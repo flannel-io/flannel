@@ -1,6 +1,6 @@
 # kolach
 
-kolach is a point to point VPN that assigns a subnet to each IP for use with
+kolach is a point to point VPN that assigns a subnet to each machine for use with
 k8s.
 
 In k8s every machine in the cluster is assigned a full subnet. The machine A
