@@ -1,6 +1,6 @@
 # kolach
 
-kolach is a point to point VPN that assigns a subnet to each machine for use with
+kolach is an overlay network that gives a subnet to each machine for use with
 k8s.
 
 In k8s every machine in the cluster is assigned a full subnet. The machine A
@@ -12,25 +12,60 @@ disadvantage is that the only cloud provider that can do this is GCE.
 
 To emulate the Kubernetes model from GCE on other platforms we need to create
 an overlay network on top of the network that we are given from cloud
-providers. Not a fun task but certainly doable.
+providers. Kolach uses the Universal TUN/TAP device and creates an overlay network
+using UDP to encapsulate IP packets. The subnet allocation is done with the help
+of etcd which maintains the overlay to actual IP mappings.
 
-There are few prototype steps we need to explore to bring this together:
+## Configuration
 
-1) Get openvpn (or some similar product) working inside of a container and
-bridging a subnet between CoreOS machines.
+Kolach reads its configuration from etcd. By default, it will read the configuration
+from ```/coreos.com/network/config``` (can be overridden via --etcd-prefix).
+The value of the config should be a JSON dictionary with the following keys:
 
-This blog post outline a configuration that can probably work for openvpn:
-http://blog.wains.be/2008/06/07/routed-openvpn-between-two-subnets-behind-nat-gateways/
+* ```Network``` (string): IPv4 network in CIDR format to use for the entire overlay network. This
+is the only mandatory key.
 
-2) Get two containers connected via this overlay network. The simplest place to
-start would be to createa an interface alias for the openvpn tap device, give
-the container the host networking namespace and then have it bind on that interface.
+* ```HostSubnet``` (number): The size of the subnet allocated to each host. Defaults to 24 (i.e. /24) unless
+the Network was configured to be less than a /24 in which case it is one less than the network.
 
-3) Write a thing that uses etcd to register machines preferred network ip for
-every machine in the cluster to connect to. Machines in the network should
-create a new openvpn connection for every registered machine and ensure it is
-up.
+* ```FirstIP``` (string): The beginning of IP range which the subnet allocation should start with. Defaults
+to the value of Network.
 
-4) Configure this whole thing using etcd and hold the network keys in etcd too.
+* ```LastIP``` (string): The end of the IP range at which the subnet allocation should end with. Defaults to
+one host-sized subnet prior to end of Network range.
 
-5) Ship it!
+## Running
+
+Once you have pushed configuration JSON to etcd, you can start kolach. If you published your
+config at the default location, you can start kolach with no arguments. Kolach will acquire a
+subnet lease, configure its routes based on other leases in the overlay network and start
+routing packets. Additionally it will monitor etcd for new members of the network and adjust
+its routing table accordingly.
+
+After kolach has acquired the subnet and configured the TUN device, it will write out an
+environment variable file (```/run/kolach/subnet.env``` by default) with subnet address and
+MTU that it supports.
+
+## Key command line options
+
+```
+-etcd-endpoint="http://127.0.0.1:4001": etcd endpoint
+-etcd-prefix="/coreos.com/network": etcd prefix
+-iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
+-port=4242: port to use for inter-node communications
+-subnet-file="/run/kolach/subnet.env": filename where env variables (subnet and MTU values) will be written to
+-v=0: log level for V logs. Set to 1 to see messages related to data path
+```
+
+## Docker integration
+
+Docker daemon accepts ```--bip``` argument to configure the subnet of the docker0 bridge. It also accepts ```--mtu``` to set the MTU
+for docker0 and veth devices that it will be creating. Since kolach writes out the acquired subnet and MTU values into
+a file, the script starting Docker daemon can source in the values and pass them to Docker daemon:
+
+```bash
+source /run/kolach/subnet.env
+docker -d --bip=${KOLACH_SUBNET} --mtu=${KOLACH_MTU}
+```
+
+Systemd users can use ```EnvironmentFile``` directive in the .service file to pull in ```/run/kolach/subnet.env```

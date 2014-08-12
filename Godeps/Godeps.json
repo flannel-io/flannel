@@ -1,0 +1,28 @@
+{
+	"ImportPath": "github.com/coreos-inc/kolach",
+	"GoVersion": "go1.2.2",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/coreos/go-etcd/etcd",
+			"Comment": "v0.2.0-rc1-120-g23142f6",
+			"Rev": "23142f6773a676cc2cae8dd0cb90b2ea761c853f"
+		},
+		{
+			"ImportPath": "github.com/coreos/go-systemd/daemon",
+			"Comment": "v2-26-ga606a1e",
+			"Rev": "a606a1e936df81b70d85448221c7b1c6d8a74ef1"
+		},
+		{
+			"ImportPath": "github.com/docker/libcontainer/netlink",
+			"Comment": "v1.1.0-131-g164cd80",
+			"Rev": "164cd807a16e63ed539cddda55ce3bbc32e1791e"
+		},
+		{
+			"ImportPath": "github.com/golang/glog",
+			"Rev": "d1c4472bf2efd3826f2b5bdcc02d8416798d678c"
+		}
+	]
+}
