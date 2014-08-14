@@ -48,6 +48,15 @@ func (ip IP4) ToIP() net.IP {
 	return net.IPv4(ip.Octets())
 }
 
+func (ip IP4) ToNetworkOrder() uint32 {
+	if NativelyLittle() {
+		a, b, c, d := byte(ip>>24), byte(ip>>16), byte(ip>>8), byte(ip)
+		return uint32(a) | (uint32(b) << 8) | (uint32(c) << 16) | (uint32(d) << 24)
+	} else {
+		return uint32(ip)
+	}
+}
+
 func (ip IP4) String() string {
 	return ip.ToIP().String()
 }
