@@ -1,16 +1,16 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"os"
-	"time"
-	"flag"
 	"path"
+	"time"
 
 	"github.com/coreos-inc/kolach/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
-	log "github.com/coreos-inc/kolach/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos-inc/kolach/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
+	log "github.com/coreos-inc/kolach/Godeps/_workspace/src/github.com/golang/glog"
 
 	"github.com/coreos-inc/kolach/pkg"
 	"github.com/coreos-inc/kolach/subnet"
@@ -26,6 +26,7 @@ type CmdLineOpts struct {
 	etcdPrefix   string
 	help         bool
 	version      bool
+	slowProxy    bool
 	port         int
 	subnetFile   string
 	iface        string
@@ -39,6 +40,7 @@ func init() {
 	flag.IntVar(&opts.port, "port", defaultPort, "port to use for inter-node communications")
 	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/kolach/subnet.env", "filename where env variables (subnet and MTU values) will be written to")
 	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
+	flag.BoolVar(&opts.slowProxy, "no-fast-proxy", false, "disable accelerated proxy")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
 }
@@ -144,7 +146,7 @@ func main() {
 
 	sm := makeSubnetManager()
 
-	udp.Run(sm, iface, ip, opts.port, func(sn pkg.IP4Net, mtu int) {
+	udp.Run(sm, iface, ip, opts.port, !opts.slowProxy, func(sn pkg.IP4Net, mtu int) {
 		writeSubnet(sn, mtu)
 		daemon.SdNotify("READY=1")
 	})
