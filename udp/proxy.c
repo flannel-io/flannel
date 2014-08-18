@@ -33,7 +33,10 @@ typedef struct icmp_pkt {
 	/* dest unreachable must include IP hdr 8 bytes of upper layer proto
 	 * of the original packet. */
 	char    data[sizeof(struct iphdr) + MAX_IPOPTLEN + 8];
-} icmp_pkt;
+} __attribute__ ((aligned (4))) icmp_pkt;
+
+/* we calc hdr checksums using 32bit uints that can alias other types */
+typedef uint32_t __attribute__((__may_alias__)) aliasing_uint32_t;
 
 struct route_entry *routes;
 size_t routes_alloc;
@@ -63,20 +66,15 @@ static void log_error(const char *fmt, ...) {
 }
 
 /* fast version -- only works with mults of 4 bytes */
-uint16_t cksum(char* buf, int len) {
+uint16_t cksum(aliasing_uint32_t *buf, int len) {
 	uint32_t sum = 0;
-	const uint32_t *b = (uint32_t*) buf;
-
 	uint16_t t1, t2;
 
-	assert(len % 4 == 0);
-
-	while( len > 0 ) {
-		uint32_t s = *b++;
+	for( ; len > 0; len-- ) {
+		uint32_t s = *buf++;
 		sum += s;
 		if( sum < s )
 			sum++;
-		len -= 4;
 	}
 
 	/* Fold down to 16 bits */
@@ -118,14 +116,14 @@ static void send_net_unreachable(int tun, char *offender) {
 	memset(&pkt, 0, sizeof(pkt));
 
 	/* Fill in the IP header */
-	pkt.iph.ihl = 5;
+	pkt.iph.ihl = sizeof(struct iphdr) / 4;
 	pkt.iph.version = IPVERSION;
 	pkt.iph.tot_len = htons(pktlen);
 	pkt.iph.ttl = 8;
 	pkt.iph.protocol = IPPROTO_ICMP;
 	pkt.iph.saddr = tun_addr;
 	pkt.iph.daddr = off_iph->saddr;
-	pkt.iph.check = cksum((char *)&pkt.iph, sizeof(struct iphdr));
+	pkt.iph.check = cksum((aliasing_uint32_t*) &pkt.iph, sizeof(struct iphdr) / sizeof(aliasing_uint32_t));
 
 	/* Fill in the ICMP header */
 	pkt.icmph.type = ICMP_DEST_UNREACH;
@@ -135,7 +133,8 @@ static void send_net_unreachable(int tun, char *offender) {
 	memcpy(pkt.data, offender, off_iph_len + 8);
 
 	/* Compute the checksum over the ICMP header and data */
-	pkt.icmph.checksum = cksum((char *)&pkt.icmph, sizeof(struct icmphdr) + off_iph_len + 8);
+	pkt.icmph.checksum = cksum((aliasing_uint32_t*) &pkt.icmph,
+			(sizeof(struct icmphdr) + off_iph_len + 8) / sizeof(aliasing_uint32_t));
 
 	/* Kick it back */
 	nsent = write(tun, &pkt, pktlen);
@@ -274,7 +273,7 @@ static void tun_send_packet(int tun, char *pkt, size_t pktlen) {
 }
 
 static void tun_to_udp(int tun, int sock) {
-	char buf[MTU];
+	char buf[MTU] __attribute__ ((aligned (4)));
 
 	struct iphdr *iph;
 	struct sockaddr_in *next_hop;
@@ -301,13 +300,13 @@ static void tun_to_udp(int tun, int sock) {
 
 	/* TTL modified, need to recompute checksum */
 	iph->check = 0;
-	iph->check = cksum((char *)iph, iph->ihl * 4);
+	iph->check = cksum((aliasing_uint32_t*) iph, iph->ihl);
 
 	sock_send_packet(sock, buf, pktlen, next_hop);
 }
 
 static void udp_to_tun(int sock, int tun) {
-	char buf[MTU];
+	char buf[MTU] __attribute__ ((aligned (4)));
 	struct iphdr *iph;
 
 	ssize_t pktlen = recv(sock, buf, MTU, 0);
@@ -327,42 +326,40 @@ static void udp_to_tun(int sock, int tun) {
 
 	/* TTL modified, need to recompute checksum */
 	iph->check = 0;
-	iph->check = cksum((char *)iph, iph->ihl * 4);
+	iph->check = cksum((aliasing_uint32_t*) iph, iph->ihl);
 
 	tun_send_packet(tun, buf, pktlen);
 }
 
 static void process_cmd(int ctl) {
-	char buf[128];
+	struct command cmd;
 	struct ip_net ipn;
 	struct sockaddr_in sa = {
 		.sin_family = AF_INET
 	};
 
-	ssize_t nrecv = recv(ctl, buf, sizeof(buf), 0);
+	ssize_t nrecv = recv(ctl, (char *) &cmd, sizeof(cmd), 0);
 	if( nrecv < 0 ) {
 		log_error("CTL recv failed: %s\n", strerror(errno));
 		return;
 	}
 
-	struct command *cmd = (struct command *)buf;
+	if( cmd.cmd == CMD_SET_ROUTE ) {
+		ipn.mask = netmask(cmd.dest_net_len);
+		ipn.ip = cmd.dest_net & ipn.mask;
 
-	if( cmd->cmd == CMD_SET_ROUTE ) {
-		ipn.mask = netmask(cmd->dest_net_len);
-		ipn.ip = cmd->dest_net & ipn.mask;
-
-		sa.sin_addr.s_addr = cmd->next_hop_ip;
-		sa.sin_port = htons(cmd->next_hop_port);
+		sa.sin_addr.s_addr = cmd.next_hop_ip;
+		sa.sin_port = htons(cmd.next_hop_port);
 
 		set_route(ipn, &sa);
 
-	} else if( cmd->cmd == CMD_DEL_ROUTE ) {
-		ipn.mask = netmask(cmd->dest_net_len);
-		ipn.ip = cmd->dest_net & ipn.mask;
+	} else if( cmd.cmd == CMD_DEL_ROUTE ) {
+		ipn.mask = netmask(cmd.dest_net_len);
+		ipn.ip = cmd.dest_net & ipn.mask;
 
 		del_route(ipn);
 
-	} else if( cmd->cmd == CMD_STOP ) {
+	} else if( cmd.cmd == CMD_STOP ) {
 		exit_flag = 1;
 	}
 }

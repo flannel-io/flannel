@@ -28,7 +28,7 @@ func runCProxy(tun *os.File, conn *os.File, ctl *os.File, tunIP pkg.IP4) {
 		C.int(tun.Fd()),
 		C.int(conn.Fd()),
 		C.int(ctl.Fd()),
-		C.in_addr_t(tunIP.ToNetworkOrder()),
+		C.in_addr_t(tunIP.NetworkOrder()),
 		C.int(log_errors),
 	)
 
@@ -93,9 +93,9 @@ func fastProxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, tunIP 
 
 				cmd := C.command{
 					cmd:           C.CMD_SET_ROUTE,
-					dest_net:      C.in_addr_t(evt.Lease.Network.IP.ToNetworkOrder()),
+					dest_net:      C.in_addr_t(evt.Lease.Network.IP.NetworkOrder()),
 					dest_net_len:  C.int(evt.Lease.Network.PrefixLen),
-					next_hop_ip:   C.in_addr_t(attrs.PublicIP.ToNetworkOrder()),
+					next_hop_ip:   C.in_addr_t(attrs.PublicIP.NetworkOrder()),
 					next_hop_port: C.short(port),
 				}
 
@@ -106,7 +106,7 @@ func fastProxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, tunIP 
 
 				cmd := C.command{
 					cmd:          C.CMD_DEL_ROUTE,
-					dest_net:     C.in_addr_t(evt.Lease.Network.IP.ToNetworkOrder()),
+					dest_net:     C.in_addr_t(evt.Lease.Network.IP.NetworkOrder()),
 					dest_net_len: C.int(evt.Lease.Network.PrefixLen),
 				}
 
