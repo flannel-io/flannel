@@ -1,11 +1,12 @@
 #include <stdlib.h>
-#include <memory.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <memory.h>
 #include <assert.h>
+
 #include <errno.h>
 #include <poll.h>
-
+#include <unistd.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -158,7 +159,7 @@ static int set_route(struct ip_net dst, struct sockaddr_in *next_hop) {
 
 	if( routes_alloc == routes_cnt ) {
 		int new_alloc = (routes_alloc ? 2*routes_alloc : 8);
-		struct route_entry *new_routes = realloc(routes, new_alloc);
+		struct route_entry *new_routes = (struct route_entry *) realloc(routes, new_alloc);
 		if( !new_routes )
 			return ENOMEM;
 
@@ -272,6 +273,25 @@ static void tun_send_packet(int tun, char *pkt, size_t pktlen) {
 	}
 }
 
+inline static int decrement_ttl(struct iphdr *iph) {
+	if( --(iph->ttl) == 0 ) {
+		char saddr[32], daddr[32];
+		log_error("Discarding IP fragment %s -> %s due to zero TTL\n",
+				inaddr_str(iph->saddr, saddr, sizeof(saddr)),
+				inaddr_str(iph->daddr, daddr, sizeof(daddr)));
+		return 0;
+	}
+
+	/* patch up IP checksum (see RFC 1624) */
+	if( iph->check >= htons(0xFFFFu - 0x100) ) {
+		iph->check += htons(0x100) + 1;
+	} else {
+		iph->check += htons(0x100);
+	}
+
+	return 1;
+}
+
 static void tun_to_udp(int tun, int sock) {
 	char buf[MTU] __attribute__ ((aligned (4)));
 
@@ -290,17 +310,12 @@ static void tun_to_udp(int tun, int sock) {
 		return;
 	}
 
-	if( --(iph->ttl) == 0 ) {
-		char saddr[32], daddr[32];
-		log_error("Discarding IP fragment %s -> %s due to zero TTL\n",
-				inaddr_str(iph->saddr, saddr, sizeof(saddr)),
-				inaddr_str(iph->daddr, daddr, sizeof(daddr)));
+	if( !decrement_ttl(iph) ) {
+		/* TTL went to 0, discard.
+		 * TODO: send back ICMP Time Exceeded
+		 */
 		return;
 	}
-
-	/* TTL modified, need to recompute checksum */
-	iph->check = 0;
-	iph->check = cksum((aliasing_uint32_t*) iph, iph->ihl);
 
 	sock_send_packet(sock, buf, pktlen, next_hop);
 }
@@ -316,17 +331,12 @@ static void udp_to_tun(int sock, int tun) {
 
 	iph = (struct iphdr *)buf;
 
-	if( --(iph->ttl) == 0 ) {
-		char saddr[32], daddr[32];
-		log_error("Discarding IP fragment %s -> %s due to zero TTL\n",
-				inaddr_str(iph->saddr, saddr, sizeof(saddr)),
-				inaddr_str(iph->daddr, daddr, sizeof(daddr)));
+	if( !decrement_ttl(iph) ) {
+		/* TTL went to 0, discard.
+		 * TODO: send back ICMP Time Exceeded
+		 */
 		return;
 	}
-
-	/* TTL modified, need to recompute checksum */
-	iph->check = 0;
-	iph->check = cksum((aliasing_uint32_t*) iph, iph->ihl);
 
 	tun_send_packet(tun, buf, pktlen);
 }
