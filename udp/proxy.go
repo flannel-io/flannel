@@ -127,11 +127,11 @@ func proxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, port int) 
 				rtr.SetRoute(evt.Lease.Network, attrs.PublicIP)
 
 			} else if evt.Type == subnet.SubnetRemoved {
-				log.Info("Subnet removed: %v", evt.Lease.Network)
+				log.Info("Subnet removed: ", evt.Lease.Network)
 				rtr.DelRoute(evt.Lease.Network)
 
 			} else {
-				log.Errorf("Internal error: unknown event type: %d", int(evt.Type))
+				log.Error("Internal error: unknown event type: ", int(evt.Type))
 			}
 		}
 	}

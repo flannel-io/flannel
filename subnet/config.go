@@ -9,9 +9,9 @@ import (
 
 type Config struct {
 	Network    pkg.IP4Net
-	FirstIP    pkg.IP4
-	LastIP     pkg.IP4
-	HostSubnet uint
+	SubnetMin  pkg.IP4
+	SubnetMax  pkg.IP4
+	SubnetLen  uint
 }
 
 func ParseConfig(s string) (*Config, error) {
@@ -21,31 +21,35 @@ func ParseConfig(s string) (*Config, error) {
 		return nil, err
 	}
 
-	if cfg.HostSubnet > 0 {
-		if cfg.HostSubnet < cfg.Network.PrefixLen {
+	if cfg.SubnetLen > 0 {
+		if cfg.SubnetLen < cfg.Network.PrefixLen {
 			return nil, errors.New("HostSubnet is larger network than Network")
 		}
 	} else {
 		// try to give each host a /24 but if the whole network
 		// is /24 or smaller, half the network
 		if cfg.Network.PrefixLen < 24 {
-			cfg.HostSubnet = 24
+			cfg.SubnetLen = 24
 		} else {
-			cfg.HostSubnet = cfg.Network.PrefixLen + 1
+			cfg.SubnetLen = cfg.Network.PrefixLen + 1
 		}
 	}
 
-	if cfg.FirstIP == pkg.IP4(0) {
-		cfg.FirstIP = cfg.Network.IP
-	} else if !cfg.Network.Contains(cfg.FirstIP) {
-		return nil, errors.New("FirstIP is not in the range of the Network")
+	subnetSize := pkg.IP4(1 << (32 - cfg.SubnetLen))
+
+	if cfg.SubnetMin == pkg.IP4(0) {
+		// skip over the first subnet otherwise it causes problems. e.g.
+		// if Network is 10.100.0.0/16, having an interface with 10.0.0.0
+		// makes ping think it's a broadcast address (not sure why)
+		cfg.SubnetMin = cfg.Network.IP + subnetSize
+	} else if !cfg.Network.Contains(cfg.SubnetMin) {
+		return nil, errors.New("SubnetMin is not in the range of the Network")
 	}
 
-	if cfg.LastIP == pkg.IP4(0) {
-		cfg.LastIP = cfg.Network.Next().IP
-		cfg.LastIP -= (1 << (32 - cfg.HostSubnet))
-	} else if !cfg.Network.Contains(cfg.LastIP) {
-		return nil, errors.New("LastIP is not in the range of the Network")
+	if cfg.SubnetMax == pkg.IP4(0) {
+		cfg.SubnetMax = cfg.Network.Next().IP - subnetSize
+	} else if !cfg.Network.Contains(cfg.SubnetMax) {
+		return nil, errors.New("SubnetMax is not in the range of the Network")
 	}
 
 	return cfg, nil

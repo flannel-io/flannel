@@ -305,13 +305,13 @@ type BaseAttrs struct {
 }
 
 func (sm *SubnetManager) allocateSubnet() (pkg.IP4Net, error) {
-	log.Infof("Picking subnet in range %s ... %s", sm.config.FirstIP, sm.config.LastIP)
+	log.Infof("Picking subnet in range %s ... %s", sm.config.SubnetMin, sm.config.SubnetMax)
 
 	var bag []pkg.IP4
-	sn := pkg.IP4Net{sm.config.FirstIP, sm.config.HostSubnet}
+	sn := pkg.IP4Net{sm.config.SubnetMin, sm.config.SubnetLen}
 
 OuterLoop:
-	for ; sn.IP <= sm.config.LastIP && len(bag) < 100; sn = sn.Next() {
+	for ; sn.IP <= sm.config.SubnetMax && len(bag) < 100; sn = sn.Next() {
 		for _, l := range sm.leases {
 			if sn.Overlaps(l.Network) {
 				continue OuterLoop
@@ -324,7 +324,7 @@ OuterLoop:
 		return pkg.IP4Net{}, errors.New("out of subnets")
 	} else {
 		i := pkg.RandInt(0, len(bag))
-		return pkg.IP4Net{bag[i], sm.config.HostSubnet}, nil
+		return pkg.IP4Net{bag[i], sm.config.SubnetLen}, nil
 	}
 }
 
