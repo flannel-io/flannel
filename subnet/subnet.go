@@ -85,7 +85,7 @@ func (sm *SubnetManager) AcquireLease(ip pkg.IP4, data string) (pkg.IP4Net, erro
 					}
 
 					sm.myLease.Network = l.Network
-					sm.leaseExp = *(resp.Node.Expiration)
+					sm.leaseExp = *resp.Node.Expiration
 					return l.Network, nil
 				}
 			}
@@ -101,7 +101,7 @@ func (sm *SubnetManager) AcquireLease(ip pkg.IP4, data string) (pkg.IP4Net, erro
 		switch {
 		case err == nil:
 			sm.myLease.Network = sn
-			sm.leaseExp = *(resp.Node.Expiration)
+			sm.leaseExp = *resp.Node.Expiration
 			return sn, nil
 
 		// if etcd returned Key Already Exists, try again.
@@ -118,7 +118,7 @@ func (sm *SubnetManager) AcquireLease(ip pkg.IP4, data string) (pkg.IP4Net, erro
 
 func (sm *SubnetManager) UpdateSubnet(data string) error {
 	resp, err := sm.registry.updateSubnet(sm.myLease.Network.StringSep(".", "-"), data, subnetTTL)
-	sm.leaseExp = *(resp.Node.Expiration)
+	sm.leaseExp = *resp.Node.Expiration
 	return err
 }
 
