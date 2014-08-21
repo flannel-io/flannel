@@ -103,13 +103,13 @@ func (r *Router) routePacket(pkt []byte, conn *net.UDPConn) {
 	log.V(1).Info("No route found for ", dstIP)
 }
 
-func proxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, port int) {
+func proxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, tunMTU uint, port int) {
 	log.Info("Running slow proxy loop")
 
 	rtr := NewRouter(port)
 
-	go proxyTunToUdp(rtr, tun, conn)
-	go proxyUdpToTun(conn, tun)
+	go proxyTunToUdp(rtr, tun, conn, tunMTU)
+	go proxyUdpToTun(conn, tun, tunMTU)
 
 	log.Info("Watching for new subnet leases")
 	evts := make(chan subnet.EventBatch)
@@ -137,8 +137,8 @@ func proxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, port int) 
 	}
 }
 
-func proxyTunToUdp(r *Router, tun *os.File, conn *net.UDPConn) {
-	pkt := make([]byte, 1600)
+func proxyTunToUdp(r *Router, tun *os.File, conn *net.UDPConn, tunMTU uint) {
+	pkt := make([]byte, tunMTU)
 	for {
 		nbytes, err := tun.Read(pkt)
 		if err != nil {
@@ -149,8 +149,8 @@ func proxyTunToUdp(r *Router, tun *os.File, conn *net.UDPConn) {
 	}
 }
 
-func proxyUdpToTun(conn *net.UDPConn, tun *os.File) {
-	pkt := make([]byte, 1600)
+func proxyUdpToTun(conn *net.UDPConn, tun *os.File, tunMTU uint) {
+	pkt := make([]byte, tunMTU)
 	for {
 		nrecv, err := conn.Read(pkt)
 		if err != nil {

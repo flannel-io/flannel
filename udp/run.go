@@ -15,7 +15,6 @@ import (
 
 const (
 	encapOverhead = 28 // 20 bytes IP hdr + 8 bytes UDP hdr
-	defaultMTU    = 1500 - encapOverhead
 )
 
 func configureIface(ifname string, ipn pkg.IP4Net, mtu int) error {
@@ -105,7 +104,8 @@ func Run(sm *subnet.SubnetManager, iface *net.Interface, ip net.IP, port int, fa
 	if iface.MTU > 0 {
 		mtu = iface.MTU - encapOverhead
 	} else {
-		mtu = defaultMTU
+		log.Errorf("Failed to determine MTU for %s interface", ip)
+		return
 	}
 
 	err = configureIface(tunName, ipn, mtu)
@@ -118,8 +118,8 @@ func Run(sm *subnet.SubnetManager, iface *net.Interface, ip net.IP, port int, fa
 	ready(sn, mtu)
 
 	if fast {
-		fastProxy(sm, tun, conn, ipn.IP, port)
+		fastProxy(sm, tun, conn, ipn.IP, uint(mtu), port)
 	} else {
-		proxy(sm, tun, conn, port)
+		proxy(sm, tun, conn, uint(mtu), port)
 	}
 }
