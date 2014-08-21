@@ -17,7 +17,7 @@ import (
 	"github.com/coreos-inc/kolach/subnet"
 )
 
-func runCProxy(tun *os.File, conn *os.File, ctl *os.File, tunIP pkg.IP4) {
+func runCProxy(tun *os.File, conn *os.File, ctl *os.File, tunIP pkg.IP4, tunMTU uint) {
 	var log_errors int
 	if log.V(1) {
 		log_errors = 1
@@ -28,6 +28,7 @@ func runCProxy(tun *os.File, conn *os.File, ctl *os.File, tunIP pkg.IP4) {
 		C.int(conn.Fd()),
 		C.int(ctl.Fd()),
 		C.in_addr_t(tunIP.NetworkOrder()),
+		C.size_t(tunMTU),
 		C.int(log_errors),
 	)
 }
@@ -54,7 +55,7 @@ func newCtlSockets() (*os.File, *os.File, error) {
 	return f1, f2, nil
 }
 
-func fastProxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, tunIP pkg.IP4, port int) {
+func fastProxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, tunIP pkg.IP4, tunMTU uint, port int) {
 	log.Info("Running fast proxy loop")
 
 	c, err := conn.File()
@@ -72,7 +73,7 @@ func fastProxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, tunIP 
 	defer ctl.Close()
 	defer peerCtl.Close()
 
-	go runCProxy(tun, c, peerCtl, tunIP)
+	go runCProxy(tun, c, peerCtl, tunIP, tunMTU)
 
 	log.Info("Watching for new subnet leases")
 	evts := make(chan subnet.EventBatch)

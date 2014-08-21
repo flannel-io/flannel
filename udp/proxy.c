@@ -16,8 +16,6 @@
 #define CMD_DEFINE
 #include "proxy.h"
 
-#define MTU 1500
-
 struct ip_net {
 	in_addr_t ip;
 	in_addr_t mask;
@@ -292,13 +290,11 @@ inline static int decrement_ttl(struct iphdr *iph) {
 	return 1;
 }
 
-static void tun_to_udp(int tun, int sock) {
-	char buf[MTU] __attribute__ ((aligned (4)));
-
+static void tun_to_udp(int tun, int sock, char *buf, size_t buflen) {
 	struct iphdr *iph;
 	struct sockaddr_in *next_hop;
 
-	ssize_t pktlen = tun_recv_packet(tun, buf, MTU);
+	ssize_t pktlen = tun_recv_packet(tun, buf, buflen);
 	if( pktlen < 0 )
 		return;
 	
@@ -320,11 +316,10 @@ static void tun_to_udp(int tun, int sock) {
 	sock_send_packet(sock, buf, pktlen, next_hop);
 }
 
-static void udp_to_tun(int sock, int tun) {
-	char buf[MTU] __attribute__ ((aligned (4)));
+static void udp_to_tun(int sock, int tun, char *buf, size_t buflen) {
 	struct iphdr *iph;
 
-	ssize_t pktlen = recv(sock, buf, MTU, 0);
+	ssize_t pktlen = recv(sock, buf, buflen, 0);
 	if( pktlen < 0 ) {
 		return;
 	}
@@ -375,7 +370,8 @@ static void process_cmd(int ctl) {
 }
 
 
-void run_proxy(int tun, int sock, int ctl, in_addr_t tun_ip, int log_errors) {
+void run_proxy(int tun, int sock, int ctl, in_addr_t tun_ip, size_t tun_mtu, int log_errors) {
+	char *buf;
 	struct pollfd fds[3] = {
 		{
 			.fd = tun,
@@ -395,6 +391,12 @@ void run_proxy(int tun, int sock, int ctl, in_addr_t tun_ip, int log_errors) {
 	tun_addr = tun_ip;
 	log_enabled = log_errors;
 
+	buf = (char *) malloc(tun_mtu);
+	if( !buf ) {
+		log_error("Failed to allocate %d byte buffer\n", tun_mtu);
+		exit(1);
+	}
+
 	while( !exit_flag ) {
 		int nfds = poll(fds, 3, -1);
 		if( nfds < 0 ) {
@@ -403,13 +405,15 @@ void run_proxy(int tun, int sock, int ctl, in_addr_t tun_ip, int log_errors) {
 		}
 
 		if( fds[0].revents & POLLIN )
-			tun_to_udp(tun, sock);
+			tun_to_udp(tun, sock, buf, tun_mtu);
 
 		if( fds[1].revents & POLLIN )
-			udp_to_tun(sock, tun);
+			udp_to_tun(sock, tun, buf, tun_mtu);
 
 		if( fds[2].revents & POLLIN )
 			process_cmd(ctl);
 	}
+
+	free(buf);
 }
 
