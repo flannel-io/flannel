@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 ORG_PATH="github.com/coreos-inc"
-REPO_PATH="${ORG_PATH}/kolach"
+REPO_PATH="${ORG_PATH}/rudder"
 
 if [ ! -h gopath/src/${REPO_PATH} ]; then
 	mkdir -p gopath/src/${ORG_PATH}
@@ -14,8 +14,8 @@ export GOPATH=${PWD}/gopath
 eval $(go env)
 
 if [ ${GOOS} = "linux" ]; then
-	echo "Building kolach..."
+	echo "Building rudder"
 	go install ${REPO_PATH}
 else
-	echo "Not on Linux - skipping kolach build"
+	echo "Not on Linux - skipping rudder build"
 fi

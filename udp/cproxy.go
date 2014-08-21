@@ -11,10 +11,10 @@ import (
 	"syscall"
 	"unsafe"
 
-	log "github.com/coreos-inc/kolach/Godeps/_workspace/src/github.com/golang/glog"
+	log "github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/golang/glog"
 
-	"github.com/coreos-inc/kolach/pkg"
-	"github.com/coreos-inc/kolach/subnet"
+	"github.com/coreos-inc/rudder/pkg"
+	"github.com/coreos-inc/rudder/subnet"
 )
 
 func runCProxy(tun *os.File, conn *os.File, ctl *os.File, tunIP pkg.IP4, tunMTU uint) {

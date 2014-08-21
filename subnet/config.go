@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/coreos-inc/kolach/pkg"
+	"github.com/coreos-inc/rudder/pkg"
 )
 
 type Config struct {
-	Network    pkg.IP4Net
-	SubnetMin  pkg.IP4
-	SubnetMax  pkg.IP4
-	SubnetLen  uint
+	Network   pkg.IP4Net
+	SubnetMin pkg.IP4
+	SubnetMax pkg.IP4
+	SubnetLen uint
 }
 
 func ParseConfig(s string) (*Config, error) {

@@ -8,13 +8,13 @@ import (
 	"path"
 	"time"
 
-	"github.com/coreos-inc/kolach/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
-	"github.com/coreos-inc/kolach/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
-	log "github.com/coreos-inc/kolach/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	"github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
+	log "github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/golang/glog"
 
-	"github.com/coreos-inc/kolach/pkg"
-	"github.com/coreos-inc/kolach/subnet"
-	"github.com/coreos-inc/kolach/udp"
+	"github.com/coreos-inc/rudder/pkg"
+	"github.com/coreos-inc/rudder/subnet"
+	"github.com/coreos-inc/rudder/udp"
 )
 
 const (
@@ -38,7 +38,7 @@ func init() {
 	flag.StringVar(&opts.etcdEndpoint, "etcd-endpoint", "http://127.0.0.1:4001", "etcd endpoint")
 	flag.StringVar(&opts.etcdPrefix, "etcd-prefix", "/coreos.com/network", "etcd prefix")
 	flag.IntVar(&opts.port, "port", defaultPort, "port to use for inter-node communications")
-	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/kolach/subnet.env", "filename where env variables (subnet and MTU values) will be written to")
+	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/rudder/subnet.env", "filename where env variables (subnet and MTU values) will be written to")
 	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
 	flag.BoolVar(&opts.slowProxy, "no-fast-proxy", false, "disable accelerated proxy")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
@@ -59,8 +59,8 @@ func writeSubnet(sn pkg.IP4Net, mtu int) error {
 	}
 	defer f.Close()
 
-	fmt.Fprintf(f, "KOLACH_SUBNET=%s\n", sn)
-	fmt.Fprintf(f, "KOLACH_MTU=%d\n", mtu)
+	fmt.Fprintf(f, "RUDDER_SUBNET=%s\n", sn)
+	fmt.Fprintf(f, "RUDDER_MTU=%d\n", mtu)
 	return nil
 }
 
