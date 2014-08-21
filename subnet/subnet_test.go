@@ -41,7 +41,7 @@ func (msr *mockSubnetRegistry) getConfig() (*etcd.Response, error) {
 	return &etcd.Response{
 		EtcdIndex: msr.index,
 		Node: &etcd.Node{
-			Value: `{ "Network": "10.3.0.0/16", "FirstIP": "10.3.1.0", "LastIP": "10.3.5.0" }`,
+			Value: `{ "Network": "10.3.0.0/16", "SubnetMin": "10.3.1.0", "SubnetMax": "10.3.5.0" }`,
 		},
 	}, nil
 }
