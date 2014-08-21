@@ -22,7 +22,6 @@ func runCProxy(tun *os.File, conn *os.File, ctl *os.File, tunIP pkg.IP4) {
 	if log.V(1) {
 		log_errors = 1
 	}
-	log.Info("C.run_proxy: log_errors: ", log_errors)
 
 	C.run_proxy(
 		C.int(tun.Fd()),
@@ -31,8 +30,6 @@ func runCProxy(tun *os.File, conn *os.File, ctl *os.File, tunIP pkg.IP4) {
 		C.in_addr_t(tunIP.NetworkOrder()),
 		C.int(log_errors),
 	)
-
-	log.Info("C.run_proxy exited")
 }
 
 func writeCommand(f *os.File, cmd *C.command) {
@@ -102,7 +99,7 @@ func fastProxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, tunIP 
 				writeCommand(ctl, &cmd)
 
 			} else if evt.Type == subnet.SubnetRemoved {
-				log.Info("Subnet removed: %v", evt.Lease.Network)
+				log.Info("Subnet removed: ", evt.Lease.Network)
 
 				cmd := C.command{
 					cmd:          C.CMD_DEL_ROUTE,
@@ -113,7 +110,7 @@ func fastProxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, tunIP 
 				writeCommand(ctl, &cmd)
 
 			} else {
-				log.Errorf("Internal error: unknown event type: %d", int(evt.Type))
+				log.Error("Internal error: unknown event type: ", int(evt.Type))
 			}
 		}
 	}

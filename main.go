@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	defaultPort = 4242
+	defaultPort = 8285
 )
 
 type CmdLineOpts struct {

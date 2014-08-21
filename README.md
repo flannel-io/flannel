@@ -25,14 +25,14 @@ The value of the config should be a JSON dictionary with the following keys:
 * ```Network``` (string): IPv4 network in CIDR format to use for the entire overlay network. This
 is the only mandatory key.
 
-* ```HostSubnet``` (number): The size of the subnet allocated to each host. Defaults to 24 (i.e. /24) unless
-the Network was configured to be less than a /24 in which case it is one less than the network.
+* ```SubnetLen``` (number): The size of the subnet allocated to each host. Defaults to 24 (i.e. /24) unless
+the Network was configured to be smaller than a /24 in which case it is one less than the network.
 
-* ```FirstIP``` (string): The beginning of IP range which the subnet allocation should start with. Defaults
-to the value of Network.
+* ```SubnetMin``` (string): The beginning of IP range which the subnet allocation should start with. Defaults
+to the first subnet of Network.
 
-* ```LastIP``` (string): The end of the IP range at which the subnet allocation should end with. Defaults to
-one host-sized subnet prior to end of Network range.
+* ```SubnetMax``` (string): The end of the IP range at which the subnet allocation should end with. Defaults to
+the last subnet of Network.
 
 ## Running
 
@@ -52,7 +52,7 @@ MTU that it supports.
 -etcd-endpoint="http://127.0.0.1:4001": etcd endpoint
 -etcd-prefix="/coreos.com/network": etcd prefix
 -iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
--port=4242: port to use for inter-node communications
+-port=8285: UDP port to use for inter-node communications
 -subnet-file="/run/kolach/subnet.env": filename where env variables (subnet and MTU values) will be written to
 -v=0: log level for V logs. Set to 1 to see messages related to data path
 ```
