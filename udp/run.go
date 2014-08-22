@@ -3,6 +3,7 @@ package udp
 import (
 	"encoding/json"
 	"net"
+	"syscall"
 	"time"
 
 	"github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
@@ -39,7 +40,15 @@ func configureIface(ifname string, ipn pkg.IP4Net, mtu int) error {
 
 	err = netlink.NetworkLinkUp(iface)
 	if err != nil {
-		log.Errorf("Failed set interface %s to UP state: %s", ifname, err)
+		log.Errorf("Failed to set interface %s to UP state: %s", ifname, err)
+		return err
+	}
+
+	// explicitly add a route since there might be a route for a subnet already
+	// installed by Docker and then it won't get auto added
+	err = netlink.AddRoute(ipn.Network().String(), "", "", ifname)
+	if err != nil && err != syscall.EEXIST {
+		log.Errorf("Failed to add route (%s -> %s): ", ipn.Network().String(), ifname, err)
 		return err
 	}
 
