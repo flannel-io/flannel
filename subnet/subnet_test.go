@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coreos-inc/kolach/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	"github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 
-	"github.com/coreos-inc/kolach/pkg"
+	"github.com/coreos-inc/rudder/pkg"
 )
 
 type mockSubnetRegistry struct {
@@ -127,7 +127,7 @@ func (msr *mockSubnetRegistry) watchSubnets(since uint64, stop chan bool) (*etcd
 				msr.subnets.Nodes = msr.subnets.Nodes[:len(msr.subnets.Nodes)-2]
 				return &etcd.Response{
 					Action: "expire",
-					Node:    n,
+					Node:   n,
 				}, nil
 			}
 		}
@@ -264,7 +264,7 @@ func TestRenewLease(t *testing.T) {
 	sm.Start(events)
 
 	fmt.Println("Waiting for lease to pass original expiration")
-	time.Sleep(2*time.Second)
+	time.Sleep(2 * time.Second)
 
 	// check that it's still good
 	for _, n := range msr.subnets.Nodes {

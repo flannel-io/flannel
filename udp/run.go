@@ -5,12 +5,12 @@ import (
 	"net"
 	"time"
 
-	"github.com/coreos-inc/kolach/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
-	log "github.com/coreos-inc/kolach/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
+	log "github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/golang/glog"
 
-	"github.com/coreos-inc/kolach/backend"
-	"github.com/coreos-inc/kolach/pkg"
-	"github.com/coreos-inc/kolach/subnet"
+	"github.com/coreos-inc/rudder/backend"
+	"github.com/coreos-inc/rudder/pkg"
+	"github.com/coreos-inc/rudder/subnet"
 )
 
 const (
@@ -76,7 +76,7 @@ func Run(sm *subnet.SubnetManager, iface *net.Interface, ip net.IP, port int, fa
 		return
 	}
 
-	tun, tunName, err := pkg.OpenTun("kolach%d")
+	tun, tunName, err := pkg.OpenTun("rudder%d")
 	if err != nil {
 		log.Error("Failed to open TUN device: ", err)
 		return

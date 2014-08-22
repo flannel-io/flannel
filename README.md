@@ -1,6 +1,6 @@
-# kolach
+# Rudder
 
-kolach is an overlay network that gives a subnet to each machine for use with
+Rudder is an overlay network that gives a subnet to each machine for use with
 k8s.
 
 In k8s every machine in the cluster is assigned a full subnet. The machine A
@@ -12,13 +12,13 @@ disadvantage is that the only cloud provider that can do this is GCE.
 
 To emulate the Kubernetes model from GCE on other platforms we need to create
 an overlay network on top of the network that we are given from cloud
-providers. Kolach uses the Universal TUN/TAP device and creates an overlay network
+providers. Rudder uses the Universal TUN/TAP device and creates an overlay network
 using UDP to encapsulate IP packets. The subnet allocation is done with the help
 of etcd which maintains the overlay to actual IP mappings.
 
 ## Configuration
 
-Kolach reads its configuration from etcd. By default, it will read the configuration
+Rudder reads its configuration from etcd. By default, it will read the configuration
 from ```/coreos.com/network/config``` (can be overridden via --etcd-prefix).
 The value of the config should be a JSON dictionary with the following keys:
 
@@ -36,14 +36,14 @@ the last subnet of Network.
 
 ## Running
 
-Once you have pushed configuration JSON to etcd, you can start kolach. If you published your
-config at the default location, you can start kolach with no arguments. Kolach will acquire a
+Once you have pushed configuration JSON to etcd, you can start Rudder. If you published your
+config at the default location, you can start Rudder with no arguments. Rudder will acquire a
 subnet lease, configure its routes based on other leases in the overlay network and start
 routing packets. Additionally it will monitor etcd for new members of the network and adjust
 its routing table accordingly.
 
-After kolach has acquired the subnet and configured the TUN device, it will write out an
-environment variable file (```/run/kolach/subnet.env``` by default) with subnet address and
+After Rudder has acquired the subnet and configured the TUN device, it will write out an
+environment variable file (```/run/rudder/subnet.env``` by default) with subnet address and
 MTU that it supports.
 
 ## Key command line options
@@ -53,19 +53,19 @@ MTU that it supports.
 -etcd-prefix="/coreos.com/network": etcd prefix
 -iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
 -port=8285: UDP port to use for inter-node communications
--subnet-file="/run/kolach/subnet.env": filename where env variables (subnet and MTU values) will be written to
+-subnet-file="/run/rudder/subnet.env": filename where env variables (subnet and MTU values) will be written to
 -v=0: log level for V logs. Set to 1 to see messages related to data path
 ```
 
 ## Docker integration
 
 Docker daemon accepts ```--bip``` argument to configure the subnet of the docker0 bridge. It also accepts ```--mtu``` to set the MTU
-for docker0 and veth devices that it will be creating. Since kolach writes out the acquired subnet and MTU values into
+for docker0 and veth devices that it will be creating. Since Rudder writes out the acquired subnet and MTU values into
 a file, the script starting Docker daemon can source in the values and pass them to Docker daemon:
 
 ```bash
-source /run/kolach/subnet.env
-docker -d --bip=${KOLACH_SUBNET} --mtu=${KOLACH_MTU}
+source /run/rudder/subnet.env
+docker -d --bip=${RUDDER_SUBNET} --mtu=${RUDDER_MTU}
 ```
 
-Systemd users can use ```EnvironmentFile``` directive in the .service file to pull in ```/run/kolach/subnet.env```
+Systemd users can use ```EnvironmentFile``` directive in the .service file to pull in ```/run/rudder/subnet.env```

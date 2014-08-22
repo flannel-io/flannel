@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net"
 
-	"github.com/coreos-inc/kolach/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
+	"github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
 )
 
 func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
