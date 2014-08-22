@@ -16,6 +16,12 @@ providers. Rudder uses the Universal TUN/TAP device and creates an overlay netwo
 using UDP to encapsulate IP packets. The subnet allocation is done with the help
 of etcd which maintains the overlay to actual IP mappings.
 
+## Building Rudder
+
+* Step 1: Make sure you have Linux headers installed on your machine. On Ubuntu, run ```sudo apt-get install linux-libc-dev```. On Fedora/Redhat, run ```sudo yum install kernel-headers```.
+* Step 2: Git clone the Rudder repo: ```git clone git@github.com:coreos-inc/rudder.git```
+* Step 3: Run the build script: ```cd rudder; ./build```
+
 ## Configuration
 
 Rudder reads its configuration from etcd. By default, it will read the configuration
@@ -69,3 +75,20 @@ docker -d --bip=${RUDDER_SUBNET} --mtu=${RUDDER_MTU}
 ```
 
 Systemd users can use ```EnvironmentFile``` directive in the .service file to pull in ```/run/rudder/subnet.env```
+
+## CoreOS integration
+
+On CoreOS it is useful to add Rudder configuration into .service file in the cloud-config as the following snippet demonstrates:
+
+```
+  - name: rudder.service
+    command: start
+    content: |
+      [Unit]
+      Requires=etcd.service
+      After=etcd.service
+
+      [Service]
+      ExecStartPre=-/usr/bin/etcdctl mk /coreos.com/network/config '{"Network":"10.0.0.0/16"}'
+      ExecStart=/opt/bin/rudder
+```
