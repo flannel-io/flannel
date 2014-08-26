@@ -13,11 +13,11 @@ import (
 
 	log "github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/golang/glog"
 
-	"github.com/coreos-inc/rudder/pkg"
+	"github.com/coreos-inc/rudder/pkg/ip"
 	"github.com/coreos-inc/rudder/subnet"
 )
 
-func runCProxy(tun *os.File, conn *os.File, ctl *os.File, tunIP pkg.IP4, tunMTU uint) {
+func runCProxy(tun *os.File, conn *os.File, ctl *os.File, tunIP ip.IP4, tunMTU uint) {
 	var log_errors int
 	if log.V(1) {
 		log_errors = 1
@@ -55,7 +55,7 @@ func newCtlSockets() (*os.File, *os.File, error) {
 	return f1, f2, nil
 }
 
-func fastProxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, tunIP pkg.IP4, tunMTU uint, port int) {
+func fastProxy(sm *subnet.SubnetManager, tun *os.File, conn *net.UDPConn, tunIP ip.IP4, tunMTU uint, port int) {
 	log.Info("Running fast proxy loop")
 
 	c, err := conn.File()

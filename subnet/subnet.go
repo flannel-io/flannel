@@ -12,7 +12,7 @@ import (
 	"github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	log "github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/golang/glog"
 
-	"github.com/coreos-inc/rudder/pkg"
+	"github.com/coreos-inc/rudder/pkg/ip"
 )
 
 const (
@@ -38,7 +38,7 @@ var (
 )
 
 type SubnetLease struct {
-	Network pkg.IP4Net
+	Network ip.IP4Net
 	Data    string
 }
 
@@ -66,12 +66,12 @@ func NewSubnetManager(etcdCli *etcd.Client, prefix string) (*SubnetManager, erro
 	return newSubnetManager(&esr)
 }
 
-func (sm *SubnetManager) AcquireLease(ip pkg.IP4, data string) (pkg.IP4Net, error) {
+func (sm *SubnetManager) AcquireLease(tep ip.IP4, data string) (ip.IP4Net, error) {
 	for i := 0; i < registerRetries; i++ {
 		var err error
 		sm.leases, err = sm.getLeases()
 		if err != nil {
-			return pkg.IP4Net{}, err
+			return ip.IP4Net{}, err
 		}
 
 		// try to reuse a subnet if there's one that match our IP
@@ -81,10 +81,10 @@ func (sm *SubnetManager) AcquireLease(ip pkg.IP4, data string) (pkg.IP4Net, erro
 			if err != nil {
 				log.Error("Error parsing subnet lease JSON: ", err)
 			} else {
-				if ip == ba.PublicIP {
+				if tep == ba.PublicIP {
 					resp, err := sm.registry.updateSubnet(l.Network.StringSep(".", "-"), data, subnetTTL)
 					if err != nil {
-						return pkg.IP4Net{}, nil
+						return ip.IP4Net{}, nil
 					}
 
 					sm.myLease.Network = l.Network
@@ -97,7 +97,7 @@ func (sm *SubnetManager) AcquireLease(ip pkg.IP4, data string) (pkg.IP4Net, erro
 		// no existing match, grab a new one
 		sn, err := sm.allocateSubnet()
 		if err != nil {
-			return pkg.IP4Net{}, err
+			return ip.IP4Net{}, err
 		}
 
 		resp, err := sm.registry.createSubnet(sn.StringSep(".", "-"), data, subnetTTL)
@@ -112,11 +112,11 @@ func (sm *SubnetManager) AcquireLease(ip pkg.IP4, data string) (pkg.IP4Net, erro
 			continue
 
 		default:
-			return pkg.IP4Net{}, err
+			return ip.IP4Net{}, err
 		}
 	}
 
-	return pkg.IP4Net{}, errors.New("Max retries reached trying to acquire a subnet")
+	return ip.IP4Net{}, errors.New("Max retries reached trying to acquire a subnet")
 }
 
 func (sm *SubnetManager) UpdateSubnet(data string) error {
@@ -142,16 +142,16 @@ func (sm *SubnetManager) GetConfig() *Config {
 
 /// Implementation
 
-func parseSubnetKey(s string) (pkg.IP4Net, error) {
+func parseSubnetKey(s string) (ip.IP4Net, error) {
 	if parts := subnetRegex.FindStringSubmatch(s); len(parts) == 3 {
-		ip := net.ParseIP(parts[1]).To4()
+		snIp := net.ParseIP(parts[1]).To4()
 		prefixLen, err := strconv.ParseUint(parts[2], 10, 5)
-		if ip != nil && err == nil {
-			return pkg.IP4Net{pkg.FromIP(ip), uint(prefixLen)}, nil
+		if snIp != nil && err == nil {
+			return ip.IP4Net{ip.FromIP(snIp), uint(prefixLen)}, nil
 		}
 	}
 
-	return pkg.IP4Net{}, errors.New("Error parsing IP Subnet")
+	return ip.IP4Net{}, errors.New("Error parsing IP Subnet")
 }
 
 type subnetRegistry interface {
@@ -274,7 +274,7 @@ func (sm *SubnetManager) applyLeases(newLeases []SubnetLease) EventBatch {
 	return batch
 }
 
-func (sm *SubnetManager) applySubnetChange(action string, ipn pkg.IP4Net, data string) Event {
+func (sm *SubnetManager) applySubnetChange(action string, ipn ip.IP4Net, data string) Event {
 	switch action {
 	case "delete", "expire":
 		for i, l := range sm.leases {
@@ -304,14 +304,14 @@ func (sm *SubnetManager) applySubnetChange(action string, ipn pkg.IP4Net, data s
 }
 
 type BaseAttrs struct {
-	PublicIP pkg.IP4
+	PublicIP ip.IP4
 }
 
-func (sm *SubnetManager) allocateSubnet() (pkg.IP4Net, error) {
+func (sm *SubnetManager) allocateSubnet() (ip.IP4Net, error) {
 	log.Infof("Picking subnet in range %s ... %s", sm.config.SubnetMin, sm.config.SubnetMax)
 
-	var bag []pkg.IP4
-	sn := pkg.IP4Net{sm.config.SubnetMin, sm.config.SubnetLen}
+	var bag []ip.IP4
+	sn := ip.IP4Net{sm.config.SubnetMin, sm.config.SubnetLen}
 
 OuterLoop:
 	for ; sn.IP <= sm.config.SubnetMax && len(bag) < 100; sn = sn.Next() {
@@ -324,10 +324,10 @@ OuterLoop:
 	}
 
 	if len(bag) == 0 {
-		return pkg.IP4Net{}, errors.New("out of subnets")
+		return ip.IP4Net{}, errors.New("out of subnets")
 	} else {
-		i := pkg.RandInt(0, len(bag))
-		return pkg.IP4Net{bag[i], sm.config.SubnetLen}, nil
+		i := randInt(0, len(bag))
+		return ip.IP4Net{bag[i], sm.config.SubnetLen}, nil
 	}
 }
 

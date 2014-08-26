@@ -1,4 +1,4 @@
-package pkg
+package ip
 
 import (
 	"errors"

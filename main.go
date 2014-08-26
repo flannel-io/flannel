@@ -12,7 +12,7 @@ import (
 	"github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
 	log "github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/golang/glog"
 
-	"github.com/coreos-inc/rudder/pkg"
+	"github.com/coreos-inc/rudder/pkg/ip"
 	"github.com/coreos-inc/rudder/subnet"
 	"github.com/coreos-inc/rudder/udp"
 )
@@ -26,7 +26,7 @@ type CmdLineOpts struct {
 	etcdPrefix   string
 	help         bool
 	version      bool
-	slowProxy    bool
+	ipMasq       bool
 	port         int
 	subnetFile   string
 	iface        string
@@ -40,12 +40,12 @@ func init() {
 	flag.IntVar(&opts.port, "port", defaultPort, "port to use for inter-node communications")
 	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/rudder/subnet.env", "filename where env variables (subnet and MTU values) will be written to")
 	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
-	flag.BoolVar(&opts.slowProxy, "no-fast-proxy", false, "disable accelerated proxy")
+	flag.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
 }
 
-func writeSubnet(sn pkg.IP4Net, mtu int) error {
+func writeSubnet(sn ip.IP4Net, mtu int) error {
 	// Write out the first usable IP by incrementing
 	// sn.IP by one
 	sn.IP += 1
@@ -66,12 +66,12 @@ func writeSubnet(sn pkg.IP4Net, mtu int) error {
 
 func lookupIface() (*net.Interface, net.IP) {
 	var iface *net.Interface
-	var ip net.IP
+	var tep net.IP
 	var err error
 
 	if len(opts.iface) > 0 {
-		if ip = net.ParseIP(opts.iface); ip != nil {
-			iface, err = pkg.GetInterfaceByIP(ip)
+		if tep = net.ParseIP(opts.iface); tep != nil {
+			iface, err = ip.GetInterfaceByIP(tep)
 			if err != nil {
 				log.Errorf("Error looking up interface %s: %s", opts.iface, err)
 				return nil, nil
@@ -86,7 +86,7 @@ func lookupIface() (*net.Interface, net.IP) {
 	} else {
 		log.Info("Determining IP address of default interface")
 		for {
-			if iface, err = pkg.GetDefaultGatewayIface(); err == nil {
+			if iface, err = ip.GetDefaultGatewayIface(); err == nil {
 				break
 			}
 			log.Error("Failed to get default interface: ", err)
@@ -94,14 +94,14 @@ func lookupIface() (*net.Interface, net.IP) {
 		}
 	}
 
-	if ip == nil {
-		ip, err = pkg.GetIfaceIP4Addr(iface)
+	if tep == nil {
+		tep, err = ip.GetIfaceIP4Addr(iface)
 		if err != nil {
 			log.Error("Failed to find IPv4 address for interface ", iface.Name)
 		}
 	}
 
-	return iface, ip
+	return iface, tep
 }
 
 func makeSubnetManager() *subnet.SubnetManager {
@@ -137,16 +137,16 @@ func main() {
 		os.Exit(0)
 	}
 
-	iface, ip := lookupIface()
-	if iface == nil || ip == nil {
+	iface, tep := lookupIface()
+	if iface == nil || tep == nil {
 		return
 	}
 
-	log.Infof("Using %s to tunnel", ip)
+	log.Infof("Using %s to tunnel", tep)
 
 	sm := makeSubnetManager()
 
-	udp.Run(sm, iface, ip, opts.port, !opts.slowProxy, func(sn pkg.IP4Net, mtu int) {
+	udp.Run(sm, iface, tep, opts.port, opts.ipMasq, func(sn ip.IP4Net, mtu int) {
 		writeSubnet(sn, mtu)
 		daemon.SdNotify("READY=1")
 	})

@@ -8,7 +8,7 @@ import (
 
 	log "github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/golang/glog"
 
-	"github.com/coreos-inc/rudder/pkg"
+	"github.com/coreos-inc/rudder/pkg/ip"
 	"github.com/coreos-inc/rudder/subnet"
 )
 
@@ -17,7 +17,7 @@ const (
 )
 
 type routeEntry struct {
-	sn   pkg.IP4Net
+	sn   ip.IP4Net
 	addr *net.UDPAddr
 }
 
@@ -33,7 +33,7 @@ func NewRouter(port int) *Router {
 	}
 }
 
-func (r *Router) SetRoute(sn pkg.IP4Net, dst pkg.IP4) {
+func (r *Router) SetRoute(sn ip.IP4Net, dst ip.IP4) {
 	r.mux.Lock()
 	defer r.mux.Unlock()
 
@@ -58,7 +58,7 @@ func (r *Router) SetRoute(sn pkg.IP4Net, dst pkg.IP4) {
 	r.routes = append(r.routes, re)
 }
 
-func (r *Router) DelRoute(sn pkg.IP4Net) {
+func (r *Router) DelRoute(sn ip.IP4Net) {
 	r.mux.Lock()
 	defer r.mux.Unlock()
 
@@ -80,7 +80,7 @@ func (r *Router) routePacket(pkt []byte, conn *net.UDPConn) {
 	r.mux.Lock()
 	defer r.mux.Unlock()
 
-	dstIP := pkg.FromBytes(pkt[16:20])
+	dstIP := ip.FromBytes(pkt[16:20])
 
 	for i, re := range r.routes {
 		if re.sn.Contains(dstIP) {

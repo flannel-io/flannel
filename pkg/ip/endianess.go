@@ -1,4 +1,4 @@
-package pkg
+package ip
 
 // Taken from a patch by David Anderson who submitted it
 // but got rejected by the golang team

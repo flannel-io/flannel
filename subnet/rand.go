@@ -1,4 +1,4 @@
-package pkg
+package subnet
 
 import (
 	"math/rand"
@@ -12,6 +12,6 @@ func init() {
 	rnd = rand.New(rand.NewSource(seed))
 }
 
-func RandInt(lo, hi int) int {
+func randInt(lo, hi int) int {
 	return lo + int(rnd.Int31n(int32(hi-lo)))
 }
