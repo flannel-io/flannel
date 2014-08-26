@@ -361,6 +361,7 @@ func (sm *SubnetManager) watchLeases(receiver chan EventBatch) {
 
 		if err != nil {
 			log.Errorf("%v", err)
+			time.Sleep(time.Second)
 			continue
 		}
 
@@ -375,7 +376,6 @@ func (sm *SubnetManager) parseSubnetWatchResponse(resp *etcd.Response) (batch *E
 
 	sn, err := parseSubnetKey(resp.Node.Key)
 	if err != nil {
-		time.Sleep(time.Second)
 		err = fmt.Errorf("Error parsing subnet IP: %s", resp.Node.Key)
 		return
 	}
@@ -403,7 +403,6 @@ func (sm *SubnetManager) parseSubnetWatchError(err error) (batch *EventBatch, ou
 			batch = &lb
 		} else {
 			out = fmt.Errorf("Failed to retrieve subnet leases: %v", err)
-			time.Sleep(time.Second)
 		}
 	} else {
 		out = fmt.Errorf("Watch of subnet leases failed: ", err)
