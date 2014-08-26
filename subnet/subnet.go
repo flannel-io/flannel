@@ -22,6 +22,8 @@ const (
 
 // etcd error codes
 const (
+	etcdKeyNotFound       = 100
+	etcdKeyAlreadyExists  = 105
 	etcdEventIndexCleared = 401
 )
 
@@ -105,7 +107,7 @@ func (sm *SubnetManager) AcquireLease(ip pkg.IP4, data string) (pkg.IP4Net, erro
 			return sn, nil
 
 		// if etcd returned Key Already Exists, try again.
-		case err.(*etcd.EtcdError).ErrorCode == 105:
+		case err.(*etcd.EtcdError).ErrorCode == etcdKeyAlreadyExists:
 			continue
 
 		default:
@@ -221,7 +223,7 @@ func (sm *SubnetManager) getLeases() ([]SubnetLease, error) {
 		}
 		sm.lastIndex = resp.EtcdIndex
 
-	case err.(*etcd.EtcdError).ErrorCode == 100:
+	case err.(*etcd.EtcdError).ErrorCode == etcdKeyNotFound:
 		// key not found: treat it as empty set
 		sm.lastIndex = err.(*etcd.EtcdError).Index
 
