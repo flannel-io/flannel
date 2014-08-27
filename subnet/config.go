@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/coreos-inc/rudder/pkg"
+	"github.com/coreos-inc/rudder/pkg/ip"
 )
 
 type Config struct {
-	Network   pkg.IP4Net
-	SubnetMin pkg.IP4
-	SubnetMax pkg.IP4
+	Network   ip.IP4Net
+	SubnetMin ip.IP4
+	SubnetMax ip.IP4
 	SubnetLen uint
 }
 
@@ -35,9 +35,9 @@ func ParseConfig(s string) (*Config, error) {
 		}
 	}
 
-	subnetSize := pkg.IP4(1 << (32 - cfg.SubnetLen))
+	subnetSize := ip.IP4(1 << (32 - cfg.SubnetLen))
 
-	if cfg.SubnetMin == pkg.IP4(0) {
+	if cfg.SubnetMin == ip.IP4(0) {
 		// skip over the first subnet otherwise it causes problems. e.g.
 		// if Network is 10.100.0.0/16, having an interface with 10.0.0.0
 		// makes ping think it's a broadcast address (not sure why)
@@ -46,7 +46,7 @@ func ParseConfig(s string) (*Config, error) {
 		return nil, errors.New("SubnetMin is not in the range of the Network")
 	}
 
-	if cfg.SubnetMax == pkg.IP4(0) {
+	if cfg.SubnetMax == ip.IP4(0) {
 		cfg.SubnetMax = cfg.Network.Next().IP - subnetSize
 	} else if !cfg.Network.Contains(cfg.SubnetMax) {
 		return nil, errors.New("SubnetMax is not in the range of the Network")

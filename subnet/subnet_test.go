@@ -7,7 +7,7 @@ import (
 
 	"github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 
-	"github.com/coreos-inc/rudder/pkg"
+	"github.com/coreos-inc/rudder/pkg/ip"
 )
 
 type mockSubnetRegistry struct {
@@ -151,7 +151,7 @@ func TestAcquireLease(t *testing.T) {
 		t.Fatalf("Failed to create subnet manager: %s", err)
 	}
 
-	ip, _ := pkg.ParseIP4("1.2.3.4")
+	ip, _ := ip.ParseIP4("1.2.3.4")
 	data := `{ "PublicIP": "1.2.3.4" }`
 
 	sn, err := sm.AcquireLease(ip, data)
@@ -252,7 +252,7 @@ func TestRenewLease(t *testing.T) {
 		t.Fatalf("Failed to create subnet manager: %s", err)
 	}
 
-	ip, _ := pkg.ParseIP4("1.2.3.4")
+	ip, _ := ip.ParseIP4("1.2.3.4")
 	data := `{ "PublicIP": "1.2.3.4" }`
 
 	sn, err := sm.AcquireLease(ip, data)
