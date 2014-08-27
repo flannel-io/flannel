@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
+	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
 )
 
 const (
