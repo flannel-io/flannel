@@ -1,9 +1,9 @@
 # Rudder
 
 Rudder is an overlay network that gives a subnet to each machine for use with
-k8s.
+Kubernetes.
 
-In k8s every machine in the cluster is assigned a full subnet. The machine A
+In Kubernetes every machine in the cluster is assigned a full subnet. The machine A
 and B might have 10.0.1.0/24 and 10.0.2.0/24 respectively. The advantage of
 this model is that it reduces the complexity of doing port mapping. The
 disadvantage is that the only cloud provider that can do this is GCE.
