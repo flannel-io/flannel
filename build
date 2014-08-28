@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-ORG_PATH="github.com/coreos-inc"
+ORG_PATH="github.com/coreos"
 REPO_PATH="${ORG_PATH}/rudder"
 
 if [ ! -h gopath/src/${REPO_PATH} ]; then

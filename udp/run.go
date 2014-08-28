@@ -7,12 +7,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
-	log "github.com/coreos-inc/rudder/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
+	log "github.com/coreos/rudder/Godeps/_workspace/src/github.com/golang/glog"
 
-	"github.com/coreos-inc/rudder/backend"
-	"github.com/coreos-inc/rudder/pkg/ip"
-	"github.com/coreos-inc/rudder/subnet"
+	"github.com/coreos/rudder/backend"
+	"github.com/coreos/rudder/pkg/ip"
+	"github.com/coreos/rudder/subnet"
 )
 
 const (

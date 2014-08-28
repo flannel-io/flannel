@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/coreos-inc/rudder/pkg/ip"
+	"github.com/coreos/rudder/pkg/ip"
 )
 
 type Config struct {
