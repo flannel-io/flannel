@@ -35,7 +35,7 @@ func configureIface(ifname string, ipn ip.IP4Net, mtu int) error {
 
 	err = netlink.NetworkSetMTU(iface, mtu)
 	if err != nil {
-		log.Errorf("Failed to set MTU for %s: ", ifname, err)
+		log.Errorf("Failed to set MTU for %s: %v", ifname, err)
 		return err
 	}
 
@@ -49,7 +49,7 @@ func configureIface(ifname string, ipn ip.IP4Net, mtu int) error {
 	// installed by Docker and then it won't get auto added
 	err = netlink.AddRoute(ipn.Network().String(), "", "", ifname)
 	if err != nil && err != syscall.EEXIST {
-		log.Errorf("Failed to add route (%s -> %s): ", ipn.Network().String(), ifname, err)
+		log.Errorf("Failed to add route (%s -> %s): %v", ipn.Network().String(), ifname, err)
 		return err
 	}
 
@@ -71,13 +71,13 @@ func setupIpMasq(ipn ip.IP4Net, iface string) error {
 
 	rules := [][]string{
 		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-		[]string{ "RUDDER", "-d", ipn.String(), "-j", "ACCEPT" },
+		[]string{"RUDDER", "-d", ipn.String(), "-j", "ACCEPT"},
 		// This rule makes sure we don't NAT multicast traffic within overlay network
-		[]string{ "RUDDER", "-d", "224.0.0.0/4", "-j", "ACCEPT" },
-		// This rule will NAT everything originating from our overlay network and 
-		[]string{ "RUDDER", "!", "-o", iface, "-j", "MASQUERADE" },
+		[]string{"RUDDER", "-d", "224.0.0.0/4", "-j", "ACCEPT"},
+		// This rule will NAT everything originating from our overlay network and
+		[]string{"RUDDER", "!", "-o", iface, "-j", "MASQUERADE"},
 		// This rule will take everything coming from overlay and sent it to RUDDER chain
-		[]string{ "POSTROUTING", "-s", ipn.String(), "-j", "RUDDER" },
+		[]string{"POSTROUTING", "-s", ipn.String(), "-j", "RUDDER"},
 	}
 
 	for _, args := range rules {
