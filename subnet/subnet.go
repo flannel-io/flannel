@@ -84,7 +84,7 @@ func (sm *SubnetManager) AcquireLease(tep ip.IP4, data string) (ip.IP4Net, error
 				if tep == ba.PublicIP {
 					resp, err := sm.registry.updateSubnet(l.Network.StringSep(".", "-"), data, subnetTTL)
 					if err != nil {
-						return ip.IP4Net{}, nil
+						return ip.IP4Net{}, err
 					}
 
 					sm.myLease.Network = l.Network
