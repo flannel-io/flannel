@@ -51,7 +51,7 @@ func GetInterfaceByIP(ip net.IP) (*net.Interface, error) {
 
 	for _, iface := range ifaces {
 		addr, err := GetIfaceIP4Addr(&iface)
-		if err != nil && ip.Equal(addr) {
+		if err == nil && ip.Equal(addr) {
 			return &iface, nil
 		}
 	}
