@@ -400,6 +400,9 @@ void run_proxy(int tun, int sock, int ctl, in_addr_t tun_ip, size_t tun_mtu, int
 	while( !exit_flag ) {
 		int nfds = poll(fds, 3, -1);
 		if( nfds < 0 ) {
+			if( errno == EINTR )
+				continue;
+
 			log_error("Poll failed: %s\n", strerror(errno));
 			exit(1);
 		}
