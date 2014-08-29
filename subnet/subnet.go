@@ -147,7 +147,7 @@ func parseSubnetKey(s string) (ip.IP4Net, error) {
 		snIp := net.ParseIP(parts[1]).To4()
 		prefixLen, err := strconv.ParseUint(parts[2], 10, 5)
 		if snIp != nil && err == nil {
-			return ip.IP4Net{ip.FromIP(snIp), uint(prefixLen)}, nil
+			return ip.IP4Net{IP: ip.FromIP(snIp), PrefixLen: uint(prefixLen)}, nil
 		}
 	}
 
@@ -311,7 +311,7 @@ func (sm *SubnetManager) allocateSubnet() (ip.IP4Net, error) {
 	log.Infof("Picking subnet in range %s ... %s", sm.config.SubnetMin, sm.config.SubnetMax)
 
 	var bag []ip.IP4
-	sn := ip.IP4Net{sm.config.SubnetMin, sm.config.SubnetLen}
+	sn := ip.IP4Net{IP: sm.config.SubnetMin, PrefixLen: sm.config.SubnetLen}
 
 OuterLoop:
 	for ; sn.IP <= sm.config.SubnetMax && len(bag) < 100; sn = sn.Next() {
@@ -327,7 +327,7 @@ OuterLoop:
 		return ip.IP4Net{}, errors.New("out of subnets")
 	} else {
 		i := randInt(0, len(bag))
-		return ip.IP4Net{bag[i], sm.config.SubnetLen}, nil
+		return ip.IP4Net{IP: bag[i], PrefixLen: sm.config.SubnetLen}, nil
 	}
 }
 
@@ -405,7 +405,7 @@ func (sm *SubnetManager) parseSubnetWatchError(err error) (batch *EventBatch, ou
 			out = fmt.Errorf("Failed to retrieve subnet leases: %v", err)
 		}
 	} else {
-		out = fmt.Errorf("Watch of subnet leases failed: ", err)
+		out = fmt.Errorf("Watch of subnet leases failed: %v", err)
 	}
 
 	return
