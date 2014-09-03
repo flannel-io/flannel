@@ -22,6 +22,12 @@ of etcd which maintains the overlay to actual IP mappings.
 * Step 2: Git clone the Rudder repo: ```git clone git@github.com:coreos/rudder.git```
 * Step 3: Run the build script: ```cd rudder; ./build```
 
+Alternatively, you can build rudder in a docker container with the following command. Replace $SRC with the absolute path to your rudder source code:
+
+```
+docker run -v $SRC:/opt/rudder -i -t google/golang /bin/bash -c "cd /opt/rudder && ./build"
+```
+
 ## Configuration
 
 Rudder reads its configuration from etcd. By default, it will read the configuration
