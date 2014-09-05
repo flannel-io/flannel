@@ -319,7 +319,7 @@ static void tun_to_udp(int tun, int sock, char *buf, size_t buflen) {
 static void udp_to_tun(int sock, int tun, char *buf, size_t buflen) {
 	struct iphdr *iph;
 
-	ssize_t pktlen = recv(sock, buf, buflen, 0);
+	ssize_t pktlen = sock_recv_packet(sock, buf, buflen);
 	if( pktlen < 0 ) {
 		return;
 	}
@@ -400,6 +400,9 @@ void run_proxy(int tun, int sock, int ctl, in_addr_t tun_ip, size_t tun_mtu, int
 	while( !exit_flag ) {
 		int nfds = poll(fds, 3, -1);
 		if( nfds < 0 ) {
+			if( errno == EINTR )
+				continue;
+
 			log_error("Poll failed: %s\n", strerror(errno));
 			exit(1);
 		}

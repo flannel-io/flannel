@@ -16,6 +16,11 @@ providers. Rudder uses the Universal TUN/TAP device and creates an overlay netwo
 using UDP to encapsulate IP packets. The subnet allocation is done with the help
 of etcd which maintains the overlay to actual IP mappings.
 
+The following diagram demonstrates the path a packet takes as it traverses the
+overlay network:
+
+![Life of a packet](./packet-01.png)
+
 ## Building Rudder
 
 * Step 1: Make sure you have Linux headers installed on your machine. On Ubuntu, run ```sudo apt-get install linux-libc-dev```. On Fedora/Redhat, run ```sudo yum install kernel-headers```.

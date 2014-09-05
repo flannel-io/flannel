@@ -8,7 +8,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
 	log "github.com/coreos/rudder/Godeps/_workspace/src/github.com/golang/glog"
 
@@ -105,10 +104,8 @@ func lookupIface() (*net.Interface, net.IP) {
 }
 
 func makeSubnetManager() *subnet.SubnetManager {
-	etcdCli := etcd.NewClient([]string{opts.etcdEndpoint})
-
 	for {
-		sm, err := subnet.NewSubnetManager(etcdCli, opts.etcdPrefix)
+		sm, err := subnet.NewSubnetManager(opts.etcdEndpoint, opts.etcdPrefix)
 		if err == nil {
 			return sm
 		}

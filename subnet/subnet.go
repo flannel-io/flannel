@@ -61,9 +61,9 @@ type Event struct {
 
 type EventBatch []Event
 
-func NewSubnetManager(etcdCli *etcd.Client, prefix string) (*SubnetManager, error) {
-	esr := etcdSubnetRegistry{etcdCli, prefix}
-	return newSubnetManager(&esr)
+func NewSubnetManager(etcdEndpoint, prefix string) (*SubnetManager, error) {
+	esr := newEtcdSubnetRegistry(etcdEndpoint, prefix)
+	return newSubnetManager(esr)
 }
 
 func (sm *SubnetManager) AcquireLease(tep ip.IP4, data string) (ip.IP4Net, error) {
@@ -141,7 +141,6 @@ func (sm *SubnetManager) GetConfig() *Config {
 }
 
 /// Implementation
-
 func parseSubnetKey(s string) (ip.IP4Net, error) {
 	if parts := subnetRegex.FindStringSubmatch(s); len(parts) == 3 {
 		snIp := net.ParseIP(parts[1]).To4()
@@ -152,43 +151,6 @@ func parseSubnetKey(s string) (ip.IP4Net, error) {
 	}
 
 	return ip.IP4Net{}, errors.New("Error parsing IP Subnet")
-}
-
-type subnetRegistry interface {
-	getConfig() (*etcd.Response, error)
-	getSubnets() (*etcd.Response, error)
-	createSubnet(sn, data string, ttl uint64) (*etcd.Response, error)
-	updateSubnet(sn, data string, ttl uint64) (*etcd.Response, error)
-	watchSubnets(since uint64, stop chan bool) (*etcd.Response, error)
-}
-
-type etcdSubnetRegistry struct {
-	cli    *etcd.Client
-	prefix string
-}
-
-func (esr *etcdSubnetRegistry) getConfig() (*etcd.Response, error) {
-	resp, err := esr.cli.Get(esr.prefix+"/config", false, false)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
-}
-
-func (esr *etcdSubnetRegistry) getSubnets() (*etcd.Response, error) {
-	return esr.cli.Get(esr.prefix+"/subnets", false, true)
-}
-
-func (esr *etcdSubnetRegistry) createSubnet(sn, data string, ttl uint64) (*etcd.Response, error) {
-	return esr.cli.Create(esr.prefix+"/subnets/"+sn, data, ttl)
-}
-
-func (esr *etcdSubnetRegistry) updateSubnet(sn, data string, ttl uint64) (*etcd.Response, error) {
-	return esr.cli.Set(esr.prefix+"/subnets/"+sn, data, ttl)
-}
-
-func (esr *etcdSubnetRegistry) watchSubnets(since uint64, stop chan bool) (*etcd.Response, error) {
-	return esr.cli.Watch(esr.prefix+"/subnets", since, true, nil, stop)
 }
 
 func newSubnetManager(r subnetRegistry) (*SubnetManager, error) {
@@ -424,7 +386,7 @@ func (sm *SubnetManager) leaseRenewer() {
 				continue
 			}
 
-			sm.leaseExp = *(resp.Node.Expiration)
+			sm.leaseExp = *resp.Node.Expiration
 			log.Info("Lease renewed, new expiration: ", sm.leaseExp)
 			dur = sm.leaseExp.Sub(time.Now()) - renewMargin
 
