@@ -157,7 +157,7 @@ static int set_route(struct ip_net dst, struct sockaddr_in *next_hop) {
 
 	if( routes_alloc == routes_cnt ) {
 		int new_alloc = (routes_alloc ? 2*routes_alloc : 8);
-		struct route_entry *new_routes = (struct route_entry *) realloc(routes, new_alloc);
+		struct route_entry *new_routes = (struct route_entry *) realloc(routes, new_alloc*sizeof(struct route_entry));
 		if( !new_routes )
 			return ENOMEM;
 
