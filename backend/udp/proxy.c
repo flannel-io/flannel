@@ -413,8 +413,9 @@ void run_proxy(int tun, int sock, int ctl, in_addr_t tun_ip, size_t tun_mtu, int
 		if( fds[1].revents & POLLIN )
 			udp_to_tun(sock, tun, buf, tun_mtu);
 
-		if( fds[2].revents & POLLIN )
+		if( fds[2].revents & POLLIN ) {
 			process_cmd(ctl);
+		}
 	}
 
 	free(buf);

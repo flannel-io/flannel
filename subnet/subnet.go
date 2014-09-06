@@ -35,6 +35,8 @@ const (
 
 var (
 	subnetRegex *regexp.Regexp = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)`)
+
+	ErrCanceled = errors.New("Canceled by user")
 )
 
 type SubnetLease struct {
@@ -49,7 +51,6 @@ type SubnetManager struct {
 	leaseExp  time.Time
 	lastIndex uint64
 	leases    []SubnetLease
-	stop      chan bool
 }
 
 type EventType int
@@ -66,7 +67,7 @@ func NewSubnetManager(etcdEndpoint, prefix string) (*SubnetManager, error) {
 	return newSubnetManager(esr)
 }
 
-func (sm *SubnetManager) AcquireLease(tep ip.IP4, data string) (ip.IP4Net, error) {
+func (sm *SubnetManager) AcquireLease(tep ip.IP4, data string, cancel chan bool) (ip.IP4Net, error) {
 	for i := 0; i < registerRetries; i++ {
 		var err error
 		sm.leases, err = sm.getLeases()
@@ -74,7 +75,7 @@ func (sm *SubnetManager) AcquireLease(tep ip.IP4, data string) (ip.IP4Net, error
 			return ip.IP4Net{}, err
 		}
 
-		// try to reuse a subnet if there's one that match our IP
+		// try to reuse a subnet if there's one that matches our IP
 		for _, l := range sm.leases {
 			var ba BaseAttrs
 			err = json.Unmarshal([]byte(l.Data), &ba)
@@ -109,10 +110,15 @@ func (sm *SubnetManager) AcquireLease(tep ip.IP4, data string) (ip.IP4Net, error
 
 		// if etcd returned Key Already Exists, try again.
 		case err.(*etcd.EtcdError).ErrorCode == etcdKeyAlreadyExists:
-			continue
+			break
 
 		default:
 			return ip.IP4Net{}, err
+		}
+
+		// before moving on, check for cancel
+		if interrupted(cancel) {
+			return ip.IP4Net{}, ErrCanceled
 		}
 	}
 
@@ -123,17 +129,6 @@ func (sm *SubnetManager) UpdateSubnet(data string) error {
 	resp, err := sm.registry.updateSubnet(sm.myLease.Network.StringSep(".", "-"), data, subnetTTL)
 	sm.leaseExp = *resp.Node.Expiration
 	return err
-}
-
-func (sm *SubnetManager) Start(receiver chan EventBatch) {
-	go sm.watchLeases(receiver)
-	go sm.leaseRenewer()
-}
-
-func (sm *SubnetManager) Stop() {
-	// once for each goroutine
-	sm.stop <- true
-	sm.stop <- true
 }
 
 func (sm *SubnetManager) GetConfig() *Config {
@@ -164,11 +159,12 @@ func newSubnetManager(r subnetRegistry) (*SubnetManager, error) {
 		return nil, err
 	}
 
-	return &SubnetManager{
+	sm := SubnetManager{
 		registry: r,
 		config:   cfg,
-		stop:     make(chan bool, 2),
-	}, nil
+	}
+
+	return &sm, nil
 }
 
 func (sm *SubnetManager) getLeases() ([]SubnetLease, error) {
@@ -293,7 +289,7 @@ OuterLoop:
 	}
 }
 
-func (sm *SubnetManager) watchLeases(receiver chan EventBatch) {
+func (sm *SubnetManager) WatchLeases(receiver chan EventBatch, cancel chan bool) {
 	// "catch up" by replaying all the leases we discovered during
 	// AcquireLease
 	var batch EventBatch
@@ -307,9 +303,9 @@ func (sm *SubnetManager) watchLeases(receiver chan EventBatch) {
 	}
 
 	for {
-		resp, err := sm.registry.watchSubnets(sm.lastIndex+1, sm.stop)
+		resp, err := sm.registry.watchSubnets(sm.lastIndex+1, cancel)
 
-		// watchSubnets exited by stop chan being signaled
+		// watchSubnets exited by cancel chan being signaled
 		if err == nil && resp == nil {
 			return
 		}
@@ -373,7 +369,7 @@ func (sm *SubnetManager) parseSubnetWatchError(err error) (batch *EventBatch, ou
 	return
 }
 
-func (sm *SubnetManager) leaseRenewer() {
+func (sm *SubnetManager) LeaseRenewer(cancel chan bool) {
 	dur := sm.leaseExp.Sub(time.Now()) - renewMargin
 
 	for {
@@ -390,8 +386,17 @@ func (sm *SubnetManager) leaseRenewer() {
 			log.Info("Lease renewed, new expiration: ", sm.leaseExp)
 			dur = sm.leaseExp.Sub(time.Now()) - renewMargin
 
-		case <-sm.stop:
+		case <-cancel:
 			return
 		}
+	}
+}
+
+func interrupted(cancel chan bool) bool {
+	select {
+	case <-cancel:
+		return true
+	default:
+		return false
 	}
 }

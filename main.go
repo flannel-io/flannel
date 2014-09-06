@@ -5,15 +5,18 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
 	"path"
+	"syscall"
 	"time"
 
 	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
 	log "github.com/coreos/rudder/Godeps/_workspace/src/github.com/golang/glog"
 
+	"github.com/coreos/rudder/backend"
 	"github.com/coreos/rudder/pkg/ip"
 	"github.com/coreos/rudder/subnet"
-	"github.com/coreos/rudder/udp"
+	"github.com/coreos/rudder/backend/udp"
 )
 
 const (
@@ -44,7 +47,7 @@ func init() {
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
 }
 
-func writeSubnet(sn ip.IP4Net, mtu int) error {
+func writeSubnetFile(sn ip.IP4Net, mtu int) error {
 	// Write out the first usable IP by incrementing
 	// sn.IP by one
 	sn.IP += 1
@@ -63,23 +66,21 @@ func writeSubnet(sn ip.IP4Net, mtu int) error {
 	return nil
 }
 
-func lookupIface() (*net.Interface, net.IP) {
+func lookupIface() (*net.Interface, net.IP, error) {
 	var iface *net.Interface
-	var tep net.IP
+	var ipaddr net.IP
 	var err error
 
 	if len(opts.iface) > 0 {
-		if tep = net.ParseIP(opts.iface); tep != nil {
-			iface, err = ip.GetInterfaceByIP(tep)
+		if ipaddr = net.ParseIP(opts.iface); ipaddr != nil {
+			iface, err = ip.GetInterfaceByIP(ipaddr)
 			if err != nil {
-				log.Errorf("Error looking up interface %s: %s", opts.iface, err)
-				return nil, nil
+				return nil, nil, fmt.Errorf("Error looking up interface %s: %s", opts.iface, err)
 			}
 		} else {
 			iface, err = net.InterfaceByName(opts.iface)
 			if err != nil {
-				log.Errorf("Error looking up interface %s: %s", opts.iface, err)
-				return nil, nil
+				return nil, nil, fmt.Errorf("Error looking up interface %s: %s", opts.iface, err)
 			}
 		}
 	} else {
@@ -93,14 +94,14 @@ func lookupIface() (*net.Interface, net.IP) {
 		}
 	}
 
-	if tep == nil {
-		tep, err = ip.GetIfaceIP4Addr(iface)
+	if ipaddr == nil {
+		ipaddr, err = ip.GetIfaceIP4Addr(iface)
 		if err != nil {
-			log.Error("Failed to find IPv4 address for interface ", iface.Name)
+			return nil, nil, fmt.Errorf("Failed to find IPv4 address for interface %s", iface.Name)
 		}
 	}
 
-	return iface, tep
+	return iface, ipaddr, nil
 }
 
 func makeSubnetManager() *subnet.SubnetManager {
@@ -113,6 +114,40 @@ func makeSubnetManager() *subnet.SubnetManager {
 		log.Error("Failed to create SubnetManager: ", err)
 		time.Sleep(time.Second)
 	}
+}
+
+func newBackend() backend.Backend {
+	sm := makeSubnetManager()
+	return udp.New(sm, opts.port)
+}
+
+func run(be backend.Backend, quit chan bool) {
+	defer close(quit)
+
+	iface, ipaddr, err := lookupIface()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	if iface.MTU == 0 {
+		log.Errorf("Failed to determine MTU for %s interface", ipaddr)
+		return
+	}
+
+	log.Infof("Using %s as external interface", ipaddr)
+
+	sn, mtu, err := be.Init(iface, ipaddr, opts.ipMasq)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	writeSubnetFile(sn, mtu)
+	daemon.SdNotify("READY=1")
+
+	log.Infof("%s mode initialized", be.Name())
+	be.Run()
 }
 
 func main() {
@@ -134,17 +169,28 @@ func main() {
 		os.Exit(0)
 	}
 
-	iface, tep := lookupIface()
-	if iface == nil || tep == nil {
-		return
+	be := newBackend()
+
+	// Register for SIGINT and SIGTERM and wait for one of them to arrive
+	log.Info("Installing signal handlers")
+	sigs := make(chan os.Signal, 5)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+
+	quit := make(chan bool)
+	go run(be, quit)
+
+	for {
+		select {
+		case <-sigs:
+			// unregister to get default OS nuke behaviour in case we don't exit cleanly
+			signal.Stop(sigs)
+
+			log.Info("Exiting...")
+			be.Stop()
+
+		case <-quit:
+			log.Infof("%s mode exited", be.Name())
+			os.Exit(0)
+		}
 	}
-
-	log.Infof("Using %s to tunnel", tep)
-
-	sm := makeSubnetManager()
-
-	udp.Run(sm, iface, tep, opts.port, opts.ipMasq, func(sn ip.IP4Net, mtu int) {
-		writeSubnet(sn, mtu)
-		daemon.SdNotify("READY=1")
-	})
 }

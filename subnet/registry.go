@@ -54,7 +54,11 @@ func (esr *etcdSubnetRegistry) watchSubnets(since uint64, stop chan bool) (*etcd
 		resp, err := esr.client().RawWatch(esr.prefix+"/subnets", since, true, nil, stop)
 
 		if err != nil {
-			return nil, err
+			if err == etcd.ErrWatchStoppedByUser {
+				return nil, nil
+			} else {
+				return nil, err
+			}
 		}
 
 		if len(resp.Body) == 0 {
