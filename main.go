@@ -19,6 +19,7 @@ import (
 	"github.com/coreos/rudder/pkg/ip"
 	"github.com/coreos/rudder/pkg/task"
 	"github.com/coreos/rudder/subnet"
+	"github.com/coreos/rudder/backend/alloc"
 	"github.com/coreos/rudder/backend/udp"
 )
 
@@ -128,6 +129,8 @@ func newBackend() (backend.Backend, error) {
 	switch strings.ToLower(bt.Type) {
 	case "udp":
 		return udp.New(sm, config.Backend), nil
+	case "alloc":
+		return alloc.New(sm), nil
 	default:
 		return nil, fmt.Errorf("'%v': unknown backend type", bt.Type)
 	}
