@@ -8,45 +8,67 @@ import (
 	"strings"
 	"sync"
 	"syscall"
-	"time"
 
 	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
 	log "github.com/coreos/rudder/Godeps/_workspace/src/github.com/golang/glog"
 
 	"github.com/coreos/rudder/backend"
 	"github.com/coreos/rudder/pkg/ip"
+	"github.com/coreos/rudder/pkg/task"
 	"github.com/coreos/rudder/subnet"
 )
 
 const (
 	encapOverhead = 28 // 20 bytes IP hdr + 8 bytes UDP hdr
+	defaultPort   = 8285
 )
 
 type UdpBackend struct {
 	sm     *subnet.SubnetManager
+	rawCfg json.RawMessage
+	cfg    struct {
+		Port int
+	}
 	ctl    *os.File
 	ctl2   *os.File
 	tun    *os.File
 	conn   *net.UDPConn
-	port   int
 	mtu    int
 	tunNet ip.IP4Net
 	stop   chan bool
 	wg     sync.WaitGroup
 }
 
-func New(sm *subnet.SubnetManager, port int) backend.Backend {
-	return &UdpBackend{
-		sm: sm,
-		port: port,
-		stop: make(chan bool),
+func New(sm *subnet.SubnetManager, config json.RawMessage) backend.Backend {
+	be := UdpBackend{
+		sm:     sm,
+		rawCfg: config,
+		stop:   make(chan bool),
 	}
+	be.cfg.Port = defaultPort
+	return &be
 }
 
 func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (ip.IP4Net, int, error) {
-	sn, err := m.acquireLease(extIP)
+	// Parse our configuration
+	if len(m.rawCfg) > 0 {
+		if err := json.Unmarshal(m.rawCfg, &m.cfg); err != nil {
+			return ip.IP4Net{}, 0, fmt.Errorf("Error decoding UDP backend config: %v", err)
+		}
+	}
+
+	// Acquire the lease form subnet manager
+	attrs := subnet.BaseAttrs{
+		PublicIP: ip.FromIP(extIP),
+	}
+
+	sn, err := m.sm.AcquireLease(attrs.PublicIP, &attrs, m.stop)
 	if err != nil {
-		return ip.IP4Net{}, 0, fmt.Errorf("Failed to acquire lease: %s", err)
+		if err == task.ErrCanceled {
+			return ip.IP4Net{}, 0, err
+		} else {
+			return ip.IP4Net{}, 0, fmt.Errorf("Failed to acquire lease: %s", err)
+		}
 	}
 
 	// Tunnel's subnet is that of the whole overlay network (e.g. /16)
@@ -63,7 +85,7 @@ func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (i
 		return ip.IP4Net{}, 0, err
 	}
 
-	m.conn, err = net.ListenUDP("udp4", &net.UDPAddr{Port: m.port})
+	m.conn, err = net.ListenUDP("udp4", &net.UDPAddr{Port: m.cfg.Port})
 	if err != nil {
 		return ip.IP4Net{}, 0, fmt.Errorf("Failed to start listening on UDP socket: %s", err)
 	}
@@ -106,38 +128,6 @@ func (m *UdpBackend) Stop() {
 
 func (m *UdpBackend) Name() string {
 	return "UDP"
-}
-
-func (m *UdpBackend) acquireLease(extIP net.IP) (ip.IP4Net, error) {
-	attrs := subnet.BaseAttrs{
-		PublicIP: ip.FromIP(extIP),
-	}
-
-	data, err := json.Marshal(&attrs)
-	if err != nil {
-		return ip.IP4Net{}, err
-	}
-
-	var sn ip.IP4Net
-	for {
-		sn, err = m.sm.AcquireLease(attrs.PublicIP, string(data), m.stop)
-		if err == nil {
-			log.Info("Subnet lease acquired: ", sn)
-			break
-		}
-
-		log.Error("Failed to acquire subnet: ", err)
-
-		select {
-		case <-time.After(time.Second):
-			break
-
-		case <-m.stop:
-			return ip.IP4Net{}, backend.ErrInterrupted
-		}
-	}
-
-	return sn, nil
 }
 
 func newCtlSockets() (*os.File, *os.File, error) {
@@ -274,7 +264,7 @@ func (m *UdpBackend) monitorEvents() {
 						continue
 					}
 
-					setRoute(m.ctl, evt.Lease.Network, attrs.PublicIP, m.port)
+					setRoute(m.ctl, evt.Lease.Network, attrs.PublicIP, m.cfg.Port)
 
 				case subnet.SubnetRemoved:
 					log.Info("Subnet removed: ", evt.Lease.Network)

@@ -13,6 +13,7 @@ import (
 	log "github.com/coreos/rudder/Godeps/_workspace/src/github.com/golang/glog"
 
 	"github.com/coreos/rudder/pkg/ip"
+	"github.com/coreos/rudder/pkg/task"
 )
 
 const (
@@ -35,8 +36,6 @@ const (
 
 var (
 	subnetRegex *regexp.Regexp = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)`)
-
-	ErrCanceled = errors.New("Canceled by user")
 )
 
 type SubnetLease struct {
@@ -67,7 +66,37 @@ func NewSubnetManager(etcdEndpoint, prefix string) (*SubnetManager, error) {
 	return newSubnetManager(esr)
 }
 
-func (sm *SubnetManager) AcquireLease(tep ip.IP4, data string, cancel chan bool) (ip.IP4Net, error) {
+func (sm *SubnetManager) AcquireLease(extIP ip.IP4, data interface{}, cancel chan bool) (ip.IP4Net, error) {
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		return ip.IP4Net{}, err
+	}
+
+	var sn ip.IP4Net
+	for {
+		sn, err = sm.acquireLeaseOnce(extIP, string(dataBytes), cancel)
+		switch {
+		case err == nil:
+			log.Info("Subnet lease acquired: ", sn)
+			return sn, nil
+
+		case err == task.ErrCanceled:
+			return ip.IP4Net{}, err
+
+		default:
+			log.Error("Failed to acquire subnet: ", err)
+		}
+
+		select {
+		case <-time.After(time.Second):
+
+		case <-cancel:
+			return ip.IP4Net{}, task.ErrCanceled
+		}
+	}
+}
+
+func (sm *SubnetManager) acquireLeaseOnce(extIP ip.IP4, data string, cancel chan bool) (ip.IP4Net, error) {
 	for i := 0; i < registerRetries; i++ {
 		var err error
 		sm.leases, err = sm.getLeases()
@@ -82,7 +111,7 @@ func (sm *SubnetManager) AcquireLease(tep ip.IP4, data string, cancel chan bool)
 			if err != nil {
 				log.Error("Error parsing subnet lease JSON: ", err)
 			} else {
-				if tep == ba.PublicIP {
+				if extIP == ba.PublicIP {
 					resp, err := sm.registry.updateSubnet(l.Network.StringSep(".", "-"), data, subnetTTL)
 					if err != nil {
 						return ip.IP4Net{}, err
@@ -118,7 +147,7 @@ func (sm *SubnetManager) AcquireLease(tep ip.IP4, data string, cancel chan bool)
 
 		// before moving on, check for cancel
 		if interrupted(cancel) {
-			return ip.IP4Net{}, ErrCanceled
+			return ip.IP4Net{}, task.ErrCanceled
 		}
 	}
 

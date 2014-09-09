@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"net"
 	"os"
 	"os/signal"
 	"path"
+	"strings"
 	"syscall"
 	"time"
 
@@ -15,12 +17,9 @@ import (
 
 	"github.com/coreos/rudder/backend"
 	"github.com/coreos/rudder/pkg/ip"
+	"github.com/coreos/rudder/pkg/task"
 	"github.com/coreos/rudder/subnet"
 	"github.com/coreos/rudder/backend/udp"
-)
-
-const (
-	defaultPort = 8285
 )
 
 type CmdLineOpts struct {
@@ -29,7 +28,6 @@ type CmdLineOpts struct {
 	help         bool
 	version      bool
 	ipMasq       bool
-	port         int
 	subnetFile   string
 	iface        string
 }
@@ -39,7 +37,6 @@ var opts CmdLineOpts
 func init() {
 	flag.StringVar(&opts.etcdEndpoint, "etcd-endpoint", "http://127.0.0.1:4001", "etcd endpoint")
 	flag.StringVar(&opts.etcdPrefix, "etcd-prefix", "/coreos.com/network", "etcd prefix")
-	flag.IntVar(&opts.port, "port", defaultPort, "port to use for inter-node communications")
 	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/rudder/subnet.env", "filename where env variables (subnet and MTU values) will be written to")
 	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
 	flag.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
@@ -85,12 +82,8 @@ func lookupIface() (*net.Interface, net.IP, error) {
 		}
 	} else {
 		log.Info("Determining IP address of default interface")
-		for {
-			if iface, err = ip.GetDefaultGatewayIface(); err == nil {
-				break
-			}
-			log.Error("Failed to get default interface: ", err)
-			time.Sleep(time.Second)
+		if iface, err = ip.GetDefaultGatewayIface(); err != nil {
+			return nil, nil, fmt.Errorf("Failed to get default interface: %s", err)
 		}
 	}
 
@@ -116,22 +109,48 @@ func makeSubnetManager() *subnet.SubnetManager {
 	}
 }
 
-func newBackend() backend.Backend {
+func newBackend() (backend.Backend, error) {
 	sm := makeSubnetManager()
-	return udp.New(sm, opts.port)
+	config := sm.GetConfig()
+
+	var bt struct {
+		Type string
+	}
+
+	if len(config.Backend) == 0 {
+		bt.Type = "udp"
+	} else {
+		if err := json.Unmarshal(config.Backend, &bt); err != nil {
+			return nil, fmt.Errorf("Error decoding Backend property of config: %v", err)
+		}
+	}
+
+	switch strings.ToLower(bt.Type) {
+	case "udp":
+		return udp.New(sm, config.Backend), nil
+	default:
+		return nil, fmt.Errorf("'%v': unknown backend type", bt.Type)
+	}
 }
 
-func run(be backend.Backend, quit chan bool) {
-	defer close(quit)
+func run(be backend.Backend, exit chan int) {
+	var err error
+	defer func() {
+		if err == nil || err == task.ErrCanceled {
+			exit <- 0
+		} else {
+			log.Error(err)
+			exit <- 1
+		}
+	}()
 
 	iface, ipaddr, err := lookupIface()
 	if err != nil {
-		log.Error(err)
 		return
 	}
 
 	if iface.MTU == 0 {
-		log.Errorf("Failed to determine MTU for %s interface", ipaddr)
+		err = fmt.Errorf("Failed to determine MTU for %s interface", ipaddr)
 		return
 	}
 
@@ -139,7 +158,6 @@ func run(be backend.Backend, quit chan bool) {
 
 	sn, mtu, err := be.Init(iface, ipaddr, opts.ipMasq)
 	if err != nil {
-		log.Error(err)
 		return
 	}
 
@@ -169,15 +187,19 @@ func main() {
 		os.Exit(0)
 	}
 
-	be := newBackend()
+	be, err := newBackend()
+	if err != nil {
+		log.Info(err)
+		os.Exit(1)
+	}
 
 	// Register for SIGINT and SIGTERM and wait for one of them to arrive
 	log.Info("Installing signal handlers")
 	sigs := make(chan os.Signal, 5)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
 
-	quit := make(chan bool)
-	go run(be, quit)
+	exit := make(chan int)
+	go run(be, exit)
 
 	for {
 		select {
@@ -188,9 +210,9 @@ func main() {
 			log.Info("Exiting...")
 			be.Stop()
 
-		case <-quit:
+		case code := <-exit:
 			log.Infof("%s mode exited", be.Name())
-			os.Exit(0)
+			os.Exit(code)
 		}
 	}
 }
