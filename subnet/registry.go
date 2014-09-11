@@ -2,8 +2,10 @@ package subnet
 
 import (
 	"sync"
+	"time"
 
 	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	log "github.com/coreos/rudder/Godeps/_workspace/src/github.com/golang/glog"
 )
 
 type subnetRegistry interface {
@@ -42,11 +44,23 @@ func (esr *etcdSubnetRegistry) getSubnets() (*etcd.Response, error) {
 }
 
 func (esr *etcdSubnetRegistry) createSubnet(sn, data string, ttl uint64) (*etcd.Response, error) {
-	return esr.client().Create(esr.prefix+"/subnets/"+sn, data, ttl)
+	resp, err := esr.client().Create(esr.prefix+"/subnets/"+sn, data, ttl)
+	if err != nil {
+		return nil, err
+	}
+
+	ensureExpiration(resp, ttl)
+	return resp, nil
 }
 
 func (esr *etcdSubnetRegistry) updateSubnet(sn, data string, ttl uint64) (*etcd.Response, error) {
-	return esr.client().Set(esr.prefix+"/subnets/"+sn, data, ttl)
+	resp, err := esr.client().Set(esr.prefix+"/subnets/"+sn, data, ttl)
+	if err != nil {
+		return nil, err
+	}
+
+	ensureExpiration(resp, ttl)
+	return resp, nil
 }
 
 func (esr *etcdSubnetRegistry) watchSubnets(since uint64, stop chan bool) (*etcd.Response, error) {
@@ -82,4 +96,13 @@ func (esr *etcdSubnetRegistry) resetClient() {
 	esr.mux.Lock()
 	defer esr.mux.Unlock()
 	esr.cli = etcd.NewClient([]string{esr.endpoint})
+}
+
+func ensureExpiration(resp *etcd.Response, ttl uint64) {
+	if resp.Node.Expiration == nil {
+		// should not be but calc it ourselves in this case
+		log.Info("Expiration field missing on etcd response, calculating locally")
+		exp := time.Now().Add(time.Duration(ttl) * time.Second)
+		resp.Node.Expiration = &exp
+	}
 }
