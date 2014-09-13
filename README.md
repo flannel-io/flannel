@@ -24,7 +24,7 @@ overlay network:
 ## Building Rudder
 
 * Step 1: Make sure you have Linux headers installed on your machine. On Ubuntu, run ```sudo apt-get install linux-libc-dev```. On Fedora/Redhat, run ```sudo yum install kernel-headers```.
-* Step 2: Git clone the Rudder repo: ```git clone git@github.com:coreos/rudder.git```
+* Step 2: Git clone the Rudder repo: ```https://github.com/coreos/rudder.git```
 * Step 3: Run the build script: ```cd rudder; ./build```
 
 Alternatively, you can build rudder in a docker container with the following command. Replace $SRC with the absolute path to your rudder source code:
