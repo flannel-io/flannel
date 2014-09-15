@@ -72,9 +72,8 @@ func removeRoute(ctl *os.File, dst ip.IP4Net) {
 
 func stopProxy(ctl *os.File) {
 	cmd := C.command{
-		cmd:          C.CMD_STOP,
+		cmd: C.CMD_STOP,
 	}
 
 	writeCommand(ctl, &cmd)
 }
-

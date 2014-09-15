@@ -38,9 +38,15 @@ var (
 	subnetRegex *regexp.Regexp = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)`)
 )
 
+type LeaseAttrs struct {
+	PublicIP    ip.IP4
+	BackendType string          `json:",omitempty"`
+	BackendData json.RawMessage `json:",omitempty"`
+}
+
 type SubnetLease struct {
 	Network ip.IP4Net
-	Data    string
+	Attrs   LeaseAttrs
 }
 
 type SubnetManager struct {
@@ -66,15 +72,9 @@ func NewSubnetManager(etcdEndpoint []string, prefix string) (*SubnetManager, err
 	return newSubnetManager(esr)
 }
 
-func (sm *SubnetManager) AcquireLease(extIP ip.IP4, data interface{}, cancel chan bool) (ip.IP4Net, error) {
-	dataBytes, err := json.Marshal(data)
-	if err != nil {
-		return ip.IP4Net{}, err
-	}
-
-	var sn ip.IP4Net
+func (sm *SubnetManager) AcquireLease(attrs *LeaseAttrs, cancel chan bool) (ip.IP4Net, error) {
 	for {
-		sn, err = sm.acquireLeaseOnce(extIP, string(dataBytes), cancel)
+		sn, err := sm.acquireLeaseOnce(attrs, cancel)
 		switch {
 		case err == nil:
 			log.Info("Subnet lease acquired: ", sn)
@@ -96,53 +96,71 @@ func (sm *SubnetManager) AcquireLease(extIP ip.IP4, data interface{}, cancel cha
 	}
 }
 
-func (sm *SubnetManager) acquireLeaseOnce(extIP ip.IP4, data string, cancel chan bool) (ip.IP4Net, error) {
+func findLeaseByIP(leases []SubnetLease, pubIP ip.IP4) *SubnetLease {
+	for _, l := range leases {
+		if pubIP == l.Attrs.PublicIP {
+			return &l
+		}
+	}
+
+	return nil
+}
+
+func (sm *SubnetManager) tryAcquireLease(extIP ip.IP4, attrs []byte) (ip.IP4Net, error) {
+	var err error
+	sm.leases, err = sm.getLeases()
+	if err != nil {
+		return ip.IP4Net{}, err
+	}
+
+	// try to reuse a subnet if there's one that matches our IP
+	if l := findLeaseByIP(sm.leases, extIP); l != nil {
+		resp, err := sm.registry.updateSubnet(l.Network.StringSep(".", "-"), string(attrs), subnetTTL)
+		if err != nil {
+			return ip.IP4Net{}, err
+		}
+
+		sm.myLease.Network = l.Network
+		sm.leaseExp = *resp.Node.Expiration
+		return l.Network, nil
+	}
+
+	// no existing match, grab a new one
+	sn, err := sm.allocateSubnet()
+	if err != nil {
+		return ip.IP4Net{}, err
+	}
+
+	resp, err := sm.registry.createSubnet(sn.StringSep(".", "-"), string(attrs), subnetTTL)
+	switch {
+	case err == nil:
+		sm.myLease.Network = sn
+		sm.leaseExp = *resp.Node.Expiration
+		return sn, nil
+
+	// if etcd returned Key Already Exists, try again.
+	case err.(*etcd.EtcdError).ErrorCode == etcdKeyAlreadyExists:
+		return ip.IP4Net{}, nil
+
+	default:
+		return ip.IP4Net{}, err
+	}
+}
+
+func (sm *SubnetManager) acquireLeaseOnce(attrs *LeaseAttrs, cancel chan bool) (ip.IP4Net, error) {
+	attrBytes, err := json.Marshal(attrs)
+	if err != nil {
+		log.Errorf("marshal failed: %#v, %v", attrs, err)
+		return ip.IP4Net{}, err
+	}
+
 	for i := 0; i < registerRetries; i++ {
-		var err error
-		sm.leases, err = sm.getLeases()
-		if err != nil {
-			return ip.IP4Net{}, err
-		}
-
-		// try to reuse a subnet if there's one that matches our IP
-		for _, l := range sm.leases {
-			var ba BaseAttrs
-			err = json.Unmarshal([]byte(l.Data), &ba)
-			if err != nil {
-				log.Error("Error parsing subnet lease JSON: ", err)
-			} else {
-				if extIP == ba.PublicIP {
-					resp, err := sm.registry.updateSubnet(l.Network.StringSep(".", "-"), data, subnetTTL)
-					if err != nil {
-						return ip.IP4Net{}, err
-					}
-
-					sm.myLease.Network = l.Network
-					sm.leaseExp = *resp.Node.Expiration
-					return l.Network, nil
-				}
-			}
-		}
-
-		// no existing match, grab a new one
-		sn, err := sm.allocateSubnet()
-		if err != nil {
-			return ip.IP4Net{}, err
-		}
-
-		resp, err := sm.registry.createSubnet(sn.StringSep(".", "-"), data, subnetTTL)
+		sn, err := sm.tryAcquireLease(attrs.PublicIP, attrBytes)
 		switch {
-		case err == nil:
-			sm.myLease.Network = sn
-			sm.leaseExp = *resp.Node.Expiration
-			return sn, nil
-
-		// if etcd returned Key Already Exists, try again.
-		case err.(*etcd.EtcdError).ErrorCode == etcdKeyAlreadyExists:
-			break
-
-		default:
+		case err != nil:
 			return ip.IP4Net{}, err
+		case sn.IP != 0:
+			return sn, nil
 		}
 
 		// before moving on, check for cancel
@@ -152,12 +170,6 @@ func (sm *SubnetManager) acquireLeaseOnce(extIP ip.IP4, data string, cancel chan
 	}
 
 	return ip.IP4Net{}, errors.New("Max retries reached trying to acquire a subnet")
-}
-
-func (sm *SubnetManager) UpdateSubnet(data string) error {
-	resp, err := sm.registry.updateSubnet(sm.myLease.Network.StringSep(".", "-"), data, subnetTTL)
-	sm.leaseExp = *resp.Node.Expiration
-	return err
 }
 
 func (sm *SubnetManager) GetConfig() *Config {
@@ -205,8 +217,11 @@ func (sm *SubnetManager) getLeases() ([]SubnetLease, error) {
 		for _, node := range resp.Node.Nodes {
 			sn, err := parseSubnetKey(node.Key)
 			if err == nil {
-				lease := SubnetLease{sn, node.Value}
-				leases = append(leases, lease)
+				var attrs LeaseAttrs
+				if err = json.Unmarshal([]byte(node.Value), &attrs); err == nil {
+					lease := SubnetLease{sn, attrs}
+					leases = append(leases, lease)
+				}
 			}
 		}
 		sm.lastIndex = resp.EtcdIndex
@@ -261,37 +276,39 @@ func (sm *SubnetManager) applyLeases(newLeases []SubnetLease) EventBatch {
 	return batch
 }
 
-func (sm *SubnetManager) applySubnetChange(action string, ipn ip.IP4Net, data string) Event {
+func (sm *SubnetManager) applySubnetChange(action string, ipn ip.IP4Net, data string) (Event, error) {
 	switch action {
 	case "delete", "expire":
 		for i, l := range sm.leases {
 			if l.Network.Equal(ipn) {
 				deleteLease(sm.leases, i)
-				return Event{SubnetRemoved, l}
+				return Event{SubnetRemoved, l}, nil
 			}
 		}
 
 		log.Errorf("Removed subnet (%s) was not found", ipn)
 		return Event{
 			SubnetRemoved,
-			SubnetLease{ipn, ""},
-		}
+			SubnetLease{ipn, LeaseAttrs{}},
+		}, nil
 
 	default:
+		var attrs LeaseAttrs
+		err := json.Unmarshal([]byte(data), &attrs)
+		if err != nil {
+			return Event{}, err
+		}
+
 		for i, l := range sm.leases {
 			if l.Network.Equal(ipn) {
-				sm.leases[i] = SubnetLease{ipn, data}
-				return Event{SubnetAdded, sm.leases[i]}
+				sm.leases[i] = SubnetLease{ipn, attrs}
+				return Event{SubnetAdded, sm.leases[i]}, nil
 			}
 		}
 
-		sm.leases = append(sm.leases, SubnetLease{ipn, data})
-		return Event{SubnetAdded, sm.leases[len(sm.leases)-1]}
+		sm.leases = append(sm.leases, SubnetLease{ipn, attrs})
+		return Event{SubnetAdded, sm.leases[len(sm.leases)-1]}, nil
 	}
-}
-
-type BaseAttrs struct {
-	PublicIP ip.IP4
 }
 
 func (sm *SubnetManager) allocateSubnet() (ip.IP4Net, error) {
@@ -369,7 +386,10 @@ func (sm *SubnetManager) parseSubnetWatchResponse(resp *etcd.Response) (batch *E
 
 	// Don't process our own changes
 	if !sm.myLease.Network.Equal(sn) {
-		evt := sm.applySubnetChange(resp.Action, sn, resp.Node.Value)
+		evt, err := sm.applySubnetChange(resp.Action, sn, resp.Node.Value)
+		if err != nil {
+			return nil, err
+		}
 		batch = &EventBatch{evt}
 	}
 
@@ -404,7 +424,14 @@ func (sm *SubnetManager) LeaseRenewer(cancel chan bool) {
 	for {
 		select {
 		case <-time.After(dur):
-			resp, err := sm.registry.updateSubnet(sm.myLease.Network.StringSep(".", "-"), sm.myLease.Data, subnetTTL)
+			attrBytes, err := json.Marshal(sm.myLease.Attrs)
+			if err != nil {
+				log.Error("Error renewing lease (trying again in 1 min): ", err)
+				dur = time.Minute
+				continue
+			}
+
+			resp, err := sm.registry.updateSubnet(sm.myLease.Network.StringSep(".", "-"), string(attrBytes), subnetTTL)
 			if err != nil {
 				log.Error("Error renewing lease (trying again in 1 min): ", err)
 				dur = time.Minute

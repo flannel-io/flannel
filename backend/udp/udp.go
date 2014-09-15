@@ -58,11 +58,11 @@ func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (*
 	}
 
 	// Acquire the lease form subnet manager
-	attrs := subnet.BaseAttrs{
+	attrs := subnet.LeaseAttrs{
 		PublicIP: ip.FromIP(extIP),
 	}
 
-	sn, err := m.sm.AcquireLease(attrs.PublicIP, &attrs, m.stop)
+	sn, err := m.sm.AcquireLease(&attrs, m.stop)
 	if err != nil {
 		if err == task.ErrCanceled {
 			return nil, err
@@ -263,13 +263,7 @@ func (m *UdpBackend) processSubnetEvents(batch subnet.EventBatch) {
 		case subnet.SubnetAdded:
 			log.Info("Subnet added: ", evt.Lease.Network)
 
-			var attrs subnet.BaseAttrs
-			if err := json.Unmarshal([]byte(evt.Lease.Data), &attrs); err != nil {
-				log.Error("Error decoding subnet lease JSON: ", err)
-				continue
-			}
-
-			setRoute(m.ctl, evt.Lease.Network, attrs.PublicIP, m.cfg.Port)
+			setRoute(m.ctl, evt.Lease.Network, evt.Lease.Attrs.PublicIP, m.cfg.Port)
 
 		case subnet.SubnetRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Network)
