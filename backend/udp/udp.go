@@ -49,11 +49,11 @@ func New(sm *subnet.SubnetManager, config json.RawMessage) backend.Backend {
 	return &be
 }
 
-func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (ip.IP4Net, int, error) {
+func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (*backend.SubnetDef, error) {
 	// Parse our configuration
 	if len(m.rawCfg) > 0 {
 		if err := json.Unmarshal(m.rawCfg, &m.cfg); err != nil {
-			return ip.IP4Net{}, 0, fmt.Errorf("Error decoding UDP backend config: %v", err)
+			return nil, fmt.Errorf("error decoding UDP backend config: %v", err)
 		}
 	}
 
@@ -65,9 +65,9 @@ func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (i
 	sn, err := m.sm.AcquireLease(attrs.PublicIP, &attrs, m.stop)
 	if err != nil {
 		if err == task.ErrCanceled {
-			return ip.IP4Net{}, 0, err
+			return nil, err
 		} else {
-			return ip.IP4Net{}, 0, fmt.Errorf("Failed to acquire lease: %s", err)
+			return nil, fmt.Errorf("failed to acquire lease: %v", err)
 		}
 	}
 
@@ -82,21 +82,24 @@ func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (i
 	m.mtu = extIface.MTU - encapOverhead
 
 	if err = m.initTun(ipMasq); err != nil {
-		return ip.IP4Net{}, 0, err
+		return nil, err
 	}
 
 	m.conn, err = net.ListenUDP("udp4", &net.UDPAddr{Port: m.cfg.Port})
 	if err != nil {
-		return ip.IP4Net{}, 0, fmt.Errorf("Failed to start listening on UDP socket: %s", err)
+		return nil, fmt.Errorf("failed to start listening on UDP socket: %v", err)
 	}
 
 
 	m.ctl, m.ctl2, err = newCtlSockets()
 	if err != nil {
-		return ip.IP4Net{}, 0, fmt.Errorf("Failed to create control socket: %s", err)
+		return nil, fmt.Errorf("failed to create control socket: %v", err)
 	}
 
-	return sn, m.mtu, nil
+	return &backend.SubnetDef{
+		Net: sn,
+		MTU: m.mtu,
+	}, nil
 }
 
 func (m *UdpBackend) Run() {
@@ -147,8 +150,7 @@ func (m *UdpBackend) initTun(ipMasq bool) error {
 
 	m.tun, tunName, err = ip.OpenTun("rudder%d")
 	if err != nil {
-		log.Error("Failed to open TUN device: ", err)
-		return err
+		return fmt.Errorf("Failed to open TUN device: %v", err)
 	}
 
 	err = configureIface(tunName, m.tunNet, m.mtu)
@@ -169,35 +171,30 @@ func (m *UdpBackend) initTun(ipMasq bool) error {
 func configureIface(ifname string, ipn ip.IP4Net, mtu int) error {
 	iface, err := net.InterfaceByName(ifname)
 	if err != nil {
-		log.Error("Failed to lookup interface ", ifname)
-		return err
+		return fmt.Errorf("failed to lookup interface %v", ifname)
 	}
 
 	n := ipn.ToIPNet()
 	err = netlink.NetworkLinkAddIp(iface, n.IP, n)
 	if err != nil {
-		log.Errorf("Failed to add IP address %s to %s: %s", n.IP, ifname, err)
-		return err
+		return fmt.Errorf("failed to add IP address %v to %v: %v", n.IP, ifname, err)
 	}
 
 	err = netlink.NetworkSetMTU(iface, mtu)
 	if err != nil {
-		log.Errorf("Failed to set MTU for %s: ", ifname, err)
-		return err
+		return fmt.Errorf("failed to set MTU for %v: %v", ifname, err)
 	}
 
 	err = netlink.NetworkLinkUp(iface)
 	if err != nil {
-		log.Errorf("Failed to set interface %s to UP state: %s", ifname, err)
-		return err
+		return fmt.Errorf("failed to set interface %v to UP state: %v", ifname, err)
 	}
 
 	// explicitly add a route since there might be a route for a subnet already
 	// installed by Docker and then it won't get auto added
 	err = netlink.AddRoute(ipn.Network().String(), "", "", ifname)
 	if err != nil && err != syscall.EEXIST {
-		log.Errorf("Failed to add route (%s -> %s): ", ipn.Network().String(), ifname, err)
-		return err
+		return fmt.Errorf("Failed to add route (%v -> %v): %v", ipn.Network().String(), ifname, err)
 	}
 
 	return nil
@@ -206,14 +203,12 @@ func configureIface(ifname string, ipn ip.IP4Net, mtu int) error {
 func setupIpMasq(ipn ip.IP4Net, iface string) error {
 	ipt, err := ip.NewIPTables()
 	if err != nil {
-		log.Error("Failed to setup IP Masquerade. iptables was not found")
-		return err
+		return fmt.Errorf("failed to setup IP Masquerade. iptables was not found")
 	}
 
 	err = ipt.ClearChain("nat", "RUDDER")
 	if err != nil {
-		log.Error("Failed to create/clear RUDDER chain in NAT table: ", err)
-		return err
+		return fmt.Errorf("Failed to create/clear RUDDER chain in NAT table: %v", err)
 	}
 
 	rules := [][]string{
@@ -232,13 +227,13 @@ func setupIpMasq(ipn ip.IP4Net, iface string) error {
 
 		err = ipt.AppendUnique("nat", args...)
 		if err != nil {
-			log.Error("Failed to insert IP masquerade rule: ", err)
-			return err
+			return fmt.Errorf("Failed to insert IP masquerade rule: %v", err)
 		}
 	}
 
 	return nil
 }
+
 func (m *UdpBackend) monitorEvents() {
 	log.Info("Watching for new subnet leases")
 
@@ -253,31 +248,35 @@ func (m *UdpBackend) monitorEvents() {
 	for {
 		select {
 		case evtBatch := <-evts:
-			for _, evt := range evtBatch {
-				switch evt.Type {
-				case subnet.SubnetAdded:
-					log.Info("Subnet added: ", evt.Lease.Network)
-
-					var attrs subnet.BaseAttrs
-					if err := json.Unmarshal([]byte(evt.Lease.Data), &attrs); err != nil {
-						log.Error("Error decoding subnet lease JSON: ", err)
-						continue
-					}
-
-					setRoute(m.ctl, evt.Lease.Network, attrs.PublicIP, m.cfg.Port)
-
-				case subnet.SubnetRemoved:
-					log.Info("Subnet removed: ", evt.Lease.Network)
-
-					removeRoute(m.ctl, evt.Lease.Network)
-
-				default:
-					log.Error("Internal error: unknown event type: ", int(evt.Type))
-				}
-			}
+			m.processSubnetEvents(evtBatch)
 
 		case <-m.stop:
 			return
+		}
+	}
+}
+
+func (m *UdpBackend) processSubnetEvents(batch subnet.EventBatch) {
+	for _, evt := range batch {
+		switch evt.Type {
+		case subnet.SubnetAdded:
+			log.Info("Subnet added: ", evt.Lease.Network)
+
+			var attrs subnet.BaseAttrs
+			if err := json.Unmarshal([]byte(evt.Lease.Data), &attrs); err != nil {
+				log.Error("Error decoding subnet lease JSON: ", err)
+				continue
+			}
+
+			setRoute(m.ctl, evt.Lease.Network, attrs.PublicIP, m.cfg.Port)
+
+		case subnet.SubnetRemoved:
+			log.Info("Subnet removed: ", evt.Lease.Network)
+
+			removeRoute(m.ctl, evt.Lease.Network)
+
+		default:
+			log.Error("Internal error: unknown event type: ", int(evt.Type))
 		}
 	}
 }

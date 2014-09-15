@@ -3,6 +3,7 @@ package subnet
 import (
 	"sync"
 	"time"
+	"path"
 
 	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	log "github.com/coreos/rudder/Godeps/_workspace/src/github.com/golang/glog"
@@ -32,7 +33,8 @@ func newEtcdSubnetRegistry(endpoint, prefix string) subnetRegistry {
 }
 
 func (esr *etcdSubnetRegistry) getConfig() (*etcd.Response, error) {
-	resp, err := esr.client().Get(esr.prefix+"/config", false, false)
+	key := path.Join(esr.prefix, "config")
+	resp, err := esr.client().Get(key, false, false)
 	if err != nil {
 		return nil, err
 	}
@@ -40,11 +42,13 @@ func (esr *etcdSubnetRegistry) getConfig() (*etcd.Response, error) {
 }
 
 func (esr *etcdSubnetRegistry) getSubnets() (*etcd.Response, error) {
-	return esr.client().Get(esr.prefix+"/subnets", false, true)
+	key := path.Join(esr.prefix, "subnets")
+	return esr.client().Get(key, false, true)
 }
 
 func (esr *etcdSubnetRegistry) createSubnet(sn, data string, ttl uint64) (*etcd.Response, error) {
-	resp, err := esr.client().Create(esr.prefix+"/subnets/"+sn, data, ttl)
+	key := path.Join(esr.prefix, "subnets", sn)
+	resp, err := esr.client().Create(key, data, ttl)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +58,8 @@ func (esr *etcdSubnetRegistry) createSubnet(sn, data string, ttl uint64) (*etcd.
 }
 
 func (esr *etcdSubnetRegistry) updateSubnet(sn, data string, ttl uint64) (*etcd.Response, error) {
-	resp, err := esr.client().Set(esr.prefix+"/subnets/"+sn, data, ttl)
+	key := path.Join(esr.prefix, "subnets", sn)
+	resp, err := esr.client().Set(key, data, ttl)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +70,8 @@ func (esr *etcdSubnetRegistry) updateSubnet(sn, data string, ttl uint64) (*etcd.
 
 func (esr *etcdSubnetRegistry) watchSubnets(since uint64, stop chan bool) (*etcd.Response, error) {
 	for {
-		resp, err := esr.client().RawWatch(esr.prefix+"/subnets", since, true, nil, stop)
+		key := path.Join(esr.prefix, "subnets")
+		resp, err := esr.client().RawWatch(key, since, true, nil, stop)
 
 		if err != nil {
 			if err == etcd.ErrWatchStoppedByUser {

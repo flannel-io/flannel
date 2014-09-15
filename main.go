@@ -45,10 +45,10 @@ func init() {
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
 }
 
-func writeSubnetFile(sn ip.IP4Net, mtu int) error {
+func writeSubnetFile(sn *backend.SubnetDef) error {
 	// Write out the first usable IP by incrementing
 	// sn.IP by one
-	sn.IP += 1
+	sn.Net.IP += 1
 
 	dir, _ := path.Split(opts.subnetFile)
 	os.MkdirAll(dir, 0755)
@@ -59,8 +59,12 @@ func writeSubnetFile(sn ip.IP4Net, mtu int) error {
 	}
 	defer f.Close()
 
-	fmt.Fprintf(f, "RUDDER_SUBNET=%s\n", sn)
-	fmt.Fprintf(f, "RUDDER_MTU=%d\n", mtu)
+	if _, err = fmt.Fprintf(f, "RUDDER_SUBNET=%s\n", sn.Net); err != nil {
+		return err
+	}
+	if _, err = fmt.Fprintf(f, "RUDDER_MTU=%d\n", sn.MTU); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -159,12 +163,13 @@ func run(be backend.Backend, exit chan int) {
 
 	log.Infof("Using %s as external interface", ipaddr)
 
-	sn, mtu, err := be.Init(iface, ipaddr, opts.ipMasq)
+	sn, err := be.Init(iface, ipaddr, opts.ipMasq)
 	if err != nil {
+		log.Error("Could not init %v backend: %v", be.Name(), err)
 		return
 	}
 
-	writeSubnetFile(sn, mtu)
+	writeSubnetFile(sn)
 	daemon.SdNotify("READY=1")
 
 	log.Infof("%s mode initialized", be.Name())
@@ -198,7 +203,7 @@ func main() {
 
 	// Register for SIGINT and SIGTERM and wait for one of them to arrive
 	log.Info("Installing signal handlers")
-	sigs := make(chan os.Signal, 5)
+	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
 
 	exit := make(chan int)

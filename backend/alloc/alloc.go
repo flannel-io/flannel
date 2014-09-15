@@ -23,7 +23,7 @@ func New(sm *subnet.SubnetManager) backend.Backend {
 	}
 }
 
-func (m *AllocBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (ip.IP4Net, int, error) {
+func (m *AllocBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (*backend.SubnetDef, error) {
 	attrs := subnet.BaseAttrs{
 		PublicIP: ip.FromIP(extIP),
 	}
@@ -31,13 +31,16 @@ func (m *AllocBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) 
 	sn, err := m.sm.AcquireLease(ip.FromIP(extIP), &attrs, m.stop)
 	if err != nil {
 		if err == task.ErrCanceled {
-			return ip.IP4Net{}, 0, err
+			return nil, err
 		} else {
-			return ip.IP4Net{}, 0, fmt.Errorf("Failed to acquire lease: %v", err)
+			return nil, fmt.Errorf("failed to acquire lease: %v", err)
 		}
 	}
 
-	return sn, extIface.MTU, nil
+	return &backend.SubnetDef{
+		Net: sn,
+		MTU: extIface.MTU,
+	}, nil
 }
 
 func (m *AllocBackend) Run() {
