@@ -14,7 +14,7 @@ export GOPATH=${PWD}/gopath
 eval $(go env)
 
 if [ ${GOOS} = "linux" ]; then
-	echo "Building flanneld"
+	echo "Building flanneld..."
 	go build -o flanneld ${REPO_PATH}
 	mv ./flanneld $GOBIN
 else
