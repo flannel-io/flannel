@@ -15,8 +15,7 @@ eval $(go env)
 
 if [ ${GOOS} = "linux" ]; then
 	echo "Building flanneld..."
-	go build -o flanneld ${REPO_PATH}
-	mv ./flanneld $GOBIN
+	go build -o ${GOBIN}/flanneld ${REPO_PATH}
 else
 	echo "Not on Linux - skipping flanneld build"
 fi
