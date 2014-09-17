@@ -12,15 +12,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
-	log "github.com/coreos/rudder/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
+	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 
-	"github.com/coreos/rudder/backend"
-	"github.com/coreos/rudder/pkg/ip"
-	"github.com/coreos/rudder/pkg/task"
-	"github.com/coreos/rudder/subnet"
-	"github.com/coreos/rudder/backend/alloc"
-	"github.com/coreos/rudder/backend/udp"
+	"github.com/coreos/flannel/backend"
+	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/pkg/task"
+	"github.com/coreos/flannel/subnet"
+	"github.com/coreos/flannel/backend/alloc"
+	"github.com/coreos/flannel/backend/udp"
 )
 
 type CmdLineOpts struct {
@@ -38,7 +38,7 @@ var opts CmdLineOpts
 func init() {
 	flag.StringVar(&opts.etcdEndpoint, "etcd-endpoint", "http://127.0.0.1:4001", "etcd endpoint")
 	flag.StringVar(&opts.etcdPrefix, "etcd-prefix", "/coreos.com/network", "etcd prefix")
-	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/rudder/subnet.env", "filename where env variables (subnet and MTU values) will be written to")
+	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/flannel/subnet.env", "filename where env variables (subnet and MTU values) will be written to")
 	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
 	flag.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
@@ -59,10 +59,10 @@ func writeSubnetFile(sn *backend.SubnetDef) error {
 	}
 	defer f.Close()
 
-	if _, err = fmt.Fprintf(f, "RUDDER_SUBNET=%s\n", sn.Net); err != nil {
+	if _, err = fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn.Net); err != nil {
 		return err
 	}
-	if _, err = fmt.Fprintf(f, "RUDDER_MTU=%d\n", sn.MTU); err != nil {
+	if _, err = fmt.Fprintf(f, "FLANNEL_MTU=%d\n", sn.MTU); err != nil {
 		return err
 	}
 	return nil

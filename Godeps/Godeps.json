@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/coreos/rudder",
+	"ImportPath": "github.com/coreos/flannel",
 	"GoVersion": "go1.2.2",
 	"Packages": [
 		"./..."

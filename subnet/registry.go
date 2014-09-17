@@ -5,8 +5,8 @@ import (
 	"time"
 	"path"
 
-	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
-	log "github.com/coreos/rudder/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 )
 
 type subnetRegistry interface {

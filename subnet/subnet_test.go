@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 
-	"github.com/coreos/rudder/pkg/ip"
+	"github.com/coreos/flannel/pkg/ip"
 )
 
 type mockSubnetRegistry struct {
