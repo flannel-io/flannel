@@ -7,26 +7,6 @@ import (
 	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
 )
 
-func GetIfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) (net.IP, error) {
-	addrs, err := iface.Addrs()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, addr := range addrs {
-		// Attempt to parse the address in CIDR notation
-		// and assert it is IPv4
-		ip, _, err := net.ParseCIDR(addr.String())
-		if err == nil && ip.To4() != nil {
-			if ip.To4().Equal(matchAddr) {
-				return ip.To4(), nil
-			}
-		}
-	}
-
-	return nil, errors.New("No IPv4 address found for given interface")
-}
-
 func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
 	addrs, err := iface.Addrs()
 	if err != nil {
@@ -43,6 +23,26 @@ func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
 	}
 
 	return nil, errors.New("No IPv4 address found for given interface")
+}
+
+func GetIfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) (error) {
+	addrs, err := iface.Addrs()
+	if err != nil {
+		return err
+	}
+
+	for _, addr := range addrs {
+		// Attempt to parse the address in CIDR notation
+		// and assert it is IPv4
+		ip, _, err := net.ParseCIDR(addr.String())
+		if err == nil && ip.To4() != nil {
+			if ip.To4().Equal(matchAddr) {
+				return nil
+			}
+		}
+	}
+
+	return errors.New("No IPv4 address found for given interface")
 }
 
 func GetDefaultGatewayIface() (*net.Interface, error) {
@@ -70,8 +70,8 @@ func GetInterfaceByIP(ip net.IP) (*net.Interface, error) {
 	}
 
 	for _, iface := range ifaces {
-		addr, err := GetIfaceIP4AddrMatch(&iface, ip)
-		if err == nil && ip.Equal(addr) {
+		err := GetIfaceIP4AddrMatch(&iface, ip)
+		if err == nil {
 			return &iface, nil
 		}
 	}
