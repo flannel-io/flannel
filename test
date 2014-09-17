@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# Run all rudder tests (not including functional)
+# Run all flannel tests (not including functional)
 #   ./test
 #   ./test -v
 #

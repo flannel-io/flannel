@@ -1,6 +1,6 @@
-# Rudder
+# flannel
 
-Rudder is an overlay network that gives a subnet to each machine for use with
+flannel is an overlay network that gives a subnet to each machine for use with
 Kubernetes.
 
 In Kubernetes every machine in the cluster is assigned a full subnet. The machine A
@@ -12,7 +12,7 @@ disadvantage is that the only cloud provider that can do this is GCE.
 
 To emulate the Kubernetes model from GCE on other platforms we need to create
 an overlay network on top of the network that we are given from cloud
-providers. Rudder uses the Universal TUN/TAP device and creates an overlay network
+providers. flannel uses the Universal TUN/TAP device and creates an overlay network
 using UDP to encapsulate IP packets. The subnet allocation is done with the help
 of etcd which maintains the overlay to actual IP mappings.
 
@@ -21,21 +21,21 @@ overlay network:
 
 ![Life of a packet](./packet-01.png)
 
-## Building Rudder
+## Building flannel
 
 * Step 1: Make sure you have Linux headers installed on your machine. On Ubuntu, run ```sudo apt-get install linux-libc-dev```. On Fedora/Redhat, run ```sudo yum install kernel-headers```.
-* Step 2: Git clone the Rudder repo: ```https://github.com/coreos/rudder.git```
-* Step 3: Run the build script: ```cd rudder; ./build```
+* Step 2: Git clone the flannel repo: ```https://github.com/coreos/flannel.git```
+* Step 3: Run the build script: ```cd flannel; ./build```
 
-Alternatively, you can build rudder in a docker container with the following command. Replace $SRC with the absolute path to your rudder source code:
+Alternatively, you can build flannel in a docker container with the following command. Replace $SRC with the absolute path to your flannel source code:
 
 ```
-docker run -v $SRC:/opt/rudder -i -t google/golang /bin/bash -c "cd /opt/rudder && ./build"
+docker run -v $SRC:/opt/flannel -i -t google/golang /bin/bash -c "cd /opt/flannel && ./build"
 ```
 
 ## Configuration
 
-Rudder reads its configuration from etcd. By default, it will read the configuration
+flannel reads its configuration from etcd. By default, it will read the configuration
 from ```/coreos.com/network/config``` (can be overridden via --etcd-prefix).
 The value of the config should be a JSON dictionary with the following keys:
 
@@ -53,14 +53,14 @@ the last subnet of Network.
 
 ## Running
 
-Once you have pushed configuration JSON to etcd, you can start Rudder. If you published your
-config at the default location, you can start Rudder with no arguments. Rudder will acquire a
+Once you have pushed configuration JSON to etcd, you can start flannel. If you published your
+config at the default location, you can start flannel with no arguments. flannel will acquire a
 subnet lease, configure its routes based on other leases in the overlay network and start
 routing packets. Additionally it will monitor etcd for new members of the network and adjust
 its routing table accordingly.
 
-After Rudder has acquired the subnet and configured the TUN device, it will write out an
-environment variable file (```/run/rudder/subnet.env``` by default) with subnet address and
+After flannel has acquired the subnet and configured the TUN device, it will write out an
+environment variable file (```/run/flannel/subnet.env``` by default) with subnet address and
 MTU that it supports.
 
 ## Key command line options
@@ -70,29 +70,29 @@ MTU that it supports.
 -etcd-prefix="/coreos.com/network": etcd prefix
 -iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
 -port=8285: UDP port to use for inter-node communications
--subnet-file="/run/rudder/subnet.env": filename where env variables (subnet and MTU values) will be written to
+-subnet-file="/run/flannel/subnet.env": filename where env variables (subnet and MTU values) will be written to
 -v=0: log level for V logs. Set to 1 to see messages related to data path
 ```
 
 ## Docker integration
 
 Docker daemon accepts ```--bip``` argument to configure the subnet of the docker0 bridge. It also accepts ```--mtu``` to set the MTU
-for docker0 and veth devices that it will be creating. Since Rudder writes out the acquired subnet and MTU values into
+for docker0 and veth devices that it will be creating. Since flannel writes out the acquired subnet and MTU values into
 a file, the script starting Docker daemon can source in the values and pass them to Docker daemon:
 
 ```bash
-source /run/rudder/subnet.env
-docker -d --bip=${RUDDER_SUBNET} --mtu=${RUDDER_MTU}
+source /run/flannel/subnet.env
+docker -d --bip=${FLANNEL_SUBNET} --mtu=${FLANNEL_MTU}
 ```
 
-Systemd users can use ```EnvironmentFile``` directive in the .service file to pull in ```/run/rudder/subnet.env```
+Systemd users can use ```EnvironmentFile``` directive in the .service file to pull in ```/run/flannel/subnet.env```
 
 ## CoreOS integration
 
-On CoreOS it is useful to add Rudder configuration into .service file in the cloud-config as the following snippet demonstrates:
+On CoreOS it is useful to add flannel configuration into .service file in the cloud-config as the following snippet demonstrates:
 
 ```
-  - name: rudder.service
+  - name: flannel.service
     command: start
     content: |
       [Unit]
@@ -101,5 +101,5 @@ On CoreOS it is useful to add Rudder configuration into .service file in the clo
 
       [Service]
       ExecStartPre=-/usr/bin/etcdctl mk /coreos.com/network/config '{"Network":"10.0.0.0/16"}'
-      ExecStart=/opt/bin/rudder
+      ExecStart=/opt/bin/flannel
 ```

@@ -9,13 +9,13 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/coreos/rudder/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
-	log "github.com/coreos/rudder/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
+	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 
-	"github.com/coreos/rudder/backend"
-	"github.com/coreos/rudder/pkg/ip"
-	"github.com/coreos/rudder/pkg/task"
-	"github.com/coreos/rudder/subnet"
+	"github.com/coreos/flannel/backend"
+	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/pkg/task"
+	"github.com/coreos/flannel/subnet"
 )
 
 const (
@@ -148,7 +148,7 @@ func (m *UdpBackend) initTun(ipMasq bool) error {
 	var tunName string
 	var err error
 
-	m.tun, tunName, err = ip.OpenTun("rudder%d")
+	m.tun, tunName, err = ip.OpenTun("flannel%d")
 	if err != nil {
 		return fmt.Errorf("Failed to open TUN device: %v", err)
 	}
@@ -206,20 +206,20 @@ func setupIpMasq(ipn ip.IP4Net, iface string) error {
 		return fmt.Errorf("failed to setup IP Masquerade. iptables was not found")
 	}
 
-	err = ipt.ClearChain("nat", "RUDDER")
+	err = ipt.ClearChain("nat", "FLANNEL")
 	if err != nil {
-		return fmt.Errorf("Failed to create/clear RUDDER chain in NAT table: %v", err)
+		return fmt.Errorf("Failed to create/clear FLANNEL chain in NAT table: %v", err)
 	}
 
 	rules := [][]string{
 		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-		[]string{ "RUDDER", "-d", ipn.String(), "-j", "ACCEPT" },
+		[]string{ "FLANNEL", "-d", ipn.String(), "-j", "ACCEPT" },
 		// This rule makes sure we don't NAT multicast traffic within overlay network
-		[]string{ "RUDDER", "-d", "224.0.0.0/4", "-j", "ACCEPT" },
+		[]string{ "FLANNEL", "-d", "224.0.0.0/4", "-j", "ACCEPT" },
 		// This rule will NAT everything originating from our overlay network and 
-		[]string{ "RUDDER", "!", "-o", iface, "-j", "MASQUERADE" },
-		// This rule will take everything coming from overlay and sent it to RUDDER chain
-		[]string{ "POSTROUTING", "-s", ipn.String(), "-j", "RUDDER" },
+		[]string{ "FLANNEL", "!", "-o", iface, "-j", "MASQUERADE" },
+		// This rule will take everything coming from overlay and sent it to FLANNEL chain
+		[]string{ "POSTROUTING", "-s", ipn.String(), "-j", "FLANNEL" },
 	}
 
 	for _, args := range rules {

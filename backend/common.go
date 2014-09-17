@@ -3,7 +3,7 @@ package backend
 import (
 	"net"
 
-	"github.com/coreos/rudder/pkg/ip"
+	"github.com/coreos/flannel/pkg/ip"
 )
 
 type SubnetDef struct {
