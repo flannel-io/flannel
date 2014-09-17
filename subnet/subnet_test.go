@@ -154,7 +154,8 @@ func TestAcquireLease(t *testing.T) {
 	ip, _ := ip.ParseIP4("1.2.3.4")
 	data := `{ "PublicIP": "1.2.3.4" }`
 
-	sn, err := sm.AcquireLease(ip, data)
+	cancel := make(chan bool)
+	sn, err := sm.AcquireLease(ip, data, cancel)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
@@ -164,7 +165,7 @@ func TestAcquireLease(t *testing.T) {
 	}
 
 	// Acquire again, should reuse
-	if sn, err = sm.AcquireLease(ip, data); err != nil {
+	if sn, err = sm.AcquireLease(ip, data, cancel); err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
 
@@ -181,7 +182,8 @@ func TestWatchLeaseAdded(t *testing.T) {
 	}
 
 	events := make(chan EventBatch)
-	sm.Start(events)
+	cancel := make(chan bool)
+	go sm.WatchLeases(events, cancel)
 
 	expected := "10.3.3.0-24"
 	msr.addCh <- expected
@@ -206,7 +208,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 		t.Errorf("WatchSubnet produced wrong subnet: expected %s, got %s", expected, actual)
 	}
 
-	sm.Stop()
+	close(cancel)
 }
 
 func TestWatchLeaseRemoved(t *testing.T) {
@@ -217,7 +219,8 @@ func TestWatchLeaseRemoved(t *testing.T) {
 	}
 
 	events := make(chan EventBatch)
-	sm.Start(events)
+	cancel := make(chan bool)
+	go sm.WatchLeases(events, cancel)
 
 	expected := "10.3.4.0-24"
 	msr.delCh <- expected
@@ -242,7 +245,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 		t.Errorf("WatchSubnet produced wrong subnet: expected %s, got %s", expected, actual)
 	}
 
-	sm.Stop()
+	close(cancel)
 }
 
 func TestRenewLease(t *testing.T) {
@@ -255,13 +258,15 @@ func TestRenewLease(t *testing.T) {
 	ip, _ := ip.ParseIP4("1.2.3.4")
 	data := `{ "PublicIP": "1.2.3.4" }`
 
-	sn, err := sm.AcquireLease(ip, data)
+	cancel := make(chan bool)
+	defer close(cancel)
+
+	sn, err := sm.AcquireLease(ip, data, cancel)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
 
-	events := make(chan EventBatch)
-	sm.Start(events)
+	go sm.LeaseRenewer(cancel)
 
 	fmt.Println("Waiting for lease to pass original expiration")
 	time.Sleep(2 * time.Second)

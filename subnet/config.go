@@ -12,6 +12,7 @@ type Config struct {
 	SubnetMin ip.IP4
 	SubnetMax ip.IP4
 	SubnetLen uint
+	Backend   json.RawMessage
 }
 
 func ParseConfig(s string) (*Config, error) {
