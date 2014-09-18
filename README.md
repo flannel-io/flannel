@@ -51,6 +51,10 @@ to the first subnet of Network.
 * ```SubnetMax``` (string): The end of the IP range at which the subnet allocation should end with. Defaults to
 the last subnet of Network.
 
+### Firewalls
+flannel uses UDP port 8285 for sending encapsulated packets. Make sure that your firewall rules allow
+this traffic for all hosts participating in the overlay network.
+
 ## Running
 
 Once you have pushed configuration JSON to etcd, you can start flannel. If you published your
@@ -69,7 +73,6 @@ MTU that it supports.
 -etcd-endpoint="http://127.0.0.1:4001": etcd endpoint
 -etcd-prefix="/coreos.com/network": etcd prefix
 -iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
--port=8285: UDP port to use for inter-node communications
 -subnet-file="/run/flannel/subnet.env": filename where env variables (subnet and MTU values) will be written to
 -v=0: log level for V logs. Set to 1 to see messages related to data path
 ```
