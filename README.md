@@ -51,6 +51,35 @@ to the first subnet of Network.
 * ```SubnetMax``` (string): The end of the IP range at which the subnet allocation should end with. Defaults to
 the last subnet of Network.
 
+* ```Backend``` (dictionary): Type of backend to use and specific configurations for that backend.  The list
+of available backends and the keys that can be put into the this dictionary are listed below. Defaults to
+"udp" backend.
+
+### Backends
+* udp: use UDP to encapsulate the packets.
+  * ```Type``` (string): ```udp```
+  * ```Port``` (number): UDP port to use for sending encapsulated packets. Defaults to 8285
+
+* alloc: only perform subnet allocation (no forwarding of data packets)
+  * ```Type``` (string): ```alloc```
+
+### Example configuration JSON
+
+The following confiuration illustrates the use of most options.
+
+```
+{
+	"Network": "10.0.0.0/8",
+	"SubnetLen": 20,
+	"SubnetMin": "10.10.0.0",
+	"SubnetMax": "10.99.0.0",
+	"Backend": {
+		"Type": "udp",
+		"Port": 7890
+	}
+}
+```
+
 ### Firewalls
 flannel uses UDP port 8285 for sending encapsulated packets. Make sure that your firewall rules allow
 this traffic for all hosts participating in the overlay network.
