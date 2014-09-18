@@ -151,11 +151,13 @@ func TestAcquireLease(t *testing.T) {
 		t.Fatalf("Failed to create subnet manager: %s", err)
 	}
 
-	ip, _ := ip.ParseIP4("1.2.3.4")
-	data := `{ "PublicIP": "1.2.3.4" }`
+	extIP, _ := ip.ParseIP4("1.2.3.4")
+	data := BaseAttrs{
+		PublicIP: extIP,
+	}
 
 	cancel := make(chan bool)
-	sn, err := sm.AcquireLease(ip, data, cancel)
+	sn, err := sm.AcquireLease(extIP, data, cancel)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
@@ -165,7 +167,7 @@ func TestAcquireLease(t *testing.T) {
 	}
 
 	// Acquire again, should reuse
-	if sn, err = sm.AcquireLease(ip, data, cancel); err != nil {
+	if sn, err = sm.AcquireLease(extIP, data, cancel); err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
 
@@ -255,13 +257,15 @@ func TestRenewLease(t *testing.T) {
 		t.Fatalf("Failed to create subnet manager: %s", err)
 	}
 
-	ip, _ := ip.ParseIP4("1.2.3.4")
-	data := `{ "PublicIP": "1.2.3.4" }`
+	extIP, _ := ip.ParseIP4("1.2.3.4")
+	data := BaseAttrs{
+		PublicIP: extIP,
+	}
 
 	cancel := make(chan bool)
 	defer close(cancel)
 
-	sn, err := sm.AcquireLease(ip, data, cancel)
+	sn, err := sm.AcquireLease(extIP, data, cancel)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}

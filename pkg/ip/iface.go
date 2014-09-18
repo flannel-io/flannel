@@ -25,7 +25,7 @@ func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
 	return nil, errors.New("No IPv4 address found for given interface")
 }
 
-func GetIfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) (error) {
+func GetIfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) error {
 	addrs, err := iface.Addrs()
 	if err != nil {
 		return err
