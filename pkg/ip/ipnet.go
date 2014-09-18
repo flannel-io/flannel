@@ -157,7 +157,6 @@ func (n IP4Net) MarshalJSON() ([]byte, error) {
 func (n *IP4Net) UnmarshalJSON(j []byte) error {
 	j = bytes.Trim(j, "\"")
 	if _, val, err := net.ParseCIDR(string(j)); err != nil {
-		fmt.Println(err)
 		return err
 	} else {
 		*n = FromIPNet(val)
