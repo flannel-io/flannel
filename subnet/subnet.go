@@ -359,7 +359,7 @@ func (sm *SubnetManager) WatchLeases(receiver chan EventBatch, cancel chan bool)
 }
 
 func (sm *SubnetManager) parseSubnetWatchResponse(resp *etcd.Response) (batch *EventBatch, err error) {
-	sm.lastIndex = resp.EtcdIndex
+	sm.lastIndex = resp.Node.ModifiedIndex
 
 	sn, err := parseSubnetKey(resp.Node.Key)
 	if err != nil {
