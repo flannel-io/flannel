@@ -33,6 +33,15 @@ Alternatively, you can build flannel in a docker container with the following co
 docker run -v $SRC:/opt/flannel -i -t google/golang /bin/bash -c "cd /opt/flannel && ./build"
 ```
 
+## Packaging flannel into Docker container
+Once flannel has been built (see above), you can optionally put it into a Docker container.
+The source tree contains Dockerfile at top level. Changed into that directory and replacing $TAG
+with a tag for the image, run:
+
+```
+docker build -t $TAG .
+```
+
 ## Configuration
 
 flannel reads its configuration from etcd. By default, it will read the configuration
