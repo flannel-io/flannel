@@ -45,6 +45,28 @@ func init() {
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
 }
 
+// TODO: This is yet another copy (others found in etcd, fleet) -- Pull it out!
+// flagsFromEnv parses all registered flags in the given flagset,
+// and if they are not already set it attempts to set their values from
+// environment variables. Environment variables take the name of the flag but
+// are UPPERCASE, have the given prefix, and any dashes are replaced by
+// underscores - for example: some-flag => PREFIX_SOME_FLAG
+func flagsFromEnv(prefix string, fs *flag.FlagSet) {
+	alreadySet := make(map[string]bool)
+	fs.Visit(func(f *flag.Flag) {
+		alreadySet[f.Name] = true
+	})
+	fs.VisitAll(func(f *flag.Flag) {
+		if !alreadySet[f.Name] {
+			key := strings.ToUpper(prefix + "_" + strings.Replace(f.Name, "-", "_", -1))
+			val := os.Getenv(key)
+			if val != "" {
+				fs.Set(f.Name, val)
+			}
+		}
+	})
+}
+
 func writeSubnetFile(sn *backend.SubnetDef) error {
 	// Write out the first usable IP by incrementing
 	// sn.IP by one
@@ -194,6 +216,8 @@ func main() {
 		fmt.Fprintln(os.Stderr, Version)
 		os.Exit(0)
 	}
+
+	flagsFromEnv("FLANNELD", flag.CommandLine)
 
 	be, err := newBackend()
 	if err != nil {
