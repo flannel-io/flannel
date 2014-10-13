@@ -3,6 +3,7 @@ package etcd
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -179,6 +180,7 @@ func (c *Client) SendRequest(rr *RawRequest) (*RawResponse, error) {
 	// we connect to a leader
 	sleep := 25 * time.Millisecond
 	maxSleep := time.Second
+
 	for attempt := 0; ; attempt++ {
 		if attempt > 0 {
 			select {
@@ -214,21 +216,29 @@ func (c *Client) SendRequest(rr *RawRequest) (*RawResponse, error) {
 
 		logger.Debug("send.request.to ", httpPath, " | method ", rr.Method)
 
-		reqLock.Lock()
-		if rr.Values == nil {
-			if req, err = http.NewRequest(rr.Method, httpPath, nil); err != nil {
-				return nil, err
-			}
-		} else {
-			body := strings.NewReader(rr.Values.Encode())
-			if req, err = http.NewRequest(rr.Method, httpPath, body); err != nil {
-				return nil, err
-			}
+		req, err := func() (*http.Request, error) {
+			reqLock.Lock()
+			defer reqLock.Unlock()
 
-			req.Header.Set("Content-Type",
-				"application/x-www-form-urlencoded; param=value")
+			if rr.Values == nil {
+				if req, err = http.NewRequest(rr.Method, httpPath, nil); err != nil {
+					return nil, err
+				}
+			} else {
+				body := strings.NewReader(rr.Values.Encode())
+				if req, err = http.NewRequest(rr.Method, httpPath, body); err != nil {
+					return nil, err
+				}
+
+				req.Header.Set("Content-Type",
+					"application/x-www-form-urlencoded; param=value")
+			}
+			return req, nil
+		}()
+
+		if err != nil {
+			return nil, err
 		}
-		reqLock.Unlock()
 
 		resp, err = c.httpClient.Do(req)
 		defer func() {
@@ -273,6 +283,15 @@ func (c *Client) SendRequest(rr *RawRequest) (*RawResponse, error) {
 			case <-cancelled:
 				return nil, ErrRequestCancelled
 			default:
+			}
+
+			if err == io.ErrUnexpectedEOF {
+				// underlying connection was closed prematurely, probably by timeout
+				// TODO: empty body or unexpectedEOF can cause http.Transport to get hosed;
+				// this allows the client to detect that and take evasive action. Need
+				// to revisit once code.google.com/p/go/issues/detail?id=8648 gets fixed.
+				respBody = []byte{}
+				break
 			}
 		}
 
