@@ -24,19 +24,19 @@ import (
 )
 
 type CmdLineOpts struct {
-	etcdEndpoint string
-	etcdPrefix   string
-	help         bool
-	version      bool
-	ipMasq       bool
-	subnetFile   string
-	iface        string
+	etcdEndpoints string
+	etcdPrefix    string
+	help          bool
+	version       bool
+	ipMasq        bool
+	subnetFile    string
+	iface         string
 }
 
 var opts CmdLineOpts
 
 func init() {
-	flag.StringVar(&opts.etcdEndpoint, "etcd-endpoint", "http://127.0.0.1:4001", "etcd endpoint")
+	flag.StringVar(&opts.etcdEndpoints, "etcd-endpoints", "http://127.0.0.1:4001", "a comma-delimited list of etcd endpoints")
 	flag.StringVar(&opts.etcdPrefix, "etcd-prefix", "/coreos.com/network", "etcd prefix")
 	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/flannel/subnet.env", "filename where env variables (subnet and MTU values) will be written to")
 	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
@@ -125,8 +125,10 @@ func lookupIface() (*net.Interface, net.IP, error) {
 }
 
 func makeSubnetManager() *subnet.SubnetManager {
+	peers := strings.Split(opts.etcdEndpoints, ",")
+
 	for {
-		sm, err := subnet.NewSubnetManager(opts.etcdEndpoint, opts.etcdPrefix)
+		sm, err := subnet.NewSubnetManager(peers, opts.etcdPrefix)
 		if err == nil {
 			return sm
 		}
