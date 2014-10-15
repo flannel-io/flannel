@@ -20,13 +20,13 @@ type subnetRegistry interface {
 type etcdSubnetRegistry struct {
 	mux      sync.Mutex
 	cli      *etcd.Client
-	endpoint string
+	endpoint []string
 	prefix   string
 }
 
-func newEtcdSubnetRegistry(endpoint, prefix string) subnetRegistry {
+func newEtcdSubnetRegistry(endpoint []string, prefix string) subnetRegistry {
 	return &etcdSubnetRegistry{
-		cli:      etcd.NewClient([]string{endpoint}),
+		cli:      etcd.NewClient(endpoint),
 		endpoint: endpoint,
 		prefix:   prefix,
 	}
@@ -101,7 +101,7 @@ func (esr *etcdSubnetRegistry) client() *etcd.Client {
 func (esr *etcdSubnetRegistry) resetClient() {
 	esr.mux.Lock()
 	defer esr.mux.Unlock()
-	esr.cli = etcd.NewClient([]string{esr.endpoint})
+	esr.cli = etcd.NewClient(esr.endpoint)
 }
 
 func ensureExpiration(resp *etcd.Response, ttl uint64) {

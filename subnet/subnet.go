@@ -61,7 +61,7 @@ type Event struct {
 
 type EventBatch []Event
 
-func NewSubnetManager(etcdEndpoint, prefix string) (*SubnetManager, error) {
+func NewSubnetManager(etcdEndpoint []string, prefix string) (*SubnetManager, error) {
 	esr := newEtcdSubnetRegistry(etcdEndpoint, prefix)
 	return newSubnetManager(esr)
 }
