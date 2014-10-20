@@ -6,16 +6,15 @@ import (
 	"os"
 	"syscall"
 	"unsafe"
-
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
 )
 
 const (
-	tunDevice = "/dev/net/tun"
+	tunDevice  = "/dev/net/tun"
+	ifnameSize = 16
 )
 
 type ifreqFlags struct {
-	IfrnName  [netlink.IFNAMSIZ]byte
+	IfrnName  [ifnameSize]byte
 	IfruFlags uint16
 }
 
@@ -46,6 +45,6 @@ func OpenTun(name string) (*os.File, string, error) {
 		return nil, "", err
 	}
 
-	ifname := fromZeroTerm(ifr.IfrnName[:netlink.IFNAMSIZ])
+	ifname := fromZeroTerm(ifr.IfrnName[:ifnameSize])
 	return tun, ifname, nil
 }

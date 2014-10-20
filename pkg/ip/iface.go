@@ -3,8 +3,9 @@ package ip
 import (
 	"errors"
 	"net"
+	"syscall"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
 )
 
 func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
@@ -46,17 +47,17 @@ func GetIfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) error {
 }
 
 func GetDefaultGatewayIface() (*net.Interface, error) {
-	routes, err := netlink.NetworkGetRoutes()
+	routes, err := netlink.RouteList(nil, syscall.AF_INET)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, route := range routes {
-		if route.Default {
-			if route.Iface == nil {
+		if route.Dst == nil || route.Dst.String() == "0.0.0.0/0" {
+			if route.LinkIndex <= 0 {
 				return nil, errors.New("Found default route but could not determine interface")
 			}
-			return route.Iface, nil
+			return net.InterfaceByIndex(route.LinkIndex)
 		}
 	}
 
