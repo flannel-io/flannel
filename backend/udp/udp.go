@@ -9,7 +9,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/docker/libcontainer/netlink"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 
 	"github.com/coreos/flannel/backend"
@@ -90,7 +90,6 @@ func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (*
 		return nil, fmt.Errorf("failed to start listening on UDP socket: %v", err)
 	}
 
-
 	m.ctl, m.ctl2, err = newCtlSockets()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create control socket: %v", err)
@@ -169,30 +168,33 @@ func (m *UdpBackend) initTun(ipMasq bool) error {
 }
 
 func configureIface(ifname string, ipn ip.IP4Net, mtu int) error {
-	iface, err := net.InterfaceByName(ifname)
+	iface, err := netlink.LinkByName(ifname)
 	if err != nil {
 		return fmt.Errorf("failed to lookup interface %v", ifname)
 	}
 
-	n := ipn.ToIPNet()
-	err = netlink.NetworkLinkAddIp(iface, n.IP, n)
+	err = netlink.AddrAdd(iface, &netlink.Addr{ipn.ToIPNet(), ""})
 	if err != nil {
-		return fmt.Errorf("failed to add IP address %v to %v: %v", n.IP, ifname, err)
+		return fmt.Errorf("failed to add IP address %v to %v: %v", ipn.String(), ifname, err)
 	}
 
-	err = netlink.NetworkSetMTU(iface, mtu)
+	err = netlink.LinkSetMTU(iface, mtu)
 	if err != nil {
 		return fmt.Errorf("failed to set MTU for %v: %v", ifname, err)
 	}
 
-	err = netlink.NetworkLinkUp(iface)
+	err = netlink.LinkSetUp(iface)
 	if err != nil {
 		return fmt.Errorf("failed to set interface %v to UP state: %v", ifname, err)
 	}
 
 	// explicitly add a route since there might be a route for a subnet already
 	// installed by Docker and then it won't get auto added
-	err = netlink.AddRoute(ipn.Network().String(), "", "", ifname)
+	err = netlink.RouteAdd(&netlink.Route{
+		LinkIndex: iface.Attrs().Index,
+		Scope:     netlink.SCOPE_UNIVERSE,
+		Dst:       ipn.Network().ToIPNet(),
+	})
 	if err != nil && err != syscall.EEXIST {
 		return fmt.Errorf("Failed to add route (%v -> %v): %v", ipn.Network().String(), ifname, err)
 	}
@@ -213,13 +215,12 @@ func setupIpMasq(ipn ip.IP4Net, iface string) error {
 
 	rules := [][]string{
 		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-		[]string{ "FLANNEL", "-d", ipn.String(), "-j", "ACCEPT" },
+		[]string{"FLANNEL", "-d", ipn.String(), "-j", "ACCEPT"},
 		// This rule makes sure we don't NAT multicast traffic within overlay network
-		[]string{ "FLANNEL", "-d", "224.0.0.0/4", "-j", "ACCEPT" },
-		// This rule will NAT everything originating from our overlay network and 
-		[]string{ "FLANNEL", "!", "-o", iface, "-j", "MASQUERADE" },
+		[]string{"FLANNEL", "-d", "224.0.0.0/4", "-j", "ACCEPT"}, // This rule will NAT everything originating from our overlay network and
+		[]string{"FLANNEL", "!", "-o", iface, "-j", "MASQUERADE"},
 		// This rule will take everything coming from overlay and sent it to FLANNEL chain
-		[]string{ "POSTROUTING", "-s", ipn.String(), "-j", "FLANNEL" },
+		[]string{"POSTROUTING", "-s", ipn.String(), "-j", "FLANNEL"},
 	}
 
 	for _, args := range rules {
