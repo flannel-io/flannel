@@ -74,7 +74,7 @@ of available backends and the keys that can be put into the this dictionary are 
 
 ### Example configuration JSON
 
-The following confiuration illustrates the use of most options.
+The following configuration illustrates the use of most options.
 
 ```
 {
