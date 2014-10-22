@@ -189,7 +189,7 @@ func run(be backend.Backend, exit chan int) {
 
 	sn, err := be.Init(iface, ipaddr, opts.ipMasq)
 	if err != nil {
-		log.Error("Could not init %v backend: %v", be.Name(), err)
+		log.Errorf("Could not init %v backend: %v", be.Name(), err)
 		return
 	}
 
