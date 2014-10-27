@@ -1,7 +1,7 @@
 # flannel
 
-flannel is an overlay network that gives a subnet to each machine for use with
-Kubernetes.
+flannel (originally [rudder](http://comments.gmane.org/gmane.linux.coreos.devel/1683)) is an overlay network that gives a subnet to each machine for use with
+Kubernetes. 
 
 In Kubernetes every machine in the cluster is assigned a full subnet. The machine A
 and B might have 10.0.1.0/24 and 10.0.2.0/24 respectively. The advantage of
