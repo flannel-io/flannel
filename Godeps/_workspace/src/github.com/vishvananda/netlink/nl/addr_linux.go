@@ -45,4 +45,3 @@ func (msg *IfAddrmsg) Serialize() []byte {
 func (msg *IfAddrmsg) Len() int {
 	return syscall.SizeofIfAddrmsg
 }
-

@@ -21,7 +21,7 @@
 		},
 		{
 			"ImportPath": "github.com/vishvananda/netlink",
-			"Rev": "dd2d5f17ae986599e165402a77c7e85fea606bec"
+			"Rev": "2187ba67a244c1c32f53bf88876e766bbbbcd5e6"
 		}
 	]
 }

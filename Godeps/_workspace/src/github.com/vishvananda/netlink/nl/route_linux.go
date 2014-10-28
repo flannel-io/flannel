@@ -31,4 +31,3 @@ func DeserializeRtMsg(b []byte) *RtMsg {
 func (msg *RtMsg) Serialize() []byte {
 	return (*(*[syscall.SizeofRtMsg]byte)(unsafe.Pointer(msg)))[:]
 }
-
