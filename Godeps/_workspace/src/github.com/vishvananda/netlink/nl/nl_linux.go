@@ -4,8 +4,8 @@ package nl
 import (
 	"bytes"
 	"encoding/binary"
-	"net"
 	"fmt"
+	"net"
 	"sync/atomic"
 	"syscall"
 	"unsafe"
@@ -304,7 +304,7 @@ func Subscribe(protocol int, groups ...uint) (*NetlinkSocket, error) {
 	s.lsa.Family = syscall.AF_NETLINK
 
 	for _, g := range groups {
-		s.lsa.Groups |= (1 << (g-1))
+		s.lsa.Groups |= (1 << (g - 1))
 	}
 
 	if err := syscall.Bind(fd, &s.lsa); err != nil {

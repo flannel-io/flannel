@@ -1,5 +1,7 @@
 # netlink - netlink library for go #
 
+[![Build Status](https://travis-ci.org/vishvananda/netlink.png?branch=master)](https://travis-ci.org/vishvananda/netlink)
+
 The netlink package provides a simple netlink library for go. Netlink
 is the interface a user-space program in linux uses to communicate with
 the kernel. It can be used to add and remove interfaces, set ip addresses
@@ -41,8 +43,8 @@ import (
 )
 
 func main() {
-    mybridge := &netlink.Link{Name: "mybridge", Type: "bridge"}
-    netlink, _ := netlink.LinkAdd(mybridge)
+    mybridge := &netlink.Bridge{netlink.LinkAttrs{Name: "foo"}}
+    _ := netlink.LinkAdd(mybridge)
     eth1, _ := netlink.LinkByName("eth1")
     netlink.LinkSetMaster(eth1, mybridge)
 }

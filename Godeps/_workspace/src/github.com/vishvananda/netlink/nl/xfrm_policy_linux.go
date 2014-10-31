@@ -117,4 +117,3 @@ func DeserializeXfrmUserTmpl(b []byte) *XfrmUserTmpl {
 func (msg *XfrmUserTmpl) Serialize() []byte {
 	return (*(*[SizeofXfrmUserTmpl]byte)(unsafe.Pointer(msg)))[:]
 }
-

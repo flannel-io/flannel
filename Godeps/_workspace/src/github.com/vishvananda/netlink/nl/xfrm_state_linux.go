@@ -219,4 +219,3 @@ func DeserializeXfrmEncapTmpl(b []byte) *XfrmEncapTmpl {
 func (msg *XfrmEncapTmpl) Serialize() []byte {
 	return (*(*[SizeofXfrmEncapTmpl]byte)(unsafe.Pointer(msg)))[:]
 }
-

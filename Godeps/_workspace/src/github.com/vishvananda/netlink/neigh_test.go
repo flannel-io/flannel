@@ -20,7 +20,7 @@ func parseMAC(s string) net.HardwareAddr {
 
 func dumpContains(dump []Neigh, e arpEntry) bool {
 	for _, n := range dump {
-		if n.IP.Equal(e.ip) && (n.State & NUD_INCOMPLETE) == 0 {
+		if n.IP.Equal(e.ip) && (n.State&NUD_INCOMPLETE) == 0 {
 			return true
 		}
 	}
@@ -28,6 +28,9 @@ func dumpContains(dump []Neigh, e arpEntry) bool {
 }
 
 func TestNeighAddDel(t *testing.T) {
+	tearDown := setUpNetlinkTest(t)
+	defer tearDown()
+
 	dummy := Dummy{LinkAttrs{Name: "neigh0"}}
 	if err := LinkAdd(&dummy); err != nil {
 		t.Fatal(err)
@@ -36,11 +39,11 @@ func TestNeighAddDel(t *testing.T) {
 	ensureIndex(dummy.Attrs())
 
 	arpTable := []arpEntry{
-		{ net.ParseIP("10.99.0.1"), parseMAC("aa:bb:cc:dd:00:01") },
-		{ net.ParseIP("10.99.0.2"), parseMAC("aa:bb:cc:dd:00:02") },
-		{ net.ParseIP("10.99.0.3"), parseMAC("aa:bb:cc:dd:00:03") },
-		{ net.ParseIP("10.99.0.4"), parseMAC("aa:bb:cc:dd:00:04") },
-		{ net.ParseIP("10.99.0.5"), parseMAC("aa:bb:cc:dd:00:05") },
+		{net.ParseIP("10.99.0.1"), parseMAC("aa:bb:cc:dd:00:01")},
+		{net.ParseIP("10.99.0.2"), parseMAC("aa:bb:cc:dd:00:02")},
+		{net.ParseIP("10.99.0.3"), parseMAC("aa:bb:cc:dd:00:03")},
+		{net.ParseIP("10.99.0.4"), parseMAC("aa:bb:cc:dd:00:04")},
+		{net.ParseIP("10.99.0.5"), parseMAC("aa:bb:cc:dd:00:05")},
 	}
 
 	// Add the arpTable
