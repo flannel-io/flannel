@@ -21,6 +21,7 @@ import (
 	"github.com/coreos/flannel/subnet"
 	"github.com/coreos/flannel/backend/alloc"
 	"github.com/coreos/flannel/backend/udp"
+	"github.com/coreos/flannel/backend/vxlan"
 )
 
 type CmdLineOpts struct {
@@ -159,6 +160,8 @@ func newBackend() (backend.Backend, error) {
 		return udp.New(sm, config.Backend), nil
 	case "alloc":
 		return alloc.New(sm), nil
+	case "vxlan":
+		return vxlan.New(sm, config.Backend), nil
 	default:
 		return nil, fmt.Errorf("'%v': unknown backend type", bt.Type)
 	}
@@ -189,7 +192,6 @@ func run(be backend.Backend, exit chan int) {
 
 	sn, err := be.Init(iface, ipaddr, opts.ipMasq)
 	if err != nil {
-		log.Errorf("Could not init %v backend: %v", be.Name(), err)
 		return
 	}
 

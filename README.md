@@ -72,6 +72,10 @@ of available backends and the keys that can be put into the this dictionary are 
 * alloc: only perform subnet allocation (no forwarding of data packets)
   * ```Type``` (string): ```alloc```
 
+* vxlan: use in-kernel VXLAN to encapsulate the packets.
+  * ```Type``` (string): ```vxlan```
+  * ```VNI```  (number): VXLAN Identifier (VNI) to be used. Defaults to 1
+
 ### Example configuration JSON
 
 The following configuration illustrates the use of most options.
@@ -90,8 +94,9 @@ The following configuration illustrates the use of most options.
 ```
 
 ### Firewalls
-flannel uses UDP port 8285 for sending encapsulated packets. Make sure that your firewall rules allow
-this traffic for all hosts participating in the overlay network.
+When using ```udp``` backend, flannel uses UDP port 8285 for sending encapsulated packets.
+When using ```vxlan``` backend, kernel uses UDP port 8472 for sending encapsulated packets.
+Make sure that your firewall rules allow this traffic for all hosts participating in the overlay network.
 
 ## Running
 
@@ -114,6 +119,12 @@ MTU that it supports.
 -subnet-file="/run/flannel/subnet.env": filename where env variables (subnet and MTU values) will be written to
 -v=0: log level for V logs. Set to 1 to see messages related to data path
 ```
+
+## Zero-downtime restarts
+When running in VXLAN mode, the kernel is providing the data path with flanneld acting as the control plane. As such, flanneld
+can be restarted (even to do an upgrade) without disturbing existing flows. However, this needs to be done in few seconds as ARP
+entries can start to timeout requiring the flanneld daemon to refresh them. Also, to avoid interruptions during restart, the configuration
+must not be changed (e.g. VNI, --iface value).
 
 ## Docker integration
 

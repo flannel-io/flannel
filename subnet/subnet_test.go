@@ -112,6 +112,7 @@ func (msr *mockSubnetRegistry) watchSubnets(since uint64, stop chan bool) (*etcd
 	case sn = <-msr.addCh:
 		n := etcd.Node{
 			Key:           sn,
+			Value:         `{"PublicIP": "1.1.1.1"}`,
 			ModifiedIndex: msr.index,
 		}
 		msr.subnets.Nodes = append(msr.subnets.Nodes, &n)
@@ -152,12 +153,12 @@ func TestAcquireLease(t *testing.T) {
 	}
 
 	extIP, _ := ip.ParseIP4("1.2.3.4")
-	data := BaseAttrs{
+	attrs := LeaseAttrs{
 		PublicIP: extIP,
 	}
 
 	cancel := make(chan bool)
-	sn, err := sm.AcquireLease(extIP, data, cancel)
+	sn, err := sm.AcquireLease(&attrs, cancel)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
@@ -167,7 +168,7 @@ func TestAcquireLease(t *testing.T) {
 	}
 
 	// Acquire again, should reuse
-	if sn, err = sm.AcquireLease(extIP, data, cancel); err != nil {
+	if sn, err = sm.AcquireLease(&attrs, cancel); err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
 
@@ -258,14 +259,14 @@ func TestRenewLease(t *testing.T) {
 	}
 
 	extIP, _ := ip.ParseIP4("1.2.3.4")
-	data := BaseAttrs{
+	attrs := LeaseAttrs{
 		PublicIP: extIP,
 	}
 
 	cancel := make(chan bool)
 	defer close(cancel)
 
-	sn, err := sm.AcquireLease(extIP, data, cancel)
+	sn, err := sm.AcquireLease(&attrs, cancel)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}

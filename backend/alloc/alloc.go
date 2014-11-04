@@ -24,11 +24,11 @@ func New(sm *subnet.SubnetManager) backend.Backend {
 }
 
 func (m *AllocBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (*backend.SubnetDef, error) {
-	attrs := subnet.BaseAttrs{
+	attrs := subnet.LeaseAttrs{
 		PublicIP: ip.FromIP(extIP),
 	}
 
-	sn, err := m.sm.AcquireLease(ip.FromIP(extIP), &attrs, m.stop)
+	sn, err := m.sm.AcquireLease(&attrs, m.stop)
 	if err != nil {
 		if err == task.ErrCanceled {
 			return nil, err
