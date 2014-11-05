@@ -67,31 +67,30 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 
 func ensureLink(vxlan *netlink.Vxlan) (*netlink.Vxlan, error) {
 	err := netlink.LinkAdd(vxlan)
-	if err != nil {
-		if err == syscall.EEXIST {
-			// it's ok if the device already exists as long as config is similar
-			existing, err := netlink.LinkByName(vxlan.Name)
-			if err != nil {
-				return nil, err
-			}
-			if incompat := vxlanLinksIncompat(vxlan, existing); incompat != "" {
-				log.Warningf("%q already exists with incompatable configuration: %v; recreating device", vxlan.Name, incompat)
-
-				// delete existing
-				if err = netlink.LinkDel(existing); err != nil {
-					return nil, fmt.Errorf("failed to delete interface: %v", err)
-				}
-
-				// create new
-				if err = netlink.LinkAdd(vxlan); err != nil {
-					return nil, fmt.Errorf("failed to create vxlan interface: %v", err)
-				}
-			} else {
-				return existing.(*netlink.Vxlan), nil
-			}
-		} else {
+	if err == syscall.EEXIST {
+		// it's ok if the device already exists as long as config is similar
+		existing, err := netlink.LinkByName(vxlan.Name)
+		if err != nil {
 			return nil, err
 		}
+
+		incompat := vxlanLinksIncompat(vxlan, existing)
+		if incompat == "" {
+			return existing.(*netlink.Vxlan), nil
+		}
+
+		// delete existing
+		log.Warningf("%q already exists with incompatable configuration: %v; recreating device", vxlan.Name, incompat)
+		if err = netlink.LinkDel(existing); err != nil {
+			return nil, fmt.Errorf("failed to delete interface: %v", err)
+		}
+
+		// create new
+		if err = netlink.LinkAdd(vxlan); err != nil {
+			return nil, fmt.Errorf("failed to create vxlan interface: %v", err)
+		}
+	} else if err != nil {
+		return nil, err
 	}
 
 	ifindex := vxlan.Index
