@@ -12,8 +12,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/coreos/go-systemd/daemon"
+	log "github.com/golang/glog"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"

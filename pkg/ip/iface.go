@@ -5,7 +5,7 @@ import (
 	"net"
 	"syscall"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
+	"github.com/vishvananda/netlink"
 )
 
 func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
