@@ -20,6 +20,7 @@ import (
 	"github.com/coreos/flannel/pkg/task"
 	"github.com/coreos/flannel/subnet"
 	"github.com/coreos/flannel/backend/alloc"
+	"github.com/coreos/flannel/backend/hostgw"
 	"github.com/coreos/flannel/backend/udp"
 	"github.com/coreos/flannel/backend/vxlan"
 )
@@ -174,6 +175,8 @@ func newBackend() (backend.Backend, error) {
 		return udp.New(sm, config.Backend), nil
 	case "alloc":
 		return alloc.New(sm), nil
+	case "host-gw":
+		return hostgw.New(sm), nil
 	case "vxlan":
 		return vxlan.New(sm, config.Backend), nil
 	default:
