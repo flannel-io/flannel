@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 #include <linux/ip.h>
 #include <linux/icmp.h>
+#include <fcntl.h>
 
 #define CMD_DEFINE
 #include "proxy.h"
@@ -65,7 +66,7 @@ static void log_error(const char *fmt, ...) {
 }
 
 /* fast version -- only works with mults of 4 bytes */
-uint16_t cksum(aliasing_uint32_t *buf, int len) {
+static uint16_t cksum(aliasing_uint32_t *buf, int len) {
 	uint32_t sum = 0;
 	uint16_t t1, t2;
 
@@ -220,7 +221,8 @@ static ssize_t tun_recv_packet(int tun, char *buf, size_t buflen) {
 
 	if( nread < sizeof(struct iphdr) ) {
 		if( nread < 0 ) {
-			log_error("TUN recv failed: %s\n", strerror(errno));
+			if( errno != EAGAIN && errno != EWOULDBLOCK )
+				log_error("TUN recv failed: %s\n", strerror(errno));
 		} else {
 			log_error("TUN recv packet too small: %d bytes\n", (int)nread);
 		}
@@ -231,11 +233,12 @@ static ssize_t tun_recv_packet(int tun, char *buf, size_t buflen) {
 }
 
 static ssize_t sock_recv_packet(int sock, char *buf, size_t buflen) {
-	ssize_t nread = recv(sock, buf, buflen, 0);
+	ssize_t nread = recv(sock, buf, buflen, MSG_DONTWAIT);
 
 	if( nread < sizeof(struct iphdr) ) {
 		if( nread < 0 ) {
-			log_error("UDP recv failed: %s\n", strerror(errno));
+			if( errno != EAGAIN && errno != EWOULDBLOCK )
+				log_error("UDP recv failed: %s\n", strerror(errno));
 		} else {
 			log_error("UDP recv packet too small: %d bytes\n", (int)nread);
 		}
@@ -260,10 +263,15 @@ static void sock_send_packet(int sock, char *pkt, size_t pktlen, struct sockaddr
 }
 
 static void tun_send_packet(int tun, char *pkt, size_t pktlen) {
-	ssize_t nsent = write(tun, pkt, pktlen);
+	ssize_t nsent;
+_retry:
+	nsent = write(tun, pkt, pktlen);
 
 	if( nsent != pktlen ) {
 		if( nsent < 0 ) {
+			if( errno == EAGAIN || errno == EWOULDBLOCK)
+				goto _retry;
+
 			log_error("TUN send failed: %s\n", strerror(errno));
 		} else {
 			log_error("Was only able to send %d out of %d bytes to TUN\n", (int)nsent, (int)pktlen);
@@ -290,39 +298,40 @@ inline static int decrement_ttl(struct iphdr *iph) {
 	return 1;
 }
 
-static void tun_to_udp(int tun, int sock, char *buf, size_t buflen) {
+static int tun_to_udp(int tun, int sock, char *buf, size_t buflen) {
 	struct iphdr *iph;
 	struct sockaddr_in *next_hop;
 
 	ssize_t pktlen = tun_recv_packet(tun, buf, buflen);
 	if( pktlen < 0 )
-		return;
+		return 0;
 	
 	iph = (struct iphdr *)buf;
 
 	next_hop = find_route((in_addr_t) iph->daddr);
 	if( !next_hop ) {
 		send_net_unreachable(tun, buf);
-		return;
+		goto _active;
 	}
 
 	if( !decrement_ttl(iph) ) {
 		/* TTL went to 0, discard.
 		 * TODO: send back ICMP Time Exceeded
 		 */
-		return;
+		goto _active;
 	}
 
 	sock_send_packet(sock, buf, pktlen, next_hop);
+_active:
+	return 1;
 }
 
-static void udp_to_tun(int sock, int tun, char *buf, size_t buflen) {
+static int udp_to_tun(int sock, int tun, char *buf, size_t buflen) {
 	struct iphdr *iph;
 
 	ssize_t pktlen = sock_recv_packet(sock, buf, buflen);
-	if( pktlen < 0 ) {
-		return;
-	}
+	if( pktlen < 0 )
+		return 0;
 
 	iph = (struct iphdr *)buf;
 
@@ -330,10 +339,12 @@ static void udp_to_tun(int sock, int tun, char *buf, size_t buflen) {
 		/* TTL went to 0, discard.
 		 * TODO: send back ICMP Time Exceeded
 		 */
-		return;
+		goto _active;
 	}
 
 	tun_send_packet(tun, buf, pktlen);
+_active:
+	return 1;
 }
 
 static void process_cmd(int ctl) {
@@ -369,10 +380,16 @@ static void process_cmd(int ctl) {
 	}
 }
 
+enum PFD {
+	PFD_TUN = 0,
+	PFD_SOCK,
+	PFD_CTL,
+	PFD_CNT
+};
 
 void run_proxy(int tun, int sock, int ctl, in_addr_t tun_ip, size_t tun_mtu, int log_errors) {
 	char *buf;
-	struct pollfd fds[3] = {
+	struct pollfd fds[PFD_CNT] = {
 		{
 			.fd = tun,
 			.events = POLLIN
@@ -397,8 +414,10 @@ void run_proxy(int tun, int sock, int ctl, in_addr_t tun_ip, size_t tun_mtu, int
 		exit(1);
 	}
 
+	fcntl(tun, F_SETFL, O_NONBLOCK);
+
 	while( !exit_flag ) {
-		int nfds = poll(fds, 3, -1);
+		int nfds = poll(fds, PFD_CNT, -1), activity;
 		if( nfds < 0 ) {
 			if( errno == EINTR )
 				continue;
@@ -407,14 +426,24 @@ void run_proxy(int tun, int sock, int ctl, in_addr_t tun_ip, size_t tun_mtu, int
 			exit(1);
 		}
 
-		if( fds[0].revents & POLLIN )
-			tun_to_udp(tun, sock, buf, tun_mtu);
-
-		if( fds[1].revents & POLLIN )
-			udp_to_tun(sock, tun, buf, tun_mtu);
-
-		if( fds[2].revents & POLLIN )
+		if( fds[PFD_CTL].revents & POLLIN )
 			process_cmd(ctl);
+
+		if( fds[PFD_TUN].revents & POLLIN || fds[PFD_SOCK].revents & POLLIN )
+			do {
+				activity = 0;
+				activity += tun_to_udp(tun, sock, buf, tun_mtu);
+				activity += udp_to_tun(sock, tun, buf, tun_mtu);
+
+				/* As long as tun or udp is readable bypass poll().
+				 * We'll just occasionally get EAGAIN on an unreadable fd which
+				 * is cheaper than the poll() call, the rest of the time the
+				 * read/recvfrom call moves data which poll() never does for us.
+				 *
+				 * This is at the expense of the ctl socket, a counter could be
+				 * used to place an upper bound on how long we may neglect ctl.
+				 */
+			} while( activity );
 	}
 
 	free(buf);
