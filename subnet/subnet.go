@@ -106,21 +106,28 @@ func findLeaseByIP(leases []SubnetLease, pubIP ip.IP4) *SubnetLease {
 	return nil
 }
 
-func (sm *SubnetManager) tryAcquireLease(extIP ip.IP4, attrs []byte) (ip.IP4Net, error) {
+func (sm *SubnetManager) tryAcquireLease(extIP ip.IP4, attrs *LeaseAttrs) (ip.IP4Net, error) {
 	var err error
 	sm.leases, err = sm.getLeases()
 	if err != nil {
 		return ip.IP4Net{}, err
 	}
 
+	attrBytes, err := json.Marshal(attrs)
+	if err != nil {
+		log.Errorf("marshal failed: %#v, %v", attrs, err)
+		return ip.IP4Net{}, err
+	}
+
 	// try to reuse a subnet if there's one that matches our IP
 	if l := findLeaseByIP(sm.leases, extIP); l != nil {
-		resp, err := sm.registry.updateSubnet(l.Network.StringSep(".", "-"), string(attrs), subnetTTL)
+		resp, err := sm.registry.updateSubnet(l.Network.StringSep(".", "-"), string(attrBytes), subnetTTL)
 		if err != nil {
 			return ip.IP4Net{}, err
 		}
 
 		sm.myLease.Network = l.Network
+		sm.myLease.Attrs = *attrs
 		sm.leaseExp = *resp.Node.Expiration
 		return l.Network, nil
 	}
@@ -131,10 +138,11 @@ func (sm *SubnetManager) tryAcquireLease(extIP ip.IP4, attrs []byte) (ip.IP4Net,
 		return ip.IP4Net{}, err
 	}
 
-	resp, err := sm.registry.createSubnet(sn.StringSep(".", "-"), string(attrs), subnetTTL)
+	resp, err := sm.registry.createSubnet(sn.StringSep(".", "-"), string(attrBytes), subnetTTL)
 	switch {
 	case err == nil:
 		sm.myLease.Network = sn
+		sm.myLease.Attrs = *attrs
 		sm.leaseExp = *resp.Node.Expiration
 		return sn, nil
 
@@ -148,14 +156,8 @@ func (sm *SubnetManager) tryAcquireLease(extIP ip.IP4, attrs []byte) (ip.IP4Net,
 }
 
 func (sm *SubnetManager) acquireLeaseOnce(attrs *LeaseAttrs, cancel chan bool) (ip.IP4Net, error) {
-	attrBytes, err := json.Marshal(attrs)
-	if err != nil {
-		log.Errorf("marshal failed: %#v, %v", attrs, err)
-		return ip.IP4Net{}, err
-	}
-
 	for i := 0; i < registerRetries; i++ {
-		sn, err := sm.tryAcquireLease(attrs.PublicIP, attrBytes)
+		sn, err := sm.tryAcquireLease(attrs.PublicIP, attrs)
 		switch {
 		case err != nil:
 			return ip.IP4Net{}, err

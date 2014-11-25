@@ -1,6 +1,7 @@
 package subnet
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -280,7 +281,15 @@ func TestRenewLease(t *testing.T) {
 	for _, n := range msr.subnets.Nodes {
 		if n.Key == sn.StringSep(".", "-") {
 			if n.Expiration.Before(time.Now()) {
-				t.Fatalf("Failed to renew lease")
+				t.Error("Failed to renew lease: expiration did not advance")
+			}
+			a := LeaseAttrs{}
+			if err := json.Unmarshal([]byte(n.Value), &a); err != nil {
+				t.Errorf("Failed to JSON-decode LeaseAttrs: %v", err)
+				return
+			}
+			if a.PublicIP != attrs.PublicIP {
+				t.Errorf("LeaseAttrs changed: was %v, now %v", attrs.PublicIP, a.PublicIP)
 			}
 			return
 		}
