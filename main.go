@@ -95,6 +95,9 @@ func writeSubnetFile(sn *backend.SubnetDef) error {
 	if _, err = fmt.Fprintf(f, "FLANNEL_MTU=%d\n", sn.MTU); err != nil {
 		return err
 	}
+	if _, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", opts.ipMasq); err != nil {
+		return err
+	}
 	return nil
 }
 
