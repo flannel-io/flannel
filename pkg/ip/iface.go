@@ -14,13 +14,29 @@ func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
 		return nil, err
 	}
 
+	// prefer non link-local addr
+	var ll net.IP
+
 	for _, addr := range addrs {
 		// Attempt to parse the address in CIDR notation
 		// and assert it is IPv4
 		ip, _, err := net.ParseCIDR(addr.String())
-		if err == nil && ip.To4() != nil {
-			return ip.To4(), nil
+		if err != nil || ip.To4() == nil {
+			continue
 		}
+
+		if ip.IsGlobalUnicast() {
+			return ip, nil
+		}
+
+		if ip.IsLinkLocalUnicast() {
+			ll = ip
+		}
+	}
+
+	if ll != nil {
+		// didn't find global but found link-local. it'll do.
+		return ll, nil
 	}
 
 	return nil, errors.New("No IPv4 address found for given interface")
