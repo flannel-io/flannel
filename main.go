@@ -27,6 +27,9 @@ import (
 type CmdLineOpts struct {
 	etcdEndpoints string
 	etcdPrefix    string
+	etcdKeyfile   string
+	etcdCertfile  string
+	etcdCAFile    string
 	help          bool
 	version       bool
 	ipMasq        bool
@@ -39,6 +42,9 @@ var opts CmdLineOpts
 func init() {
 	flag.StringVar(&opts.etcdEndpoints, "etcd-endpoints", "http://127.0.0.1:4001", "a comma-delimited list of etcd endpoints")
 	flag.StringVar(&opts.etcdPrefix, "etcd-prefix", "/coreos.com/network", "etcd prefix")
+	flag.StringVar(&opts.etcdKeyfile, "etcd-keyfile", "", "SSL key file used to secure etcd communication")
+	flag.StringVar(&opts.etcdCertfile, "etcd-certfile", "", "SSL certification file used to secure etcd communication")
+	flag.StringVar(&opts.etcdCAFile, "etcd-cafile", "", "SSL Certificate Authority file used to secure etcd communication")
 	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/flannel/subnet.env", "filename where env variables (subnet and MTU values) will be written to")
 	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
 	flag.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
@@ -128,8 +134,16 @@ func lookupIface() (*net.Interface, net.IP, error) {
 func makeSubnetManager() *subnet.SubnetManager {
 	peers := strings.Split(opts.etcdEndpoints, ",")
 
+	cfg := &subnet.EtcdConfig{
+		Endpoints: peers,
+		Keyfile:   opts.etcdKeyfile,
+		Certfile:  opts.etcdCertfile,
+		CAFile:    opts.etcdCAFile,
+		Prefix:    opts.etcdPrefix,
+	}
+
 	for {
-		sm, err := subnet.NewSubnetManager(peers, opts.etcdPrefix)
+		sm, err := subnet.NewSubnetManager(cfg)
 		if err == nil {
 			return sm
 		}
