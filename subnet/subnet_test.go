@@ -3,6 +3,7 @@ package subnet
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -252,18 +253,31 @@ func TestWatchLeaseRemoved(t *testing.T) {
 	close(cancel)
 }
 
+type leaseData struct {
+	Dummy string
+}
+
 func TestRenewLease(t *testing.T) {
 	msr := newMockSubnetRegistry(1)
 	sm, err := newSubnetManager(msr)
 	if err != nil {
-		t.Fatalf("Failed to create subnet manager: %s", err)
+		t.Fatalf("Failed to create subnet manager: %v", err)
 	}
 
+	// Create LeaseAttrs
 	extIP, _ := ip.ParseIP4("1.2.3.4")
 	attrs := LeaseAttrs{
-		PublicIP: extIP,
+		PublicIP:    extIP,
+		BackendType: "vxlan",
 	}
 
+	ld, err := json.Marshal(&leaseData{Dummy: "test string"})
+	if err != nil {
+		t.Fatalf("Failed to marshal leaseData: %v", err)
+	}
+	attrs.BackendData = json.RawMessage(ld)
+
+	// Acquire lease
 	cancel := make(chan bool)
 	defer close(cancel)
 
@@ -288,8 +302,8 @@ func TestRenewLease(t *testing.T) {
 				t.Errorf("Failed to JSON-decode LeaseAttrs: %v", err)
 				return
 			}
-			if a.PublicIP != attrs.PublicIP {
-				t.Errorf("LeaseAttrs changed: was %v, now %v", attrs.PublicIP, a.PublicIP)
+			if !reflect.DeepEqual(a, attrs) {
+				t.Errorf("LeaseAttrs changed: was %#v, now %#v", attrs, a)
 			}
 			return
 		}

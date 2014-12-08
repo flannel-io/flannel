@@ -424,12 +424,12 @@ func (sm *SubnetManager) parseSubnetWatchError(err error) (batch *EventBatch, ou
 }
 
 func (sm *SubnetManager) LeaseRenewer(cancel chan bool) {
-	dur := sm.leaseExp.Sub(time.Now()) - renewMargin
-
 	for {
+		dur := sm.leaseExp.Sub(time.Now()) - renewMargin
+
 		select {
 		case <-time.After(dur):
-			attrBytes, err := json.Marshal(sm.myLease.Attrs)
+			attrBytes, err := json.Marshal(&sm.myLease.Attrs)
 			if err != nil {
 				log.Error("Error renewing lease (trying again in 1 min): ", err)
 				dur = time.Minute

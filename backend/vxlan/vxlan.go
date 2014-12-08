@@ -23,7 +23,7 @@ type VXLANBackend struct {
 	sm     *subnet.SubnetManager
 	rawCfg json.RawMessage
 	cfg    struct {
-		Vni  int
+		VNI  int
 		Port int
 	}
 	dev    *vxlanDevice
@@ -38,28 +38,22 @@ func New(sm *subnet.SubnetManager, config json.RawMessage) backend.Backend {
 		rawCfg: config,
 		stop:   make(chan bool),
 	}
-	vb.cfg.Vni = defaultVNI
+	vb.cfg.VNI = defaultVNI
 
 	return vb
 }
 
 func newSubnetAttrs(pubIP net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, error) {
-	sa := subnet.LeaseAttrs{
+	data, err := json.Marshal(&vxlanLeaseAttrs{hardwareAddr(mac)})
+	if err != nil {
+		return nil, err
+	}
+
+	return &subnet.LeaseAttrs{
 		PublicIP:    ip.FromIP(pubIP),
 		BackendType: "vxlan",
-	}
-
-	data, err := json.Marshal(vxlanLeaseAttrs{hardwareAddr(mac)})
-	if err != nil {
-		return nil, err
-	}
-
-	err = sa.BackendData.UnmarshalJSON(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return &sa, nil
+		BackendData: json.RawMessage(data),
+	}, nil
 }
 
 func (vb *VXLANBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (*backend.SubnetDef, error) {
@@ -71,8 +65,8 @@ func (vb *VXLANBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool)
 	}
 
 	devAttrs := vxlanDeviceAttrs{
-		vni:       uint32(vb.cfg.Vni),
-		name:      fmt.Sprintf("flannel.%v", vb.cfg.Vni),
+		vni:       uint32(vb.cfg.VNI),
+		name:      fmt.Sprintf("flannel.%v", vb.cfg.VNI),
 		vtepIndex: extIface.Index,
 		vtepAddr:  extIP,
 		vtepPort:  vb.cfg.Port,
