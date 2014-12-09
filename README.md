@@ -27,19 +27,18 @@ overlay network:
 * Step 2: Git clone the flannel repo: ```https://github.com/coreos/flannel.git```
 * Step 3: Run the build script: ```cd flannel; ./build```
 
-Alternatively, you can build flannel in a docker container with the following command. Replace $SRC with the absolute path to your flannel source code:
+### Building in a Docker container
+
+For quick testing, you can build flannel inside a Docker container (such container will retain its build environment):
+```
+docker build .
+```
+
+If you would like to build inside a Docker container but to produce a binary on your host:
 
 ```
+# Replace $SRC with the absolute path to your flannel source code
 docker run -v $SRC:/opt/flannel -i -t google/golang /bin/bash -c "cd /opt/flannel && ./build"
-```
-
-## Packaging flannel into Docker container
-Once flannel has been built (see above), you can optionally put it into a Docker container.
-The source tree contains Dockerfile at top level. Changed into that directory and replacing $TAG
-with a tag for the image, run:
-
-```
-docker build -t $TAG .
 ```
 
 ## Configuration

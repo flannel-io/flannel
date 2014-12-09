@@ -7,5 +7,4 @@ fi
 
 TAG=$1
 
-docker build -t quay.io/coreos/flannel:$TAG .
 docker push quay.io/coreos/flannel:$TAG
