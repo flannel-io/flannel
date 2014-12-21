@@ -112,7 +112,7 @@ MTU that it supports.
 ## Key command line options
 
 ```
--etcd-endpoint="http://127.0.0.1:4001": etcd endpoint
+-etcd-endpoints="http://127.0.0.1:4001": a comma-delimited list of etcd endpoints
 -etcd-prefix="/coreos.com/network": etcd prefix
 -iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
 -subnet-file="/run/flannel/subnet.env": filename where env variables (subnet and MTU values) will be written to
