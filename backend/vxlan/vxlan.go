@@ -10,9 +10,9 @@ import (
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
 
 	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/subnet"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/pkg/task"
+	"github.com/coreos/flannel/subnet"
 )
 
 const (
@@ -26,10 +26,10 @@ type VXLANBackend struct {
 		VNI  int
 		Port int
 	}
-	dev    *vxlanDevice
-	stop   chan bool
-	wg     sync.WaitGroup
-	rts    routes
+	dev  *vxlanDevice
+	stop chan bool
+	wg   sync.WaitGroup
+	rts  routes
 }
 
 func New(sm *subnet.SubnetManager, config json.RawMessage) backend.Backend {
@@ -162,7 +162,7 @@ func (hw *hardwareAddr) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("error parsing hardware addr")
 	}
 
-	b = b[1:len(b)-1]
+	b = b[1 : len(b)-1]
 
 	mac, err := net.ParseMAC(string(b))
 	if err != nil {

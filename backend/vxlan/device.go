@@ -152,7 +152,7 @@ func (dev *vxlanDevice) MonitorMisses(misses chan *netlink.Neigh) {
 			log.Errorf("Failed to receive from netlink: %v ", err)
 
 			// wait 1 sec before retrying but honor the cancel channel
-			time.Sleep(1*time.Second)
+			time.Sleep(1 * time.Second)
 			continue
 		}
 
@@ -277,7 +277,7 @@ func setAddr4(link *netlink.Vxlan, ipn *net.IPNet) error {
 		}
 	}
 
-	addr := netlink.Addr{ ipn, "" }
+	addr := netlink.Addr{ipn, ""}
 	if err = netlink.AddrAdd(link, &addr); err != nil {
 		return fmt.Errorf("failed to add IP address %s to %s: %s", ipn.String(), link.Attrs().Name, err)
 	}
