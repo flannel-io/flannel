@@ -1,7 +1,7 @@
 # flannel
 
 flannel (originally [rudder](http://comments.gmane.org/gmane.linux.coreos.devel/1683)) is an overlay network that gives a subnet to each machine for use with
-Kubernetes. 
+Kubernetes.
 
 In Kubernetes every machine in the cluster is assigned a full subnet. The machine A
 and B might have 10.0.1.0/24 and 10.0.2.0/24 respectively. The advantage of
@@ -74,6 +74,11 @@ of available backends and the keys that can be put into the this dictionary are 
 * vxlan: use in-kernel VXLAN to encapsulate the packets.
   * ```Type``` (string): ```vxlan```
   * ```VNI```  (number): VXLAN Identifier (VNI) to be used. Defaults to 1
+
+* host-gw: create IP routes to subnets via remote machine IPs.  Note
+  that this requires direct layer2 connectivity between hosts running
+  flannel.
+  * ```Type``` (string): ```host-gw```
 
 ### Example configuration JSON
 
