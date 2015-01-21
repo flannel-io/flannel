@@ -36,6 +36,8 @@ type CmdLineOpts struct {
 	ipMasq        bool
 	subnetFile    string
 	iface         string
+	dockerFmt     bool
+	dockerFmtPrefix string
 }
 
 var opts CmdLineOpts
@@ -51,6 +53,8 @@ func init() {
 	flag.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
+	flag.BoolVar(&opts.dockerFmt, "docker-fmt", false, "output docker command line options instead of env variables")
+	flag.StringVar(&opts.dockerFmtPrefix, "docker-fmt-prefix", "DOCKER_NETWORK_OPTIONS", "prefix for docker flags to be used by docker init script")
 }
 
 // TODO: This is yet another copy (others found in etcd, fleet) -- Pull it out!
@@ -75,6 +79,24 @@ func flagsFromEnv(prefix string, fs *flag.FlagSet) {
 	})
 }
 
+func writeEnvSubnetFile(f *os.File, sn *backend.SubnetDef) error {
+	if _, err := fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn.Net); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(f, "FLANNEL_MTU=%d\n", sn.MTU); err != nil {
+		return err
+	}
+	return nil
+}
+
+func writeDockerSubnetFile(f *os.File, sn *backend.SubnetDef) error {
+	_, err := fmt.Fprintf(f, "%s=\"--bip=%s --mtu=%d\"\n", opts.dockerFmtPrefix, sn.Net, sn.MTU)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func writeSubnetFile(sn *backend.SubnetDef) error {
 	// Write out the first usable IP by incrementing
 	// sn.IP by one
@@ -89,10 +111,12 @@ func writeSubnetFile(sn *backend.SubnetDef) error {
 	}
 	defer f.Close()
 
-	if _, err = fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn.Net); err != nil {
-		return err
+	if opts.dockerFmt == true {
+		err = writeDockerSubnetFile(f, sn)
+	} else {
+		err = writeEnvSubnetFile(f, sn)
 	}
-	if _, err = fmt.Fprintf(f, "FLANNEL_MTU=%d\n", sn.MTU); err != nil {
+	if err != nil {
 		return err
 	}
 	if _, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", opts.ipMasq); err != nil {
