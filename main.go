@@ -135,7 +135,7 @@ func lookupIface() (*net.Interface, net.IP, error) {
 	return iface, ipaddr, nil
 }
 
-func makeSubnetManager() *subnet.SubnetManager {
+func newSubnetManager() *subnet.SubnetManager {
 	peers := strings.Split(opts.etcdEndpoints, ",")
 
 	cfg := &subnet.EtcdConfig{
@@ -157,8 +157,7 @@ func makeSubnetManager() *subnet.SubnetManager {
 	}
 }
 
-func newBackend() (backend.Backend, error) {
-	sm := makeSubnetManager()
+func newBackend(sm *subnet.SubnetManager) (backend.Backend, error) {
 	config := sm.GetConfig()
 
 	var bt struct {
@@ -187,7 +186,7 @@ func newBackend() (backend.Backend, error) {
 	}
 }
 
-func run(be backend.Backend, exit chan int) {
+func run(sm *subnet.SubnetManager, be backend.Backend, exit chan int) {
 	var err error
 	defer func() {
 		if err == nil || err == task.ErrCanceled {
@@ -210,9 +209,16 @@ func run(be backend.Backend, exit chan int) {
 
 	log.Infof("Using %s as external interface", ipaddr)
 
-	sn, err := be.Init(iface, ipaddr, opts.ipMasq)
+	sn, err := be.Init(iface, ipaddr)
 	if err != nil {
 		return
+	}
+
+	if opts.ipMasq {
+		flannelNet := sm.GetConfig().Network
+		if err = setupIPMasq(flannelNet); err != nil {
+			return
+		}
 	}
 
 	writeSubnetFile(sn)
@@ -243,7 +249,8 @@ func main() {
 
 	flagsFromEnv("FLANNELD", flag.CommandLine)
 
-	be, err := newBackend()
+	sm := newSubnetManager()
+	be, err := newBackend(sm)
 	if err != nil {
 		log.Info(err)
 		os.Exit(1)
@@ -255,7 +262,7 @@ func main() {
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
 
 	exit := make(chan int)
-	go run(be, exit)
+	go run(sm, be, exit)
 
 	for {
 		select {

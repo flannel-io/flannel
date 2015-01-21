@@ -56,7 +56,7 @@ func newSubnetAttrs(pubIP net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, err
 	}, nil
 }
 
-func (vb *VXLANBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (*backend.SubnetDef, error) {
+func (vb *VXLANBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.SubnetDef, error) {
 	// Parse our configuration
 	if len(vb.rawCfg) > 0 {
 		if err := json.Unmarshal(vb.rawCfg, &vb.cfg); err != nil {
@@ -102,7 +102,10 @@ func (vb *VXLANBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool)
 		return nil, err
 	}
 
-	return &backend.SubnetDef{sn, vb.dev.MTU()}, nil
+	return &backend.SubnetDef{
+		Net: sn,
+		MTU: vb.dev.MTU(),
+	}, nil
 }
 
 func (vb *VXLANBackend) Run() {

@@ -3,7 +3,6 @@ package hostgw
 import (
 	"fmt"
 	"net"
-	"strings"
 	"sync"
 
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
@@ -31,7 +30,7 @@ func New(sm *subnet.SubnetManager) backend.Backend {
 	return b
 }
 
-func (rb *HostgwBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool) (*backend.SubnetDef, error) {
+func (rb *HostgwBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.SubnetDef, error) {
 	rb.extIface = extIface
 	rb.extIP = extIP
 
@@ -47,13 +46,6 @@ func (rb *HostgwBackend) Init(extIface *net.Interface, extIP net.IP, ipMasq bool
 		} else {
 			return nil, fmt.Errorf("Failed to acquire lease: %v", err)
 		}
-	}
-
-	if ipMasq {
-		if err := setupIpMasq(sn, rb.sm.GetConfig().Network); err != nil {
-			return nil, fmt.Errorf("Failed to configure ip-masq: %v", err)
-		}
-
 	}
 
 	/* NB: docker will create the local route to `sn` */
@@ -143,32 +135,4 @@ func (rb *HostgwBackend) handleSubnetEvents(batch subnet.EventBatch) {
 			log.Error("Internal error: unknown event type: ", int(evt.Type))
 		}
 	}
-}
-
-func setupIpMasq(localNet ip.IP4Net, overlayNet ip.IP4Net) error {
-	ipt, err := ip.NewIPTables()
-	if err != nil {
-		return err
-	}
-
-	err = ipt.ClearChain("nat", "FLANNEL")
-	if err != nil {
-		return fmt.Errorf("Failed to create/clear FLANNEL chain in NAT table: %v", err)
-	}
-
-	rules := [][]string{
-		[]string{"FLANNEL", "-s", localNet.String(), "-o", "lo", "-j", "ACCEPT"},
-		[]string{"FLANNEL", "-s", localNet.String(), "!", "-d", overlayNet.String(), "-j", "MASQUERADE"},
-		[]string{"POSTROUTING", "-s", localNet.String(), "-j", "FLANNEL"},
-	}
-
-	for _, args := range rules {
-		log.Info("Adding iptables rule: ", strings.Join(args, " "))
-
-		if err := ipt.AppendUnique("nat", args...); err != nil {
-			return fmt.Errorf("Failed to insert IP masquerade rule: %v", err)
-		}
-	}
-
-	return nil
 }
