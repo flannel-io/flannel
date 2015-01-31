@@ -10,7 +10,6 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
-
 type AllocBackend struct {
 	sm   *subnet.SubnetManager
 	stop chan bool
@@ -18,7 +17,7 @@ type AllocBackend struct {
 
 func New(sm *subnet.SubnetManager) backend.Backend {
 	return &AllocBackend{
-		sm: sm,
+		sm:   sm,
 		stop: make(chan bool),
 	}
 }

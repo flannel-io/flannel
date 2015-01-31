@@ -16,13 +16,13 @@ import (
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 
 	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/pkg/task"
-	"github.com/coreos/flannel/subnet"
 	"github.com/coreos/flannel/backend/alloc"
 	"github.com/coreos/flannel/backend/hostgw"
 	"github.com/coreos/flannel/backend/udp"
 	"github.com/coreos/flannel/backend/vxlan"
+	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/pkg/task"
+	"github.com/coreos/flannel/subnet"
 )
 
 type CmdLineOpts struct {

@@ -1,16 +1,16 @@
 package udp
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"net"
 	"os"
 	"strings"
 	"sync"
 	"syscall"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
@@ -215,12 +215,12 @@ func setupIpMasq(ipn ip.IP4Net, iface string) error {
 
 	rules := [][]string{
 		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-		[]string{"FLANNEL", "-d", ipn.String(), "-j", "ACCEPT"},
+		{"FLANNEL", "-d", ipn.String(), "-j", "ACCEPT"},
 		// This rule makes sure we don't NAT multicast traffic within overlay network
-		[]string{"FLANNEL", "-d", "224.0.0.0/4", "-j", "ACCEPT"}, // This rule will NAT everything originating from our overlay network and
-		[]string{"FLANNEL", "!", "-o", iface, "-j", "MASQUERADE"},
+		{"FLANNEL", "-d", "224.0.0.0/4", "-j", "ACCEPT"}, // This rule will NAT everything originating from our overlay network and
+		{"FLANNEL", "!", "-o", iface, "-j", "MASQUERADE"},
 		// This rule will take everything coming from overlay and sent it to FLANNEL chain
-		[]string{"POSTROUTING", "-s", ipn.String(), "-j", "FLANNEL"},
+		{"POSTROUTING", "-s", ipn.String(), "-j", "FLANNEL"},
 	}
 
 	for _, args := range rules {
