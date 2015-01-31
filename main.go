@@ -7,7 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"path"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -16,13 +16,13 @@ import (
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 
 	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/pkg/task"
-	"github.com/coreos/flannel/subnet"
 	"github.com/coreos/flannel/backend/alloc"
 	"github.com/coreos/flannel/backend/hostgw"
 	"github.com/coreos/flannel/backend/udp"
 	"github.com/coreos/flannel/backend/vxlan"
+	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/pkg/task"
+	"github.com/coreos/flannel/subnet"
 )
 
 type CmdLineOpts struct {
@@ -80,25 +80,26 @@ func writeSubnetFile(sn *backend.SubnetDef) error {
 	// sn.IP by one
 	sn.Net.IP += 1
 
-	dir, _ := path.Split(opts.subnetFile)
+	dir, name := filepath.Split(opts.subnetFile)
 	os.MkdirAll(dir, 0755)
 
-	f, err := os.Create(opts.subnetFile)
+	tempFile := filepath.Join(dir, "."+name)
+	f, err := os.Create(tempFile)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
-	if _, err = fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn.Net); err != nil {
+	fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn.Net)
+	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", sn.MTU)
+	_, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", opts.ipMasq)
+	f.Close()
+	if err != nil {
 		return err
 	}
-	if _, err = fmt.Fprintf(f, "FLANNEL_MTU=%d\n", sn.MTU); err != nil {
-		return err
-	}
-	if _, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", opts.ipMasq); err != nil {
-		return err
-	}
-	return nil
+
+	// rename(2) the temporary file to the desired location so that it becomes
+	// atomically visible with the contents
+	return os.Rename(tempFile, opts.subnetFile)
 }
 
 func lookupIface() (*net.Interface, net.IP, error) {
