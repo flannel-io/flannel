@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	"github.com/coreos/go-etcd/etcd"
 
 	"github.com/coreos/flannel/pkg/ip"
 )
