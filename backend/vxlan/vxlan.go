@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
@@ -73,9 +74,16 @@ func (vb *VXLANBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 	}
 
 	var err error
-	vb.dev, err = newVXLANDevice(&devAttrs)
-	if err != nil {
-		return nil, err
+	for {
+		vb.dev, err = newVXLANDevice(&devAttrs)
+		if err == nil {
+			break
+		} else {
+			log.Warning("Failed to create VXLAN interface, retrying...")
+
+			// wait 1 sec before retrying
+			time.Sleep(1*time.Second)
+		}
 	}
 
 	sa, err := newSubnetAttrs(extIP, vb.dev.MACAddr())
