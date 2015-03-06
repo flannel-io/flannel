@@ -124,6 +124,12 @@ MTU that it supports.
 -v=0: log level for V logs. Set to 1 to see messages related to data path
 ```
 
+## Environment Variables
+Besides using the `-iface` command line option one can also change the the default interface to use
+(IP or name) for inter-host communication via the the `FLANNELD_INTERFACE` environment variable.
+Please do note that if one tries to set it both via environment and via command line whatever is
+defined in the later would win.
+
 ## Zero-downtime restarts
 When running in VXLAN mode, the kernel is providing the data path with flanneld acting as the control plane. As such, flanneld
 can be restarted (even to do an upgrade) without disturbing existing flows. However, this needs to be done in few seconds as ARP

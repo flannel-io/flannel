@@ -106,17 +106,25 @@ func lookupIface() (*net.Interface, net.IP, error) {
 	var iface *net.Interface
 	var ipaddr net.IP
 	var err error
+	default_iface := ""
 
+	// if set in bot sides command line wins
 	if len(opts.iface) > 0 {
-		if ipaddr = net.ParseIP(opts.iface); ipaddr != nil {
+		default_iface = opts.iface
+	} else if t := os.Getenv("FLANNELD_INTERFACE"); t != "" {
+		default_iface = t
+	}
+
+	if len(default_iface) > 0 {
+		if ipaddr = net.ParseIP(default_iface); ipaddr != nil {
 			iface, err = ip.GetInterfaceByIP(ipaddr)
 			if err != nil {
-				return nil, nil, fmt.Errorf("Error looking up interface %s: %s", opts.iface, err)
+				return nil, nil, fmt.Errorf("Error looking up interface %s: %s", default_iface, err)
 			}
 		} else {
-			iface, err = net.InterfaceByName(opts.iface)
+			iface, err = net.InterfaceByName(default_iface)
 			if err != nil {
-				return nil, nil, fmt.Errorf("Error looking up interface %s: %s", opts.iface, err)
+				return nil, nil, fmt.Errorf("Error looking up interface %s: %s", default_iface, err)
 			}
 		}
 	} else {
