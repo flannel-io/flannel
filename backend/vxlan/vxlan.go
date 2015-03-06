@@ -79,7 +79,8 @@ func (vb *VXLANBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 		if err == nil {
 			break
 		} else {
-			log.Warning("Failed to create VXLAN interface, retrying...")
+			log.Error("VXLAN init: ", err)
+			log.Info("Retrying in 1 second...")
 
 			// wait 1 sec before retrying
 			time.Sleep(1*time.Second)
