@@ -1,3 +1,17 @@
+// Copyright 2015 CoreOS, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package vxlan
 
 import (
@@ -11,9 +25,9 @@ import (
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
 
 	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/subnet"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/pkg/task"
+	"github.com/coreos/flannel/subnet"
 )
 
 const (
@@ -27,10 +41,10 @@ type VXLANBackend struct {
 		VNI  int
 		Port int
 	}
-	dev    *vxlanDevice
-	stop   chan bool
-	wg     sync.WaitGroup
-	rts    routes
+	dev  *vxlanDevice
+	stop chan bool
+	wg   sync.WaitGroup
+	rts  routes
 }
 
 func New(sm *subnet.SubnetManager, config json.RawMessage) backend.Backend {
@@ -83,7 +97,7 @@ func (vb *VXLANBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 			log.Info("Retrying in 1 second...")
 
 			// wait 1 sec before retrying
-			time.Sleep(1*time.Second)
+			time.Sleep(1 * time.Second)
 		}
 	}
 
@@ -174,7 +188,7 @@ func (hw *hardwareAddr) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("error parsing hardware addr")
 	}
 
-	b = b[1:len(b)-1]
+	b = b[1 : len(b)-1]
 
 	mac, err := net.ParseMAC(string(b))
 	if err != nil {
