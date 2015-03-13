@@ -15,7 +15,6 @@
 package subnet
 
 import (
-	"fmt"
 	"path"
 	"sync"
 	"time"
@@ -118,9 +117,8 @@ func (esr *etcdSubnetRegistry) watchSubnets(since uint64, stop chan bool) (*etcd
 		}
 
 		if len(resp.Body) == 0 {
-			// etcd timed out, go back but recreate the client as the underlying
-			// http transport gets hosed (http://code.google.com/p/go/issues/detail?id=8648)
-			esr.resetClient()
+			// etcd timed out, and the underlying http transport gets hosed
+			// http://code.google.com/p/go/issues/detail?id=8648
 			continue
 		}
 
@@ -132,17 +130,6 @@ func (esr *etcdSubnetRegistry) client() *etcd.Client {
 	esr.mux.Lock()
 	defer esr.mux.Unlock()
 	return esr.cli
-}
-
-func (esr *etcdSubnetRegistry) resetClient() {
-	esr.mux.Lock()
-	defer esr.mux.Unlock()
-
-	var err error
-	esr.cli, err = newEtcdClient(esr.etcdCfg)
-	if err != nil {
-		panic(fmt.Errorf("resetClient: error recreating etcd client: %v", err))
-	}
 }
 
 func ensureExpiration(resp *etcd.Response, ttl uint64) {
