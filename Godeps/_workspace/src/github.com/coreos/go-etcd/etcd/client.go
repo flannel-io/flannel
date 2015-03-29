@@ -40,6 +40,7 @@ type Client struct {
 	config      Config   `json:"config"`
 	cluster     *Cluster `json:"cluster"`
 	httpClient  *http.Client
+	transport   *http.Transport
 	persistence io.Writer
 	cURLch      chan string
 	// CheckRetry can be used to control the policy for failed requests
@@ -166,17 +167,23 @@ func NewClientFromReader(reader io.Reader) (*Client, error) {
 // Override the Client's HTTP Transport object
 func (c *Client) SetTransport(tr *http.Transport) {
 	c.httpClient.Transport = tr
+	c.transport = tr
+}
+
+func (c *Client) Close() {
+	c.transport.DisableKeepAlives = true
+	c.transport.CloseIdleConnections()
 }
 
 // initHTTPClient initializes a HTTP client for etcd client
 func (c *Client) initHTTPClient() {
-	tr := &http.Transport{
+	c.transport = &http.Transport{
 		Dial: c.dial,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
 	}
-	c.httpClient = &http.Client{Transport: tr}
+	c.httpClient = &http.Client{Transport: c.transport}
 }
 
 // initHTTPClient initializes a HTTPS client for etcd client
