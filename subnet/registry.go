@@ -139,6 +139,7 @@ func (esr *etcdSubnetRegistry) resetClient() {
 	defer esr.mux.Unlock()
 
 	var err error
+	esr.cli.Close()
 	esr.cli, err = newEtcdClient(esr.etcdCfg)
 	if err != nil {
 		panic(fmt.Errorf("resetClient: error recreating etcd client: %v", err))
