@@ -7,8 +7,8 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/coreos/go-etcd/etcd",
-			"Comment": "v0.2.0-rc1-123-g0157fac",
-			"Rev": "0157fac4bb9567e843bdbb5854e966862c36be09"
+			"Comment": "v0.4.6-12-gbf30eb7",
+			"Rev": "bf30eb7162940ff9aa35d55b23e49ba69322963d"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-systemd/daemon",
