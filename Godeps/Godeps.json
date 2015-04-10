@@ -1,24 +1,14 @@
 {
 	"ImportPath": "github.com/coreos/flannel",
-	"GoVersion": "go1.3.1",
+	"GoVersion": "go1.4.2",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/coreos/etcd/etcdserver/etcdhttp/httptypes",
-			"Comment": "v2.0.0-rc.1-135-g945c5dd",
-			"Rev": "945c5dd5588240407e09329bca9314b66220b9ff"
-		},
-		{
-			"ImportPath": "github.com/coreos/etcd/pkg/types",
-			"Comment": "v2.0.0-rc.1-135-g945c5dd",
-			"Rev": "945c5dd5588240407e09329bca9314b66220b9ff"
-		},
-		{
 			"ImportPath": "github.com/coreos/go-etcd/etcd",
-			"Comment": "v0.4.6-12-gbf30eb7",
-			"Rev": "bf30eb7162940ff9aa35d55b23e49ba69322963d"
+			"Comment": "v0.4.6-3-g441f1a1",
+			"Rev": "441f1a1a60ef3f700b6f4b4099e0c35527a25031"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-systemd/daemon",

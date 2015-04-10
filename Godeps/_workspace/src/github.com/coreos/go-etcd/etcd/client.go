@@ -7,16 +7,12 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
-	"strings"
 	"time"
-
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/etcdserver/etcdhttp/httptypes"
 )
 
 // See SetConsistency for how to use these constants.
@@ -31,10 +27,6 @@ const (
 const (
 	defaultBufferSize = 10
 )
-
-func init() {
-	rand.Seed(int64(time.Now().Nanosecond()))
-}
 
 type Config struct {
 	CertFile    string        `json:"certFile"`
@@ -73,7 +65,8 @@ func NewClient(machines []string) *Client {
 	config := Config{
 		// default timeout is one second
 		DialTimeout: time.Second,
-		Consistency: WEAK_CONSISTENCY,
+		// default consistency level is STRONG
+		Consistency: STRONG_CONSISTENCY,
 	}
 
 	client := &Client{
@@ -97,7 +90,8 @@ func NewTLSClient(machines []string, cert, key, caCert string) (*Client, error) 
 	config := Config{
 		// default timeout is one second
 		DialTimeout: time.Second,
-		Consistency: WEAK_CONSISTENCY,
+		// default consistency level is STRONG
+		Consistency: STRONG_CONSISTENCY,
 		CertFile:    cert,
 		KeyFile:     key,
 		CaCertFile:  make([]string, 0),
@@ -305,37 +299,30 @@ func (c *Client) SyncCluster() bool {
 // internalSyncCluster syncs cluster information using the given machine list.
 func (c *Client) internalSyncCluster(machines []string) bool {
 	for _, machine := range machines {
-		httpPath := c.createHttpPath(machine, path.Join(version, "members"))
+		httpPath := c.createHttpPath(machine, path.Join(version, "machines"))
 		resp, err := c.httpClient.Get(httpPath)
 		if err != nil {
 			// try another machine in the cluster
 			continue
+		} else {
+			b, err := ioutil.ReadAll(resp.Body)
+			resp.Body.Close()
+			if err != nil {
+				// try another machine in the cluster
+				continue
+			}
+
+			// update Machines List
+			c.cluster.updateFromStr(string(b))
+
+			// update leader
+			// the first one in the machine list is the leader
+			c.cluster.switchLeader(0)
+
+			logger.Debug("sync.machines ", c.cluster.Machines)
+			c.saveConfig()
+			return true
 		}
-
-		b, err := ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			// try another machine in the cluster
-			continue
-		}
-
-		var mCollection httptypes.MemberCollection
-		if err := json.Unmarshal(b, &mCollection); err != nil {
-			// try another machine
-			continue
-		}
-
-		urls := make([]string, 0)
-		for _, m := range mCollection {
-			urls = append(urls, m.ClientURLs...)
-		}
-
-		// update Machines List
-		c.cluster.updateFromStr(strings.Join(urls, ","))
-
-		logger.Debug("sync.machines ", c.cluster.Machines)
-		c.saveConfig()
-		return true
 	}
 	return false
 }
