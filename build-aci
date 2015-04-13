@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# A non-installed actool can be used, for example:
+# ACTOOL=../../appc/spec/bin/actool
+ACTOOL=${ACTOOL:-actool}
+
+IMAGEDIR=${IMAGEDIR:-bin/image-aci}
+
+VERSION=$1
+
+if [ ! -x "$ACTOOL" ] ; then
+    echo "actool ($ACTOOL) is not executable"
+    exit 1
+fi
+
+if [ ! -x bin/flanneld ] ; then
+    echo "bin/flanneld not found. Is it compiled?"
+    exit 1
+fi
+
+if [ -z "$VERSION" ] ; then
+    echo "Usage: build-aci VERSION"
+    exit 1
+fi
+
+mkdir -p $IMAGEDIR/rootfs
+if [ ! -d $IMAGEDIR/rootfs -o ! -x $IMAGEDIR/rootfs ]; then
+    echo "$IMAGEDIR/rootfs is not a writeable directory"
+    exit 1
+fi
+
+
+cp bin/flanneld  $IMAGEDIR/rootfs/
+cp README.md            $IMAGEDIR/rootfs/
+mkdir -p $IMAGEDIR/rootfs/dev/net
+
+cat <<DF > $IMAGEDIR/manifest
+{
+    "acVersion": "0.1.1",
+    "acKind": "ImageManifest",
+    "name": "coreos.com/flannel",
+    "labels": [
+        {"name": "os", "value": "linux"},
+        {"name": "arch", "value": "amd64"},
+        {"name": "version", "value": "${VERSION}"}
+    ],
+    "app": {
+        "exec": [
+             "/flanneld"
+        ],
+        "user": "0",
+        "group": "0",
+        "isolators": [
+            {
+                "name": "capabilities/bounding-set",
+                "value": "CAP_NET_ADMIN"
+            }
+        ]
+    }
+}
+DF
+
+## Undecided whether /dev/net/tun should be made available with deviceFiles
+## (https://github.com/appc/spec/pull/128) or with mountPoints
+
+#    "deviceFiles": [
+#        "/dev/net/tun"
+#    ]
+
+## With the current version of systemd-nspawn, mountPoints does not work, see
+## http://cgit.freedesktop.org/systemd/systemd/commit/?id=05e7da5afa07b5620c06507a3f033334a5179d21
+
+#        "mountPoints": [
+#            {
+#                "name": "dev-net-tun",
+#                "path": "/dev/net/tun",
+#                "readOnly": false
+#            }
+#        ]
+
+mkdir -p $IMAGEDIR/rootfs/etc/
+cat <<DF > $IMAGEDIR/rootfs/etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+DF
+
+$ACTOOL build -overwrite=true $IMAGEDIR bin/flannel-${1}-linux-amd64.aci
