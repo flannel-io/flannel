@@ -80,6 +80,16 @@ of available backends and the keys that can be put into the this dictionary are 
   flannel.
   * ```Type``` (string): ```host-gw```
 
+* aws-vpc: create IP routes in an [Amazon VPC route table](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Route_Tables.html).
+  Requires running on an EC2 instance that is in an Amazon VPC.
+  * ```Type``` (string): ```aws-vpc```
+  * ```RouteTableID``` (string): The ID of the VPC route table to add routes to. This must be in the
+  same region as the EC2 instance that flannel is running on.
+
+  Authentication is handled via environment variables. Ensure that the ```AWS_ACCESS_KEY_ID```,
+  ```AWS_SECRET_ACCESS_KEY``` and optionally ```AWS_SECURITY_TOKEN``` environment variables are set
+  when running the flannel process.
+
 ### Example configuration JSON
 
 The following configuration illustrates the use of most options.
