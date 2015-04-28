@@ -87,6 +87,12 @@ func (rb *HostgwBackend) Run() {
 
 	defer rb.wg.Wait()
 
+	rb.wg.Add(1)
+	go func() {
+		rb.sm.ListLeases(evts, rb.stop)
+		rb.wg.Done()
+	}()
+
 	for {
 		select {
 		case evtBatch := <-evts:
@@ -145,8 +151,62 @@ func (rb *HostgwBackend) handleSubnetEvents(batch subnet.EventBatch) {
 				continue
 			}
 
+		case subnet.SubnetListed:
+			log.Info("Subnet listed: ", evt.Lease.Network)
+
+			if evt.Lease.Attrs.BackendType != "host-gw" {
+				log.Warningf("Ignoring non-host-gw subnet: type=%v", evt.Lease.Attrs.BackendType)
+				continue
+			}
+
+			subExistInRoute := checkSubnetExistInRouts(evt.Lease)
+
+			if !subExistInRoute {
+				route := netlink.Route{
+					Dst:       evt.Lease.Network.ToIPNet(),
+					Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
+					LinkIndex: rb.extIface.Index,
+				}
+				if err := netlink.RouteAdd(&route); err != nil {
+					log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Network, evt.Lease.Attrs.PublicIP, err)
+					continue
+				}
+			}
+
 		default:
 			log.Error("Internal error: unknown event type: ", int(evt.Type))
 		}
 	}
+}
+
+func checkSubnetExistInRouts(lease subnet.SubnetLease) bool {
+	routeList, err := netlink.RouteList(nil, netlink.FAMILY_V4)
+	if err != nil {
+		return true
+	} else {
+		ipNet := lease.Network.ToIPNet()
+		gateWay := lease.Attrs.PublicIP.ToIP()
+		for _, route := range routeList {
+			if route.Dst == nil {
+				continue
+			}
+			if route.Dst.IP.Equal(ipNet.IP) && route.Gw.Equal(gateWay) && bytesEqual(route.Dst.Mask, ipNet.Mask) {
+				return true
+			}
+		}
+		log.Warningf("%v via %v does not exits in the Route table", lease.Network, lease.Attrs.PublicIP)
+		return false
+	}
+}
+
+func bytesEqual(x, y []byte) bool {
+	if len(x) != len(y) {
+		return false
+	}
+	for i, b := range x {
+		if y[i] != b {
+			return false
+		}
+	}
+	return true
 }

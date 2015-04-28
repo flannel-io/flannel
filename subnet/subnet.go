@@ -46,6 +46,7 @@ const (
 const (
 	SubnetAdded = iota
 	SubnetRemoved
+	SubnetListed
 )
 
 var (
@@ -391,6 +392,40 @@ func (sm *SubnetManager) WatchLeases(receiver chan EventBatch, cancel chan bool)
 		if batch != nil {
 			receiver <- *batch
 		}
+	}
+}
+
+func (sm *SubnetManager) ListLeases(receiver chan EventBatch, cancel chan bool) {
+	//periodly list leases
+	for {
+		log.Info("begin to colletc leases")
+		resp, err := sm.registry.watchSubnets(sm.lastIndex+1, cancel)
+
+		// watchSubnets exited by cancel chan being signaled
+		if err == nil && resp == nil {
+			return
+		}
+
+		leases, err := sm.getLeases()
+		if err == nil {
+
+			var batch EventBatch
+			for _, l := range leases {
+				// skip self
+				if l.Network.Equal(sm.myLease.Network) {
+					continue
+				}
+
+				batch = append(batch, Event{SubnetListed, l})
+			}
+			log.Info("finish collection leases")
+			if &batch != nil {
+				receiver <- batch
+			}
+
+			log.Info("finish passing")
+		}
+		time.Sleep(10 * time.Second)
 	}
 }
 
