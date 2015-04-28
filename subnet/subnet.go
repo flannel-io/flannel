@@ -31,9 +31,10 @@ import (
 )
 
 const (
-	registerRetries = 10
-	subnetTTL       = 24 * 3600
-	renewMargin     = time.Hour
+	registerRetries   = 10
+	subnetTTL         = 24 * 3600
+	renewMargin       = time.Hour
+	subnetListRetries = 10
 )
 
 // etcd error codes
@@ -398,7 +399,6 @@ func (sm *SubnetManager) WatchLeases(receiver chan EventBatch, cancel chan bool)
 func (sm *SubnetManager) ListLeases(receiver chan EventBatch, cancel chan bool) {
 	//periodly list leases
 	for {
-		log.Info("begin to colletc leases")
 		resp, err := sm.registry.watchSubnets(sm.lastIndex+1, cancel)
 
 		// watchSubnets exited by cancel chan being signaled
@@ -418,14 +418,11 @@ func (sm *SubnetManager) ListLeases(receiver chan EventBatch, cancel chan bool) 
 
 				batch = append(batch, Event{SubnetListed, l})
 			}
-			log.Info("finish collection leases")
 			if &batch != nil {
 				receiver <- batch
 			}
-
-			log.Info("finish passing")
 		}
-		time.Sleep(10 * time.Second)
+		time.Sleep(subnetListRetries * time.Second)
 	}
 }
 
