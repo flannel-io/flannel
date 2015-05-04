@@ -31,10 +31,9 @@ import (
 )
 
 const (
-	registerRetries   = 10
-	subnetTTL         = 24 * 3600
-	renewMargin       = time.Hour
-	subnetListRetries = 10
+	registerRetries = 10
+	subnetTTL       = 24 * 3600
+	renewMargin     = time.Hour
 )
 
 // etcd error codes
@@ -47,7 +46,6 @@ const (
 const (
 	SubnetAdded = iota
 	SubnetRemoved
-	SubnetListed
 )
 
 var (
@@ -393,36 +391,6 @@ func (sm *SubnetManager) WatchLeases(receiver chan EventBatch, cancel chan bool)
 		if batch != nil {
 			receiver <- *batch
 		}
-	}
-}
-
-func (sm *SubnetManager) ListLeases(receiver chan EventBatch, cancel chan bool) {
-	//periodly list leases
-	for {
-		resp, err := sm.registry.watchSubnets(sm.lastIndex+1, cancel)
-
-		// watchSubnets exited by cancel chan being signaled
-		if err == nil && resp == nil {
-			return
-		}
-
-		leases, err := sm.getLeases()
-		if err == nil {
-
-			var batch EventBatch
-			for _, l := range leases {
-				// skip self
-				if l.Network.Equal(sm.myLease.Network) {
-					continue
-				}
-
-				batch = append(batch, Event{SubnetListed, l})
-			}
-			if &batch != nil {
-				receiver <- batch
-			}
-		}
-		time.Sleep(subnetListRetries * time.Second)
 	}
 }
 
