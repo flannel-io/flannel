@@ -15,9 +15,11 @@
 package hostgw
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
@@ -28,12 +30,17 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
+const (
+	routeCheckRetries = 10
+)
+
 type HostgwBackend struct {
 	sm       *subnet.SubnetManager
 	extIface *net.Interface
 	extIP    net.IP
 	stop     chan bool
 	wg       sync.WaitGroup
+	rl       []netlink.Route
 }
 
 func New(sm *subnet.SubnetManager) backend.Backend {
@@ -85,6 +92,13 @@ func (rb *HostgwBackend) Run() {
 		rb.wg.Done()
 	}()
 
+	rb.rl = make([]netlink.Route, 0, 10)
+	rb.wg.Add(1)
+	go func() {
+		rb.routeCheck(rb.stop)
+		rb.wg.Done()
+	}()
+
 	defer rb.wg.Wait()
 
 	for {
@@ -126,6 +140,7 @@ func (rb *HostgwBackend) handleSubnetEvents(batch subnet.EventBatch) {
 				log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Network, evt.Lease.Attrs.PublicIP, err)
 				continue
 			}
+			rb.addToRouteList(route)
 
 		case subnet.SubnetRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Network)
@@ -144,9 +159,69 @@ func (rb *HostgwBackend) handleSubnetEvents(batch subnet.EventBatch) {
 				log.Errorf("Error deleting route to %v: %v", evt.Lease.Network, err)
 				continue
 			}
+			rb.removeFromRouteList(route)
 
 		default:
 			log.Error("Internal error: unknown event type: ", int(evt.Type))
 		}
 	}
+}
+
+func (rb *HostgwBackend) addToRouteList(route netlink.Route) {
+	rb.rl = append(rb.rl, route)
+}
+
+func (rb *HostgwBackend) removeFromRouteList(route netlink.Route) {
+	for index, r := range rb.rl {
+		if routeEqual(r, route) {
+			rb.rl = append(rb.rl[:index], rb.rl[index+1:]...)
+			return
+		}
+	}
+}
+
+func (rb *HostgwBackend) routeCheck(cancel chan bool) {
+	for {
+		select {
+		case <-cancel:
+			return
+		case <-time.After(routeCheckRetries * time.Second):
+			rb.checkSubnetExistInRoutes()
+		}
+	}
+}
+
+func (rb *HostgwBackend) checkSubnetExistInRoutes() {
+	routeList, err := netlink.RouteList(nil, netlink.FAMILY_V4)
+	if err == nil {
+		for _, route := range rb.rl {
+			exist := false
+			for _, r := range routeList {
+				if r.Dst == nil {
+					continue
+				}
+				if routeEqual(r, route) {
+					exist = true
+					break
+				}
+			}
+			if !exist {
+				if err := netlink.RouteAdd(&route); err != nil {
+					if nerr, ok := err.(net.Error); !ok {
+						log.Errorf("Error recovering route to %v: %v, %v", route.Dst, route.Gw, nerr)
+					}
+					continue
+				} else {
+					log.Infof("Route recovered %v : %v", route.Dst, route.Gw)
+				}
+			}
+		}
+	}
+}
+
+func routeEqual(x, y netlink.Route) bool {
+	if x.Dst.IP.Equal(y.Dst.IP) && x.Gw.Equal(y.Gw) && bytes.Equal(x.Dst.Mask, y.Dst.Mask) {
+		return true
+	}
+	return false
 }
