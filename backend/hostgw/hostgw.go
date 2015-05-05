@@ -15,6 +15,7 @@
 package hostgw
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"sync"
@@ -30,12 +31,7 @@ import (
 )
 
 const (
-	routeCheckBegins  = 120
 	routeCheckRetries = 10
-)
-
-var (
-	routeList []netlink.Route
 )
 
 type HostgwBackend struct {
@@ -44,6 +40,7 @@ type HostgwBackend struct {
 	extIP    net.IP
 	stop     chan bool
 	wg       sync.WaitGroup
+	rl       []netlink.Route
 }
 
 func New(sm *subnet.SubnetManager) backend.Backend {
@@ -95,14 +92,14 @@ func (rb *HostgwBackend) Run() {
 		rb.wg.Done()
 	}()
 
-	defer rb.wg.Wait()
-
-	routeList = make([]netlink.Route, 0, 10)
+	rb.rl = make([]netlink.Route, 0, 10)
 	rb.wg.Add(1)
 	go func() {
 		rb.routeCheck(rb.stop)
 		rb.wg.Done()
 	}()
+
+	defer rb.wg.Wait()
 
 	for {
 		select {
@@ -143,7 +140,7 @@ func (rb *HostgwBackend) handleSubnetEvents(batch subnet.EventBatch) {
 				log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Network, evt.Lease.Attrs.PublicIP, err)
 				continue
 			}
-			addToRouteList(route)
+			rb.addToRouteList(route)
 
 		case subnet.SubnetRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Network)
@@ -162,7 +159,7 @@ func (rb *HostgwBackend) handleSubnetEvents(batch subnet.EventBatch) {
 				log.Errorf("Error deleting route to %v: %v", evt.Lease.Network, err)
 				continue
 			}
-			removeFromRouteList(route)
+			rb.removeFromRouteList(route)
 
 		default:
 			log.Error("Internal error: unknown event type: ", int(evt.Type))
@@ -170,38 +167,36 @@ func (rb *HostgwBackend) handleSubnetEvents(batch subnet.EventBatch) {
 	}
 }
 
-func addToRouteList(route netlink.Route) {
-	routeList = append(routeList, route)
+func (rb *HostgwBackend) addToRouteList(route netlink.Route) {
+	rb.rl = append(rb.rl, route)
 }
 
-func removeFromRouteList(route netlink.Route) {
-	for index, r := range routeList {
+func (rb *HostgwBackend) removeFromRouteList(route netlink.Route) {
+	for index, r := range rb.rl {
 		if routeEqual(r, route) {
-			routeList = append(routeList[:index], routeList[index+1:]...)
+			rb.rl = append(rb.rl[:index], rb.rl[index+1:]...)
 			return
 		}
 	}
 }
 
 func (rb *HostgwBackend) routeCheck(cancel chan bool) {
-	time.Sleep(routeCheckBegins * time.Second)
 	for {
 		select {
 		case <-cancel:
 			return
-		default:
+		case <-time.After(routeCheckRetries * time.Second):
 			rb.checkSubnetExistInRoutes()
 		}
-		time.Sleep(routeCheckRetries * time.Second)
 	}
 }
 
 func (rb *HostgwBackend) checkSubnetExistInRoutes() {
-	rl, err := netlink.RouteList(nil, netlink.FAMILY_V4)
+	routeList, err := netlink.RouteList(nil, netlink.FAMILY_V4)
 	if err == nil {
-		for _, route := range routeList {
+		for _, route := range rb.rl {
 			exist := false
-			for _, r := range rl {
+			for _, r := range routeList {
 				if r.Dst == nil {
 					continue
 				}
@@ -211,27 +206,22 @@ func (rb *HostgwBackend) checkSubnetExistInRoutes() {
 				}
 			}
 			if !exist {
-				netlink.RouteAdd(&route)
+				if err := netlink.RouteAdd(&route); err != nil {
+					if nerr, ok := err.(net.Error); !ok {
+						log.Errorf("Error recovering route to %v: %v, %v", route.Dst, route.Gw, nerr)
+					}
+					continue
+				} else {
+					log.Infof("Route recovered %v : %v", route.Dst, route.Gw)
+				}
 			}
 		}
 	}
 }
 
 func routeEqual(x, y netlink.Route) bool {
-	if x.Dst.IP.Equal(y.Dst.IP) && x.Gw.Equal(y.Gw) && bytesEqual(x.Dst.Mask, y.Dst.Mask) {
+	if x.Dst.IP.Equal(y.Dst.IP) && x.Gw.Equal(y.Gw) && bytes.Equal(x.Dst.Mask, y.Dst.Mask) {
 		return true
 	}
 	return false
-}
-
-func bytesEqual(x, y []byte) bool {
-	if len(x) != len(y) {
-		return false
-	}
-	for i, b := range x {
-		if y[i] != b {
-			return false
-		}
-	}
-	return true
 }
