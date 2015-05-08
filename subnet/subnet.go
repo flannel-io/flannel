@@ -17,10 +17,10 @@ package subnet
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
-
 	"github.com/coreos/flannel/pkg/ip"
 )
 
@@ -80,11 +80,12 @@ func (et EventType) MarshalJSON() ([]byte, error) {
 
 func (et *EventType) UnmarshalJSON(data []byte) error {
 	switch string(data) {
-	case "added":
+	case "\"added\"":
 		*et = SubnetAdded
-	case "removed":
+	case "\"removed\"":
 		*et = SubnetRemoved
 	default:
+		fmt.Println(string(data))
 		return errors.New("bad event type")
 	}
 

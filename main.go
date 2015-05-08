@@ -31,6 +31,7 @@ import (
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/remote"
 	"github.com/coreos/flannel/subnet"
 )
 
@@ -46,6 +47,8 @@ type CmdLineOpts struct {
 	subnetFile    string
 	subnetDir     string
 	iface         string
+	listen        string
+	remote        string
 	networks      string
 }
 
@@ -60,6 +63,8 @@ func init() {
 	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/flannel/subnet.env", "filename where env variables (subnet, MTU, ... ) will be written to")
 	flag.StringVar(&opts.subnetDir, "subnet-dir", "/run/flannel/networks", "directory where files with env variables (subnet, MTU, ...) will be written to")
 	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
+	flag.StringVar(&opts.listen, "listen", "", "run as server and listen on specified address (e.g. ':8080')")
+	flag.StringVar(&opts.remote, "remote", "", "run as client and connect to server on specified address (e.g. '10.1.2.3:8080')")
 	flag.StringVar(&opts.networks, "networks", "", "run in multi-network mode and service the specified networks")
 	flag.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
@@ -154,6 +159,10 @@ func isMultiNetwork() bool {
 }
 
 func newSubnetManager() (subnet.Manager, error) {
+	if opts.remote != "" {
+		return remote.NewRemoteManager(opts.remote), nil
+	}
+
 	cfg := &subnet.EtcdConfig{
 		Endpoints: strings.Split(opts.etcdEndpoints, ","),
 		Keyfile:   opts.etcdKeyfile,
@@ -243,12 +252,23 @@ func main() {
 
 	var runFunc func(ctx context.Context)
 
-	networks := strings.Split(opts.networks, ",")
-	if len(networks) == 0 {
-		networks = append(networks, "")
-	}
-	runFunc = func(ctx context.Context) {
-		initAndRun(ctx, sm, networks)
+	if opts.listen != "" {
+		if opts.remote != "" {
+			log.Error("--listen and --remote are mutually exclusive")
+			os.Exit(1)
+		}
+		log.Info("running as server")
+		runFunc = func(ctx context.Context) {
+			remote.RunServer(ctx, sm, opts.listen)
+		}
+	} else {
+		networks := strings.Split(opts.networks, ",")
+		if len(networks) == 0 {
+			networks = append(networks, "")
+		}
+		runFunc = func(ctx context.Context) {
+			initAndRun(ctx, sm, networks)
+		}
 	}
 
 	// Register for SIGINT and SIGTERM
