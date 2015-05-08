@@ -24,10 +24,9 @@ import (
 
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
-
+	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/pkg/task"
 	"github.com/coreos/flannel/subnet"
 )
 
@@ -37,26 +36,33 @@ const (
 )
 
 type UdpBackend struct {
-	sm     *subnet.SubnetManager
-	rawCfg json.RawMessage
-	cfg    struct {
+	sm      subnet.Manager
+	network string
+	config  *subnet.Config
+	cfg     struct {
 		Port int
 	}
+	lease  *subnet.Lease
 	ctl    *os.File
 	ctl2   *os.File
 	tun    *os.File
 	conn   *net.UDPConn
 	mtu    int
 	tunNet ip.IP4Net
-	stop   chan bool
+	ctx    context.Context
+	cancel context.CancelFunc
 	wg     sync.WaitGroup
 }
 
-func New(sm *subnet.SubnetManager, config json.RawMessage) backend.Backend {
+func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	be := UdpBackend{
-		sm:     sm,
-		rawCfg: config,
-		stop:   make(chan bool),
+		sm:      sm,
+		network: network,
+		config:  config,
+		ctx:     ctx,
+		cancel:  cancel,
 	}
 	be.cfg.Port = defaultPort
 	return &be
@@ -64,8 +70,8 @@ func New(sm *subnet.SubnetManager, config json.RawMessage) backend.Backend {
 
 func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.SubnetDef, error) {
 	// Parse our configuration
-	if len(m.rawCfg) > 0 {
-		if err := json.Unmarshal(m.rawCfg, &m.cfg); err != nil {
+	if len(m.config.Backend) > 0 {
+		if err := json.Unmarshal(m.config.Backend, &m.cfg); err != nil {
 			return nil, fmt.Errorf("error decoding UDP backend config: %v", err)
 		}
 	}
@@ -75,20 +81,23 @@ func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Subne
 		PublicIP: ip.FromIP(extIP),
 	}
 
-	sn, err := m.sm.AcquireLease(&attrs, m.stop)
-	if err != nil {
-		if err == task.ErrCanceled {
-			return nil, err
-		} else {
-			return nil, fmt.Errorf("failed to acquire lease: %v", err)
-		}
+	l, err := m.sm.AcquireLease(m.ctx, m.network, &attrs)
+	switch err {
+	case nil:
+		m.lease = l
+
+	case context.Canceled, context.DeadlineExceeded:
+		return nil, err
+
+	default:
+		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
 	// Tunnel's subnet is that of the whole overlay network (e.g. /16)
 	// and not that of the individual host (e.g. /24)
 	m.tunNet = ip.IP4Net{
-		IP:        sn.IP,
-		PrefixLen: m.sm.GetConfig().Network.PrefixLen,
+		IP:        l.Subnet.IP,
+		PrefixLen: m.config.Network.PrefixLen,
 	}
 
 	// TUN MTU will be smaller b/c of encap (IP+UDP hdrs)
@@ -109,7 +118,7 @@ func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Subne
 	}
 
 	return &backend.SubnetDef{
-		Net: sn,
+		Net: l.Subnet,
 		MTU: m.mtu,
 	}, nil
 }
@@ -124,7 +133,7 @@ func (m *UdpBackend) Run() {
 	}()
 
 	go func() {
-		m.sm.LeaseRenewer(m.stop)
+		subnet.LeaseRenewer(m.ctx, m.sm, m.network, m.lease)
 		m.wg.Done()
 	}()
 
@@ -138,7 +147,7 @@ func (m *UdpBackend) Stop() {
 		stopProxy(m.ctl)
 	}
 
-	close(m.stop)
+	m.cancel()
 }
 
 func (m *UdpBackend) Name() string {
@@ -211,11 +220,11 @@ func configureIface(ifname string, ipn ip.IP4Net, mtu int) error {
 func (m *UdpBackend) monitorEvents() {
 	log.Info("Watching for new subnet leases")
 
-	evts := make(chan subnet.EventBatch)
+	evts := make(chan []subnet.Event)
 
 	m.wg.Add(1)
 	go func() {
-		m.sm.WatchLeases(evts, m.stop)
+		subnet.WatchLeases(m.ctx, m.sm, m.network, evts)
 		m.wg.Done()
 	}()
 
@@ -224,24 +233,24 @@ func (m *UdpBackend) monitorEvents() {
 		case evtBatch := <-evts:
 			m.processSubnetEvents(evtBatch)
 
-		case <-m.stop:
+		case <-m.ctx.Done():
 			return
 		}
 	}
 }
 
-func (m *UdpBackend) processSubnetEvents(batch subnet.EventBatch) {
+func (m *UdpBackend) processSubnetEvents(batch []subnet.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
 		case subnet.SubnetAdded:
-			log.Info("Subnet added: ", evt.Lease.Network)
+			log.Info("Subnet added: ", evt.Lease.Subnet)
 
-			setRoute(m.ctl, evt.Lease.Network, evt.Lease.Attrs.PublicIP, m.cfg.Port)
+			setRoute(m.ctl, evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, m.cfg.Port)
 
 		case subnet.SubnetRemoved:
-			log.Info("Subnet removed: ", evt.Lease.Network)
+			log.Info("Subnet removed: ", evt.Lease.Subnet)
 
-			removeRoute(m.ctl, evt.Lease.Network)
+			removeRoute(m.ctl, evt.Lease.Subnet)
 
 		default:
 			log.Error("Internal error: unknown event type: ", int(evt.Type))

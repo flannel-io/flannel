@@ -24,14 +24,15 @@ import (
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
-type subnetRegistry interface {
-	getConfig() (*etcd.Response, error)
-	getSubnets() (*etcd.Response, error)
-	createSubnet(sn, data string, ttl uint64) (*etcd.Response, error)
-	updateSubnet(sn, data string, ttl uint64) (*etcd.Response, error)
-	watchSubnets(since uint64, stop chan bool) (*etcd.Response, error)
+type Registry interface {
+	getConfig(ctx context.Context, network string) (*etcd.Response, error)
+	getSubnets(ctx context.Context, network string) (*etcd.Response, error)
+	createSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error)
+	updateSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error)
+	watchSubnets(ctx context.Context, network string, since uint64) (*etcd.Response, error)
 }
 
 type EtcdConfig struct {
@@ -60,7 +61,7 @@ func newEtcdClient(c *EtcdConfig) (*etcd.Client, error) {
 	}
 }
 
-func newEtcdSubnetRegistry(config *EtcdConfig) (subnetRegistry, error) {
+func newEtcdSubnetRegistry(config *EtcdConfig) (Registry, error) {
 	r := &etcdSubnetRegistry{
 		etcdCfg: config,
 	}
@@ -74,8 +75,8 @@ func newEtcdSubnetRegistry(config *EtcdConfig) (subnetRegistry, error) {
 	return r, nil
 }
 
-func (esr *etcdSubnetRegistry) getConfig() (*etcd.Response, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "config")
+func (esr *etcdSubnetRegistry) getConfig(ctx context.Context, network string) (*etcd.Response, error) {
+	key := path.Join(esr.etcdCfg.Prefix, network, "config")
 	resp, err := esr.client().Get(key, false, false)
 	if err != nil {
 		return nil, err
@@ -83,13 +84,13 @@ func (esr *etcdSubnetRegistry) getConfig() (*etcd.Response, error) {
 	return resp, nil
 }
 
-func (esr *etcdSubnetRegistry) getSubnets() (*etcd.Response, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets")
+func (esr *etcdSubnetRegistry) getSubnets(ctx context.Context, network string) (*etcd.Response, error) {
+	key := path.Join(esr.etcdCfg.Prefix, network, "subnets")
 	return esr.client().Get(key, false, true)
 }
 
-func (esr *etcdSubnetRegistry) createSubnet(sn, data string, ttl uint64) (*etcd.Response, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", sn)
+func (esr *etcdSubnetRegistry) createSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error) {
+	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", sn)
 	resp, err := esr.client().Create(key, data, ttl)
 	if err != nil {
 		return nil, err
@@ -99,8 +100,8 @@ func (esr *etcdSubnetRegistry) createSubnet(sn, data string, ttl uint64) (*etcd.
 	return resp, nil
 }
 
-func (esr *etcdSubnetRegistry) updateSubnet(sn, data string, ttl uint64) (*etcd.Response, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", sn)
+func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error) {
+	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", sn)
 	resp, err := esr.client().Set(key, data, ttl)
 	if err != nil {
 		return nil, err
@@ -110,27 +111,44 @@ func (esr *etcdSubnetRegistry) updateSubnet(sn, data string, ttl uint64) (*etcd.
 	return resp, nil
 }
 
-func (esr *etcdSubnetRegistry) watchSubnets(since uint64, stop chan bool) (*etcd.Response, error) {
-	for {
-		key := path.Join(esr.etcdCfg.Prefix, "subnets")
-		resp, err := esr.client().RawWatch(key, since, true, nil, stop)
+type watchResp struct {
+	resp *etcd.Response
+	err  error
+}
 
-		if err != nil {
-			if err == etcd.ErrWatchStoppedByUser {
-				return nil, nil
-			} else {
-				return nil, err
+func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, network string, since uint64) (*etcd.Response, error) {
+	stop := make(chan bool)
+	respCh := make(chan watchResp)
+
+	go func() {
+		for {
+			key := path.Join(esr.etcdCfg.Prefix, network, "subnets")
+			rresp, err := esr.client().RawWatch(key, since, true, nil, stop)
+
+			if err != nil {
+				respCh <- watchResp{nil, err}
+				return
 			}
-		}
 
-		if len(resp.Body) == 0 {
-			// etcd timed out, go back but recreate the client as the underlying
-			// http transport gets hosed (http://code.google.com/p/go/issues/detail?id=8648)
-			esr.resetClient()
-			continue
-		}
+			if len(rresp.Body) == 0 {
+				// etcd timed out, go back but recreate the client as the underlying
+				// http transport gets hosed (http://code.google.com/p/go/issues/detail?id=8648)
+				esr.resetClient()
+				continue
+			}
 
-		return resp.Unmarshal()
+			resp, err := rresp.Unmarshal()
+			respCh <- watchResp{resp, err}
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		close(stop)
+		<-respCh // Wait for f to return.
+		return nil, ctx.Err()
+	case wr := <-respCh:
+		return wr.resp, wr.err
 	}
 }
 

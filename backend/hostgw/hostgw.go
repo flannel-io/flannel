@@ -23,10 +23,9 @@ import (
 
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
-
+	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/pkg/task"
 	"github.com/coreos/flannel/subnet"
 )
 
@@ -35,18 +34,25 @@ const (
 )
 
 type HostgwBackend struct {
-	sm       *subnet.SubnetManager
+	sm       subnet.Manager
+	network  string
+	lease    *subnet.Lease
 	extIface *net.Interface
 	extIP    net.IP
-	stop     chan bool
+	ctx      context.Context
+	cancel   context.CancelFunc
 	wg       sync.WaitGroup
 	rl       []netlink.Route
 }
 
-func New(sm *subnet.SubnetManager) backend.Backend {
+func New(sm subnet.Manager, network string) backend.Backend {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	b := &HostgwBackend{
-		sm:   sm,
-		stop: make(chan bool),
+		sm:      sm,
+		network: network,
+		ctx:     ctx,
+		cancel:  cancel,
 	}
 	return b
 }
@@ -60,19 +66,22 @@ func (rb *HostgwBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.S
 		BackendType: "host-gw",
 	}
 
-	sn, err := rb.sm.AcquireLease(&attrs, rb.stop)
-	if err != nil {
-		if err == task.ErrCanceled {
-			return nil, err
-		} else {
-			return nil, fmt.Errorf("Failed to acquire lease: %v", err)
-		}
+	l, err := rb.sm.AcquireLease(rb.ctx, rb.network, &attrs)
+	switch err {
+	case nil:
+		rb.lease = l
+
+	case context.Canceled, context.DeadlineExceeded:
+		return nil, err
+
+	default:
+		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
 	/* NB: docker will create the local route to `sn` */
 
 	return &backend.SubnetDef{
-		Net: sn,
+		Net: l.Subnet,
 		MTU: extIface.MTU,
 	}, nil
 }
@@ -80,22 +89,22 @@ func (rb *HostgwBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.S
 func (rb *HostgwBackend) Run() {
 	rb.wg.Add(1)
 	go func() {
-		rb.sm.LeaseRenewer(rb.stop)
+		subnet.LeaseRenewer(rb.ctx, rb.sm, rb.network, rb.lease)
 		rb.wg.Done()
 	}()
 
 	log.Info("Watching for new subnet leases")
-	evts := make(chan subnet.EventBatch)
+	evts := make(chan []subnet.Event)
 	rb.wg.Add(1)
 	go func() {
-		rb.sm.WatchLeases(evts, rb.stop)
+		subnet.WatchLeases(rb.ctx, rb.sm, rb.network, evts)
 		rb.wg.Done()
 	}()
 
 	rb.rl = make([]netlink.Route, 0, 10)
 	rb.wg.Add(1)
 	go func() {
-		rb.routeCheck(rb.stop)
+		rb.routeCheck(rb.ctx)
 		rb.wg.Done()
 	}()
 
@@ -106,25 +115,25 @@ func (rb *HostgwBackend) Run() {
 		case evtBatch := <-evts:
 			rb.handleSubnetEvents(evtBatch)
 
-		case <-rb.stop:
+		case <-rb.ctx.Done():
 			return
 		}
 	}
 }
 
 func (rb *HostgwBackend) Stop() {
-	close(rb.stop)
+	rb.cancel()
 }
 
 func (rb *HostgwBackend) Name() string {
 	return "host-gw"
 }
 
-func (rb *HostgwBackend) handleSubnetEvents(batch subnet.EventBatch) {
+func (rb *HostgwBackend) handleSubnetEvents(batch []subnet.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
 		case subnet.SubnetAdded:
-			log.Infof("Subnet added: %v via %v", evt.Lease.Network, evt.Lease.Attrs.PublicIP)
+			log.Infof("Subnet added: %v via %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
 
 			if evt.Lease.Attrs.BackendType != "host-gw" {
 				log.Warningf("Ignoring non-host-gw subnet: type=%v", evt.Lease.Attrs.BackendType)
@@ -132,18 +141,18 @@ func (rb *HostgwBackend) handleSubnetEvents(batch subnet.EventBatch) {
 			}
 
 			route := netlink.Route{
-				Dst:       evt.Lease.Network.ToIPNet(),
+				Dst:       evt.Lease.Subnet.ToIPNet(),
 				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
 				LinkIndex: rb.extIface.Index,
 			}
 			if err := netlink.RouteAdd(&route); err != nil {
-				log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Network, evt.Lease.Attrs.PublicIP, err)
+				log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, err)
 				continue
 			}
 			rb.addToRouteList(route)
 
 		case subnet.SubnetRemoved:
-			log.Info("Subnet removed: ", evt.Lease.Network)
+			log.Info("Subnet removed: ", evt.Lease.Subnet)
 
 			if evt.Lease.Attrs.BackendType != "host-gw" {
 				log.Warningf("Ignoring non-host-gw subnet: type=%v", evt.Lease.Attrs.BackendType)
@@ -151,12 +160,12 @@ func (rb *HostgwBackend) handleSubnetEvents(batch subnet.EventBatch) {
 			}
 
 			route := netlink.Route{
-				Dst:       evt.Lease.Network.ToIPNet(),
+				Dst:       evt.Lease.Subnet.ToIPNet(),
 				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
 				LinkIndex: rb.extIface.Index,
 			}
 			if err := netlink.RouteDel(&route); err != nil {
-				log.Errorf("Error deleting route to %v: %v", evt.Lease.Network, err)
+				log.Errorf("Error deleting route to %v: %v", evt.Lease.Subnet, err)
 				continue
 			}
 			rb.removeFromRouteList(route)
@@ -180,10 +189,10 @@ func (rb *HostgwBackend) removeFromRouteList(route netlink.Route) {
 	}
 }
 
-func (rb *HostgwBackend) routeCheck(cancel chan bool) {
+func (rb *HostgwBackend) routeCheck(ctx context.Context) {
 	for {
 		select {
-		case <-cancel:
+		case <-ctx.Done():
 			return
 		case <-time.After(routeCheckRetries * time.Second):
 			rb.checkSubnetExistInRoutes()

@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
 	"github.com/coreos/flannel/pkg/ip"
 )
@@ -53,7 +54,7 @@ func newMockSubnetRegistry(ttlOverride uint64) *mockSubnetRegistry {
 	}
 }
 
-func (msr *mockSubnetRegistry) getConfig() (*etcd.Response, error) {
+func (msr *mockSubnetRegistry) getConfig(ctx context.Context, network string) (*etcd.Response, error) {
 	return &etcd.Response{
 		EtcdIndex: msr.index,
 		Node: &etcd.Node{
@@ -62,14 +63,14 @@ func (msr *mockSubnetRegistry) getConfig() (*etcd.Response, error) {
 	}, nil
 }
 
-func (msr *mockSubnetRegistry) getSubnets() (*etcd.Response, error) {
+func (msr *mockSubnetRegistry) getSubnets(ctx context.Context, network string) (*etcd.Response, error) {
 	return &etcd.Response{
 		Node:      msr.subnets,
 		EtcdIndex: msr.index,
 	}, nil
 }
 
-func (msr *mockSubnetRegistry) createSubnet(sn, data string, ttl uint64) (*etcd.Response, error) {
+func (msr *mockSubnetRegistry) createSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error) {
 	msr.index += 1
 
 	if msr.ttl > 0 {
@@ -94,8 +95,7 @@ func (msr *mockSubnetRegistry) createSubnet(sn, data string, ttl uint64) (*etcd.
 	}, nil
 }
 
-func (msr *mockSubnetRegistry) updateSubnet(sn, data string, ttl uint64) (*etcd.Response, error) {
-
+func (msr *mockSubnetRegistry) updateSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error) {
 	msr.index += 1
 
 	// add squared durations :)
@@ -115,15 +115,14 @@ func (msr *mockSubnetRegistry) updateSubnet(sn, data string, ttl uint64) (*etcd.
 	}
 
 	return nil, fmt.Errorf("Subnet not found")
-
 }
 
-func (msr *mockSubnetRegistry) watchSubnets(since uint64, stop chan bool) (*etcd.Response, error) {
+func (msr *mockSubnetRegistry) watchSubnets(ctx context.Context, network string, since uint64) (*etcd.Response, error) {
 	var sn string
 
 	select {
-	case <-stop:
-		return nil, nil
+	case <-ctx.Done():
+		return nil, ctx.Err()
 
 	case sn = <-msr.addCh:
 		n := etcd.Node{
@@ -163,46 +162,41 @@ func (msr *mockSubnetRegistry) hasSubnet(sn string) bool {
 
 func TestAcquireLease(t *testing.T) {
 	msr := newMockSubnetRegistry(0)
-	sm, err := newSubnetManager(msr)
-	if err != nil {
-		t.Fatalf("Failed to create subnet manager: %s", err)
-	}
+	sm := newEtcdManager(msr)
 
 	extIP, _ := ip.ParseIP4("1.2.3.4")
 	attrs := LeaseAttrs{
 		PublicIP: extIP,
 	}
 
-	cancel := make(chan bool)
-	sn, err := sm.AcquireLease(&attrs, cancel)
+	l, err := sm.AcquireLease(context.Background(), "", &attrs)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
 
-	if sn.String() != "10.3.3.0/24" {
-		t.Fatal("Subnet mismatch: expected 10.3.3.0/24, got: ", sn)
+	if l.Subnet.String() != "10.3.3.0/24" {
+		t.Fatal("Subnet mismatch: expected 10.3.3.0/24, got: ", l.Subnet)
 	}
 
 	// Acquire again, should reuse
-	if sn, err = sm.AcquireLease(&attrs, cancel); err != nil {
+	if l, err = sm.AcquireLease(context.Background(), "", &attrs); err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
 
-	if sn.String() != "10.3.3.0/24" {
-		t.Fatal("Subnet mismatch: expected 10.3.3.0/24, got: ", sn)
+	if l.Subnet.String() != "10.3.3.0/24" {
+		t.Fatal("Subnet mismatch: expected 10.3.3.0/24, got: ", l.Subnet)
 	}
 }
 
 func TestWatchLeaseAdded(t *testing.T) {
 	msr := newMockSubnetRegistry(0)
-	sm, err := newSubnetManager(msr)
-	if err != nil {
-		t.Fatalf("Failed to create subnet manager: %s", err)
-	}
+	sm := newEtcdManager(msr)
 
-	events := make(chan EventBatch)
-	cancel := make(chan bool)
-	go sm.WatchLeases(events, cancel)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	events := make(chan []Event)
+	go WatchLeases(ctx, sm, "", events)
 
 	expected := "10.3.3.0-24"
 	msr.addCh <- expected
@@ -222,24 +216,21 @@ func TestWatchLeaseAdded(t *testing.T) {
 		t.Fatalf("WatchSubnets produced wrong event type")
 	}
 
-	actual := evt.Lease.Network.StringSep(".", "-")
+	actual := evt.Lease.Key()
 	if actual != expected {
 		t.Errorf("WatchSubnet produced wrong subnet: expected %s, got %s", expected, actual)
 	}
-
-	close(cancel)
 }
 
 func TestWatchLeaseRemoved(t *testing.T) {
 	msr := newMockSubnetRegistry(0)
-	sm, err := newSubnetManager(msr)
-	if err != nil {
-		t.Fatalf("Failed to create subnet manager: %s", err)
-	}
+	sm := newEtcdManager(msr)
 
-	events := make(chan EventBatch)
-	cancel := make(chan bool)
-	go sm.WatchLeases(events, cancel)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	events := make(chan []Event)
+	go WatchLeases(ctx, sm, "", events)
 
 	expected := "10.3.4.0-24"
 	msr.delCh <- expected
@@ -259,12 +250,10 @@ func TestWatchLeaseRemoved(t *testing.T) {
 		t.Fatalf("WatchSubnets produced wrong event type")
 	}
 
-	actual := evt.Lease.Network.StringSep(".", "-")
+	actual := evt.Lease.Key()
 	if actual != expected {
 		t.Errorf("WatchSubnet produced wrong subnet: expected %s, got %s", expected, actual)
 	}
-
-	close(cancel)
 }
 
 type leaseData struct {
@@ -273,10 +262,7 @@ type leaseData struct {
 
 func TestRenewLease(t *testing.T) {
 	msr := newMockSubnetRegistry(1)
-	sm, err := newSubnetManager(msr)
-	if err != nil {
-		t.Fatalf("Failed to create subnet manager: %v", err)
-	}
+	sm := newEtcdManager(msr)
 
 	// Create LeaseAttrs
 	extIP, _ := ip.ParseIP4("1.2.3.4")
@@ -292,22 +278,22 @@ func TestRenewLease(t *testing.T) {
 	attrs.BackendData = json.RawMessage(ld)
 
 	// Acquire lease
-	cancel := make(chan bool)
-	defer close(cancel)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	sn, err := sm.AcquireLease(&attrs, cancel)
+	l, err := sm.AcquireLease(ctx, "", &attrs)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
 
-	go sm.LeaseRenewer(cancel)
+	go LeaseRenewer(ctx, sm, "", l)
 
 	fmt.Println("Waiting for lease to pass original expiration")
 	time.Sleep(2 * time.Second)
 
 	// check that it's still good
 	for _, n := range msr.subnets.Nodes {
-		if n.Key == sn.StringSep(".", "-") {
+		if n.Key == l.Subnet.StringSep(".", "-") {
 			if n.Expiration.Before(time.Now()) {
 				t.Error("Failed to renew lease: expiration did not advance")
 			}
