@@ -22,8 +22,18 @@ import (
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
 )
 
+func getIfaceAddrs(iface *net.Interface) ([]netlink.Addr, error) {
+	link := &netlink.Device{
+		netlink.LinkAttrs{
+			Index: iface.Index,
+		},
+	}
+
+	return netlink.AddrList(link, syscall.AF_INET)
+}
+
 func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
-	addrs, err := iface.Addrs()
+	addrs, err := getIfaceAddrs(iface)
 	if err != nil {
 		return nil, err
 	}
@@ -32,19 +42,16 @@ func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
 	var ll net.IP
 
 	for _, addr := range addrs {
-		// Attempt to parse the address in CIDR notation
-		// and assert it is IPv4
-		ip, _, err := net.ParseCIDR(addr.String())
-		if err != nil || ip.To4() == nil {
+		if addr.IP.To4() == nil {
 			continue
 		}
 
-		if ip.IsGlobalUnicast() {
-			return ip, nil
+		if addr.IP.IsGlobalUnicast() {
+			return addr.IP, nil
 		}
 
-		if ip.IsLinkLocalUnicast() {
-			ll = ip
+		if addr.IP.IsLinkLocalUnicast() {
+			ll = addr.IP
 		}
 	}
 
@@ -57,7 +64,7 @@ func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
 }
 
 func GetIfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) error {
-	addrs, err := iface.Addrs()
+	addrs, err := getIfaceAddrs(iface)
 	if err != nil {
 		return err
 	}
@@ -65,9 +72,8 @@ func GetIfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) error {
 	for _, addr := range addrs {
 		// Attempt to parse the address in CIDR notation
 		// and assert it is IPv4
-		ip, _, err := net.ParseCIDR(addr.String())
-		if err == nil && ip.To4() != nil {
-			if ip.To4().Equal(matchAddr) {
+		if addr.IP.To4() != nil {
+			if addr.IP.To4().Equal(matchAddr) {
 				return nil
 			}
 		}
