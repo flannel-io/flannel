@@ -30,10 +30,10 @@ func ParseIPNet(s string) (*net.IPNet, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &net.IPNet{ip, ipNet.Mask}, nil
+	return &net.IPNet{IP: ip, Mask: ipNet.Mask}, nil
 }
 
 // NewIPNet generates an IPNet from an ip address using a netmask of 32.
 func NewIPNet(ip net.IP) *net.IPNet {
-	return &net.IPNet{ip, net.CIDRMask(32, 32)}
+	return &net.IPNet{IP: ip, Mask: net.CIDRMask(32, 32)}
 }

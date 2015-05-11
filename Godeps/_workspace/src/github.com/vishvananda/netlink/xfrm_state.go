@@ -15,9 +15,8 @@ type XfrmStateAlgo struct {
 type EncapType uint8
 
 const (
-	_                                    = iota
-	XFRM_ENCAP_ESPINUDP_NONIKE EncapType = iota
-	XFRM_ENCAP_ESPINUDP        EncapType = iota
+	XFRM_ENCAP_ESPINUDP_NONIKE EncapType = iota + 1
+	XFRM_ENCAP_ESPINUDP
 )
 
 func (e EncapType) String() string {

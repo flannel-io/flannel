@@ -42,6 +42,30 @@ func LinkDel(link *Link) error {
 	return ErrNotImplemented
 }
 
+func SetHairpin(link Link, mode bool) error {
+	return ErrNotImplemented
+}
+
+func SetGuard(link Link, mode bool) error {
+	return ErrNotImplemented
+}
+
+func SetFastLeave(link Link, mode bool) error {
+	return ErrNotImplemented
+}
+
+func SetLearning(link Link, mode bool) error {
+	return ErrNotImplemented
+}
+
+func SetRootBlock(link Link, mode bool) error {
+	return ErrNotImplemented
+}
+
+func SetFlood(link Link, mode bool) error {
+	return ErrNotImplemented
+}
+
 func LinkList() ([]Link, error) {
 	return nil, ErrNotImplemented
 }

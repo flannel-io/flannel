@@ -1,8 +1,6 @@
 package netlink
 
-import (
-	"net"
-)
+import "net"
 
 // Link represents a link device from netlink. Shared link attributes
 // like name may be retrieved using the Attrs() method. Unique data
@@ -12,15 +10,22 @@ type Link interface {
 	Type() string
 }
 
+type (
+	NsPid int
+	NsFd  int
+)
+
 // LinkAttrs represents data shared by most link types
 type LinkAttrs struct {
 	Index        int
 	MTU          int
+	TxQLen       uint32 // Transmit Queue Length
 	Name         string
 	HardwareAddr net.HardwareAddr
 	Flags        net.Flags
-	ParentIndex  int // index of the parent link device
-	MasterIndex  int // must be the index of a bridge
+	ParentIndex  int         // index of the parent link device
+	MasterIndex  int         // must be the index of a bridge
+	Namespace    interface{} // nil | NsPid | NsFd
 }
 
 // Device links cannot be created via netlink. These links
@@ -77,9 +82,21 @@ func (vlan *Vlan) Type() string {
 	return "vlan"
 }
 
+type MacvlanMode uint16
+
+const (
+	MACVLAN_MODE_DEFAULT MacvlanMode = iota
+	MACVLAN_MODE_PRIVATE
+	MACVLAN_MODE_VEPA
+	MACVLAN_MODE_BRIDGE
+	MACVLAN_MODE_PASSTHRU
+	MACVLAN_MODE_SOURCE
+)
+
 // Macvlan links have ParentIndex set in their Attrs()
 type Macvlan struct {
 	LinkAttrs
+	Mode MacvlanMode
 }
 
 func (macvlan *Macvlan) Attrs() *LinkAttrs {
@@ -148,7 +165,29 @@ func (vxlan *Vxlan) Type() string {
 	return "vxlan"
 }
 
+type IPVlanMode uint16
+
+const (
+	IPVLAN_MODE_L2 IPVlanMode = iota
+	IPVLAN_MODE_L3
+	IPVLAN_MODE_MAX
+)
+
+type IPVlan struct {
+	LinkAttrs
+	Mode IPVlanMode
+}
+
+func (ipvlan *IPVlan) Attrs() *LinkAttrs {
+	return &ipvlan.LinkAttrs
+}
+
+func (ipvlan *IPVlan) Type() string {
+	return "ipvlan"
+}
+
 // iproute2 supported devices;
 // vlan | veth | vcan | dummy | ifb | macvlan | macvtap |
-// can | bridge | bond | ipoib | ip6tnl | ipip | sit |
-// vxlan | gre | gretap | ip6gre | ip6gretap | vti
+// bridge | bond | ipoib | ip6tnl | ipip | sit | vxlan |
+// gre | gretap | ip6gre | ip6gretap | vti | nlmon |
+// bond_slave | ipvlan

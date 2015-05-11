@@ -222,7 +222,7 @@ func (req *NetlinkRequest) Execute(sockType int, resType uint16) ([][]byte, erro
 
 done:
 	for {
-		msgs, err := s.Recieve()
+		msgs, err := s.Receive()
 		if err != nil {
 			return nil, err
 		}
@@ -248,6 +248,9 @@ done:
 				continue
 			}
 			res = append(res, m.Data)
+			if m.Header.Flags&syscall.NLM_F_MULTI == 0 {
+				break done
+			}
 		}
 	}
 	return res, nil
@@ -291,7 +294,7 @@ func getNetlinkSocket(protocol int) (*NetlinkSocket, error) {
 
 // Create a netlink socket with a given protocol (e.g. NETLINK_ROUTE)
 // and subscribe it to multicast groups passed in variable argument list.
-// Returns the netlink socket on whic hReceive() method can be called
+// Returns the netlink socket on which Receive() method can be called
 // to retrieve the messages from the kernel.
 func Subscribe(protocol int, groups ...uint) (*NetlinkSocket, error) {
 	fd, err := syscall.Socket(syscall.AF_NETLINK, syscall.SOCK_RAW, protocol)
@@ -326,7 +329,7 @@ func (s *NetlinkSocket) Send(request *NetlinkRequest) error {
 	return nil
 }
 
-func (s *NetlinkSocket) Recieve() ([]syscall.NetlinkMessage, error) {
+func (s *NetlinkSocket) Receive() ([]syscall.NetlinkMessage, error) {
 	rb := make([]byte, syscall.Getpagesize())
 	nr, _, err := syscall.Recvfrom(s.fd, rb, 0)
 	if err != nil {
