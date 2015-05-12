@@ -88,7 +88,7 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 	}
 
 	// Setup the EC2 client
-	auth, err := aws.EnvAuth()
+	auth, err := aws.GetAuth("", "")
 	if err != nil {
 		return nil, fmt.Errorf("error getting AWS credentials from environment: %v", err)
 	}
