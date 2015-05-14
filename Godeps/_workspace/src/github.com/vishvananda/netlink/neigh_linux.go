@@ -9,16 +9,16 @@ import (
 )
 
 const (
-	NDA_UNSPEC    = iota
-	NDA_DST       = iota
-	NDA_LLADDR    = iota
-	NDA_CACHEINFO = iota
-	NDA_PROBES    = iota
-	NDA_VLAN      = iota
-	NDA_PORT      = iota
-	NDA_VNI       = iota
-	NDA_IFINDEX   = iota
-	NDA_MAX       = NDA_IFINDEX
+	NDA_UNSPEC = iota
+	NDA_DST
+	NDA_LLADDR
+	NDA_CACHEINFO
+	NDA_PROBES
+	NDA_VLAN
+	NDA_PORT
+	NDA_VNI
+	NDA_IFINDEX
+	NDA_MAX = NDA_IFINDEX
 )
 
 // Neighbor Cache Entry States.

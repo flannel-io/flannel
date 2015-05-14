@@ -1,9 +1,14 @@
 package netlink
 
 import (
-	"github.com/vishvananda/netns"
+	"bytes"
+	"net"
 	"testing"
+
+	"github.com/vishvananda/netns"
 )
+
+const testTxQLen uint32 = 100
 
 func testLinkAddDel(t *testing.T, link Link) {
 	links, err := LinkList()
@@ -46,13 +51,24 @@ func testLinkAddDel(t *testing.T, link Link) {
 	}
 
 	if veth, ok := link.(*Veth); ok {
+		if veth.TxQLen != testTxQLen {
+			t.Fatalf("TxQLen is %d, should be %d", veth.TxQLen, testTxQLen)
+		}
+		if rBase.MTU != base.MTU {
+			t.Fatalf("MTU is %d, should be %d", rBase.MTU, base.MTU)
+		}
+
 		if veth.PeerName != "" {
+			var peer *Veth
 			other, err := LinkByName(veth.PeerName)
 			if err != nil {
-				t.Fatal("Peer %s not created", veth.PeerName)
+				t.Fatalf("Peer %s not created", veth.PeerName)
 			}
-			if _, ok = other.(*Veth); !ok {
-				t.Fatal("Peer %s is incorrect type", veth.PeerName)
+			if peer, ok = other.(*Veth); !ok {
+				t.Fatalf("Peer %s is incorrect type", veth.PeerName)
+			}
+			if peer.TxQLen != testTxQLen {
+				t.Fatalf("TxQLen of peer is %d, should be %d", peer.TxQLen, testTxQLen)
 			}
 		}
 	}
@@ -63,6 +79,26 @@ func testLinkAddDel(t *testing.T, link Link) {
 			t.Fatal("Result of create is not a vxlan")
 		}
 		compareVxlan(t, vxlan, other)
+	}
+
+	if ipv, ok := link.(*IPVlan); ok {
+		other, ok := result.(*IPVlan)
+		if !ok {
+			t.Fatal("Result of create is not a ipvlan")
+		}
+		if ipv.Mode != other.Mode {
+			t.Fatalf("Got unexpected mode: %d, expected: %d", other.Mode, ipv.Mode)
+		}
+	}
+
+	if macv, ok := link.(*Macvlan); ok {
+		other, ok := result.(*Macvlan)
+		if !ok {
+			t.Fatal("Result of create is not a macvlan")
+		}
+		if macv.Mode != other.Mode {
+			t.Fatalf("Got unexpected mode: %d, expected: %d", other.Mode, macv.Mode)
+		}
 	}
 
 	if err = LinkDel(link); err != nil {
@@ -82,54 +118,54 @@ func testLinkAddDel(t *testing.T, link Link) {
 func compareVxlan(t *testing.T, expected, actual *Vxlan) {
 
 	if actual.VxlanId != expected.VxlanId {
-		t.Fatalf("Vxlan.VxlanId doesn't match")
+		t.Fatal("Vxlan.VxlanId doesn't match")
 	}
 	if expected.SrcAddr != nil && !actual.SrcAddr.Equal(expected.SrcAddr) {
-		t.Fatalf("Vxlan.SrcAddr doesn't match")
+		t.Fatal("Vxlan.SrcAddr doesn't match")
 	}
 	if expected.Group != nil && !actual.Group.Equal(expected.Group) {
-		t.Fatalf("Vxlan.Group doesn't match")
+		t.Fatal("Vxlan.Group doesn't match")
 	}
 	if expected.TTL != -1 && actual.TTL != expected.TTL {
-		t.Fatalf("Vxlan.TTL doesn't match")
+		t.Fatal("Vxlan.TTL doesn't match")
 	}
 	if expected.TOS != -1 && actual.TOS != expected.TOS {
-		t.Fatalf("Vxlan.TOS doesn't match")
+		t.Fatal("Vxlan.TOS doesn't match")
 	}
 	if actual.Learning != expected.Learning {
-		t.Fatalf("Vxlan.Learning doesn't match")
+		t.Fatal("Vxlan.Learning doesn't match")
 	}
 	if actual.Proxy != expected.Proxy {
-		t.Fatalf("Vxlan.Proxy doesn't match")
+		t.Fatal("Vxlan.Proxy doesn't match")
 	}
 	if actual.RSC != expected.RSC {
-		t.Fatalf("Vxlan.RSC doesn't match", actual, expected)
+		t.Fatal("Vxlan.RSC doesn't match")
 	}
 	if actual.L2miss != expected.L2miss {
-		t.Fatalf("Vxlan.L2miss doesn't match")
+		t.Fatal("Vxlan.L2miss doesn't match")
 	}
 	if actual.L3miss != expected.L3miss {
-		t.Fatalf("Vxlan.L3miss doesn't match")
+		t.Fatal("Vxlan.L3miss doesn't match")
 	}
 	if expected.NoAge {
 		if !actual.NoAge {
-			t.Fatalf("Vxlan.NoAge doesn't match")
+			t.Fatal("Vxlan.NoAge doesn't match")
 		}
 	} else if expected.Age > 0 && actual.Age != expected.Age {
-		t.Fatalf("Vxlan.Age doesn't match")
+		t.Fatal("Vxlan.Age doesn't match")
 	}
 	if expected.Limit > 0 && actual.Limit != expected.Limit {
-		t.Fatalf("Vxlan.Limit doesn't match")
+		t.Fatal("Vxlan.Limit doesn't match")
 	}
 	if expected.Port > 0 && actual.Port != expected.Port {
-		t.Fatalf("Vxlan.Port doesn't match")
+		t.Fatal("Vxlan.Port doesn't match")
 	}
 	if expected.PortLow > 0 || expected.PortHigh > 0 {
 		if actual.PortLow != expected.PortLow {
-			t.Fatalf("Vxlan.PortLow doesn't match")
+			t.Fatal("Vxlan.PortLow doesn't match")
 		}
 		if actual.PortHigh != expected.PortHigh {
-			t.Fatalf("Vxlan.PortHigh doesn't match")
+			t.Fatal("Vxlan.PortHigh doesn't match")
 		}
 	}
 }
@@ -145,7 +181,7 @@ func TestLinkAddDelBridge(t *testing.T) {
 	tearDown := setUpNetlinkTest(t)
 	defer tearDown()
 
-	testLinkAddDel(t, &Bridge{LinkAttrs{Name: "foo"}})
+	testLinkAddDel(t, &Bridge{LinkAttrs{Name: "foo", MTU: 1400}})
 }
 
 func TestLinkAddDelVlan(t *testing.T) {
@@ -173,7 +209,10 @@ func TestLinkAddDelMacvlan(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testLinkAddDel(t, &Macvlan{LinkAttrs{Name: "bar", ParentIndex: parent.Attrs().Index}})
+	testLinkAddDel(t, &Macvlan{
+		LinkAttrs: LinkAttrs{Name: "bar", ParentIndex: parent.Attrs().Index},
+		Mode:      MACVLAN_MODE_PRIVATE,
+	})
 
 	if err := LinkDel(parent); err != nil {
 		t.Fatal(err)
@@ -184,7 +223,7 @@ func TestLinkAddDelVeth(t *testing.T) {
 	tearDown := setUpNetlinkTest(t)
 	defer tearDown()
 
-	testLinkAddDel(t, &Veth{LinkAttrs{Name: "foo"}, "bar"})
+	testLinkAddDel(t, &Veth{LinkAttrs{Name: "foo", TxQLen: testTxQLen, MTU: 1400}, "bar"})
 }
 
 func TestLinkAddDelBridgeMaster(t *testing.T) {
@@ -362,6 +401,63 @@ func TestLinkAddDelVxlan(t *testing.T) {
 	}
 }
 
+func TestLinkAddDelIPVlanL2(t *testing.T) {
+	tearDown := setUpNetlinkTest(t)
+	defer tearDown()
+	parent := &Dummy{LinkAttrs{Name: "foo"}}
+	if err := LinkAdd(parent); err != nil {
+		t.Fatal(err)
+	}
+
+	ipv := IPVlan{
+		LinkAttrs: LinkAttrs{
+			Name:        "bar",
+			ParentIndex: parent.Index,
+		},
+		Mode: IPVLAN_MODE_L2,
+	}
+
+	testLinkAddDel(t, &ipv)
+}
+
+func TestLinkAddDelIPVlanL3(t *testing.T) {
+	tearDown := setUpNetlinkTest(t)
+	defer tearDown()
+	parent := &Dummy{LinkAttrs{Name: "foo"}}
+	if err := LinkAdd(parent); err != nil {
+		t.Fatal(err)
+	}
+
+	ipv := IPVlan{
+		LinkAttrs: LinkAttrs{
+			Name:        "bar",
+			ParentIndex: parent.Index,
+		},
+		Mode: IPVLAN_MODE_L3,
+	}
+
+	testLinkAddDel(t, &ipv)
+}
+
+func TestLinkAddDelIPVlanNoParent(t *testing.T) {
+	tearDown := setUpNetlinkTest(t)
+	defer tearDown()
+
+	ipv := IPVlan{
+		LinkAttrs: LinkAttrs{
+			Name: "bar",
+		},
+		Mode: IPVLAN_MODE_L3,
+	}
+	err := LinkAdd(&ipv)
+	if err == nil {
+		t.Fatal("Add should fail if ipvlan creating without ParentIndex")
+	}
+	if err.Error() != "Can't create ipvlan link without ParentIndex" {
+		t.Fatalf("Error should be about missing ParentIndex, got %q", err)
+	}
+}
+
 func TestLinkByIndex(t *testing.T) {
 	tearDown := setUpNetlinkTest(t)
 	defer tearDown()
@@ -386,5 +482,63 @@ func TestLinkByIndex(t *testing.T) {
 	_, err = LinkByIndex(dummy.Attrs().Index)
 	if err == nil {
 		t.Fatalf("LinkByIndex(%v) found deleted link", err)
+	}
+}
+
+func TestLinkSet(t *testing.T) {
+	tearDown := setUpNetlinkTest(t)
+	defer tearDown()
+
+	iface := &Dummy{LinkAttrs{Name: "foo"}}
+	if err := LinkAdd(iface); err != nil {
+		t.Fatal(err)
+	}
+
+	link, err := LinkByName("foo")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = LinkSetName(link, "bar")
+	if err != nil {
+		t.Fatalf("Could not change interface name: %v", err)
+	}
+
+	link, err = LinkByName("bar")
+	if err != nil {
+		t.Fatalf("Interface name not changed: %v", err)
+	}
+
+	err = LinkSetMTU(link, 1400)
+	if err != nil {
+		t.Fatalf("Could not set MTU: %v", err)
+	}
+
+	link, err = LinkByName("bar")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if link.Attrs().MTU != 1400 {
+		t.Fatal("MTU not changed!")
+	}
+
+	addr, err := net.ParseMAC("00:12:34:56:78:AB")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = LinkSetHardwareAddr(link, addr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	link, err = LinkByName("bar")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(link.Attrs().HardwareAddr, addr) {
+		t.Fatalf("hardware address not changed!")
 	}
 }

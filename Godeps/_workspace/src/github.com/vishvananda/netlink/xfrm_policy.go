@@ -9,12 +9,12 @@ import (
 type Dir uint8
 
 const (
-	XFRM_DIR_IN     Dir = iota
-	XFRM_DIR_OUT    Dir = iota
-	XFRM_DIR_FWD    Dir = iota
-	XFRM_SOCKET_IN  Dir = iota
-	XFRM_SOCKET_OUT Dir = iota
-	XFRM_SOCKET_FWD Dir = iota
+	XFRM_DIR_IN Dir = iota
+	XFRM_DIR_OUT
+	XFRM_DIR_FWD
+	XFRM_SOCKET_IN
+	XFRM_SOCKET_OUT
+	XFRM_SOCKET_FWD
 )
 
 func (d Dir) String() string {

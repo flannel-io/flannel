@@ -25,7 +25,7 @@ func RouteDel(route *Route) error {
 }
 
 func routeHandle(route *Route, req *nl.NetlinkRequest) error {
-	if route.Dst.IP == nil && route.Src == nil && route.Gw == nil {
+	if (route.Dst == nil || route.Dst.IP == nil) && route.Src == nil && route.Gw == nil {
 		return fmt.Errorf("one of Dst.IP, Src, or Gw must not be nil")
 	}
 
@@ -34,7 +34,7 @@ func routeHandle(route *Route, req *nl.NetlinkRequest) error {
 	family := -1
 	var rtAttrs []*nl.RtAttr
 
-	if route.Dst.IP != nil {
+	if route.Dst != nil && route.Dst.IP != nil {
 		dstLen, _ := route.Dst.Mask.Size()
 		msg.Dst_len = uint8(dstLen)
 		dstFamily := nl.GetIPFamily(route.Dst.IP)
@@ -163,4 +163,63 @@ func RouteList(link Link, family int) ([]Route, error) {
 	}
 
 	return res, nil
+}
+
+// RouteGet gets a route to a specific destination from the host system.
+// Equivalent to: 'ip route get'.
+func RouteGet(destination net.IP) ([]Route, error) {
+	req := nl.NewNetlinkRequest(syscall.RTM_GETROUTE, syscall.NLM_F_REQUEST)
+	family := nl.GetIPFamily(destination)
+	var destinationData []byte
+	var bitlen uint8
+	if family == FAMILY_V4 {
+		destinationData = destination.To4()
+		bitlen = 32
+	} else {
+		destinationData = destination.To16()
+		bitlen = 128
+	}
+	msg := &nl.RtMsg{}
+	msg.Family = uint8(family)
+	msg.Dst_len = bitlen
+	req.AddData(msg)
+
+	rtaDst := nl.NewRtAttr(syscall.RTA_DST, destinationData)
+	req.AddData(rtaDst)
+
+	msgs, err := req.Execute(syscall.NETLINK_ROUTE, syscall.RTM_NEWROUTE)
+	if err != nil {
+		return nil, err
+	}
+
+	native := nl.NativeEndian()
+	res := make([]Route, 0)
+	for _, m := range msgs {
+		msg := nl.DeserializeRtMsg(m)
+		attrs, err := nl.ParseRouteAttr(m[msg.Len():])
+		if err != nil {
+			return nil, err
+		}
+
+		route := Route{}
+		for _, attr := range attrs {
+			switch attr.Attr.Type {
+			case syscall.RTA_GATEWAY:
+				route.Gw = net.IP(attr.Value)
+			case syscall.RTA_PREFSRC:
+				route.Src = net.IP(attr.Value)
+			case syscall.RTA_DST:
+				route.Dst = &net.IPNet{
+					IP:   attr.Value,
+					Mask: net.CIDRMask(int(msg.Dst_len), 8*len(attr.Value)),
+				}
+			case syscall.RTA_OIF:
+				routeIndex := int(native.Uint32(attr.Value[0:4]))
+				route.LinkIndex = routeIndex
+			}
+		}
+		res = append(res, route)
+	}
+	return res, nil
+
 }

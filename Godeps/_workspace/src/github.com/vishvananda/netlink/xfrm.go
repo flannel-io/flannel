@@ -39,12 +39,12 @@ func (p Proto) String() string {
 type Mode uint8
 
 const (
-	XFRM_MODE_TRANSPORT         Mode = iota
-	XFRM_MODE_TUNNEL            Mode = iota
-	XFRM_MODE_ROUTEOPTIMIZATION Mode = iota
-	XFRM_MODE_IN_TRIGGER        Mode = iota
-	XFRM_MODE_BEET              Mode = iota
-	XFRM_MODE_MAX               Mode = iota
+	XFRM_MODE_TRANSPORT Mode = iota
+	XFRM_MODE_TUNNEL
+	XFRM_MODE_ROUTEOPTIMIZATION
+	XFRM_MODE_IN_TRIGGER
+	XFRM_MODE_BEET
+	XFRM_MODE_MAX
 )
 
 func (m Mode) String() string {

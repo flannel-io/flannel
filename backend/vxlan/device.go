@@ -161,7 +161,7 @@ func (dev *vxlanDevice) MonitorMisses(misses chan *netlink.Neigh) {
 	}
 
 	for {
-		msgs, err := nlsock.Recieve()
+		msgs, err := nlsock.Receive()
 		if err != nil {
 			log.Errorf("Failed to receive from netlink: %v ", err)
 

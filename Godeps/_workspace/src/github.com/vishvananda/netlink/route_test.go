@@ -34,7 +34,17 @@ func TestRouteAddDel(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(routes) != 1 {
-		t.Fatal("Link not removed properly")
+		t.Fatal("Link not added properly")
+	}
+
+	dstIP := net.ParseIP("192.168.0.42")
+	routeToDstIP, err := RouteGet(dstIP)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(routeToDstIP) == 0 {
+		t.Fatal("Default route not present")
 	}
 
 	err = RouteDel(&route)
@@ -50,4 +60,25 @@ func TestRouteAddDel(t *testing.T) {
 		t.Fatal("Route not removed properly")
 	}
 
+}
+
+func TestRouteAddIncomplete(t *testing.T) {
+	tearDown := setUpNetlinkTest(t)
+	defer tearDown()
+
+	// get loopback interface
+	link, err := LinkByName("lo")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// bring the interface up
+	if err = LinkSetUp(link); err != nil {
+		t.Fatal(err)
+	}
+
+	route := Route{LinkIndex: link.Attrs().Index}
+	if err := RouteAdd(&route); err == nil {
+		t.Fatal("Adding incomplete route should fail")
+	}
 }

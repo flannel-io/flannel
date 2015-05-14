@@ -30,6 +30,6 @@ type Route struct {
 }
 
 func (r Route) String() string {
-	return fmt.Sprintf("{Ifindex: %d Dst: %s Src: %s Gw: %s}", r.LinkIndex, r.Dst.String(),
+	return fmt.Sprintf("{Ifindex: %d Dst: %s Src: %s Gw: %s}", r.LinkIndex, r.Dst,
 		r.Src, r.Gw)
 }

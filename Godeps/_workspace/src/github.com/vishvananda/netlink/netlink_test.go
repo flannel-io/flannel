@@ -1,11 +1,12 @@
 package netlink
 
 import (
-	"github.com/vishvananda/netns"
 	"log"
 	"os"
 	"runtime"
 	"testing"
+
+	"github.com/vishvananda/netns"
 )
 
 type tearDownNetlinkTest func()
