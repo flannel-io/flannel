@@ -64,12 +64,14 @@ type SubnetLease struct {
 }
 
 type SubnetManager struct {
-	registry  subnetRegistry
-	config    *Config
-	myLease   SubnetLease
-	leaseExp  time.Time
-	lastIndex uint64
-	leases    []SubnetLease
+	registry      subnetRegistry
+	config        *Config
+	myLease       SubnetLease
+	leaseExp      time.Time
+	lastIndex     uint64
+	leases        []SubnetLease
+	staticNetwork string
+	staticConfig  *Config
 }
 
 type EventType int
@@ -89,7 +91,30 @@ func NewSubnetManager(config *EtcdConfig) (*SubnetManager, error) {
 	return newSubnetManager(esr)
 }
 
+func NewSubnetManagerWithStaticConfig(config, network string, etcdconfig *EtcdConfig) (*SubnetManager, error) {
+	esr, err := newEtcdSubnetRegistry(etcdconfig)
+	if err != nil {
+		return nil, err
+	}
+	cfg, err := ParseConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
+	sm := SubnetManager{
+		registry:      esr,
+		config:        cfg,
+		staticNetwork: network,
+	}
+
+	return &sm, nil
+}
+
 func (sm *SubnetManager) AcquireLease(attrs *LeaseAttrs, cancel chan bool) (ip.IP4Net, error) {
+	if sm.staticNetwork != "" {
+		return sm.useStaticLease(attrs)
+	}
+
 	for {
 		sn, err := sm.acquireLeaseOnce(attrs, cancel)
 		switch {
@@ -170,6 +195,14 @@ func (sm *SubnetManager) tryAcquireLease(extIP ip.IP4, attrs *LeaseAttrs) (ip.IP
 	default:
 		return ip.IP4Net{}, err
 	}
+}
+
+func (sm *SubnetManager) useStaticLease(attrs *LeaseAttrs) (ip.IP4Net, error) {
+	sn, err := parseSubnetKey(sm.staticNetwork)
+	sm.myLease.Network = sn
+	sm.myLease.Attrs = *attrs
+	sm.leaseExp = time.Now()
+	return sn, err
 }
 
 func (sm *SubnetManager) acquireLeaseOnce(attrs *LeaseAttrs, cancel chan bool) (ip.IP4Net, error) {

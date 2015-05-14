@@ -51,6 +51,8 @@ type CmdLineOpts struct {
 	ipMasq        bool
 	subnetFile    string
 	iface         string
+	staticSubnet  string
+	staticConfig  string
 }
 
 var opts CmdLineOpts
@@ -66,6 +68,8 @@ func init() {
 	flag.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
+	flag.StringVar(&opts.staticConfig, "config", "", "static config to use")
+	flag.StringVar(&opts.staticSubnet, "subnet", "", "static subnet to use")
 }
 
 // TODO: This is yet another copy (others found in etcd, fleet) -- Pull it out!
@@ -163,7 +167,14 @@ func newSubnetManager() *subnet.SubnetManager {
 	}
 
 	for {
-		sm, err := subnet.NewSubnetManager(cfg)
+		var err error
+		var sm *subnet.SubnetManager
+		if opts.staticConfig != "" && opts.staticSubnet != "" {
+			log.Info("Using static configuration")
+			sm, err = subnet.NewSubnetManagerWithStaticConfig(opts.staticConfig, opts.staticSubnet, cfg)
+		} else {
+			sm, err = subnet.NewSubnetManager(cfg)
+		}
 		if err == nil {
 			return sm
 		}
