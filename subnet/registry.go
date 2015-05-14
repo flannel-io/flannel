@@ -16,6 +16,8 @@ package subnet
 
 import (
 	"fmt"
+	golog "log"
+	"os"
 	"path"
 	"sync"
 	"time"
@@ -44,6 +46,10 @@ type etcdSubnetRegistry struct {
 	mux     sync.Mutex
 	cli     *etcd.Client
 	etcdCfg *EtcdConfig
+}
+
+func init() {
+	etcd.SetLogger(golog.New(os.Stderr, "go-etcd", golog.LstdFlags))
 }
 
 func newEtcdClient(c *EtcdConfig) (*etcd.Client, error) {
