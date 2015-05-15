@@ -22,36 +22,42 @@ import (
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/mitchellh/goamz/aws"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/mitchellh/goamz/ec2"
-
+	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/pkg/task"
 	"github.com/coreos/flannel/subnet"
 )
 
 type AwsVpcBackend struct {
-	sm     *subnet.SubnetManager
-	rawCfg json.RawMessage
-	cfg    struct {
+	sm      subnet.Manager
+	network string
+	config  *subnet.Config
+	cfg     struct {
 		RouteTableID string
 	}
-	stop chan bool
-	wg   sync.WaitGroup
+	lease  *subnet.Lease
+	ctx    context.Context
+	cancel context.CancelFunc
+	wg     sync.WaitGroup
 }
 
-func New(sm *subnet.SubnetManager, config json.RawMessage) backend.Backend {
+func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	be := AwsVpcBackend{
-		sm:     sm,
-		rawCfg: config,
-		stop:   make(chan bool),
+		sm:      sm,
+		network: network,
+		config:  config,
+		ctx:     ctx,
+		cancel:  cancel,
 	}
 	return &be
 }
 
 func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.SubnetDef, error) {
 	// Parse our configuration
-	if len(m.rawCfg) > 0 {
-		if err := json.Unmarshal(m.rawCfg, &m.cfg); err != nil {
+	if len(m.config.Backend) > 0 {
+		if err := json.Unmarshal(m.config.Backend, &m.cfg); err != nil {
 			return nil, fmt.Errorf("error decoding VPC backend config: %v", err)
 		}
 	}
@@ -61,13 +67,16 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 		PublicIP: ip.FromIP(extIP),
 	}
 
-	sn, err := m.sm.AcquireLease(&attrs, m.stop)
-	if err != nil {
-		if err == task.ErrCanceled {
-			return nil, err
-		} else {
-			return nil, fmt.Errorf("failed to acquire lease: %v", err)
-		}
+	l, err := m.sm.AcquireLease(m.ctx, m.network, &attrs)
+	switch err {
+	case nil:
+		m.lease = l
+
+	case context.Canceled, context.DeadlineExceeded:
+		return nil, err
+
+	default:
+		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
 	// Figure out this machine's EC2 instance ID and region
@@ -95,10 +104,10 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 	ec2c := ec2.New(auth, region)
 
 	// Delete route for this machine's subnet if it already exists
-	if _, err := ec2c.DeleteRoute(m.cfg.RouteTableID, sn.String()); err != nil {
+	if _, err := ec2c.DeleteRoute(m.cfg.RouteTableID, l.Subnet.String()); err != nil {
 		if ec2err, ok := err.(*ec2.Error); !ok || ec2err.Code != "InvalidRoute.NotFound" {
 			// an error other than the route not already existing occurred
-			return nil, fmt.Errorf("error deleting existing route for %s: %v", sn.String(), err)
+			return nil, fmt.Errorf("error deleting existing route for %s: %v", l.Subnet.String(), err)
 		}
 	}
 
@@ -106,7 +115,7 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 	route := &ec2.CreateRoute{
 		RouteTableId:         m.cfg.RouteTableID,
 		InstanceId:           instanceID,
-		DestinationCidrBlock: sn.String(),
+		DestinationCidrBlock: l.Subnet.String(),
 	}
 
 	if _, err := ec2c.CreateRoute(route); err != nil {
@@ -114,17 +123,17 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 	}
 
 	return &backend.SubnetDef{
-		Net: sn,
+		Net: l.Subnet,
 		MTU: extIface.MTU,
 	}, nil
 }
 
 func (m *AwsVpcBackend) Run() {
-	m.sm.LeaseRenewer(m.stop)
+	subnet.LeaseRenewer(m.ctx, m.sm, m.network, m.lease)
 }
 
 func (m *AwsVpcBackend) Stop() {
-	close(m.stop)
+	m.cancel()
 }
 
 func (m *AwsVpcBackend) Name() string {

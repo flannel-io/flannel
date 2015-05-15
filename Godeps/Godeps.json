@@ -34,6 +34,10 @@
 		{
 			"ImportPath": "github.com/vishvananda/netlink",
 			"Rev": "991a7a2fa7c073968fb27f36669df199b1fdf412"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "1dfe7915deaf3f80b962c163b918868d8a6d8974"
 		}
 	]
 }

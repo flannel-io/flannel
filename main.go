@@ -15,7 +15,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"net"
@@ -23,20 +22,15 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
-	"time"
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
-
+	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/backend/alloc"
-	"github.com/coreos/flannel/backend/awsvpc"
-	"github.com/coreos/flannel/backend/hostgw"
-	"github.com/coreos/flannel/backend/udp"
-	"github.com/coreos/flannel/backend/vxlan"
+	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/pkg/task"
 	"github.com/coreos/flannel/subnet"
 )
 
@@ -50,7 +44,9 @@ type CmdLineOpts struct {
 	version       bool
 	ipMasq        bool
 	subnetFile    string
+	subnetDir     string
 	iface         string
+	networks      string
 }
 
 var opts CmdLineOpts
@@ -61,8 +57,10 @@ func init() {
 	flag.StringVar(&opts.etcdKeyfile, "etcd-keyfile", "", "SSL key file used to secure etcd communication")
 	flag.StringVar(&opts.etcdCertfile, "etcd-certfile", "", "SSL certification file used to secure etcd communication")
 	flag.StringVar(&opts.etcdCAFile, "etcd-cafile", "", "SSL Certificate Authority file used to secure etcd communication")
-	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/flannel/subnet.env", "filename where env variables (subnet and MTU values) will be written to")
+	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/flannel/subnet.env", "filename where env variables (subnet, MTU, ... ) will be written to")
+	flag.StringVar(&opts.subnetDir, "subnet-dir", "/run/flannel/networks", "directory where files with env variables (subnet, MTU, ...) will be written to")
 	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
+	flag.StringVar(&opts.networks, "networks", "", "run in multi-network mode and service the specified networks")
 	flag.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
@@ -90,12 +88,8 @@ func flagsFromEnv(prefix string, fs *flag.FlagSet) {
 	})
 }
 
-func writeSubnetFile(sn *backend.SubnetDef) error {
-	// Write out the first usable IP by incrementing
-	// sn.IP by one
-	sn.Net.IP += 1
-
-	dir, name := filepath.Split(opts.subnetFile)
+func writeSubnetFile(path string, sn *backend.SubnetDef) error {
+	dir, name := filepath.Split(path)
 	os.MkdirAll(dir, 0755)
 
 	tempFile := filepath.Join(dir, "."+name)
@@ -103,6 +97,10 @@ func writeSubnetFile(sn *backend.SubnetDef) error {
 	if err != nil {
 		return err
 	}
+
+	// Write out the first usable IP by incrementing
+	// sn.IP by one
+	sn.Net.IP += 1
 
 	fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn.Net)
 	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", sn.MTU)
@@ -114,7 +112,7 @@ func writeSubnetFile(sn *backend.SubnetDef) error {
 
 	// rename(2) the temporary file to the desired location so that it becomes
 	// atomically visible with the contents
-	return os.Rename(tempFile, opts.subnetFile)
+	return os.Rename(tempFile, path)
 }
 
 func lookupIface() (*net.Interface, net.IP, error) {
@@ -151,99 +149,69 @@ func lookupIface() (*net.Interface, net.IP, error) {
 	return iface, ipaddr, nil
 }
 
-func newSubnetManager() *subnet.SubnetManager {
-	peers := strings.Split(opts.etcdEndpoints, ",")
+func isMultiNetwork() bool {
+	return len(opts.networks) > 0
+}
 
+func newSubnetManager() (subnet.Manager, error) {
 	cfg := &subnet.EtcdConfig{
-		Endpoints: peers,
+		Endpoints: strings.Split(opts.etcdEndpoints, ","),
 		Keyfile:   opts.etcdKeyfile,
 		Certfile:  opts.etcdCertfile,
 		CAFile:    opts.etcdCAFile,
 		Prefix:    opts.etcdPrefix,
 	}
 
-	for {
-		sm, err := subnet.NewSubnetManager(cfg)
-		if err == nil {
-			return sm
-		}
-
-		log.Error("Failed to create SubnetManager: ", err)
-		time.Sleep(time.Second)
-	}
+	return subnet.NewEtcdManager(cfg)
 }
 
-func newBackend(sm *subnet.SubnetManager) (backend.Backend, error) {
-	config := sm.GetConfig()
-
-	var bt struct {
-		Type string
-	}
-
-	if len(config.Backend) == 0 {
-		bt.Type = "udp"
-	} else {
-		if err := json.Unmarshal(config.Backend, &bt); err != nil {
-			return nil, fmt.Errorf("Error decoding Backend property of config: %v", err)
-		}
-	}
-
-	switch strings.ToLower(bt.Type) {
-	case "udp":
-		return udp.New(sm, config.Backend), nil
-	case "alloc":
-		return alloc.New(sm), nil
-	case "host-gw":
-		return hostgw.New(sm), nil
-	case "vxlan":
-		return vxlan.New(sm, config.Backend), nil
-	case "aws-vpc":
-		return awsvpc.New(sm, config.Backend), nil
-	default:
-		return nil, fmt.Errorf("'%v': unknown backend type", bt.Type)
-	}
-}
-
-func run(sm *subnet.SubnetManager, be backend.Backend, exit chan int) {
-	var err error
-	defer func() {
-		if err == nil || err == task.ErrCanceled {
-			exit <- 0
-		} else {
-			log.Error(err)
-			exit <- 1
-		}
-	}()
-
+func initAndRun(ctx context.Context, sm subnet.Manager, netnames []string) {
 	iface, ipaddr, err := lookupIface()
 	if err != nil {
+		log.Error(err)
 		return
 	}
 
 	if iface.MTU == 0 {
-		err = fmt.Errorf("Failed to determine MTU for %s interface", ipaddr)
+		log.Errorf("Failed to determine MTU for %s interface", ipaddr)
 		return
 	}
 
 	log.Infof("Using %s as external interface", ipaddr)
 
-	sn, err := be.Init(iface, ipaddr)
-	if err != nil {
-		return
+	nets := []*network.Network{}
+	for _, n := range netnames {
+		nets = append(nets, network.New(sm, n, opts.ipMasq))
 	}
 
-	if opts.ipMasq {
-		flannelNet := sm.GetConfig().Network
-		if err = setupIPMasq(flannelNet); err != nil {
-			return
-		}
+	wg := sync.WaitGroup{}
+
+	for _, n := range nets {
+		go func(n *network.Network) {
+			wg.Add(1)
+			defer wg.Done()
+
+			sn := n.Init(ctx, iface, ipaddr)
+			if sn != nil {
+				if isMultiNetwork() {
+					path := filepath.Join(opts.subnetDir, n.Name) + ".env"
+					if err := writeSubnetFile(path, sn); err != nil {
+						return
+					}
+				} else {
+					if err := writeSubnetFile(opts.subnetFile, sn); err != nil {
+						return
+					}
+					daemon.SdNotify("READY=1")
+				}
+
+				n.Run(ctx)
+				log.Infof("%v exited", n.Name)
+			}
+		}(n)
 	}
 
-	writeSubnetFile(sn)
-	daemon.SdNotify("READY=1")
-
-	log.Infof("%s mode initialized", be.Name())
-	be.Run()
+	wg.Wait()
 }
 
 func main() {
@@ -267,33 +235,42 @@ func main() {
 
 	flagsFromEnv("FLANNELD", flag.CommandLine)
 
-	sm := newSubnetManager()
-	be, err := newBackend(sm)
+	sm, err := newSubnetManager()
 	if err != nil {
-		log.Info(err)
+		log.Error("Failed to create SubnetManager: ", err)
 		os.Exit(1)
 	}
 
-	// Register for SIGINT and SIGTERM and wait for one of them to arrive
+	var runFunc func(ctx context.Context)
+
+	networks := strings.Split(opts.networks, ",")
+	if len(networks) == 0 {
+		networks = append(networks, "")
+	}
+	runFunc = func(ctx context.Context) {
+		initAndRun(ctx, sm, networks)
+	}
+
+	// Register for SIGINT and SIGTERM
 	log.Info("Installing signal handlers")
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
 
-	exit := make(chan int)
-	go run(sm, be, exit)
+	ctx, cancel := context.WithCancel(context.Background())
 
-	for {
-		select {
-		case <-sigs:
-			// unregister to get default OS nuke behaviour in case we don't exit cleanly
-			signal.Stop(sigs)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		runFunc(ctx)
+		wg.Done()
+	}()
 
-			log.Info("Exiting...")
-			be.Stop()
+	<-sigs
+	// unregister to get default OS nuke behaviour in case we don't exit cleanly
+	signal.Stop(sigs)
 
-		case code := <-exit:
-			log.Infof("%s mode exited", be.Name())
-			os.Exit(code)
-		}
-	}
+	log.Info("Exiting...")
+	cancel()
+
+	wg.Wait()
 }
