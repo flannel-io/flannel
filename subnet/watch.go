@@ -21,11 +21,16 @@ import (
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
+// WatchLeases performs a long term watch of the given network's subnet leases
+// and communicates addition/deletion events on receiver channel. It takes care
+// of handling "fall-behind" logic where the history window has advanced too far
+// and it needs to diff the latest snapshot with its saved state and generate events
 func WatchLeases(ctx context.Context, sm Manager, network string, receiver chan []Event) {
 	lw := &leaseWatcher{}
+	var cursor interface{}
 
 	for {
-		res, err := sm.WatchLeases(ctx, network, lw.cursor)
+		res, err := sm.WatchLeases(ctx, network, cursor)
 		if err != nil {
 			if err == context.Canceled || err == context.DeadlineExceeded {
 				return
@@ -35,6 +40,7 @@ func WatchLeases(ctx context.Context, sm Manager, network string, receiver chan 
 			time.Sleep(time.Second)
 			continue
 		}
+		cursor = res.Cursor
 
 		batch := []Event{}
 
@@ -52,7 +58,6 @@ func WatchLeases(ctx context.Context, sm Manager, network string, receiver chan 
 
 type leaseWatcher struct {
 	leases []Lease
-	cursor interface{}
 }
 
 func (lw *leaseWatcher) reset(leases []Lease) []Event {
