@@ -111,7 +111,7 @@ func findLeaseByIP(leases []Lease, pubIP ip.IP4) *Lease {
 
 func (m *EtcdManager) tryAcquireLease(ctx context.Context, network string, config *Config, extIP ip.IP4, attrs *LeaseAttrs) (*Lease, error) {
 	var err error
-	leases, err := m.getLeases(ctx, network)
+	leases, _, err := m.getLeases(ctx, network)
 	if err != nil {
 		return nil, err
 	}
@@ -215,10 +215,14 @@ OuterLoop:
 	}
 }
 
-func (m *EtcdManager) getLeases(ctx context.Context, network string) ([]Lease, error) {
+// getLeases queries etcd to get a list of currently allocated leases for a given network.
+// It returns the leases along with the "as-of" etcd-index that can be used as the starting
+// point for etcd watch.
+func (m *EtcdManager) getLeases(ctx context.Context, network string) ([]Lease, uint64, error) {
 	resp, err := m.registry.getSubnets(ctx, network)
 
 	leases := []Lease{}
+	index := uint64(0)
 
 	switch {
 	case err == nil:
@@ -228,8 +232,8 @@ func (m *EtcdManager) getLeases(ctx context.Context, network string) ([]Lease, e
 				attrs := &LeaseAttrs{}
 				if err = json.Unmarshal([]byte(node.Value), attrs); err == nil {
 					exp := time.Time{}
-					if resp.Node.Expiration != nil {
-						exp = *resp.Node.Expiration
+					if node.Expiration != nil {
+						exp = *node.Expiration
 					}
 
 					lease := Lease{
@@ -241,15 +245,16 @@ func (m *EtcdManager) getLeases(ctx context.Context, network string) ([]Lease, e
 				}
 			}
 		}
+		index = resp.Node.ModifiedIndex
 
 	case err.(*etcd.EtcdError).ErrorCode == etcdKeyNotFound:
 		// key not found: treat it as empty set
 
 	default:
-		return nil, err
+		return nil, 0, err
 	}
 
-	return leases, nil
+	return leases, index, nil
 }
 
 func (m *EtcdManager) RenewLease(ctx context.Context, network string, lease *Lease) error {
@@ -339,19 +344,18 @@ func parseSubnetWatchResponse(resp *etcd.Response) (WatchResult, error) {
 	}, nil
 }
 
+// watchReset is called when incremental watch failed and we need to grab a snapshot
 func (m *EtcdManager) watchReset(ctx context.Context, network string) (WatchResult, error) {
 	wr := WatchResult{}
 
-	leases, err := m.getLeases(ctx, network)
+	leases, index, err := m.getLeases(ctx, network)
 	if err != nil {
 		return wr, fmt.Errorf("failed to retrieve subnet leases: %v", err)
 	}
 
-	for _, l := range leases {
-		e := Event{SubnetAdded, l}
-		wr.Events = append(wr.Events, e)
-	}
-
+	cursor := index + 1
+	wr.Snapshot = leases
+	wr.Cursor = cursor
 	return wr, nil
 }
 
