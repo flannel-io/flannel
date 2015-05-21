@@ -81,7 +81,7 @@ func (vb *VXLANBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 	// Parse our configuration
 	if len(vb.config.Backend) > 0 {
 		if err := json.Unmarshal(vb.config.Backend, &vb.cfg); err != nil {
-			return nil, fmt.Errorf("error decoding UDP backend config: %v", err)
+			return nil, fmt.Errorf("error decoding VXLAN backend config: %v", err)
 		}
 	}
 
