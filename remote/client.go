@@ -124,7 +124,12 @@ func (m *RemoteManager) WatchLeases(ctx context.Context, network string, cursor 
 	url := m.mkurl(network, "leases")
 
 	if cursor != nil {
-		url = fmt.Sprintf("%v?next=%v", url, cursor)
+		c, ok := cursor.(string)
+		if !ok {
+			return subnet.WatchResult{}, fmt.Errorf("internal error: RemoteManager.WatchLeases received non-string cursor")
+		}
+
+		url = fmt.Sprintf("%v?next=%v", url, c)
 	}
 
 	resp, err := httpGet(ctx, url)
@@ -139,6 +144,9 @@ func (m *RemoteManager) WatchLeases(ctx context.Context, network string, cursor 
 	wr := subnet.WatchResult{}
 	if err := json.NewDecoder(resp.Body).Decode(&wr); err != nil {
 		return subnet.WatchResult{}, err
+	}
+	if _, ok := wr.Cursor.(string); !ok {
+		return subnet.WatchResult{}, fmt.Errorf("lease watch returned non-string cursor")
 	}
 
 	return wr, nil
