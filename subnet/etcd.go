@@ -245,10 +245,11 @@ func (m *EtcdManager) getLeases(ctx context.Context, network string) ([]Lease, u
 				}
 			}
 		}
-		index = resp.Node.ModifiedIndex
+		index = resp.EtcdIndex
 
 	case err.(*etcd.EtcdError).ErrorCode == etcdKeyNotFound:
 		// key not found: treat it as empty set
+		index = resp.EtcdIndex
 
 	default:
 		return nil, 0, err
@@ -274,11 +275,11 @@ func (m *EtcdManager) RenewLease(ctx context.Context, network string, lease *Lea
 }
 
 func (m *EtcdManager) WatchLeases(ctx context.Context, network string, cursor interface{}) (WatchResult, error) {
-	nextIndex := uint64(0)
-	if cursor != nil {
-		nextIndex = cursor.(uint64)
+	if cursor == nil {
+		return m.watchReset(ctx, network)
 	}
 
+	nextIndex := cursor.(uint64)
 	resp, err := m.registry.watchSubnets(ctx, network, nextIndex)
 
 	switch {

@@ -99,52 +99,11 @@ func doTestWatch(t *testing.T, sm subnet.Manager) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	res := make(chan error)
-	barrier := make(chan struct{})
+	events := make(chan []subnet.Event)
+	go subnet.WatchLeases(ctx, sm, "_", events)
 
-	sm.WatchLeases(ctx, "_", nil)
-
-	var expectedSubnet ip.IP4Net
-
-	go func() {
-		wr, err := sm.WatchLeases(ctx, "_", nil)
-		if err != nil {
-			res <- fmt.Errorf("WatchLeases failed: %v", err)
-			return
-		}
-		if len(wr.Events) > 0 && len(wr.Snapshot) > 0 {
-			res <- fmt.Errorf("WatchLeases returned events and snapshots")
-			return
-		}
-
-		res <- nil
-		<-barrier
-
-		wr, err = sm.WatchLeases(ctx, "_", wr.Cursor)
-		if err != nil {
-			res <- fmt.Errorf("WatchLeases failed: %v", err)
-			return
-		}
-		if len(wr.Events) == 0 {
-			res <- fmt.Errorf("WatchLeases returned empty events")
-			return
-		}
-
-		if wr.Events[0].Type != subnet.SubnetAdded {
-			res <- fmt.Errorf("WatchLeases returned event with wrong EventType: %v vs %v", wr.Events[0].Type, subnet.SubnetAdded)
-			return
-		}
-
-		if !wr.Events[0].Lease.Subnet.Equal(expectedSubnet) {
-			res <- fmt.Errorf("WatchLeases returned unexpected subnet: %v vs %v", wr.Events[0].Lease.Subnet, expectedSubnet)
-		}
-
-		res <- nil
-	}()
-
-	if err := <-res; err != nil {
-		t.Fatal(err.Error())
-	}
+	// skip over the initial snapshot
+	<-events
 
 	attrs := &subnet.LeaseAttrs{
 		PublicIP: mustParseIP4("1.1.1.2"),
@@ -158,10 +117,18 @@ func doTestWatch(t *testing.T, sm subnet.Manager) {
 		t.Errorf("AcquireLease returned subnet not in network: %v (in %v)", l.Subnet, expectedNetwork)
 	}
 
-	expectedSubnet = l.Subnet
+	evtBatch := <-events
 
-	barrier <- struct{}{}
-	if err := <-res; err != nil {
-		t.Fatal(err.Error())
+	if len(evtBatch) != 1 {
+		t.Fatalf("WatchSubnets produced wrong sized event batch")
+	}
+
+	evt := evtBatch[0]
+	if evt.Type != subnet.SubnetAdded {
+		t.Fatalf("WatchSubnets produced wrong event type")
+	}
+
+	if evt.Lease.Key() != l.Key() {
+		t.Errorf("WatchSubnet produced wrong subnet: expected %s, got %s", l.Key(), evt.Lease.Key())
 	}
 }

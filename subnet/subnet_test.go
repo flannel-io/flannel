@@ -77,13 +77,13 @@ func TestWatchLeaseAdded(t *testing.T) {
 	events := make(chan []Event)
 	go WatchLeases(ctx, sm, "", events)
 
+	// skip over the initial snapshot
+	<-events
+
 	expected := "10.3.3.0-24"
 	msr.createSubnet(ctx, "_", expected, `{"PublicIP": "1.1.1.1"}`, 0)
 
-	evtBatch, ok := <-events
-	if !ok {
-		t.Fatalf("WatchSubnets did not publish")
-	}
+	evtBatch := <-events
 
 	if len(evtBatch) != 1 {
 		t.Fatalf("WatchSubnets produced wrong sized event batch")
@@ -111,13 +111,13 @@ func TestWatchLeaseRemoved(t *testing.T) {
 	events := make(chan []Event)
 	go WatchLeases(ctx, sm, "", events)
 
+	// skip over the initial snapshot
+	<-events
+
 	expected := "10.3.4.0-24"
 	msr.expireSubnet(expected)
 
-	evtBatch, ok := <-events
-	if !ok {
-		t.Fatalf("WatchSubnets did not publish")
-	}
+	evtBatch := <-events
 
 	if len(evtBatch) != 1 {
 		t.Fatalf("WatchSubnets produced wrong sized event batch")
