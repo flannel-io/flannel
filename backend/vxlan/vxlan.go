@@ -15,18 +15,17 @@
 package vxlan
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"net"
-	"sync"
-	"time"
-
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
-
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
+	"net"
+	"sync"
+	"time"
 )
 
 const (
@@ -157,6 +156,15 @@ func (vb *VXLANBackend) Run() {
 	}()
 
 	defer vb.wg.Wait()
+	initialEvtsBatch := <-evts
+	for {
+		err := vb.handleInitialSubnetEvents(initialEvtsBatch)
+		if err == nil {
+			break
+		}
+		log.Error(err, " About to retry")
+		time.Sleep(time.Second)
+	}
 
 	for {
 		select {
@@ -222,7 +230,6 @@ func (vb *VXLANBackend) handleSubnetEvents(batch []subnet.Event) {
 			}
 			vb.dev.AddL2(neigh{IP: evt.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)})
 			vb.dev.AddL3(neigh{IP: evt.Lease.Subnet.IP, MAC: net.HardwareAddr(attrs.VtepMAC)})
-			vb.dev.AddRoute(evt.Lease.Subnet)
 
 		case subnet.SubnetRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
@@ -238,7 +245,6 @@ func (vb *VXLANBackend) handleSubnetEvents(batch []subnet.Event) {
 				continue
 			}
 
-			vb.dev.DelRoute(evt.Lease.Subnet)
 			if len(attrs.VtepMAC) > 0 {
 				vb.dev.DelL2(neigh{IP: evt.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)})
 				vb.dev.DelL3(neigh{IP: evt.Lease.Subnet.IP, MAC: net.HardwareAddr(attrs.VtepMAC)})
@@ -248,4 +254,82 @@ func (vb *VXLANBackend) handleSubnetEvents(batch []subnet.Event) {
 			log.Error("Internal error: unknown event type: ", int(evt.Type))
 		}
 	}
+}
+
+func (vb *VXLANBackend) handleInitialSubnetEvents(batch []subnet.Event) error {
+	log.Infof("Handling initial subnet events")
+	fdbTable, err := vb.dev.GetL2List()
+	if err != nil {
+		return fmt.Errorf("Error fetching L2 table: %v", err)
+	}
+
+	l3Table, err := vb.dev.GetL3List()
+	if err != nil {
+		return fmt.Errorf("Error fetching L3 table: %v", err)
+	}
+
+	for _, fdbEntry := range fdbTable {
+		log.Infof("fdb already populated with: %s %s ", fdbEntry.IP, fdbEntry.HardwareAddr)
+	}
+
+	for _, l3Entry := range l3Table {
+		log.Infof("l3 table already populated with: %s %s", l3Entry.IP, l3Entry.HardwareAddr)
+	}
+
+	evtMarker := make([]bool, len(batch))
+	leaseAttrsList := make([]vxlanLeaseAttrs, len(batch))
+	fdbEntryMarker := make([]bool, len(fdbTable))
+
+	for i, evt := range batch {
+		if evt.Lease.Attrs.BackendType != "vxlan" {
+			log.Warningf("Ignoring non-vxlan subnet: type=%v", evt.Lease.Attrs.BackendType)
+			evtMarker[i] = true
+			continue
+		}
+
+		if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &leaseAttrsList[i]); err != nil {
+			log.Error("Error decoding subnet lease JSON: ", err)
+			evtMarker[i] = true
+			continue
+		}
+
+		for j, fdbEntry := range fdbTable {
+			if evt.Lease.Attrs.PublicIP.ToIP().Equal(fdbEntry.IP) && bytes.Equal([]byte(leaseAttrsList[i].VtepMAC), []byte(fdbEntry.HardwareAddr)) {
+				evtMarker[i] = true
+				fdbEntryMarker[j] = true
+				break
+			}
+		}
+	}
+
+	for _, l3Entry := range l3Table {
+		vb.dev.DelL3(neigh{IP: ip.FromIP(l3Entry.IP), MAC: l3Entry.HardwareAddr})
+	}
+
+	for j, marker := range fdbEntryMarker {
+		if !marker {
+			err := vb.dev.DelL2(neigh{IP: ip.FromIP(fdbTable[j].IP), MAC: fdbTable[j].HardwareAddr})
+			if err != nil {
+				log.Error("Delete L2 failed: ", err)
+			}
+		}
+	}
+
+	for i, marker := range evtMarker {
+		if !marker {
+			err := vb.dev.AddL2(neigh{IP: batch[i].Lease.Attrs.PublicIP, MAC: net.HardwareAddr(leaseAttrsList[i].VtepMAC)})
+			if err != nil {
+				log.Error("Add L2 failed: ", err)
+			}
+		}
+		err := vb.dev.AddL3(neigh{IP: batch[i].Lease.Subnet.IP, MAC: net.HardwareAddr(leaseAttrsList[i].VtepMAC)})
+		if err != nil {
+			log.Error("Add L3 failed: ", err)
+			err1 := vb.dev.DelL2(neigh{IP: batch[i].Lease.Attrs.PublicIP, MAC: net.HardwareAddr(leaseAttrsList[i].VtepMAC)})
+			if err1 != nil {
+				log.Error("Attempt to remove matching L2 entry failed: ", err1)
+			}
+		}
+	}
+	return nil
 }

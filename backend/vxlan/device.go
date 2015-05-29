@@ -150,6 +150,16 @@ type neigh struct {
 	IP  ip.IP4
 }
 
+func (dev *vxlanDevice) GetL2List() ([]netlink.Neigh, error) {
+	log.Infof("calling GetL2List() dev.link.Index: %d ", dev.link.Index)
+	return netlink.NeighList(dev.link.Index, syscall.AF_BRIDGE)
+}
+
+func (dev *vxlanDevice) GetL3List() ([]netlink.Neigh, error) {
+	log.Infof("calling GetL3List() dev.link.Index: %d ", dev.link.Index)
+	return netlink.NeighList(dev.link.Index, syscall.AF_INET)
+}
+
 func (dev *vxlanDevice) AddL2(n neigh) error {
 	log.Infof("calling NeighAdd: %v, %v", n.IP, n.MAC)
 	return netlink.NeighAdd(&netlink.Neigh{
@@ -193,27 +203,6 @@ func (dev *vxlanDevice) DelL3(n neigh) error {
 		IP:           n.IP.ToIP(),
 		HardwareAddr: n.MAC,
 	})
-}
-
-func (dev *vxlanDevice) AddRoute(subnet ip.IP4Net) error {
-	route := &netlink.Route{
-		Scope: netlink.SCOPE_UNIVERSE,
-		Dst:   subnet.ToIPNet(),
-		Gw:    subnet.IP.ToIP(),
-	}
-
-	log.Infof("calling RouteAdd: %s", subnet)
-	return netlink.RouteAdd(route)
-}
-
-func (dev *vxlanDevice) DelRoute(subnet ip.IP4Net) error {
-	route := &netlink.Route{
-		Scope: netlink.SCOPE_UNIVERSE,
-		Dst:   subnet.ToIPNet(),
-		Gw:    subnet.IP.ToIP(),
-	}
-	log.Infof("calling RouteDel: %s", subnet)
-	return netlink.RouteDel(route)
 }
 
 func vxlanLinksIncompat(l1, l2 netlink.Link) string {
