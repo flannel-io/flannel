@@ -121,12 +121,17 @@ func (msr *mockSubnetRegistry) updateSubnet(ctx context.Context, network, sn, da
 }
 
 func (msr *mockSubnetRegistry) watchSubnets(ctx context.Context, network string, since uint64) (*etcd.Response, error) {
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
 
-	case r := <-msr.events:
-		return r, nil
+		case r := <-msr.events:
+			if r.Node.ModifiedIndex < since {
+				continue
+			}
+			return r, nil
+		}
 	}
 }
 
@@ -142,8 +147,10 @@ func (msr *mockSubnetRegistry) hasSubnet(sn string) bool {
 func (msr *mockSubnetRegistry) expireSubnet(sn string) {
 	for i, n := range msr.subnets.Nodes {
 		if n.Key == sn {
+			msr.index += 1
 			msr.subnets.Nodes[i] = msr.subnets.Nodes[len(msr.subnets.Nodes)-1]
 			msr.subnets.Nodes = msr.subnets.Nodes[:len(msr.subnets.Nodes)-2]
+			n.ModifiedIndex = msr.index
 			msr.events <- &etcd.Response{
 				Action: "expire",
 				Node:   n,
