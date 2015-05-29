@@ -249,7 +249,7 @@ func (m *EtcdManager) getLeases(ctx context.Context, network string) ([]Lease, u
 
 	case err.(*etcd.EtcdError).ErrorCode == etcdKeyNotFound:
 		// key not found: treat it as empty set
-		index = resp.EtcdIndex
+		index = err.(*etcd.EtcdError).Index
 
 	default:
 		return nil, 0, err
