@@ -20,7 +20,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"strconv"
 
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/gorilla/mux"
@@ -109,13 +108,12 @@ func handleRenewLease(ctx context.Context, sm subnet.Manager, w http.ResponseWri
 	jsonResponse(w, http.StatusOK, lease)
 }
 
-func getCursor(u *url.URL) (interface{}, error) {
+func getCursor(u *url.URL) interface{} {
 	vals, ok := u.Query()["next"]
 	if !ok {
-		return nil, nil
+		return nil
 	}
-	index, err := strconv.ParseUint(vals[0], 10, 64)
-	return index, err
+	return vals[0]
 }
 
 // GET /{network}/leases?next=cursor
@@ -127,17 +125,22 @@ func handleWatchLeases(ctx context.Context, sm subnet.Manager, w http.ResponseWr
 		network = ""
 	}
 
-	cursor, err := getCursor(r.URL)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "invalid 'next' value: ", err)
-		return
-	}
+	cursor := getCursor(r.URL)
 
 	wr, err := sm.WatchLeases(ctx, network, cursor)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, err)
+		return
+	}
+
+	switch wr.Cursor.(type) {
+	case string:
+	case fmt.Stringer:
+		wr.Cursor = wr.Cursor.(fmt.Stringer).String()
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, fmt.Errorf("internal error: watch cursor is of unknown type"))
 		return
 	}
 

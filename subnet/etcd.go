@@ -49,6 +49,14 @@ var (
 	subnetRegex *regexp.Regexp = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)`)
 )
 
+type watchCursor struct {
+	index uint64
+}
+
+func (c watchCursor) String() string {
+	return strconv.FormatUint(c.index, 10)
+}
+
 func NewEtcdManager(config *EtcdConfig) (Manager, error) {
 	r, err := newEtcdSubnetRegistry(config)
 	if err != nil {
@@ -279,7 +287,20 @@ func (m *EtcdManager) WatchLeases(ctx context.Context, network string, cursor in
 		return m.watchReset(ctx, network)
 	}
 
-	nextIndex := cursor.(uint64)
+	nextIndex := uint64(0)
+
+	if wc, ok := cursor.(watchCursor); ok {
+		nextIndex = wc.index
+	} else if s, ok := cursor.(string); ok {
+		var err error
+		nextIndex, err = strconv.ParseUint(s, 10, 64)
+		if err != nil {
+			return WatchResult{}, fmt.Errorf("failed to parse cursor: %v", err)
+		}
+	} else {
+		return WatchResult{}, fmt.Errorf("internal error: watch cursor is of unknown type")
+	}
+
 	resp, err := m.registry.watchSubnets(ctx, network, nextIndex)
 
 	switch {
@@ -337,7 +358,7 @@ func parseSubnetWatchResponse(resp *etcd.Response) (WatchResult, error) {
 		}
 	}
 
-	cursor := resp.Node.ModifiedIndex + 1
+	cursor := watchCursor{resp.Node.ModifiedIndex + 1}
 
 	return WatchResult{
 		Cursor: cursor,
@@ -354,7 +375,7 @@ func (m *EtcdManager) watchReset(ctx context.Context, network string) (WatchResu
 		return wr, fmt.Errorf("failed to retrieve subnet leases: %v", err)
 	}
 
-	cursor := index + 1
+	cursor := watchCursor{index + 1}
 	wr.Snapshot = leases
 	wr.Cursor = cursor
 	return wr, nil
