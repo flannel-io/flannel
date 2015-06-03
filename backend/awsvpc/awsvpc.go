@@ -17,15 +17,15 @@ package awsvpc
 import (
 	"encoding/json"
 	"fmt"
-	"net"
-	"sync"
-
+	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/mitchellh/goamz/aws"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/mitchellh/goamz/ec2"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
+	"net"
+	"sync"
 )
 
 type AwsVpcBackend struct {
@@ -102,6 +102,23 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 		return nil, fmt.Errorf("error getting AWS credentials from environment: %v", err)
 	}
 	ec2c := ec2.New(auth, region)
+
+	filter := ec2.NewFilter()
+	filter.Add("route.destination-cidr-block", l.Subnet.String())
+	filter.Add("route.state", "active")
+
+	resp, err := ec2c.DescribeRouteTables([]string{m.cfg.RouteTableID}, filter)
+	if err != nil {
+		return nil, fmt.Errorf("error describing routeTables for %s: %v", l.Subnet.String(), err)
+	}
+
+	for _, routeTable := range resp.RouteTables {
+		for _, route := range routeTable.Routes {
+			if l.Subnet.String() == route.DestinationCidrBlock && route.State == "active" {
+				log.Errorf("Matching *active* entry to: %s that will be deleted: %s, %s \n", l.Subnet.String(), route.DestinationCidrBlock, route.GatewayId)
+			}
+		}
+	}
 
 	// Delete route for this machine's subnet if it already exists
 	if _, err := ec2c.DeleteRoute(m.cfg.RouteTableID, l.Subnet.String()); err != nil {
