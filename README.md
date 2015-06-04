@@ -27,6 +27,62 @@ overlay network:
 * Step 2: Git clone the flannel repo: ```https://github.com/coreos/flannel.git```
 * Step 3: Run the build script: ```cd flannel; ./build```
 
+If you are building `flanneld` on CentOS 7, you may need to proceed with the following steps:
+
+1. Install Golang: 
+
+    ```
+    yum install -y git golang golang-vim golang-src
+    ```
+    
+2. If necessary, add proxy server addresses:
+
+    ```
+    export http_proxy="http://proxy.domain.com:9001"
+    export https_proxy="http://proxy.domain.com:9002"
+    ```
+
+3. Create a development directory and clone `flannel` project:
+
+    ```
+    cd ~/dev && git clone https://github.com/coreos/flannel.git && cd flannel
+    ```
+    
+4. Add `GOPATH` environment variable pointing to `flannel`'s workspace:
+
+
+    ```
+    export GOPATH="$HOME/dev/flannel/Godeps/_workspace"
+    ```
+
+5. Install `Cover` tool:
+
+    ```
+    go get golang.org/x/tools/cmd/cover
+    ```
+
+6. Run tests:
+
+    ```
+    # ./test
+    Building flanneld...
+    Running tests...
+    ok      github.com/coreos/flannel/pkg/ip        0.011s  coverage: 15.6% of statements
+    ok      github.com/coreos/flannel/subnet        2.009s  coverage: 59.5% of statements
+    ok      github.com/coreos/flannel/remote        0.012s  coverage: 73.3% of statements
+    Checking gofmt...
+    Success
+    #
+    ```
+    
+7. Alternatively, you may build `flanneld`:
+
+    ```
+    # ./build
+    Building flanneld...
+    #
+    ```
+
 ### Building in a Docker container
 
 For quick testing, you can build flannel inside a Docker container (such container will retain its build environment):
