@@ -84,7 +84,6 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 	if err != nil {
 		return nil, fmt.Errorf("error getting EC2 instance identity: %v", err)
 	}
-
 	instanceID, ok := identity["instanceId"].(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid EC2 instance ID: %v", identity["instanceId"])
@@ -103,19 +102,37 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 	}
 	ec2c := ec2.New(auth, region)
 
+	if m.cfg.RouteTableID == "" {
+		log.Infof("RouteTableID not passed as config parameter, attempting to detect")
+		routeTableID, err := m.DetectRouteTableID(instanceID, ec2c)
+		if err != nil {
+			return nil, err
+		}
+		log.Info("Detected routeRouteTableID: ", routeTableID)
+
+		m.cfg.RouteTableID = routeTableID
+	}
+
 	filter := ec2.NewFilter()
 	filter.Add("route.destination-cidr-block", l.Subnet.String())
 	filter.Add("route.state", "active")
 
 	resp, err := ec2c.DescribeRouteTables([]string{m.cfg.RouteTableID}, filter)
 	if err != nil {
-		return nil, fmt.Errorf("error describing routeTables for %s: %v", l.Subnet.String(), err)
-	}
+		log.Errorf("Error describing route tables: %v", err)
 
-	for _, routeTable := range resp.RouteTables {
-		for _, route := range routeTable.Routes {
-			if l.Subnet.String() == route.DestinationCidrBlock && route.State == "active" {
-				log.Errorf("Matching *active* entry to: %s that will be deleted: %s, %s \n", l.Subnet.String(), route.DestinationCidrBlock, route.GatewayId)
+		if ec2Err, ok := err.(*ec2.Error); ok {
+			if ec2Err.Code == "UnauthorizedOperation" {
+				log.Errorf("Note: describeRouteTables permission cannot be bound to any resource")
+			}
+		}
+
+	} else {
+		for _, routeTable := range resp.RouteTables {
+			for _, route := range routeTable.Routes {
+				if l.Subnet.String() == route.DestinationCidrBlock && route.State == "active" {
+					log.Errorf("Matching *active* entry to: %s that will be deleted: %s, %s \n", l.Subnet.String(), route.DestinationCidrBlock, route.GatewayId)
+				}
 			}
 		}
 	}
@@ -143,6 +160,26 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 		Net: l.Subnet,
 		MTU: extIface.MTU,
 	}, nil
+}
+
+func (m *AwsVpcBackend) DetectRouteTableID(instanceID string, ec2c *ec2.EC2) (string, error) {
+	resp, err := ec2c.Instances([]string{instanceID}, nil)
+	if err != nil {
+		return "", fmt.Errorf("error getting instance info: %v", err)
+	}
+
+	subnetID := resp.Reservations[0].Instances[0].SubnetId
+	log.Info("SubnetId: ", subnetID)
+
+	filter := ec2.NewFilter()
+	filter.Add("association.subnet-id", subnetID)
+
+	res, err := ec2c.DescribeRouteTables(nil, filter)
+	if err != nil {
+		return "", fmt.Errorf("error describing routeTables for subnetID %s: %v", subnetID, err)
+	}
+
+	return res.RouteTables[0].RouteTableId, nil
 }
 
 func (m *AwsVpcBackend) Run() {
