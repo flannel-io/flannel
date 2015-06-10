@@ -1,0 +1,51 @@
+#cloud-config
+
+coreos:
+  units:
+    - name: etcd.service
+      command: start
+    - name: fleet.service
+      command: start
+    - name: flannel.service
+      command: start
+      content: |
+        [Unit]
+        After=network-online.target 
+        Wants=network-online.target
+        Description=Flannel is an etcd backed overlay network for containers
+
+        [Service]
+        ExecStartPre=-/usr/bin/mkdir -p /opt/bin
+        ExecStartPre=/usr/bin/wget -N -P /opt/bin http://storage.googleapis.com/flannel/flanneld
+        ExecStartPre=/usr/bin/chmod +x /opt/bin/flanneld
+        ExecStartPre=-/usr/bin/etcdctl mk /coreos.com/network/config '{"Network":"10.244.0.0/16", "Backend":{"Type": "alloc"}}'
+        ExecStart=/opt/bin/flanneld -etcd-endpoint http://127.0.0.1:4001
+    - name: flannel-route-manager.service
+      command: start
+      content: |
+        [Unit]
+        After=flannel.service 
+        Wants=flannel.service
+        Description=Sync the flannel routing table to a backend
+
+        [Service]
+        ExecStartPre=-/usr/bin/mkdir -p /opt/bin
+        ExecStartPre=/usr/bin/wget -N -P /opt/bin http://storage.googleapis.com/frm/flannel-route-manager
+        ExecStartPre=/usr/bin/chmod +x /opt/bin/flannel-route-manager
+        ExecStart=/opt/bin/flannel-route-manager
+    - name: docker.service
+      command: start
+      content: |
+        [Unit]
+        After=flannel.service
+        Wants=flannel.service
+        Description=Docker Application Container Engine
+        Documentation=http://docs.docker.io
+
+        [Service]
+        EnvironmentFile=/run/flannel/subnet.env
+        ExecStartPre=/bin/mount --make-rprivate /
+        ExecStart=/usr/bin/docker -d --bip=${FLANNEL_SUBNET} --mtu=${FLANNEL_MTU} -s=btrfs -H fd://
+
+        [Install]
+        WantedBy=multi-user.target
