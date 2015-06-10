@@ -18,14 +18,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/subnet"
 	"net"
 	"sync"
 	"time"
+
+	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
+	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+
+	"github.com/coreos/flannel/backend"
+	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/subnet"
 )
 
 const (
@@ -45,6 +48,7 @@ type VXLANBackend struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 	wg     sync.WaitGroup
+	rts    routes
 }
 
 func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
@@ -146,6 +150,12 @@ func (vb *VXLANBackend) Run() {
 		vb.wg.Done()
 	}()
 
+	log.Info("Watching for L3 misses")
+	misses := make(chan *netlink.Neigh, 100)
+	// Unfrtunately MonitorMisses does not take a cancel channel
+	// as there's no wait to interrupt netlink socket recv
+	go vb.dev.MonitorMisses(misses)
+
 	log.Info("Watching for new subnet leases")
 	evts := make(chan []subnet.Event)
 	vb.wg.Add(1)
@@ -168,6 +178,9 @@ func (vb *VXLANBackend) Run() {
 
 	for {
 		select {
+		case miss := <-misses:
+			vb.handleMiss(miss)
+
 		case evtBatch := <-evts:
 			vb.handleSubnetEvents(evtBatch)
 
@@ -228,8 +241,8 @@ func (vb *VXLANBackend) handleSubnetEvents(batch []subnet.Event) {
 				log.Error("Error decoding subnet lease JSON: ", err)
 				continue
 			}
+			vb.rts.set(evt.Lease.Subnet, net.HardwareAddr(attrs.VtepMAC))
 			vb.dev.AddL2(neigh{IP: evt.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)})
-			vb.dev.AddL3(neigh{IP: evt.Lease.Subnet.IP, MAC: net.HardwareAddr(attrs.VtepMAC)})
 
 		case subnet.SubnetRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
@@ -247,8 +260,8 @@ func (vb *VXLANBackend) handleSubnetEvents(batch []subnet.Event) {
 
 			if len(attrs.VtepMAC) > 0 {
 				vb.dev.DelL2(neigh{IP: evt.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)})
-				vb.dev.DelL3(neigh{IP: evt.Lease.Subnet.IP, MAC: net.HardwareAddr(attrs.VtepMAC)})
 			}
+			vb.rts.remove(evt.Lease.Subnet)
 
 		default:
 			log.Error("Internal error: unknown event type: ", int(evt.Type))
@@ -263,17 +276,8 @@ func (vb *VXLANBackend) handleInitialSubnetEvents(batch []subnet.Event) error {
 		return fmt.Errorf("Error fetching L2 table: %v", err)
 	}
 
-	l3Table, err := vb.dev.GetL3List()
-	if err != nil {
-		return fmt.Errorf("Error fetching L3 table: %v", err)
-	}
-
 	for _, fdbEntry := range fdbTable {
 		log.Infof("fdb already populated with: %s %s ", fdbEntry.IP, fdbEntry.HardwareAddr)
-	}
-
-	for _, l3Entry := range l3Table {
-		log.Infof("l3 table already populated with: %s %s", l3Entry.IP, l3Entry.HardwareAddr)
 	}
 
 	evtMarker := make([]bool, len(batch))
@@ -300,10 +304,7 @@ func (vb *VXLANBackend) handleInitialSubnetEvents(batch []subnet.Event) error {
 				break
 			}
 		}
-	}
-
-	for _, l3Entry := range l3Table {
-		vb.dev.DelL3(neigh{IP: ip.FromIP(l3Entry.IP), MAC: l3Entry.HardwareAddr})
+		vb.rts.set(evt.Lease.Subnet, net.HardwareAddr(leaseAttrsList[i].VtepMAC))
 	}
 
 	for j, marker := range fdbEntryMarker {
@@ -321,15 +322,37 @@ func (vb *VXLANBackend) handleInitialSubnetEvents(batch []subnet.Event) error {
 			if err != nil {
 				log.Error("Add L2 failed: ", err)
 			}
-		}
-		err := vb.dev.AddL3(neigh{IP: batch[i].Lease.Subnet.IP, MAC: net.HardwareAddr(leaseAttrsList[i].VtepMAC)})
-		if err != nil {
-			log.Error("Add L3 failed: ", err)
-			err1 := vb.dev.DelL2(neigh{IP: batch[i].Lease.Attrs.PublicIP, MAC: net.HardwareAddr(leaseAttrsList[i].VtepMAC)})
-			if err1 != nil {
-				log.Error("Attempt to remove matching L2 entry failed: ", err1)
-			}
+
 		}
 	}
 	return nil
+}
+
+func (vb *VXLANBackend) handleMiss(miss *netlink.Neigh) {
+	switch {
+	case len(miss.IP) == 0 && len(miss.HardwareAddr) == 0:
+		log.Info("Ignoring nil miss")
+
+	case len(miss.HardwareAddr) == 0:
+		vb.handleL3Miss(miss)
+
+	default:
+		log.Infof("Ignoring not a miss: %v, %v", miss.HardwareAddr, miss.IP)
+	}
+}
+
+func (vb *VXLANBackend) handleL3Miss(miss *netlink.Neigh) {
+	log.Infof("L3 miss: %v", miss.IP)
+
+	rt := vb.rts.findByNetwork(ip.FromIP(miss.IP))
+	if rt == nil {
+		log.Infof("Route for %v not found", miss.IP)
+		return
+	}
+
+	if err := vb.dev.AddL3(neigh{IP: ip.FromIP(miss.IP), MAC: rt.vtepMAC}); err != nil {
+		log.Errorf("AddL3 failed: %v", err)
+	} else {
+		log.Info("AddL3 succeeded")
+	}
 }

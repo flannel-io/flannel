@@ -19,9 +19,11 @@ import (
 	"net"
 	"os"
 	"syscall"
+	"time"
 
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink/nl"
 
 	"github.com/coreos/flannel/pkg/ip"
 )
@@ -65,6 +67,9 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 	if err != nil {
 		return nil, err
 	}
+	// this enables ARP requests being sent to userspace via netlink
+	sysctlPath := fmt.Sprintf("/proc/sys/net/ipv4/neigh/%s/app_solicit", devAttrs.name)
+	sysctlSet(sysctlPath, "3")
 
 	return &vxlanDevice{
 		link: link,
@@ -155,11 +160,6 @@ func (dev *vxlanDevice) GetL2List() ([]netlink.Neigh, error) {
 	return netlink.NeighList(dev.link.Index, syscall.AF_BRIDGE)
 }
 
-func (dev *vxlanDevice) GetL3List() ([]netlink.Neigh, error) {
-	log.Infof("calling GetL3List() dev.link.Index: %d ", dev.link.Index)
-	return netlink.NeighList(dev.link.Index, syscall.AF_INET)
-}
-
 func (dev *vxlanDevice) AddL2(n neigh) error {
 	log.Infof("calling NeighAdd: %v, %v", n.IP, n.MAC)
 	return netlink.NeighAdd(&netlink.Neigh{
@@ -187,7 +187,7 @@ func (dev *vxlanDevice) AddL3(n neigh) error {
 	log.Infof("calling NeighSet: %v, %v", n.IP, n.MAC)
 	return netlink.NeighSet(&netlink.Neigh{
 		LinkIndex:    dev.link.Index,
-		State:        netlink.NUD_PERMANENT,
+		State:        netlink.NUD_REACHABLE,
 		Type:         syscall.RTN_UNICAST,
 		IP:           n.IP.ToIP(),
 		HardwareAddr: n.MAC,
@@ -198,11 +198,60 @@ func (dev *vxlanDevice) DelL3(n neigh) error {
 	log.Infof("calling NeighDel: %v, %v", n.IP, n.MAC)
 	return netlink.NeighDel(&netlink.Neigh{
 		LinkIndex:    dev.link.Index,
-		State:        netlink.NUD_PERMANENT,
+		State:        netlink.NUD_REACHABLE,
 		Type:         syscall.RTN_UNICAST,
 		IP:           n.IP.ToIP(),
 		HardwareAddr: n.MAC,
 	})
+}
+
+func (dev *vxlanDevice) MonitorMisses(misses chan *netlink.Neigh) {
+	nlsock, err := nl.Subscribe(syscall.NETLINK_ROUTE, syscall.RTNLGRP_NEIGH)
+	if err != nil {
+		log.Error("Failed to subscribe to netlink RTNLGRP_NEIGH messages")
+		return
+	}
+
+	for {
+		msgs, err := nlsock.Receive()
+		if err != nil {
+			log.Errorf("Failed to receive from netlink: %v ", err)
+
+			time.Sleep(1 * time.Second)
+			continue
+		}
+
+		for _, msg := range msgs {
+			dev.processNeighMsg(msg, misses)
+		}
+	}
+}
+
+func isNeighResolving(state int) bool {
+	return (state & (netlink.NUD_INCOMPLETE | netlink.NUD_STALE | netlink.NUD_DELAY | netlink.NUD_PROBE)) != 0
+}
+
+func (dev *vxlanDevice) processNeighMsg(msg syscall.NetlinkMessage, misses chan *netlink.Neigh) {
+	neigh, err := netlink.NeighDeserialize(msg.Data)
+	if err != nil {
+		log.Error("Failed to deserialize netlink ndmsg: %v", err)
+		return
+	}
+
+	if int(neigh.LinkIndex) != dev.link.Index {
+		return
+	}
+
+	if msg.Header.Type != syscall.RTM_GETNEIGH && msg.Header.Type != syscall.RTM_NEWNEIGH {
+		return
+	}
+
+	if !isNeighResolving(neigh.State) {
+		// misses come with NUD_STALE bit set
+		return
+	}
+
+	misses <- neigh
 }
 
 func vxlanLinksIncompat(l1, l2 netlink.Link) string {
