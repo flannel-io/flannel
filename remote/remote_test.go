@@ -17,8 +17,11 @@ package remote
 import (
 	"fmt"
 	"net"
+	"net/url"
 	"sync"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
@@ -64,16 +67,38 @@ func mustParseIP4Net(s string) ip.IP4Net {
 	return ip.FromIPNet(n)
 }
 
+func isConnRefused(err error) bool {
+	if uerr, ok := err.(*url.Error); ok {
+		if operr, ok := uerr.Err.(*net.OpError); ok {
+			return operr.Err == syscall.ECONNREFUSED
+		}
+	}
+	return false
+}
+
 func doTestRemote(ctx context.Context, t *testing.T, remoteAddr string) {
 	sm := NewRemoteManager(remoteAddr)
 
-	cfg, err := sm.GetNetworkConfig(ctx, "_")
-	if err != nil {
-		t.Errorf("GetNetworkConfig failed: %v", err)
-	}
+	for i := 0; ; i++ {
+		cfg, err := sm.GetNetworkConfig(ctx, "_")
+		if err != nil {
+			if isConnRefused(err) {
+				if i == 100 {
+					t.Fatalf("Out of connection retries")
+				}
 
-	if cfg.Network.String() != expectedNetwork {
-		t.Errorf("GetNetworkConfig returned bad network: %v vs %v", cfg.Network, expectedNetwork)
+				fmt.Println("Connection refused, retrying...")
+				time.Sleep(300 * time.Millisecond)
+				continue
+			}
+
+			t.Fatalf("GetNetworkConfig failed: %v", err)
+		}
+
+		if cfg.Network.String() != expectedNetwork {
+			t.Errorf("GetNetworkConfig returned bad network: %v vs %v", cfg.Network, expectedNetwork)
+		}
+		break
 	}
 
 	attrs := &subnet.LeaseAttrs{
@@ -81,7 +106,7 @@ func doTestRemote(ctx context.Context, t *testing.T, remoteAddr string) {
 	}
 	l, err := sm.AcquireLease(ctx, "_", attrs)
 	if err != nil {
-		t.Errorf("AcquireLease failed: %v", err)
+		t.Fatalf("AcquireLease failed: %v", err)
 	}
 
 	if !mustParseIP4Net(expectedNetwork).Contains(l.Subnet.IP) {
