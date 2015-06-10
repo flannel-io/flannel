@@ -1,0 +1,31 @@
+{
+	"ImportPath": "github.com/kelseyhightower/flannel-route-manager",
+	"GoVersion": "go1.3",
+	"Deps": [
+		{
+			"ImportPath": "code.google.com/p/goauth2/compute/serviceaccount",
+			"Comment": "weekly-56",
+			"Rev": "afe77d958c701557ec5dc56f6936fcc194d15520"
+		},
+		{
+			"ImportPath": "code.google.com/p/goauth2/oauth",
+			"Comment": "weekly-56",
+			"Rev": "afe77d958c701557ec5dc56f6936fcc194d15520"
+		},
+		{
+			"ImportPath": "code.google.com/p/google-api-go-client/compute/v1",
+			"Comment": "release-101",
+			"Rev": "e1c259484b495133836706f46319f5897f1e9bf6"
+		},
+		{
+			"ImportPath": "code.google.com/p/google-api-go-client/googleapi",
+			"Comment": "release-101",
+			"Rev": "e1c259484b495133836706f46319f5897f1e9bf6"
+		},
+		{
+			"ImportPath": "github.com/coreos/go-etcd/etcd",
+			"Comment": "v0.2.0-rc1-120-g23142f6",
+			"Rev": "23142f6773a676cc2cae8dd0cb90b2ea761c853f"
+		}
+	]
+}
