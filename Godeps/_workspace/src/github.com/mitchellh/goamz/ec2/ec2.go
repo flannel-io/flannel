@@ -3101,7 +3101,9 @@ func (ec2 *EC2) DeleteRouteTable(id string) (resp *SimpleResp, err error) {
 // http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeRouteTables.html
 func (ec2 *EC2) DescribeRouteTables(ids []string, filter *Filter) (resp *RouteTablesResp, err error) {
 	params := makeParams("DescribeRouteTables")
-	addParamsList(params, "RouteTableId", ids)
+	if ids != nil {
+		addParamsList(params, "RouteTableId", ids)
+	}
 	filter.addParams(params)
 
 	resp = &RouteTablesResp{}
