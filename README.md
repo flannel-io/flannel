@@ -1,31 +1,26 @@
 # flannel
 
-flannel (originally [rudder](http://comments.gmane.org/gmane.linux.coreos.devel/1683)) is an overlay network that gives a subnet to each machine for use with
-Kubernetes.
+flannel is a virtual network that gives a subnet to each host for use with container runtimes.
 
-In Kubernetes every machine in the cluster is assigned a full subnet. The machine A
-and B might have 10.0.1.0/24 and 10.0.2.0/24 respectively. The advantage of
-this model is that it reduces the complexity of doing port mapping. The
-disadvantage is that the only cloud provider that can do this is GCE.
+Platforms like Google's Kubernetes assume that each container (pod) has a unique, routable IP inside the cluster.
+The advantage of this model is that it reduces the complexity of doing port mapping.
 
 ## Theory of Operation
 
-To emulate the Kubernetes model from GCE on other platforms we need to create
-an overlay network on top of the network that we are given from cloud
-providers. flannel uses the Universal TUN/TAP device and creates an overlay network
-using UDP to encapsulate IP packets. The subnet allocation is done with the help
-of etcd which maintains the overlay to actual IP mappings.
-
-The following diagram demonstrates the path a packet takes as it traverses the
-overlay network:
+flannel runs an agent, flanneld, on each host and is responsible for allocating a subnet lease out of a preconfigured address space.
+flannel uses [etcd](https://github.com/coreos/etcd) to store the network configuration, allocated subnets, and auxiliary data (such as host's IP).
+The forwarding of packets is achieved using one of several strategies that are known as backends.
+The simplest backend is `udp` and uses a TUN device to encapsulate every IP fragment in a UDP packet, forming an overlay network.
+The following diagram demonstrates the path a packet takes as it traverses the overlay network:
 
 ![Life of a packet](./packet-01.png)
 
 ## Building flannel
 
-* Step 1: Make sure you have Linux headers installed on your machine. On Ubuntu, run ```sudo apt-get install linux-libc-dev```. On Fedora/Redhat, run ```sudo yum install kernel-headers```.
-* Step 2: Git clone the flannel repo: ```https://github.com/coreos/flannel.git```
-* Step 3: Run the build script: ```cd flannel; ./build```
+* Step 1: Make sure you have Linux headers installed on your machine. On Ubuntu, run `sudo apt-get install linux-libc-dev`.
+On Fedora/Redhat, run `sudo yum install kernel-headers`.
+* Step 2: Git clone the flannel repo: `git clone https://github.com/coreos/flannel.git`
+* Step 3: Run the build script: `cd flannel; ./build`
 
 ### Building in a Docker container
 
@@ -43,59 +38,55 @@ docker run -v $SRC:/opt/flannel -i -t google/golang /bin/bash -c "cd /opt/flanne
 
 ## Configuration
 
-flannel reads its configuration from etcd. By default, it will read the configuration
-from ```/coreos.com/network/config``` (can be overridden via --etcd-prefix).
-The value of the config should be a JSON dictionary with the following keys:
+flannel reads its configuration from etcd.
+By default, it will read the configuration from `/coreos.com/network/config` (can be overridden via `--etcd-prefix`).
+You can use `etcdctl` utility to set values in etcd.
+The value of the config is a JSON dictionary with the following keys:
 
-* ```Network``` (string): IPv4 network in CIDR format to use for the entire overlay network. This
-is the only mandatory key.
+* `Network` (string): IPv4 network in CIDR format to use for the entire flannel network.
+This is the only mandatory key.
 
-* ```SubnetLen``` (number): The size of the subnet allocated to each host. Defaults to 24 (i.e. /24) unless
-the Network was configured to be smaller than a /24 in which case it is one less than the network.
+* `SubnetLen` (integer): The size of the subnet allocated to each host.
+   Defaults to 24 (i.e. /24) unless the Network was configured to be smaller than a /24 in which case it is one less than the network.
 
-* ```SubnetMin``` (string): The beginning of IP range which the subnet allocation should start with. Defaults
-to the first subnet of Network.
+* `SubnetMin` (string): The beginning of IP range which the subnet allocation should start with.
+   Defaults to the first subnet of Network.
 
-* ```SubnetMax``` (string): The end of the IP range at which the subnet allocation should end with. Defaults to
-the last subnet of Network.
+* `SubnetMax` (string): The end of the IP range at which the subnet allocation should end with.
+   Defaults to the last subnet of Network.
 
-* ```Backend``` (dictionary): Type of backend to use and specific configurations for that backend.  The list
-of available backends and the keys that can be put into the this dictionary are listed below. Defaults to
-"udp" backend.
+* `Backend` (dictionary): Type of backend to use and specific configurations for that backend.
+   The list of available backends and the keys that can be put into the this dictionary are listed below.
+   Defaults to "udp" backend.
 
 ### Backends
 * udp: use UDP to encapsulate the packets.
-  * ```Type``` (string): ```udp```
-  * ```Port``` (number): UDP port to use for sending encapsulated packets. Defaults to 8285
-
-* alloc: only perform subnet allocation (no forwarding of data packets)
-  * ```Type``` (string): ```alloc```
+  * `Type` (string): `udp`
+  * `Port` (number): UDP port to use for sending encapsulated packets. Defaults to 8285.
 
 * vxlan: use in-kernel VXLAN to encapsulate the packets.
-  * ```Type``` (string): ```vxlan```
-  * ```VNI```  (number): VXLAN Identifier (VNI) to be used. Defaults to 1
+  * `Type` (string): `vxlan`
+  * `VNI`  (number): VXLAN Identifier (VNI) to be used. Defaults to 1.
 
-* host-gw: create IP routes to subnets via remote machine IPs.  Note
-  that this requires direct layer2 connectivity between hosts running
-  flannel.
-  * ```Type``` (string): ```host-gw```
+* host-gw: create IP routes to subnets via remote machine IPs.
+  Note that this requires direct layer2 connectivity between hosts running flannel.
+  * `Type` (string): `host-gw`
 
 * aws-vpc: create IP routes in an [Amazon VPC route table](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Route_Tables.html).
   Requires running on an EC2 instance that is in an Amazon VPC.
-  * ```Type``` (string): ```aws-vpc```
-  * ```RouteTableID``` (string): The ID of the VPC route table to add routes
-    to. This must be in the same region as the EC2 instance that flannel is
-    running on.
+  * `Type` (string): `aws-vpc`
+  * `RouteTableID` (string): The ID of the VPC route table to add routes to.
+     This must be in the same region as the EC2 instance that flannel is running on.
 
-  Authentication is handled via either environment variables or the node's IAM
-  role. If the node has insufficient privileges to modify the VPC routing table
-  specified, ensure that appropriate ```AWS_ACCESS_KEY_ID```,
-  ```AWS_SECRET_ACCESS_KEY```, and optionally ```AWS_SECURITY_TOKEN```
-  environment variables are set when running the flannel process.
+  Authentication is handled via either environment variables or the node's IAM role.
+  If the node has insufficient privileges to modify the VPC routing table specified, ensure that appropriate `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optionally `AWS_SECURITY_TOKEN` environment variables are set when running the flanneld process.
+
+* alloc: only perform subnet allocation (no forwarding of data packets).
+  * `Type` (string): `alloc`
 
 ### Example configuration JSON
 
-The following configuration illustrates the use of most options.
+The following configuration illustrates the use of most options with `udp` backend.
 
 ```
 {
@@ -111,64 +102,55 @@ The following configuration illustrates the use of most options.
 ```
 
 ### Firewalls
-When using ```udp``` backend, flannel uses UDP port 8285 for sending encapsulated packets.
-When using ```vxlan``` backend, kernel uses UDP port 8472 for sending encapsulated packets.
+When using `udp` backend, flannel uses UDP port 8285 for sending encapsulated packets.
+When using `vxlan` backend, kernel uses UDP port 8472 for sending encapsulated packets.
 Make sure that your firewall rules allow this traffic for all hosts participating in the overlay network.
 
 ## Running
 
-Once you have pushed configuration JSON to etcd, you can start flannel. If you published your
-config at the default location, you can start flannel with no arguments. flannel will acquire a
-subnet lease, configure its routes based on other leases in the overlay network and start
-routing packets. Additionally it will monitor etcd for new members of the network and adjust
-its routing table accordingly.
+Once you have pushed configuration JSON to etcd, you can start flanneld.
+If you published your config at the default location, you can start flanneld with no arguments.
+flannel will acquire a subnet lease, configure its routes based on other leases in the overlay network and start routing packets.
+Additionally it will monitor etcd for new members of the network and adjust the routes accordingly.
 
-After flannel has acquired the subnet and configured the TUN device, it will write out an
-environment variable file (```/run/flannel/subnet.env``` by default) with subnet address and
-MTU that it supports.
+After flannel has acquired the subnet and configured backend, it will write out an environment variable file (`/run/flannel/subnet.env` by default) with subnet address and MTU that it supports.
 
 ## Key command line options
 
 ```
--etcd-endpoints="http://127.0.0.1:4001": a comma-delimited list of etcd endpoints
--etcd-prefix="/coreos.com/network": etcd prefix
--iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
--subnet-file="/run/flannel/subnet.env": filename where env variables (subnet and MTU values) will be written to
--v=0: log level for V logs. Set to 1 to see messages related to data path
+--etcd-endpoints=http://127.0.0.1:4001: a comma-delimited list of etcd endpoints.
+--etcd-prefix=/coreos.com/network: etcd prefix.
+--etcd-keyfile="": SSL key file used to secure etcd communication.
+--etcd-certfile="": SSL certification file used to secure etcd communication.
+--etcd-cafile="": SSL Certificate Authority file used to secure etcd communication.
+--iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
+--subnet-file=/run/flannel/subnet.env: filename where env variables (subnet and MTU values) will be written to.
+--ip-masq=false: setup IP masquerade for traffic destined for outside the flannel network.
+-v=0: log level for V logs. Set to 1 to see messages related to data path.
+--version: print version and exit
 ```
 
 ## Zero-downtime restarts
-When running in VXLAN mode, the kernel is providing the data path with flanneld acting as the control plane. As such, flanneld
-can be restarted (even to do an upgrade) without disturbing existing flows. However, this needs to be done in few seconds as ARP
-entries can start to timeout requiring the flanneld daemon to refresh them. Also, to avoid interruptions during restart, the configuration
-must not be changed (e.g. VNI, --iface value).
+
+When running with a backend other than `udp`, the kernel is providing the data path with flanneld acting as the control plane.
+As such, flanneld can be restarted (even to do an upgrade) without disturbing existing flows.
+However in the case of `vxlan` backend, this needs to be done within a few seconds as ARP entries can start to timeout requiring the flannel daemon to refresh them.
+Also, to avoid interruptions during restart, the configuration must not be changed (e.g. VNI, --iface values).
 
 ## Docker integration
 
-Docker daemon accepts ```--bip``` argument to configure the subnet of the docker0 bridge. It also accepts ```--mtu``` to set the MTU
-for docker0 and veth devices that it will be creating. Since flannel writes out the acquired subnet and MTU values into
-a file, the script starting Docker daemon can source in the values and pass them to Docker daemon:
+Docker daemon accepts `--bip` argument to configure the subnet of the docker0 bridge.
+It also accepts `--mtu` to set the MTU for docker0 and veth devices that it will be creating.
+Since flannel writes out the acquired subnet and MTU values into a file, the script starting Docker can source in the values and pass them to Docker daemon:
 
 ```bash
 source /run/flannel/subnet.env
 docker -d --bip=${FLANNEL_SUBNET} --mtu=${FLANNEL_MTU}
 ```
 
-Systemd users can use ```EnvironmentFile``` directive in the .service file to pull in ```/run/flannel/subnet.env```
+Systemd users can use `EnvironmentFile` directive in the .service file to pull in `/run/flannel/subnet.env`
 
 ## CoreOS integration
 
-On CoreOS it is useful to add flannel configuration into .service file in the cloud-config as the following snippet demonstrates:
-
-```
-  - name: flannel.service
-    command: start
-    content: |
-      [Unit]
-      Requires=etcd.service
-      After=etcd.service
-
-      [Service]
-      ExecStartPre=-/usr/bin/etcdctl mk /coreos.com/network/config '{"Network":"10.0.0.0/16"}'
-      ExecStart=/opt/bin/flannel
-```
+CoreOS ships with flannel integrated into the distribution.
+See https://coreos.com/docs/cluster-management/setup/flannel-config/ for more information.
