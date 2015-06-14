@@ -159,10 +159,10 @@ func RunServer(ctx context.Context, sm subnet.Manager, listenAddr string) {
 	// that means "no network"
 
 	r := mux.NewRouter()
-	r.HandleFunc("/{network}/config", bindHandler(handleGetNetworkConfig, ctx, sm)).Methods("GET")
-	r.HandleFunc("/{network}/leases", bindHandler(handleAcquireLease, ctx, sm)).Methods("POST")
-	r.HandleFunc("/{network}/leases/{subnet}", bindHandler(handleRenewLease, ctx, sm)).Methods("PUT")
-	r.HandleFunc("/{network}/leases", bindHandler(handleWatchLeases, ctx, sm)).Methods("GET")
+	r.HandleFunc("/v1/{network}/config", bindHandler(handleGetNetworkConfig, ctx, sm)).Methods("GET")
+	r.HandleFunc("/v1/{network}/leases", bindHandler(handleAcquireLease, ctx, sm)).Methods("POST")
+	r.HandleFunc("/v1/{network}/leases/{subnet}", bindHandler(handleRenewLease, ctx, sm)).Methods("PUT")
+	r.HandleFunc("/v1/{network}/leases", bindHandler(handleWatchLeases, ctx, sm)).Methods("GET")
 
 	l, err := net.Listen("tcp", listenAddr)
 	if err != nil {

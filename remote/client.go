@@ -29,11 +29,11 @@ import (
 
 // implements subnet.Manager by sending requests to the server
 type RemoteManager struct {
-	host string // includes scheme, host, and port
+	base string // includes scheme, host, and port, and version
 }
 
 func NewRemoteManager(listenAddr string) subnet.Manager {
-	return &RemoteManager{host: "http://" + listenAddr}
+	return &RemoteManager{base: "http://" + listenAddr + "/v1"}
 }
 
 func (m *RemoteManager) mkurl(network string, parts ...string) string {
@@ -43,7 +43,7 @@ func (m *RemoteManager) mkurl(network string, parts ...string) string {
 	if network[0] != '/' {
 		network = "/" + network
 	}
-	return m.host + path.Join(append([]string{network}, parts...)...)
+	return m.base + path.Join(append([]string{network}, parts...)...)
 }
 
 func (m *RemoteManager) GetNetworkConfig(ctx context.Context, network string) (*subnet.Config, error) {
