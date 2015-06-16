@@ -8,6 +8,7 @@ import (
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/backend/alloc"
 	"github.com/coreos/flannel/backend/awsvpc"
+	"github.com/coreos/flannel/backend/gce"
 	"github.com/coreos/flannel/backend/hostgw"
 	"github.com/coreos/flannel/backend/udp"
 	"github.com/coreos/flannel/backend/vxlan"
@@ -38,6 +39,8 @@ func newBackend(sm subnet.Manager, network string, config *subnet.Config) (backe
 		return vxlan.New(sm, network, config), nil
 	case "aws-vpc":
 		return awsvpc.New(sm, network, config), nil
+	case "gce":
+		return gce.New(sm, network, config), nil
 	default:
 		return nil, fmt.Errorf("%v: '%v': unknown backend type", network, bt.Type)
 	}
