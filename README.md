@@ -81,6 +81,15 @@ This is the only mandatory key.
   Authentication is handled via either environment variables or the node's IAM role.
   If the node has insufficient privileges to modify the VPC routing table specified, ensure that appropriate `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optionally `AWS_SECURITY_TOKEN` environment variables are set when running the flanneld process.
 
+* gce: create IP routes in a [Google Compute Engine Network](https://cloud.google.com/compute/docs/networking#networks)
+  * Requirements:
+    * [Enable IP forwarding for the instances](https://cloud.google.com/compute/docs/networking#canipforward).
+    * [Instance service account](https://cloud.google.com/compute/docs/authentication#using) with read-write compute permissions. 
+  * `Type` (string): `gce`  
+  
+  Command to create a compute instance with the correct permissions and IP forwarding enabled:  
+  `$ gcloud compute instances create INSTANCE --can-ip-forward --scopes compute-rw`
+
 * alloc: only perform subnet allocation (no forwarding of data packets).
   * `Type` (string): `alloc`
 

@@ -6,6 +6,26 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "code.google.com/p/goauth2/compute/serviceaccount",
+			"Comment": "weekly-56",
+			"Rev": "afe77d958c701557ec5dc56f6936fcc194d15520"
+		},
+		{
+			"ImportPath": "code.google.com/p/goauth2/oauth",
+			"Comment": "weekly-56",
+			"Rev": "afe77d958c701557ec5dc56f6936fcc194d15520"
+		},
+		{
+			"ImportPath": "code.google.com/p/google-api-go-client/compute/v1",
+			"Comment": "release-107",
+			"Rev": "6ddfebb10ece847f1ae09c701834f1b15abbd8b2"
+		},
+		{
+			"ImportPath": "code.google.com/p/google-api-go-client/googleapi",
+			"Comment": "release-107",
+			"Rev": "6ddfebb10ece847f1ae09c701834f1b15abbd8b2"
+		},
+		{
 			"ImportPath": "github.com/coreos/go-etcd/etcd",
 			"Comment": "v2.0.0-3-g0424b5f",
 			"Rev": "0424b5f86ef0ca57a5309c599f74bbb3e97ecd9d"
@@ -20,6 +40,14 @@
 			"Rev": "d1c4472bf2efd3826f2b5bdcc02d8416798d678c"
 		},
 		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "50c25fb3b2b3b3cc724e9b6ac75fb44b3bccd0da"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "e444e69cbd2e2e3e0749a2f3c717cec491552bbf"
+		},
+		{
 			"ImportPath": "github.com/mitchellh/goamz/aws",
 			"Rev": "caaaea8b30ee15616494ee68abd5d8ebbbef05cf"
 		},
@@ -30,14 +58,6 @@
 		{
 			"ImportPath": "github.com/vaughan0/go-ini",
 			"Rev": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1"
-		},
-		{
-			"ImportPath": "github.com/gorilla/context",
-			"Rev": "50c25fb3b2b3b3cc724e9b6ac75fb44b3bccd0da"
-		},
-		{
-			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "e444e69cbd2e2e3e0749a2f3c717cec491552bbf"
 		},
 		{
 			"ImportPath": "github.com/vishvananda/netlink",
