@@ -73,10 +73,14 @@ This is the only mandatory key.
   * `Type` (string): `host-gw`
 
 * aws-vpc: create IP routes in an [Amazon VPC route table](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Route_Tables.html).
-  Requires running on an EC2 instance that is in an Amazon VPC.
+  * Requirements:
+	* Running on an EC2 instance that is in an Amazon VPC.
+	* Permissions required: `CreateRoute`, `DeleteRoute`,`DescribeRouteTables`, `DescribeInstances [optional]`
+	* [Disable source/destination checks](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_NAT_Instance.html#EIP_Disable_SrcDestCheck) on instances running flannel.
   * `Type` (string): `aws-vpc`
-  * `RouteTableID` (string): The ID of the VPC route table to add routes to.
-     This must be in the same region as the EC2 instance that flannel is running on.
+  * `RouteTableID` (string): [optional] The ID of the VPC route table to add routes to.
+     The route table must be in the same region as the EC2 instance that flannel is running on.
+     flannel can automatically detect the id of the route table if the optional `DescribeInstances` is granted to the EC2 instance.
 
   Authentication is handled via either environment variables or the node's IAM role.
   If the node has insufficient privileges to modify the VPC routing table specified, ensure that appropriate `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optionally `AWS_SECURITY_TOKEN` environment variables are set when running the flanneld process.
