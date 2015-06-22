@@ -238,19 +238,19 @@ func (g *GCEBackend) handleMatchingRoute(subnet string) (bool, error) {
 }
 
 func (g *GCEBackend) getRoute(subnet string) (*compute.Route, error) {
-	routeName := formatRouteName(g.gceNetwork.Name, subnet)
+	routeName := formatRouteName(subnet)
 	return g.computeService.Routes.Get(g.project, routeName).Do()
 }
 
 func (g *GCEBackend) deleteRoute(subnet string) (*compute.Operation, error) {
-	routeName := formatRouteName(g.gceNetwork.Name, subnet)
+	routeName := formatRouteName(subnet)
 	return g.computeService.Routes.Delete(g.project, routeName).Do()
 }
 
 func (g *GCEBackend) insertRoute(subnet string) (*compute.Operation, error) {
 	log.Infof("Inserting route for subnet: %v", subnet)
 	route := &compute.Route{
-		Name:            formatRouteName(g.gceNetwork.Name, subnet),
+		Name:            formatRouteName(subnet),
 		DestRange:       subnet,
 		Network:         g.gceNetwork.SelfLink,
 		NextHopInstance: g.gceInstance.SelfLink,
@@ -260,6 +260,6 @@ func (g *GCEBackend) insertRoute(subnet string) (*compute.Operation, error) {
 	return g.computeService.Routes.Insert(g.project, route).Do()
 }
 
-func formatRouteName(network, subnet string) string {
-	return fmt.Sprintf("flannel-%s-%s", network, replacer.Replace(subnet))
+func formatRouteName(subnet string) string {
+	return fmt.Sprintf("flannel-%s", replacer.Replace(subnet))
 }

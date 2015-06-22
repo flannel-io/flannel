@@ -83,7 +83,9 @@ This is the only mandatory key.
      flannel can automatically detect the id of the route table if the optional `DescribeInstances` is granted to the EC2 instance.
 
   Authentication is handled via either environment variables or the node's IAM role.
-  If the node has insufficient privileges to modify the VPC routing table specified, ensure that appropriate `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optionally `AWS_SECURITY_TOKEN` environment variables are set when running the flanneld process.
+  If the node has insufficient privileges to modify the VPC routing table specified, ensure that appropriate `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optionally `AWS_SECURITY_TOKEN` environment variables are set when running the flanneld process. 
+ 
+  Note: Currently, AWS [limits](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Appendix_Limits.html) the number of entries per route table to 50. 
 
 * gce: create IP routes in a [Google Compute Engine Network](https://cloud.google.com/compute/docs/networking#networks)
   * Requirements:
@@ -92,7 +94,9 @@ This is the only mandatory key.
   * `Type` (string): `gce`  
   
   Command to create a compute instance with the correct permissions and IP forwarding enabled:  
-  `$ gcloud compute instances create INSTANCE --can-ip-forward --scopes compute-rw`
+  `$ gcloud compute instances create INSTANCE --can-ip-forward --scopes compute-rw`  
+  
+  Note: Currently, GCE [limits](https://cloud.google.com/compute/docs/resource-quotas) the number of routes for every *project* to 100.
 
 * alloc: only perform subnet allocation (no forwarding of data packets).
   * `Type` (string): `alloc`
