@@ -32,6 +32,7 @@ type Registry interface {
 	getSubnets(ctx context.Context, network string) (*etcd.Response, error)
 	createSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error)
 	updateSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error)
+	deleteSubnet(ctx context.Context, network, sn string) (*etcd.Response, error)
 	watchSubnets(ctx context.Context, network string, since uint64) (*etcd.Response, error)
 }
 
@@ -109,6 +110,11 @@ func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, network, sn, da
 
 	ensureExpiration(resp, ttl)
 	return resp, nil
+}
+
+func (esr *etcdSubnetRegistry) deleteSubnet(ctx context.Context, network, sn string) (*etcd.Response, error) {
+	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", sn)
+	return esr.client().Delete(key, false)
 }
 
 type watchResp struct {

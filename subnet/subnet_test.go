@@ -40,7 +40,7 @@ func newDummyRegistry(ttlOverride uint64) *mockSubnetRegistry {
 }
 
 func TestAcquireLease(t *testing.T) {
-	msr := newDummyRegistry(0)
+	msr := newDummyRegistry(1000)
 	sm := newEtcdManager(msr)
 
 	extIP, _ := ip.ParseIP4("1.2.3.4")
@@ -64,6 +64,50 @@ func TestAcquireLease(t *testing.T) {
 
 	if l.Subnet.String() != "10.3.3.0/24" {
 		t.Fatal("Subnet mismatch: expected 10.3.3.0/24, got: ", l.Subnet)
+	}
+}
+
+func TestConfigChanged(t *testing.T) {
+	msr := newDummyRegistry(1000)
+	sm := newEtcdManager(msr)
+
+	extIP, _ := ip.ParseIP4("1.2.3.4")
+	attrs := LeaseAttrs{
+		PublicIP: extIP,
+	}
+
+	l, err := sm.AcquireLease(context.Background(), "", &attrs)
+	if err != nil {
+		t.Fatal("AcquireLease failed: ", err)
+	}
+
+	if l.Subnet.String() != "10.3.3.0/24" {
+		t.Fatal("Subnet mismatch: expected 10.3.3.0/24, got: ", l.Subnet)
+	}
+
+	// Change config
+	config := `{ "Network": "10.4.0.0/16" }`
+	msr.setConfig(config)
+
+	// Acquire again, should not reuse
+	if l, err = sm.AcquireLease(context.Background(), "", &attrs); err != nil {
+		t.Fatal("AcquireLease failed: ", err)
+	}
+
+	newNet := newIP4Net("10.4.0.0", 16)
+	if !newNet.Contains(l.Subnet.IP) {
+		t.Fatalf("Subnet mismatch: expected within %v, got: %v", newNet, l.Subnet)
+	}
+}
+
+func newIP4Net(ipaddr string, prefix uint) ip.IP4Net {
+	a, err := ip.ParseIP4(ipaddr)
+	if err != nil {
+		panic("failed to parse ipaddr")
+	}
+	return ip.IP4Net{
+		IP:        a,
+		PrefixLen: prefix,
 	}
 }
 
