@@ -11,7 +11,7 @@ tag=$1
 tgt=$(mktemp -d)
 
 # Build flannel inside 
-docker run -v `pwd`/../:/opt/flannel -i -t golang:1.4.1 /bin/bash -c "cd /opt/flannel && ./build"
+docker run -v `pwd`/../:/opt/flannel -i -t golang:1.4.2 /bin/bash -c "cd /opt/flannel && ./build"
 
 # Generate Dockerfile into target tmp dir
 cat <<DF >${tgt}/Dockerfile
