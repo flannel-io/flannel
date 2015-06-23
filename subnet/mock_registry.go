@@ -58,6 +58,13 @@ func (msr *mockSubnetRegistry) getConfig(ctx context.Context, network string) (*
 	}, nil
 }
 
+func (msr *mockSubnetRegistry) setConfig(config string) {
+	msr.config = &etcd.Node{
+		Key:   "config",
+		Value: config,
+	}
+}
+
 func (msr *mockSubnetRegistry) getSubnets(ctx context.Context, network string) (*etcd.Response, error) {
 	return &etcd.Response{
 		Node:      msr.subnets,
@@ -118,6 +125,29 @@ func (msr *mockSubnetRegistry) updateSubnet(ctx context.Context, network, sn, da
 	}
 
 	return nil, fmt.Errorf("Subnet not found")
+}
+
+func (msr *mockSubnetRegistry) deleteSubnet(ctx context.Context, network, sn string) (*etcd.Response, error) {
+	msr.index += 1
+
+	for i, n := range msr.subnets.Nodes {
+		if n.Key == sn {
+			msr.subnets.Nodes[i] = msr.subnets.Nodes[len(msr.subnets.Nodes)-1]
+			msr.subnets.Nodes = msr.subnets.Nodes[:len(msr.subnets.Nodes)-1]
+			msr.events <- &etcd.Response{
+				Action: "delete",
+				Node:   n,
+			}
+
+			return &etcd.Response{
+				Node:      n,
+				EtcdIndex: msr.index,
+			}, nil
+		}
+	}
+
+	return nil, fmt.Errorf("Subnet not found")
+
 }
 
 func (msr *mockSubnetRegistry) watchSubnets(ctx context.Context, network string, since uint64) (*etcd.Response, error) {

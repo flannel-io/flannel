@@ -131,14 +131,23 @@ func (m *EtcdManager) tryAcquireLease(ctx context.Context, network string, confi
 
 	// try to reuse a subnet if there's one that matches our IP
 	if l := findLeaseByIP(leases, extIP); l != nil {
-		resp, err := m.registry.updateSubnet(ctx, network, l.Key(), string(attrBytes), subnetTTL)
-		if err != nil {
-			return nil, err
-		}
+		// make sure the existing subnet is still within the configured network
+		if isSubnetConfigCompat(config, l.Subnet) {
+			log.Infof("Found lease (%v) for current IP (%v), reusing", l.Subnet, extIP)
+			resp, err := m.registry.updateSubnet(ctx, network, l.Key(), string(attrBytes), subnetTTL)
+			if err != nil {
+				return nil, err
+			}
 
-		l.Attrs = attrs
-		l.Expiration = *resp.Node.Expiration
-		return l, nil
+			l.Attrs = attrs
+			l.Expiration = *resp.Node.Expiration
+			return l, nil
+		} else {
+			log.Infof("Found lease (%v) for current IP (%v) but not compatible with current config, deleting", l.Subnet, extIP)
+			if _, err := m.registry.deleteSubnet(ctx, network, l.Key()); err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	// no existing match, grab a new one
@@ -381,11 +390,10 @@ func (m *EtcdManager) watchReset(ctx context.Context, network string) (WatchResu
 	return wr, nil
 }
 
-func interrupted(cancel chan bool) bool {
-	select {
-	case <-cancel:
-		return true
-	default:
+func isSubnetConfigCompat(config *Config, sn ip.IP4Net) bool {
+	if sn.IP < config.SubnetMin || sn.IP > config.SubnetMax {
 		return false
 	}
+
+	return sn.PrefixLen == config.SubnetLen
 }
