@@ -231,7 +231,7 @@ func main() {
 	// now parse command line args
 	flag.Parse()
 
-	if opts.help {
+	if flag.NArg() > 0 || opts.help {
 		fmt.Fprintf(os.Stderr, "Usage: %s [OPTION]...\n", os.Args[0])
 		flag.PrintDefaults()
 		os.Exit(0)
