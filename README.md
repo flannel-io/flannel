@@ -132,6 +132,51 @@ Additionally it will monitor etcd for new members of the network and adjust the 
 
 After flannel has acquired the subnet and configured backend, it will write out an environment variable file (`/run/flannel/subnet.env` by default) with subnet address and MTU that it supports.
 
+## Client/Server mode (EXPERIMENTAL)
+
+While flannel has been designed to work without a need for a central controller, utilizing etcd for coordination, it can be configured to run in a client/server mode.
+Such setup offers the advantange of having only a single (or a handful) of server having access to etcd with flannel daemons accessing etcd via the server.
+The server is completely stateless and does not assume that it has exclusive access to the etcd keyspace.
+In the future this will be exploited to provide failover.
+Currently though, the clients accept only a single endpoint to which to connect to.
+It is important to note that the server itself does not join the flannel network (it won't assign itself a subnet) -- it just satisfies requests from the clients.
+
+To run a server on a host with 10.0.0.3 IP address:
+```
+$ flanneld --listen=0.0.0.0:8888
+```
+
+To run flannel daemon in client mode:
+```
+$ flanneld --remote=10.0.0.3
+```
+
+## Multi-network mode (EXPERIMENTAL)
+
+Multi-network mode allows a single flannel daemon to join multiple networks.
+Each network is independent from each other and has its own configuration, IP space, interfaces.
+To configure three networks, `blue`, `green`, and `red`, start by publishing their configurations to etcd in different directories:
+```
+$ etcdctl set /coreos.com/network/blue/config  '{ "Network": "10.1.0.0/16", "Backend": { "Type": "vxlan", "VNI": 1 } }'
+$ etcdctl set /coreos.com/network/green/config '{ "Network": "10.2.0.0/16", "Backend": { "Type": "vxlan", "VNI": 2 } }'
+$ etcdctl set /coreos.com/network/red/config   '{ "Network": "10.3.0.0/16", "Backend": { "Type": "vxlan", "VNI": 3 } }'
+```
+
+Next, start the flannel daemon, specifying the etcd prefix (we used one different from default) and the networks to join:
+```
+$ flanneld --networks=blue,green,red
+```
+
+Instead of writing out `/run/flannel/subnet.env` file with flannel parameters, it will create a .env file for each network in `/run/flannel/networks` directory:
+```
+$ ls /run/flannel/networks/
+bar.env  baz.env  foo.env
+```
+
+**Important**: In multi-network mode, flannel will not notify systemd that it is ready upon initialization.
+This is because some networks may initialize slower (or never) than others.
+Use systemd.path files for unit synchronization.
+
 ## Key command line options
 
 ```
@@ -143,9 +188,17 @@ After flannel has acquired the subnet and configured backend, it will write out 
 --iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
 --subnet-file=/run/flannel/subnet.env: filename where env variables (subnet and MTU values) will be written to.
 --ip-masq=false: setup IP masquerade for traffic destined for outside the flannel network.
+--listen="": if specified, will run in server mode. Value is IP and port (e.g. `0.0.0.0:8888`) to listen on.
+--remote="": if specified, will run in client mode. Value is IP and port of the server.
+--networks="": if specified, will run in multi-network mode. Value is comma separate list of networks to join.
 -v=0: log level for V logs. Set to 1 to see messages related to data path.
 --version: print version and exit
 ```
+
+## Environment variables
+The command line options outlined above can also be specified via environment variables.
+For example `--etcd-endpoints=http://10.0.0.2:2379` is equivalent to `FLANNELD_ETCD_ENDPOINTS=http://10.0.0.2:2379` environment variable.
+Any command line option can be turned into an environment variable by prefixing it with `FLANNELD_`, stripping leading dashes, converting to uppercase and replacing all other dashes to underscores.
 
 ## Zero-downtime restarts
 
