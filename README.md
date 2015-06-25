@@ -134,47 +134,49 @@ After flannel has acquired the subnet and configured backend, it will write out 
 
 ## Client/Server mode (EXPERIMENTAL)
 
-While flannel has been designed to work without a need for a central controller, utilizing etcd for coordination, it can be configured to run in a client/server mode.
-Such setup offers the advantange of having only a single (or a handful) of server having access to etcd with flannel daemons accessing etcd via the server.
+By default flannel runs without a central controller, utilizing etcd for coordination.
+However, it can also be configured to run in client/server mode, where a special instance of the flannel daemon (the server) is the only one that communicates with etcd.
+This setup offers the advantange of having only a single server directly connecting to etcd, with the rest of the flannel daemons (clients) accessing etcd via the server.
 The server is completely stateless and does not assume that it has exclusive access to the etcd keyspace.
-In the future this will be exploited to provide failover.
-Currently though, the clients accept only a single endpoint to which to connect to.
-It is important to note that the server itself does not join the flannel network (it won't assign itself a subnet) -- it just satisfies requests from the clients.
+In the future this will be exploited to provide failover; currently, however, the clients accept only a single endpoint to which to connect.
 
-To run a server on a host with 10.0.0.3 IP address:
+To run the flannel daemon in server mode, simply provide the `--listen` flag:
 ```
 $ flanneld --listen=0.0.0.0:8888
 ```
 
-To run flannel daemon in client mode:
+To run the flannel daemon in client mode, use the `--remote` flag to point it to a flannel server instance:
 ```
 $ flanneld --remote=10.0.0.3
 ```
+
+It is important to note that the server itself does not join the flannel network (i.e. it won't assign itself a subnet) -- it just satisfies requests from the clients.
+As such, if the host running the flannel server also needs to participate in the overlay, it should start two instances of flannel - one in client mode and one in server mode.
 
 ## Multi-network mode (EXPERIMENTAL)
 
 Multi-network mode allows a single flannel daemon to join multiple networks.
 Each network is independent from each other and has its own configuration, IP space, interfaces.
-To configure three networks, `blue`, `green`, and `red`, start by publishing their configurations to etcd in different directories:
+To configure three networks -- in this example named `blue`, `green`, and `red` -- start by publishing their configurations to etcd in different locations:
 ```
 $ etcdctl set /coreos.com/network/blue/config  '{ "Network": "10.1.0.0/16", "Backend": { "Type": "vxlan", "VNI": 1 } }'
 $ etcdctl set /coreos.com/network/green/config '{ "Network": "10.2.0.0/16", "Backend": { "Type": "vxlan", "VNI": 2 } }'
 $ etcdctl set /coreos.com/network/red/config   '{ "Network": "10.3.0.0/16", "Backend": { "Type": "vxlan", "VNI": 3 } }'
 ```
 
-Next, start the flannel daemon, specifying the etcd prefix (we used one different from default) and the networks to join:
+Next, start the flannel daemon, specifying the networks to join:
 ```
 $ flanneld --networks=blue,green,red
 ```
 
-Instead of writing out `/run/flannel/subnet.env` file with flannel parameters, it will create a .env file for each network in `/run/flannel/networks` directory:
+Instead of writing out a single `/run/flannel/subnet.env` file with flannel parameters, it will create a .env file for each network in the directory `/run/flannel/networks`:
 ```
 $ ls /run/flannel/networks/
 bar.env  baz.env  foo.env
 ```
 
 **Important**: In multi-network mode, flannel will not notify systemd that it is ready upon initialization.
-This is because some networks may initialize slower (or never) than others.
+This is because some networks may initialize slower than others (or never).
 Use systemd.path files for unit synchronization.
 
 ## Key command line options
