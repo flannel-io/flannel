@@ -139,6 +139,7 @@ However, it can also be configured to run in client/server mode, where a special
 This setup offers the advantange of having only a single server directly connecting to etcd, with the rest of the flannel daemons (clients) accessing etcd via the server.
 The server is completely stateless and does not assume that it has exclusive access to the etcd keyspace.
 In the future this will be exploited to provide failover; currently, however, the clients accept only a single endpoint to which to connect.
+The stateless server also makes it possible to run some nodes in client mode side-by-side with those connecting to etcd directly.
 
 To run the flannel daemon in server mode, simply provide the `--listen` flag:
 ```
@@ -147,7 +148,7 @@ $ flanneld --listen=0.0.0.0:8888
 
 To run the flannel daemon in client mode, use the `--remote` flag to point it to a flannel server instance:
 ```
-$ flanneld --remote=10.0.0.3
+$ flanneld --remote=10.0.0.3:8888
 ```
 
 It is important to note that the server itself does not join the flannel network (i.e. it won't assign itself a subnet) -- it just satisfies requests from the clients.
@@ -172,12 +173,23 @@ $ flanneld --networks=blue,green,red
 Instead of writing out a single `/run/flannel/subnet.env` file with flannel parameters, it will create a .env file for each network in the directory `/run/flannel/networks`:
 ```
 $ ls /run/flannel/networks/
-bar.env  baz.env  foo.env
+blue.env  green.env  red.env
 ```
 
 **Important**: In multi-network mode, flannel will not notify systemd that it is ready upon initialization.
 This is because some networks may initialize slower than others (or never).
 Use systemd.path files for unit synchronization.
+
+**Note**: Multi-network mode can work in conjunction with the client/server mode.
+The `--networks` flag is only passed to the client:
+
+```
+# Server daemon
+$ flanneld --listen=0.0.0.0:8888
+
+# Client daemon
+$ flanneld --remote=10.0.0.3:8888 --networks=blue,green
+```
 
 ## Key command line options
 
