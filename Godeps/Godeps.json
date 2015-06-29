@@ -31,6 +31,11 @@
 			"Rev": "0424b5f86ef0ca57a5309c599f74bbb3e97ecd9d"
 		},
 		{
+			"ImportPath": "github.com/coreos/go-systemd/activation",
+			"Comment": "v2-26-ga606a1e",
+			"Rev": "a606a1e936df81b70d85448221c7b1c6d8a74ef1"
+		},
+		{
 			"ImportPath": "github.com/coreos/go-systemd/daemon",
 			"Comment": "v2-26-ga606a1e",
 			"Rev": "a606a1e936df81b70d85448221c7b1c6d8a74ef1"

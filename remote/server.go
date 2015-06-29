@@ -20,7 +20,10 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
+	"strconv"
 
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/activation"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
@@ -153,6 +156,51 @@ func bindHandler(h handler, ctx context.Context, sm subnet.Manager) http.Handler
 	}
 }
 
+func fdListener(addr string) (net.Listener, error) {
+	fdOffset := 0
+	if addr != "" {
+		fd, err := strconv.Atoi(addr)
+		if err != nil {
+			return nil, fmt.Errorf("fd index is not a number")
+		}
+		fdOffset = fd - 3
+	}
+
+	listeners, err := activation.Listeners(false)
+	if err != nil {
+		return nil, err
+	}
+
+	if fdOffset >= len(listeners) {
+		return nil, fmt.Errorf("fd %v is out of range (%v)", addr, len(listeners)+3)
+	}
+
+	if listeners[fdOffset] == nil {
+		return nil, fmt.Errorf("fd %v was not socket activated", addr)
+	}
+
+	return listeners[fdOffset], nil
+}
+
+func listener(addr string) (net.Listener, error) {
+	rex := regexp.MustCompile("(?:([a-z]+)://)?(.*)")
+	groups := rex.FindStringSubmatch(addr)
+
+	switch {
+	case groups == nil:
+		return nil, fmt.Errorf("bad listener address")
+
+	case groups[1] == "", groups[1] == "tcp":
+		return net.Listen("tcp", groups[2])
+
+	case groups[1] == "fd":
+		return fdListener(groups[2])
+
+	default:
+		return nil, fmt.Errorf("bad listener scheme")
+	}
+}
+
 func RunServer(ctx context.Context, sm subnet.Manager, listenAddr string) {
 	// {network} is always required a the API level but to
 	// keep backward compat, special "_" network is allowed
@@ -164,7 +212,7 @@ func RunServer(ctx context.Context, sm subnet.Manager, listenAddr string) {
 	r.HandleFunc("/v1/{network}/leases/{subnet}", bindHandler(handleRenewLease, ctx, sm)).Methods("PUT")
 	r.HandleFunc("/v1/{network}/leases", bindHandler(handleWatchLeases, ctx, sm)).Methods("GET")
 
-	l, err := net.Listen("tcp", listenAddr)
+	l, err := listener(listenAddr)
 	if err != nil {
 		log.Errorf("Error listening on %v: %v", listenAddr, err)
 		return

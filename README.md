@@ -202,7 +202,7 @@ $ flanneld --remote=10.0.0.3:8888 --networks=blue,green
 --iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
 --subnet-file=/run/flannel/subnet.env: filename where env variables (subnet and MTU values) will be written to.
 --ip-masq=false: setup IP masquerade for traffic destined for outside the flannel network.
---listen="": if specified, will run in server mode. Value is IP and port (e.g. `0.0.0.0:8888`) to listen on.
+--listen="": if specified, will run in server mode. Value is IP and port (e.g. `0.0.0.0:8888`) to listen on or `fd://` for [socket activation](http://www.freedesktop.org/software/systemd/man/systemd.socket.html).
 --remote="": if specified, will run in client mode. Value is IP and port of the server.
 --networks="": if specified, will run in multi-network mode. Value is comma separate list of networks to join.
 -v=0: log level for V logs. Set to 1 to see messages related to data path.
