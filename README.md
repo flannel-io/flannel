@@ -75,8 +75,7 @@ This is the only mandatory key.
 * aws-vpc: create IP routes in an [Amazon VPC route table](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Route_Tables.html).
   * Requirements:
 	* Running on an EC2 instance that is in an Amazon VPC.
-	* Permissions required: `CreateRoute`, `DeleteRoute`,`DescribeRouteTables`, `DescribeInstances [optional]`
-	* [Disable source/destination checks](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_NAT_Instance.html#EIP_Disable_SrcDestCheck) on instances running flannel.
+	* Permissions required: `CreateRoute`, `DeleteRoute`,`DescribeRouteTables`, `ModifyInstanceAttribute`, `DescribeInstances [optional]`
   * `Type` (string): `aws-vpc`
   * `RouteTableID` (string): [optional] The ID of the VPC route table to add routes to.
      The route table must be in the same region as the EC2 instance that flannel is running on.
