@@ -102,6 +102,10 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 	}
 	ec2c := ec2.New(auth, region)
 
+	if _, err = m.DisableSrcDestCheck(instanceID, ec2c); err != nil {
+		log.Info("Warning- disabling source destination check falied!: %v", err)
+	}
+
 	if m.cfg.RouteTableID == "" {
 		log.Infof("RouteTableID not passed as config parameter, attempting to detect")
 		routeTableID, err := m.DetectRouteTableID(instanceID, ec2c)
@@ -160,6 +164,15 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 		Net: l.Subnet,
 		MTU: extIface.MTU,
 	}, nil
+}
+
+func (m *AwsVpcBackend) DisableSrcDestCheck(instanceID string, ec2c *ec2.EC2) (*ec2.ModifyInstanceResp, error) {
+	modifyAttributes := &ec2.ModifyInstance{
+		SourceDestCheck:    false,
+		SetSourceDestCheck: true,
+	}
+
+	return ec2c.ModifyInstance(instanceID, modifyAttributes)
 }
 
 func (m *AwsVpcBackend) DetectRouteTableID(instanceID string, ec2c *ec2.EC2) (string, error) {
