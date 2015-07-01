@@ -102,62 +102,43 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 	}
 	ec2c := ec2.New(auth, region)
 
-	if _, err = m.DisableSrcDestCheck(instanceID, ec2c); err != nil {
+	if _, err = m.disableSrcDestCheck(instanceID, ec2c); err != nil {
 		log.Info("Warning- disabling source destination check falied!: %v", err)
 	}
 
 	if m.cfg.RouteTableID == "" {
-		log.Infof("RouteTableID not passed as config parameter, attempting to detect")
-		routeTableID, err := m.DetectRouteTableID(instanceID, ec2c)
-		if err != nil {
+		log.Infof("RouteTableID not passed as config parameter, detecting ...")
+		if err := m.detectRouteTableID(instanceID, ec2c); err != nil {
 			return nil, err
 		}
-		log.Info("Detected routeRouteTableID: ", routeTableID)
-
-		m.cfg.RouteTableID = routeTableID
 	}
 
-	filter := ec2.NewFilter()
-	filter.Add("route.destination-cidr-block", l.Subnet.String())
-	filter.Add("route.state", "active")
+	log.Info("RouteRouteTableID: ", m.cfg.RouteTableID)
 
-	resp, err := ec2c.DescribeRouteTables([]string{m.cfg.RouteTableID}, filter)
+	matchingRouteFound, err := m.checkMatchingRoutes(instanceID, l.Subnet.String(), ec2c)
 	if err != nil {
 		log.Errorf("Error describing route tables: %v", err)
 
 		if ec2Err, ok := err.(*ec2.Error); ok {
 			if ec2Err.Code == "UnauthorizedOperation" {
-				log.Errorf("Note: describeRouteTables permission cannot be bound to any resource")
+				log.Errorf("Note: DescribeRouteTables permission cannot be bound to any resource")
 			}
 		}
 
-	} else {
-		for _, routeTable := range resp.RouteTables {
-			for _, route := range routeTable.Routes {
-				if l.Subnet.String() == route.DestinationCidrBlock && route.State == "active" {
-					log.Errorf("Matching *active* entry to: %s that will be deleted: %s, %s \n", l.Subnet.String(), route.DestinationCidrBlock, route.GatewayId)
-				}
+	}
+
+	if !matchingRouteFound {
+		if _, err := ec2c.DeleteRoute(m.cfg.RouteTableID, l.Subnet.String()); err != nil {
+			if ec2err, ok := err.(*ec2.Error); !ok || ec2err.Code != "InvalidRoute.NotFound" {
+				// an error other than the route not already existing occurred
+				return nil, fmt.Errorf("error deleting existing route for %s: %v", l.Subnet.String(), err)
 			}
 		}
-	}
 
-	// Delete route for this machine's subnet if it already exists
-	if _, err := ec2c.DeleteRoute(m.cfg.RouteTableID, l.Subnet.String()); err != nil {
-		if ec2err, ok := err.(*ec2.Error); !ok || ec2err.Code != "InvalidRoute.NotFound" {
-			// an error other than the route not already existing occurred
-			return nil, fmt.Errorf("error deleting existing route for %s: %v", l.Subnet.String(), err)
+		// Add the route for this machine's subnet
+		if _, err := m.createRoute(instanceID, l.Subnet.String(), ec2c); err != nil {
+			return nil, fmt.Errorf("unable to add route %s: %v", l.Subnet.String(), err)
 		}
-	}
-
-	// Add the route for this machine's subnet
-	route := &ec2.CreateRoute{
-		RouteTableId:         m.cfg.RouteTableID,
-		InstanceId:           instanceID,
-		DestinationCidrBlock: l.Subnet.String(),
-	}
-
-	if _, err := ec2c.CreateRoute(route); err != nil {
-		return nil, fmt.Errorf("unable to add route %+v: %v", route, err)
 	}
 
 	return &backend.SubnetDef{
@@ -166,7 +147,46 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 	}, nil
 }
 
-func (m *AwsVpcBackend) DisableSrcDestCheck(instanceID string, ec2c *ec2.EC2) (*ec2.ModifyInstanceResp, error) {
+func (m *AwsVpcBackend) checkMatchingRoutes(instanceID, subnet string, ec2c *ec2.EC2) (bool, error) {
+
+	filter := ec2.NewFilter()
+	filter.Add("route.destination-cidr-block", subnet)
+	filter.Add("route.state", "active")
+
+	matchingRouteFound := false
+
+	resp, err := ec2c.DescribeRouteTables([]string{m.cfg.RouteTableID}, filter)
+	if err != nil {
+		return matchingRouteFound, err
+	}
+
+	for _, routeTable := range resp.RouteTables {
+		for _, route := range routeTable.Routes {
+			if subnet == route.DestinationCidrBlock && route.State == "active" {
+
+				if route.InstanceId == instanceID {
+					matchingRouteFound = true
+					break
+				}
+
+				log.Errorf("Deleting invalid *active* matching route: %s, %s \n", route.DestinationCidrBlock, route.InstanceId)
+			}
+		}
+	}
+
+	return matchingRouteFound, nil
+}
+
+func (m *AwsVpcBackend) createRoute(instanceID, subnet string, ec2c *ec2.EC2) (*ec2.SimpleResp, error) {
+	route := &ec2.CreateRoute{
+		RouteTableId:         m.cfg.RouteTableID,
+		InstanceId:           instanceID,
+		DestinationCidrBlock: subnet,
+	}
+
+	return ec2c.CreateRoute(route)
+}
+func (m *AwsVpcBackend) disableSrcDestCheck(instanceID string, ec2c *ec2.EC2) (*ec2.ModifyInstanceResp, error) {
 	modifyAttributes := &ec2.ModifyInstance{
 		SourceDestCheck:    false,
 		SetSourceDestCheck: true,
@@ -175,10 +195,10 @@ func (m *AwsVpcBackend) DisableSrcDestCheck(instanceID string, ec2c *ec2.EC2) (*
 	return ec2c.ModifyInstance(instanceID, modifyAttributes)
 }
 
-func (m *AwsVpcBackend) DetectRouteTableID(instanceID string, ec2c *ec2.EC2) (string, error) {
+func (m *AwsVpcBackend) detectRouteTableID(instanceID string, ec2c *ec2.EC2) error {
 	resp, err := ec2c.Instances([]string{instanceID}, nil)
 	if err != nil {
-		return "", fmt.Errorf("error getting instance info: %v", err)
+		return fmt.Errorf("error getting instance info: %v", err)
 	}
 
 	subnetID := resp.Reservations[0].Instances[0].SubnetId
@@ -189,10 +209,11 @@ func (m *AwsVpcBackend) DetectRouteTableID(instanceID string, ec2c *ec2.EC2) (st
 
 	res, err := ec2c.DescribeRouteTables(nil, filter)
 	if err != nil {
-		return "", fmt.Errorf("error describing routeTables for subnetID %s: %v", subnetID, err)
+		return fmt.Errorf("error describing routeTables for subnetID %s: %v", subnetID, err)
 	}
 
-	return res.RouteTables[0].RouteTableId, nil
+	m.cfg.RouteTableID = res.RouteTables[0].RouteTableId
+	return nil
 }
 
 func (m *AwsVpcBackend) Run() {
