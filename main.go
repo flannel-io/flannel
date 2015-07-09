@@ -36,20 +36,23 @@ import (
 )
 
 type CmdLineOpts struct {
-	etcdEndpoints string
-	etcdPrefix    string
-	etcdKeyfile   string
-	etcdCertfile  string
-	etcdCAFile    string
-	help          bool
-	version       bool
-	ipMasq        bool
-	subnetFile    string
-	subnetDir     string
-	iface         string
-	listen        string
-	remote        string
-	networks      string
+	etcdEndpoints  string
+	etcdPrefix     string
+	etcdKeyfile    string
+	etcdCertfile   string
+	etcdCAFile     string
+	help           bool
+	version        bool
+	ipMasq         bool
+	subnetFile     string
+	subnetDir      string
+	iface          string
+	listen         string
+	remote         string
+	remoteKeyfile  string
+	remoteCertfile string
+	remoteCAFile   string
+	networks       string
 }
 
 var opts CmdLineOpts
@@ -65,6 +68,9 @@ func init() {
 	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
 	flag.StringVar(&opts.listen, "listen", "", "run as server and listen on specified address (e.g. ':8080')")
 	flag.StringVar(&opts.remote, "remote", "", "run as client and connect to server on specified address (e.g. '10.1.2.3:8080')")
+	flag.StringVar(&opts.remoteKeyfile, "remote-keyfile", "", "SSL key file used to secure client/server communication")
+	flag.StringVar(&opts.remoteCertfile, "remote-certfile", "", "SSL certification file used to secure client/server communication")
+	flag.StringVar(&opts.remoteCAFile, "remote-cafile", "", "SSL Certificate Authority file used to secure client/server communication")
 	flag.StringVar(&opts.networks, "networks", "", "run in multi-network mode and service the specified networks")
 	flag.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
@@ -160,7 +166,7 @@ func isMultiNetwork() bool {
 
 func newSubnetManager() (subnet.Manager, error) {
 	if opts.remote != "" {
-		return remote.NewRemoteManager(opts.remote), nil
+		return remote.NewRemoteManager(opts.remote, opts.remoteCAFile, opts.remoteCertfile, opts.remoteKeyfile)
 	}
 
 	cfg := &subnet.EtcdConfig{
@@ -259,7 +265,7 @@ func main() {
 		}
 		log.Info("running as server")
 		runFunc = func(ctx context.Context) {
-			remote.RunServer(ctx, sm, opts.listen)
+			remote.RunServer(ctx, sm, opts.listen, opts.remoteCAFile, opts.remoteCertfile, opts.remoteKeyfile)
 		}
 	} else {
 		networks := strings.Split(opts.networks, ",")

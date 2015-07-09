@@ -41,7 +41,7 @@ func TestRemote(t *testing.T) {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
-		RunServer(ctx, sm, addr)
+		RunServer(ctx, sm, addr, "", "", "")
 		wg.Done()
 	}()
 
@@ -77,7 +77,10 @@ func isConnRefused(err error) bool {
 }
 
 func doTestRemote(ctx context.Context, t *testing.T, remoteAddr string) {
-	sm := NewRemoteManager(remoteAddr)
+	sm, err := NewRemoteManager(remoteAddr, "", "", "")
+	if err != nil {
+		t.Fatalf("Failed to create remote mananager: %v", err)
+	}
 
 	for i := 0; ; i++ {
 		cfg, err := sm.GetNetworkConfig(ctx, "_")

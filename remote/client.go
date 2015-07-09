@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"path"
 
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/pkg/transport"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
 	"github.com/coreos/flannel/subnet"
@@ -29,11 +30,33 @@ import (
 
 // implements subnet.Manager by sending requests to the server
 type RemoteManager struct {
-	base string // includes scheme, host, and port, and version
+	base      string // includes scheme, host, and port, and version
+	transport *http.Transport
 }
 
-func NewRemoteManager(listenAddr string) subnet.Manager {
-	return &RemoteManager{base: "http://" + listenAddr + "/v1"}
+func NewRemoteManager(listenAddr, cafile, certfile, keyfile string) (subnet.Manager, error) {
+	tls := transport.TLSInfo{
+		CAFile:   cafile,
+		CertFile: certfile,
+		KeyFile:  keyfile,
+	}
+
+	t, err := transport.NewTransport(tls)
+	if err != nil {
+		return nil, err
+	}
+
+	var scheme string
+	if tls.Empty() && tls.CAFile == "" {
+		scheme = "http://"
+	} else {
+		scheme = "https://"
+	}
+
+	return &RemoteManager{
+		base:      scheme + listenAddr + "/v1",
+		transport: t,
+	}, nil
 }
 
 func (m *RemoteManager) mkurl(network string, parts ...string) string {
@@ -49,7 +72,7 @@ func (m *RemoteManager) mkurl(network string, parts ...string) string {
 func (m *RemoteManager) GetNetworkConfig(ctx context.Context, network string) (*subnet.Config, error) {
 	url := m.mkurl(network, "config")
 
-	resp, err := httpGet(ctx, url)
+	resp, err := m.httpGet(ctx, url)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +98,7 @@ func (m *RemoteManager) AcquireLease(ctx context.Context, network string, attrs 
 		return nil, err
 	}
 
-	resp, err := httpPutPost(ctx, "POST", url, "application/json", body)
+	resp, err := m.httpPutPost(ctx, "POST", url, "application/json", body)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +124,7 @@ func (m *RemoteManager) RenewLease(ctx context.Context, network string, lease *s
 		return err
 	}
 
-	resp, err := httpPutPost(ctx, "PUT", url, "application/json", body)
+	resp, err := m.httpPutPost(ctx, "PUT", url, "application/json", body)
 	if err != nil {
 		return err
 	}
@@ -132,7 +155,7 @@ func (m *RemoteManager) WatchLeases(ctx context.Context, network string, cursor 
 		url = fmt.Sprintf("%v?next=%v", url, c)
 	}
 
-	resp, err := httpGet(ctx, url)
+	resp, err := m.httpGet(ctx, url)
 	if err != nil {
 		return subnet.WatchResult{}, err
 	}
@@ -165,11 +188,10 @@ type httpRespErr struct {
 	err  error
 }
 
-func httpDo(ctx context.Context, req *http.Request) (*http.Response, error) {
+func (m *RemoteManager) httpDo(ctx context.Context, req *http.Request) (*http.Response, error) {
 	// Run the HTTP request in a goroutine (so it can be canceled) and pass
 	// the result via the channel c
-	tr := &http.Transport{}
-	client := &http.Client{Transport: tr}
+	client := &http.Client{Transport: m.transport}
 	c := make(chan httpRespErr, 1)
 	go func() {
 		resp, err := client.Do(req)
@@ -178,7 +200,7 @@ func httpDo(ctx context.Context, req *http.Request) (*http.Response, error) {
 
 	select {
 	case <-ctx.Done():
-		tr.CancelRequest(req)
+		m.transport.CancelRequest(req)
 		<-c // Wait for f to return.
 		return nil, ctx.Err()
 	case r := <-c:
@@ -186,20 +208,20 @@ func httpDo(ctx context.Context, req *http.Request) (*http.Response, error) {
 	}
 }
 
-func httpGet(ctx context.Context, url string) (*http.Response, error) {
+func (m *RemoteManager) httpGet(ctx context.Context, url string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return httpDo(ctx, req)
+	return m.httpDo(ctx, req)
 }
 
-func httpPutPost(ctx context.Context, method, url, contentType string, body []byte) (*http.Response, error) {
+func (m *RemoteManager) httpPutPost(ctx context.Context, method, url, contentType string, body []byte) (*http.Response, error) {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", contentType)
-	return httpDo(ctx, req)
+	return m.httpDo(ctx, req)
 }

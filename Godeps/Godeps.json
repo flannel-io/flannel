@@ -26,6 +26,11 @@
 			"Rev": "6ddfebb10ece847f1ae09c701834f1b15abbd8b2"
 		},
 		{
+			"ImportPath": "github.com/coreos/etcd/pkg/transport",
+			"Comment": "v2.1.0-rc.0-24-g8ab388f",
+			"Rev": "8ab388fa56e6ad4d5566a42ef9f5ebeadc433a6e"
+		},
+		{
 			"ImportPath": "github.com/coreos/go-etcd/etcd",
 			"Comment": "v2.0.0-3-g0424b5f",
 			"Rev": "0424b5f86ef0ca57a5309c599f74bbb3e97ecd9d"
