@@ -37,6 +37,7 @@ func (m *AllocBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Sub
 	l, err := m.sm.AcquireLease(m.ctx, m.network, &attrs)
 	switch err {
 	case nil:
+		m.lease = l
 		return &backend.SubnetDef{
 			Net: l.Subnet,
 			MTU: extIface.MTU,
