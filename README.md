@@ -17,8 +17,8 @@ The following diagram demonstrates the path a packet takes as it traverses the o
 
 ## Building flannel
 
-* Step 1: Make sure you have Linux headers installed on your machine. On Ubuntu, run `sudo apt-get install linux-libc-dev`.
-On Fedora/Redhat, run `sudo yum install kernel-headers`.
+* Step 1: Make sure you have required dependencies installed on your machine. On Ubuntu, run `sudo apt-get install linux-libc-dev golang gcc`.
+On Fedora/Redhat, run `sudo yum install kernel-headers golang gcc`.
 * Step 2: Git clone the flannel repo: `git clone https://github.com/coreos/flannel.git`
 * Step 3: Run the build script: `cd flannel; ./build`
 
