@@ -15,6 +15,7 @@
 package remote
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -23,6 +24,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/pkg/transport"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/activation"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/gorilla/mux"
@@ -182,26 +184,50 @@ func fdListener(addr string) (net.Listener, error) {
 	return listeners[fdOffset], nil
 }
 
-func listener(addr string) (net.Listener, error) {
+func listener(addr, cafile, certfile, keyfile string) (net.Listener, error) {
 	rex := regexp.MustCompile("(?:([a-z]+)://)?(.*)")
 	groups := rex.FindStringSubmatch(addr)
+
+	var l net.Listener
+	var err error
 
 	switch {
 	case groups == nil:
 		return nil, fmt.Errorf("bad listener address")
 
 	case groups[1] == "", groups[1] == "tcp":
-		return net.Listen("tcp", groups[2])
+		if l, err = net.Listen("tcp", groups[2]); err != nil {
+			return nil, err
+		}
 
 	case groups[1] == "fd":
-		return fdListener(groups[2])
+		if l, err = fdListener(groups[2]); err != nil {
+			return nil, err
+		}
 
 	default:
 		return nil, fmt.Errorf("bad listener scheme")
 	}
+
+	tlsinfo := transport.TLSInfo{
+		CAFile:   cafile,
+		CertFile: certfile,
+		KeyFile:  keyfile,
+	}
+
+	if !tlsinfo.Empty() {
+		cfg, err := tlsinfo.ServerConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		l = tls.NewListener(l, cfg)
+	}
+
+	return l, nil
 }
 
-func RunServer(ctx context.Context, sm subnet.Manager, listenAddr string) {
+func RunServer(ctx context.Context, sm subnet.Manager, listenAddr, cafile, certfile, keyfile string) {
 	// {network} is always required a the API level but to
 	// keep backward compat, special "_" network is allowed
 	// that means "no network"
@@ -212,7 +238,7 @@ func RunServer(ctx context.Context, sm subnet.Manager, listenAddr string) {
 	r.HandleFunc("/v1/{network}/leases/{subnet}", bindHandler(handleRenewLease, ctx, sm)).Methods("PUT")
 	r.HandleFunc("/v1/{network}/leases", bindHandler(handleWatchLeases, ctx, sm)).Methods("GET")
 
-	l, err := listener(listenAddr)
+	l, err := listener(listenAddr, cafile, certfile, keyfile)
 	if err != nil {
 		log.Errorf("Error listening on %v: %v", listenAddr, err)
 		return
