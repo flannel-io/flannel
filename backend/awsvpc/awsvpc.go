@@ -201,8 +201,19 @@ func (m *AwsVpcBackend) detectRouteTableID(instanceID string, ec2c *ec2.EC2) err
 		return fmt.Errorf("error getting instance info: %v", err)
 	}
 
+	if len(resp.Reservations) == 0 {
+		return fmt.Errorf("no reservations found")
+	}
+
+	if len(resp.Reservations[0].Instances) == 0 {
+		return fmt.Errorf("no matching instance found with id: %v", instanceID)
+	}
+
 	subnetID := resp.Reservations[0].Instances[0].SubnetId
-	log.Info("SubnetId: ", subnetID)
+	vpcID := resp.Reservations[0].Instances[0].VpcId
+
+	log.Info("Subnet-ID: ", subnetID)
+	log.Info("VPC-ID: ", vpcID)
 
 	filter := ec2.NewFilter()
 	filter.Add("association.subnet-id", subnetID)
@@ -212,10 +223,28 @@ func (m *AwsVpcBackend) detectRouteTableID(instanceID string, ec2c *ec2.EC2) err
 		return fmt.Errorf("error describing routeTables for subnetID %s: %v", subnetID, err)
 	}
 
+	if len(res.RouteTables) != 0 {
+		m.cfg.RouteTableID = res.RouteTables[0].RouteTableId
+		return nil
+	}
+
+	filter = ec2.NewFilter()
+	filter.Add("association.main", "true")
+	filter.Add("vpc-id", vpcID)
+
+	res, err = ec2c.DescribeRouteTables(nil, filter)
+	if err != nil {
+		log.Info("error describing route tables: ", err)
+	}
+
+	if len(res.RouteTables) == 0 {
+		return fmt.Errorf("main route table not found")
+	}
+
 	m.cfg.RouteTableID = res.RouteTables[0].RouteTableId
+
 	return nil
 }
-
 func (m *AwsVpcBackend) Run() {
 	subnet.LeaseRenewer(m.ctx, m.sm, m.network, m.lease)
 }
