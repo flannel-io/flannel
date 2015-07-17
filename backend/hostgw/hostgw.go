@@ -145,6 +145,9 @@ func (rb *HostgwBackend) handleSubnetEvents(batch []subnet.Event) {
 				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
 				LinkIndex: rb.extIface.Index,
 			}
+			if rb.extIP.Equal(route.Gw) {
+				continue
+			}
 			if err := netlink.RouteAdd(&route); err != nil {
 				log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, err)
 				continue
