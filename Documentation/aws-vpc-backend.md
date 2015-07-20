@@ -1,5 +1,7 @@
 # Amazon VPC Backend for Flannel
 
+When running within an Amazon VPC, we recommend using the aws-vpc backend which, instead of using encapsulation, manipulates IP routes to achieve maximum performance. Because of this, a separate flannel interface is not created.
+
 In order to run flannel on AWS we need to first create an [Amazon VPC](http://aws.amazon.com/vpc/).
 Amazon VPC enables us to launch EC2 instances into a virtual network, which we can configure via its route table.
 
@@ -136,4 +138,6 @@ Confirm that the subnet route table has entries for the lease acquired by each o
 </div>
 <div class="caption">AWS Routes</div>
 
-Keep in mind that the Amazon VPC [limits](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Appendix_Limits.html) the number of entries per route table to 50.
+### Limitations
+
+Keep in mind that the Amazon VPC [limits](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Appendix_Limits.html) the number of entries per route table to 50. If you require more routes, request a quota increase or simply switch to the VXLAN backend.

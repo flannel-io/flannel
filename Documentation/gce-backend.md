@@ -1,5 +1,7 @@
 # GCE Backend for Flannel
 
+When running on Google Compute Engine, we recommend using the GCE backend which, instead of using encapsulation, manipulates IP routes to achieve maximum performance. Because of this, a separate flannel interface is not created.
+
 From the Developers Console, we start by creating a new network.
 
 Configure the network name and address range. Then add firewall rules to allow etcd traffic (tcp/2379), SSH, and ICMP. 
@@ -69,4 +71,6 @@ Check that the subnet lease acquired by each of the hosts has been added!
 </div>
 <div class="caption">GCE Routes</div>
 
-It’s important to note that GCE currently [limits](https://cloud.google.com/compute/docs/resource-quotas) the number of routes per *project* to 100. 
+### Limitations
+
+It’s important to note that GCE currently [limits](https://cloud.google.com/compute/docs/resource-quotas) the number of routes per *project* to 100. If you require more routes, request a quota increase or simply switch to the VXLAN backend.
