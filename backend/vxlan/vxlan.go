@@ -66,20 +66,20 @@ func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backe
 	return vb
 }
 
-func newSubnetAttrs(pubIP net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, error) {
+func newSubnetAttrs(extEaddr net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, error) {
 	data, err := json.Marshal(&vxlanLeaseAttrs{hardwareAddr(mac)})
 	if err != nil {
 		return nil, err
 	}
 
 	return &subnet.LeaseAttrs{
-		PublicIP:    ip.FromIP(pubIP),
+		PublicIP:    ip.FromIP(extEaddr),
 		BackendType: "vxlan",
 		BackendData: json.RawMessage(data),
 	}, nil
 }
 
-func (vb *VXLANBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.SubnetDef, error) {
+func (vb *VXLANBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
 	// Parse our configuration
 	if len(vb.config.Backend) > 0 {
 		if err := json.Unmarshal(vb.config.Backend, &vb.cfg); err != nil {
@@ -91,7 +91,7 @@ func (vb *VXLANBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 		vni:       uint32(vb.cfg.VNI),
 		name:      fmt.Sprintf("flannel.%v", vb.cfg.VNI),
 		vtepIndex: extIface.Index,
-		vtepAddr:  extIP,
+		vtepAddr:  extIaddr,
 		vtepPort:  vb.cfg.Port,
 	}
 
@@ -109,7 +109,7 @@ func (vb *VXLANBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Su
 		}
 	}
 
-	sa, err := newSubnetAttrs(extIP, vb.dev.MACAddr())
+	sa, err := newSubnetAttrs(extEaddr, vb.dev.MACAddr())
 	if err != nil {
 		return nil, err
 	}

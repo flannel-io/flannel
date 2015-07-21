@@ -29,9 +29,9 @@ func New(sm subnet.Manager, network string) backend.Backend {
 	}
 }
 
-func (m *AllocBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.SubnetDef, error) {
+func (m *AllocBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
 	attrs := subnet.LeaseAttrs{
-		PublicIP: ip.FromIP(extIP),
+		PublicIP: ip.FromIP(extEaddr),
 	}
 
 	l, err := m.sm.AcquireLease(m.ctx, m.network, &attrs)

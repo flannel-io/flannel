@@ -175,6 +175,7 @@ $ flanneld --remote=10.0.0.3:8888 --networks=blue,green
 ## Key command line options
 
 ```
+--public-ip="": IP accessible by other nodes for inter-host communication. Defaults to the IP of the interface being used for communication.
 --etcd-endpoints=http://127.0.0.1:4001: a comma-delimited list of etcd endpoints.
 --etcd-prefix=/coreos.com/network: etcd prefix.
 --etcd-keyfile="": SSL key file used to secure etcd communication.
