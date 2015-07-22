@@ -41,7 +41,7 @@ func New(sm subnet.Manager, name string, ipMasq bool) *Network {
 	}
 }
 
-func (n *Network) Init(ctx context.Context, iface *net.Interface, ipaddr net.IP) *backend.SubnetDef {
+func (n *Network) Init(ctx context.Context, iface *net.Interface, iaddr net.IP, eaddr net.IP) *backend.SubnetDef {
 	var cfg *subnet.Config
 	var be backend.Backend
 	var sn *backend.SubnetDef
@@ -66,7 +66,7 @@ func (n *Network) Init(ctx context.Context, iface *net.Interface, ipaddr net.IP)
 		},
 
 		func() (err error) {
-			sn, err = be.Init(iface, ipaddr)
+			sn, err = be.Init(iface, iaddr, eaddr)
 			if err != nil {
 				log.Errorf("Failed to initialize network %v (type %v): %v", n.Name, be.Name(), err)
 			}

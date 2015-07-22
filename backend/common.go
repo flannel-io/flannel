@@ -26,7 +26,7 @@ type SubnetDef struct {
 }
 
 type Backend interface {
-	Init(extIface *net.Interface, extIP net.IP) (*SubnetDef, error)
+	Init(extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*SubnetDef, error)
 	Run()
 	Stop()
 	Name() string

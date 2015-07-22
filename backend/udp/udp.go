@@ -69,7 +69,7 @@ func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backe
 	return &be
 }
 
-func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.SubnetDef, error) {
+func (m *UdpBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
 	// Parse our configuration
 	if len(m.config.Backend) > 0 {
 		if err := json.Unmarshal(m.config.Backend, &m.cfg); err != nil {
@@ -79,7 +79,7 @@ func (m *UdpBackend) Init(extIface *net.Interface, extIP net.IP) (*backend.Subne
 
 	// Acquire the lease form subnet manager
 	attrs := subnet.LeaseAttrs{
-		PublicIP: ip.FromIP(extIP),
+		PublicIP: ip.FromIP(extEaddr),
 	}
 
 	l, err := m.sm.AcquireLease(m.ctx, m.network, &attrs)

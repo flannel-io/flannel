@@ -43,9 +43,9 @@ func TestAcquireLease(t *testing.T) {
 	msr := newDummyRegistry(1000)
 	sm := newEtcdManager(msr)
 
-	extIP, _ := ip.ParseIP4("1.2.3.4")
+	extIaddr, _ := ip.ParseIP4("1.2.3.4")
 	attrs := LeaseAttrs{
-		PublicIP: extIP,
+		PublicIP: extIaddr,
 	}
 
 	l, err := sm.AcquireLease(context.Background(), "", &attrs)
@@ -71,9 +71,9 @@ func TestConfigChanged(t *testing.T) {
 	msr := newDummyRegistry(1000)
 	sm := newEtcdManager(msr)
 
-	extIP, _ := ip.ParseIP4("1.2.3.4")
+	extIaddr, _ := ip.ParseIP4("1.2.3.4")
 	attrs := LeaseAttrs{
-		PublicIP: extIP,
+		PublicIP: extIaddr,
 	}
 
 	l, err := sm.AcquireLease(context.Background(), "", &attrs)
@@ -188,9 +188,9 @@ func TestRenewLease(t *testing.T) {
 	sm := newEtcdManager(msr)
 
 	// Create LeaseAttrs
-	extIP, _ := ip.ParseIP4("1.2.3.4")
+	extIaddr, _ := ip.ParseIP4("1.2.3.4")
 	attrs := LeaseAttrs{
-		PublicIP:    extIP,
+		PublicIP:    extIaddr,
 		BackendType: "vxlan",
 	}
 
