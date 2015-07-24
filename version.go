@@ -14,4 +14,4 @@
 
 package main
 
-const Version = "0.5.2"
+const Version = "0.5.2+git"
