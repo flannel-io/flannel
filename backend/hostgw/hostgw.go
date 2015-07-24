@@ -61,7 +61,7 @@ func (rb *HostgwBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr
 	rb.extIface = extIface
 	rb.extIaddr = extIaddr
 
-	if extIaddr.Equal(extEaddr) {
+	if !extIaddr.Equal(extEaddr) {
 		return nil, fmt.Errorf("your PublicIP differs from interface IP, meaning that probably you're on a NAT, which is not supported by host-gw backend")
 	}
 
