@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ip
+package iptables
 
 import (
 	"bytes"
 	"fmt"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
+	"log"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -25,11 +25,25 @@ import (
 	"syscall"
 )
 
+// Adds the output of stderr to exec.ExitError
+type Error struct {
+	exec.ExitError
+	msg string
+}
+
+func (e *Error) ExitStatus() int {
+	return e.Sys().(syscall.WaitStatus).ExitStatus()
+}
+
+func (e *Error) Error() string {
+	return fmt.Sprintf("exit status %v: %v", e.ExitStatus(), e.msg)
+}
+
 type IPTables struct {
 	path string
 }
 
-func NewIPTables() (*IPTables, error) {
+func New() (*IPTables, error) {
 	path, err := exec.LookPath("iptables")
 	if err != nil {
 		return nil, err
@@ -38,63 +52,126 @@ func NewIPTables() (*IPTables, error) {
 	return &IPTables{path}, nil
 }
 
-func (ipt *IPTables) Exists(table string, args ...string) (bool, error) {
+// Exists checks if given rulespec in specified table/chain exists
+func (ipt *IPTables) Exists(table, chain string, rulespec ...string) (bool, error) {
 	checkPresent, err := getIptablesHasCheckCommand()
 	if err != nil {
-		log.Warningf("Error checking iptables version, assuming version at least 1.4.11: %v\n", err)
+		log.Printf("Error checking iptables version, assuming version at least 1.4.11: %v", err)
 		checkPresent = true
 	}
 
 	if !checkPresent {
-		cmd := append([]string{"-A"}, args...)
+		cmd := append([]string{"-A", chain}, rulespec...)
 		return existsForOldIpTables(table, strings.Join(cmd, " "))
 	} else {
-		cmd := append([]string{"-t", table, "-C"}, args...)
-		err = exec.Command(ipt.path, cmd...).Run()
-	}
-	switch {
-	case err == nil:
-		return true, nil
-	case err.(*exec.ExitError).Sys().(syscall.WaitStatus).ExitStatus() == 1:
-		return false, nil
-	default:
-		return false, err
+		cmd := append([]string{"-t", table, "-C", chain}, rulespec...)
+		err := ipt.run(cmd...)
+
+		switch {
+		case err == nil:
+			return true, nil
+		case err.(*Error).ExitStatus() == 1:
+			return false, nil
+		default:
+			return false, err
+		}
 	}
 }
 
-func (ipt *IPTables) Append(table string, args ...string) error {
-	cmd := append([]string{"-t", table, "-A"}, args...)
-	return exec.Command(ipt.path, cmd...).Run()
+// Insert inserts rulespec to specified table/chain (in specified pos)
+func (ipt *IPTables) Insert(table, chain string, pos int, rulespec ...string) error {
+	cmd := append([]string{"-t", table, "-I", chain, strconv.Itoa(pos)}, rulespec...)
+	return ipt.run(cmd...)
+}
+
+// Append appends rulespec to specified table/chain
+func (ipt *IPTables) Append(table, chain string, rulespec ...string) error {
+	cmd := append([]string{"-t", table, "-A", chain}, rulespec...)
+	return ipt.run(cmd...)
 }
 
 // AppendUnique acts like Append except that it won't add a duplicate
-func (ipt *IPTables) AppendUnique(table string, args ...string) error {
-	exists, err := ipt.Exists(table, args...)
+func (ipt *IPTables) AppendUnique(table, chain string, rulespec ...string) error {
+	exists, err := ipt.Exists(table, chain, rulespec...)
 	if err != nil {
 		return err
 	}
 
 	if !exists {
-		return ipt.Append(table, args...)
+		return ipt.Append(table, chain, rulespec...)
 	}
 
 	return nil
 }
 
+// Delete removes rulespec in specified table/chain
+func (ipt *IPTables) Delete(table, chain string, rulespec ...string) error {
+	cmd := append([]string{"-t", table, "-D", chain}, rulespec...)
+	return ipt.run(cmd...)
+}
+
+// List rules in specified table/chain
+func (ipt *IPTables) List(table, chain string) ([]string, error) {
+	var stdout, stderr bytes.Buffer
+	cmd := exec.Cmd{
+		Path:   ipt.path,
+		Args:   []string{ipt.path, "--wait", "-t", table, "-S", chain},
+		Stdout: &stdout,
+		Stderr: &stderr,
+	}
+
+	if err := cmd.Run(); err != nil {
+		return nil, &Error{*(err.(*exec.ExitError)), stderr.String()}
+	}
+
+	rules := strings.Split(stdout.String(), "\n")
+	if len(rules) > 0 && rules[len(rules)-1] == "" {
+		rules = rules[:len(rules)-1]
+	}
+
+	return rules, nil
+}
+
+func (ipt *IPTables) NewChain(table, chain string) error {
+	return ipt.run("-t", table, "-N", chain)
+}
+
+// ClearChain flushed (deletes all rules) in the specifed table/chain.
+// If the chain does not exist, new one will be created
 func (ipt *IPTables) ClearChain(table, chain string) error {
-	cmd := append([]string{"-t", table, "-N", chain})
-	err := exec.Command(ipt.path, cmd...).Run()
+	err := ipt.NewChain(table, chain)
 
 	switch {
 	case err == nil:
 		return nil
-	case err.(*exec.ExitError).Sys().(syscall.WaitStatus).ExitStatus() == 1:
+	case err.(*Error).ExitStatus() == 1:
 		// chain already exists. Flush (clear) it.
-		cmd := append([]string{"-t", table, "-F", chain})
-		return exec.Command(ipt.path, cmd...).Run()
+		return ipt.run("-t", table, "-F", chain)
 	default:
 		return err
 	}
+}
+
+// DeleteChain deletes the chain in the specified table.
+// The chain must be empty
+func (ipt *IPTables) DeleteChain(table, chain string) error {
+	return ipt.run("-t", table, "-X", chain)
+}
+
+func (ipt *IPTables) run(args ...string) error {
+	var stderr bytes.Buffer
+	args = append([]string{"--wait"}, args...)
+	cmd := exec.Cmd{
+		Path:   ipt.path,
+		Args:   append([]string{ipt.path}, args...),
+		Stderr: &stderr,
+	}
+
+	if err := cmd.Run(); err != nil {
+		return &Error{*(err.(*exec.ExitError)), stderr.String()}
+	}
+
+	return nil
 }
 
 // Checks if iptables has the "-C" flag
