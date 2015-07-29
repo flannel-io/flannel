@@ -1,5 +1,7 @@
 # flannel
 
+![flannel Logo](logos/flannel-horizontal-color.png)
+
 flannel is a virtual network that gives a subnet to each host for use with container runtimes.
 
 Platforms like Google's Kubernetes assume that each container (pod) has a unique, routable IP inside the cluster.
