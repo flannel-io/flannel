@@ -23,7 +23,7 @@ indiv_opts=false
 combined_opts=false
 ipmasq=true
 
-while getopts "f:d:ick:" opt; do
+while getopts "f:d:icmk:" opt; do
 	case $opt in
 		f)
 			flannel_env=$OPTARG
@@ -66,8 +66,15 @@ if [ -n "$FLANNEL_MTU" ]; then
 	DOCKER_OPT_MTU="--mtu=$FLANNEL_MTU"
 fi
 
-if [ "$FLANNEL_IPMASQ" = true ] && [ $ipmasq = true ] ; then
-	DOCKER_OPT_IPMASQ="--ip-masq=false"
+if [ -n "$FLANNEL_IPMASQ" ] && [ $ipmasq = true ] ; then
+	if [ "$FLANNEL_IPMASQ" = true ] ; then
+		DOCKER_OPT_IPMASQ="--ip-masq=false"
+	elif [ "$FLANNEL_IPMASQ" = false ] ; then
+		DOCKER_OPT_IPMASQ="--ip-masq=true"
+	else
+		echo "Invalid value of FLANNEL_IPMASQ: $FLANNEL_IPMASQ" > /dev/stderr
+		exit 1
+	fi
 fi
 
 eval docker_opts="\$${combined_opts_key}"
