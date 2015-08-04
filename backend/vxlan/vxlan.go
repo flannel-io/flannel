@@ -308,7 +308,7 @@ func (vb *VXLANBackend) handleInitialSubnetEvents(batch []subnet.Event) error {
 	}
 
 	for j, marker := range fdbEntryMarker {
-		if !marker {
+		if !marker && fdbTable[j].IP != nil {
 			err := vb.dev.DelL2(neigh{IP: ip.FromIP(fdbTable[j].IP), MAC: fdbTable[j].HardwareAddr})
 			if err != nil {
 				log.Error("Delete L2 failed: ", err)
