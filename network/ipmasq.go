@@ -18,13 +18,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-iptables/iptables"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 
 	"github.com/coreos/flannel/pkg/ip"
 )
 
 func setupIPMasq(ipn ip.IP4Net) error {
-	ipt, err := ip.NewIPTables()
+	ipt, err := iptables.New()
 	if err != nil {
 		return fmt.Errorf("failed to setup IP Masquerade. iptables was not found")
 	}
@@ -43,10 +44,12 @@ func setupIPMasq(ipn ip.IP4Net) error {
 		{"POSTROUTING", "-s", ipn.String(), "-j", "FLANNEL"},
 	}
 
-	for _, args := range rules {
-		log.Info("Adding iptables rule: ", strings.Join(args, " "))
+	for _, rule := range rules {
+		log.Info("Adding iptables rule: ", strings.Join(rule, " "))
+		chain := rule[0]
+		args := rule[1:len(rule)]
 
-		err = ipt.AppendUnique("nat", args...)
+		err = ipt.AppendUnique("nat", chain, args...)
 		if err != nil {
 			return fmt.Errorf("Failed to insert IP masquerade rule: %v", err)
 		}
