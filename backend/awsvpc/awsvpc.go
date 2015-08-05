@@ -103,7 +103,7 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr 
 	ec2c := ec2.New(auth, region)
 
 	if _, err = m.disableSrcDestCheck(instanceID, ec2c); err != nil {
-		log.Infof("Warning- disabling source destination check falied!: %v", err)
+		log.Infof("Warning- disabling source destination check failed: %v", err)
 	}
 
 	if m.cfg.RouteTableID == "" {
