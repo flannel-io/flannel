@@ -14,7 +14,9 @@
 
 package subnet
 
-func NewMockManager(ttlOverride uint64, config string) Manager {
+import "time"
+
+func NewMockManager(ttlOverride time.Duration, config string) Manager {
 	r := newMockRegistry(ttlOverride, config, nil)
 	return newEtcdManager(r)
 }

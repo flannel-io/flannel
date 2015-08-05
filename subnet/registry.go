@@ -16,13 +16,12 @@ package subnet
 
 import (
 	"fmt"
-	golog "log"
-	"os"
 	"path"
 	"sync"
 	"time"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	etcd "github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/client"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/pkg/transport"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 )
@@ -30,8 +29,8 @@ import (
 type Registry interface {
 	getConfig(ctx context.Context, network string) (*etcd.Response, error)
 	getSubnets(ctx context.Context, network string) (*etcd.Response, error)
-	createSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error)
-	updateSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error)
+	createSubnet(ctx context.Context, network, sn, data string, ttl time.Duration) (*etcd.Response, error)
+	updateSubnet(ctx context.Context, network, sn, data string, ttl time.Duration) (*etcd.Response, error)
 	deleteSubnet(ctx context.Context, network, sn string) (*etcd.Response, error)
 	watchSubnets(ctx context.Context, network string, since uint64) (*etcd.Response, error)
 }
@@ -46,20 +45,31 @@ type EtcdConfig struct {
 
 type etcdSubnetRegistry struct {
 	mux     sync.Mutex
-	cli     *etcd.Client
+	cli     etcd.KeysAPI
 	etcdCfg *EtcdConfig
 }
 
-func init() {
-	etcd.SetLogger(golog.New(os.Stderr, "go-etcd", golog.LstdFlags))
-}
-
-func newEtcdClient(c *EtcdConfig) (*etcd.Client, error) {
-	if c.Keyfile != "" || c.Certfile != "" || c.CAFile != "" {
-		return etcd.NewTLSClient(c.Endpoints, c.Certfile, c.Keyfile, c.CAFile)
-	} else {
-		return etcd.NewClient(c.Endpoints), nil
+func newEtcdClient(c *EtcdConfig) (etcd.KeysAPI, error) {
+	tlsInfo := transport.TLSInfo{
+		CertFile: c.Certfile,
+		KeyFile:  c.Keyfile,
+		CAFile:   c.CAFile,
 	}
+
+	t, err := transport.NewTransport(tlsInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	cli, err := etcd.New(etcd.Config{
+		Endpoints: c.Endpoints,
+		Transport: t,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return etcd.NewKeysAPI(cli), nil
 }
 
 func newEtcdSubnetRegistry(config *EtcdConfig) (Registry, error) {
@@ -78,7 +88,7 @@ func newEtcdSubnetRegistry(config *EtcdConfig) (Registry, error) {
 
 func (esr *etcdSubnetRegistry) getConfig(ctx context.Context, network string) (*etcd.Response, error) {
 	key := path.Join(esr.etcdCfg.Prefix, network, "config")
-	resp, err := esr.client().Get(key, false, false)
+	resp, err := esr.client().Get(ctx, key, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -87,12 +97,16 @@ func (esr *etcdSubnetRegistry) getConfig(ctx context.Context, network string) (*
 
 func (esr *etcdSubnetRegistry) getSubnets(ctx context.Context, network string) (*etcd.Response, error) {
 	key := path.Join(esr.etcdCfg.Prefix, network, "subnets")
-	return esr.client().Get(key, false, true)
+	return esr.client().Get(ctx, key, &etcd.GetOptions{Recursive: true})
 }
 
-func (esr *etcdSubnetRegistry) createSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error) {
+func (esr *etcdSubnetRegistry) createSubnet(ctx context.Context, network, sn, data string, ttl time.Duration) (*etcd.Response, error) {
 	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", sn)
-	resp, err := esr.client().Create(key, data, ttl)
+	opts := &etcd.SetOptions{
+		PrevExist: etcd.PrevNoExist,
+		TTL:       ttl,
+	}
+	resp, err := esr.client().Set(ctx, key, data, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -101,9 +115,9 @@ func (esr *etcdSubnetRegistry) createSubnet(ctx context.Context, network, sn, da
 	return resp, nil
 }
 
-func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error) {
+func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, network, sn, data string, ttl time.Duration) (*etcd.Response, error) {
 	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", sn)
-	resp, err := esr.client().Set(key, data, ttl)
+	resp, err := esr.client().Set(ctx, key, data, &etcd.SetOptions{TTL: ttl})
 	if err != nil {
 		return nil, err
 	}
@@ -114,51 +128,19 @@ func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, network, sn, da
 
 func (esr *etcdSubnetRegistry) deleteSubnet(ctx context.Context, network, sn string) (*etcd.Response, error) {
 	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", sn)
-	return esr.client().Delete(key, false)
-}
-
-type watchResp struct {
-	resp *etcd.Response
-	err  error
+	return esr.client().Delete(ctx, key, nil)
 }
 
 func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, network string, since uint64) (*etcd.Response, error) {
-	stop := make(chan bool)
-	respCh := make(chan watchResp)
-
-	go func() {
-		for {
-			key := path.Join(esr.etcdCfg.Prefix, network, "subnets")
-			rresp, err := esr.client().RawWatch(key, since, true, nil, stop)
-
-			if err != nil {
-				respCh <- watchResp{nil, err}
-				return
-			}
-
-			if len(rresp.Body) == 0 {
-				// etcd timed out, go back but recreate the client as the underlying
-				// http transport gets hosed (http://code.google.com/p/go/issues/detail?id=8648)
-				esr.resetClient()
-				continue
-			}
-
-			resp, err := rresp.Unmarshal()
-			respCh <- watchResp{resp, err}
-		}
-	}()
-
-	select {
-	case <-ctx.Done():
-		close(stop)
-		<-respCh // Wait for f to return.
-		return nil, ctx.Err()
-	case wr := <-respCh:
-		return wr.resp, wr.err
+	key := path.Join(esr.etcdCfg.Prefix, network, "subnets")
+	opts := &etcd.WatcherOptions{
+		AfterIndex: since,
+		Recursive:  true,
 	}
+	return esr.client().Watcher(key, opts).Next(ctx)
 }
 
-func (esr *etcdSubnetRegistry) client() *etcd.Client {
+func (esr *etcdSubnetRegistry) client() etcd.KeysAPI {
 	esr.mux.Lock()
 	defer esr.mux.Unlock()
 	return esr.cli
@@ -169,14 +151,13 @@ func (esr *etcdSubnetRegistry) resetClient() {
 	defer esr.mux.Unlock()
 
 	var err error
-	esr.cli.Close()
 	esr.cli, err = newEtcdClient(esr.etcdCfg)
 	if err != nil {
 		panic(fmt.Errorf("resetClient: error recreating etcd client: %v", err))
 	}
 }
 
-func ensureExpiration(resp *etcd.Response, ttl uint64) {
+func ensureExpiration(resp *etcd.Response, ttl time.Duration) {
 	if resp.Node.Expiration == nil {
 		// should not be but calc it ourselves in this case
 		log.Info("Expiration field missing on etcd response, calculating locally")

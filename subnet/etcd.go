@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	etcd "github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/client"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/coreos/flannel/pkg/ip"
@@ -31,14 +31,7 @@ import (
 
 const (
 	registerRetries = 10
-	subnetTTL       = 24 * 3600
-)
-
-// etcd error codes
-const (
-	etcdKeyNotFound       = 100
-	etcdKeyAlreadyExists  = 105
-	etcdEventIndexCleared = 401
+	subnetTTL       = 24 * time.Hour
 )
 
 type EtcdManager struct {
@@ -157,21 +150,20 @@ func (m *EtcdManager) tryAcquireLease(ctx context.Context, network string, confi
 	}
 
 	resp, err := m.registry.createSubnet(ctx, network, sn.StringSep(".", "-"), string(attrBytes), subnetTTL)
-	switch {
-	case err == nil:
+	if err == nil {
 		return &Lease{
 			Subnet:     sn,
 			Attrs:      attrs,
 			Expiration: *resp.Node.Expiration,
 		}, nil
-
-	// if etcd returned Key Already Exists, try again.
-	case err.(*etcd.EtcdError).ErrorCode == etcdKeyAlreadyExists:
-		return nil, nil
-
-	default:
-		return nil, err
 	}
+
+	if etcdErr, ok := err.(etcd.Error); ok && etcdErr.Code == etcd.ErrorCodeNodeExist {
+		// if etcd returned Key Already Exists, try again.
+		return nil, nil
+	}
+
+	return nil, err
 }
 
 func (m *EtcdManager) acquireLeaseOnce(ctx context.Context, network string, config *Config, attrs *LeaseAttrs) (*Lease, error) {
@@ -239,10 +231,8 @@ func (m *EtcdManager) getLeases(ctx context.Context, network string) ([]Lease, u
 	resp, err := m.registry.getSubnets(ctx, network)
 
 	leases := []Lease{}
-	index := uint64(0)
 
-	switch {
-	case err == nil:
+	if err == nil {
 		for _, node := range resp.Node.Nodes {
 			sn, err := parseSubnetKey(node.Key)
 			if err == nil {
@@ -262,17 +252,16 @@ func (m *EtcdManager) getLeases(ctx context.Context, network string) ([]Lease, u
 				}
 			}
 		}
-		index = resp.EtcdIndex
 
-	case err.(*etcd.EtcdError).ErrorCode == etcdKeyNotFound:
-		// key not found: treat it as empty set
-		index = err.(*etcd.EtcdError).Index
-
-	default:
-		return nil, 0, err
+		return leases, resp.Index, nil
 	}
 
-	return leases, index, nil
+	if etcdErr, ok := err.(etcd.Error); ok && etcdErr.Code == etcd.ErrorCodeKeyNotFound {
+		// key not found: treat it as empty set
+		return leases, etcdErr.Index, nil
+	}
+
+	return nil, 0, err
 }
 
 func (m *EtcdManager) RenewLease(ctx context.Context, network string, lease *Lease) error {
@@ -326,8 +315,8 @@ func (m *EtcdManager) WatchLeases(ctx context.Context, network string, cursor in
 }
 
 func isIndexTooSmall(err error) bool {
-	etcdErr, ok := err.(*etcd.EtcdError)
-	return ok && etcdErr.ErrorCode == etcdEventIndexCleared
+	etcdErr, ok := err.(etcd.Error)
+	return ok && etcdErr.Code == etcd.ErrorCodeEventIndexCleared
 }
 
 func parseSubnetWatchResponse(resp *etcd.Response) (WatchResult, error) {
@@ -367,7 +356,7 @@ func parseSubnetWatchResponse(resp *etcd.Response) (WatchResult, error) {
 		}
 	}
 
-	cursor := watchCursor{resp.Node.ModifiedIndex + 1}
+	cursor := watchCursor{resp.Node.ModifiedIndex}
 
 	return WatchResult{
 		Cursor: cursor,
@@ -380,11 +369,12 @@ func (m *EtcdManager) watchReset(ctx context.Context, network string) (WatchResu
 	wr := WatchResult{}
 
 	leases, index, err := m.getLeases(ctx, network)
+
 	if err != nil {
 		return wr, fmt.Errorf("failed to retrieve subnet leases: %v", err)
 	}
 
-	cursor := watchCursor{index + 1}
+	cursor := watchCursor{index}
 	wr.Snapshot = leases
 	wr.Cursor = cursor
 	return wr, nil
