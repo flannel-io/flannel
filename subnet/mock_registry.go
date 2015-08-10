@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-etcd/etcd"
+	etcd "github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/client"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
@@ -27,10 +27,10 @@ type mockSubnetRegistry struct {
 	subnets *etcd.Node
 	events  chan *etcd.Response
 	index   uint64
-	ttl     uint64
+	ttl     time.Duration
 }
 
-func newMockRegistry(ttlOverride uint64, config string, initialSubnets []*etcd.Node) *mockSubnetRegistry {
+func newMockRegistry(ttlOverride time.Duration, config string, initialSubnets []*etcd.Node) *mockSubnetRegistry {
 	index := uint64(0)
 	for _, n := range initialSubnets {
 		if n.ModifiedIndex > index {
@@ -53,8 +53,8 @@ func newMockRegistry(ttlOverride uint64, config string, initialSubnets []*etcd.N
 
 func (msr *mockSubnetRegistry) getConfig(ctx context.Context, network string) (*etcd.Response, error) {
 	return &etcd.Response{
-		EtcdIndex: msr.index,
-		Node:      msr.config,
+		Index: msr.index,
+		Node:  msr.config,
 	}, nil
 }
 
@@ -67,20 +67,19 @@ func (msr *mockSubnetRegistry) setConfig(config string) {
 
 func (msr *mockSubnetRegistry) getSubnets(ctx context.Context, network string) (*etcd.Response, error) {
 	return &etcd.Response{
-		Node:      msr.subnets,
-		EtcdIndex: msr.index,
+		Node:  msr.subnets,
+		Index: msr.index,
 	}, nil
 }
 
-func (msr *mockSubnetRegistry) createSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error) {
+func (msr *mockSubnetRegistry) createSubnet(ctx context.Context, network, sn, data string, ttl time.Duration) (*etcd.Response, error) {
 	msr.index += 1
 
 	if msr.ttl > 0 {
 		ttl = msr.ttl
 	}
 
-	// add squared durations :)
-	exp := time.Now().Add(time.Duration(ttl) * time.Second)
+	exp := time.Now().Add(ttl)
 
 	node := &etcd.Node{
 		Key:           sn,
@@ -96,16 +95,15 @@ func (msr *mockSubnetRegistry) createSubnet(ctx context.Context, network, sn, da
 	}
 
 	return &etcd.Response{
-		Node:      node,
-		EtcdIndex: msr.index,
+		Node:  node,
+		Index: msr.index,
 	}, nil
 }
 
-func (msr *mockSubnetRegistry) updateSubnet(ctx context.Context, network, sn, data string, ttl uint64) (*etcd.Response, error) {
+func (msr *mockSubnetRegistry) updateSubnet(ctx context.Context, network, sn, data string, ttl time.Duration) (*etcd.Response, error) {
 	msr.index += 1
 
-	// add squared durations :)
-	exp := time.Now().Add(time.Duration(ttl) * time.Second)
+	exp := time.Now().Add(ttl)
 
 	for _, n := range msr.subnets.Nodes {
 		if n.Key == sn {
@@ -118,8 +116,8 @@ func (msr *mockSubnetRegistry) updateSubnet(ctx context.Context, network, sn, da
 			}
 
 			return &etcd.Response{
-				Node:      n,
-				EtcdIndex: msr.index,
+				Node:  n,
+				Index: msr.index,
 			}, nil
 		}
 	}
@@ -140,8 +138,8 @@ func (msr *mockSubnetRegistry) deleteSubnet(ctx context.Context, network, sn str
 			}
 
 			return &etcd.Response{
-				Node:      n,
-				EtcdIndex: msr.index,
+				Node:  n,
+				Index: msr.index,
 			}, nil
 		}
 	}
@@ -157,7 +155,7 @@ func (msr *mockSubnetRegistry) watchSubnets(ctx context.Context, network string,
 			return nil, ctx.Err()
 
 		case r := <-msr.events:
-			if r.Node.ModifiedIndex < since {
+			if r.Node.ModifiedIndex <= since {
 				continue
 			}
 			return r, nil

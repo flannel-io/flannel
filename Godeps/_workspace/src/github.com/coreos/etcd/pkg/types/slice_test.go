@@ -12,11 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package subnet
+package types
 
-import "time"
+import (
+	"reflect"
+	"sort"
+	"testing"
+)
 
-func NewMockManager(ttlOverride time.Duration, config string) Manager {
-	r := newMockRegistry(ttlOverride, config, nil)
-	return newEtcdManager(r)
+func TestUint64Slice(t *testing.T) {
+	g := Uint64Slice{10, 500, 5, 1, 100, 25}
+	w := Uint64Slice{1, 5, 10, 25, 100, 500}
+	sort.Sort(g)
+	if !reflect.DeepEqual(g, w) {
+		t.Errorf("slice after sort = %#v, want %#v", g, w)
+	}
 }

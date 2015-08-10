@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package subnet
+package types
 
-import "time"
+// Uint64Slice implements sort interface
+type Uint64Slice []uint64
 
-func NewMockManager(ttlOverride time.Duration, config string) Manager {
-	r := newMockRegistry(ttlOverride, config, nil)
-	return newEtcdManager(r)
-}
+func (p Uint64Slice) Len() int           { return len(p) }
+func (p Uint64Slice) Less(i, j int) bool { return p[i] < p[j] }
+func (p Uint64Slice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }

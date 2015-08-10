@@ -12,11 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package subnet
+package client
 
-import "time"
+import "fmt"
 
-func NewMockManager(ttlOverride time.Duration, config string) Manager {
-	r := newMockRegistry(ttlOverride, config, nil)
-	return newEtcdManager(r)
+type ClusterError struct {
+	Errors []error
+}
+
+func (ce *ClusterError) Error() string {
+	return ErrClusterUnavailable.Error()
+}
+
+func (ce *ClusterError) Detail() string {
+	s := ""
+	for i, e := range ce.Errors {
+		s += fmt.Sprintf("error #%d: %s\n", i, e)
+	}
+	return s
 }

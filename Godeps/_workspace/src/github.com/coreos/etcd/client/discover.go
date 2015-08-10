@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package subnet
+package client
 
-import "time"
-
-func NewMockManager(ttlOverride time.Duration, config string) Manager {
-	r := newMockRegistry(ttlOverride, config, nil)
-	return newEtcdManager(r)
+// Discoverer is an interface that wraps the Discover method.
+type Discoverer interface {
+	// Dicover looks up the etcd servers for the domain.
+	Discover(domain string) ([]string, error)
 }
