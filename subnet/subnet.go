@@ -44,33 +44,42 @@ type (
 	EventType int
 
 	Event struct {
-		Type  EventType `json:"type"`
-		Lease Lease     `json:"lease"`
+		Type    EventType `json:"type"`
+		Lease   Lease     `json:"lease,omitempty"`
+		Network string    `json:"network,omitempty"`
 	}
 )
 
 const (
-	SubnetAdded EventType = iota
-	SubnetRemoved
+	EventAdded EventType = iota
+	EventRemoved
 )
 
-type WatchResult struct {
-	// Either Events or Leases should be set.
-	// If Leases are not empty, it means the cursor
-	// was out of range and Snapshot contains the current
-	// list of leases
+type LeaseWatchResult struct {
+	// Either Events or Snapshot will be set.  If Events is empty, it means
+	// the cursor was out of range and Snapshot contains the current list
+	// of items, even if empty.
 	Events   []Event     `json:"events"`
 	Snapshot []Lease     `json:"snapshot"`
 	Cursor   interface{} `json:"cursor"`
+}
+
+type NetworkWatchResult struct {
+	// Either Events or Snapshot will be set.  If Events is empty, it means
+	// the cursor was out of range and Snapshot contains the current list
+	// of items, even if empty.
+	Events   []Event     `json:"events"`
+	Snapshot []string    `json:"snapshot"`
+	Cursor   interface{} `json:"cursor,omitempty"`
 }
 
 func (et EventType) MarshalJSON() ([]byte, error) {
 	s := ""
 
 	switch et {
-	case SubnetAdded:
+	case EventAdded:
 		s = "added"
-	case SubnetRemoved:
+	case EventRemoved:
 		s = "removed"
 	default:
 		return nil, errors.New("bad event type")
@@ -81,9 +90,9 @@ func (et EventType) MarshalJSON() ([]byte, error) {
 func (et *EventType) UnmarshalJSON(data []byte) error {
 	switch string(data) {
 	case "\"added\"":
-		*et = SubnetAdded
+		*et = EventAdded
 	case "\"removed\"":
-		*et = SubnetRemoved
+		*et = EventRemoved
 	default:
 		fmt.Println(string(data))
 		return errors.New("bad event type")
@@ -96,5 +105,6 @@ type Manager interface {
 	GetNetworkConfig(ctx context.Context, network string) (*Config, error)
 	AcquireLease(ctx context.Context, network string, attrs *LeaseAttrs) (*Lease, error)
 	RenewLease(ctx context.Context, network string, lease *Lease) error
-	WatchLeases(ctx context.Context, network string, cursor interface{}) (WatchResult, error)
+	WatchLeases(ctx context.Context, network string, cursor interface{}) (LeaseWatchResult, error)
+	WatchNetworks(ctx context.Context, cursor interface{}) (NetworkWatchResult, error)
 }

@@ -152,6 +152,32 @@ func handleWatchLeases(ctx context.Context, sm subnet.Manager, w http.ResponseWr
 	jsonResponse(w, http.StatusOK, wr)
 }
 
+// GET /?next=cursor watches
+// GET / retrieves all networks
+func handleNetworks(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	cursor := getCursor(r.URL)
+	wr, err := sm.WatchNetworks(ctx, cursor)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, err)
+		return
+	}
+
+	switch wr.Cursor.(type) {
+	case string:
+	case fmt.Stringer:
+		wr.Cursor = wr.Cursor.(fmt.Stringer).String()
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, fmt.Errorf("internal error: watch cursor is of unknown type"))
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, wr)
+}
+
 func bindHandler(h handler, ctx context.Context, sm subnet.Manager) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
 		h(ctx, sm, resp, req)
@@ -237,6 +263,7 @@ func RunServer(ctx context.Context, sm subnet.Manager, listenAddr, cafile, certf
 	r.HandleFunc("/v1/{network}/leases", bindHandler(handleAcquireLease, ctx, sm)).Methods("POST")
 	r.HandleFunc("/v1/{network}/leases/{subnet}", bindHandler(handleRenewLease, ctx, sm)).Methods("PUT")
 	r.HandleFunc("/v1/{network}/leases", bindHandler(handleWatchLeases, ctx, sm)).Methods("GET")
+	r.HandleFunc("/v1/", bindHandler(handleNetworks, ctx, sm)).Methods("GET")
 
 	l, err := listener(listenAddr, cafile, certfile, keyfile)
 	if err != nil {

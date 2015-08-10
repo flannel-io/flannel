@@ -27,7 +27,7 @@ import (
 	"github.com/coreos/flannel/pkg/ip"
 )
 
-func newDummyRegistry(ttlOverride time.Duration) *mockSubnetRegistry {
+func newDummyRegistry(ttlOverride time.Duration) *MockSubnetRegistry {
 	subnets := []*etcd.Node{
 		&etcd.Node{Key: "10.3.1.0-24", Value: `{ "PublicIP": "1.1.1.1" }`, ModifiedIndex: 10},
 		&etcd.Node{Key: "10.3.2.0-24", Value: `{ "PublicIP": "1.1.1.1" }`, ModifiedIndex: 11},
@@ -36,7 +36,7 @@ func newDummyRegistry(ttlOverride time.Duration) *mockSubnetRegistry {
 	}
 
 	config := `{ "Network": "10.3.0.0/16", "SubnetMin": "10.3.1.0", "SubnetMax": "10.3.5.0" }`
-	return newMockRegistry(ttlOverride, config, subnets)
+	return NewMockRegistry(ttlOverride, "_", config, subnets)
 }
 
 func TestAcquireLease(t *testing.T) {
@@ -48,7 +48,7 @@ func TestAcquireLease(t *testing.T) {
 		PublicIP: extIaddr,
 	}
 
-	l, err := sm.AcquireLease(context.Background(), "", &attrs)
+	l, err := sm.AcquireLease(context.Background(), "_", &attrs)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
@@ -58,7 +58,7 @@ func TestAcquireLease(t *testing.T) {
 	}
 
 	// Acquire again, should reuse
-	if l, err = sm.AcquireLease(context.Background(), "", &attrs); err != nil {
+	if l, err = sm.AcquireLease(context.Background(), "_", &attrs); err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
 
@@ -76,7 +76,7 @@ func TestConfigChanged(t *testing.T) {
 		PublicIP: extIaddr,
 	}
 
-	l, err := sm.AcquireLease(context.Background(), "", &attrs)
+	l, err := sm.AcquireLease(context.Background(), "_", &attrs)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
@@ -87,10 +87,10 @@ func TestConfigChanged(t *testing.T) {
 
 	// Change config
 	config := `{ "Network": "10.4.0.0/16" }`
-	msr.setConfig(config)
+	msr.setConfig("_", config)
 
 	// Acquire again, should not reuse
-	if l, err = sm.AcquireLease(context.Background(), "", &attrs); err != nil {
+	if l, err = sm.AcquireLease(context.Background(), "_", &attrs); err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
 
@@ -117,7 +117,7 @@ func acquireLease(ctx context.Context, t *testing.T, sm Manager) *Lease {
 		PublicIP: extIaddr,
 	}
 
-	l, err := sm.AcquireLease(ctx, "", &attrs)
+	l, err := sm.AcquireLease(ctx, "_", &attrs)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
@@ -135,7 +135,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 	l := acquireLease(ctx, t, sm)
 
 	events := make(chan []Event)
-	go WatchLeases(ctx, sm, "", l, events)
+	go WatchLeases(ctx, sm, "_", l, events)
 
 	evtBatch := <-events
 	for _, evt := range evtBatch {
@@ -155,7 +155,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 
 	evt := evtBatch[0]
 
-	if evt.Type != SubnetAdded {
+	if evt.Type != EventAdded {
 		t.Fatalf("WatchLeases produced wrong event type")
 	}
 
@@ -175,7 +175,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 	l := acquireLease(ctx, t, sm)
 
 	events := make(chan []Event)
-	go WatchLeases(ctx, sm, "", l, events)
+	go WatchLeases(ctx, sm, "_", l, events)
 
 	evtBatch := <-events
 	for _, evt := range evtBatch {
@@ -185,7 +185,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 	}
 
 	expected := "10.3.4.0-24"
-	msr.expireSubnet(expected)
+	msr.expireSubnet("_", expected)
 
 	evtBatch = <-events
 	if len(evtBatch) != 1 {
@@ -194,7 +194,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 
 	evt := evtBatch[0]
 
-	if evt.Type != SubnetRemoved {
+	if evt.Type != EventRemoved {
 		t.Fatalf("WatchLeases produced wrong event type")
 	}
 
@@ -229,18 +229,22 @@ func TestRenewLease(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	l, err := sm.AcquireLease(ctx, "", &attrs)
+	l, err := sm.AcquireLease(ctx, "_", &attrs)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
 	}
 
-	go LeaseRenewer(ctx, sm, "", l)
+	go LeaseRenewer(ctx, sm, "_", l)
 
 	fmt.Println("Waiting for lease to pass original expiration")
 	time.Sleep(2 * time.Second)
 
 	// check that it's still good
-	for _, n := range msr.subnets.Nodes {
+	net, err := msr.getNetwork(ctx, "_")
+	if err != nil {
+		t.Error("Failed to renew lease: could not get networks: %v", err)
+	}
+	for _, n := range net.Node.Nodes {
 		if n.Key == l.Subnet.StringSep(".", "-") {
 			if n.Expiration.Before(time.Now()) {
 				t.Error("Failed to renew lease: expiration did not advance")
@@ -258,4 +262,107 @@ func TestRenewLease(t *testing.T) {
 	}
 
 	t.Fatalf("Failed to find acquired lease")
+}
+
+func TestWatchGetNetworks(t *testing.T) {
+	msr := newDummyRegistry(0)
+	sm := newEtcdManager(msr)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Kill the previously added "_" network
+	msr.DeleteNetwork(ctx, "_")
+
+	expected := "foobar"
+	msr.CreateNetwork(ctx, expected, `{"Network": "10.1.1.0/16", "Backend": {"Type": "bridge"}}`)
+
+	resp, err := sm.WatchNetworks(ctx, nil)
+	if err != nil {
+		t.Errorf("WatchNetworks(nil) failed:", err)
+	}
+
+	if len(resp.Snapshot) != 1 {
+		t.Errorf("WatchNetworks(nil) produced wrong number of networks: expected 1, got %d", len(resp.Snapshot))
+	}
+
+	if resp.Snapshot[0] != expected {
+		t.Errorf("WatchNetworks(nil) produced wrong network: expected %s, got %s", expected, resp.Snapshot[0])
+	}
+}
+
+func TestWatchNetworkAdded(t *testing.T) {
+	msr := newDummyRegistry(0)
+	sm := newEtcdManager(msr)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	events := make(chan []Event)
+	go WatchNetworks(ctx, sm, events)
+
+	// skip over the initial snapshot
+	<-events
+
+	expected := "foobar"
+	msr.CreateNetwork(ctx, expected, `{"Network": "10.1.1.0/16", "Backend": {"Type": "bridge"}}`)
+
+	evtBatch := <-events
+
+	if len(evtBatch) != 1 {
+		t.Fatalf("WatchNetworks produced wrong sized event batch")
+	}
+
+	evt := evtBatch[0]
+
+	if evt.Type != EventAdded {
+		t.Fatalf("WatchNetworks produced wrong event type")
+	}
+
+	actual := evt.Network
+	if actual != expected {
+		t.Errorf("WatchNetworks produced wrong network: expected %s, got %s", expected, actual)
+	}
+}
+
+func TestWatchNetworkRemoved(t *testing.T) {
+	msr := newDummyRegistry(0)
+	sm := newEtcdManager(msr)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	events := make(chan []Event)
+	go WatchNetworks(ctx, sm, events)
+
+	// skip over the initial snapshot
+	<-events
+
+	expected := "blah"
+	msr.CreateNetwork(ctx, expected, `{"Network": "10.1.1.0/16", "Backend": {"Type": "bridge"}}`)
+
+	// skip over the create event
+	<-events
+
+	_, err := msr.DeleteNetwork(ctx, expected)
+	if err != nil {
+		t.Fatalf("WatchNetworks failed to delete the network")
+	}
+
+	evtBatch := <-events
+
+	if len(evtBatch) != 1 {
+		t.Fatalf("WatchNetworks produced wrong sized event batch")
+	}
+
+	evt := evtBatch[0]
+
+	if evt.Type != EventRemoved {
+		t.Fatalf("WatchNetworks produced wrong event type")
+	}
+
+	actual := evt.Network
+	if actual != expected {
+		t.Errorf("WatchNetwork produced wrong network: expected %s, got %s", expected, actual)
+	}
 }

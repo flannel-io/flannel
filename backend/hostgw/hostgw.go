@@ -136,7 +136,7 @@ func (rb *HostgwBackend) Name() string {
 func (rb *HostgwBackend) handleSubnetEvents(batch []subnet.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
-		case subnet.SubnetAdded:
+		case subnet.EventAdded:
 			log.Infof("Subnet added: %v via %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
 
 			if evt.Lease.Attrs.BackendType != "host-gw" {
@@ -155,7 +155,7 @@ func (rb *HostgwBackend) handleSubnetEvents(batch []subnet.Event) {
 			}
 			rb.addToRouteList(route)
 
-		case subnet.SubnetRemoved:
+		case subnet.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
 
 			if evt.Lease.Attrs.BackendType != "host-gw" {

@@ -228,7 +228,7 @@ type vxlanLeaseAttrs struct {
 func (vb *VXLANBackend) handleSubnetEvents(batch []subnet.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
-		case subnet.SubnetAdded:
+		case subnet.EventAdded:
 			log.Info("Subnet added: ", evt.Lease.Subnet)
 
 			if evt.Lease.Attrs.BackendType != "vxlan" {
@@ -244,7 +244,7 @@ func (vb *VXLANBackend) handleSubnetEvents(batch []subnet.Event) {
 			vb.rts.set(evt.Lease.Subnet, net.HardwareAddr(attrs.VtepMAC))
 			vb.dev.AddL2(neigh{IP: evt.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)})
 
-		case subnet.SubnetRemoved:
+		case subnet.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
 
 			if evt.Lease.Attrs.BackendType != "vxlan" {
