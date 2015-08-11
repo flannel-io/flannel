@@ -125,10 +125,18 @@ func doTestRemote(ctx context.Context, t *testing.T, remoteAddr string) {
 
 func doTestWatch(t *testing.T, sm subnet.Manager) {
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	defer func() {
+		cancel()
+		wg.Wait()
+	}()
 
 	events := make(chan []subnet.Event)
-	go subnet.WatchLeases(ctx, sm, "_", events)
+	go func() {
+		subnet.WatchLeases(ctx, sm, "_", events)
+		wg.Done()
+	}()
 
 	// skip over the initial snapshot
 	<-events
