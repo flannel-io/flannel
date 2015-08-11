@@ -26,7 +26,8 @@ import (
 )
 
 type Network struct {
-	Name string
+	Name   string
+	Config *subnet.Config
 
 	sm     subnet.Manager
 	ipMasq bool
@@ -42,13 +43,12 @@ func New(sm subnet.Manager, name string, ipMasq bool) *Network {
 }
 
 func (n *Network) Init(ctx context.Context, iface *net.Interface, iaddr net.IP, eaddr net.IP) *backend.SubnetDef {
-	var cfg *subnet.Config
 	var be backend.Backend
 	var sn *backend.SubnetDef
 
 	steps := []func() error{
 		func() (err error) {
-			cfg, err = n.sm.GetNetworkConfig(ctx, n.Name)
+			n.Config, err = n.sm.GetNetworkConfig(ctx, n.Name)
 			if err != nil {
 				log.Error("Failed to retrieve network config: ", err)
 			}
@@ -56,7 +56,7 @@ func (n *Network) Init(ctx context.Context, iface *net.Interface, iaddr net.IP, 
 		},
 
 		func() (err error) {
-			be, err = newBackend(n.sm, n.Name, cfg)
+			be, err = newBackend(n.sm, n.Name, n.Config)
 			if err != nil {
 				log.Error("Failed to create backend: ", err)
 			} else {
@@ -75,7 +75,7 @@ func (n *Network) Init(ctx context.Context, iface *net.Interface, iaddr net.IP, 
 
 		func() (err error) {
 			if n.ipMasq {
-				flannelNet := cfg.Network
+				flannelNet := n.Config.Network
 				if err = setupIPMasq(flannelNet); err != nil {
 					log.Errorf("Failed to set up IP Masquerade for network %v: %v", n.Name, err)
 				}

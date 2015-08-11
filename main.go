@@ -101,7 +101,7 @@ func flagsFromEnv(prefix string, fs *flag.FlagSet) {
 	})
 }
 
-func writeSubnetFile(path string, sn *backend.SubnetDef) error {
+func writeSubnetFile(path string, nw ip.IP4Net, sn *backend.SubnetDef) error {
 	dir, name := filepath.Split(path)
 	os.MkdirAll(dir, 0755)
 
@@ -115,6 +115,7 @@ func writeSubnetFile(path string, sn *backend.SubnetDef) error {
 	// sn.IP by one
 	sn.Net.IP += 1
 
+	fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", nw)
 	fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn.Net)
 	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", sn.MTU)
 	_, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", opts.ipMasq)
@@ -223,11 +224,11 @@ func initAndRun(ctx context.Context, sm subnet.Manager, netnames []string) {
 			if sn != nil {
 				if isMultiNetwork() {
 					path := filepath.Join(opts.subnetDir, n.Name) + ".env"
-					if err := writeSubnetFile(path, sn); err != nil {
+					if err := writeSubnetFile(path, n.Config.Network, sn); err != nil {
 						return
 					}
 				} else {
-					if err := writeSubnetFile(opts.subnetFile, sn); err != nil {
+					if err := writeSubnetFile(opts.subnetFile, n.Config.Network, sn); err != nil {
 						return
 					}
 					daemon.SdNotify("READY=1")
