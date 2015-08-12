@@ -19,8 +19,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"path"
+	"time"
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/pkg/transport"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
@@ -31,7 +33,26 @@ import (
 // implements subnet.Manager by sending requests to the server
 type RemoteManager struct {
 	base      string // includes scheme, host, and port, and version
-	transport *http.Transport
+	transport *Transport
+}
+
+func NewTransport(info transport.TLSInfo) (*Transport, error) {
+	cfg, err := info.ClientConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	t := &Transport{
+		// timeouts taken from http.DefaultTransport
+		Dial: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: 10 * time.Second,
+		TLSClientConfig:     cfg,
+	}
+
+	return t, nil
 }
 
 func NewRemoteManager(listenAddr, cafile, certfile, keyfile string) (subnet.Manager, error) {
@@ -41,7 +62,7 @@ func NewRemoteManager(listenAddr, cafile, certfile, keyfile string) (subnet.Mana
 		KeyFile:  keyfile,
 	}
 
-	t, err := transport.NewTransport(tls)
+	t, err := NewTransport(tls)
 	if err != nil {
 		return nil, err
 	}
