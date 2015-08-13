@@ -26,8 +26,10 @@ import (
 	"syscall"
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/pkg/flagutil"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/pkg/ip"
@@ -77,28 +79,6 @@ func init() {
 	flag.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
-}
-
-// TODO: This is yet another copy (others found in etcd, fleet) -- Pull it out!
-// flagsFromEnv parses all registered flags in the given flagset,
-// and if they are not already set it attempts to set their values from
-// environment variables. Environment variables take the name of the flag but
-// are UPPERCASE, have the given prefix, and any dashes are replaced by
-// underscores - for example: some-flag => PREFIX_SOME_FLAG
-func flagsFromEnv(prefix string, fs *flag.FlagSet) {
-	alreadySet := make(map[string]bool)
-	fs.Visit(func(f *flag.Flag) {
-		alreadySet[f.Name] = true
-	})
-	fs.VisitAll(func(f *flag.Flag) {
-		if !alreadySet[f.Name] {
-			key := strings.ToUpper(prefix + "_" + strings.Replace(f.Name, "-", "_", -1))
-			val := os.Getenv(key)
-			if val != "" {
-				fs.Set(f.Name, val)
-			}
-		}
-	})
 }
 
 func writeSubnetFile(path string, nw ip.IP4Net, sn *backend.SubnetDef) error {
@@ -262,7 +242,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	flagsFromEnv("FLANNELD", flag.CommandLine)
+	flagutil.SetFlagsFromEnv(flag.CommandLine, "FLANNELD")
 
 	sm, err := newSubnetManager()
 	if err != nil {
