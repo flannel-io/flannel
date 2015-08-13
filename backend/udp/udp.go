@@ -225,7 +225,7 @@ func (m *UdpBackend) monitorEvents() {
 
 	m.wg.Add(1)
 	go func() {
-		subnet.WatchLeases(m.ctx, m.sm, m.network, evts)
+		subnet.WatchLeases(m.ctx, m.sm, m.network, m.lease, evts)
 		m.wg.Done()
 	}()
 

@@ -101,7 +101,7 @@ func (rb *HostgwBackend) Run() {
 	evts := make(chan []subnet.Event)
 	rb.wg.Add(1)
 	go func() {
-		subnet.WatchLeases(rb.ctx, rb.sm, rb.network, evts)
+		subnet.WatchLeases(rb.ctx, rb.sm, rb.network, rb.lease, evts)
 		rb.wg.Done()
 	}()
 
@@ -148,9 +148,6 @@ func (rb *HostgwBackend) handleSubnetEvents(batch []subnet.Event) {
 				Dst:       evt.Lease.Subnet.ToIPNet(),
 				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
 				LinkIndex: rb.extIface.Index,
-			}
-			if rb.extIaddr.Equal(route.Gw) {
-				continue
 			}
 			if err := netlink.RouteAdd(&route); err != nil {
 				log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, err)

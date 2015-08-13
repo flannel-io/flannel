@@ -134,7 +134,7 @@ func doTestWatch(t *testing.T, sm subnet.Manager) {
 
 	events := make(chan []subnet.Event)
 	go func() {
-		subnet.WatchLeases(ctx, sm, "_", events)
+		subnet.WatchLeases(ctx, sm, "_", nil, events)
 		wg.Done()
 	}()
 

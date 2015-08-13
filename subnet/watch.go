@@ -25,8 +25,10 @@ import (
 // and communicates addition/deletion events on receiver channel. It takes care
 // of handling "fall-behind" logic where the history window has advanced too far
 // and it needs to diff the latest snapshot with its saved state and generate events
-func WatchLeases(ctx context.Context, sm Manager, network string, receiver chan []Event) {
-	lw := &leaseWatcher{}
+func WatchLeases(ctx context.Context, sm Manager, network string, ownLease *Lease, receiver chan []Event) {
+	lw := &leaseWatcher{
+		ownLease: ownLease,
+	}
 	var cursor interface{}
 
 	for {
@@ -57,13 +59,18 @@ func WatchLeases(ctx context.Context, sm Manager, network string, receiver chan 
 }
 
 type leaseWatcher struct {
-	leases []Lease
+	ownLease *Lease
+	leases   []Lease
 }
 
 func (lw *leaseWatcher) reset(leases []Lease) []Event {
 	batch := []Event{}
 
 	for _, nl := range leases {
+		if lw.ownLease != nil && nl.Subnet.Equal(lw.ownLease.Subnet) {
+			continue
+		}
+
 		found := false
 		for i, ol := range lw.leases {
 			if ol.Subnet.Equal(nl.Subnet) {
@@ -93,6 +100,10 @@ func (lw *leaseWatcher) update(events []Event) []Event {
 	batch := []Event{}
 
 	for _, e := range events {
+		if lw.ownLease != nil && e.Lease.Subnet.Equal(lw.ownLease.Subnet) {
+			continue
+		}
+
 		switch e.Type {
 		case SubnetAdded:
 			batch = append(batch, lw.add(&e.Lease))

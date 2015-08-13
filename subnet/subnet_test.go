@@ -111,6 +111,20 @@ func newIP4Net(ipaddr string, prefix uint) ip.IP4Net {
 	}
 }
 
+func acquireLease(ctx context.Context, t *testing.T, sm Manager) *Lease {
+	extIaddr, _ := ip.ParseIP4("1.2.3.4")
+	attrs := LeaseAttrs{
+		PublicIP: extIaddr,
+	}
+
+	l, err := sm.AcquireLease(ctx, "", &attrs)
+	if err != nil {
+		t.Fatal("AcquireLease failed: ", err)
+	}
+
+	return l
+}
+
 func TestWatchLeaseAdded(t *testing.T) {
 	msr := newDummyRegistry(0)
 	sm := newEtcdManager(msr)
@@ -118,25 +132,31 @@ func TestWatchLeaseAdded(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	l := acquireLease(ctx, t, sm)
+
 	events := make(chan []Event)
-	go WatchLeases(ctx, sm, "", events)
-
-	// skip over the initial snapshot
-	<-events
-
-	expected := "10.3.3.0-24"
-	msr.createSubnet(ctx, "_", expected, `{"PublicIP": "1.1.1.1"}`, 0)
+	go WatchLeases(ctx, sm, "", l, events)
 
 	evtBatch := <-events
+	for _, evt := range evtBatch {
+		if evt.Lease.Key() == l.Key() {
+			t.Errorf("WatchLeases returned our own lease")
+		}
+	}
+
+	expected := "10.3.6.0-24"
+	msr.createSubnet(ctx, "_", expected, `{"PublicIP": "1.1.1.1"}`, 0)
+
+	evtBatch = <-events
 
 	if len(evtBatch) != 1 {
-		t.Fatalf("WatchSubnets produced wrong sized event batch")
+		t.Fatalf("WatchLeases produced wrong sized event batch")
 	}
 
 	evt := evtBatch[0]
 
 	if evt.Type != SubnetAdded {
-		t.Fatalf("WatchSubnets produced wrong event type")
+		t.Fatalf("WatchLeases produced wrong event type")
 	}
 
 	actual := evt.Lease.Key()
@@ -152,25 +172,30 @@ func TestWatchLeaseRemoved(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	events := make(chan []Event)
-	go WatchLeases(ctx, sm, "", events)
+	l := acquireLease(ctx, t, sm)
 
-	// skip over the initial snapshot
-	<-events
+	events := make(chan []Event)
+	go WatchLeases(ctx, sm, "", l, events)
+
+	evtBatch := <-events
+	for _, evt := range evtBatch {
+		if evt.Lease.Key() == l.Key() {
+			t.Errorf("WatchLeases returned our own lease")
+		}
+	}
 
 	expected := "10.3.4.0-24"
 	msr.expireSubnet(expected)
 
-	evtBatch := <-events
-
+	evtBatch = <-events
 	if len(evtBatch) != 1 {
-		t.Fatalf("WatchSubnets produced wrong sized event batch")
+		t.Fatalf("WatchLeases produced wrong sized event batch")
 	}
 
 	evt := evtBatch[0]
 
 	if evt.Type != SubnetRemoved {
-		t.Fatalf("WatchSubnets produced wrong event type")
+		t.Fatalf("WatchLeases produced wrong event type")
 	}
 
 	actual := evt.Lease.Key()
