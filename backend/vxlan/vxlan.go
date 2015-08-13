@@ -160,7 +160,7 @@ func (vb *VXLANBackend) Run() {
 	evts := make(chan []subnet.Event)
 	vb.wg.Add(1)
 	go func() {
-		subnet.WatchLeases(vb.ctx, vb.sm, vb.network, evts)
+		subnet.WatchLeases(vb.ctx, vb.sm, vb.network, vb.lease, evts)
 		log.Info("WatchLeases exited")
 		vb.wg.Done()
 	}()
