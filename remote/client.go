@@ -275,6 +275,28 @@ func (m *RemoteManager) AddReservation(ctx context.Context, network string, r *s
 	if resp.StatusCode != http.StatusOK {
 		return httpError(resp)
 	}
+
+	return nil
+}
+
+func (m *RemoteManager) CreateBackendData(ctx context.Context, network, data string) error {
+	url := m.mkurl(network, "backend-data")
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	resp, err := m.httpVerb(ctx, "POST", url, "application/json", body)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return httpError(resp)
+	}
+
 	return nil
 }
 
@@ -306,13 +328,33 @@ func (m *RemoteManager) ListReservations(ctx context.Context, network string) ([
 	if resp.StatusCode != http.StatusOK {
 		return nil, httpError(resp)
 	}
-
 	rs := []subnet.Reservation{}
 	if err := json.NewDecoder(resp.Body).Decode(&rs); err != nil {
 		return nil, err
 	}
 
 	return rs, nil
+}
+
+func (m *RemoteManager) GetBackendData(ctx context.Context, network string) (string, error) {
+	url := m.mkurl(network, "backend-data")
+
+	resp, err := m.httpVerb(ctx, "GET", url, "", nil)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", httpError(resp)
+	}
+
+	data := ""
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return "", err
+	}
+
+	return data, nil
 }
 
 func httpError(resp *http.Response) error {
