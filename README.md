@@ -25,7 +25,7 @@ Flannel is focused on networking. For network policy, other projects such as [Ca
 
 The easiest way to deploy flannel with Kubernetes is to use one of several deployment tools and distributions that network clusters with flannel by default. For example, CoreOS's [Tectonic][tectonic] sets up flannel in the Kubernetes clusters it creates using the open source [Tectonic Installer][tectonic-installer] to drive the setup process.
 
-Though not required, it's recommended that flannel uses the Kubernetes API as its backing store which avoids the need to deploy a discrete `etcd` cluster for `flannel`. This `flannel` mode is known as the *kube subnet manager*.
+Though not required , it's recommended that flannel uses the Kubernetes API as its backing store which avoids the need to deploy a discrete `etcd` cluster for `flannel `. This `flannel`mode is known as the *kube subnet manager*.
 
 ### Deploying flannel manually
 
@@ -65,9 +65,10 @@ See [CONTRIBUTING][contributing] for details on submitting patches and the contr
 
 See [reporting bugs][reporting] for details about reporting any issues.
 
-## License
-
-Flannel is under the Apache 2.0 license. See the [LICENSE][license] file for details.
+  ## License
+   
+ 
+  Flannel is under the Apache 2.0 license. See the [LICENSE][license] file for details. 
 
 [calico]: http://www.projectcalico.org
 [pod-cidr]: https://kubernetes.io/docs/admin/kubelet/
