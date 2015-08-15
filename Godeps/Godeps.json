@@ -66,6 +66,10 @@
 			"Rev": "5c0313fff8cd85670ae4fc996254dd7d66cb4cf7"
 		},
 		{
+			"ImportPath": "github.com/bronze1man/goStrongswanVici",
+			"Rev": "47d13792a9d595f0d5d840fe25eae019cf204e6a"
+		},
+		{
 			"ImportPath": "github.com/coreos/etcd/client",
 			"Comment": "v2.1.1-135-ga1ef699",
 			"Rev": "a1ef699aebbe7ebb4da2f90a42e0f612eec08384"
