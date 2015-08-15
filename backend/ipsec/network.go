@@ -21,9 +21,9 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
-	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+	log "github.com/golang/glog"
+	"github.com/vishvananda/netlink"
+	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/subnet"
