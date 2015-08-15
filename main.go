@@ -32,6 +32,7 @@ import (
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
+	"github.com/coreos/flannel/backend/ipsec"
 	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
@@ -92,6 +93,7 @@ type CmdLineOpts struct {
 	subnetLeaseRenewMargin int
 	healthzIP              string
 	healthzPort            int
+	charonPath     string
 }
 
 var (
@@ -121,6 +123,7 @@ func init() {
 	flannelFlags.BoolVar(&opts.version, "version", false, "print version and exit")
 	flannelFlags.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "the IP address for healthz server to listen")
 	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "the port for healthz server to listen(0 to disable)")
+	flag.StringVar(&opts.charonPath, "charon-path", "", "path to charon executable")
 
 	// glog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
@@ -281,6 +284,10 @@ func main() {
 		cancel()
 		wg.Wait()
 		os.Exit(1)
+	}
+
+	if opts.charonPath != "" {
+		ipsec.CharonPath = opts.charonPath
 	}
 
 	// Set up ipMasq if needed
