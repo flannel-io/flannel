@@ -496,3 +496,21 @@ func (m *LocalManager) ListReservations(ctx context.Context, network string) ([]
 
 	return rsvs, nil
 }
+
+func (m *LocalManager) CreateBackendData(ctx context.Context, network, data string) error {
+	err := m.registry.createBackendData(ctx, network, data)
+
+	if err == nil {
+		return nil
+	}
+
+	if etcdErr, ok := err.(etcd.Error); ok && etcdErr.Code == etcd.ErrorCodeNodeExist {
+		return nil
+	}
+
+	return err
+}
+
+func (m *LocalManager) GetBackendData(ctx context.Context, network string) (string, error) {
+	return m.registry.getBackendData(ctx, network)
+}
