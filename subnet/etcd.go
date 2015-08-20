@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"path"
 	"regexp"
 	"strconv"
 	"time"
@@ -35,7 +36,8 @@ const (
 )
 
 type EtcdManager struct {
-	registry Registry
+	registry     Registry
+	networkRegex *regexp.Regexp
 }
 
 var (
@@ -55,15 +57,21 @@ func NewEtcdManager(config *EtcdConfig) (Manager, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &EtcdManager{r}, nil
+	return &EtcdManager{
+		registry:     r,
+		networkRegex: regexp.MustCompile(config.Prefix + `/([^/]*)/config`),
+	}, nil
 }
 
 func newEtcdManager(r Registry) Manager {
-	return &EtcdManager{r}
+	return &EtcdManager{
+		registry:     r,
+		networkRegex: regexp.MustCompile(`/coreos.com/network/([^/]*)/config`),
+	}
 }
 
 func (m *EtcdManager) GetNetworkConfig(ctx context.Context, network string) (*Config, error) {
-	cfgResp, err := m.registry.getConfig(ctx, network)
+	cfgResp, err := m.registry.getNetworkConfig(ctx, network)
 	if err != nil {
 		return nil, err
 	}
@@ -280,11 +288,7 @@ func (m *EtcdManager) RenewLease(ctx context.Context, network string, lease *Lea
 	return nil
 }
 
-func (m *EtcdManager) WatchLeases(ctx context.Context, network string, cursor interface{}) (WatchResult, error) {
-	if cursor == nil {
-		return m.watchReset(ctx, network)
-	}
-
+func getNextIndex(cursor interface{}) (uint64, error) {
 	nextIndex := uint64(0)
 
 	if wc, ok := cursor.(watchCursor); ok {
@@ -293,13 +297,26 @@ func (m *EtcdManager) WatchLeases(ctx context.Context, network string, cursor in
 		var err error
 		nextIndex, err = strconv.ParseUint(s, 10, 64)
 		if err != nil {
-			return WatchResult{}, fmt.Errorf("failed to parse cursor: %v", err)
+			return 0, fmt.Errorf("failed to parse cursor: %v", err)
 		}
 	} else {
-		return WatchResult{}, fmt.Errorf("internal error: watch cursor is of unknown type")
+		return 0, fmt.Errorf("internal error: watch cursor is of unknown type")
 	}
 
-	resp, err := m.registry.watchSubnets(ctx, network, nextIndex)
+	return nextIndex, nil
+}
+
+func (m *EtcdManager) WatchLeases(ctx context.Context, network string, cursor interface{}) (LeaseWatchResult, error) {
+	if cursor == nil {
+		return m.leaseWatchReset(ctx, network)
+	}
+
+	nextIndex, err := getNextIndex(cursor)
+	if err != nil {
+		return LeaseWatchResult{}, err
+	}
+
+	resp, err := m.registry.watch(ctx, path.Join(network, "subnets"), nextIndex)
 
 	switch {
 	case err == nil:
@@ -307,10 +324,35 @@ func (m *EtcdManager) WatchLeases(ctx context.Context, network string, cursor in
 
 	case isIndexTooSmall(err):
 		log.Warning("Watch of subnet leases failed because etcd index outside history window")
-		return m.watchReset(ctx, network)
+		return m.leaseWatchReset(ctx, network)
 
 	default:
-		return WatchResult{}, err
+		return LeaseWatchResult{}, err
+	}
+}
+
+func (m *EtcdManager) WatchNetworks(ctx context.Context, cursor interface{}) (NetworkWatchResult, error) {
+	if cursor == nil {
+		return m.networkWatchReset(ctx)
+	}
+
+	nextIndex, err := getNextIndex(cursor)
+	if err != nil {
+		return NetworkWatchResult{}, err
+	}
+
+	resp, err := m.registry.watch(ctx, "", nextIndex)
+
+	switch {
+	case err == nil:
+		return m.parseNetworkWatchResponse(resp)
+
+	case isIndexTooSmall(err):
+		log.Warning("Watch of subnet leases failed because etcd index outside history window")
+		return m.networkWatchReset(ctx)
+
+	default:
+		return NetworkWatchResult{}, err
 	}
 }
 
@@ -319,10 +361,10 @@ func isIndexTooSmall(err error) bool {
 	return ok && etcdErr.Code == etcd.ErrorCodeEventIndexCleared
 }
 
-func parseSubnetWatchResponse(resp *etcd.Response) (WatchResult, error) {
+func parseSubnetWatchResponse(resp *etcd.Response) (LeaseWatchResult, error) {
 	sn, err := parseSubnetKey(resp.Node.Key)
 	if err != nil {
-		return WatchResult{}, fmt.Errorf("error parsing subnet IP: %s", resp.Node.Key)
+		return LeaseWatchResult{}, fmt.Errorf("error parsing subnet IP: %s", resp.Node.Key)
 	}
 
 	evt := Event{}
@@ -330,15 +372,16 @@ func parseSubnetWatchResponse(resp *etcd.Response) (WatchResult, error) {
 	switch resp.Action {
 	case "delete", "expire":
 		evt = Event{
-			SubnetRemoved,
+			EventRemoved,
 			Lease{Subnet: sn},
+			"",
 		}
 
 	default:
 		attrs := &LeaseAttrs{}
 		err := json.Unmarshal([]byte(resp.Node.Value), attrs)
 		if err != nil {
-			return WatchResult{}, err
+			return LeaseWatchResult{}, err
 		}
 
 		exp := time.Time{}
@@ -347,36 +390,120 @@ func parseSubnetWatchResponse(resp *etcd.Response) (WatchResult, error) {
 		}
 
 		evt = Event{
-			SubnetAdded,
+			EventAdded,
 			Lease{
 				Subnet:     sn,
 				Attrs:      attrs,
 				Expiration: exp,
 			},
+			"",
 		}
 	}
 
-	cursor := watchCursor{resp.Node.ModifiedIndex}
-
-	return WatchResult{
-		Cursor: cursor,
+	return LeaseWatchResult{
+		Cursor: watchCursor{resp.Node.ModifiedIndex},
 		Events: []Event{evt},
 	}, nil
 }
 
-// watchReset is called when incremental watch failed and we need to grab a snapshot
-func (m *EtcdManager) watchReset(ctx context.Context, network string) (WatchResult, error) {
-	wr := WatchResult{}
+// Returns network name from config key (eg, /coreos.com/network/foobar/config),
+// if the 'config' key isn't present we don't consider the network valid
+func (m *EtcdManager) parseNetworkKey(s string) (string, error) {
+	if parts := m.networkRegex.FindStringSubmatch(s); len(parts) == 2 {
+		return parts[1], nil
+	}
+
+	return "", errors.New("Error parsing Network key")
+}
+
+func (m *EtcdManager) parseNetworkWatchResponse(resp *etcd.Response) (NetworkWatchResult, error) {
+	netname, err := m.parseNetworkKey(resp.Node.Key)
+	if err != nil {
+		// Ignore non .../<netname>/config keys
+		return NetworkWatchResult{}, nil
+	}
+
+	evt := Event{}
+
+	switch resp.Action {
+	case "delete":
+		evt = Event{
+			EventRemoved,
+			Lease{},
+			netname,
+		}
+
+	default:
+		_, err := ParseConfig(resp.Node.Value)
+		if err != nil {
+			return NetworkWatchResult{}, err
+		}
+
+		evt = Event{
+			EventAdded,
+			Lease{},
+			netname,
+		}
+	}
+
+	return NetworkWatchResult{
+		Cursor: watchCursor{resp.Node.ModifiedIndex},
+		Events: []Event{evt},
+	}, nil
+}
+
+// getNetworks queries etcd to get a list of network names.  It returns the
+// networks along with the 'as-of' etcd-index that can be used as the starting
+// point for etcd watch.
+func (m *EtcdManager) getNetworks(ctx context.Context) ([]string, uint64, error) {
+	resp, err := m.registry.getNetworks(ctx)
+
+	networks := []string{}
+
+	if err == nil {
+		for _, node := range resp.Node.Nodes {
+			netname, err := m.parseNetworkKey(node.Key)
+			if err == nil {
+				networks = append(networks, netname)
+			}
+		}
+
+		return networks, resp.Index, nil
+	}
+
+	if etcdErr, ok := err.(etcd.Error); ok && etcdErr.Code == etcd.ErrorCodeKeyNotFound {
+		// key not found: treat it as empty set
+		return networks, etcdErr.Index, nil
+	}
+
+	return nil, 0, err
+}
+
+// leaseWatchReset is called when incremental lease watch failed and we need to grab a snapshot
+func (m *EtcdManager) leaseWatchReset(ctx context.Context, network string) (LeaseWatchResult, error) {
+	wr := LeaseWatchResult{}
 
 	leases, index, err := m.getLeases(ctx, network)
-
 	if err != nil {
 		return wr, fmt.Errorf("failed to retrieve subnet leases: %v", err)
 	}
 
-	cursor := watchCursor{index}
+	wr.Cursor = watchCursor{index}
 	wr.Snapshot = leases
-	wr.Cursor = cursor
+	return wr, nil
+}
+
+// networkWatchReset is called when incremental network watch failed and we need to grab a snapshot
+func (m *EtcdManager) networkWatchReset(ctx context.Context) (NetworkWatchResult, error) {
+	wr := NetworkWatchResult{}
+
+	networks, index, err := m.getNetworks(ctx)
+	if err != nil {
+		return wr, fmt.Errorf("failed to retrieve networks: %v", err)
+	}
+
+	wr.Cursor = watchCursor{index}
+	wr.Snapshot = networks
 	return wr, nil
 }
 

@@ -243,12 +243,12 @@ func (m *UdpBackend) monitorEvents() {
 func (m *UdpBackend) processSubnetEvents(batch []subnet.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
-		case subnet.SubnetAdded:
+		case subnet.EventAdded:
 			log.Info("Subnet added: ", evt.Lease.Subnet)
 
 			setRoute(m.ctl, evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, m.cfg.Port)
 
-		case subnet.SubnetRemoved:
+		case subnet.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
 
 			removeRoute(m.ctl, evt.Lease.Subnet)

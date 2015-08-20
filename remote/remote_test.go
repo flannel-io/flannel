@@ -33,7 +33,8 @@ const expectedNetwork = "10.1.0.0/16"
 
 func TestRemote(t *testing.T) {
 	config := fmt.Sprintf(`{"Network": %q}`, expectedNetwork)
-	sm := subnet.NewMockManager(1, config)
+	serverRegistry := subnet.NewMockRegistry(1, "", config, nil)
+	sm := subnet.NewMockManager(serverRegistry)
 
 	addr := "127.0.0.1:9999"
 
@@ -45,7 +46,7 @@ func TestRemote(t *testing.T) {
 		wg.Done()
 	}()
 
-	doTestRemote(ctx, t, addr)
+	doTestRemote(ctx, t, addr, serverRegistry)
 
 	cancel()
 	wg.Wait()
@@ -76,7 +77,7 @@ func isConnRefused(err error) bool {
 	return false
 }
 
-func doTestRemote(ctx context.Context, t *testing.T, remoteAddr string) {
+func doTestRemote(ctx context.Context, t *testing.T, remoteAddr string, serverRegistry *subnet.MockSubnetRegistry) {
 	sm, err := NewRemoteManager(remoteAddr, "", "", "")
 	if err != nil {
 		t.Fatalf("Failed to create remote mananager: %v", err)
@@ -120,10 +121,12 @@ func doTestRemote(ctx context.Context, t *testing.T, remoteAddr string) {
 		t.Errorf("RenewLease failed: %v", err)
 	}
 
-	doTestWatch(t, sm)
+	doTestWatchLeases(t, sm)
+
+	doTestWatchNetworks(t, sm, serverRegistry)
 }
 
-func doTestWatch(t *testing.T, sm subnet.Manager) {
+func doTestWatchLeases(t *testing.T, sm subnet.Manager) {
 	ctx, cancel := context.WithCancel(context.Background())
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -160,11 +163,72 @@ func doTestWatch(t *testing.T, sm subnet.Manager) {
 	}
 
 	evt := evtBatch[0]
-	if evt.Type != subnet.SubnetAdded {
+	if evt.Type != subnet.EventAdded {
 		t.Fatalf("WatchSubnets produced wrong event type")
 	}
 
 	if evt.Lease.Key() != l.Key() {
 		t.Errorf("WatchSubnet produced wrong subnet: expected %s, got %s", l.Key(), evt.Lease.Key())
+	}
+}
+
+func doTestWatchNetworks(t *testing.T, sm subnet.Manager, serverRegistry *subnet.MockSubnetRegistry) {
+	ctx, cancel := context.WithCancel(context.Background())
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	defer func() {
+		cancel()
+		wg.Wait()
+	}()
+
+	events := make(chan []subnet.Event)
+	go func() {
+		subnet.WatchNetworks(ctx, sm, events)
+		wg.Done()
+	}()
+
+	// skip over the initial snapshot
+	<-events
+
+	expectedNetname := "foobar"
+	config := fmt.Sprintf(`{"Network": %q}`, expectedNetwork)
+	_, err := serverRegistry.CreateNetwork(ctx, expectedNetname, config)
+	if err != nil {
+		t.Errorf("create network failed: %v", err)
+	}
+
+	evtBatch := <-events
+
+	if len(evtBatch) != 1 {
+		t.Fatalf("WatchNetworks create produced wrong sized event batch")
+	}
+
+	evt := evtBatch[0]
+	if evt.Type != subnet.EventAdded {
+		t.Fatalf("WatchNetworks create produced wrong event type")
+	}
+
+	if evt.Network != expectedNetname {
+		t.Errorf("WatchNetwork create produced wrong network: expected %s, got %s", expectedNetname, evt.Network)
+	}
+
+	_, err = serverRegistry.DeleteNetwork(ctx, expectedNetname)
+	if err != nil {
+		t.Errorf("delete network failed: %v", err)
+	}
+
+	evtBatch = <-events
+
+	if len(evtBatch) != 1 {
+		t.Fatalf("WatchNetworks delete produced wrong sized event batch")
+	}
+
+	evt = evtBatch[0]
+	if evt.Type != subnet.EventRemoved {
+		t.Fatalf("WatchNetworks delete produced wrong event type")
+	}
+
+	if evt.Network != expectedNetname {
+		t.Errorf("WatchNetwork delete produced wrong network: expected %s, got %s", expectedNetname, evt.Network)
 	}
 }

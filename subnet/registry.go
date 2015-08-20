@@ -27,12 +27,13 @@ import (
 )
 
 type Registry interface {
-	getConfig(ctx context.Context, network string) (*etcd.Response, error)
+	getNetworkConfig(ctx context.Context, network string) (*etcd.Response, error)
 	getSubnets(ctx context.Context, network string) (*etcd.Response, error)
 	createSubnet(ctx context.Context, network, sn, data string, ttl time.Duration) (*etcd.Response, error)
 	updateSubnet(ctx context.Context, network, sn, data string, ttl time.Duration) (*etcd.Response, error)
 	deleteSubnet(ctx context.Context, network, sn string) (*etcd.Response, error)
-	watchSubnets(ctx context.Context, network string, since uint64) (*etcd.Response, error)
+	watch(ctx context.Context, path string, since uint64) (*etcd.Response, error)
+	getNetworks(ctx context.Context) (*etcd.Response, error)
 }
 
 type EtcdConfig struct {
@@ -86,7 +87,7 @@ func newEtcdSubnetRegistry(config *EtcdConfig) (Registry, error) {
 	return r, nil
 }
 
-func (esr *etcdSubnetRegistry) getConfig(ctx context.Context, network string) (*etcd.Response, error) {
+func (esr *etcdSubnetRegistry) getNetworkConfig(ctx context.Context, network string) (*etcd.Response, error) {
 	key := path.Join(esr.etcdCfg.Prefix, network, "config")
 	resp, err := esr.client().Get(ctx, key, nil)
 	if err != nil {
@@ -131,13 +132,18 @@ func (esr *etcdSubnetRegistry) deleteSubnet(ctx context.Context, network, sn str
 	return esr.client().Delete(ctx, key, nil)
 }
 
-func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, network string, since uint64) (*etcd.Response, error) {
-	key := path.Join(esr.etcdCfg.Prefix, network, "subnets")
+func (esr *etcdSubnetRegistry) watch(ctx context.Context, subpath string, since uint64) (*etcd.Response, error) {
+	key := path.Join(esr.etcdCfg.Prefix, subpath)
 	opts := &etcd.WatcherOptions{
 		AfterIndex: since,
 		Recursive:  true,
 	}
-	return esr.client().Watcher(key, opts).Next(ctx)
+	e, err := esr.client().Watcher(key, opts).Next(ctx)
+	return e, err
+}
+
+func (esr *etcdSubnetRegistry) getNetworks(ctx context.Context) (*etcd.Response, error) {
+	return esr.client().Get(ctx, esr.etcdCfg.Prefix, &etcd.GetOptions{Recursive: true})
 }
 
 func (esr *etcdSubnetRegistry) client() etcd.KeysAPI {

@@ -164,13 +164,11 @@ func (m *RemoteManager) RenewLease(ctx context.Context, network string, lease *s
 	return nil
 }
 
-func (m *RemoteManager) WatchLeases(ctx context.Context, network string, cursor interface{}) (subnet.WatchResult, error) {
-	url := m.mkurl(network, "leases")
-
+func (m *RemoteManager) watch(ctx context.Context, url string, cursor interface{}, wr interface{}) error {
 	if cursor != nil {
 		c, ok := cursor.(string)
 		if !ok {
-			return subnet.WatchResult{}, fmt.Errorf("internal error: RemoteManager.WatchLeases received non-string cursor")
+			return fmt.Errorf("internal error: RemoteManager.watch received non-string cursor")
 		}
 
 		url = fmt.Sprintf("%v?next=%v", url, c)
@@ -178,19 +176,44 @@ func (m *RemoteManager) WatchLeases(ctx context.Context, network string, cursor 
 
 	resp, err := m.httpGet(ctx, url)
 	if err != nil {
-		return subnet.WatchResult{}, err
+		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return subnet.WatchResult{}, httpError(resp)
+		return httpError(resp)
 	}
 
-	wr := subnet.WatchResult{}
-	if err := json.NewDecoder(resp.Body).Decode(&wr); err != nil {
-		return subnet.WatchResult{}, err
+	if err := json.NewDecoder(resp.Body).Decode(wr); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *RemoteManager) WatchLeases(ctx context.Context, network string, cursor interface{}) (subnet.LeaseWatchResult, error) {
+	url := m.mkurl(network, "leases")
+
+	wr := subnet.LeaseWatchResult{}
+	err := m.watch(ctx, url, cursor, &wr)
+	if err != nil {
+		return subnet.LeaseWatchResult{}, err
 	}
 	if _, ok := wr.Cursor.(string); !ok {
-		return subnet.WatchResult{}, fmt.Errorf("lease watch returned non-string cursor")
+		return subnet.LeaseWatchResult{}, fmt.Errorf("watch returned non-string cursor")
+	}
+
+	return wr, nil
+}
+
+func (m *RemoteManager) WatchNetworks(ctx context.Context, cursor interface{}) (subnet.NetworkWatchResult, error) {
+	wr := subnet.NetworkWatchResult{}
+	err := m.watch(ctx, m.base+"/", cursor, &wr)
+	if err != nil {
+		return subnet.NetworkWatchResult{}, err
+	}
+
+	if _, ok := wr.Cursor.(string); !ok {
+		return subnet.NetworkWatchResult{}, fmt.Errorf("watch returned non-string cursor")
 	}
 
 	return wr, nil

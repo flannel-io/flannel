@@ -16,63 +16,79 @@ package subnet
 
 import (
 	"fmt"
+	"path"
+	"sort"
+	"strings"
 	"time"
 
 	etcd "github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/client"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
-type mockSubnetRegistry struct {
-	config  *etcd.Node
-	subnets *etcd.Node
-	events  chan *etcd.Response
-	index   uint64
-	ttl     time.Duration
+type MockSubnetRegistry struct {
+	networks map[string]*etcd.Node
+	events   chan *etcd.Response
+	index    uint64
+	ttl      time.Duration
 }
 
-func newMockRegistry(ttlOverride time.Duration, config string, initialSubnets []*etcd.Node) *mockSubnetRegistry {
+const networkKeyPrefix = "/coreos.com/network"
+
+func NewMockRegistry(ttlOverride time.Duration, network, config string, initialSubnets []*etcd.Node) *MockSubnetRegistry {
 	index := uint64(0)
+
+	node := &etcd.Node{Key: normalizeNetKey(network), Value: config, ModifiedIndex: 0, Nodes: make([]*etcd.Node, 0, 20)}
 	for _, n := range initialSubnets {
 		if n.ModifiedIndex > index {
 			index = n.ModifiedIndex
 		}
+		node.Nodes = append(node.Nodes, n)
 	}
 
-	return &mockSubnetRegistry{
-		config: &etcd.Node{
-			Value: config,
-		},
-		subnets: &etcd.Node{
-			Nodes: initialSubnets,
-		},
+	msr := &MockSubnetRegistry{
 		events: make(chan *etcd.Response, 1000),
 		index:  index + 1,
 		ttl:    ttlOverride,
 	}
+
+	msr.networks = make(map[string]*etcd.Node)
+	msr.networks[network] = node
+	return msr
 }
 
-func (msr *mockSubnetRegistry) getConfig(ctx context.Context, network string) (*etcd.Response, error) {
+func (msr *MockSubnetRegistry) getNetworkConfig(ctx context.Context, network string) (*etcd.Response, error) {
 	return &etcd.Response{
 		Index: msr.index,
-		Node:  msr.config,
+		Node:  msr.networks[network],
 	}, nil
 }
 
-func (msr *mockSubnetRegistry) setConfig(config string) {
-	msr.config = &etcd.Node{
-		Key:   "config",
-		Value: config,
+func (msr *MockSubnetRegistry) setConfig(network, config string) error {
+	n, ok := msr.networks[network]
+	if !ok {
+		return fmt.Errorf("Network %s not found", network)
 	}
+	n.Value = config
+	return nil
 }
 
-func (msr *mockSubnetRegistry) getSubnets(ctx context.Context, network string) (*etcd.Response, error) {
+func (msr *MockSubnetRegistry) getSubnets(ctx context.Context, network string) (*etcd.Response, error) {
+	n, ok := msr.networks[network]
+	if !ok {
+		return nil, fmt.Errorf("Network %s not found", network)
+	}
 	return &etcd.Response{
-		Node:  msr.subnets,
+		Node:  n,
 		Index: msr.index,
 	}, nil
 }
 
-func (msr *mockSubnetRegistry) createSubnet(ctx context.Context, network, sn, data string, ttl time.Duration) (*etcd.Response, error) {
+func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, network, sn, data string, ttl time.Duration) (*etcd.Response, error) {
+	n, ok := msr.networks[network]
+	if !ok {
+		return nil, fmt.Errorf("Network %s not found", network)
+	}
+
 	msr.index += 1
 
 	if msr.ttl > 0 {
@@ -88,7 +104,7 @@ func (msr *mockSubnetRegistry) createSubnet(ctx context.Context, network, sn, da
 		Expiration:    &exp,
 	}
 
-	msr.subnets.Nodes = append(msr.subnets.Nodes, node)
+	n.Nodes = append(n.Nodes, node)
 	msr.events <- &etcd.Response{
 		Action: "add",
 		Node:   node,
@@ -100,23 +116,28 @@ func (msr *mockSubnetRegistry) createSubnet(ctx context.Context, network, sn, da
 	}, nil
 }
 
-func (msr *mockSubnetRegistry) updateSubnet(ctx context.Context, network, sn, data string, ttl time.Duration) (*etcd.Response, error) {
+func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, network, sn, data string, ttl time.Duration) (*etcd.Response, error) {
+	n, ok := msr.networks[network]
+	if !ok {
+		return nil, fmt.Errorf("Network %s not found", network)
+	}
+
 	msr.index += 1
 
 	exp := time.Now().Add(ttl)
 
-	for _, n := range msr.subnets.Nodes {
-		if n.Key == sn {
-			n.Value = data
-			n.ModifiedIndex = msr.index
-			n.Expiration = &exp
+	for _, sub := range n.Nodes {
+		if sub.Key == sn {
+			sub.Value = data
+			sub.ModifiedIndex = msr.index
+			sub.Expiration = &exp
 			msr.events <- &etcd.Response{
 				Action: "add",
-				Node:   n,
+				Node:   sub,
 			}
 
 			return &etcd.Response{
-				Node:  n,
+				Node:  sub,
 				Index: msr.index,
 			}, nil
 		}
@@ -125,20 +146,26 @@ func (msr *mockSubnetRegistry) updateSubnet(ctx context.Context, network, sn, da
 	return nil, fmt.Errorf("Subnet not found")
 }
 
-func (msr *mockSubnetRegistry) deleteSubnet(ctx context.Context, network, sn string) (*etcd.Response, error) {
+func (msr *MockSubnetRegistry) deleteSubnet(ctx context.Context, network, sn string) (*etcd.Response, error) {
+	n, ok := msr.networks[network]
+	if !ok {
+		return nil, fmt.Errorf("Network %s not found", network)
+	}
+
 	msr.index += 1
 
-	for i, n := range msr.subnets.Nodes {
-		if n.Key == sn {
-			msr.subnets.Nodes[i] = msr.subnets.Nodes[len(msr.subnets.Nodes)-1]
-			msr.subnets.Nodes = msr.subnets.Nodes[:len(msr.subnets.Nodes)-1]
+	for i, sub := range n.Nodes {
+		if sub.Key == sn {
+			n.Nodes[i] = n.Nodes[len(n.Nodes)-1]
+			n.Nodes = n.Nodes[:len(n.Nodes)-1]
+			sub.ModifiedIndex = msr.index
 			msr.events <- &etcd.Response{
 				Action: "delete",
-				Node:   n,
+				Node:   sub,
 			}
 
 			return &etcd.Response{
-				Node:  n,
+				Node:  sub,
 				Index: msr.index,
 			}, nil
 		}
@@ -148,8 +175,17 @@ func (msr *mockSubnetRegistry) deleteSubnet(ctx context.Context, network, sn str
 
 }
 
-func (msr *mockSubnetRegistry) watchSubnets(ctx context.Context, network string, since uint64) (*etcd.Response, error) {
+func (msr *MockSubnetRegistry) watch(ctx context.Context, network string, since uint64) (*etcd.Response, error) {
 	for {
+		if since < msr.index {
+			return nil, etcd.Error{
+				Code:    etcd.ErrorCodeEventIndexCleared,
+				Cause:   "out of date",
+				Message: "cursor is out of date",
+				Index:   msr.index,
+			}
+		}
+
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
@@ -163,27 +199,127 @@ func (msr *mockSubnetRegistry) watchSubnets(ctx context.Context, network string,
 	}
 }
 
-func (msr *mockSubnetRegistry) hasSubnet(sn string) bool {
-	for _, n := range msr.subnets.Nodes {
-		if n.Key == sn {
+func (msr *MockSubnetRegistry) hasSubnet(network, sn string) bool {
+	n, ok := msr.networks[network]
+	if !ok {
+		return false
+	}
+
+	for _, sub := range n.Nodes {
+		if sub.Key == sn {
 			return true
 		}
 	}
 	return false
 }
 
-func (msr *mockSubnetRegistry) expireSubnet(sn string) {
-	for i, n := range msr.subnets.Nodes {
-		if n.Key == sn {
+func (msr *MockSubnetRegistry) expireSubnet(network, sn string) {
+	n, ok := msr.networks[network]
+	if !ok {
+		return
+	}
+
+	for i, sub := range n.Nodes {
+		if sub.Key == sn {
 			msr.index += 1
-			msr.subnets.Nodes[i] = msr.subnets.Nodes[len(msr.subnets.Nodes)-1]
-			msr.subnets.Nodes = msr.subnets.Nodes[:len(msr.subnets.Nodes)-2]
-			n.ModifiedIndex = msr.index
+			n.Nodes[i] = n.Nodes[len(n.Nodes)-1]
+			n.Nodes = n.Nodes[:len(n.Nodes)-2]
+			sub.ModifiedIndex = msr.index
 			msr.events <- &etcd.Response{
 				Action: "expire",
-				Node:   n,
+				Node:   sub,
 			}
 			return
 		}
 	}
+}
+
+func (msr *MockSubnetRegistry) getNetworks(ctx context.Context) (*etcd.Response, error) {
+	var keys []string
+	for k := range msr.networks {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	networks := &etcd.Node{Key: networkKeyPrefix, Value: "", ModifiedIndex: msr.index, Nodes: make([]*etcd.Node, 0, len(keys))}
+	for _, k := range keys {
+		networks.Nodes = append(networks.Nodes, msr.networks[k])
+	}
+
+	return &etcd.Response{
+		Node:  networks,
+		Index: msr.index,
+	}, nil
+}
+
+func (msr *MockSubnetRegistry) getNetwork(ctx context.Context, network string) (*etcd.Response, error) {
+	n, ok := msr.networks[network]
+	if !ok {
+		return nil, fmt.Errorf("Network %s not found", network)
+	}
+
+	return &etcd.Response{
+		Node:  n,
+		Index: msr.index,
+	}, nil
+}
+
+func (msr *MockSubnetRegistry) CreateNetwork(ctx context.Context, network, config string) (*etcd.Response, error) {
+	_, ok := msr.networks[network]
+	if ok {
+		return nil, fmt.Errorf("Network %s already exists", network)
+	}
+
+	msr.index += 1
+
+	node := &etcd.Node{
+		Key:           normalizeNetKey(network),
+		Value:         config,
+		ModifiedIndex: msr.index,
+	}
+
+	msr.networks[network] = node
+	msr.events <- &etcd.Response{
+		Action: "add",
+		Node:   node,
+	}
+
+	return &etcd.Response{
+		Node:  node,
+		Index: msr.index,
+	}, nil
+}
+
+func (msr *MockSubnetRegistry) DeleteNetwork(ctx context.Context, network string) (*etcd.Response, error) {
+	n, ok := msr.networks[network]
+	if !ok {
+		return nil, fmt.Errorf("Network %s not found", network)
+	}
+
+	msr.index += 1
+
+	n.ModifiedIndex = msr.index
+
+	delete(msr.networks, network)
+	msr.events <- &etcd.Response{
+		Action: "delete",
+		Node:   n,
+	}
+
+	return &etcd.Response{
+		Node:  n,
+		Index: msr.index,
+	}, nil
+}
+
+func normalizeNetKey(key string) string {
+	match := networkKeyPrefix
+	newKey := key
+	if !strings.HasPrefix(newKey, match+"/") {
+		newKey = path.Join(match, key)
+	}
+	if !strings.HasSuffix(newKey, "/config") {
+		newKey = path.Join(newKey, "config")
+	}
+	return newKey
 }
