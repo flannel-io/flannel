@@ -17,17 +17,17 @@ package backend
 import (
 	"net"
 
-	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+
+	"github.com/coreos/flannel/subnet"
 )
 
 type SubnetDef struct {
-	Net ip.IP4Net
-	MTU int
+	Lease *subnet.Lease
+	MTU   int
 }
 
 type Backend interface {
-	Init(extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*SubnetDef, error)
-	Run()
-	Stop()
-	Name() string
+	Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*SubnetDef, error)
+	Run(ctx context.Context)
 }

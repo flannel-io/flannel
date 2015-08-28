@@ -43,23 +43,16 @@ type VXLANBackend struct {
 		VNI  int
 		Port int
 	}
-	lease  *subnet.Lease
-	dev    *vxlanDevice
-	ctx    context.Context
-	cancel context.CancelFunc
-	wg     sync.WaitGroup
-	rts    routes
+	lease *subnet.Lease
+	dev   *vxlanDevice
+	rts   routes
 }
 
 func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	vb := &VXLANBackend{
 		sm:      sm,
 		network: network,
 		config:  config,
-		ctx:     ctx,
-		cancel:  cancel,
 	}
 	vb.cfg.VNI = defaultVNI
 
@@ -79,7 +72,7 @@ func newSubnetAttrs(extEaddr net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, 
 	}, nil
 }
 
-func (vb *VXLANBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
+func (vb *VXLANBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
 	// Parse our configuration
 	if len(vb.config.Backend) > 0 {
 		if err := json.Unmarshal(vb.config.Backend, &vb.cfg); err != nil {
@@ -114,7 +107,7 @@ func (vb *VXLANBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr 
 		return nil, err
 	}
 
-	l, err := vb.sm.AcquireLease(vb.ctx, vb.network, sa)
+	l, err := vb.sm.AcquireLease(ctx, vb.network, sa)
 	switch err {
 	case nil:
 		vb.lease = l
@@ -137,35 +130,30 @@ func (vb *VXLANBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr 
 	}
 
 	return &backend.SubnetDef{
-		Net: l.Subnet,
-		MTU: vb.dev.MTU(),
+		Lease: l,
+		MTU:   vb.dev.MTU(),
 	}, nil
 }
 
-func (vb *VXLANBackend) Run() {
-	vb.wg.Add(1)
-	go func() {
-		subnet.LeaseRenewer(vb.ctx, vb.sm, vb.network, vb.lease)
-		log.Info("LeaseRenewer exited")
-		vb.wg.Done()
-	}()
-
+func (vb *VXLANBackend) Run(ctx context.Context) {
 	log.Info("Watching for L3 misses")
 	misses := make(chan *netlink.Neigh, 100)
 	// Unfrtunately MonitorMisses does not take a cancel channel
 	// as there's no wait to interrupt netlink socket recv
 	go vb.dev.MonitorMisses(misses)
 
+	wg := sync.WaitGroup{}
+
 	log.Info("Watching for new subnet leases")
 	evts := make(chan []subnet.Event)
-	vb.wg.Add(1)
+	wg.Add(1)
 	go func() {
-		subnet.WatchLeases(vb.ctx, vb.sm, vb.network, vb.lease, evts)
+		subnet.WatchLeases(ctx, vb.sm, vb.network, vb.lease, evts)
 		log.Info("WatchLeases exited")
-		vb.wg.Done()
+		wg.Done()
 	}()
 
-	defer vb.wg.Wait()
+	defer wg.Wait()
 	initialEvtsBatch := <-evts
 	for {
 		err := vb.handleInitialSubnetEvents(initialEvtsBatch)
@@ -184,18 +172,10 @@ func (vb *VXLANBackend) Run() {
 		case evtBatch := <-evts:
 			vb.handleSubnetEvents(evtBatch)
 
-		case <-vb.ctx.Done():
+		case <-ctx.Done():
 			return
 		}
 	}
-}
-
-func (vb *VXLANBackend) Stop() {
-	vb.cancel()
-}
-
-func (vb *VXLANBackend) Name() string {
-	return "VXLAN"
 }
 
 // So we can make it JSON (un)marshalable

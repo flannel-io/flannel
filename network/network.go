@@ -32,6 +32,7 @@ type Network struct {
 	sm     subnet.Manager
 	ipMasq bool
 	be     backend.Backend
+	lease  *subnet.Lease
 }
 
 func New(sm subnet.Manager, name string, ipMasq bool) *Network {
@@ -66,10 +67,11 @@ func (n *Network) Init(ctx context.Context, iface *net.Interface, iaddr net.IP, 
 		},
 
 		func() (err error) {
-			sn, err = be.Init(iface, iaddr, eaddr)
+			sn, err = be.Init(ctx, iface, iaddr, eaddr)
 			if err != nil {
-				log.Errorf("Failed to initialize network %v (type %v): %v", n.Name, be.Name(), err)
+				log.Errorf("Failed to initialize network %v (type %v): %v", n.Name, n.Config.BackendType, err)
 			}
+			n.lease = sn.Lease
 			return
 		},
 
@@ -106,12 +108,16 @@ func (n *Network) Run(ctx context.Context) {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
-		n.be.Run()
+		n.be.Run(ctx)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		subnet.LeaseRenewer(ctx, n.sm, n.Name, n.lease)
 		wg.Done()
 	}()
 
 	<-ctx.Done()
-	n.be.Stop()
-
 	wg.Wait()
 }

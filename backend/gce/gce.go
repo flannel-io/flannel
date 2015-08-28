@@ -41,7 +41,6 @@ import (
 	"fmt"
 	"net"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/code.google.com/p/goauth2/compute/serviceaccount"
@@ -65,33 +64,26 @@ type GCEBackend struct {
 	sm             subnet.Manager
 	config         *subnet.Config
 	lease          *subnet.Lease
-	ctx            context.Context
-	cancel         context.CancelFunc
-	wg             sync.WaitGroup
 	computeService *compute.Service
 	gceNetwork     *compute.Network
 	gceInstance    *compute.Instance
 }
 
 func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	gb := GCEBackend{
 		sm:      sm,
 		config:  config,
-		ctx:     ctx,
-		cancel:  cancel,
 		network: network,
 	}
 	return &gb
 }
 
-func (g *GCEBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
+func (g *GCEBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
 	attrs := subnet.LeaseAttrs{
 		PublicIP: ip.FromIP(extEaddr),
 	}
 
-	l, err := g.sm.AcquireLease(g.ctx, g.network, &attrs)
+	l, err := g.sm.AcquireLease(ctx, g.network, &attrs)
 	switch err {
 	case nil:
 		g.lease = l
@@ -161,23 +153,12 @@ func (g *GCEBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr net
 	}
 
 	return &backend.SubnetDef{
-		Net: l.Subnet,
-		MTU: extIface.MTU,
+		Lease: l,
+		MTU:   extIface.MTU,
 	}, nil
 }
 
-func (g *GCEBackend) Run() {
-	log.Info("GCE backend running")
-	subnet.LeaseRenewer(g.ctx, g.sm, g.network, g.lease)
-}
-
-func (g *GCEBackend) Stop() {
-	log.Info("GCE backend stopping")
-	g.cancel()
-}
-
-func (g *GCEBackend) Name() string {
-	return "gce"
+func (g *GCEBackend) Run(ctx context.Context) {
 }
 
 func (g *GCEBackend) pollOperationStatus(operationName string) error {

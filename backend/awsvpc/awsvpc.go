@@ -17,15 +17,16 @@ package awsvpc
 import (
 	"encoding/json"
 	"fmt"
+	"net"
+
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/mitchellh/goamz/aws"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/mitchellh/goamz/ec2"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
-	"net"
-	"sync"
 )
 
 type AwsVpcBackend struct {
@@ -35,26 +36,19 @@ type AwsVpcBackend struct {
 	cfg     struct {
 		RouteTableID string
 	}
-	lease  *subnet.Lease
-	ctx    context.Context
-	cancel context.CancelFunc
-	wg     sync.WaitGroup
+	lease *subnet.Lease
 }
 
 func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	be := AwsVpcBackend{
 		sm:      sm,
 		network: network,
 		config:  config,
-		ctx:     ctx,
-		cancel:  cancel,
 	}
 	return &be
 }
 
-func (m *AwsVpcBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
+func (m *AwsVpcBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
 	// Parse our configuration
 	if len(m.config.Backend) > 0 {
 		if err := json.Unmarshal(m.config.Backend, &m.cfg); err != nil {
@@ -67,7 +61,7 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr 
 		PublicIP: ip.FromIP(extEaddr),
 	}
 
-	l, err := m.sm.AcquireLease(m.ctx, m.network, &attrs)
+	l, err := m.sm.AcquireLease(ctx, m.network, &attrs)
 	switch err {
 	case nil:
 		m.lease = l
@@ -142,8 +136,8 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr 
 	}
 
 	return &backend.SubnetDef{
-		Net: l.Subnet,
-		MTU: extIface.MTU,
+		Lease: l,
+		MTU:   extIface.MTU,
 	}, nil
 }
 
@@ -245,14 +239,6 @@ func (m *AwsVpcBackend) detectRouteTableID(instanceID string, ec2c *ec2.EC2) err
 
 	return nil
 }
-func (m *AwsVpcBackend) Run() {
-	subnet.LeaseRenewer(m.ctx, m.sm, m.network, m.lease)
-}
 
-func (m *AwsVpcBackend) Stop() {
-	m.cancel()
-}
-
-func (m *AwsVpcBackend) Name() string {
-	return "aws-vpc"
+func (m *AwsVpcBackend) Run(ctx context.Context) {
 }

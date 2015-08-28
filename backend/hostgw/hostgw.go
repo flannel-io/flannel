@@ -39,25 +39,18 @@ type HostgwBackend struct {
 	lease    *subnet.Lease
 	extIface *net.Interface
 	extIaddr net.IP
-	ctx      context.Context
-	cancel   context.CancelFunc
-	wg       sync.WaitGroup
 	rl       []netlink.Route
 }
 
 func New(sm subnet.Manager, network string) backend.Backend {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	b := &HostgwBackend{
 		sm:      sm,
 		network: network,
-		ctx:     ctx,
-		cancel:  cancel,
 	}
 	return b
 }
 
-func (rb *HostgwBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
+func (rb *HostgwBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
 	rb.extIface = extIface
 	rb.extIaddr = extIaddr
 
@@ -70,7 +63,7 @@ func (rb *HostgwBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr
 		BackendType: "host-gw",
 	}
 
-	l, err := rb.sm.AcquireLease(rb.ctx, rb.network, &attrs)
+	l, err := rb.sm.AcquireLease(ctx, rb.network, &attrs)
 	switch err {
 	case nil:
 		rb.lease = l
@@ -85,52 +78,40 @@ func (rb *HostgwBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr
 	/* NB: docker will create the local route to `sn` */
 
 	return &backend.SubnetDef{
-		Net: l.Subnet,
-		MTU: extIface.MTU,
+		Lease: l,
+		MTU:   extIface.MTU,
 	}, nil
 }
 
-func (rb *HostgwBackend) Run() {
-	rb.wg.Add(1)
-	go func() {
-		subnet.LeaseRenewer(rb.ctx, rb.sm, rb.network, rb.lease)
-		rb.wg.Done()
-	}()
+func (rb *HostgwBackend) Run(ctx context.Context) {
+	wg := sync.WaitGroup{}
 
 	log.Info("Watching for new subnet leases")
 	evts := make(chan []subnet.Event)
-	rb.wg.Add(1)
+	wg.Add(1)
 	go func() {
-		subnet.WatchLeases(rb.ctx, rb.sm, rb.network, rb.lease, evts)
-		rb.wg.Done()
+		subnet.WatchLeases(ctx, rb.sm, rb.network, rb.lease, evts)
+		wg.Done()
 	}()
 
 	rb.rl = make([]netlink.Route, 0, 10)
-	rb.wg.Add(1)
+	wg.Add(1)
 	go func() {
-		rb.routeCheck(rb.ctx)
-		rb.wg.Done()
+		rb.routeCheck(ctx)
+		wg.Done()
 	}()
 
-	defer rb.wg.Wait()
+	defer wg.Wait()
 
 	for {
 		select {
 		case evtBatch := <-evts:
 			rb.handleSubnetEvents(evtBatch)
 
-		case <-rb.ctx.Done():
+		case <-ctx.Done():
 			return
 		}
 	}
-}
-
-func (rb *HostgwBackend) Stop() {
-	rb.cancel()
-}
-
-func (rb *HostgwBackend) Name() string {
-	return "host-gw"
 }
 
 func (rb *HostgwBackend) handleSubnetEvents(batch []subnet.Event) {
