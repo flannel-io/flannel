@@ -103,8 +103,13 @@ func (m *RemoteManager) GetNetworkConfig(ctx context.Context, network string) (*
 		return nil, httpError(resp)
 	}
 
-	config := &subnet.Config{}
-	if err := json.NewDecoder(resp.Body).Decode(config); err != nil {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	config, err := subnet.ParseConfig(string(body))
+	if err != nil {
 		return nil, err
 	}
 
