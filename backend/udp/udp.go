@@ -50,26 +50,19 @@ type UdpBackend struct {
 	conn   *net.UDPConn
 	mtu    int
 	tunNet ip.IP4Net
-	ctx    context.Context
-	cancel context.CancelFunc
-	wg     sync.WaitGroup
 }
 
 func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	be := UdpBackend{
 		sm:      sm,
 		network: network,
 		config:  config,
-		ctx:     ctx,
-		cancel:  cancel,
 	}
 	be.cfg.Port = defaultPort
 	return &be
 }
 
-func (m *UdpBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
+func (m *UdpBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
 	// Parse our configuration
 	if len(m.config.Backend) > 0 {
 		if err := json.Unmarshal(m.config.Backend, &m.cfg); err != nil {
@@ -82,7 +75,7 @@ func (m *UdpBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr net
 		PublicIP: ip.FromIP(extEaddr),
 	}
 
-	l, err := m.sm.AcquireLease(m.ctx, m.network, &attrs)
+	l, err := m.sm.AcquireLease(ctx, m.network, &attrs)
 	switch err {
 	case nil:
 		m.lease = l
@@ -119,40 +112,43 @@ func (m *UdpBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr net
 	}
 
 	return &backend.SubnetDef{
-		Net: l.Subnet,
-		MTU: m.mtu,
+		Lease: l,
+		MTU:   m.mtu,
 	}, nil
 }
 
-func (m *UdpBackend) Run() {
+func (m *UdpBackend) Run(ctx context.Context) {
 	// one for each goroutine below
-	m.wg.Add(2)
+	wg := sync.WaitGroup{}
 
+	wg.Add(1)
 	go func() {
 		runCProxy(m.tun, m.conn, m.ctl2, m.tunNet.IP, m.mtu)
-		m.wg.Done()
+		wg.Done()
 	}()
 
+	log.Info("Watching for new subnet leases")
+
+	evts := make(chan []subnet.Event)
+
+	wg.Add(1)
 	go func() {
-		subnet.LeaseRenewer(m.ctx, m.sm, m.network, m.lease)
-		m.wg.Done()
+		subnet.WatchLeases(ctx, m.sm, m.network, m.lease, evts)
+		wg.Done()
 	}()
 
-	m.monitorEvents()
+	for {
+		select {
+		case evtBatch := <-evts:
+			m.processSubnetEvents(evtBatch)
 
-	m.wg.Wait()
-}
-
-func (m *UdpBackend) Stop() {
-	if m.ctl != nil {
-		stopProxy(m.ctl)
+		case <-ctx.Done():
+			stopProxy(m.ctl)
+			break
+		}
 	}
 
-	m.cancel()
-}
-
-func (m *UdpBackend) Name() string {
-	return "UDP"
+	wg.Wait()
 }
 
 func newCtlSockets() (*os.File, *os.File, error) {
@@ -216,28 +212,6 @@ func configureIface(ifname string, ipn ip.IP4Net, mtu int) error {
 	}
 
 	return nil
-}
-
-func (m *UdpBackend) monitorEvents() {
-	log.Info("Watching for new subnet leases")
-
-	evts := make(chan []subnet.Event)
-
-	m.wg.Add(1)
-	go func() {
-		subnet.WatchLeases(m.ctx, m.sm, m.network, m.lease, evts)
-		m.wg.Done()
-	}()
-
-	for {
-		select {
-		case evtBatch := <-evts:
-			m.processSubnetEvents(evtBatch)
-
-		case <-m.ctx.Done():
-			return
-		}
-	}
 }
 
 func (m *UdpBackend) processSubnetEvents(batch []subnet.Event) {

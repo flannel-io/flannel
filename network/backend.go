@@ -1,7 +1,6 @@
 package network
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -16,19 +15,7 @@ import (
 )
 
 func newBackend(sm subnet.Manager, network string, config *subnet.Config) (backend.Backend, error) {
-	var bt struct {
-		Type string
-	}
-
-	if len(config.Backend) == 0 {
-		bt.Type = "udp"
-	} else {
-		if err := json.Unmarshal(config.Backend, &bt); err != nil {
-			return nil, fmt.Errorf("Error decoding Backend property of config: %v", err)
-		}
-	}
-
-	switch strings.ToLower(bt.Type) {
+	switch strings.ToLower(config.BackendType) {
 	case "udp":
 		return udp.New(sm, network, config), nil
 	case "alloc":
@@ -42,6 +29,6 @@ func newBackend(sm subnet.Manager, network string, config *subnet.Config) (backe
 	case "gce":
 		return gce.New(sm, network, config), nil
 	default:
-		return nil, fmt.Errorf("%v: '%v': unknown backend type", network, bt.Type)
+		return nil, fmt.Errorf("%v: '%v': unknown backend type", network, config.BackendType)
 	}
 }

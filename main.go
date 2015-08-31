@@ -81,7 +81,7 @@ func init() {
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
 }
 
-func writeSubnetFile(path string, nw ip.IP4Net, sn *backend.SubnetDef) error {
+func writeSubnetFile(path string, nw ip.IP4Net, sd *backend.SubnetDef) error {
 	dir, name := filepath.Split(path)
 	os.MkdirAll(dir, 0755)
 
@@ -93,11 +93,12 @@ func writeSubnetFile(path string, nw ip.IP4Net, sn *backend.SubnetDef) error {
 
 	// Write out the first usable IP by incrementing
 	// sn.IP by one
-	sn.Net.IP += 1
+	sn := sd.Lease.Subnet
+	sn.IP += 1
 
 	fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", nw)
-	fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn.Net)
-	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", sn.MTU)
+	fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn)
+	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", sd.MTU)
 	_, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", opts.ipMasq)
 	f.Close()
 	if err != nil {
