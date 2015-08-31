@@ -140,7 +140,10 @@ func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, network string,
 
 	msr.index += 1
 
-	exp := clock.Now().Add(ttl)
+	exp := time.Time{}
+	if ttl != 0 {
+		exp = clock.Now().Add(ttl)
+	}
 
 	l := Lease{
 		Subnet:     sn,
@@ -169,7 +172,10 @@ func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, network string,
 
 	msr.index += 1
 
-	exp := clock.Now().Add(ttl)
+	exp := time.Time{}
+	if ttl != 0 {
+		exp = clock.Now().Add(ttl)
+	}
 
 	sub, i, err := n.findSubnet(sn)
 	if err != nil {

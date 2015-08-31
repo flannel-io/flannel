@@ -46,8 +46,6 @@ func jsonResponse(w http.ResponseWriter, code int, v interface{}) {
 
 // GET /{network}/config
 func handleGetNetworkConfig(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
 	network := mux.Vars(r)["network"]
 	if network == "_" {
 		network = ""
@@ -65,8 +63,6 @@ func handleGetNetworkConfig(ctx context.Context, sm subnet.Manager, w http.Respo
 
 // POST /{network}/leases
 func handleAcquireLease(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
 	network := mux.Vars(r)["network"]
 	if network == "_" {
 		network = ""
@@ -91,8 +87,6 @@ func handleAcquireLease(ctx context.Context, sm subnet.Manager, w http.ResponseW
 
 // PUT /{network}/{lease.network}
 func handleRenewLease(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
 	network := mux.Vars(r)["network"]
 	if network == "_" {
 		network = ""
@@ -115,8 +109,6 @@ func handleRenewLease(ctx context.Context, sm subnet.Manager, w http.ResponseWri
 }
 
 func handleRevokeLease(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
 	network := mux.Vars(r)["network"]
 	if network == "_" {
 		network = ""
@@ -134,8 +126,6 @@ func handleRevokeLease(ctx context.Context, sm subnet.Manager, w http.ResponseWr
 		fmt.Fprint(w, err)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func getCursor(u *url.URL) interface{} {
@@ -148,8 +138,6 @@ func getCursor(u *url.URL) interface{} {
 
 // GET /{network}/leases/subnet?next=cursor
 func handleWatchLease(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
 	network := mux.Vars(r)["network"]
 	if network == "_" {
 		network = ""
@@ -186,8 +174,6 @@ func handleWatchLease(ctx context.Context, sm subnet.Manager, w http.ResponseWri
 
 // GET /{network}/leases?next=cursor
 func handleWatchLeases(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
 	network := mux.Vars(r)["network"]
 	if network == "_" {
 		network = ""
@@ -218,8 +204,6 @@ func handleWatchLeases(ctx context.Context, sm subnet.Manager, w http.ResponseWr
 // GET /?next=cursor watches
 // GET / retrieves all networks
 func handleNetworks(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
 	cursor := getCursor(r.URL)
 	wr, err := sm.WatchNetworks(ctx, cursor)
 	if err != nil {
@@ -239,6 +223,67 @@ func handleNetworks(ctx context.Context, sm subnet.Manager, w http.ResponseWrite
 	}
 
 	jsonResponse(w, http.StatusOK, wr)
+}
+
+// POST /{network}/reservations
+func handleAddReservation(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
+	network := mux.Vars(r)["network"]
+	if network == "_" {
+		network = ""
+	}
+
+	rsv := &subnet.Reservation{}
+	if err := json.NewDecoder(r.Body).Decode(rsv); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "JSON decoding error: ", err)
+		return
+	}
+
+	if err := sm.AddReservation(ctx, network, rsv); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, fmt.Errorf("internal error: %v", err))
+		return
+	}
+}
+
+// DELETE /{network}/reservations/{subnet}
+func handleRemoveReservation(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
+	network := mux.Vars(r)["network"]
+	if network == "_" {
+		network = ""
+	}
+
+	sn := subnet.ParseSubnetKey(mux.Vars(r)["subnet"])
+	if sn == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "bad subnet")
+		return
+	}
+
+	if err := sm.RemoveReservation(ctx, network, *sn); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// GET /{network}/reservations
+func handleListReservations(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
+	network := mux.Vars(r)["network"]
+	if network == "_" {
+		network = ""
+	}
+
+	leases, err := sm.ListReservations(ctx, network)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, err)
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, leases)
 }
 
 func bindHandler(h handler, ctx context.Context, sm subnet.Manager) http.HandlerFunc {
@@ -323,12 +368,17 @@ func RunServer(ctx context.Context, sm subnet.Manager, listenAddr, cafile, certf
 
 	r := mux.NewRouter()
 	r.HandleFunc("/v1/{network}/config", bindHandler(handleGetNetworkConfig, ctx, sm)).Methods("GET")
+
 	r.HandleFunc("/v1/{network}/leases", bindHandler(handleAcquireLease, ctx, sm)).Methods("POST")
 	r.HandleFunc("/v1/{network}/leases/{subnet}", bindHandler(handleWatchLease, ctx, sm)).Methods("GET")
 	r.HandleFunc("/v1/{network}/leases/{subnet}", bindHandler(handleRenewLease, ctx, sm)).Methods("PUT")
 	r.HandleFunc("/v1/{network}/leases/{subnet}", bindHandler(handleRevokeLease, ctx, sm)).Methods("DELETE")
 	r.HandleFunc("/v1/{network}/leases", bindHandler(handleWatchLeases, ctx, sm)).Methods("GET")
 	r.HandleFunc("/v1/", bindHandler(handleNetworks, ctx, sm)).Methods("GET")
+
+	r.HandleFunc("/v1/{network}/reservations", bindHandler(handleListReservations, ctx, sm)).Methods("GET")
+	r.HandleFunc("/v1/{network}/reservations", bindHandler(handleAddReservation, ctx, sm)).Methods("POST")
+	r.HandleFunc("/v1/{network}/reservations/{subnet}", bindHandler(handleRemoveReservation, ctx, sm)).Methods("DELETE")
 
 	l, err := listener(listenAddr, cafile, certfile, keyfile)
 	if err != nil {

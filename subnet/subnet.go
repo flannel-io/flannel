@@ -26,6 +26,11 @@ import (
 	"github.com/coreos/flannel/pkg/ip"
 )
 
+var (
+	ErrLeaseTaken  = errors.New("subnet: lease already taken")
+	ErrNoMoreTries = errors.New("subnet: no more tries")
+)
+
 type LeaseAttrs struct {
 	PublicIP    ip.IP4
 	BackendType string          `json:",omitempty"`
@@ -42,6 +47,11 @@ type Lease struct {
 
 func (l *Lease) Key() string {
 	return MakeSubnetKey(l.Subnet)
+}
+
+type Reservation struct {
+	Subnet   ip.IP4Net
+	PublicIP ip.IP4
 }
 
 type (
@@ -129,4 +139,8 @@ type Manager interface {
 	WatchLease(ctx context.Context, network string, sn ip.IP4Net, cursor interface{}) (LeaseWatchResult, error)
 	WatchLeases(ctx context.Context, network string, cursor interface{}) (LeaseWatchResult, error)
 	WatchNetworks(ctx context.Context, cursor interface{}) (NetworkWatchResult, error)
+
+	AddReservation(ctx context.Context, network string, r *Reservation) error
+	RemoveReservation(ctx context.Context, network string, subnet ip.IP4Net) error
+	ListReservations(ctx context.Context, network string) ([]Reservation, error)
 }
