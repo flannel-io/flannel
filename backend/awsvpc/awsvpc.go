@@ -22,6 +22,7 @@ import (
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/ec2"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
@@ -83,16 +84,17 @@ func (m *AwsVpcBackend) Init(extIface *net.Interface, extIaddr net.IP, extEaddr 
 	}
 
 	// Figure out this machine's EC2 instance ID and region
-	identity, err := getInstanceIdentity()
+	metadataClient := ec2metadata.New(nil)
+	region, err := metadataClient.Region()
 	if err != nil {
-		return nil, fmt.Errorf("error getting EC2 instance identity: %v", err)
+		return nil, fmt.Errorf("error getting EC2 region name: %v", err)
 	}
-	instanceID, ok := identity["instanceId"].(string)
-	if !ok {
-		return nil, fmt.Errorf("invalid EC2 instance ID: %v", identity["instanceId"])
+	instanceID, err := metadataClient.GetMetadata("instance-id")
+	if err != nil {
+		return nil, fmt.Errorf("error getting EC2 instance ID: %v", err)
 	}
 
-	ec2c := ec2.New(&aws.Config{Region: aws.String(identity["region"].(string))})
+	ec2c := ec2.New(&aws.Config{Region: aws.String(region)})
 
 	if _, err = m.disableSrcDestCheck(instanceID, ec2c); err != nil {
 		log.Infof("Warning- disabling source destination check failed: %v", err)
