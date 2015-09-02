@@ -17,14 +17,13 @@ package awsvpc
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/mitchellh/goamz/aws"
+	"net/http"
 )
 
 func getInstanceIdentity() (map[string]interface{}, error) {
 	url := "http://169.254.169.254/latest/dynamic/instance-identity/document"
 
-	resp, err := aws.RetryingClient.Get(url)
+	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
