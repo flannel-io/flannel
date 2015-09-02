@@ -16,7 +16,7 @@ type AllocBackend struct {
 	lease   *subnet.Lease
 }
 
-func New(sm subnet.Manager, network string) backend.Backend {
+func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
 	return &AllocBackend{
 		sm:      sm,
 		network: network,

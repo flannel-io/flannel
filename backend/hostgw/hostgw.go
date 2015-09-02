@@ -42,7 +42,7 @@ type HostgwBackend struct {
 	rl       []netlink.Route
 }
 
-func New(sm subnet.Manager, network string) backend.Backend {
+func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
 	b := &HostgwBackend{
 		sm:      sm,
 		network: network,

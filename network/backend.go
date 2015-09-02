@@ -14,21 +14,20 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
+var backendMap = map[string]func(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
+	"udp":     udp.New,
+	"alloc":   alloc.New,
+	"host-gw": hostgw.New,
+	"vxlan":   vxlan.New,
+	"aws-vpc": awsvpc.New,
+	"gce":     gce.New,
+}
+
 func newBackend(sm subnet.Manager, network string, config *subnet.Config) (backend.Backend, error) {
-	switch strings.ToLower(config.BackendType) {
-	case "udp":
-		return udp.New(sm, network, config), nil
-	case "alloc":
-		return alloc.New(sm, network), nil
-	case "host-gw":
-		return hostgw.New(sm, network), nil
-	case "vxlan":
-		return vxlan.New(sm, network, config), nil
-	case "aws-vpc":
-		return awsvpc.New(sm, network, config), nil
-	case "gce":
-		return gce.New(sm, network, config), nil
-	default:
-		return nil, fmt.Errorf("%v: '%v': unknown backend type", network, config.BackendType)
+	betype := strings.ToLower(config.BackendType)
+	befunc, ok := backendMap[betype]
+	if !ok {
+		return nil, fmt.Errorf("%v: '%v': unknown backend type", network, betype)
 	}
+	return befunc(sm, network, config), nil
 }
