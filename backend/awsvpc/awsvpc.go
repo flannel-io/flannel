@@ -21,6 +21,7 @@ import (
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/ec2"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
@@ -75,16 +76,17 @@ func (m *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, con
 	}
 
 	// Figure out this machine's EC2 instance ID and region
-	identity, err := getInstanceIdentity()
+	metadataClient := ec2metadata.New(nil)
+	region, err := metadataClient.Region()
 	if err != nil {
-		return nil, fmt.Errorf("error getting EC2 instance identity: %v", err)
+		return nil, fmt.Errorf("error getting EC2 region name: %v", err)
 	}
-	instanceID, ok := identity["instanceId"].(string)
-	if !ok {
-		return nil, fmt.Errorf("invalid EC2 instance ID: %v", identity["instanceId"])
+	instanceID, err := metadataClient.GetMetadata("instance-id")
+	if err != nil {
+		return nil, fmt.Errorf("error getting EC2 instance ID: %v", err)
 	}
 
-	ec2c := ec2.New(&aws.Config{Region: aws.String(identity["region"].(string))})
+	ec2c := ec2.New(&aws.Config{Region: aws.String(region)})
 
 	if _, err = m.disableSrcDestCheck(instanceID, ec2c); err != nil {
 		log.Infof("Warning- disabling source destination check failed: %v", err)
@@ -164,9 +166,9 @@ func (m *AwsVpcBackend) checkMatchingRoutes(instanceID, subnet string, ec2c *ec2
 }
 
 func (m *AwsVpcBackend) createRoute(instanceID, subnet string, ec2c *ec2.EC2) (*ec2.CreateRouteOutput, error) {
-	route := &ec2.CreateRouteInput {
-		RouteTableId: &m.cfg.RouteTableID,
-		InstanceId: &instanceID,
+	route := &ec2.CreateRouteInput{
+		RouteTableId:         &m.cfg.RouteTableID,
+		InstanceId:           &instanceID,
 		DestinationCidrBlock: &subnet,
 	}
 
@@ -174,7 +176,7 @@ func (m *AwsVpcBackend) createRoute(instanceID, subnet string, ec2c *ec2.EC2) (*
 }
 func (m *AwsVpcBackend) disableSrcDestCheck(instanceID string, ec2c *ec2.EC2) (*ec2.ModifyInstanceAttributeOutput, error) {
 	modifyAttributes := &ec2.ModifyInstanceAttributeInput{
-		InstanceId: aws.String(instanceID),
+		InstanceId:      aws.String(instanceID),
 		SourceDestCheck: &ec2.AttributeBooleanValue{Value: aws.Bool(false)},
 	}
 
@@ -208,7 +210,7 @@ func (m *AwsVpcBackend) detectRouteTableID(instanceID string, ec2c *ec2.EC2) err
 	filter := newFilter()
 	filter.Add("association.subnet-id", *subnetID)
 
-	routeTablesInput := &ec2.DescribeRouteTablesInput {
+	routeTablesInput := &ec2.DescribeRouteTablesInput{
 		Filters: filter,
 	}
 
@@ -226,7 +228,7 @@ func (m *AwsVpcBackend) detectRouteTableID(instanceID string, ec2c *ec2.EC2) err
 	filter.Add("association.main", "true")
 	filter.Add("vpc-id", *vpcID)
 
-	routeTablesInput = &ec2.DescribeRouteTablesInput {
+	routeTablesInput = &ec2.DescribeRouteTablesInput{
 		Filters: filter,
 	}
 
