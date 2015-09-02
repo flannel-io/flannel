@@ -11,30 +11,33 @@ import (
 )
 
 type AllocBackend struct {
-	sm      subnet.Manager
-	network string
-	lease   *subnet.Lease
+	sm       subnet.Manager
+	publicIP ip.IP4
+	mtu      int
+	lease    *subnet.Lease
 }
 
-func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
-	return &AllocBackend{
+func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
+	be := AllocBackend{
 		sm:      sm,
-		network: network,
+		publicIP: ip.FromIP(extEaddr),
+		mtu:      extIface.MTU,
 	}
+	return &be, nil
 }
 
-func (m *AllocBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
+func (m *AllocBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (*backend.SubnetDef, error) {
 	attrs := subnet.LeaseAttrs{
-		PublicIP: ip.FromIP(extEaddr),
+		PublicIP: m.publicIP,
 	}
 
-	l, err := m.sm.AcquireLease(ctx, m.network, &attrs)
+	l, err := m.sm.AcquireLease(ctx, network, &attrs)
 	switch err {
 	case nil:
 		m.lease = l
 		return &backend.SubnetDef{
 			Lease: l,
-			MTU:   extIface.MTU,
+			MTU:   m.mtu,
 		}, nil
 
 	case context.Canceled, context.DeadlineExceeded:

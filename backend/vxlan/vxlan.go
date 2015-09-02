@@ -36,27 +36,30 @@ const (
 )
 
 type VXLANBackend struct {
-	sm      subnet.Manager
-	network string
-	config  *subnet.Config
-	cfg     struct {
-		VNI  int
-		Port int
+	sm       subnet.Manager
+	network  string
+	cfg      struct {
+		 VNI  int
+		 Port int
 	}
-	lease *subnet.Lease
-	dev   *vxlanDevice
-	rts   routes
+	extIndex int
+	extIaddr net.IP
+	extEaddr net.IP
+	lease    *subnet.Lease
+	dev      *vxlanDevice
+	rts      routes
 }
 
-func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
+func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
 	vb := &VXLANBackend{
-		sm:      sm,
-		network: network,
-		config:  config,
+		sm:       sm,
+		extIndex: extIface.Index,
+		extIaddr: extIaddr,
+		extEaddr: extEaddr,
 	}
 	vb.cfg.VNI = defaultVNI
 
-	return vb
+	return vb, nil
 }
 
 func newSubnetAttrs(extEaddr net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, error) {
@@ -72,10 +75,12 @@ func newSubnetAttrs(extEaddr net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, 
 	}, nil
 }
 
-func (vb *VXLANBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
+func (vb *VXLANBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (*backend.SubnetDef, error) {
+	vb.network = network
+
 	// Parse our configuration
-	if len(vb.config.Backend) > 0 {
-		if err := json.Unmarshal(vb.config.Backend, &vb.cfg); err != nil {
+	if len(config.Backend) > 0 {
+		if err := json.Unmarshal(config.Backend, &vb.cfg); err != nil {
 			return nil, fmt.Errorf("error decoding VXLAN backend config: %v", err)
 		}
 	}
@@ -83,8 +88,8 @@ func (vb *VXLANBackend) Init(ctx context.Context, extIface *net.Interface, extIa
 	devAttrs := vxlanDeviceAttrs{
 		vni:       uint32(vb.cfg.VNI),
 		name:      fmt.Sprintf("flannel.%v", vb.cfg.VNI),
-		vtepIndex: extIface.Index,
-		vtepAddr:  extIaddr,
+		vtepIndex: vb.extIndex,
+		vtepAddr:  vb.extIaddr,
 		vtepPort:  vb.cfg.Port,
 	}
 
@@ -102,7 +107,7 @@ func (vb *VXLANBackend) Init(ctx context.Context, extIface *net.Interface, extIa
 		}
 	}
 
-	sa, err := newSubnetAttrs(extEaddr, vb.dev.MACAddr())
+	sa, err := newSubnetAttrs(vb.extEaddr, vb.dev.MACAddr())
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +128,7 @@ func (vb *VXLANBackend) Init(ctx context.Context, extIface *net.Interface, extIa
 	// and not that of the individual host (e.g. /24)
 	vxlanNet := ip.IP4Net{
 		IP:        l.Subnet.IP,
-		PrefixLen: vb.config.Network.PrefixLen,
+		PrefixLen: config.Network.PrefixLen,
 	}
 	if err = vb.dev.Configure(vxlanNet); err != nil {
 		return nil, err

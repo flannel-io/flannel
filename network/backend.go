@@ -2,6 +2,7 @@ package network
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/coreos/flannel/backend"
@@ -14,7 +15,9 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
-var backendMap = map[string]func(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
+type beNewFunc func(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error)
+
+var backendMap = map[string]beNewFunc {
 	"udp":     udp.New,
 	"alloc":   alloc.New,
 	"host-gw": hostgw.New,
@@ -23,11 +26,11 @@ var backendMap = map[string]func(sm subnet.Manager, network string, config *subn
 	"gce":     gce.New,
 }
 
-func newBackend(sm subnet.Manager, network string, config *subnet.Config) (backend.Backend, error) {
-	betype := strings.ToLower(config.BackendType)
+func newBackend(sm subnet.Manager, backendType string, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
+	betype := strings.ToLower(backendType)
 	befunc, ok := backendMap[betype]
 	if !ok {
-		return nil, fmt.Errorf("%v: '%v': unknown backend type", network, betype)
+		return nil, fmt.Errorf("unknown backend type")
 	}
-	return befunc(sm, network, config), nil
+	return befunc(sm, extIface, extIaddr, extEaddr)
 }

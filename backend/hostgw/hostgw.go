@@ -35,31 +35,35 @@ const (
 
 type HostgwBackend struct {
 	sm       subnet.Manager
+	publicIP ip.IP4
 	network  string
 	lease    *subnet.Lease
 	extIface *net.Interface
 	extIaddr net.IP
+	mtu      int
 	rl       []netlink.Route
 }
 
-func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
-	b := &HostgwBackend{
-		sm:      sm,
-		network: network,
-	}
-	return b
-}
-
-func (rb *HostgwBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
-	rb.extIface = extIface
-	rb.extIaddr = extIaddr
-
+func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
 	if !extIaddr.Equal(extEaddr) {
 		return nil, fmt.Errorf("your PublicIP differs from interface IP, meaning that probably you're on a NAT, which is not supported by host-gw backend")
 	}
 
+	b := &HostgwBackend{
+		sm:       sm,
+		publicIP: ip.FromIP(extEaddr),
+		mtu:      extIface.MTU,
+		extIface: extIface,
+		extIaddr: extIaddr,
+	}
+	return b, nil
+}
+
+func (rb *HostgwBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (*backend.SubnetDef, error) {
+	rb.network = network
+
 	attrs := subnet.LeaseAttrs{
-		PublicIP:    ip.FromIP(extIaddr),
+		PublicIP:    rb.publicIP,
 		BackendType: "host-gw",
 	}
 
@@ -79,7 +83,7 @@ func (rb *HostgwBackend) Init(ctx context.Context, extIface *net.Interface, extI
 
 	return &backend.SubnetDef{
 		Lease: l,
-		MTU:   extIface.MTU,
+		MTU:   rb.mtu,
 	}, nil
 }
 
