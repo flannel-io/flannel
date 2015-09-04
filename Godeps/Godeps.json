@@ -27,8 +27,13 @@
 		},
 		{
 			"ImportPath": "github.com/coreos/etcd/client",
-			"Comment": "v2.1.1-85-gff0b872",
-			"Rev": "ff0b8723c747e76d2651bcddaff26563128ab216"
+			"Comment": "v2.1.1-135-ga1ef699",
+			"Rev": "a1ef699aebbe7ebb4da2f90a42e0f612eec08384"
+		},
+		{
+			"ImportPath": "github.com/coreos/etcd/pkg/pathutil",
+			"Comment": "v2.1.1-135-ga1ef699",
+			"Rev": "a1ef699aebbe7ebb4da2f90a42e0f612eec08384"
 		},
 		{
 			"ImportPath": "github.com/coreos/etcd/pkg/transport",
