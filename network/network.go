@@ -57,9 +57,9 @@ func (n *Network) Init(ctx context.Context, iface *net.Interface, iaddr net.IP, 
 		},
 
 		func() (err error) {
-			be, err = newBackend(n.sm, n.Name, n.Config)
+			be, err = newBackend(n.sm, n.Config.BackendType, iface, iaddr, eaddr)
 			if err != nil {
-				log.Error("Failed to create backend: ", err)
+				log.Errorf("Failed to create and initialize network %v (type %v): %v", n.Name, n.Config.BackendType, err)
 			} else {
 				n.be = be
 			}
@@ -67,11 +67,12 @@ func (n *Network) Init(ctx context.Context, iface *net.Interface, iaddr net.IP, 
 		},
 
 		func() (err error) {
-			sn, err = be.Init(ctx, iface, iaddr, eaddr)
+			sn, err = be.RegisterNetwork(ctx, n.Name, n.Config)
 			if err != nil {
-				log.Errorf("Failed to initialize network %v (type %v): %v", n.Name, n.Config.BackendType, err)
+				log.Errorf("Failed register network %v (type %v): %v", n.Name, n.Config.BackendType, err)
+			} else {
+				n.lease = sn.Lease
 			}
-			n.lease = sn.Lease
 			return
 		},
 

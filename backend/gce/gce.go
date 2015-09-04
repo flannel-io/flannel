@@ -59,31 +59,31 @@ var metadataEndpoint = "http://169.254.169.254/computeMetadata/v1"
 var replacer = strings.NewReplacer(".", "-", "/", "-")
 
 type GCEBackend struct {
-	network        string
-	project        string
 	sm             subnet.Manager
-	config         *subnet.Config
+	publicIP       ip.IP4
+	mtu            int
+	project        string
 	lease          *subnet.Lease
 	computeService *compute.Service
 	gceNetwork     *compute.Network
 	gceInstance    *compute.Instance
 }
 
-func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
+func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
 	gb := GCEBackend{
-		sm:      sm,
-		config:  config,
-		network: network,
+		sm:       sm,
+		publicIP: ip.FromIP(extEaddr),
+		mtu:      extIface.MTU,
 	}
-	return &gb
+	return &gb, nil
 }
 
-func (g *GCEBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
+func (g *GCEBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (*backend.SubnetDef, error) {
 	attrs := subnet.LeaseAttrs{
-		PublicIP: ip.FromIP(extEaddr),
+		PublicIP: g.publicIP,
 	}
 
-	l, err := g.sm.AcquireLease(ctx, g.network, &attrs)
+	l, err := g.sm.AcquireLease(ctx, network, &attrs)
 	switch err {
 	case nil:
 		g.lease = l
@@ -154,7 +154,7 @@ func (g *GCEBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr
 
 	return &backend.SubnetDef{
 		Lease: l,
-		MTU:   extIface.MTU,
+		MTU:   g.mtu,
 	}, nil
 }
 

@@ -30,38 +30,38 @@ import (
 )
 
 type AwsVpcBackend struct {
-	sm      subnet.Manager
-	network string
-	config  *subnet.Config
-	cfg     struct {
-		RouteTableID string
+	sm       subnet.Manager
+	publicIP ip.IP4
+	mtu      int
+	cfg      struct {
+		 RouteTableID string
 	}
-	lease *subnet.Lease
+	lease    *subnet.Lease
 }
 
-func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
+func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
 	be := AwsVpcBackend{
 		sm:      sm,
-		network: network,
-		config:  config,
+		publicIP: ip.FromIP(extEaddr),
+		mtu:      extIface.MTU,
 	}
-	return &be
+	return &be, nil
 }
 
-func (m *AwsVpcBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
+func (m *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (*backend.SubnetDef, error) {
 	// Parse our configuration
-	if len(m.config.Backend) > 0 {
-		if err := json.Unmarshal(m.config.Backend, &m.cfg); err != nil {
+	if len(config.Backend) > 0 {
+		if err := json.Unmarshal(config.Backend, &m.cfg); err != nil {
 			return nil, fmt.Errorf("error decoding VPC backend config: %v", err)
 		}
 	}
 
 	// Acquire the lease form subnet manager
 	attrs := subnet.LeaseAttrs{
-		PublicIP: ip.FromIP(extEaddr),
+		PublicIP: m.publicIP,
 	}
 
-	l, err := m.sm.AcquireLease(ctx, m.network, &attrs)
+	l, err := m.sm.AcquireLease(ctx, network, &attrs)
 	switch err {
 	case nil:
 		m.lease = l
@@ -137,7 +137,7 @@ func (m *AwsVpcBackend) Init(ctx context.Context, extIface *net.Interface, extIa
 
 	return &backend.SubnetDef{
 		Lease: l,
-		MTU:   extIface.MTU,
+		MTU:   m.mtu,
 	}, nil
 }
 

@@ -2,6 +2,7 @@ package network
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/coreos/flannel/backend"
@@ -14,21 +15,22 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
-func newBackend(sm subnet.Manager, network string, config *subnet.Config) (backend.Backend, error) {
-	switch strings.ToLower(config.BackendType) {
-	case "udp":
-		return udp.New(sm, network, config), nil
-	case "alloc":
-		return alloc.New(sm, network), nil
-	case "host-gw":
-		return hostgw.New(sm, network), nil
-	case "vxlan":
-		return vxlan.New(sm, network, config), nil
-	case "aws-vpc":
-		return awsvpc.New(sm, network, config), nil
-	case "gce":
-		return gce.New(sm, network, config), nil
-	default:
-		return nil, fmt.Errorf("%v: '%v': unknown backend type", network, config.BackendType)
+type beNewFunc func(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error)
+
+var backendMap = map[string]beNewFunc {
+	"udp":     udp.New,
+	"alloc":   alloc.New,
+	"host-gw": hostgw.New,
+	"vxlan":   vxlan.New,
+	"aws-vpc": awsvpc.New,
+	"gce":     gce.New,
+}
+
+func newBackend(sm subnet.Manager, backendType string, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
+	betype := strings.ToLower(backendType)
+	befunc, ok := backendMap[betype]
+	if !ok {
+		return nil, fmt.Errorf("unknown backend type")
 	}
+	return befunc(sm, extIface, extIaddr, extEaddr)
 }

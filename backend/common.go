@@ -15,8 +15,6 @@
 package backend
 
 import (
-	"net"
-
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
 	"github.com/coreos/flannel/subnet"
@@ -27,7 +25,21 @@ type SubnetDef struct {
 	MTU   int
 }
 
+// Besides the entry points in the Backend interface, the backend's New()
+// function receives static network interface information (like internal and
+// external IP addresses, MTU, etc) which it should cache for later use if
+// needed.
+//
+// To implement a singleton backend which manages multiple networks, the
+// New() function should create the singleton backend object once, and return
+// that object on on further calls to New().  The backend is guaranteed that
+// the arguments passed via New() will not change across invocations.  Also,
+// since multiple RegisterNetwork() and Run() calls may be in-flight at any
+// given time for a singleton backend, it must protect these calls with a mutex.
 type Backend interface {
-	Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*SubnetDef, error)
+	// Called when the backend should create or begin managing a new network
+	RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (*SubnetDef, error)
+	// Called after the backend's first network has been registered to
+	// allow the plugin to watch dynamic events
 	Run(ctx context.Context)
 }

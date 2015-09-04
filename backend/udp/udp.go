@@ -37,42 +37,45 @@ const (
 )
 
 type UdpBackend struct {
-	sm      subnet.Manager
-	network string
-	config  *subnet.Config
-	cfg     struct {
-		Port int
+	sm       subnet.Manager
+	network  string
+	publicIP ip.IP4
+	cfg      struct {
+		 Port int
 	}
-	lease  *subnet.Lease
-	ctl    *os.File
-	ctl2   *os.File
-	tun    *os.File
-	conn   *net.UDPConn
-	mtu    int
-	tunNet ip.IP4Net
+	lease    *subnet.Lease
+	ctl      *os.File
+	ctl2     *os.File
+	tun      *os.File
+	conn     *net.UDPConn
+	mtu      int
+	tunNet   ip.IP4Net
 }
 
-func New(sm subnet.Manager, network string, config *subnet.Config) backend.Backend {
+func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
 	be := UdpBackend{
-		sm:      sm,
-		network: network,
-		config:  config,
+		sm:       sm,
+		publicIP: ip.FromIP(extEaddr),
+		// TUN MTU will be smaller b/c of encap (IP+UDP hdrs)
+		mtu:      extIface.MTU - encapOverhead,
 	}
 	be.cfg.Port = defaultPort
-	return &be
+	return &be, nil
 }
 
-func (m *UdpBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (*backend.SubnetDef, error) {
+func (m *UdpBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (*backend.SubnetDef, error) {
+	m.network = network
+
 	// Parse our configuration
-	if len(m.config.Backend) > 0 {
-		if err := json.Unmarshal(m.config.Backend, &m.cfg); err != nil {
+	if len(config.Backend) > 0 {
+		if err := json.Unmarshal(config.Backend, &m.cfg); err != nil {
 			return nil, fmt.Errorf("error decoding UDP backend config: %v", err)
 		}
 	}
 
 	// Acquire the lease form subnet manager
 	attrs := subnet.LeaseAttrs{
-		PublicIP: ip.FromIP(extEaddr),
+		PublicIP: m.publicIP,
 	}
 
 	l, err := m.sm.AcquireLease(ctx, m.network, &attrs)
@@ -91,11 +94,8 @@ func (m *UdpBackend) Init(ctx context.Context, extIface *net.Interface, extIaddr
 	// and not that of the individual host (e.g. /24)
 	m.tunNet = ip.IP4Net{
 		IP:        l.Subnet.IP,
-		PrefixLen: m.config.Network.PrefixLen,
+		PrefixLen: config.Network.PrefixLen,
 	}
-
-	// TUN MTU will be smaller b/c of encap (IP+UDP hdrs)
-	m.mtu = extIface.MTU - encapOverhead
 
 	if err = m.initTun(); err != nil {
 		return nil, err
