@@ -24,9 +24,9 @@ import (
 	"regexp"
 	"strconv"
 
+	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/pkg/transport"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/activation"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 

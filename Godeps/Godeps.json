@@ -26,6 +26,11 @@
 			"Rev": "6ddfebb10ece847f1ae09c701834f1b15abbd8b2"
 		},
 		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.6",
+			"Rev": "5701be89e7d3cdcbc48504241b9c66ef085f759d"
+		},
+		{
 			"ImportPath": "github.com/coreos/etcd/client",
 			"Comment": "v2.1.1-85-gff0b872",
 			"Rev": "ff0b8723c747e76d2651bcddaff26563128ab216"
@@ -57,10 +62,6 @@
 		{
 			"ImportPath": "github.com/coreos/pkg/flagutil",
 			"Rev": "b0d3d81732aea341039d191d8618a3466fe54395"
-		},
-		{
-			"ImportPath": "github.com/golang/glog",
-			"Rev": "d1c4472bf2efd3826f2b5bdcc02d8416798d678c"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",

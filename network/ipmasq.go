@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
+	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-iptables/iptables"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 
 	"github.com/coreos/flannel/pkg/ip"
 )

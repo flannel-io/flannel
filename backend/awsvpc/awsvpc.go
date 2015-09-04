@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"net"
 
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
+	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/mitchellh/goamz/aws"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/mitchellh/goamz/ec2"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
@@ -34,14 +34,14 @@ type AwsVpcBackend struct {
 	publicIP ip.IP4
 	mtu      int
 	cfg      struct {
-		 RouteTableID string
+		RouteTableID string
 	}
-	lease    *subnet.Lease
+	lease *subnet.Lease
 }
 
 func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
 	be := AwsVpcBackend{
-		sm:      sm,
+		sm:       sm,
 		publicIP: ip.FromIP(extEaddr),
 		mtu:      extIface.MTU,
 	}

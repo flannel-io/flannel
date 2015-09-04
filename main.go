@@ -25,9 +25,9 @@ import (
 	"sync"
 	"syscall"
 
+	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/pkg/flagutil"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
 	"github.com/coreos/flannel/backend"
@@ -225,10 +225,6 @@ func initAndRun(ctx context.Context, sm subnet.Manager, netnames []string) {
 }
 
 func main() {
-	// glog will log to tmp files by default. override so all entries
-	// can flow into journald (if running under systemd)
-	flag.Set("logtostderr", "true")
-
 	// now parse command line args
 	flag.Parse()
 

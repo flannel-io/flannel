@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
+	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
@@ -36,11 +36,11 @@ const (
 )
 
 type VXLANBackend struct {
-	sm       subnet.Manager
-	network  string
-	cfg      struct {
-		 VNI  int
-		 Port int
+	sm      subnet.Manager
+	network string
+	cfg     struct {
+		VNI  int
+		Port int
 	}
 	extIndex int
 	extIaddr net.IP

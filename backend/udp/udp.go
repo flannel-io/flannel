@@ -22,7 +22,7 @@ import (
 	"sync"
 	"syscall"
 
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
+	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
@@ -41,15 +41,15 @@ type UdpBackend struct {
 	network  string
 	publicIP ip.IP4
 	cfg      struct {
-		 Port int
+		Port int
 	}
-	lease    *subnet.Lease
-	ctl      *os.File
-	ctl2     *os.File
-	tun      *os.File
-	conn     *net.UDPConn
-	mtu      int
-	tunNet   ip.IP4Net
+	lease  *subnet.Lease
+	ctl    *os.File
+	ctl2   *os.File
+	tun    *os.File
+	conn   *net.UDPConn
+	mtu    int
+	tunNet ip.IP4Net
 }
 
 func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
@@ -57,7 +57,7 @@ func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr n
 		sm:       sm,
 		publicIP: ip.FromIP(extEaddr),
 		// TUN MTU will be smaller b/c of encap (IP+UDP hdrs)
-		mtu:      extIface.MTU - encapOverhead,
+		mtu: extIface.MTU - encapOverhead,
 	}
 	be.cfg.Port = defaultPort
 	return &be, nil
