@@ -16,13 +16,13 @@ package subnet
 
 import (
 	"fmt"
+	"log"
 	"path"
 	"sync"
 	"time"
 
 	etcd "github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/client"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/pkg/transport"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
@@ -166,7 +166,7 @@ func (esr *etcdSubnetRegistry) resetClient() {
 func ensureExpiration(resp *etcd.Response, ttl time.Duration) {
 	if resp.Node.Expiration == nil {
 		// should not be but calc it ourselves in this case
-		log.Info("Expiration field missing on etcd response, calculating locally")
+		log.Printf("Expiration field missing on etcd response, calculating locally")
 		exp := time.Now().Add(time.Duration(ttl) * time.Second)
 		resp.Node.Expiration = &exp
 	}

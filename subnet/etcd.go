@@ -25,9 +25,9 @@ import (
 	"time"
 
 	etcd "github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/client"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/coreos/flannel/pkg/ip"
+	"log"
 )
 
 const (
@@ -89,14 +89,14 @@ func (m *EtcdManager) AcquireLease(ctx context.Context, network string, attrs *L
 		l, err := m.acquireLeaseOnce(ctx, network, config, attrs)
 		switch {
 		case err == nil:
-			log.Info("Subnet lease acquired: ", l.Subnet)
+			log.Printf("Subnet lease acquired: ", l.Subnet)
 			return l, nil
 
 		case err == context.Canceled, err == context.DeadlineExceeded:
 			return nil, err
 
 		default:
-			log.Error("Failed to acquire subnet: ", err)
+			log.Printf("Failed to acquire subnet: ", err)
 		}
 
 		select {
@@ -134,7 +134,7 @@ func (m *EtcdManager) tryAcquireLease(ctx context.Context, network string, confi
 	if l := findLeaseByIP(leases, extIaddr); l != nil {
 		// make sure the existing subnet is still within the configured network
 		if isSubnetConfigCompat(config, l.Subnet) {
-			log.Infof("Found lease (%v) for current IP (%v), reusing", l.Subnet, extIaddr)
+			log.Printf("Found lease (%v) for current IP (%v), reusing", l.Subnet, extIaddr)
 			resp, err := m.registry.updateSubnet(ctx, network, l.Key(), string(attrBytes), subnetTTL)
 			if err != nil {
 				return nil, err
@@ -144,7 +144,7 @@ func (m *EtcdManager) tryAcquireLease(ctx context.Context, network string, confi
 			l.Expiration = *resp.Node.Expiration
 			return l, nil
 		} else {
-			log.Infof("Found lease (%v) for current IP (%v) but not compatible with current config, deleting", l.Subnet, extIaddr)
+			log.Printf("Found lease (%v) for current IP (%v) but not compatible with current config, deleting", l.Subnet, extIaddr)
 			if _, err := m.registry.deleteSubnet(ctx, network, l.Key()); err != nil {
 				return nil, err
 			}
@@ -209,7 +209,7 @@ func parseSubnetKey(s string) (ip.IP4Net, error) {
 }
 
 func (m *EtcdManager) allocateSubnet(config *Config, leases []Lease) (ip.IP4Net, error) {
-	log.Infof("Picking subnet in range %s ... %s", config.SubnetMin, config.SubnetMax)
+	log.Printf("Picking subnet in range %s ... %s", config.SubnetMin, config.SubnetMax)
 
 	var bag []ip.IP4
 	sn := ip.IP4Net{IP: config.SubnetMin, PrefixLen: config.SubnetLen}
@@ -323,7 +323,7 @@ func (m *EtcdManager) WatchLeases(ctx context.Context, network string, cursor in
 		return parseSubnetWatchResponse(resp)
 
 	case isIndexTooSmall(err):
-		log.Warning("Watch of subnet leases failed because etcd index outside history window")
+		log.Printf("Watch of subnet leases failed because etcd index outside history window")
 		return m.leaseWatchReset(ctx, network)
 
 	default:
@@ -348,7 +348,7 @@ func (m *EtcdManager) WatchNetworks(ctx context.Context, cursor interface{}) (Ne
 		return m.parseNetworkWatchResponse(resp)
 
 	case isIndexTooSmall(err):
-		log.Warning("Watch of subnet leases failed because etcd index outside history window")
+		log.Printf("Watch of subnet leases failed because etcd index outside history window")
 		return m.networkWatchReset(ctx)
 
 	default:

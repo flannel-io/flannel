@@ -17,8 +17,8 @@ package subnet
 import (
 	"time"
 
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+	"log"
 )
 
 const (
@@ -33,12 +33,12 @@ func LeaseRenewer(ctx context.Context, m Manager, network string, lease *Lease) 
 		case <-time.After(dur):
 			err := m.RenewLease(ctx, network, lease)
 			if err != nil {
-				log.Error("Error renewing lease (trying again in 1 min): ", err)
+				log.Printf("Error renewing lease (trying again in 1 min): ", err)
 				dur = time.Minute
 				continue
 			}
 
-			log.Info("Lease renewed, new expiration: ", lease.Expiration)
+			log.Printf("Lease renewed, new expiration: ", lease.Expiration)
 			dur = lease.Expiration.Sub(time.Now()) - renewMargin
 
 		case <-ctx.Done():
