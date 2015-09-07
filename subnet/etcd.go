@@ -462,9 +462,12 @@ func (m *EtcdManager) getNetworks(ctx context.Context) ([]string, uint64, error)
 
 	if err == nil {
 		for _, node := range resp.Node.Nodes {
-			netname, err := m.parseNetworkKey(node.Key)
-			if err == nil {
-				networks = append(networks, netname)
+			// Look for '/config' on the child nodes
+			for _, child := range node.Nodes {
+				netname, err := m.parseNetworkKey(child.Key)
+				if err == nil {
+					networks = append(networks, netname)
+				}
 			}
 		}
 

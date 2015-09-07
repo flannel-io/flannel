@@ -234,6 +234,13 @@ func (msr *MockSubnetRegistry) expireSubnet(network, sn string) {
 	}
 }
 
+func configKeyToNetworkKey(configKey string) string {
+	if !strings.HasSuffix(configKey, "/config") {
+		return ""
+	}
+	return strings.TrimSuffix(configKey, "/config")
+}
+
 func (msr *MockSubnetRegistry) getNetworks(ctx context.Context) (*etcd.Response, error) {
 	var keys []string
 	for k := range msr.networks {
@@ -241,13 +248,34 @@ func (msr *MockSubnetRegistry) getNetworks(ctx context.Context) (*etcd.Response,
 	}
 	sort.Strings(keys)
 
-	networks := &etcd.Node{Key: networkKeyPrefix, Value: "", ModifiedIndex: msr.index, Nodes: make([]*etcd.Node, 0, len(keys))}
+	// mimic etcd by returning a multi-level response where each top-level
+	// node is a network node, and each network node has a single child
+	// 'config' node.  eg:
+	//
+	//  /coreos.com/network
+	//     /coreos.com/network/blue
+	//        /coreos.com/network/blue/config
+	//     /coreos.com/network/red
+	//        /coreos.com/network/red/config
+	//
+	toplevel := &etcd.Node{Key: networkKeyPrefix, Value: "", ModifiedIndex: msr.index, Nodes: make([]*etcd.Node, 0, len(keys))}
 	for _, k := range keys {
-		networks.Nodes = append(networks.Nodes, msr.networks[k])
+		netKey := configKeyToNetworkKey(msr.networks[k].Key)
+		if netKey == "" {
+			continue
+		}
+		network := &etcd.Node{
+			Key:           netKey,
+			Value:         "",
+			ModifiedIndex: msr.index,
+			Nodes:         []*etcd.Node{msr.networks[k]},
+		}
+
+		toplevel.Nodes = append(toplevel.Nodes, network)
 	}
 
 	return &etcd.Response{
-		Node:  networks,
+		Node:  toplevel,
 		Index: msr.index,
 	}, nil
 }

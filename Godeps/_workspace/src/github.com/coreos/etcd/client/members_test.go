@@ -47,8 +47,8 @@ func TestMembersAPIActionAdd(t *testing.T) {
 	ep := url.URL{Scheme: "http", Host: "example.com"}
 	act := &membersAPIActionAdd{
 		peerURLs: types.URLs([]url.URL{
-			url.URL{Scheme: "https", Host: "127.0.0.1:8081"},
-			url.URL{Scheme: "http", Host: "127.0.0.1:8080"},
+			{Scheme: "https", Host: "127.0.0.1:8081"},
+			{Scheme: "http", Host: "127.0.0.1:8080"},
 		}),
 	}
 
@@ -74,8 +74,8 @@ func TestMembersAPIActionUpdate(t *testing.T) {
 	act := &membersAPIActionUpdate{
 		memberID: "0xabcd",
 		peerURLs: types.URLs([]url.URL{
-			url.URL{Scheme: "https", Host: "127.0.0.1:8081"},
-			url.URL{Scheme: "http", Host: "127.0.0.1:8080"},
+			{Scheme: "https", Host: "127.0.0.1:8081"},
+			{Scheme: "http", Host: "127.0.0.1:8080"},
 		}),
 	}
 
@@ -288,8 +288,8 @@ func TestMemberCollectionUnmarshal(t *testing.T) {
 func TestMemberCreateRequestMarshal(t *testing.T) {
 	req := memberCreateOrUpdateRequest{
 		PeerURLs: types.URLs([]url.URL{
-			url.URL{Scheme: "http", Host: "127.0.0.1:8081"},
-			url.URL{Scheme: "https", Host: "127.0.0.1:8080"},
+			{Scheme: "http", Host: "127.0.0.1:8081"},
+			{Scheme: "https", Host: "127.0.0.1:8080"},
 		}),
 	}
 	want := []byte(`{"peerURLs":["http://127.0.0.1:8081","https://127.0.0.1:8080"]}`)
@@ -307,7 +307,7 @@ func TestMemberCreateRequestMarshal(t *testing.T) {
 func TestHTTPMembersAPIAddSuccess(t *testing.T) {
 	wantAction := &membersAPIActionAdd{
 		peerURLs: types.URLs([]url.URL{
-			url.URL{Scheme: "http", Host: "127.0.0.1:7002"},
+			{Scheme: "http", Host: "127.0.0.1:7002"},
 		}),
 	}
 
@@ -472,7 +472,7 @@ func TestHTTPMembersAPIListSuccess(t *testing.T) {
 	}
 
 	wantResponseMembers := []Member{
-		Member{
+		{
 			ID:         "94088180e21eb87b",
 			Name:       "node2",
 			PeerURLs:   []string{"http://127.0.0.1:7002"},
