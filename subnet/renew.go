@@ -17,7 +17,7 @@ package subnet
 import (
 	"time"
 
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
+	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
