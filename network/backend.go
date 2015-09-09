@@ -17,7 +17,7 @@ import (
 
 type beNewFunc func(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error)
 
-var backendMap = map[string]beNewFunc {
+var backendMap = map[string]beNewFunc{
 	"udp":     udp.New,
 	"alloc":   alloc.New,
 	"host-gw": hostgw.New,
