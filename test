@@ -14,7 +14,7 @@ COVER=${COVER:-"-cover"}
 
 source ./build
 
-TESTABLE="pkg/ip subnet remote"
+TESTABLE="pkg/ip subnet network remote"
 FORMATTABLE="$TESTABLE"
 
 # user has not provided PKG override
