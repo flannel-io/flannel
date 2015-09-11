@@ -119,7 +119,9 @@ func NewNetworkManager(ctx context.Context, sm subnet.Manager) (*Manager, error)
 	}
 
 	for _, name := range strings.Split(opts.networks, ",") {
-		manager.allowedNetworks[name] = true
+		if name != "" {
+			manager.allowedNetworks[name] = true
+		}
 	}
 
 	if manager.isMultiNetwork() {
