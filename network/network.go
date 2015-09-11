@@ -94,16 +94,16 @@ func (n *Network) Init(iface *net.Interface, iaddr net.IP, eaddr net.IP) *backen
 	}
 
 	for _, s := range steps {
-		for ; ; time.Sleep(time.Second) {
-			select {
-			case <-n.ctx.Done():
-				return nil
-			default:
+		for {
+			if err := s(); err == nil {
+				break
 			}
 
-			err := s()
-			if err == nil {
-				break
+			select {
+			case <-time.After(time.Second):
+
+			case <-n.ctx.Done():
+				return nil
 			}
 		}
 	}

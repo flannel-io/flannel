@@ -36,11 +36,11 @@ const (
 )
 
 type VXLANBackend struct {
-	sm       subnet.Manager
-	network  string
-	cfg      struct {
-		 VNI  int
-		 Port int
+	sm      subnet.Manager
+	network string
+	cfg     struct {
+		VNI  int
+		Port int
 	}
 	extIndex int
 	extIaddr net.IP
@@ -94,17 +94,9 @@ func (vb *VXLANBackend) RegisterNetwork(ctx context.Context, network string, con
 	}
 
 	var err error
-	for {
-		vb.dev, err = newVXLANDevice(&devAttrs)
-		if err == nil {
-			break
-		} else {
-			log.Error("VXLAN init: ", err)
-			log.Info("Retrying in 1 second...")
-
-			// wait 1 sec before retrying
-			time.Sleep(1 * time.Second)
-		}
+	vb.dev, err = newVXLANDevice(&devAttrs)
+	if err != nil {
+		return nil, err
 	}
 
 	sa, err := newSubnetAttrs(vb.extEaddr, vb.dev.MACAddr())
