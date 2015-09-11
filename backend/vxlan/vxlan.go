@@ -36,11 +36,11 @@ const (
 )
 
 type VXLANBackend struct {
-	sm       subnet.Manager
-	network  string
-	cfg      struct {
-		 VNI  int
-		 Port int
+	sm      subnet.Manager
+	network string
+	cfg     struct {
+		VNI  int
+		Port int
 	}
 	extIndex int
 	extIaddr net.IP
