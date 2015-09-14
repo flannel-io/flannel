@@ -341,11 +341,17 @@ func (m *EtcdManager) WatchNetworks(ctx context.Context, cursor interface{}) (Ne
 		return NetworkWatchResult{}, err
 	}
 
+DoWatch:
 	resp, err := m.registry.watch(ctx, "", nextIndex)
 
 	switch {
 	case err == nil:
-		return m.parseNetworkWatchResponse(resp)
+		result, err, again := m.parseNetworkWatchResponse(resp)
+		if again {
+			nextIndex = resp.Node.ModifiedIndex
+			goto DoWatch
+		}
+		return result, err
 
 	case isIndexTooSmall(err):
 		log.Warning("Watch of subnet leases failed because etcd index outside history window")
@@ -416,11 +422,11 @@ func (m *EtcdManager) parseNetworkKey(s string) (string, error) {
 	return "", errors.New("Error parsing Network key")
 }
 
-func (m *EtcdManager) parseNetworkWatchResponse(resp *etcd.Response) (NetworkWatchResult, error) {
+func (m *EtcdManager) parseNetworkWatchResponse(resp *etcd.Response) (NetworkWatchResult, error, bool) {
 	netname, err := m.parseNetworkKey(resp.Node.Key)
 	if err != nil {
-		// Ignore non .../<netname>/config keys
-		return NetworkWatchResult{}, nil
+		// Ignore non .../<netname>/config keys; tell caller to try again
+		return NetworkWatchResult{}, nil, true
 	}
 
 	evt := Event{}
@@ -436,7 +442,7 @@ func (m *EtcdManager) parseNetworkWatchResponse(resp *etcd.Response) (NetworkWat
 	default:
 		_, err := ParseConfig(resp.Node.Value)
 		if err != nil {
-			return NetworkWatchResult{}, err
+			return NetworkWatchResult{}, err, false
 		}
 
 		evt = Event{
@@ -449,7 +455,7 @@ func (m *EtcdManager) parseNetworkWatchResponse(resp *etcd.Response) (NetworkWat
 	return NetworkWatchResult{
 		Cursor: watchCursor{resp.Node.ModifiedIndex},
 		Events: []Event{evt},
-	}, nil
+	}, nil, false
 }
 
 // getNetworks queries etcd to get a list of network names.  It returns the
