@@ -288,10 +288,10 @@ func (m *Manager) Run() {
 	// Run existing networks
 	for _, net := range m.networks {
 		wg.Add(1)
-		go func() {
-			m.RunNetwork(net)
+		go func(n *Network) {
+			m.RunNetwork(n)
 			wg.Done()
-		}()
+		}(net)
 	}
 
 	if opts.watchNetworks {
