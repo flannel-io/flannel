@@ -248,3 +248,6 @@ func (m *AwsVpcBackend) detectRouteTableID(instanceID string, ec2c *ec2.EC2) err
 
 func (m *AwsVpcBackend) Run(ctx context.Context) {
 }
+
+func (m *AwsVpcBackend) UnregisterNetwork(ctx context.Context, name string) {
+}

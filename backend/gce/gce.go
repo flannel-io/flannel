@@ -161,6 +161,9 @@ func (g *GCEBackend) RegisterNetwork(ctx context.Context, network string, config
 func (g *GCEBackend) Run(ctx context.Context) {
 }
 
+func (g *GCEBackend) UnregisterNetwork(ctx context.Context, name string) {
+}
+
 func (g *GCEBackend) pollOperationStatus(operationName string) error {
 	for i := 0; i < 100; i++ {
 		operation, err := g.computeService.GlobalOperations.Get(g.project, operationName).Do()

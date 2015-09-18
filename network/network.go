@@ -126,6 +126,8 @@ func (n *Network) Run() {
 	}()
 
 	<-n.ctx.Done()
+	n.be.UnregisterNetwork(n.ctx, n.Name)
+
 	wg.Wait()
 }
 

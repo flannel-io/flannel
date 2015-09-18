@@ -183,6 +183,9 @@ func (vb *VXLANBackend) Run(ctx context.Context) {
 	}
 }
 
+func (vb *VXLANBackend) UnregisterNetwork(ctx context.Context, name string) {
+}
+
 // So we can make it JSON (un)marshalable
 type hardwareAddr net.HardwareAddr
 
