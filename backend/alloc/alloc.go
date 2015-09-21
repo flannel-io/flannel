@@ -50,3 +50,6 @@ func (m *AllocBackend) RegisterNetwork(ctx context.Context, network string, conf
 
 func (m *AllocBackend) Run(ctx context.Context) {
 }
+
+func (m *AllocBackend) UnregisterNetwork(ctx context.Context, name string) {
+}

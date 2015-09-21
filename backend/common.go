@@ -42,4 +42,6 @@ type Backend interface {
 	// Called after the backend's first network has been registered to
 	// allow the plugin to watch dynamic events
 	Run(ctx context.Context)
+	// Called to clean up any network resources or operations
+	UnregisterNetwork(ctx context.Context, network string)
 }

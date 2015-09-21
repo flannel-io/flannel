@@ -118,6 +118,9 @@ func (rb *HostgwBackend) Run(ctx context.Context) {
 	}
 }
 
+func (rb *HostgwBackend) UnregisterNetwork(ctx context.Context, name string) {
+}
+
 func (rb *HostgwBackend) handleSubnetEvents(batch []subnet.Event) {
 	for _, evt := range batch {
 		switch evt.Type {

@@ -151,6 +151,9 @@ func (m *UdpBackend) Run(ctx context.Context) {
 	wg.Wait()
 }
 
+func (m *UdpBackend) UnregisterNetwork(ctx context.Context, name string) {
+}
+
 func newCtlSockets() (*os.File, *os.File, error) {
 	fds, err := syscall.Socketpair(syscall.AF_UNIX, syscall.SOCK_SEQPACKET, 0)
 	if err != nil {
