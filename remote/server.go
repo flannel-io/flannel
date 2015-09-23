@@ -26,6 +26,7 @@ import (
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/pkg/transport"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/activation"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
@@ -248,6 +249,8 @@ func RunServer(ctx context.Context, sm subnet.Manager, listenAddr, cafile, certf
 	go func() {
 		c <- http.Serve(l, httpLogger(r))
 	}()
+
+	daemon.SdNotify("READY=1")
 
 	select {
 	case <-ctx.Done():
