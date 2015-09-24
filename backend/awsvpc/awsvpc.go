@@ -17,7 +17,6 @@ package awsvpc
 import (
 	"encoding/json"
 	"fmt"
-	"net"
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
@@ -31,42 +30,47 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
-type AwsVpcBackend struct {
-	sm       subnet.Manager
-	publicIP ip.IP4
-	mtu      int
-	cfg      struct {
-		RouteTableID string
-	}
-	lease *subnet.Lease
+func init() {
+	backend.Register("aws-vpc", New)
 }
 
-func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
+type AwsVpcBackend struct {
+	sm       subnet.Manager
+	extIface *backend.ExternalInterface
+}
+
+func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backend, error) {
 	be := AwsVpcBackend{
 		sm:       sm,
-		publicIP: ip.FromIP(extEaddr),
-		mtu:      extIface.MTU,
+		extIface: extIface,
 	}
 	return &be, nil
 }
 
-func (m *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (*backend.SubnetDef, error) {
+func (be *AwsVpcBackend) Run(ctx context.Context) {
+	<-ctx.Done()
+}
+
+func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (backend.Network, error) {
 	// Parse our configuration
+	cfg := struct {
+		RouteTableID string
+	}{}
+
 	if len(config.Backend) > 0 {
-		if err := json.Unmarshal(config.Backend, &m.cfg); err != nil {
+		if err := json.Unmarshal(config.Backend, &cfg); err != nil {
 			return nil, fmt.Errorf("error decoding VPC backend config: %v", err)
 		}
 	}
 
 	// Acquire the lease form subnet manager
 	attrs := subnet.LeaseAttrs{
-		PublicIP: m.publicIP,
+		PublicIP: ip.FromIP(be.extIface.ExtAddr),
 	}
 
-	l, err := m.sm.AcquireLease(ctx, network, &attrs)
+	l, err := be.sm.AcquireLease(ctx, network, &attrs)
 	switch err {
 	case nil:
-		m.lease = l
 
 	case context.Canceled, context.DeadlineExceeded:
 		return nil, err
@@ -88,20 +92,20 @@ func (m *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, con
 
 	ec2c := ec2.New(&aws.Config{Region: aws.String(region)})
 
-	if _, err = m.disableSrcDestCheck(instanceID, ec2c); err != nil {
+	if _, err = be.disableSrcDestCheck(instanceID, ec2c); err != nil {
 		log.Infof("Warning- disabling source destination check failed: %v", err)
 	}
 
-	if m.cfg.RouteTableID == "" {
+	if cfg.RouteTableID == "" {
 		log.Infof("RouteTableID not passed as config parameter, detecting ...")
-		if err := m.detectRouteTableID(instanceID, ec2c); err != nil {
+		if cfg.RouteTableID, err = be.detectRouteTableID(instanceID, ec2c); err != nil {
 			return nil, err
 		}
 	}
 
-	log.Info("RouteRouteTableID: ", m.cfg.RouteTableID)
+	log.Info("RouteRouteTableID: ", cfg.RouteTableID)
 
-	matchingRouteFound, err := m.checkMatchingRoutes(instanceID, l.Subnet.String(), ec2c)
+	matchingRouteFound, err := be.checkMatchingRoutes(cfg.RouteTableID, instanceID, l.Subnet.String(), ec2c)
 	if err != nil {
 		log.Errorf("Error describing route tables: %v", err)
 
@@ -114,7 +118,7 @@ func (m *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, con
 
 	if !matchingRouteFound {
 		cidrBlock := l.Subnet.String()
-		deleteRouteInput := &ec2.DeleteRouteInput{RouteTableId: &m.cfg.RouteTableID, DestinationCidrBlock: &cidrBlock}
+		deleteRouteInput := &ec2.DeleteRouteInput{RouteTableId: &cfg.RouteTableID, DestinationCidrBlock: &cidrBlock}
 		if _, err := ec2c.DeleteRoute(deleteRouteInput); err != nil {
 			if ec2err, ok := err.(awserr.Error); !ok || ec2err.Code() != "InvalidRoute.NotFound" {
 				// an error other than the route not already existing occurred
@@ -123,25 +127,25 @@ func (m *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, con
 		}
 
 		// Add the route for this machine's subnet
-		if _, err := m.createRoute(instanceID, l.Subnet.String(), ec2c); err != nil {
+		if _, err := be.createRoute(cfg.RouteTableID, instanceID, l.Subnet.String(), ec2c); err != nil {
 			return nil, fmt.Errorf("unable to add route %s: %v", l.Subnet.String(), err)
 		}
 	}
 
-	return &backend.SubnetDef{
-		Lease: l,
-		MTU:   m.mtu,
+	return &backend.SimpleNetwork{
+		SubnetLease: l,
+		ExtIface:    be.extIface,
 	}, nil
 }
 
-func (m *AwsVpcBackend) checkMatchingRoutes(instanceID, subnet string, ec2c *ec2.EC2) (bool, error) {
+func (be *AwsVpcBackend) checkMatchingRoutes(routeTableID, instanceID, subnet string, ec2c *ec2.EC2) (bool, error) {
 	matchingRouteFound := false
 
 	filter := newFilter()
 	filter.Add("route.destination-cidr-block", subnet)
 	filter.Add("route.state", "active")
 
-	input := ec2.DescribeRouteTablesInput{Filters: filter, RouteTableIds: []*string{&m.cfg.RouteTableID}}
+	input := ec2.DescribeRouteTablesInput{Filters: filter, RouteTableIds: []*string{&routeTableID}}
 
 	resp, err := ec2c.DescribeRouteTables(&input)
 	if err != nil {
@@ -165,16 +169,17 @@ func (m *AwsVpcBackend) checkMatchingRoutes(instanceID, subnet string, ec2c *ec2
 	return matchingRouteFound, nil
 }
 
-func (m *AwsVpcBackend) createRoute(instanceID, subnet string, ec2c *ec2.EC2) (*ec2.CreateRouteOutput, error) {
+func (be *AwsVpcBackend) createRoute(routeTableID, instanceID, subnet string, ec2c *ec2.EC2) (*ec2.CreateRouteOutput, error) {
 	route := &ec2.CreateRouteInput{
-		RouteTableId:         &m.cfg.RouteTableID,
+		RouteTableId:         &routeTableID,
 		InstanceId:           &instanceID,
 		DestinationCidrBlock: &subnet,
 	}
 
 	return ec2c.CreateRoute(route)
 }
-func (m *AwsVpcBackend) disableSrcDestCheck(instanceID string, ec2c *ec2.EC2) (*ec2.ModifyInstanceAttributeOutput, error) {
+
+func (be *AwsVpcBackend) disableSrcDestCheck(instanceID string, ec2c *ec2.EC2) (*ec2.ModifyInstanceAttributeOutput, error) {
 	modifyAttributes := &ec2.ModifyInstanceAttributeInput{
 		InstanceId:      aws.String(instanceID),
 		SourceDestCheck: &ec2.AttributeBooleanValue{Value: aws.Bool(false)},
@@ -183,22 +188,22 @@ func (m *AwsVpcBackend) disableSrcDestCheck(instanceID string, ec2c *ec2.EC2) (*
 	return ec2c.ModifyInstanceAttribute(modifyAttributes)
 }
 
-func (m *AwsVpcBackend) detectRouteTableID(instanceID string, ec2c *ec2.EC2) error {
+func (be *AwsVpcBackend) detectRouteTableID(instanceID string, ec2c *ec2.EC2) (string, error) {
 	instancesInput := &ec2.DescribeInstancesInput{
 		InstanceIds: []*string{&instanceID},
 	}
 
 	resp, err := ec2c.DescribeInstances(instancesInput)
 	if err != nil {
-		return fmt.Errorf("error getting instance info: %v", err)
+		return "", fmt.Errorf("error getting instance info: %v", err)
 	}
 
 	if len(resp.Reservations) == 0 {
-		return fmt.Errorf("no reservations found")
+		return "", fmt.Errorf("no reservations found")
 	}
 
 	if len(resp.Reservations[0].Instances) == 0 {
-		return fmt.Errorf("no matching instance found with id: %v", instanceID)
+		return "", fmt.Errorf("no matching instance found with id: %v", instanceID)
 	}
 
 	subnetID := resp.Reservations[0].Instances[0].SubnetId
@@ -216,12 +221,11 @@ func (m *AwsVpcBackend) detectRouteTableID(instanceID string, ec2c *ec2.EC2) err
 
 	res, err := ec2c.DescribeRouteTables(routeTablesInput)
 	if err != nil {
-		return fmt.Errorf("error describing routeTables for subnetID %s: %v", *subnetID, err)
+		return "", fmt.Errorf("error describing routeTables for subnetID %s: %v", *subnetID, err)
 	}
 
 	if len(res.RouteTables) != 0 {
-		m.cfg.RouteTableID = *res.RouteTables[0].RouteTableId
-		return nil
+		return *res.RouteTables[0].RouteTableId, nil
 	}
 
 	filter = newFilter()
@@ -238,16 +242,8 @@ func (m *AwsVpcBackend) detectRouteTableID(instanceID string, ec2c *ec2.EC2) err
 	}
 
 	if len(res.RouteTables) == 0 {
-		return fmt.Errorf("main route table not found")
+		return "", fmt.Errorf("main route table not found")
 	}
 
-	m.cfg.RouteTableID = *res.RouteTables[0].RouteTableId
-
-	return nil
-}
-
-func (m *AwsVpcBackend) Run(ctx context.Context) {
-}
-
-func (m *AwsVpcBackend) UnregisterNetwork(ctx context.Context, name string) {
+	return *res.RouteTables[0].RouteTableId, nil
 }

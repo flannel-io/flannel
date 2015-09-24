@@ -30,6 +30,14 @@ import (
 	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/remote"
 	"github.com/coreos/flannel/subnet"
+
+	// Backends need to be imported for their init() to get executed and them to register
+	_ "github.com/coreos/flannel/backend/alloc"
+	_ "github.com/coreos/flannel/backend/awsvpc"
+	_ "github.com/coreos/flannel/backend/gce"
+	_ "github.com/coreos/flannel/backend/hostgw"
+	_ "github.com/coreos/flannel/backend/udp"
+	_ "github.com/coreos/flannel/backend/vxlan"
 )
 
 type CmdLineOpts struct {

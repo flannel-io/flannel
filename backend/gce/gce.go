@@ -39,12 +39,9 @@ package gce
 
 import (
 	"fmt"
-	"net"
 	"strings"
-	"time"
+	"sync"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/code.google.com/p/goauth2/compute/serviceaccount"
-	"github.com/coreos/flannel/Godeps/_workspace/src/code.google.com/p/google-api-go-client/compute/v1"
 	"github.com/coreos/flannel/Godeps/_workspace/src/code.google.com/p/google-api-go-client/googleapi"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
@@ -54,39 +51,49 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
+func init() {
+	backend.Register("gce", New)
+}
+
 var metadataEndpoint = "http://169.254.169.254/computeMetadata/v1"
 
 var replacer = strings.NewReplacer(".", "-", "/", "-")
 
 type GCEBackend struct {
-	sm             subnet.Manager
-	publicIP       ip.IP4
-	mtu            int
-	project        string
-	lease          *subnet.Lease
-	computeService *compute.Service
-	gceNetwork     *compute.Network
-	gceInstance    *compute.Instance
+	sm       subnet.Manager
+	extIface *backend.ExternalInterface
+	apiInit  sync.Once
+	api      *gceAPI
 }
 
-func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
+func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backend, error) {
 	gb := GCEBackend{
 		sm:       sm,
-		publicIP: ip.FromIP(extEaddr),
-		mtu:      extIface.MTU,
+		extIface: extIface,
 	}
 	return &gb, nil
 }
 
-func (g *GCEBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (*backend.SubnetDef, error) {
+func (g *GCEBackend) ensureAPI() error {
+	var err error
+	g.apiInit.Do(func() {
+		g.api, err = newAPI()
+	})
+	return err
+}
+
+func (g *GCEBackend) Run(ctx context.Context) {
+	<-ctx.Done()
+}
+
+func (g *GCEBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (backend.Network, error) {
 	attrs := subnet.LeaseAttrs{
-		PublicIP: g.publicIP,
+		PublicIP: ip.FromIP(g.extIface.ExtAddr),
 	}
 
 	l, err := g.sm.AcquireLease(ctx, network, &attrs)
 	switch err {
 	case nil:
-		g.lease = l
 
 	case context.Canceled, context.DeadlineExceeded:
 		return nil, err
@@ -95,44 +102,8 @@ func (g *GCEBackend) RegisterNetwork(ctx context.Context, network string, config
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
-	client, err := serviceaccount.NewClient(&serviceaccount.Options{})
-	if err != nil {
-		return nil, fmt.Errorf("error creating client: %v", err)
-	}
-
-	g.computeService, err = compute.New(client)
-	if err != nil {
-		return nil, fmt.Errorf("error creating compute service: %v", err)
-	}
-
-	networkName, err := networkFromMetadata()
-	if err != nil {
-		return nil, fmt.Errorf("error getting network metadata: %v", err)
-	}
-
-	g.project, err = projectFromMetadata()
-	if err != nil {
-		return nil, fmt.Errorf("error getting project: %v", err)
-	}
-
-	instanceName, err := instanceNameFromMetadata()
-	if err != nil {
-		return nil, fmt.Errorf("error getting instance name: %v", err)
-	}
-
-	instanceZone, err := instanceZoneFromMetadata()
-	if err != nil {
-		return nil, fmt.Errorf("error getting instance zone: %v", err)
-	}
-
-	g.gceNetwork, err = g.computeService.Networks.Get(g.project, networkName).Do()
-	if err != nil {
-		return nil, fmt.Errorf("error getting network from compute service: %v", err)
-	}
-
-	g.gceInstance, err = g.computeService.Instances.Get(g.project, instanceZone, instanceName).Do()
-	if err != nil {
-		return nil, fmt.Errorf("error getting instance from compute service: %v", err)
+	if err = g.ensureAPI(); err != nil {
+		return nil, err
 	}
 
 	found, err := g.handleMatchingRoute(l.Subnet.String())
@@ -141,56 +112,26 @@ func (g *GCEBackend) RegisterNetwork(ctx context.Context, network string, config
 	}
 
 	if !found {
-		operation, err := g.insertRoute(l.Subnet.String())
+		operation, err := g.api.insertRoute(l.Subnet.String())
 		if err != nil {
 			return nil, fmt.Errorf("error inserting route: %v", err)
 		}
 
-		err = g.pollOperationStatus(operation.Name)
+		err = g.api.pollOperationStatus(operation.Name)
 		if err != nil {
 			return nil, fmt.Errorf("insert operaiton failed: ", err)
 		}
 	}
 
-	return &backend.SubnetDef{
-		Lease: l,
-		MTU:   g.mtu,
+	return &backend.SimpleNetwork{
+		SubnetLease: l,
+		ExtIface:    g.extIface,
 	}, nil
-}
-
-func (g *GCEBackend) Run(ctx context.Context) {
-}
-
-func (g *GCEBackend) UnregisterNetwork(ctx context.Context, name string) {
-}
-
-func (g *GCEBackend) pollOperationStatus(operationName string) error {
-	for i := 0; i < 100; i++ {
-		operation, err := g.computeService.GlobalOperations.Get(g.project, operationName).Do()
-		if err != nil {
-			return fmt.Errorf("error fetching operation status: %v", err)
-		}
-
-		if operation.Error != nil {
-			return fmt.Errorf("error running operation: %v", operation.Error)
-		}
-
-		if i%5 == 0 {
-			log.Infof("%v operation status: %v waiting for completion...", operation.OperationType, operation.Status)
-		}
-
-		if operation.Status == "DONE" {
-			return nil
-		}
-		time.Sleep(time.Second)
-	}
-
-	return fmt.Errorf("timeout waiting for operation to finish")
 }
 
 //returns true if an exact matching rule is found
 func (g *GCEBackend) handleMatchingRoute(subnet string) (bool, error) {
-	matchingRoute, err := g.getRoute(subnet)
+	matchingRoute, err := g.api.getRoute(subnet)
 	if err != nil {
 		if apiError, ok := err.(*googleapi.Error); ok {
 			if apiError.Code != 404 {
@@ -201,49 +142,21 @@ func (g *GCEBackend) handleMatchingRoute(subnet string) (bool, error) {
 		return false, fmt.Errorf("error getting googleapi: %v", err)
 	}
 
-	if matchingRoute.NextHopInstance == g.gceInstance.SelfLink {
+	if matchingRoute.NextHopInstance == g.api.gceInstance.SelfLink {
 		log.Info("Exact pre-existing route found")
 		return true, nil
 	}
 
 	log.Info("Deleting conflicting route")
-	operation, err := g.deleteRoute(subnet)
+	operation, err := g.api.deleteRoute(subnet)
 	if err != nil {
 		return false, fmt.Errorf("error deleting conflicting route : %v", err)
 	}
 
-	err = g.pollOperationStatus(operation.Name)
+	err = g.api.pollOperationStatus(operation.Name)
 	if err != nil {
 		return false, fmt.Errorf("delete operation failed: %v", err)
 	}
 
 	return false, nil
-
-}
-
-func (g *GCEBackend) getRoute(subnet string) (*compute.Route, error) {
-	routeName := formatRouteName(subnet)
-	return g.computeService.Routes.Get(g.project, routeName).Do()
-}
-
-func (g *GCEBackend) deleteRoute(subnet string) (*compute.Operation, error) {
-	routeName := formatRouteName(subnet)
-	return g.computeService.Routes.Delete(g.project, routeName).Do()
-}
-
-func (g *GCEBackend) insertRoute(subnet string) (*compute.Operation, error) {
-	log.Infof("Inserting route for subnet: %v", subnet)
-	route := &compute.Route{
-		Name:            formatRouteName(subnet),
-		DestRange:       subnet,
-		Network:         g.gceNetwork.SelfLink,
-		NextHopInstance: g.gceInstance.SelfLink,
-		Priority:        1000,
-		Tags:            []string{},
-	}
-	return g.computeService.Routes.Insert(g.project, route).Do()
-}
-
-func formatRouteName(subnet string) string {
-	return fmt.Sprintf("flannel-%s", replacer.Replace(subnet))
 }

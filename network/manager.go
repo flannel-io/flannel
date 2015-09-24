@@ -16,6 +16,7 @@
 package network
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"net"
@@ -43,6 +44,8 @@ type CmdLineOpts struct {
 	watchNetworks bool
 }
 
+var errAlreadyExists = errors.New("already exists")
+
 var opts CmdLineOpts
 
 func init() {
@@ -58,13 +61,13 @@ func init() {
 type Manager struct {
 	ctx             context.Context
 	sm              subnet.Manager
+	bm              backend.Manager
 	allowedNetworks map[string]bool
+	mux             sync.Mutex
 	networks        map[string]*Network
 	watch           bool
 	ipMasq          bool
-	extIface        *net.Interface
-	iaddr           net.IP
-	eaddr           net.IP
+	extIface        *backend.ExternalInterface
 }
 
 func (m *Manager) isNetAllowed(name string) bool {
@@ -81,41 +84,22 @@ func (m *Manager) isMultiNetwork() bool {
 }
 
 func NewNetworkManager(ctx context.Context, sm subnet.Manager) (*Manager, error) {
-	iface, iaddr, err := lookupExtIface(opts.iface)
+	extIface, err := lookupExtIface(opts.iface)
 	if err != nil {
 		return nil, err
 	}
 
-	if iface.MTU == 0 {
-		return nil, fmt.Errorf("Failed to determine MTU for %s interface", iaddr)
-	}
-
-	var eaddr net.IP
-
-	if len(opts.publicIP) > 0 {
-		eaddr = net.ParseIP(opts.publicIP)
-		if eaddr == nil {
-			return nil, fmt.Errorf("Invalid public IP address", opts.publicIP)
-		}
-	}
-
-	if eaddr == nil {
-		eaddr = iaddr
-	}
-
-	log.Infof("Using %s as external interface", iaddr)
-	log.Infof("Using %s as external endpoint", eaddr)
+	bm := backend.NewManager(ctx, sm, extIface)
 
 	manager := &Manager{
 		ctx:             ctx,
 		sm:              sm,
+		bm:              bm,
 		allowedNetworks: make(map[string]bool),
 		networks:        make(map[string]*Network),
 		watch:           opts.watchNetworks,
 		ipMasq:          opts.ipMasq,
-		extIface:        iface,
-		iaddr:           iaddr,
-		eaddr:           eaddr,
+		extIface:        extIface,
 	}
 
 	for _, name := range strings.Split(opts.networks, ",") {
@@ -133,17 +117,17 @@ func NewNetworkManager(ctx context.Context, sm subnet.Manager) (*Manager, error)
 
 		for _, n := range result.Snapshot {
 			if manager.isNetAllowed(n) {
-				manager.networks[n] = NewNetwork(ctx, sm, n, manager.ipMasq)
+				manager.networks[n] = NewNetwork(ctx, sm, bm, n, manager.ipMasq)
 			}
 		}
 	} else {
-		manager.networks[""] = NewNetwork(ctx, sm, "", manager.ipMasq)
+		manager.networks[""] = NewNetwork(ctx, sm, bm, "", manager.ipMasq)
 	}
 
 	return manager, nil
 }
 
-func lookupExtIface(ifname string) (*net.Interface, net.IP, error) {
+func lookupExtIface(ifname string) (*backend.ExternalInterface, error) {
 	var iface *net.Interface
 	var iaddr net.IP
 	var err error
@@ -152,32 +136,56 @@ func lookupExtIface(ifname string) (*net.Interface, net.IP, error) {
 		if iaddr = net.ParseIP(ifname); iaddr != nil {
 			iface, err = ip.GetInterfaceByIP(iaddr)
 			if err != nil {
-				return nil, nil, fmt.Errorf("Error looking up interface %s: %s", ifname, err)
+				return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
 			}
 		} else {
 			iface, err = net.InterfaceByName(ifname)
 			if err != nil {
-				return nil, nil, fmt.Errorf("Error looking up interface %s: %s", ifname, err)
+				return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
 			}
 		}
 	} else {
 		log.Info("Determining IP address of default interface")
 		if iface, err = ip.GetDefaultGatewayIface(); err != nil {
-			return nil, nil, fmt.Errorf("Failed to get default interface: %s", err)
+			return nil, fmt.Errorf("failed to get default interface: %s", err)
 		}
 	}
 
 	if iaddr == nil {
 		iaddr, err = ip.GetIfaceIP4Addr(iface)
 		if err != nil {
-			return nil, nil, fmt.Errorf("Failed to find IPv4 address for interface %s", iface.Name)
+			return nil, fmt.Errorf("failed to find IPv4 address for interface %s", iface.Name)
 		}
 	}
 
-	return iface, iaddr, nil
+	if iface.MTU == 0 {
+		return nil, fmt.Errorf("failed to determine MTU for %s interface", iaddr)
+	}
+
+	var eaddr net.IP
+
+	if len(opts.publicIP) > 0 {
+		eaddr = net.ParseIP(opts.publicIP)
+		if eaddr == nil {
+			return nil, fmt.Errorf("invalid public IP address", opts.publicIP)
+		}
+	}
+
+	if eaddr == nil {
+		eaddr = iaddr
+	}
+
+	log.Infof("Using %s as external interface", iaddr)
+	log.Infof("Using %s as external endpoint", eaddr)
+
+	return &backend.ExternalInterface{
+		Iface:     iface,
+		IfaceAddr: iaddr,
+		ExtAddr:   eaddr,
+	}, nil
 }
 
-func writeSubnetFile(path string, nw ip.IP4Net, ipMasq bool, sd *backend.SubnetDef) error {
+func writeSubnetFile(path string, nw ip.IP4Net, ipMasq bool, bn backend.Network) error {
 	dir, name := filepath.Split(path)
 	os.MkdirAll(dir, 0755)
 
@@ -189,12 +197,12 @@ func writeSubnetFile(path string, nw ip.IP4Net, ipMasq bool, sd *backend.SubnetD
 
 	// Write out the first usable IP by incrementing
 	// sn.IP by one
-	sn := sd.Lease.Subnet
+	sn := bn.Lease().Subnet
 	sn.IP += 1
 
 	fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", nw)
 	fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn)
-	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", sd.MTU)
+	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", bn.MTU())
 	_, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", ipMasq)
 	f.Close()
 	if err != nil {
@@ -206,31 +214,62 @@ func writeSubnetFile(path string, nw ip.IP4Net, ipMasq bool, sd *backend.SubnetD
 	return os.Rename(tempFile, path)
 }
 
-func (m *Manager) RunNetwork(net *Network) {
-	sn := net.Init(m.extIface, m.iaddr, m.eaddr)
-	if sn != nil {
+func (m *Manager) addNetwork(n *Network) error {
+	m.mux.Lock()
+	defer m.mux.Unlock()
+
+	if _, ok := m.networks[n.Name]; ok {
+		return errAlreadyExists
+	}
+	m.networks[n.Name] = n
+	return nil
+}
+
+func (m *Manager) delNetwork(n *Network) {
+	m.mux.Lock()
+	delete(m.networks, n.Name)
+	m.mux.Unlock()
+}
+
+func (m *Manager) getNetwork(netname string) (*Network, bool) {
+	m.mux.Lock()
+	n, ok := m.networks[netname]
+	m.mux.Unlock()
+
+	return n, ok
+}
+
+func (m *Manager) forEachNetwork(f func(n *Network)) {
+	m.mux.Lock()
+	for _, n := range m.networks {
+		f(n)
+	}
+	m.mux.Unlock()
+}
+
+func (m *Manager) runNetwork(n *Network) {
+	n.Run(m.extIface, func(bn backend.Network) {
 		if m.isMultiNetwork() {
-			path := filepath.Join(opts.subnetDir, net.Name) + ".env"
-			if err := writeSubnetFile(path, net.Config.Network, m.ipMasq, sn); err != nil {
-				log.Warningf("%v failed to write subnet file: %s", net.Name, err)
+			path := filepath.Join(opts.subnetDir, n.Name) + ".env"
+			if err := writeSubnetFile(path, n.Config.Network, m.ipMasq, bn); err != nil {
+				log.Warningf("%v failed to write subnet file: %s", n.Name, err)
 				return
 			}
 		} else {
-			if err := writeSubnetFile(opts.subnetFile, net.Config.Network, m.ipMasq, sn); err != nil {
-				log.Warningf("%v failed to write subnet file: %s", net.Name, err)
+			if err := writeSubnetFile(opts.subnetFile, n.Config.Network, m.ipMasq, bn); err != nil {
+				log.Warningf("%v failed to write subnet file: %s", n.Name, err)
 				return
 			}
 			daemon.SdNotify("READY=1")
 		}
+	})
 
-		log.Infof("Running network %v", net.Name)
-		net.Run()
-		log.Infof("%v exited", net.Name)
-	}
+	m.delNetwork(n)
 }
 
 func (m *Manager) watchNetworks() {
 	wg := sync.WaitGroup{}
+	defer wg.Wait()
 
 	events := make(chan []subnet.Event)
 	wg.Add(1)
@@ -244,65 +283,63 @@ func (m *Manager) watchNetworks() {
 	for {
 		select {
 		case <-m.ctx.Done():
-			break
+			return
 
 		case evtBatch := <-events:
 			for _, e := range evtBatch {
 				netname := e.Network
 				if !m.isNetAllowed(netname) {
+					log.Infof("Network %q is not allowed", netname)
 					continue
 				}
 
 				switch e.Type {
 				case subnet.EventAdded:
-					if _, ok := m.networks[netname]; ok {
+					n := NewNetwork(m.ctx, m.sm, m.bm, netname, m.ipMasq)
+					if err := m.addNetwork(n); err != nil {
+						log.Infof("Network %q: %v", netname, err)
 						continue
 					}
-					net := NewNetwork(m.ctx, m.sm, netname, m.ipMasq)
-					m.networks[netname] = net
+
+					log.Infof("Network added: %v", netname)
+
 					wg.Add(1)
 					go func() {
-						m.RunNetwork(net)
+						m.runNetwork(n)
 						wg.Done()
 					}()
 
 				case subnet.EventRemoved:
-					net, ok := m.networks[netname]
+					log.Infof("Network removed: %v", netname)
+
+					n, ok := m.getNetwork(netname)
 					if !ok {
 						log.Warningf("Network %v unknown; ignoring EventRemoved", netname)
 						continue
 					}
-					net.Cancel()
-					delete(m.networks, netname)
+					n.Cancel()
 				}
 			}
 		}
 	}
-
-	wg.Wait()
 }
 
 func (m *Manager) Run() {
 	wg := sync.WaitGroup{}
 
 	// Run existing networks
-	for _, net := range m.networks {
+	m.forEachNetwork(func(n *Network) {
 		wg.Add(1)
 		go func(n *Network) {
-			m.RunNetwork(n)
+			m.runNetwork(n)
 			wg.Done()
-		}(net)
-	}
+		}(n)
+	})
 
 	if opts.watchNetworks {
-		wg.Add(1)
-		go func() {
-			m.watchNetworks()
-			wg.Done()
-		}()
-	} else {
-		<-m.ctx.Done()
+		m.watchNetworks()
 	}
 
 	wg.Wait()
+	m.bm.Wait()
 }

@@ -15,14 +15,17 @@
 package backend
 
 import (
+	"net"
+
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
 	"github.com/coreos/flannel/subnet"
 )
 
-type SubnetDef struct {
-	Lease *subnet.Lease
-	MTU   int
+type ExternalInterface struct {
+	Iface     *net.Interface
+	IfaceAddr net.IP
+	ExtAddr   net.IP
 }
 
 // Besides the entry points in the Backend interface, the backend's New()
@@ -37,11 +40,33 @@ type SubnetDef struct {
 // since multiple RegisterNetwork() and Run() calls may be in-flight at any
 // given time for a singleton backend, it must protect these calls with a mutex.
 type Backend interface {
-	// Called when the backend should create or begin managing a new network
-	RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (*SubnetDef, error)
-	// Called after the backend's first network has been registered to
-	// allow the plugin to watch dynamic events
+	// Called first to start the necessary event loops and such
 	Run(ctx context.Context)
-	// Called to clean up any network resources or operations
-	UnregisterNetwork(ctx context.Context, network string)
+	// Called when the backend should create or begin managing a new network
+	RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (Network, error)
+}
+
+type Network interface {
+	Lease() *subnet.Lease
+	MTU() int
+	Run(ctx context.Context)
+}
+
+type BackendCtor func(sm subnet.Manager, ei *ExternalInterface) (Backend, error)
+
+type SimpleNetwork struct {
+	SubnetLease *subnet.Lease
+	ExtIface    *ExternalInterface
+}
+
+func (n *SimpleNetwork) Lease() *subnet.Lease {
+	return n.SubnetLease
+}
+
+func (n *SimpleNetwork) MTU() int {
+	return n.ExtIface.Iface.MTU
+}
+
+func (_ *SimpleNetwork) Run(ctx context.Context) {
+	<-ctx.Done()
 }

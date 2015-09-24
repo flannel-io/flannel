@@ -15,15 +15,10 @@
 package vxlan
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net"
-	"sync"
-	"time"
 
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
 	"github.com/coreos/flannel/backend"
@@ -31,35 +26,26 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
+func init() {
+	backend.Register("vxlan", New)
+}
+
 const (
 	defaultVNI = 1
 )
 
 type VXLANBackend struct {
-	sm      subnet.Manager
-	network string
-	cfg     struct {
-		VNI  int
-		Port int
-	}
-	extIndex int
-	extIaddr net.IP
-	extEaddr net.IP
-	lease    *subnet.Lease
-	dev      *vxlanDevice
-	rts      routes
+	sm       subnet.Manager
+	extIface *backend.ExternalInterface
 }
 
-func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
-	vb := &VXLANBackend{
+func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backend, error) {
+	be := &VXLANBackend{
 		sm:       sm,
-		extIndex: extIface.Index,
-		extIaddr: extIaddr,
-		extEaddr: extEaddr,
+		extIface: extIface,
 	}
-	vb.cfg.VNI = defaultVNI
 
-	return vb, nil
+	return be, nil
 }
 
 func newSubnetAttrs(extEaddr net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, error) {
@@ -75,39 +61,46 @@ func newSubnetAttrs(extEaddr net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, 
 	}, nil
 }
 
-func (vb *VXLANBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (*backend.SubnetDef, error) {
-	vb.network = network
+func (be *VXLANBackend) Run(ctx context.Context) {
+	<-ctx.Done()
+}
 
+func (be *VXLANBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (backend.Network, error) {
 	// Parse our configuration
+	cfg := struct {
+		VNI  int
+		Port int
+	}{
+		VNI: defaultVNI,
+	}
+
 	if len(config.Backend) > 0 {
-		if err := json.Unmarshal(config.Backend, &vb.cfg); err != nil {
+		if err := json.Unmarshal(config.Backend, &cfg); err != nil {
 			return nil, fmt.Errorf("error decoding VXLAN backend config: %v", err)
 		}
 	}
 
 	devAttrs := vxlanDeviceAttrs{
-		vni:       uint32(vb.cfg.VNI),
-		name:      fmt.Sprintf("flannel.%v", vb.cfg.VNI),
-		vtepIndex: vb.extIndex,
-		vtepAddr:  vb.extIaddr,
-		vtepPort:  vb.cfg.Port,
+		vni:       uint32(cfg.VNI),
+		name:      fmt.Sprintf("flannel.%v", cfg.VNI),
+		vtepIndex: be.extIface.Iface.Index,
+		vtepAddr:  be.extIface.IfaceAddr,
+		vtepPort:  cfg.Port,
 	}
 
-	var err error
-	vb.dev, err = newVXLANDevice(&devAttrs)
+	dev, err := newVXLANDevice(&devAttrs)
 	if err != nil {
 		return nil, err
 	}
 
-	sa, err := newSubnetAttrs(vb.extEaddr, vb.dev.MACAddr())
+	sa, err := newSubnetAttrs(be.extIface.ExtAddr, dev.MACAddr())
 	if err != nil {
 		return nil, err
 	}
 
-	l, err := vb.sm.AcquireLease(ctx, vb.network, sa)
+	l, err := be.sm.AcquireLease(ctx, network, sa)
 	switch err {
 	case nil:
-		vb.lease = l
 
 	case context.Canceled, context.DeadlineExceeded:
 		return nil, err
@@ -122,60 +115,11 @@ func (vb *VXLANBackend) RegisterNetwork(ctx context.Context, network string, con
 		IP:        l.Subnet.IP,
 		PrefixLen: config.Network.PrefixLen,
 	}
-	if err = vb.dev.Configure(vxlanNet); err != nil {
+	if err = dev.Configure(vxlanNet); err != nil {
 		return nil, err
 	}
 
-	return &backend.SubnetDef{
-		Lease: l,
-		MTU:   vb.dev.MTU(),
-	}, nil
-}
-
-func (vb *VXLANBackend) Run(ctx context.Context) {
-	log.Info("Watching for L3 misses")
-	misses := make(chan *netlink.Neigh, 100)
-	// Unfrtunately MonitorMisses does not take a cancel channel
-	// as there's no wait to interrupt netlink socket recv
-	go vb.dev.MonitorMisses(misses)
-
-	wg := sync.WaitGroup{}
-
-	log.Info("Watching for new subnet leases")
-	evts := make(chan []subnet.Event)
-	wg.Add(1)
-	go func() {
-		subnet.WatchLeases(ctx, vb.sm, vb.network, vb.lease, evts)
-		log.Info("WatchLeases exited")
-		wg.Done()
-	}()
-
-	defer wg.Wait()
-	initialEvtsBatch := <-evts
-	for {
-		err := vb.handleInitialSubnetEvents(initialEvtsBatch)
-		if err == nil {
-			break
-		}
-		log.Error(err, " About to retry")
-		time.Sleep(time.Second)
-	}
-
-	for {
-		select {
-		case miss := <-misses:
-			vb.handleMiss(miss)
-
-		case evtBatch := <-evts:
-			vb.handleSubnetEvents(evtBatch)
-
-		case <-ctx.Done():
-			return
-		}
-	}
-}
-
-func (vb *VXLANBackend) UnregisterNetwork(ctx context.Context, name string) {
+	return newNetwork(network, be.sm, be.extIface, dev, vxlanNet, l)
 }
 
 // So we can make it JSON (un)marshalable
@@ -199,140 +143,4 @@ func (hw *hardwareAddr) UnmarshalJSON(b []byte) error {
 
 	*hw = hardwareAddr(mac)
 	return nil
-}
-
-type vxlanLeaseAttrs struct {
-	VtepMAC hardwareAddr
-}
-
-func (vb *VXLANBackend) handleSubnetEvents(batch []subnet.Event) {
-	for _, evt := range batch {
-		switch evt.Type {
-		case subnet.EventAdded:
-			log.Info("Subnet added: ", evt.Lease.Subnet)
-
-			if evt.Lease.Attrs.BackendType != "vxlan" {
-				log.Warningf("Ignoring non-vxlan subnet: type=%v", evt.Lease.Attrs.BackendType)
-				continue
-			}
-
-			var attrs vxlanLeaseAttrs
-			if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &attrs); err != nil {
-				log.Error("Error decoding subnet lease JSON: ", err)
-				continue
-			}
-			vb.rts.set(evt.Lease.Subnet, net.HardwareAddr(attrs.VtepMAC))
-			vb.dev.AddL2(neigh{IP: evt.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)})
-
-		case subnet.EventRemoved:
-			log.Info("Subnet removed: ", evt.Lease.Subnet)
-
-			if evt.Lease.Attrs.BackendType != "vxlan" {
-				log.Warningf("Ignoring non-vxlan subnet: type=%v", evt.Lease.Attrs.BackendType)
-				continue
-			}
-
-			var attrs vxlanLeaseAttrs
-			if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &attrs); err != nil {
-				log.Error("Error decoding subnet lease JSON: ", err)
-				continue
-			}
-
-			if len(attrs.VtepMAC) > 0 {
-				vb.dev.DelL2(neigh{IP: evt.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)})
-			}
-			vb.rts.remove(evt.Lease.Subnet)
-
-		default:
-			log.Error("Internal error: unknown event type: ", int(evt.Type))
-		}
-	}
-}
-
-func (vb *VXLANBackend) handleInitialSubnetEvents(batch []subnet.Event) error {
-	log.Infof("Handling initial subnet events")
-	fdbTable, err := vb.dev.GetL2List()
-	if err != nil {
-		return fmt.Errorf("Error fetching L2 table: %v", err)
-	}
-
-	for _, fdbEntry := range fdbTable {
-		log.Infof("fdb already populated with: %s %s ", fdbEntry.IP, fdbEntry.HardwareAddr)
-	}
-
-	evtMarker := make([]bool, len(batch))
-	leaseAttrsList := make([]vxlanLeaseAttrs, len(batch))
-	fdbEntryMarker := make([]bool, len(fdbTable))
-
-	for i, evt := range batch {
-		if evt.Lease.Attrs.BackendType != "vxlan" {
-			log.Warningf("Ignoring non-vxlan subnet: type=%v", evt.Lease.Attrs.BackendType)
-			evtMarker[i] = true
-			continue
-		}
-
-		if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &leaseAttrsList[i]); err != nil {
-			log.Error("Error decoding subnet lease JSON: ", err)
-			evtMarker[i] = true
-			continue
-		}
-
-		for j, fdbEntry := range fdbTable {
-			if evt.Lease.Attrs.PublicIP.ToIP().Equal(fdbEntry.IP) && bytes.Equal([]byte(leaseAttrsList[i].VtepMAC), []byte(fdbEntry.HardwareAddr)) {
-				evtMarker[i] = true
-				fdbEntryMarker[j] = true
-				break
-			}
-		}
-		vb.rts.set(evt.Lease.Subnet, net.HardwareAddr(leaseAttrsList[i].VtepMAC))
-	}
-
-	for j, marker := range fdbEntryMarker {
-		if !marker && fdbTable[j].IP != nil {
-			err := vb.dev.DelL2(neigh{IP: ip.FromIP(fdbTable[j].IP), MAC: fdbTable[j].HardwareAddr})
-			if err != nil {
-				log.Error("Delete L2 failed: ", err)
-			}
-		}
-	}
-
-	for i, marker := range evtMarker {
-		if !marker {
-			err := vb.dev.AddL2(neigh{IP: batch[i].Lease.Attrs.PublicIP, MAC: net.HardwareAddr(leaseAttrsList[i].VtepMAC)})
-			if err != nil {
-				log.Error("Add L2 failed: ", err)
-			}
-
-		}
-	}
-	return nil
-}
-
-func (vb *VXLANBackend) handleMiss(miss *netlink.Neigh) {
-	switch {
-	case len(miss.IP) == 0 && len(miss.HardwareAddr) == 0:
-		log.Info("Ignoring nil miss")
-
-	case len(miss.HardwareAddr) == 0:
-		vb.handleL3Miss(miss)
-
-	default:
-		log.Infof("Ignoring not a miss: %v, %v", miss.HardwareAddr, miss.IP)
-	}
-}
-
-func (vb *VXLANBackend) handleL3Miss(miss *netlink.Neigh) {
-	log.Infof("L3 miss: %v", miss.IP)
-
-	rt := vb.rts.findByNetwork(ip.FromIP(miss.IP))
-	if rt == nil {
-		log.Infof("Route for %v not found", miss.IP)
-		return
-	}
-
-	if err := vb.dev.AddL3(neigh{IP: ip.FromIP(miss.IP), MAC: rt.vtepMAC}); err != nil {
-		log.Errorf("AddL3 failed: %v", err)
-	} else {
-		log.Info("AddL3 succeeded")
-	}
 }
