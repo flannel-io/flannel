@@ -24,36 +24,47 @@ import (
 	"github.com/coreos/flannel/pkg/ip"
 )
 
+func rules(ipn ip.IP4Net) [][]string {
+	n := ipn.String()
+
+	return [][]string{
+		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
+		{"-s", n, "-d", n, "-j", "ACCEPT"},
+		// NAT if it's not multicast traffic
+		{"-s", n, "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE"},
+		// Masquerade anything headed towards flannel from the host
+		{"!", "-s", n, "-d", n, "-j", "MASQUERADE"},
+	}
+}
+
 func setupIPMasq(ipn ip.IP4Net) error {
 	ipt, err := iptables.New()
 	if err != nil {
-		return fmt.Errorf("failed to setup IP Masquerade. iptables was not found")
+		return fmt.Errorf("failed to set up IP Masquerade. iptables was not found")
 	}
 
-	err = ipt.ClearChain("nat", "FLANNEL")
-	if err != nil {
-		return fmt.Errorf("Failed to create/clear FLANNEL chain in NAT table: %v", err)
-	}
-
-	rules := [][]string{
-		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-		{"FLANNEL", "-d", ipn.String(), "-j", "ACCEPT"},
-		// NAT if it's not multicast traffic
-		{"FLANNEL", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE"},
-		// This rule will take everything coming from overlay and send it to FLANNEL chain
-		{"POSTROUTING", "-s", ipn.String(), "-j", "FLANNEL"},
-		// Masquerade anything headed towards flannel from the host
-		{"POSTROUTING", "!", "-s", ipn.String(), "-d", ipn.String(), "-j", "MASQUERADE"},
-	}
-
-	for _, rule := range rules {
+	for _, rule := range rules(ipn) {
 		log.Info("Adding iptables rule: ", strings.Join(rule, " "))
-		chain := rule[0]
-		args := rule[1:len(rule)]
-
-		err = ipt.AppendUnique("nat", chain, args...)
+		err = ipt.AppendUnique("nat", "POSTROUTING", rule...)
 		if err != nil {
-			return fmt.Errorf("Failed to insert IP masquerade rule: %v", err)
+			return fmt.Errorf("failed to insert IP masquerade rule: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func teardownIPMasq(ipn ip.IP4Net) error {
+	ipt, err := iptables.New()
+	if err != nil {
+		return fmt.Errorf("failed to teardown IP Masquerade. iptables was not found")
+	}
+
+	for _, rule := range rules(ipn) {
+		log.Info("Deleting iptables rule: ", strings.Join(rule, " "))
+		err = ipt.Delete("nat", "POSTROUTING", rule...)
+		if err != nil {
+			return fmt.Errorf("failed to delete IP masquerade rule: %v", err)
 		}
 	}
 

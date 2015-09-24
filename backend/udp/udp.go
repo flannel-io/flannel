@@ -118,8 +118,16 @@ func (m *UdpBackend) RegisterNetwork(ctx context.Context, network string, config
 }
 
 func (m *UdpBackend) Run(ctx context.Context) {
+	defer func() {
+		m.tun.Close()
+		m.conn.Close()
+		m.ctl.Close()
+		m.ctl2.Close()
+	}()
+
 	// one for each goroutine below
 	wg := sync.WaitGroup{}
+	defer wg.Wait()
 
 	wg.Add(1)
 	go func() {
@@ -144,11 +152,9 @@ func (m *UdpBackend) Run(ctx context.Context) {
 
 		case <-ctx.Done():
 			stopProxy(m.ctl)
-			break
+			return
 		}
 	}
-
-	wg.Wait()
 }
 
 func (m *UdpBackend) UnregisterNetwork(ctx context.Context, name string) {
