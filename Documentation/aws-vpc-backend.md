@@ -13,8 +13,8 @@ From the VPC dashboard start out by running the "VPC Wizard":
 <br/>
 <div class="row">
   <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12 co-m-screenshot">
-    <a href="{{site.baseurl}}/assets/images/media/aws-vpc.png">
-      <img src="{{site.baseurl}}/assets/images/media/aws-vpc.png" alt="New Amazon VPC" />
+    <a href="img/aws-vpc.png">
+      <img src="img/aws-vpc.png" alt="New Amazon VPC" />
     </a>
   </div>
 </div>
@@ -80,8 +80,8 @@ In the launch wizard, choose the `CoreOS-stable-681.2.0` image and under "Config
 <br/>
 <div class="row">
   <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12 co-m-screenshot">
-    <a href="{{site.baseurl}}/assets/images/media/aws-instance-configuration.png" class="co-m-screenshot">
-      <img src="{{site.baseurl}}/assets/images/media/aws-instance-configuration.png" alt="AWS EC2 Instance Details" />
+    <a href="img/aws-instance-configuration.png" class="co-m-screenshot">
+      <img src="img/aws-instance-configuration.png" alt="AWS EC2 Instance Details" />
     </a>
   </div>
 </div>
@@ -96,8 +96,8 @@ Since our instance will be sending and receiving traffic for IPs other than the 
 <br/>
 <div class="row">
   <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12 co-m-screenshot">
-    <a href="{{site.baseurl}}/assets/images/media/aws-src-dst-check.png" class="co-m-screenshot">
-      <img src="{{site.baseurl}}/assets/images/media/aws-src-dst-check.png" alt="Disable AWS Source/Dest Check" />
+    <a href="img/aws-src-dst-check.png" class="co-m-screenshot">
+      <img src="img/aws-src-dst-check.png" alt="Disable AWS Source/Dest Check" />
     </a>
   </div>
 </div>
@@ -131,8 +131,8 @@ Confirm that the subnet route table has entries for the lease acquired by each o
 <br/>
 <div class="row">
   <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12 co-m-screenshot">
-    <a href="{{site.baseurl}}/assets/images/media/aws-routes.png" class="co-m-screenshot">
-      <img src="{{site.baseurl}}/assets/images/media/aws-routes.png" alt="AWS Routes" />
+    <a href="img/aws-routes.png" class="co-m-screenshot">
+      <img src="img/aws-routes.png" alt="AWS Routes" />
     </a>
   </div>
 </div>
