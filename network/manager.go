@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 flannel authors
 // Copyright 2015 Red Hat, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");

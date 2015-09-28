@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 flannel authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,14 +36,14 @@ type AwsVpcBackend struct {
 	publicIP ip.IP4
 	mtu      int
 	cfg      struct {
-		 RouteTableID string
+		RouteTableID string
 	}
-	lease    *subnet.Lease
+	lease *subnet.Lease
 }
 
 func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
 	be := AwsVpcBackend{
-		sm:      sm,
+		sm:       sm,
 		publicIP: ip.FromIP(extEaddr),
 		mtu:      extIface.MTU,
 	}
