@@ -40,8 +40,10 @@ func setupIPMasq(ipn ip.IP4Net) error {
 		{"FLANNEL", "-d", ipn.String(), "-j", "ACCEPT"},
 		// NAT if it's not multicast traffic
 		{"FLANNEL", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE"},
-		// This rule will take everything coming from overlay and sent it to FLANNEL chain
+		// This rule will take everything coming from overlay and send it to FLANNEL chain
 		{"POSTROUTING", "-s", ipn.String(), "-j", "FLANNEL"},
+		// Masquerade anything headed towards flannel from the host
+		{"POSTROUTING", "!", "-s", ipn.String(), "-d", ipn.String(), "-j", "MASQUERADE"},
 	}
 
 	for _, rule := range rules {
