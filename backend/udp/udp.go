@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 flannel authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,15 +41,15 @@ type UdpBackend struct {
 	network  string
 	publicIP ip.IP4
 	cfg      struct {
-		 Port int
+		Port int
 	}
-	lease    *subnet.Lease
-	ctl      *os.File
-	ctl2     *os.File
-	tun      *os.File
-	conn     *net.UDPConn
-	mtu      int
-	tunNet   ip.IP4Net
+	lease  *subnet.Lease
+	ctl    *os.File
+	ctl2   *os.File
+	tun    *os.File
+	conn   *net.UDPConn
+	mtu    int
+	tunNet ip.IP4Net
 }
 
 func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr net.IP) (backend.Backend, error) {
@@ -57,7 +57,7 @@ func New(sm subnet.Manager, extIface *net.Interface, extIaddr net.IP, extEaddr n
 		sm:       sm,
 		publicIP: ip.FromIP(extEaddr),
 		// TUN MTU will be smaller b/c of encap (IP+UDP hdrs)
-		mtu:      extIface.MTU - encapOverhead,
+		mtu: extIface.MTU - encapOverhead,
 	}
 	be.cfg.Port = defaultPort
 	return &be, nil
