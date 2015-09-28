@@ -17,14 +17,14 @@ Under the "Management, disk, networking, access & security options" make the fol
 <br/>
 <div class="row">
   <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 co-m-screenshot">
-    <a href="{{site.baseurl}}/assets/images/media/gce-instance.png">
-      <img src="{{site.baseurl}}/assets/images/media/gce-instance.png" alt="New GCE Instance">
+    <a href="img/gce-instance.png">
+      <img src="img/gce-instance.png" alt="New GCE Instance">
     </a>
     <div class="co-m-screenshot-caption">Booting a new GCE instance</div>
   </div>
   <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 co-m-screenshot">
-    <a href="{{site.baseurl}}/assets/images/media/gce-instance-and-security.png">
-      <img src="{{site.baseurl}}/assets/images/media/gce-instance-and-security.png" alt="Security settings for a new instance">
+    <a href="img/gce-instance-and-security.png">
+      <img src="img/gce-instance-and-security.png" alt="Security settings for a new instance">
     </a>
     <div class="co-m-screenshot-caption">Security settings for a new instance</div>
   </div>
@@ -64,8 +64,8 @@ Check that the subnet lease acquired by each of the hosts has been added!
 <br/>
 <div class="row">
   <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12 co-m-screenshot">
-    <a href="{{site.baseurl}}/assets/images/media/gce-routes.png" class="co-m-screenshot">
-      <img src="{{site.baseurl}}/assets/images/media/gce-routes.png" alt="GCE Routes" />
+    <a href="img/gce-routes.png" class="co-m-screenshot">
+      <img src="img/gce-routes.png" alt="GCE Routes" />
     </a>
   </div>
 </div>

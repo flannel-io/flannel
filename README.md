@@ -69,6 +69,7 @@ This is the only mandatory key.
 * vxlan: use in-kernel VXLAN to encapsulate the packets.
   * `Type` (string): `vxlan`
   * `VNI`  (number): VXLAN Identifier (VNI) to be used. Defaults to 1.
+  * `Port` (number): UDP port to use for sending encapsulated packets. Defaults to kernel default, currently 8472.
 
 * host-gw: create IP routes to subnets via remote machine IPs.
   Note that this requires direct layer2 connectivity between hosts running flannel.
@@ -225,3 +226,10 @@ Systemd users can use `EnvironmentFile` directive in the .service file to pull i
 
 CoreOS ships with flannel integrated into the distribution.
 See https://coreos.com/docs/cluster-management/setup/flannel-config/ for more information.
+
+## Running on Vagrant
+
+Vagrant has a tendency to give the default interface (one with the default route) a non-unique IP (often 10.0.2.15).
+This causes flannel to register multiple nodes with the same IP.
+To work around this issue, use `--iface` option to specify the interface that has a unique IP.
+If you're running on CoreOS, use cloud-config to set `coreos.flannel.interface` to `$public_ipv4`.
