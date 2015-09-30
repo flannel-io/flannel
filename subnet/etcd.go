@@ -59,14 +59,14 @@ func NewEtcdManager(config *EtcdConfig) (Manager, error) {
 	}
 	return &EtcdManager{
 		registry:     r,
-		networkRegex: regexp.MustCompile(config.Prefix + `/([^/]*)/config`),
+		networkRegex: regexp.MustCompile(config.Prefix + `/([^/]*)(/|/config)?$`),
 	}, nil
 }
 
 func newEtcdManager(r Registry) Manager {
 	return &EtcdManager{
 		registry:     r,
-		networkRegex: regexp.MustCompile(`/coreos.com/network/([^/]*)/config`),
+		networkRegex: regexp.MustCompile(`/coreos.com/network/([^/]*)(/|/config)?$`),
 	}
 }
 
@@ -196,16 +196,16 @@ func (m *EtcdManager) acquireLeaseOnce(ctx context.Context, network string, conf
 	return nil, errors.New("Max retries reached trying to acquire a subnet")
 }
 
-func parseSubnetKey(s string) (ip.IP4Net, error) {
+func parseSubnetKey(s string) *ip.IP4Net {
 	if parts := subnetRegex.FindStringSubmatch(s); len(parts) == 3 {
 		snIp := net.ParseIP(parts[1]).To4()
 		prefixLen, err := strconv.ParseUint(parts[2], 10, 5)
 		if snIp != nil && err == nil {
-			return ip.IP4Net{IP: ip.FromIP(snIp), PrefixLen: uint(prefixLen)}, nil
+			return &ip.IP4Net{IP: ip.FromIP(snIp), PrefixLen: uint(prefixLen)}
 		}
 	}
 
-	return ip.IP4Net{}, errors.New("Error parsing IP Subnet")
+	return nil
 }
 
 func (m *EtcdManager) allocateSubnet(config *Config, leases []Lease) (ip.IP4Net, error) {
@@ -242,8 +242,7 @@ func (m *EtcdManager) getLeases(ctx context.Context, network string) ([]Lease, u
 
 	if err == nil {
 		for _, node := range resp.Node.Nodes {
-			sn, err := parseSubnetKey(node.Key)
-			if err == nil {
+			if sn := parseSubnetKey(node.Key); sn != nil {
 				attrs := &LeaseAttrs{}
 				if err = json.Unmarshal([]byte(node.Value), attrs); err == nil {
 					exp := time.Time{}
@@ -252,7 +251,7 @@ func (m *EtcdManager) getLeases(ctx context.Context, network string) ([]Lease, u
 					}
 
 					lease := Lease{
-						Subnet:     sn,
+						Subnet:     *sn,
 						Attrs:      attrs,
 						Expiration: exp,
 					}
@@ -351,6 +350,7 @@ DoWatch:
 			nextIndex = resp.Node.ModifiedIndex
 			goto DoWatch
 		}
+
 		return result, err
 
 	case isIndexTooSmall(err):
@@ -368,9 +368,9 @@ func isIndexTooSmall(err error) bool {
 }
 
 func parseSubnetWatchResponse(resp *etcd.Response) (LeaseWatchResult, error) {
-	sn, err := parseSubnetKey(resp.Node.Key)
-	if err != nil {
-		return LeaseWatchResult{}, fmt.Errorf("error parsing subnet IP: %s", resp.Node.Key)
+	sn := parseSubnetKey(resp.Node.Key)
+	if sn == nil {
+		return LeaseWatchResult{}, fmt.Errorf("%v %q: not a subnet, skipping", resp.Action, resp.Node.Key)
 	}
 
 	evt := Event{}
@@ -379,7 +379,7 @@ func parseSubnetWatchResponse(resp *etcd.Response) (LeaseWatchResult, error) {
 	case "delete", "expire":
 		evt = Event{
 			EventRemoved,
-			Lease{Subnet: sn},
+			Lease{Subnet: *sn},
 			"",
 		}
 
@@ -398,7 +398,7 @@ func parseSubnetWatchResponse(resp *etcd.Response) (LeaseWatchResult, error) {
 		evt = Event{
 			EventAdded,
 			Lease{
-				Subnet:     sn,
+				Subnet:     *sn,
 				Attrs:      attrs,
 				Expiration: exp,
 			},
@@ -414,18 +414,17 @@ func parseSubnetWatchResponse(resp *etcd.Response) (LeaseWatchResult, error) {
 
 // Returns network name from config key (eg, /coreos.com/network/foobar/config),
 // if the 'config' key isn't present we don't consider the network valid
-func (m *EtcdManager) parseNetworkKey(s string) (string, error) {
-	if parts := m.networkRegex.FindStringSubmatch(s); len(parts) == 2 {
-		return parts[1], nil
+func (m *EtcdManager) parseNetworkKey(s string) (string, bool) {
+	if parts := m.networkRegex.FindStringSubmatch(s); len(parts) == 3 {
+		return parts[1], parts[2] != ""
 	}
 
-	return "", errors.New("Error parsing Network key")
+	return "", false
 }
 
 func (m *EtcdManager) parseNetworkWatchResponse(resp *etcd.Response) (NetworkWatchResult, error, bool) {
-	netname, err := m.parseNetworkKey(resp.Node.Key)
-	if err != nil {
-		// Ignore non .../<netname>/config keys; tell caller to try again
+	netname, isConfig := m.parseNetworkKey(resp.Node.Key)
+	if netname == "" {
 		return NetworkWatchResult{}, nil, true
 	}
 
@@ -440,6 +439,11 @@ func (m *EtcdManager) parseNetworkWatchResponse(resp *etcd.Response) (NetworkWat
 		}
 
 	default:
+		if !isConfig {
+			// Ignore non .../<netname>/config keys; tell caller to try again
+			return NetworkWatchResult{}, nil, true
+		}
+
 		_, err := ParseConfig(resp.Node.Value)
 		if err != nil {
 			return NetworkWatchResult{}, err, false
@@ -470,8 +474,8 @@ func (m *EtcdManager) getNetworks(ctx context.Context) ([]string, uint64, error)
 		for _, node := range resp.Node.Nodes {
 			// Look for '/config' on the child nodes
 			for _, child := range node.Nodes {
-				netname, err := m.parseNetworkKey(child.Key)
-				if err == nil {
+				netname, isConfig := m.parseNetworkKey(child.Key)
+				if isConfig {
 					networks = append(networks, netname)
 				}
 			}

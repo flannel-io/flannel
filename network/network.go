@@ -25,6 +25,10 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
+const (
+	renewMargin = time.Hour
+)
+
 type Network struct {
 	Name       string
 	Config     *subnet.Config
@@ -37,82 +41,79 @@ type Network struct {
 	lease  *subnet.Lease
 }
 
-func NewNetwork(ctx context.Context, sm subnet.Manager, name string, ipMasq bool) *Network {
-	ctx, cancel := context.WithCancel(ctx)
-
+func NewNetwork(sm subnet.Manager, name string, ipMasq bool) *Network {
 	return &Network{
-		Name:       name,
-		ctx:        ctx,
-		cancelFunc: cancel,
-		sm:         sm,
-		ipMasq:     ipMasq,
+		Name:   name,
+		sm:     sm,
+		ipMasq: ipMasq,
 	}
 }
 
-func (n *Network) Init(iface *net.Interface, iaddr net.IP, eaddr net.IP) *backend.SubnetDef {
-	var be backend.Backend
+func (n *Network) Init(ctx context.Context, iface *net.Interface, iaddr net.IP, eaddr net.IP) (*backend.SubnetDef, error) {
 	var sn *backend.SubnetDef
 
-	steps := []func() error{
-		func() (err error) {
+	n.ctx, n.cancelFunc = context.WithCancel(ctx)
+
+	type step struct {
+		desc string
+		fn   func() error
+	}
+
+	steps := []step{
+		step{"retrieve network config", func() (err error) {
 			n.Config, err = n.sm.GetNetworkConfig(n.ctx, n.Name)
-			if err != nil {
-				log.Error("Failed to retrieve network config: ", err)
-			}
 			return
-		},
+		}},
 
-		func() (err error) {
-			be, err = newBackend(n.sm, n.Config.BackendType, iface, iaddr, eaddr)
-			if err != nil {
-				log.Errorf("Failed to create and initialize network %v (type %v): %v", n.Name, n.Config.BackendType, err)
-			} else {
-				n.be = be
-			}
+		step{"create and initialize network", func() (err error) {
+			n.be, err = newBackend(n.sm, n.Config.BackendType, iface, iaddr, eaddr)
 			return
-		},
+		}},
 
-		func() (err error) {
-			sn, err = be.RegisterNetwork(n.ctx, n.Name, n.Config)
-			if err != nil {
-				log.Errorf("Failed register network %v (type %v): %v", n.Name, n.Config.BackendType, err)
-			} else {
+		step{"register network", func() (err error) {
+			sn, err = n.be.RegisterNetwork(n.ctx, n.Name, n.Config)
+			if err == nil {
 				n.lease = sn.Lease
 			}
 			return
-		},
+		}},
 
-		func() (err error) {
+		step{"set up IP Masquerade", func() (err error) {
 			if n.ipMasq {
-				flannelNet := n.Config.Network
-				if err = setupIPMasq(flannelNet); err != nil {
-					log.Errorf("Failed to set up IP Masquerade for network %v: %v", n.Name, err)
-				}
+				err = setupIPMasq(n.Config.Network)
 			}
 			return
-		},
+		}},
 	}
 
 	for _, s := range steps {
+	RetryFor:
 		for {
-			if err := s(); err == nil {
-				break
+			err := s.fn()
+			switch err {
+			case nil:
+				break RetryFor
+			case context.Canceled:
+				return nil, err
+			default:
+				log.Errorf("%q: failed to %v: %v", n.Name, s.desc, err)
 			}
 
 			select {
 			case <-time.After(time.Second):
 
 			case <-n.ctx.Done():
-				return nil
+				return nil, n.ctx.Err()
 			}
 		}
 	}
 
-	return sn
+	return sn, nil
 }
 
 func (n *Network) Run() {
 	wg := sync.WaitGroup{}
+
 	wg.Add(1)
 	go func() {
 		n.be.Run(n.ctx)
@@ -125,9 +126,16 @@ func (n *Network) Run() {
 		wg.Done()
 	}()
 
-	<-n.ctx.Done()
-	n.be.UnregisterNetwork(n.ctx, n.Name)
+	defer func() {
+		n.be.UnregisterNetwork(n.ctx, n.Name)
+		if n.ipMasq {
+			if err := teardownIPMasq(n.Config.Network); err != nil {
+				log.Errorf("Failed to tear down IP Masquerade for network %v: %v", n.Name, err)
+			}
+		}
+	}()
 
+	<-n.ctx.Done()
 	wg.Wait()
 }
 

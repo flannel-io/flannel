@@ -16,6 +16,7 @@
 package network
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"net"
@@ -43,6 +44,8 @@ type CmdLineOpts struct {
 	watchNetworks bool
 }
 
+var errAlreadyExists = errors.New("already exists")
+
 var opts CmdLineOpts
 
 func init() {
@@ -59,6 +62,7 @@ type Manager struct {
 	ctx             context.Context
 	sm              subnet.Manager
 	allowedNetworks map[string]bool
+	mux             sync.Mutex
 	networks        map[string]*Network
 	watch           bool
 	ipMasq          bool
@@ -133,11 +137,11 @@ func NewNetworkManager(ctx context.Context, sm subnet.Manager) (*Manager, error)
 
 		for _, n := range result.Snapshot {
 			if manager.isNetAllowed(n) {
-				manager.networks[n] = NewNetwork(ctx, sm, n, manager.ipMasq)
+				manager.networks[n] = NewNetwork(sm, n, manager.ipMasq)
 			}
 		}
 	} else {
-		manager.networks[""] = NewNetwork(ctx, sm, "", manager.ipMasq)
+		manager.networks[""] = NewNetwork(sm, "", manager.ipMasq)
 	}
 
 	return manager, nil
@@ -206,31 +210,72 @@ func writeSubnetFile(path string, nw ip.IP4Net, ipMasq bool, sd *backend.SubnetD
 	return os.Rename(tempFile, path)
 }
 
-func (m *Manager) RunNetwork(net *Network) {
-	sn := net.Init(m.extIface, m.iaddr, m.eaddr)
-	if sn != nil {
+func (m *Manager) addNetwork(n *Network) error {
+	m.mux.Lock()
+	defer m.mux.Unlock()
+
+	if _, ok := m.networks[n.Name]; ok {
+		return errAlreadyExists
+	}
+	m.networks[n.Name] = n
+	return nil
+}
+
+func (m *Manager) delNetwork(n *Network) {
+	m.mux.Lock()
+	delete(m.networks, n.Name)
+	m.mux.Unlock()
+}
+
+func (m *Manager) getNetwork(netname string) (*Network, bool) {
+	m.mux.Lock()
+	n, ok := m.networks[netname]
+	m.mux.Unlock()
+
+	return n, ok
+}
+
+func (m *Manager) forEachNetwork(f func(n *Network)) {
+	m.mux.Lock()
+	for _, n := range m.networks {
+		f(n)
+	}
+	m.mux.Unlock()
+}
+
+func (m *Manager) runNetwork(n *Network) {
+	sn, err := n.Init(m.ctx, m.extIface, m.iaddr, m.eaddr)
+	switch err {
+	case nil:
 		if m.isMultiNetwork() {
-			path := filepath.Join(opts.subnetDir, net.Name) + ".env"
-			if err := writeSubnetFile(path, net.Config.Network, m.ipMasq, sn); err != nil {
-				log.Warningf("%v failed to write subnet file: %s", net.Name, err)
+			path := filepath.Join(opts.subnetDir, n.Name) + ".env"
+			if err := writeSubnetFile(path, n.Config.Network, m.ipMasq, sn); err != nil {
+				log.Warningf("%v failed to write subnet file: %s", n.Name, err)
 				return
 			}
 		} else {
-			if err := writeSubnetFile(opts.subnetFile, net.Config.Network, m.ipMasq, sn); err != nil {
-				log.Warningf("%v failed to write subnet file: %s", net.Name, err)
+			if err := writeSubnetFile(opts.subnetFile, n.Config.Network, m.ipMasq, sn); err != nil {
+				log.Warningf("%v failed to write subnet file: %s", n.Name, err)
 				return
 			}
 			daemon.SdNotify("READY=1")
 		}
 
-		log.Infof("Running network %v", net.Name)
-		net.Run()
-		log.Infof("%v exited", net.Name)
+		log.Infof("Running network %v", n.Name)
+		n.Run()
+		log.Infof("%v exited", n.Name)
+	case context.Canceled:
+
+	default:
+		log.Fatalf("Network.Init() returned unexpected error: %v", err)
 	}
+
+	m.delNetwork(n)
 }
 
 func (m *Manager) watchNetworks() {
 	wg := sync.WaitGroup{}
+	defer wg.Wait()
 
 	events := make(chan []subnet.Event)
 	wg.Add(1)
@@ -244,64 +289,61 @@ func (m *Manager) watchNetworks() {
 	for {
 		select {
 		case <-m.ctx.Done():
-			break
+			return
 
 		case evtBatch := <-events:
 			for _, e := range evtBatch {
 				netname := e.Network
 				if !m.isNetAllowed(netname) {
+					log.Infof("Network %q is not allowed", netname)
 					continue
 				}
 
 				switch e.Type {
 				case subnet.EventAdded:
-					if _, ok := m.networks[netname]; ok {
+					n := NewNetwork(m.sm, netname, m.ipMasq)
+					if err := m.addNetwork(n); err != nil {
+						log.Infof("Network %q: %v", netname, err)
 						continue
 					}
-					net := NewNetwork(m.ctx, m.sm, netname, m.ipMasq)
-					m.networks[netname] = net
+
+					log.Infof("Network added: %v", netname)
+
 					wg.Add(1)
 					go func() {
-						m.RunNetwork(net)
+						m.runNetwork(n)
 						wg.Done()
 					}()
 
 				case subnet.EventRemoved:
-					net, ok := m.networks[netname]
+					log.Infof("Network removed: %v", netname)
+
+					n, ok := m.getNetwork(netname)
 					if !ok {
 						log.Warningf("Network %v unknown; ignoring EventRemoved", netname)
 						continue
 					}
-					net.Cancel()
-					delete(m.networks, netname)
+					n.Cancel()
 				}
 			}
 		}
 	}
-
-	wg.Wait()
 }
 
 func (m *Manager) Run() {
 	wg := sync.WaitGroup{}
 
 	// Run existing networks
-	for _, net := range m.networks {
+	m.forEachNetwork(func(n *Network) {
 		wg.Add(1)
 		go func(n *Network) {
-			m.RunNetwork(n)
+			m.runNetwork(n)
 			wg.Done()
-		}(net)
-	}
+		}(n)
+	})
 
 	if opts.watchNetworks {
-		wg.Add(1)
-		go func() {
-			m.watchNetworks()
-			wg.Done()
-		}()
-	} else {
-		<-m.ctx.Done()
+		m.watchNetworks()
 	}
 
 	wg.Wait()
