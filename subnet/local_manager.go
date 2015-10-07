@@ -170,6 +170,10 @@ OuterLoop:
 	}
 }
 
+func (m *LocalManager) RevokeLease(ctx context.Context, network string, sn ip.IP4Net) error {
+	return m.registry.deleteSubnet(ctx, network, sn)
+}
+
 func (m *LocalManager) RenewLease(ctx context.Context, network string, lease *Lease) error {
 	// TODO(eyakubovich): propogate ctx into registry
 	exp, err := m.registry.updateSubnet(ctx, network, lease.Subnet, &lease.Attrs, subnetTTL, 0)
@@ -199,9 +203,49 @@ func getNextIndex(cursor interface{}) (uint64, error) {
 	return nextIndex, nil
 }
 
+func (m *LocalManager) leaseWatchReset(ctx context.Context, network string, sn ip.IP4Net) (LeaseWatchResult, error) {
+	l, index, err := m.registry.getSubnet(ctx, network, sn)
+	if err != nil {
+		return LeaseWatchResult{}, err
+	}
+
+	return LeaseWatchResult{
+		Snapshot: []Lease{*l},
+		Cursor:   watchCursor{index},
+	}, nil
+}
+
+func (m *LocalManager) WatchLease(ctx context.Context, network string, sn ip.IP4Net, cursor interface{}) (LeaseWatchResult, error) {
+	if cursor == nil {
+		return m.leaseWatchReset(ctx, network, sn)
+	}
+
+	nextIndex, err := getNextIndex(cursor)
+	if err != nil {
+		return LeaseWatchResult{}, err
+	}
+
+	evt, index, err := m.registry.watchSubnet(ctx, network, nextIndex, sn)
+
+	switch {
+	case err == nil:
+		return LeaseWatchResult{
+			Events: []Event{evt},
+			Cursor: watchCursor{index},
+		}, nil
+
+	case isIndexTooSmall(err):
+		log.Warning("Watch of subnet leases failed because etcd index outside history window")
+		return m.leaseWatchReset(ctx, network, sn)
+
+	default:
+		return LeaseWatchResult{}, err
+	}
+}
+
 func (m *LocalManager) WatchLeases(ctx context.Context, network string, cursor interface{}) (LeaseWatchResult, error) {
 	if cursor == nil {
-		return m.leaseWatchReset(ctx, network)
+		return m.leasesWatchReset(ctx, network)
 	}
 
 	nextIndex, err := getNextIndex(cursor)
@@ -220,7 +264,7 @@ func (m *LocalManager) WatchLeases(ctx context.Context, network string, cursor i
 
 	case isIndexTooSmall(err):
 		log.Warning("Watch of subnet leases failed because etcd index outside history window")
-		return m.leaseWatchReset(ctx, network)
+		return m.leasesWatchReset(ctx, network)
 
 	default:
 		return LeaseWatchResult{}, err
@@ -265,8 +309,8 @@ func isIndexTooSmall(err error) bool {
 	return ok && etcdErr.Code == etcd.ErrorCodeEventIndexCleared
 }
 
-// leaseWatchReset is called when incremental lease watch failed and we need to grab a snapshot
-func (m *LocalManager) leaseWatchReset(ctx context.Context, network string) (LeaseWatchResult, error) {
+// leasesWatchReset is called when incremental lease watch failed and we need to grab a snapshot
+func (m *LocalManager) leasesWatchReset(ctx context.Context, network string) (LeaseWatchResult, error) {
 	wr := LeaseWatchResult{}
 
 	leases, index, err := m.registry.getSubnets(ctx, network)

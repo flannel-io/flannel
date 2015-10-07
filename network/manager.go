@@ -235,12 +235,16 @@ func (m *Manager) forEachNetwork(f func(n *Network)) {
 func (m *Manager) runNetwork(n *Network) {
 	n.Run(m.extIface, func(bn backend.Network) {
 		if m.isMultiNetwork() {
+			log.Infof("%v: lease acquired: %v", n.Name, bn.Lease().Subnet)
+
 			path := filepath.Join(opts.subnetDir, n.Name) + ".env"
 			if err := writeSubnetFile(path, n.Config.Network, m.ipMasq, bn); err != nil {
 				log.Warningf("%v failed to write subnet file: %s", n.Name, err)
 				return
 			}
 		} else {
+			log.Infof("Lease acquired: %v", bn.Lease().Subnet)
+
 			if err := writeSubnetFile(opts.subnetFile, n.Config.Network, m.ipMasq, bn); err != nil {
 				log.Warningf("%v failed to write subnet file: %s", n.Name, err)
 				return

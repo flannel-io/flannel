@@ -114,12 +114,74 @@ func handleRenewLease(ctx context.Context, sm subnet.Manager, w http.ResponseWri
 	jsonResponse(w, http.StatusOK, lease)
 }
 
+func handleRevokeLease(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	network := mux.Vars(r)["network"]
+	if network == "_" {
+		network = ""
+	}
+
+	sn := subnet.ParseSubnetKey(mux.Vars(r)["subnet"])
+	if sn == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "failed to parse subnet")
+		return
+	}
+
+	if err := sm.RevokeLease(ctx, network, *sn); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
 func getCursor(u *url.URL) interface{} {
 	vals, ok := u.Query()["next"]
 	if !ok {
 		return nil
 	}
 	return vals[0]
+}
+
+// GET /{network}/leases/subnet?next=cursor
+func handleWatchLease(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	network := mux.Vars(r)["network"]
+	if network == "_" {
+		network = ""
+	}
+
+	sn := subnet.ParseSubnetKey(mux.Vars(r)["subnet"])
+	if sn == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "bad subnet")
+		return
+	}
+
+	cursor := getCursor(r.URL)
+
+	wr, err := sm.WatchLease(ctx, network, *sn, cursor)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, err)
+		return
+	}
+
+	switch wr.Cursor.(type) {
+	case string:
+	case fmt.Stringer:
+		wr.Cursor = wr.Cursor.(fmt.Stringer).String()
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, fmt.Errorf("internal error: watch cursor is of unknown type"))
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, wr)
 }
 
 // GET /{network}/leases?next=cursor
@@ -262,7 +324,9 @@ func RunServer(ctx context.Context, sm subnet.Manager, listenAddr, cafile, certf
 	r := mux.NewRouter()
 	r.HandleFunc("/v1/{network}/config", bindHandler(handleGetNetworkConfig, ctx, sm)).Methods("GET")
 	r.HandleFunc("/v1/{network}/leases", bindHandler(handleAcquireLease, ctx, sm)).Methods("POST")
+	r.HandleFunc("/v1/{network}/leases/{subnet}", bindHandler(handleWatchLease, ctx, sm)).Methods("GET")
 	r.HandleFunc("/v1/{network}/leases/{subnet}", bindHandler(handleRenewLease, ctx, sm)).Methods("PUT")
+	r.HandleFunc("/v1/{network}/leases/{subnet}", bindHandler(handleRevokeLease, ctx, sm)).Methods("DELETE")
 	r.HandleFunc("/v1/{network}/leases", bindHandler(handleWatchLeases, ctx, sm)).Methods("GET")
 	r.HandleFunc("/v1/", bindHandler(handleNetworks, ctx, sm)).Methods("GET")
 

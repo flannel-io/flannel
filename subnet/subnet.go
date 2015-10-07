@@ -18,6 +18,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
+	"strconv"
 	"time"
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
@@ -39,7 +41,7 @@ type Lease struct {
 }
 
 func (l *Lease) Key() string {
-	return l.Subnet.StringSep(".", "-")
+	return MakeSubnetKey(l.Subnet)
 }
 
 type (
@@ -103,10 +105,28 @@ func (et *EventType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func ParseSubnetKey(s string) *ip.IP4Net {
+	if parts := subnetRegex.FindStringSubmatch(s); len(parts) == 3 {
+		snIp := net.ParseIP(parts[1]).To4()
+		prefixLen, err := strconv.ParseUint(parts[2], 10, 5)
+		if snIp != nil && err == nil {
+			return &ip.IP4Net{IP: ip.FromIP(snIp), PrefixLen: uint(prefixLen)}
+		}
+	}
+
+	return nil
+}
+
+func MakeSubnetKey(sn ip.IP4Net) string {
+	return sn.StringSep(".", "-")
+}
+
 type Manager interface {
 	GetNetworkConfig(ctx context.Context, network string) (*Config, error)
 	AcquireLease(ctx context.Context, network string, attrs *LeaseAttrs) (*Lease, error)
 	RenewLease(ctx context.Context, network string, lease *Lease) error
+	RevokeLease(ctx context.Context, network string, sn ip.IP4Net) error
+	WatchLease(ctx context.Context, network string, sn ip.IP4Net, cursor interface{}) (LeaseWatchResult, error)
 	WatchLeases(ctx context.Context, network string, cursor interface{}) (LeaseWatchResult, error)
 	WatchNetworks(ctx context.Context, cursor interface{}) (NetworkWatchResult, error)
 }

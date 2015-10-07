@@ -32,25 +32,62 @@ import (
 
 const expectedNetwork = "10.1.0.0/16"
 
-func TestRemote(t *testing.T) {
+type fixture struct {
+	ctx      context.Context
+	cancel   context.CancelFunc
+	srvAddr  string
+	registry *subnet.MockSubnetRegistry
+	sm       subnet.Manager
+	wg       sync.WaitGroup
+}
+
+func newFixture(t *testing.T) *fixture {
+	f := &fixture{}
+
 	config := fmt.Sprintf(`{"Network": %q}`, expectedNetwork)
-	serverRegistry := subnet.NewMockRegistry("", config, nil)
-	sm := subnet.NewMockManager(serverRegistry)
+	f.registry = subnet.NewMockRegistry("", config, nil)
+	sm := subnet.NewMockManager(f.registry)
 
-	addr := "127.0.0.1:9999"
+	f.srvAddr = "127.0.0.1:9999"
 
-	ctx, cancel := context.WithCancel(context.Background())
-	wg := sync.WaitGroup{}
-	wg.Add(1)
+	f.ctx, f.cancel = context.WithCancel(context.Background())
+	f.wg.Add(1)
 	go func() {
-		RunServer(ctx, sm, addr, "", "", "")
-		wg.Done()
+		RunServer(f.ctx, sm, f.srvAddr, "", "", "")
+		f.wg.Done()
 	}()
 
-	doTestRemote(ctx, t, addr, serverRegistry)
+	var err error
+	f.sm, err = NewRemoteManager(f.srvAddr, "", "", "")
+	if err != nil {
+		panic(fmt.Sprintf("Failed to create remote mananager: %v", err))
+	}
 
-	cancel()
-	wg.Wait()
+	for i := 0; ; i++ {
+		_, err := f.sm.GetNetworkConfig(f.ctx, "_")
+		if err == nil {
+			break
+		}
+
+		if isConnRefused(err) {
+			if i == 100 {
+				t.Fatalf("Out of connection retries")
+			}
+
+			fmt.Println("Connection refused, retrying...")
+			time.Sleep(300 * time.Millisecond)
+			continue
+		}
+
+		t.Fatalf("GetNetworkConfig failed: %v", err)
+	}
+
+	return f
+}
+
+func (f *fixture) Close() {
+	f.cancel()
+	f.wg.Wait()
 }
 
 func mustParseIP4(s string) ip.IP4 {
@@ -81,38 +118,29 @@ func isConnRefused(err error) bool {
 	return false
 }
 
-func doTestRemote(ctx context.Context, t *testing.T, remoteAddr string, serverRegistry *subnet.MockSubnetRegistry) {
-	sm, err := NewRemoteManager(remoteAddr, "", "", "")
+func TestGetConfig(t *testing.T) {
+	f := newFixture(t)
+	defer f.Close()
+
+	cfg, err := f.sm.GetNetworkConfig(f.ctx, "_")
 	if err != nil {
-		t.Fatalf("Failed to create remote mananager: %v", err)
+		t.Fatalf("GetNetworkConfig failed: %v", err)
 	}
 
-	for i := 0; ; i++ {
-		cfg, err := sm.GetNetworkConfig(ctx, "_")
-		if err != nil {
-			if isConnRefused(err) {
-				if i == 100 {
-					t.Fatalf("Out of connection retries")
-				}
-
-				fmt.Println("Connection refused, retrying...")
-				time.Sleep(300 * time.Millisecond)
-				continue
-			}
-
-			t.Fatalf("GetNetworkConfig failed: %v", err)
-		}
-
-		if cfg.Network.String() != expectedNetwork {
-			t.Errorf("GetNetworkConfig returned bad network: %v vs %v", cfg.Network, expectedNetwork)
-		}
-		break
+	if cfg.Network.String() != expectedNetwork {
+		t.Errorf("GetNetworkConfig returned bad network: %v vs %v", cfg.Network, expectedNetwork)
 	}
+}
+
+func TestAcquireRenewLease(t *testing.T) {
+	f := newFixture(t)
+	defer f.Close()
 
 	attrs := &subnet.LeaseAttrs{
 		PublicIP: mustParseIP4("1.1.1.1"),
 	}
-	l, err := sm.AcquireLease(ctx, "_", attrs)
+
+	l, err := f.sm.AcquireLease(f.ctx, "_", attrs)
 	if err != nil {
 		t.Fatalf("AcquireLease failed: %v", err)
 	}
@@ -121,28 +149,20 @@ func doTestRemote(ctx context.Context, t *testing.T, remoteAddr string, serverRe
 		t.Errorf("AcquireLease returned subnet not in network: %v (in %v)", l.Subnet, expectedNetwork)
 	}
 
-	if err = sm.RenewLease(ctx, "_", l); err != nil {
+	if err = f.sm.RenewLease(f.ctx, "_", l); err != nil {
 		t.Errorf("RenewLease failed: %v", err)
 	}
-
-	doTestWatchLeases(t, sm)
-
-	doTestWatchNetworks(t, sm, serverRegistry)
 }
 
-func doTestWatchLeases(t *testing.T, sm subnet.Manager) {
-	ctx, cancel := context.WithCancel(context.Background())
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	defer func() {
-		cancel()
-		wg.Wait()
-	}()
+func TestWatchLeases(t *testing.T) {
+	f := newFixture(t)
+	defer f.Close()
 
 	events := make(chan []subnet.Event)
+	f.wg.Add(1)
 	go func() {
-		subnet.WatchLeases(ctx, sm, "_", nil, events)
-		wg.Done()
+		subnet.WatchLeases(f.ctx, f.sm, "_", nil, events)
+		f.wg.Done()
 	}()
 
 	// skip over the initial snapshot
@@ -151,7 +171,7 @@ func doTestWatchLeases(t *testing.T, sm subnet.Manager) {
 	attrs := &subnet.LeaseAttrs{
 		PublicIP: mustParseIP4("1.1.1.2"),
 	}
-	l, err := sm.AcquireLease(ctx, "_", attrs)
+	l, err := f.sm.AcquireLease(f.ctx, "_", attrs)
 	if err != nil {
 		t.Errorf("AcquireLease failed: %v", err)
 		return
@@ -176,19 +196,38 @@ func doTestWatchLeases(t *testing.T, sm subnet.Manager) {
 	}
 }
 
-func doTestWatchNetworks(t *testing.T, sm subnet.Manager, serverRegistry *subnet.MockSubnetRegistry) {
-	ctx, cancel := context.WithCancel(context.Background())
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	defer func() {
-		cancel()
-		wg.Wait()
-	}()
+func TestRevokeLease(t *testing.T) {
+	f := newFixture(t)
+	defer f.Close()
+
+	attrs := &subnet.LeaseAttrs{
+		PublicIP: mustParseIP4("1.1.1.1"),
+	}
+
+	l, err := f.sm.AcquireLease(f.ctx, "_", attrs)
+	if err != nil {
+		t.Fatalf("AcquireLease failed: %v", err)
+	}
+
+	if err := f.sm.RevokeLease(f.ctx, "_", l.Subnet); err != nil {
+		t.Fatalf("RevokeLease failed: %v", err)
+	}
+
+	_, err = f.sm.WatchLease(f.ctx, "_", l.Subnet, nil)
+	if err == nil {
+		t.Fatalf("Revoked lease found")
+	}
+}
+
+func TestWatchNetworks(t *testing.T) {
+	f := newFixture(t)
+	defer f.Close()
 
 	events := make(chan []subnet.Event)
+	f.wg.Add(1)
 	go func() {
-		subnet.WatchNetworks(ctx, sm, events)
-		wg.Done()
+		subnet.WatchNetworks(f.ctx, f.sm, events)
+		f.wg.Done()
 	}()
 
 	// skip over the initial snapshot
@@ -196,7 +235,7 @@ func doTestWatchNetworks(t *testing.T, sm subnet.Manager, serverRegistry *subnet
 
 	expectedNetname := "foobar"
 	config := fmt.Sprintf(`{"Network": %q}`, expectedNetwork)
-	err := serverRegistry.CreateNetwork(ctx, expectedNetname, config)
+	err := f.registry.CreateNetwork(f.ctx, expectedNetname, config)
 	if err != nil {
 		t.Errorf("create network failed: %v", err)
 	}
@@ -216,7 +255,7 @@ func doTestWatchNetworks(t *testing.T, sm subnet.Manager, serverRegistry *subnet
 		t.Errorf("WatchNetwork create produced wrong network: expected %s, got %s", expectedNetname, evt.Network)
 	}
 
-	err = serverRegistry.DeleteNetwork(ctx, expectedNetname)
+	err = f.registry.DeleteNetwork(f.ctx, expectedNetname)
 	if err != nil {
 		t.Errorf("delete network failed: %v", err)
 	}
