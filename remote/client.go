@@ -180,6 +180,7 @@ func (m *RemoteManager) WatchLeases(ctx context.Context, network string, cursor 
 	if err != nil {
 		return subnet.WatchResult{}, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return subnet.WatchResult{}, httpError(resp)
