@@ -32,8 +32,10 @@ type LeaseAttrs struct {
 
 type Lease struct {
 	Subnet     ip.IP4Net
-	Attrs      *LeaseAttrs
+	Attrs      LeaseAttrs
 	Expiration time.Time
+
+	asof uint64
 }
 
 func (l *Lease) Key() string {

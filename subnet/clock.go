@@ -14,6 +14,6 @@
 
 package subnet
 
-func NewMockManager(registry *MockSubnetRegistry) Manager {
-	return newLocalManager(registry)
-}
+import "github.com/coreos/flannel/Godeps/_workspace/src/github.com/jonboulle/clockwork"
+
+var clock clockwork.Clock = clockwork.NewRealClock()

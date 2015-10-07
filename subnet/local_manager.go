@@ -15,12 +15,8 @@
 package subnet
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
-	"path"
-	"regexp"
 	"strconv"
 	"time"
 
@@ -35,14 +31,9 @@ const (
 	subnetTTL       = 24 * time.Hour
 )
 
-type EtcdManager struct {
-	registry     Registry
-	networkRegex *regexp.Regexp
+type LocalManager struct {
+	registry Registry
 }
-
-var (
-	subnetRegex *regexp.Regexp = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)`)
-)
 
 type watchCursor struct {
 	index uint64
@@ -52,60 +43,46 @@ func (c watchCursor) String() string {
 	return strconv.FormatUint(c.index, 10)
 }
 
-func NewEtcdManager(config *EtcdConfig) (Manager, error) {
+func NewLocalManager(config *EtcdConfig) (Manager, error) {
 	r, err := newEtcdSubnetRegistry(config)
 	if err != nil {
 		return nil, err
 	}
-	return &EtcdManager{
-		registry:     r,
-		networkRegex: regexp.MustCompile(config.Prefix + `/([^/]*)(/|/config)?$`),
-	}, nil
+	return newLocalManager(r), nil
 }
 
-func newEtcdManager(r Registry) Manager {
-	return &EtcdManager{
-		registry:     r,
-		networkRegex: regexp.MustCompile(`/coreos.com/network/([^/]*)(/|/config)?$`),
+func newLocalManager(r Registry) Manager {
+	return &LocalManager{
+		registry: r,
 	}
 }
 
-func (m *EtcdManager) GetNetworkConfig(ctx context.Context, network string) (*Config, error) {
-	cfgResp, err := m.registry.getNetworkConfig(ctx, network)
+func (m *LocalManager) GetNetworkConfig(ctx context.Context, network string) (*Config, error) {
+	cfg, err := m.registry.getNetworkConfig(ctx, network)
 	if err != nil {
 		return nil, err
 	}
 
-	return ParseConfig(cfgResp.Node.Value)
+	return ParseConfig(cfg)
 }
 
-func (m *EtcdManager) AcquireLease(ctx context.Context, network string, attrs *LeaseAttrs) (*Lease, error) {
+func (m *LocalManager) AcquireLease(ctx context.Context, network string, attrs *LeaseAttrs) (*Lease, error) {
 	config, err := m.GetNetworkConfig(ctx, network)
 	if err != nil {
 		return nil, err
 	}
 
-	for {
-		l, err := m.acquireLeaseOnce(ctx, network, config, attrs)
+	for i := 0; i < registerRetries; i++ {
+		l, err := m.tryAcquireLease(ctx, network, config, attrs.PublicIP, attrs)
 		switch {
-		case err == nil:
-			log.Info("Subnet lease acquired: ", l.Subnet)
-			return l, nil
-
-		case err == context.Canceled, err == context.DeadlineExceeded:
+		case err != nil:
 			return nil, err
-
-		default:
-			log.Error("Failed to acquire subnet: ", err)
-		}
-
-		select {
-		case <-time.After(time.Second):
-
-		case <-ctx.Done():
-			return nil, ctx.Err()
+		case l != nil:
+			return l, nil
 		}
 	}
+
+	return nil, errors.New("Max retries reached trying to acquire a subnet")
 }
 
 func findLeaseByIP(leases []Lease, pubIP ip.IP4) *Lease {
@@ -118,14 +95,9 @@ func findLeaseByIP(leases []Lease, pubIP ip.IP4) *Lease {
 	return nil
 }
 
-func (m *EtcdManager) tryAcquireLease(ctx context.Context, network string, config *Config, extIaddr ip.IP4, attrs *LeaseAttrs) (*Lease, error) {
+func (m *LocalManager) tryAcquireLease(ctx context.Context, network string, config *Config, extIaddr ip.IP4, attrs *LeaseAttrs) (*Lease, error) {
 	var err error
-	leases, _, err := m.getLeases(ctx, network)
-	if err != nil {
-		return nil, err
-	}
-
-	attrBytes, err := json.Marshal(attrs)
+	leases, _, err := m.registry.getSubnets(ctx, network)
 	if err != nil {
 		return nil, err
 	}
@@ -135,17 +107,17 @@ func (m *EtcdManager) tryAcquireLease(ctx context.Context, network string, confi
 		// make sure the existing subnet is still within the configured network
 		if isSubnetConfigCompat(config, l.Subnet) {
 			log.Infof("Found lease (%v) for current IP (%v), reusing", l.Subnet, extIaddr)
-			resp, err := m.registry.updateSubnet(ctx, network, l.Key(), string(attrBytes), subnetTTL)
+			exp, err := m.registry.updateSubnet(ctx, network, l.Subnet, attrs, subnetTTL, 0)
 			if err != nil {
 				return nil, err
 			}
 
-			l.Attrs = attrs
-			l.Expiration = *resp.Node.Expiration
+			l.Attrs = *attrs
+			l.Expiration = exp
 			return l, nil
 		} else {
 			log.Infof("Found lease (%v) for current IP (%v) but not compatible with current config, deleting", l.Subnet, extIaddr)
-			if _, err := m.registry.deleteSubnet(ctx, network, l.Key()); err != nil {
+			if err := m.registry.deleteSubnet(ctx, network, l.Subnet); err != nil {
 				return nil, err
 			}
 		}
@@ -157,12 +129,12 @@ func (m *EtcdManager) tryAcquireLease(ctx context.Context, network string, confi
 		return nil, err
 	}
 
-	resp, err := m.registry.createSubnet(ctx, network, sn.StringSep(".", "-"), string(attrBytes), subnetTTL)
+	exp, err := m.registry.createSubnet(ctx, network, sn, attrs, subnetTTL)
 	if err == nil {
 		return &Lease{
 			Subnet:     sn,
-			Attrs:      attrs,
-			Expiration: *resp.Node.Expiration,
+			Attrs:      *attrs,
+			Expiration: exp,
 		}, nil
 	}
 
@@ -174,41 +146,7 @@ func (m *EtcdManager) tryAcquireLease(ctx context.Context, network string, confi
 	return nil, err
 }
 
-func (m *EtcdManager) acquireLeaseOnce(ctx context.Context, network string, config *Config, attrs *LeaseAttrs) (*Lease, error) {
-	for i := 0; i < registerRetries; i++ {
-		l, err := m.tryAcquireLease(ctx, network, config, attrs.PublicIP, attrs)
-		switch {
-		case err != nil:
-			return nil, err
-		case l != nil:
-			return l, nil
-		}
-
-		// before moving on, check for cancel
-		// TODO(eyakubovich): propogate ctx deeper into registry
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
-		}
-	}
-
-	return nil, errors.New("Max retries reached trying to acquire a subnet")
-}
-
-func parseSubnetKey(s string) *ip.IP4Net {
-	if parts := subnetRegex.FindStringSubmatch(s); len(parts) == 3 {
-		snIp := net.ParseIP(parts[1]).To4()
-		prefixLen, err := strconv.ParseUint(parts[2], 10, 5)
-		if snIp != nil && err == nil {
-			return &ip.IP4Net{IP: ip.FromIP(snIp), PrefixLen: uint(prefixLen)}
-		}
-	}
-
-	return nil
-}
-
-func (m *EtcdManager) allocateSubnet(config *Config, leases []Lease) (ip.IP4Net, error) {
+func (m *LocalManager) allocateSubnet(config *Config, leases []Lease) (ip.IP4Net, error) {
 	log.Infof("Picking subnet in range %s ... %s", config.SubnetMin, config.SubnetMax)
 
 	var bag []ip.IP4
@@ -232,58 +170,14 @@ OuterLoop:
 	}
 }
 
-// getLeases queries etcd to get a list of currently allocated leases for a given network.
-// It returns the leases along with the "as-of" etcd-index that can be used as the starting
-// point for etcd watch.
-func (m *EtcdManager) getLeases(ctx context.Context, network string) ([]Lease, uint64, error) {
-	resp, err := m.registry.getSubnets(ctx, network)
-
-	leases := []Lease{}
-
-	if err == nil {
-		for _, node := range resp.Node.Nodes {
-			if sn := parseSubnetKey(node.Key); sn != nil {
-				attrs := &LeaseAttrs{}
-				if err = json.Unmarshal([]byte(node.Value), attrs); err == nil {
-					exp := time.Time{}
-					if node.Expiration != nil {
-						exp = *node.Expiration
-					}
-
-					lease := Lease{
-						Subnet:     *sn,
-						Attrs:      attrs,
-						Expiration: exp,
-					}
-					leases = append(leases, lease)
-				}
-			}
-		}
-
-		return leases, resp.Index, nil
-	}
-
-	if etcdErr, ok := err.(etcd.Error); ok && etcdErr.Code == etcd.ErrorCodeKeyNotFound {
-		// key not found: treat it as empty set
-		return leases, etcdErr.Index, nil
-	}
-
-	return nil, 0, err
-}
-
-func (m *EtcdManager) RenewLease(ctx context.Context, network string, lease *Lease) error {
-	attrBytes, err := json.Marshal(lease.Attrs)
-	if err != nil {
-		return err
-	}
-
+func (m *LocalManager) RenewLease(ctx context.Context, network string, lease *Lease) error {
 	// TODO(eyakubovich): propogate ctx into registry
-	resp, err := m.registry.updateSubnet(ctx, network, lease.Key(), string(attrBytes), subnetTTL)
+	exp, err := m.registry.updateSubnet(ctx, network, lease.Subnet, &lease.Attrs, subnetTTL, 0)
 	if err != nil {
 		return err
 	}
 
-	lease.Expiration = *resp.Node.Expiration
+	lease.Expiration = exp
 	return nil
 }
 
@@ -305,7 +199,7 @@ func getNextIndex(cursor interface{}) (uint64, error) {
 	return nextIndex, nil
 }
 
-func (m *EtcdManager) WatchLeases(ctx context.Context, network string, cursor interface{}) (LeaseWatchResult, error) {
+func (m *LocalManager) WatchLeases(ctx context.Context, network string, cursor interface{}) (LeaseWatchResult, error) {
 	if cursor == nil {
 		return m.leaseWatchReset(ctx, network)
 	}
@@ -315,11 +209,14 @@ func (m *EtcdManager) WatchLeases(ctx context.Context, network string, cursor in
 		return LeaseWatchResult{}, err
 	}
 
-	resp, err := m.registry.watch(ctx, path.Join(network, "subnets"), nextIndex)
+	evt, index, err := m.registry.watchSubnets(ctx, network, nextIndex)
 
 	switch {
 	case err == nil:
-		return parseSubnetWatchResponse(resp)
+		return LeaseWatchResult{
+			Events: []Event{evt},
+			Cursor: watchCursor{index},
+		}, nil
 
 	case isIndexTooSmall(err):
 		log.Warning("Watch of subnet leases failed because etcd index outside history window")
@@ -330,7 +227,7 @@ func (m *EtcdManager) WatchLeases(ctx context.Context, network string, cursor in
 	}
 }
 
-func (m *EtcdManager) WatchNetworks(ctx context.Context, cursor interface{}) (NetworkWatchResult, error) {
+func (m *LocalManager) WatchNetworks(ctx context.Context, cursor interface{}) (NetworkWatchResult, error) {
 	if cursor == nil {
 		return m.networkWatchReset(ctx)
 	}
@@ -341,20 +238,21 @@ func (m *EtcdManager) WatchNetworks(ctx context.Context, cursor interface{}) (Ne
 	}
 
 DoWatch:
-	resp, err := m.registry.watch(ctx, "", nextIndex)
+	evt, index, err := m.registry.watchNetworks(ctx, nextIndex)
 
 	switch {
 	case err == nil:
-		result, err, again := m.parseNetworkWatchResponse(resp)
-		if again {
-			nextIndex = resp.Node.ModifiedIndex
-			goto DoWatch
-		}
+		return NetworkWatchResult{
+			Events: []Event{evt},
+			Cursor: watchCursor{index},
+		}, nil
 
-		return result, err
+	case err == ErrTryAgain:
+		nextIndex = index
+		goto DoWatch
 
 	case isIndexTooSmall(err):
-		log.Warning("Watch of subnet leases failed because etcd index outside history window")
+		log.Warning("Watch of networks failed because etcd index outside history window")
 		return m.networkWatchReset(ctx)
 
 	default:
@@ -367,136 +265,11 @@ func isIndexTooSmall(err error) bool {
 	return ok && etcdErr.Code == etcd.ErrorCodeEventIndexCleared
 }
 
-func parseSubnetWatchResponse(resp *etcd.Response) (LeaseWatchResult, error) {
-	sn := parseSubnetKey(resp.Node.Key)
-	if sn == nil {
-		return LeaseWatchResult{}, fmt.Errorf("%v %q: not a subnet, skipping", resp.Action, resp.Node.Key)
-	}
-
-	evt := Event{}
-
-	switch resp.Action {
-	case "delete", "expire":
-		evt = Event{
-			EventRemoved,
-			Lease{Subnet: *sn},
-			"",
-		}
-
-	default:
-		attrs := &LeaseAttrs{}
-		err := json.Unmarshal([]byte(resp.Node.Value), attrs)
-		if err != nil {
-			return LeaseWatchResult{}, err
-		}
-
-		exp := time.Time{}
-		if resp.Node.Expiration != nil {
-			exp = *resp.Node.Expiration
-		}
-
-		evt = Event{
-			EventAdded,
-			Lease{
-				Subnet:     *sn,
-				Attrs:      attrs,
-				Expiration: exp,
-			},
-			"",
-		}
-	}
-
-	return LeaseWatchResult{
-		Cursor: watchCursor{resp.Node.ModifiedIndex},
-		Events: []Event{evt},
-	}, nil
-}
-
-// Returns network name from config key (eg, /coreos.com/network/foobar/config),
-// if the 'config' key isn't present we don't consider the network valid
-func (m *EtcdManager) parseNetworkKey(s string) (string, bool) {
-	if parts := m.networkRegex.FindStringSubmatch(s); len(parts) == 3 {
-		return parts[1], parts[2] != ""
-	}
-
-	return "", false
-}
-
-func (m *EtcdManager) parseNetworkWatchResponse(resp *etcd.Response) (NetworkWatchResult, error, bool) {
-	netname, isConfig := m.parseNetworkKey(resp.Node.Key)
-	if netname == "" {
-		return NetworkWatchResult{}, nil, true
-	}
-
-	evt := Event{}
-
-	switch resp.Action {
-	case "delete":
-		evt = Event{
-			EventRemoved,
-			Lease{},
-			netname,
-		}
-
-	default:
-		if !isConfig {
-			// Ignore non .../<netname>/config keys; tell caller to try again
-			return NetworkWatchResult{}, nil, true
-		}
-
-		_, err := ParseConfig(resp.Node.Value)
-		if err != nil {
-			return NetworkWatchResult{}, err, false
-		}
-
-		evt = Event{
-			EventAdded,
-			Lease{},
-			netname,
-		}
-	}
-
-	return NetworkWatchResult{
-		Cursor: watchCursor{resp.Node.ModifiedIndex},
-		Events: []Event{evt},
-	}, nil, false
-}
-
-// getNetworks queries etcd to get a list of network names.  It returns the
-// networks along with the 'as-of' etcd-index that can be used as the starting
-// point for etcd watch.
-func (m *EtcdManager) getNetworks(ctx context.Context) ([]string, uint64, error) {
-	resp, err := m.registry.getNetworks(ctx)
-
-	networks := []string{}
-
-	if err == nil {
-		for _, node := range resp.Node.Nodes {
-			// Look for '/config' on the child nodes
-			for _, child := range node.Nodes {
-				netname, isConfig := m.parseNetworkKey(child.Key)
-				if isConfig {
-					networks = append(networks, netname)
-				}
-			}
-		}
-
-		return networks, resp.Index, nil
-	}
-
-	if etcdErr, ok := err.(etcd.Error); ok && etcdErr.Code == etcd.ErrorCodeKeyNotFound {
-		// key not found: treat it as empty set
-		return networks, etcdErr.Index, nil
-	}
-
-	return nil, 0, err
-}
-
 // leaseWatchReset is called when incremental lease watch failed and we need to grab a snapshot
-func (m *EtcdManager) leaseWatchReset(ctx context.Context, network string) (LeaseWatchResult, error) {
+func (m *LocalManager) leaseWatchReset(ctx context.Context, network string) (LeaseWatchResult, error) {
 	wr := LeaseWatchResult{}
 
-	leases, index, err := m.getLeases(ctx, network)
+	leases, index, err := m.registry.getSubnets(ctx, network)
 	if err != nil {
 		return wr, fmt.Errorf("failed to retrieve subnet leases: %v", err)
 	}
@@ -507,10 +280,10 @@ func (m *EtcdManager) leaseWatchReset(ctx context.Context, network string) (Leas
 }
 
 // networkWatchReset is called when incremental network watch failed and we need to grab a snapshot
-func (m *EtcdManager) networkWatchReset(ctx context.Context) (NetworkWatchResult, error) {
+func (m *LocalManager) networkWatchReset(ctx context.Context) (NetworkWatchResult, error) {
 	wr := NetworkWatchResult{}
 
-	networks, index, err := m.getNetworks(ctx)
+	networks, index, err := m.registry.getNetworks(ctx)
 	if err != nil {
 		return wr, fmt.Errorf("failed to retrieve networks: %v", err)
 	}

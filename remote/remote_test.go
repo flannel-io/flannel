@@ -34,7 +34,7 @@ const expectedNetwork = "10.1.0.0/16"
 
 func TestRemote(t *testing.T) {
 	config := fmt.Sprintf(`{"Network": %q}`, expectedNetwork)
-	serverRegistry := subnet.NewMockRegistry(1, "", config, nil)
+	serverRegistry := subnet.NewMockRegistry("", config, nil)
 	sm := subnet.NewMockManager(serverRegistry)
 
 	addr := "127.0.0.1:9999"
@@ -196,7 +196,7 @@ func doTestWatchNetworks(t *testing.T, sm subnet.Manager, serverRegistry *subnet
 
 	expectedNetname := "foobar"
 	config := fmt.Sprintf(`{"Network": %q}`, expectedNetwork)
-	_, err := serverRegistry.CreateNetwork(ctx, expectedNetname, config)
+	err := serverRegistry.CreateNetwork(ctx, expectedNetname, config)
 	if err != nil {
 		t.Errorf("create network failed: %v", err)
 	}
@@ -216,7 +216,7 @@ func doTestWatchNetworks(t *testing.T, sm subnet.Manager, serverRegistry *subnet
 		t.Errorf("WatchNetwork create produced wrong network: expected %s, got %s", expectedNetname, evt.Network)
 	}
 
-	_, err = serverRegistry.DeleteNetwork(ctx, expectedNetname)
+	err = serverRegistry.DeleteNetwork(ctx, expectedNetname)
 	if err != nil {
 		t.Errorf("delete network failed: %v", err)
 	}

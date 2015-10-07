@@ -85,7 +85,7 @@ func newSubnetManager() (subnet.Manager, error) {
 		Prefix:    opts.etcdPrefix,
 	}
 
-	return subnet.NewEtcdManager(cfg)
+	return subnet.NewLocalManager(cfg)
 }
 
 func main() {
