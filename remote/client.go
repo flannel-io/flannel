@@ -183,6 +183,7 @@ func (m *RemoteManager) watch(ctx context.Context, url string, cursor interface{
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return httpError(resp)
