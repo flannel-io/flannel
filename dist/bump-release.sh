@@ -25,7 +25,7 @@ replace_version ${VERSION}
 git tag -a -m "${VERSIONTAG}" "${VERSIONTAG}"
 
 # bump ver to placeholder and push to origin
-replace_version "${VERSION}+was-not-built-properly"
+replace_version "${VERSION}+git"
 git push "${ORIGIN}" master
 
 # push the tag
