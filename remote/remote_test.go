@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"os"
 	"sync"
 	"syscall"
 	"testing"
@@ -71,6 +72,9 @@ func mustParseIP4Net(s string) ip.IP4Net {
 func isConnRefused(err error) bool {
 	if uerr, ok := err.(*url.Error); ok {
 		if operr, ok := uerr.Err.(*net.OpError); ok {
+			if oserr, ok := operr.Err.(*os.SyscallError); ok {
+				return oserr.Err == syscall.ECONNREFUSED
+			}
 			return operr.Err == syscall.ECONNREFUSED
 		}
 	}
