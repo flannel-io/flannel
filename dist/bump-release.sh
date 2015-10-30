@@ -13,8 +13,8 @@ VERSIONTAG="v${VERSION}"
 TAGBR="v${VERSION}-tag"
 
 replace_version() {
-	sed -i -e "s/const Version.*/const Version = \"$1\"/" ../version.go
-	git commit -m "version: bump to v$1" ../version.go
+	sed -i -e "s/const Version.*/const Version = \"$1\"/" version/version.go
+	git commit -m "version: bump to v$1" version/version.go
 }
 
 # make sure we're up to date
@@ -24,8 +24,8 @@ git pull --ff-only ${ORIGIN} master
 replace_version ${VERSION}
 git tag -a -m "${VERSIONTAG}" "${VERSIONTAG}"
 
-# bump ver to +git and push to origin
-replace_version "${VERSION}+git"
+# bump ver to placeholder and push to origin
+replace_version "${VERSION}+was-not-built-properly"
 git push "${ORIGIN}" master
 
 # push the tag
