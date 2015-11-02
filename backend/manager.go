@@ -46,6 +46,7 @@ func NewManager(ctx context.Context, sm subnet.Manager, extIface *ExternalInterf
 		ctx:      ctx,
 		sm:       sm,
 		extIface: extIface,
+		active:   make(map[string]Backend),
 	}
 }
 
@@ -69,6 +70,7 @@ func (bm *manager) GetBackend(backendType string) (Backend, error) {
 	if err != nil {
 		return nil, err
 	}
+	bm.active[betype] = be
 
 	bm.wg.Add(1)
 	go func() {
