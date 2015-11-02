@@ -49,6 +49,14 @@ func ParseIP4(s string) (IP4, error) {
 	return FromIP(ip), nil
 }
 
+func MustParseIP4(s string) IP4 {
+	ip, err := ParseIP4(s)
+	if err != nil {
+		panic(err)
+	}
+	return ip
+}
+
 func (ip IP4) Octets() (a, b, c, d byte) {
 	if NativelyLittle() {
 		a, b, c, d = byte(ip>>24), byte(ip>>16), byte(ip>>8), byte(ip)

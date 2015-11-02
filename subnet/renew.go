@@ -26,7 +26,7 @@ const (
 )
 
 func LeaseRenewer(ctx context.Context, m Manager, network string, lease *Lease) {
-	dur := lease.Expiration.Sub(time.Now()) - renewMargin
+	dur := lease.Expiration.Sub(clock.Now()) - renewMargin
 
 	for {
 		select {
@@ -39,7 +39,7 @@ func LeaseRenewer(ctx context.Context, m Manager, network string, lease *Lease) 
 			}
 
 			log.Info("Lease renewed, new expiration: ", lease.Expiration)
-			dur = lease.Expiration.Sub(time.Now()) - renewMargin
+			dur = lease.Expiration.Sub(clock.Now()) - renewMargin
 
 		case <-ctx.Done():
 			return

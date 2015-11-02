@@ -16,32 +16,37 @@ package subnet
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"testing"
 	"time"
 
-	etcd "github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/client"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/jonboulle/clockwork"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
 	"github.com/coreos/flannel/pkg/ip"
 )
 
-func newDummyRegistry(ttlOverride time.Duration) *MockSubnetRegistry {
-	subnets := []*etcd.Node{
-		&etcd.Node{Key: "10.3.1.0-24", Value: `{ "PublicIP": "1.1.1.1" }`, ModifiedIndex: 10},
-		&etcd.Node{Key: "10.3.2.0-24", Value: `{ "PublicIP": "1.1.1.1" }`, ModifiedIndex: 11},
-		&etcd.Node{Key: "10.3.4.0-24", Value: `{ "PublicIP": "1.1.1.1" }`, ModifiedIndex: 12},
-		&etcd.Node{Key: "10.3.5.0-24", Value: `{ "PublicIP": "1.1.1.1" }`, ModifiedIndex: 13},
+func newDummyRegistry() *MockSubnetRegistry {
+	attrs := LeaseAttrs{
+		PublicIP: ip.MustParseIP4("1.1.1.1"),
+	}
+
+	exp := time.Time{}
+
+	subnets := []Lease{
+		{ip.IP4Net{ip.MustParseIP4("10.3.1.0"), 24}, attrs, exp, 10},
+		{ip.IP4Net{ip.MustParseIP4("10.3.2.0"), 24}, attrs, exp, 11},
+		{ip.IP4Net{ip.MustParseIP4("10.3.4.0"), 24}, attrs, exp, 12},
+		{ip.IP4Net{ip.MustParseIP4("10.3.5.0"), 24}, attrs, exp, 13},
 	}
 
 	config := `{ "Network": "10.3.0.0/16", "SubnetMin": "10.3.1.0", "SubnetMax": "10.3.5.0" }`
-	return NewMockRegistry(ttlOverride, "_", config, subnets)
+	return NewMockRegistry("_", config, subnets)
 }
 
 func TestAcquireLease(t *testing.T) {
-	msr := newDummyRegistry(1000)
-	sm := newEtcdManager(msr)
+	msr := newDummyRegistry()
+	sm := NewMockManager(msr)
 
 	extIaddr, _ := ip.ParseIP4("1.2.3.4")
 	attrs := LeaseAttrs{
@@ -68,8 +73,8 @@ func TestAcquireLease(t *testing.T) {
 }
 
 func TestConfigChanged(t *testing.T) {
-	msr := newDummyRegistry(1000)
-	sm := newEtcdManager(msr)
+	msr := newDummyRegistry()
+	sm := NewMockManager(msr)
 
 	extIaddr, _ := ip.ParseIP4("1.2.3.4")
 	attrs := LeaseAttrs{
@@ -126,8 +131,8 @@ func acquireLease(ctx context.Context, t *testing.T, sm Manager) *Lease {
 }
 
 func TestWatchLeaseAdded(t *testing.T) {
-	msr := newDummyRegistry(0)
-	sm := newEtcdManager(msr)
+	msr := newDummyRegistry()
+	sm := NewMockManager(msr)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -144,8 +149,14 @@ func TestWatchLeaseAdded(t *testing.T) {
 		}
 	}
 
-	expected := "10.3.6.0-24"
-	msr.createSubnet(ctx, "_", expected, `{"PublicIP": "1.1.1.1"}`, 0)
+	expected := ip.IP4Net{
+		IP:        ip.MustParseIP4("10.3.6.0"),
+		PrefixLen: 24,
+	}
+	attrs := &LeaseAttrs{
+		PublicIP: ip.MustParseIP4("1.1.1.1"),
+	}
+	msr.createSubnet(ctx, "_", expected, attrs, 0)
 
 	evtBatch = <-events
 
@@ -159,15 +170,15 @@ func TestWatchLeaseAdded(t *testing.T) {
 		t.Fatalf("WatchLeases produced wrong event type")
 	}
 
-	actual := evt.Lease.Key()
-	if actual != expected {
+	actual := evt.Lease.Subnet
+	if !actual.Equal(expected) {
 		t.Errorf("WatchSubnet produced wrong subnet: expected %s, got %s", expected, actual)
 	}
 }
 
 func TestWatchLeaseRemoved(t *testing.T) {
-	msr := newDummyRegistry(0)
-	sm := newEtcdManager(msr)
+	msr := newDummyRegistry()
+	sm := NewMockManager(msr)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -184,7 +195,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 		}
 	}
 
-	expected := "10.3.4.0-24"
+	expected := ip.IP4Net{ip.MustParseIP4("10.3.4.0"), 24}
 	msr.expireSubnet("_", expected)
 
 	evtBatch = <-events
@@ -198,8 +209,8 @@ func TestWatchLeaseRemoved(t *testing.T) {
 		t.Fatalf("WatchLeases produced wrong event type")
 	}
 
-	actual := evt.Lease.Key()
-	if actual != expected {
+	actual := evt.Lease.Subnet
+	if !actual.Equal(expected) {
 		t.Errorf("WatchSubnet produced wrong subnet: expected %s, got %s", expected, actual)
 	}
 }
@@ -209,8 +220,11 @@ type leaseData struct {
 }
 
 func TestRenewLease(t *testing.T) {
-	msr := newDummyRegistry(1)
-	sm := newEtcdManager(msr)
+	msr := newDummyRegistry()
+	sm := NewMockManager(msr)
+	now := time.Now()
+	fakeClock := clockwork.NewFakeClockAt(now)
+	clock = fakeClock
 
 	// Create LeaseAttrs
 	extIaddr, _ := ip.ParseIP4("1.2.3.4")
@@ -236,26 +250,20 @@ func TestRenewLease(t *testing.T) {
 
 	go LeaseRenewer(ctx, sm, "_", l)
 
-	fmt.Println("Waiting for lease to pass original expiration")
-	time.Sleep(2 * time.Second)
+	fakeClock.Advance(24 * time.Hour)
 
 	// check that it's still good
-	net, err := msr.getNetwork(ctx, "_")
+	n, err := msr.getNetwork(ctx, "_")
 	if err != nil {
 		t.Error("Failed to renew lease: could not get networks: %v", err)
 	}
-	for _, n := range net.Node.Nodes {
-		if n.Key == l.Subnet.StringSep(".", "-") {
-			if n.Expiration.Before(time.Now()) {
-				t.Error("Failed to renew lease: expiration did not advance")
+	for _, sn := range n.subnets {
+		if sn.Subnet.Equal(l.Subnet) {
+			if !sn.Expiration.Equal(now.Add(subnetTTL)) {
+				t.Errorf("Failed to renew lease: bad expiration; expected %v, got %v", now.Add(subnetTTL), sn.Expiration)
 			}
-			a := LeaseAttrs{}
-			if err := json.Unmarshal([]byte(n.Value), &a); err != nil {
-				t.Errorf("Failed to JSON-decode LeaseAttrs: %v", err)
-				return
-			}
-			if !reflect.DeepEqual(a, attrs) {
-				t.Errorf("LeaseAttrs changed: was %#v, now %#v", attrs, a)
+			if !reflect.DeepEqual(sn.Attrs, attrs) {
+				t.Errorf("LeaseAttrs changed: was %#v, now %#v", attrs, sn.Attrs)
 			}
 			return
 		}
@@ -265,8 +273,8 @@ func TestRenewLease(t *testing.T) {
 }
 
 func TestWatchGetNetworks(t *testing.T) {
-	msr := newDummyRegistry(0)
-	sm := newEtcdManager(msr)
+	msr := newDummyRegistry()
+	sm := NewMockManager(msr)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -292,8 +300,8 @@ func TestWatchGetNetworks(t *testing.T) {
 }
 
 func TestWatchNetworkAdded(t *testing.T) {
-	msr := newDummyRegistry(0)
-	sm := newEtcdManager(msr)
+	msr := newDummyRegistry()
+	sm := NewMockManager(msr)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -326,8 +334,8 @@ func TestWatchNetworkAdded(t *testing.T) {
 }
 
 func TestWatchNetworkRemoved(t *testing.T) {
-	msr := newDummyRegistry(0)
-	sm := newEtcdManager(msr)
+	msr := newDummyRegistry()
+	sm := NewMockManager(msr)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -344,7 +352,7 @@ func TestWatchNetworkRemoved(t *testing.T) {
 	// skip over the create event
 	<-events
 
-	_, err := msr.DeleteNetwork(ctx, expected)
+	err := msr.DeleteNetwork(ctx, expected)
 	if err != nil {
 		t.Fatalf("WatchNetworks failed to delete the network")
 	}
