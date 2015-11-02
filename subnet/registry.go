@@ -195,7 +195,7 @@ func (esr *etcdSubnetRegistry) deleteSubnet(ctx context.Context, network string,
 }
 
 func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, network string, since uint64) (Event, uint64, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", network)
+	key := path.Join(esr.etcdCfg.Prefix, network, "subnets")
 	opts := &etcd.WatcherOptions{
 		AfterIndex: since,
 		Recursive:  true,
