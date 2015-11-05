@@ -141,7 +141,7 @@ func main() {
 		}
 
 		runFunc = func(ctx context.Context) {
-			nm.Run()
+			nm.Run(ctx)
 		}
 	}
 
