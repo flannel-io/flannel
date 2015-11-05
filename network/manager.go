@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
@@ -106,22 +107,6 @@ func NewNetworkManager(ctx context.Context, sm subnet.Manager) (*Manager, error)
 		if name != "" {
 			manager.allowedNetworks[name] = true
 		}
-	}
-
-	if manager.isMultiNetwork() {
-		// Get list of existing networks
-		result, err := manager.sm.WatchNetworks(ctx, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, n := range result.Snapshot {
-			if manager.isNetAllowed(n) {
-				manager.networks[n] = NewNetwork(ctx, sm, bm, n, manager.ipMasq)
-			}
-		}
-	} else {
-		manager.networks[""] = NewNetwork(ctx, sm, bm, "", manager.ipMasq)
 	}
 
 	return manager, nil
@@ -324,8 +309,33 @@ func (m *Manager) watchNetworks() {
 	}
 }
 
-func (m *Manager) Run() {
+func (m *Manager) Run(ctx context.Context) {
 	wg := sync.WaitGroup{}
+
+	if m.isMultiNetwork() {
+		for {
+			// Try adding initial networks
+			result, err := m.sm.WatchNetworks(ctx, nil)
+			if err == nil {
+				for _, n := range result.Snapshot {
+					if m.isNetAllowed(n) {
+						m.networks[n] = NewNetwork(ctx, m.sm, m.bm, n, m.ipMasq)
+					}
+				}
+				break
+			}
+
+			// Otherwise retry in a few seconds
+			log.Warning("Failed to retrieve networks (will retry): %v", err)
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(time.Second):
+			}
+		}
+	} else {
+		m.networks[""] = NewNetwork(ctx, m.sm, m.bm, "", m.ipMasq)
+	}
 
 	// Run existing networks
 	m.forEachNetwork(func(n *Network) {
