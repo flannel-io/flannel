@@ -12,6 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package version
 
-const Version = "0.5.3+git"
+var Version = "0.5.3+git"

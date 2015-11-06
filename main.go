@@ -30,6 +30,7 @@ import (
 	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/remote"
 	"github.com/coreos/flannel/subnet"
+	"github.com/coreos/flannel/version"
 
 	// Backends need to be imported for their init() to get executed and them to register
 	_ "github.com/coreos/flannel/backend/alloc"
@@ -103,7 +104,7 @@ func main() {
 	}
 
 	if opts.version {
-		fmt.Fprintln(os.Stderr, Version)
+		fmt.Fprintln(os.Stderr, version.Version)
 		os.Exit(0)
 	}
 
