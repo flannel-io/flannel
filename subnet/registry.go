@@ -57,7 +57,10 @@ type EtcdConfig struct {
 	Prefix    string
 }
 
+type etcdNewFunc func(c *EtcdConfig) (etcd.KeysAPI, error)
+
 type etcdSubnetRegistry struct {
+	cliNewFunc   etcdNewFunc
 	mux          sync.Mutex
 	cli          etcd.KeysAPI
 	etcdCfg      *EtcdConfig
@@ -87,14 +90,19 @@ func newEtcdClient(c *EtcdConfig) (etcd.KeysAPI, error) {
 	return etcd.NewKeysAPI(cli), nil
 }
 
-func newEtcdSubnetRegistry(config *EtcdConfig) (Registry, error) {
+func newEtcdSubnetRegistry(config *EtcdConfig, cliNewFunc etcdNewFunc) (Registry, error) {
 	r := &etcdSubnetRegistry{
 		etcdCfg:      config,
 		networkRegex: regexp.MustCompile(config.Prefix + `/([^/]*)(/|/config)?$`),
 	}
+	if cliNewFunc != nil {
+		r.cliNewFunc = cliNewFunc
+	} else {
+		r.cliNewFunc = newEtcdClient
+	}
 
 	var err error
-	r.cli, err = newEtcdClient(config)
+	r.cli, err = r.cliNewFunc(config)
 	if err != nil {
 		return nil, err
 	}
