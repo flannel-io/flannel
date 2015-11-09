@@ -50,6 +50,7 @@ type Network interface {
 	Lease() *subnet.Lease
 	MTU() int
 	Run(ctx context.Context)
+	SubnetFileVars() map[string]string
 }
 
 type BackendCtor func(sm subnet.Manager, ei *ExternalInterface) (Backend, error)
@@ -69,4 +70,8 @@ func (n *SimpleNetwork) MTU() int {
 
 func (_ *SimpleNetwork) Run(ctx context.Context) {
 	<-ctx.Done()
+}
+
+func (_ *SimpleNetwork) SubnetFileVars() map[string]string {
+	return nil
 }

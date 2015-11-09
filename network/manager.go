@@ -180,14 +180,23 @@ func writeSubnetFile(path string, nw ip.IP4Net, ipMasq bool, bn backend.Network)
 		return err
 	}
 
-	// Write out the first usable IP by incrementing
-	// sn.IP by one
-	sn := bn.Lease().Subnet
-	sn.IP += 1
-
 	fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", nw)
-	fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn)
 	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", bn.MTU())
+
+	if lease := bn.Lease(); lease != nil {
+		// Write out the first usable IP by incrementing
+		// sn.IP by one
+		sn := bn.Lease().Subnet
+		sn.IP += 1
+		fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn)
+	}
+
+	if extraVars := bn.SubnetFileVars(); extraVars != nil {
+		for key, value := range extraVars {
+			fmt.Fprintf(f, "%s=%s\n", key, value)
+		}
+	}
+
 	_, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", ipMasq)
 	f.Close()
 	if err != nil {

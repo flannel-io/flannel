@@ -45,6 +45,10 @@ func (n *network) MTU() int {
 	return n.extIface.Iface.MTU
 }
 
+func (n *network) SubnetFileVars() map[string]string {
+	return nil
+}
+
 func (n *network) Run(ctx context.Context) {
 	wg := sync.WaitGroup{}
 
