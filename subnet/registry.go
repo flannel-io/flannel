@@ -18,10 +18,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"path"
 	"regexp"
-	"strconv"
 	"sync"
 	"time"
 
@@ -41,10 +39,12 @@ var (
 type Registry interface {
 	getNetworkConfig(ctx context.Context, network string) (string, error)
 	getSubnets(ctx context.Context, network string) ([]Lease, uint64, error)
+	getSubnet(ctx context.Context, network string, sn ip.IP4Net) (*Lease, uint64, error)
 	createSubnet(ctx context.Context, network string, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error)
 	updateSubnet(ctx context.Context, network string, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration, asof uint64) (time.Time, error)
 	deleteSubnet(ctx context.Context, network string, sn ip.IP4Net) error
 	watchSubnets(ctx context.Context, network string, since uint64) (Event, uint64, error)
+	watchSubnet(ctx context.Context, network string, since uint64, sn ip.IP4Net) (Event, uint64, error)
 	getNetworks(ctx context.Context) ([]string, uint64, error)
 	watchNetworks(ctx context.Context, since uint64) (Event, uint64, error)
 }
@@ -127,29 +127,31 @@ func (esr *etcdSubnetRegistry) getSubnets(ctx context.Context, network string) (
 
 	leases := []Lease{}
 	for _, node := range resp.Node.Nodes {
-		if sn := parseSubnetKey(node.Key); sn != nil {
-			attrs := &LeaseAttrs{}
-			if err = json.Unmarshal([]byte(node.Value), attrs); err == nil {
-				exp := time.Time{}
-				if node.Expiration != nil {
-					exp = *node.Expiration
-				}
-
-				lease := Lease{
-					Subnet:     *sn,
-					Attrs:      *attrs,
-					Expiration: exp,
-				}
-				leases = append(leases, lease)
-			}
+		l, err := nodeToLease(node)
+		if err != nil {
+			log.Warningf("Ignoring bad subnet node: %v", err)
+			continue
 		}
+
+		leases = append(leases, *l)
 	}
 
 	return leases, resp.Index, nil
 }
 
+func (esr *etcdSubnetRegistry) getSubnet(ctx context.Context, network string, sn ip.IP4Net) (*Lease, uint64, error) {
+	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", MakeSubnetKey(sn))
+	resp, err := esr.client().Get(ctx, key, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	l, err := nodeToLease(resp.Node)
+	return l, resp.Index, err
+}
+
 func (esr *etcdSubnetRegistry) createSubnet(ctx context.Context, network string, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error) {
-	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", sn.StringSep(".", "-"))
+	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", MakeSubnetKey(sn))
 	value, err := json.Marshal(attrs)
 	if err != nil {
 		return time.Time{}, err
@@ -170,7 +172,7 @@ func (esr *etcdSubnetRegistry) createSubnet(ctx context.Context, network string,
 }
 
 func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, network string, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration, asof uint64) (time.Time, error) {
-	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", sn.StringSep(".", "-"))
+	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", MakeSubnetKey(sn))
 	value, err := json.Marshal(attrs)
 	if err != nil {
 		return time.Time{}, err
@@ -189,7 +191,7 @@ func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, network string,
 }
 
 func (esr *etcdSubnetRegistry) deleteSubnet(ctx context.Context, network string, sn ip.IP4Net) error {
-	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", sn.StringSep(".", "-"))
+	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", MakeSubnetKey(sn))
 	_, err := esr.client().Delete(ctx, key, nil)
 	return err
 }
@@ -207,6 +209,21 @@ func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, network string,
 
 	evt, err := parseSubnetWatchResponse(e)
 	return evt, e.Node.ModifiedIndex, err
+}
+
+func (esr *etcdSubnetRegistry) watchSubnet(ctx context.Context, network string, since uint64, sn ip.IP4Net) (Event, uint64, error) {
+	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", MakeSubnetKey(sn))
+	opts := &etcd.WatcherOptions{
+		AfterIndex: since,
+	}
+
+	e, err := esr.client().Watcher(key, opts).Next(ctx)
+	if err != nil {
+		return Event{}, 0, err
+	}
+
+	evt, err := parseSubnetWatchResponse(e)
+	return evt, e.Index, err
 }
 
 // getNetworks queries etcd to get a list of network names.  It returns the
@@ -280,7 +297,7 @@ func ensureExpiration(resp *etcd.Response, ttl time.Duration) {
 }
 
 func parseSubnetWatchResponse(resp *etcd.Response) (Event, error) {
-	sn := parseSubnetKey(resp.Node.Key)
+	sn := ParseSubnetKey(resp.Node.Key)
 	if sn == nil {
 		return Event{}, fmt.Errorf("%v %q: not a subnet, skipping", resp.Action, resp.Node.Key)
 	}
@@ -366,14 +383,28 @@ func (esr *etcdSubnetRegistry) parseNetworkKey(s string) (string, bool) {
 	return "", false
 }
 
-func parseSubnetKey(s string) *ip.IP4Net {
-	if parts := subnetRegex.FindStringSubmatch(s); len(parts) == 3 {
-		snIp := net.ParseIP(parts[1]).To4()
-		prefixLen, err := strconv.ParseUint(parts[2], 10, 5)
-		if snIp != nil && err == nil {
-			return &ip.IP4Net{IP: ip.FromIP(snIp), PrefixLen: uint(prefixLen)}
-		}
+func nodeToLease(node *etcd.Node) (*Lease, error) {
+	sn := ParseSubnetKey(node.Key)
+	if sn == nil {
+		return nil, fmt.Errorf("failed to parse subnet key %q", *sn)
 	}
 
-	return nil
+	attrs := &LeaseAttrs{}
+	if err := json.Unmarshal([]byte(node.Value), attrs); err != nil {
+		return nil, err
+	}
+
+	exp := time.Time{}
+	if node.Expiration != nil {
+		exp = *node.Expiration
+	}
+
+	lease := Lease{
+		Subnet:     *sn,
+		Attrs:      *attrs,
+		Expiration: exp,
+		asof:       node.ModifiedIndex,
+	}
+
+	return &lease, nil
 }

@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -27,6 +28,7 @@ import (
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/pkg/transport"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
+	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
 )
 
@@ -93,7 +95,7 @@ func (m *RemoteManager) mkurl(network string, parts ...string) string {
 func (m *RemoteManager) GetNetworkConfig(ctx context.Context, network string) (*subnet.Config, error) {
 	url := m.mkurl(network, "config")
 
-	resp, err := m.httpGet(ctx, url)
+	resp, err := m.httpVerb(ctx, "GET", url, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +126,7 @@ func (m *RemoteManager) AcquireLease(ctx context.Context, network string, attrs 
 		return nil, err
 	}
 
-	resp, err := m.httpPutPost(ctx, "POST", url, "application/json", body)
+	resp, err := m.httpVerb(ctx, "POST", url, "application/json", body)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +152,7 @@ func (m *RemoteManager) RenewLease(ctx context.Context, network string, lease *s
 		return err
 	}
 
-	resp, err := m.httpPutPost(ctx, "PUT", url, "application/json", body)
+	resp, err := m.httpVerb(ctx, "PUT", url, "application/json", body)
 	if err != nil {
 		return err
 	}
@@ -169,6 +171,22 @@ func (m *RemoteManager) RenewLease(ctx context.Context, network string, lease *s
 	return nil
 }
 
+func (m *RemoteManager) RevokeLease(ctx context.Context, network string, sn ip.IP4Net) error {
+	url := m.mkurl(network, "leases", subnet.MakeSubnetKey(sn))
+
+	resp, err := m.httpVerb(ctx, "DELETE", url, "", nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return httpError(resp)
+	}
+
+	return nil
+}
+
 func (m *RemoteManager) watch(ctx context.Context, url string, cursor interface{}, wr interface{}) error {
 	if cursor != nil {
 		c, ok := cursor.(string)
@@ -179,7 +197,7 @@ func (m *RemoteManager) watch(ctx context.Context, url string, cursor interface{
 		url = fmt.Sprintf("%v?next=%v", url, c)
 	}
 
-	resp, err := m.httpGet(ctx, url)
+	resp, err := m.httpVerb(ctx, "GET", url, "", nil)
 	if err != nil {
 		return err
 	}
@@ -194,6 +212,21 @@ func (m *RemoteManager) watch(ctx context.Context, url string, cursor interface{
 	}
 
 	return nil
+}
+
+func (m *RemoteManager) WatchLease(ctx context.Context, network string, sn ip.IP4Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
+	url := m.mkurl(network, "leases", subnet.MakeSubnetKey(sn))
+
+	wr := subnet.LeaseWatchResult{}
+	err := m.watch(ctx, url, cursor, &wr)
+	if err != nil {
+		return subnet.LeaseWatchResult{}, err
+	}
+	if _, ok := wr.Cursor.(string); !ok {
+		return subnet.LeaseWatchResult{}, fmt.Errorf("watch returned non-string cursor")
+	}
+
+	return wr, nil
 }
 
 func (m *RemoteManager) WatchLeases(ctx context.Context, network string, cursor interface{}) (subnet.LeaseWatchResult, error) {
@@ -258,20 +291,19 @@ func (m *RemoteManager) httpDo(ctx context.Context, req *http.Request) (*http.Re
 	}
 }
 
-func (m *RemoteManager) httpGet(ctx context.Context, url string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", url, nil)
+func (m *RemoteManager) httpVerb(ctx context.Context, method, url, contentType string, body []byte) (*http.Response, error) {
+	var r io.Reader
+	if body != nil {
+		r = bytes.NewBuffer(body)
+	}
+
+	req, err := http.NewRequest(method, url, r)
 	if err != nil {
 		return nil, err
 	}
 
-	return m.httpDo(ctx, req)
-}
-
-func (m *RemoteManager) httpPutPost(ctx context.Context, method, url, contentType string, body []byte) (*http.Response, error) {
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
-	if err != nil {
-		return nil, err
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
 	}
-	req.Header.Set("Content-Type", contentType)
 	return m.httpDo(ctx, req)
 }

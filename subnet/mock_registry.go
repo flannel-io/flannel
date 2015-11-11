@@ -17,6 +17,7 @@ package subnet
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	etcd "github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/client"
@@ -26,9 +27,36 @@ import (
 )
 
 type netwk struct {
-	config       string
-	subnets      []Lease
-	subnetEvents chan event
+	config        string
+	subnets       []Lease
+	subnetsEvents chan event
+
+	mux          sync.Mutex
+	subnetEvents map[ip.IP4Net]chan event
+}
+
+func (n *netwk) sendSubnetEvent(sn ip.IP4Net, e event) {
+	n.subnetsEvents <- e
+
+	n.mux.Lock()
+	c, ok := n.subnetEvents[sn]
+	if !ok {
+		c = make(chan event, 10)
+		n.subnetEvents[sn] = c
+	}
+	n.mux.Unlock()
+	c <- e
+}
+
+func (n *netwk) subnetEventsChan(sn ip.IP4Net) chan event {
+	n.mux.Lock()
+	c, ok := n.subnetEvents[sn]
+	if !ok {
+		c = make(chan event, 10)
+		n.subnetEvents[sn] = c
+	}
+	n.mux.Unlock()
+	return c
 }
 
 type event struct {
@@ -50,9 +78,10 @@ func NewMockRegistry(network, config string, initialSubnets []Lease) *MockSubnet
 	}
 
 	msr.networks[network] = &netwk{
-		config:       config,
-		subnets:      initialSubnets,
-		subnetEvents: make(chan event, 1000),
+		config:        config,
+		subnets:       initialSubnets,
+		subnetsEvents: make(chan event, 1000),
+		subnetEvents:  make(map[ip.IP4Net]chan event),
 	}
 	return msr
 }
@@ -80,6 +109,19 @@ func (msr *MockSubnetRegistry) getSubnets(ctx context.Context, network string) (
 		return nil, 0, fmt.Errorf("Network %s not found", network)
 	}
 	return n.subnets, msr.index, nil
+}
+
+func (msr *MockSubnetRegistry) getSubnet(ctx context.Context, network string, sn ip.IP4Net) (*Lease, uint64, error) {
+	n, ok := msr.networks[network]
+	if !ok {
+		return nil, 0, fmt.Errorf("Network %s not found", network)
+	}
+	for _, l := range n.subnets {
+		if l.Subnet.Equal(sn) {
+			return &l, msr.index, nil
+		}
+	}
+	return nil, msr.index, fmt.Errorf("subnet %s not found", sn)
 }
 
 func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, network string, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error) {
@@ -113,7 +155,8 @@ func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, network string,
 		Lease:   l,
 		Network: network,
 	}
-	n.subnetEvents <- event{evt, msr.index}
+
+	n.sendSubnetEvent(sn, event{evt, msr.index})
 
 	return exp, nil
 }
@@ -128,20 +171,22 @@ func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, network string,
 
 	exp := clock.Now().Add(ttl)
 
-	sub, _, err := n.findSubnet(sn)
+	sub, i, err := n.findSubnet(sn)
 	if err != nil {
 		return time.Time{}, err
 	}
 
 	sub.Attrs = *attrs
-	sub.Expiration = exp
 	sub.asof = msr.index
-	n.subnetEvents <- event{
+	sub.Expiration = exp
+	n.subnets[i] = sub
+	n.sendSubnetEvent(sn, event{
 		Event{
 			Type:    EventAdded,
 			Lease:   sub,
 			Network: network,
-		}, msr.index}
+		}, msr.index,
+	})
 
 	return sub.Expiration, nil
 }
@@ -162,12 +207,13 @@ func (msr *MockSubnetRegistry) deleteSubnet(ctx context.Context, network string,
 	n.subnets[i] = n.subnets[len(n.subnets)-1]
 	n.subnets = n.subnets[:len(n.subnets)-1]
 	sub.asof = msr.index
-	n.subnetEvents <- event{
+	n.sendSubnetEvent(sn, event{
 		Event{
 			Type:    EventRemoved,
 			Lease:   sub,
 			Network: network,
-		}, msr.index}
+		}, msr.index,
+	})
 
 	return nil
 }
@@ -192,7 +238,36 @@ func (msr *MockSubnetRegistry) watchSubnets(ctx context.Context, network string,
 		case <-ctx.Done():
 			return Event{}, msr.index, ctx.Err()
 
-		case e := <-n.subnetEvents:
+		case e := <-n.subnetsEvents:
+			if e.index <= since {
+				continue
+			}
+			return e.evt, msr.index, nil
+		}
+	}
+}
+
+func (msr *MockSubnetRegistry) watchSubnet(ctx context.Context, network string, since uint64, sn ip.IP4Net) (Event, uint64, error) {
+	n, ok := msr.networks[network]
+	if !ok {
+		return Event{}, msr.index, fmt.Errorf("Network %s not found", network)
+	}
+
+	for {
+		if since < msr.index {
+			return Event{}, msr.index, etcd.Error{
+				Code:    etcd.ErrorCodeEventIndexCleared,
+				Cause:   "out of date",
+				Message: "cursor is out of date",
+				Index:   msr.index,
+			}
+		}
+
+		select {
+		case <-ctx.Done():
+			return Event{}, msr.index, ctx.Err()
+
+		case e := <-n.subnetEventsChan(sn):
 			if e.index <= since {
 				continue
 			}
@@ -212,12 +287,12 @@ func (msr *MockSubnetRegistry) expireSubnet(network string, sn ip.IP4Net) {
 		n.subnets[i] = n.subnets[len(n.subnets)-1]
 		n.subnets = n.subnets[:len(n.subnets)-1]
 		sub.asof = msr.index
-		n.subnetEvents <- event{
+		n.sendSubnetEvent(sn, event{
 			Event{
 				Type:  EventRemoved,
 				Lease: sub,
 			}, msr.index,
-		}
+		})
 	}
 }
 
@@ -280,8 +355,9 @@ func (msr *MockSubnetRegistry) CreateNetwork(ctx context.Context, network, confi
 	msr.index += 1
 
 	n := &netwk{
-		config:       network,
-		subnetEvents: make(chan event, 1000),
+		config:        network,
+		subnetsEvents: make(chan event, 1000),
+		subnetEvents:  make(map[ip.IP4Net]chan event),
 	}
 
 	msr.networks[network] = n

@@ -19,6 +19,8 @@ import (
 
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+
+	"github.com/coreos/flannel/pkg/ip"
 )
 
 // WatchLeases performs a long term watch of the given network's subnet leases
@@ -42,6 +44,7 @@ func WatchLeases(ctx context.Context, sm Manager, network string, ownLease *Leas
 			time.Sleep(time.Second)
 			continue
 		}
+
 		cursor = res.Cursor
 
 		batch := []Event{}
@@ -244,4 +247,36 @@ func (nw *netWatcher) remove(network string) Event {
 	}
 
 	return Event{EventRemoved, Lease{}, network}
+}
+
+// WatchLease performs a long term watch of the given network's subnet lease
+// and communicates addition/deletion events on receiver channel. It takes care
+// of handling "fall-behind" logic where the history window has advanced too far
+// and it needs to diff the latest snapshot with its saved state and generate events
+func WatchLease(ctx context.Context, sm Manager, network string, sn ip.IP4Net, receiver chan Event) {
+	var cursor interface{}
+
+	for {
+		wr, err := sm.WatchLease(ctx, network, sn, cursor)
+		if err != nil {
+			if err == context.Canceled || err == context.DeadlineExceeded {
+				return
+			}
+
+			log.Errorf("Subnet watch failed: %v", err)
+			time.Sleep(time.Second)
+			continue
+		}
+
+		if len(wr.Snapshot) > 0 {
+			receiver <- Event{
+				Type:  EventAdded,
+				Lease: wr.Snapshot[0],
+			}
+		} else {
+			receiver <- wr.Events[0]
+		}
+
+		cursor = wr.Cursor
+	}
 }

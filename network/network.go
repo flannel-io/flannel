@@ -15,12 +15,14 @@
 package network
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 	"time"
 
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/subnet"
 )
@@ -29,7 +31,10 @@ const (
 	renewMargin = time.Hour
 )
 
-var backends map[string]backend.Backend
+var (
+	errInterrupted = errors.New("interrupted")
+	errCanceled    = errors.New("canceled")
+)
 
 type Network struct {
 	Name   string
@@ -91,38 +96,45 @@ func (n *Network) init() error {
 	return nil
 }
 
-func (n *Network) Run(extIface *backend.ExternalInterface, inited func(bn backend.Network)) {
-	wg := sync.WaitGroup{}
-
-For:
+func (n *Network) retryInit() error {
 	for {
 		err := n.init()
-		switch err {
-		case nil:
-			break For
-		case context.Canceled:
-			return
-		default:
-			log.Error(err)
-			select {
-			case <-n.ctx.Done():
-				return
-			case <-time.After(time.Second):
-			}
+		if err == nil || err == context.Canceled {
+			return err
 		}
+
+		log.Error(err)
+
+		select {
+		case <-n.ctx.Done():
+			return n.ctx.Err()
+		case <-time.After(time.Second):
+		}
+	}
+}
+
+func (n *Network) runOnce(extIface *backend.ExternalInterface, inited func(bn backend.Network)) error {
+	if err := n.retryInit(); err != nil {
+		return errCanceled
 	}
 
 	inited(n.bn)
 
-	wg.Add(1)
-	go func() {
-		n.bn.Run(n.ctx)
-		wg.Done()
-	}()
+	ctx, interruptFunc := context.WithCancel(n.ctx)
+
+	wg := sync.WaitGroup{}
 
 	wg.Add(1)
 	go func() {
-		subnet.LeaseRenewer(n.ctx, n.sm, n.Name, n.bn.Lease())
+		n.bn.Run(ctx)
+		wg.Done()
+	}()
+
+	evts := make(chan subnet.Event)
+
+	wg.Add(1)
+	go func() {
+		subnet.WatchLease(ctx, n.sm, n.Name, n.bn.Lease().Subnet, evts)
 		wg.Done()
 	}()
 
@@ -134,7 +146,48 @@ For:
 		}
 	}()
 
-	wg.Wait()
+	defer wg.Wait()
+
+	dur := n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+
+	for {
+		select {
+		case <-time.After(dur):
+			err := n.sm.RenewLease(n.ctx, n.Name, n.bn.Lease())
+			if err != nil {
+				log.Error("Error renewing lease (trying again in 1 min): ", err)
+				dur = time.Minute
+				continue
+			}
+
+			log.Info("Lease renewed, new expiration: ", n.bn.Lease().Expiration)
+			dur = n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+
+		case e := <-evts:
+			if e.Type == subnet.EventRemoved {
+				log.Warning("Lease has been revoked")
+				interruptFunc()
+				return errInterrupted
+			}
+			dur = n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+
+		case <-n.ctx.Done():
+			return errCanceled
+		}
+	}
+}
+
+func (n *Network) Run(extIface *backend.ExternalInterface, inited func(bn backend.Network)) {
+	for {
+		switch n.runOnce(extIface, inited) {
+		case errInterrupted:
+
+		case errCanceled:
+			return
+		default:
+			panic("unexpected error returned")
+		}
+	}
 }
 
 func (n *Network) Cancel() {
