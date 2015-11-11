@@ -130,14 +130,6 @@ func (n *Network) runOnce(extIface *backend.ExternalInterface, inited func(bn ba
 		wg.Done()
 	}()
 
-	evts := make(chan subnet.Event)
-
-	wg.Add(1)
-	go func() {
-		subnet.WatchLease(ctx, n.sm, n.Name, n.bn.Lease().Subnet, evts)
-		wg.Done()
-	}()
-
 	defer func() {
 		if n.ipMasq {
 			if err := teardownIPMasq(n.Config.Network); err != nil {
@@ -148,33 +140,46 @@ func (n *Network) runOnce(extIface *backend.ExternalInterface, inited func(bn ba
 
 	defer wg.Wait()
 
-	dur := n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+	if n.bn.Lease() != nil {
+		evts := make(chan subnet.Event)
 
-	for {
-		select {
-		case <-time.After(dur):
-			err := n.sm.RenewLease(n.ctx, n.Name, n.bn.Lease())
-			if err != nil {
-				log.Error("Error renewing lease (trying again in 1 min): ", err)
-				dur = time.Minute
-				continue
+		wg.Add(1)
+		go func() {
+			subnet.WatchLease(ctx, n.sm, n.Name, n.bn.Lease().Subnet, evts)
+			wg.Done()
+		}()
+
+		dur := n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+
+		for {
+			select {
+			case <-time.After(dur):
+				err := n.sm.RenewLease(n.ctx, n.Name, n.bn.Lease())
+				if err != nil {
+					log.Error("Error renewing lease (trying again in 1 min): ", err)
+					dur = time.Minute
+					continue
+				}
+
+				log.Info("Lease renewed, new expiration: ", n.bn.Lease().Expiration)
+				dur = n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+
+			case e := <-evts:
+				if e.Type == subnet.EventRemoved {
+					log.Warning("Lease has been revoked")
+					interruptFunc()
+					return errInterrupted
+				}
+				dur = n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+
+			case <-n.ctx.Done():
 			}
-
-			log.Info("Lease renewed, new expiration: ", n.bn.Lease().Expiration)
-			dur = n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
-
-		case e := <-evts:
-			if e.Type == subnet.EventRemoved {
-				log.Warning("Lease has been revoked")
-				interruptFunc()
-				return errInterrupted
-			}
-			dur = n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
-
-		case <-n.ctx.Done():
-			return errCanceled
 		}
+	} else {
+		<-n.ctx.Done()
 	}
+
+	return errCanceled
 }
 
 func (n *Network) Run(extIface *backend.ExternalInterface, inited func(bn backend.Network)) {
