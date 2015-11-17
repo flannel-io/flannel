@@ -149,7 +149,6 @@ func (n *Network) runOnce(extIface *backend.ExternalInterface, inited func(bn ba
 	defer wg.Wait()
 
 	dur := n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
-
 	for {
 		select {
 		case <-time.After(dur):
@@ -164,12 +163,16 @@ func (n *Network) runOnce(extIface *backend.ExternalInterface, inited func(bn ba
 			dur = n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
 
 		case e := <-evts:
-			if e.Type == subnet.EventRemoved {
+			switch e.Type {
+			case subnet.EventAdded:
+				n.bn.Lease().Expiration = e.Lease.Expiration
+				dur = n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+
+			case subnet.EventRemoved:
 				log.Warning("Lease has been revoked")
 				interruptFunc()
 				return errInterrupted
 			}
-			dur = n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
 
 		case <-n.ctx.Done():
 			return errCanceled

@@ -33,7 +33,7 @@ import (
 
 var (
 	subnetRegex *regexp.Regexp = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)`)
-	ErrTryAgain                = errors.New("try again")
+	errTryAgain                = errors.New("try again")
 )
 
 type Registry interface {
@@ -167,8 +167,12 @@ func (esr *etcdSubnetRegistry) createSubnet(ctx context.Context, network string,
 		return time.Time{}, err
 	}
 
-	ensureExpiration(resp, ttl)
-	return *resp.Node.Expiration, nil
+	exp := time.Time{}
+	if resp.Node.Expiration != nil {
+		exp = *resp.Node.Expiration
+	}
+
+	return exp, nil
 }
 
 func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, network string, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration, asof uint64) (time.Time, error) {
@@ -186,8 +190,12 @@ func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, network string,
 		return time.Time{}, err
 	}
 
-	ensureExpiration(resp, ttl)
-	return *resp.Node.Expiration, nil
+	exp := time.Time{}
+	if resp.Node.Expiration != nil {
+		exp = *resp.Node.Expiration
+	}
+
+	return exp, nil
 }
 
 func (esr *etcdSubnetRegistry) deleteSubnet(ctx context.Context, network string, sn ip.IP4Net) error {
@@ -223,7 +231,7 @@ func (esr *etcdSubnetRegistry) watchSubnet(ctx context.Context, network string, 
 	}
 
 	evt, err := parseSubnetWatchResponse(e)
-	return evt, e.Index, err
+	return evt, e.Node.ModifiedIndex, err
 }
 
 // getNetworks queries etcd to get a list of network names.  It returns the
@@ -287,15 +295,6 @@ func (esr *etcdSubnetRegistry) resetClient() {
 	}
 }
 
-func ensureExpiration(resp *etcd.Response, ttl time.Duration) {
-	if resp.Node.Expiration == nil {
-		// should not be but calc it ourselves in this case
-		log.Info("Expiration field missing on etcd response, calculating locally")
-		exp := clock.Now().Add(time.Duration(ttl) * time.Second)
-		resp.Node.Expiration = &exp
-	}
-}
-
 func parseSubnetWatchResponse(resp *etcd.Response) (Event, error) {
 	sn := ParseSubnetKey(resp.Node.Key)
 	if sn == nil {
@@ -339,7 +338,7 @@ func (esr *etcdSubnetRegistry) parseNetworkWatchResponse(resp *etcd.Response) (E
 	index := resp.Node.ModifiedIndex
 	netname, isConfig := esr.parseNetworkKey(resp.Node.Key)
 	if netname == "" {
-		return Event{}, index, ErrTryAgain
+		return Event{}, index, errTryAgain
 	}
 
 	evt := Event{}
@@ -355,7 +354,7 @@ func (esr *etcdSubnetRegistry) parseNetworkWatchResponse(resp *etcd.Response) (E
 	default:
 		if !isConfig {
 			// Ignore non .../<netname>/config keys; tell caller to try again
-			return Event{}, index, ErrTryAgain
+			return Event{}, index, errTryAgain
 		}
 
 		_, err := ParseConfig(resp.Node.Value)

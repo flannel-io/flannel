@@ -258,6 +258,63 @@ func (m *RemoteManager) WatchNetworks(ctx context.Context, cursor interface{}) (
 	return wr, nil
 }
 
+func (m *RemoteManager) AddReservation(ctx context.Context, network string, r *subnet.Reservation) error {
+	url := m.mkurl(network, "reservations")
+
+	body, err := json.Marshal(r)
+	if err != nil {
+		return err
+	}
+
+	resp, err := m.httpVerb(ctx, "POST", url, "application/json", body)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return httpError(resp)
+	}
+	return nil
+}
+
+func (m *RemoteManager) RemoveReservation(ctx context.Context, network string, sn ip.IP4Net) error {
+	url := m.mkurl(network, "reservations", subnet.MakeSubnetKey(sn))
+
+	resp, err := m.httpVerb(ctx, "DELETE", url, "", nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return httpError(resp)
+	}
+
+	return nil
+}
+
+func (m *RemoteManager) ListReservations(ctx context.Context, network string) ([]subnet.Reservation, error) {
+	url := m.mkurl(network, "reservations")
+
+	resp, err := m.httpVerb(ctx, "GET", url, "", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, httpError(resp)
+	}
+
+	rs := []subnet.Reservation{}
+	if err := json.NewDecoder(resp.Body).Decode(&rs); err != nil {
+		return nil, err
+	}
+
+	return rs, nil
+}
+
 func httpError(resp *http.Response) error {
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
