@@ -125,7 +125,7 @@
 		},
 		{
 			"ImportPath": "github.com/vishvananda/netlink",
-			"Rev": "991a7a2fa7c073968fb27f36669df199b1fdf412"
+			"Rev": "a57a12c1b1d8aa37cf2f9da4fa7657b1f1fed88c"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",

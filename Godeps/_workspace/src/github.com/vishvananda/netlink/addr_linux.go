@@ -81,7 +81,7 @@ func AddrList(link Link, family int) ([]Addr, error) {
 		index = base.Index
 	}
 
-	res := make([]Addr, 0)
+	var res []Addr
 	for _, m := range msgs {
 		msg := nl.DeserializeIfAddrmsg(m)
 
