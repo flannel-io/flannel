@@ -39,8 +39,9 @@ func NativeEndian() binary.ByteOrder {
 		var x uint32 = 0x01020304
 		if *(*byte)(unsafe.Pointer(&x)) == 0x01 {
 			nativeEndian = binary.BigEndian
+		} else {
+			nativeEndian = binary.LittleEndian
 		}
-		nativeEndian = binary.LittleEndian
 	}
 	return nativeEndian
 }
@@ -141,17 +142,19 @@ func (a *RtAttr) Len() int {
 }
 
 // Serialize the RtAttr into a byte array
-// This can't ust unsafe.cast because it must iterate through children.
+// This can't just unsafe.cast because it must iterate through children.
 func (a *RtAttr) Serialize() []byte {
 	native := NativeEndian()
 
 	length := a.Len()
 	buf := make([]byte, rtaAlignOf(length))
 
+	next := 4
 	if a.Data != nil {
-		copy(buf[4:], a.Data)
-	} else {
-		next := 4
+		copy(buf[next:], a.Data)
+		next += rtaAlignOf(len(a.Data))
+	}
+	if len(a.children) > 0 {
 		for _, child := range a.children {
 			childBuf := child.Serialize()
 			copy(buf[next:], childBuf)
@@ -172,16 +175,16 @@ type NetlinkRequest struct {
 }
 
 // Serialize the Netlink Request into a byte array
-func (msg *NetlinkRequest) Serialize() []byte {
+func (req *NetlinkRequest) Serialize() []byte {
 	length := syscall.SizeofNlMsghdr
-	dataBytes := make([][]byte, len(msg.Data))
-	for i, data := range msg.Data {
+	dataBytes := make([][]byte, len(req.Data))
+	for i, data := range req.Data {
 		dataBytes[i] = data.Serialize()
 		length = length + len(dataBytes[i])
 	}
-	msg.Len = uint32(length)
+	req.Len = uint32(length)
 	b := make([]byte, length)
-	hdr := (*(*[syscall.SizeofNlMsghdr]byte)(unsafe.Pointer(msg)))[:]
+	hdr := (*(*[syscall.SizeofNlMsghdr]byte)(unsafe.Pointer(req)))[:]
 	next := syscall.SizeofNlMsghdr
 	copy(b[0:next], hdr)
 	for _, data := range dataBytes {
@@ -193,9 +196,9 @@ func (msg *NetlinkRequest) Serialize() []byte {
 	return b
 }
 
-func (msg *NetlinkRequest) AddData(data NetlinkRequestData) {
+func (req *NetlinkRequest) AddData(data NetlinkRequestData) {
 	if data != nil {
-		msg.Data = append(msg.Data, data)
+		req.Data = append(req.Data, data)
 	}
 }
 
@@ -218,7 +221,7 @@ func (req *NetlinkRequest) Execute(sockType int, resType uint16) ([][]byte, erro
 		return nil, err
 	}
 
-	res := make([][]byte, 0)
+	var res [][]byte
 
 done:
 	for {
@@ -320,6 +323,10 @@ func Subscribe(protocol int, groups ...uint) (*NetlinkSocket, error) {
 
 func (s *NetlinkSocket) Close() {
 	syscall.Close(s.fd)
+}
+
+func (s *NetlinkSocket) GetFd() int {
+	return s.fd
 }
 
 func (s *NetlinkSocket) Send(request *NetlinkRequest) error {
