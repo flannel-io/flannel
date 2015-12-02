@@ -68,7 +68,7 @@ func (c watchCursor) String() string {
 }
 
 func NewLocalManager(config *EtcdConfig) (Manager, error) {
-	r, err := newEtcdSubnetRegistry(config)
+	r, err := newEtcdSubnetRegistry(config, nil)
 	if err != nil {
 		return nil, err
 	}
