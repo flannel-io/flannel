@@ -175,7 +175,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 	evtBatch = <-events
 
 	if len(evtBatch) != 1 {
-		t.Fatalf("WatchLeases produced wrong sized event batch")
+		t.Fatalf("WatchLeases produced wrong sized event batch: got %v, expected 1", len(evtBatch))
 	}
 
 	evt := evtBatch[0]
@@ -203,6 +203,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 	go WatchLeases(ctx, sm, "_", l, events)
 
 	evtBatch := <-events
+
 	for _, evt := range evtBatch {
 		if evt.Lease.Key() == l.Key() {
 			t.Errorf("WatchLeases returned our own lease")
@@ -220,7 +221,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 
 	evtBatch = <-events
 	if len(evtBatch) != 1 {
-		t.Fatalf("WatchLeases produced wrong sized event batch")
+		t.Fatalf("WatchLeases produced wrong sized event batch: %#v", evtBatch)
 	}
 
 	evt := evtBatch[0]

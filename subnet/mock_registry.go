@@ -65,6 +65,7 @@ type event struct {
 }
 
 type MockSubnetRegistry struct {
+	mux           sync.Mutex
 	networks      map[string]*netwk
 	networkEvents chan event
 	index         uint64
@@ -87,6 +88,9 @@ func NewMockRegistry(network, config string, initialSubnets []Lease) *MockSubnet
 }
 
 func (msr *MockSubnetRegistry) getNetworkConfig(ctx context.Context, network string) (string, error) {
+	msr.mux.Lock()
+	defer msr.mux.Unlock()
+
 	n, ok := msr.networks[network]
 	if !ok {
 		return "", fmt.Errorf("Network %s not found", network)
@@ -95,6 +99,9 @@ func (msr *MockSubnetRegistry) getNetworkConfig(ctx context.Context, network str
 }
 
 func (msr *MockSubnetRegistry) setConfig(network, config string) error {
+	msr.mux.Lock()
+	defer msr.mux.Unlock()
+
 	n, ok := msr.networks[network]
 	if !ok {
 		return fmt.Errorf("Network %s not found", network)
@@ -104,14 +111,23 @@ func (msr *MockSubnetRegistry) setConfig(network, config string) error {
 }
 
 func (msr *MockSubnetRegistry) getSubnets(ctx context.Context, network string) ([]Lease, uint64, error) {
+	msr.mux.Lock()
+	defer msr.mux.Unlock()
+
 	n, ok := msr.networks[network]
 	if !ok {
 		return nil, 0, fmt.Errorf("Network %s not found", network)
 	}
-	return n.subnets, msr.index, nil
+
+	subs := make([]Lease, len(n.subnets))
+	copy(subs, n.subnets)
+	return subs, msr.index, nil
 }
 
 func (msr *MockSubnetRegistry) getSubnet(ctx context.Context, network string, sn ip.IP4Net) (*Lease, uint64, error) {
+	msr.mux.Lock()
+	defer msr.mux.Unlock()
+
 	n, ok := msr.networks[network]
 	if !ok {
 		return nil, 0, fmt.Errorf("Network %s not found", network)
@@ -125,6 +141,9 @@ func (msr *MockSubnetRegistry) getSubnet(ctx context.Context, network string, sn
 }
 
 func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, network string, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error) {
+	msr.mux.Lock()
+	defer msr.mux.Unlock()
+
 	n, ok := msr.networks[network]
 	if !ok {
 		return time.Time{}, fmt.Errorf("Network %s not found", network)
@@ -165,6 +184,9 @@ func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, network string,
 }
 
 func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, network string, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration, asof uint64) (time.Time, error) {
+	msr.mux.Lock()
+	defer msr.mux.Unlock()
+
 	n, ok := msr.networks[network]
 	if !ok {
 		return time.Time{}, fmt.Errorf("Network %s not found", network)
@@ -198,6 +220,9 @@ func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, network string,
 }
 
 func (msr *MockSubnetRegistry) deleteSubnet(ctx context.Context, network string, sn ip.IP4Net) error {
+	msr.mux.Lock()
+	defer msr.mux.Unlock()
+
 	n, ok := msr.networks[network]
 	if !ok {
 		return fmt.Errorf("Network %s not found", network)
@@ -225,64 +250,79 @@ func (msr *MockSubnetRegistry) deleteSubnet(ctx context.Context, network string,
 }
 
 func (msr *MockSubnetRegistry) watchSubnets(ctx context.Context, network string, since uint64) (Event, uint64, error) {
+	msr.mux.Lock()
 	n, ok := msr.networks[network]
+	msr.mux.Unlock()
+
 	if !ok {
-		return Event{}, msr.index, fmt.Errorf("Network %s not found", network)
+		return Event{}, 0, fmt.Errorf("Network %s not found", network)
 	}
 
 	for {
-		if since < msr.index {
-			return Event{}, msr.index, etcd.Error{
+		msr.mux.Lock()
+		index := msr.index
+		msr.mux.Unlock()
+
+		if since < index {
+			return Event{}, 0, etcd.Error{
 				Code:    etcd.ErrorCodeEventIndexCleared,
 				Cause:   "out of date",
 				Message: "cursor is out of date",
-				Index:   msr.index,
+				Index:   index,
 			}
 		}
 
 		select {
 		case <-ctx.Done():
-			return Event{}, msr.index, ctx.Err()
+			return Event{}, 0, ctx.Err()
 
 		case e := <-n.subnetsEvents:
-			if e.index <= since {
-				continue
+			if e.index > since {
+				return e.evt, e.index, nil
 			}
-			return e.evt, msr.index, nil
 		}
 	}
 }
 
 func (msr *MockSubnetRegistry) watchSubnet(ctx context.Context, network string, since uint64, sn ip.IP4Net) (Event, uint64, error) {
+	msr.mux.Lock()
 	n, ok := msr.networks[network]
+	msr.mux.Unlock()
+
 	if !ok {
-		return Event{}, msr.index, fmt.Errorf("Network %s not found", network)
+		return Event{}, 0, fmt.Errorf("Network %s not found", network)
 	}
 
 	for {
-		if since < msr.index {
+		msr.mux.Lock()
+		index := msr.index
+		msr.mux.Unlock()
+
+		if since < index {
 			return Event{}, msr.index, etcd.Error{
 				Code:    etcd.ErrorCodeEventIndexCleared,
 				Cause:   "out of date",
 				Message: "cursor is out of date",
-				Index:   msr.index,
+				Index:   index,
 			}
 		}
 
 		select {
 		case <-ctx.Done():
-			return Event{}, msr.index, ctx.Err()
+			return Event{}, index, ctx.Err()
 
 		case e := <-n.subnetEventsChan(sn):
-			if e.index <= since {
-				continue
+			if e.index > since {
+				return e.evt, index, nil
 			}
-			return e.evt, msr.index, nil
 		}
 	}
 }
 
 func (msr *MockSubnetRegistry) expireSubnet(network string, sn ip.IP4Net) {
+	msr.mux.Lock()
+	defer msr.mux.Unlock()
+
 	n, ok := msr.networks[network]
 	if !ok {
 		return
@@ -310,6 +350,9 @@ func configKeyToNetworkKey(configKey string) string {
 }
 
 func (msr *MockSubnetRegistry) getNetworks(ctx context.Context) ([]string, uint64, error) {
+	msr.mux.Lock()
+	defer msr.mux.Unlock()
+
 	ns := []string{}
 
 	for n, _ := range msr.networks {
@@ -320,30 +363,36 @@ func (msr *MockSubnetRegistry) getNetworks(ctx context.Context) ([]string, uint6
 }
 
 func (msr *MockSubnetRegistry) watchNetworks(ctx context.Context, since uint64) (Event, uint64, error) {
+	msr.mux.Lock()
+	index := msr.index
+	msr.mux.Unlock()
+
 	for {
-		if since < msr.index {
-			return Event{}, msr.index, etcd.Error{
+		if since < index {
+			return Event{}, 0, etcd.Error{
 				Code:    etcd.ErrorCodeEventIndexCleared,
 				Cause:   "out of date",
 				Message: "cursor is out of date",
-				Index:   msr.index,
+				Index:   index,
 			}
 		}
 
 		select {
 		case <-ctx.Done():
-			return Event{}, msr.index, ctx.Err()
+			return Event{}, 0, ctx.Err()
 
 		case e := <-msr.networkEvents:
-			if e.index <= since {
-				continue
+			if e.index > since {
+				return e.evt, e.index, nil
 			}
-			return e.evt, msr.index, nil
 		}
 	}
 }
 
 func (msr *MockSubnetRegistry) getNetwork(ctx context.Context, network string) (*netwk, error) {
+	msr.mux.Lock()
+	defer msr.mux.Unlock()
+
 	n, ok := msr.networks[network]
 	if !ok {
 		return nil, fmt.Errorf("Network %s not found", network)
@@ -353,6 +402,9 @@ func (msr *MockSubnetRegistry) getNetwork(ctx context.Context, network string) (
 }
 
 func (msr *MockSubnetRegistry) CreateNetwork(ctx context.Context, network, config string) error {
+	msr.mux.Lock()
+	defer msr.mux.Unlock()
+
 	_, ok := msr.networks[network]
 	if ok {
 		return fmt.Errorf("Network %s already exists", network)
@@ -378,6 +430,9 @@ func (msr *MockSubnetRegistry) CreateNetwork(ctx context.Context, network, confi
 }
 
 func (msr *MockSubnetRegistry) DeleteNetwork(ctx context.Context, network string) error {
+	msr.mux.Lock()
+	defer msr.mux.Unlock()
+
 	_, ok := msr.networks[network]
 	if !ok {
 		return fmt.Errorf("Network %s not found", network)
