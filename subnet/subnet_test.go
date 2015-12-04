@@ -35,10 +35,14 @@ func newDummyRegistry() *MockSubnetRegistry {
 	exp := time.Time{}
 
 	subnets := []Lease{
+		// leases within SubnetMin-SubnetMax range
 		{ip.IP4Net{ip.MustParseIP4("10.3.1.0"), 24}, attrs, exp, 10},
 		{ip.IP4Net{ip.MustParseIP4("10.3.2.0"), 24}, attrs, exp, 11},
 		{ip.IP4Net{ip.MustParseIP4("10.3.4.0"), 24}, attrs, exp, 12},
 		{ip.IP4Net{ip.MustParseIP4("10.3.5.0"), 24}, attrs, exp, 13},
+
+		// hand created lease outside the range of subnetMin-SubnetMax for testing removal
+		{ip.IP4Net{ip.MustParseIP4("10.3.31.0"), 24}, attrs, exp, 13},
 	}
 
 	config := `{ "Network": "10.3.0.0/16", "SubnetMin": "10.3.1.0", "SubnetMax": "10.3.25.0" }`
@@ -151,13 +155,22 @@ func TestWatchLeaseAdded(t *testing.T) {
 	}
 
 	expected := ip.IP4Net{
-		IP:        ip.MustParseIP4("10.3.6.0"),
+		IP:        ip.MustParseIP4("10.3.30.0"),
 		PrefixLen: 24,
 	}
+	// Sanity check to make sure acquired lease is not this.
+	// It shouldn't be as SubnetMin/SubnetMax in config is [10.3.1.0/24 to 10.3.25.0/24]
+	if l.Subnet.Equal(expected) {
+		t.Fatalf("Acquired lease conflicts with one about to create")
+	}
+
 	attrs := &LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.1.1.1"),
 	}
-	msr.createSubnet(ctx, "_", expected, attrs, 0)
+	_, err := msr.createSubnet(ctx, "_", expected, attrs, 0)
+	if err != nil {
+		t.Fatalf("createSubnet filed: %v", err)
+	}
 
 	evtBatch = <-events
 
@@ -196,7 +209,13 @@ func TestWatchLeaseRemoved(t *testing.T) {
 		}
 	}
 
-	expected := ip.IP4Net{ip.MustParseIP4("10.3.4.0"), 24}
+	expected := ip.IP4Net{ip.MustParseIP4("10.3.31.0"), 24}
+	// Sanity check to make sure acquired lease is not this.
+	// It shouldn't be as SubnetMin/SubnetMax in config is [10.3.1.0/24 to 10.3.25.0/24]
+	if l.Subnet.Equal(expected) {
+		t.Fatalf("Acquired lease conflicts with one about to create")
+	}
+
 	msr.expireSubnet("_", expected)
 
 	evtBatch = <-events
