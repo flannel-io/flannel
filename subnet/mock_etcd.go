@@ -17,6 +17,7 @@ package subnet
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	etcd "github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/client"
@@ -26,8 +27,9 @@ import (
 const DEFAULT_TTL time.Duration = 8760 * time.Hour // one year
 
 type mockEtcd struct {
+	mux      sync.Mutex
 	nodes    map[string]*etcd.Node
-	watchers map[*watcher]*watcher
+	watchers map[*watcher]struct{}
 	// A given number of past events must be available for watchers, because
 	// flannel always uses a new watcher instead of re-using old ones, and
 	// the new watcher's index may be slightly in the past
@@ -39,7 +41,7 @@ func newMockEtcd() *mockEtcd {
 	me := &mockEtcd{
 		index:    1000,
 		nodes:    make(map[string]*etcd.Node),
-		watchers: make(map[*watcher]*watcher),
+		watchers: make(map[*watcher]struct{}),
 		events:   make([]*etcd.Response, 0, 50),
 	}
 	me.nodes["/"] = me.newNode("/", "", true)
@@ -146,6 +148,9 @@ func (me *mockEtcd) copyNode(node *etcd.Node, recursive bool) *etcd.Node {
 }
 
 func (me *mockEtcd) Get(ctx context.Context, key string, opts *etcd.GetOptions) (*etcd.Response, error) {
+	me.mux.Lock()
+	defer me.mux.Unlock()
+
 	node, _, err := me.findNode(key)
 	if err != nil {
 		return nil, err
@@ -173,7 +178,7 @@ func (me *mockEtcd) sendEvent(resp *etcd.Response) {
 	me.events = append(me.events, resp)
 
 	// and notify watchers
-	for w := range me.watchers {
+	for w, _ := range me.watchers {
 		w.notifyEvent(resp)
 	}
 }
@@ -285,6 +290,9 @@ func (me *mockEtcd) set(ctx context.Context, key, value string, opts *etcd.SetOp
 }
 
 func (me *mockEtcd) Set(ctx context.Context, key, value string, opts *etcd.SetOptions) (*etcd.Response, error) {
+	me.mux.Lock()
+	defer me.mux.Unlock()
+
 	return me.set(ctx, key, value, opts, "set")
 }
 
@@ -318,6 +326,9 @@ func (me *mockEtcd) deleteNode(node *etcd.Node, parent *etcd.Node, recursive boo
 }
 
 func (me *mockEtcd) Delete(ctx context.Context, key string, opts *etcd.DeleteOptions) (*etcd.Response, error) {
+	me.mux.Lock()
+	defer me.mux.Unlock()
+
 	node, parent, err := me.findNode(key)
 	if err != nil {
 		return nil, err
@@ -350,6 +361,9 @@ func (me *mockEtcd) Delete(ctx context.Context, key string, opts *etcd.DeleteOpt
 }
 
 func (me *mockEtcd) Create(ctx context.Context, key, value string) (*etcd.Response, error) {
+	me.mux.Lock()
+	defer me.mux.Unlock()
+
 	return me.set(ctx, key, value, &etcd.SetOptions{PrevExist: etcd.PrevNoExist}, "create")
 }
 
@@ -358,6 +372,9 @@ func (me *mockEtcd) CreateInOrder(ctx context.Context, dir, value string, opts *
 }
 
 func (me *mockEtcd) Update(ctx context.Context, key, value string) (*etcd.Response, error) {
+	me.mux.Lock()
+	defer me.mux.Unlock()
+
 	return me.set(ctx, key, value, &etcd.SetOptions{PrevExist: etcd.PrevExist}, "update")
 }
 
@@ -395,17 +412,23 @@ func (w *watcher) notifyEvent(resp *etcd.Response) {
 }
 
 func (w *watcher) Next(ctx context.Context) (*etcd.Response, error) {
+	w.parent.mux.Lock()
+
 	// If the event is already in the history log return it from there
+
 	for _, e := range w.parent.events {
 		if e.Index > w.after && w.shouldGrabEvent(e) {
 			w.after = e.Index
+			w.parent.mux.Unlock()
 			return e, nil
 		}
 	}
 
 	// Watch must handle adding and removing itself from the parent when
 	// it's done to ensure it can be garbage collected correctly
-	w.parent.watchers[w] = w
+	w.parent.watchers[w] = struct{}{}
+
+	w.parent.mux.Unlock()
 
 	// Otherwise wait for new events
 	for {
@@ -416,10 +439,17 @@ func (w *watcher) Next(ctx context.Context) (*etcd.Response, error) {
 				continue
 			}
 			w.after = e.Index
+
+			w.parent.mux.Lock()
 			delete(w.parent.watchers, w)
+			w.parent.mux.Unlock()
+
 			return e, nil
 		case <-ctx.Done():
+			w.parent.mux.Lock()
 			delete(w.parent.watchers, w)
+			w.parent.mux.Unlock()
+
 			return nil, context.Canceled
 		}
 	}

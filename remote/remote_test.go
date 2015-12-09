@@ -165,9 +165,6 @@ func TestWatchLeases(t *testing.T) {
 		f.wg.Done()
 	}()
 
-	// skip over the initial snapshot
-	<-events
-
 	attrs := &subnet.LeaseAttrs{
 		PublicIP: mustParseIP4("1.1.1.2"),
 	}

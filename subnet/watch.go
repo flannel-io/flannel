@@ -55,7 +55,7 @@ func WatchLeases(ctx context.Context, sm Manager, network string, ownLease *Leas
 			batch = lw.reset(res.Snapshot)
 		}
 
-		if batch != nil {
+		if len(batch) > 0 {
 			receiver <- batch
 		}
 	}
@@ -91,10 +91,15 @@ func (lw *leaseWatcher) reset(leases []Lease) []Event {
 
 	// everything left in sm.leases has been deleted
 	for _, l := range lw.leases {
+		if lw.ownLease != nil && l.Subnet.Equal(lw.ownLease.Subnet) {
+			continue
+		}
 		batch = append(batch, Event{EventRemoved, l, ""})
 	}
 
-	lw.leases = leases
+	// copy the leases over (caution: don't just assign a slice)
+	lw.leases = make([]Lease, len(leases))
+	copy(lw.leases, leases)
 
 	return batch
 }
@@ -128,6 +133,7 @@ func (lw *leaseWatcher) add(lease *Lease) Event {
 	}
 
 	lw.leases = append(lw.leases, *lease)
+
 	return Event{EventAdded, lw.leases[len(lw.leases)-1], ""}
 }
 
@@ -144,8 +150,8 @@ func (lw *leaseWatcher) remove(lease *Lease) Event {
 }
 
 func deleteLease(l []Lease, i int) []Lease {
-	l[i], l = l[len(l)-1], l[:len(l)-1]
-	return l
+	l[i] = l[len(l)-1]
+	return l[:len(l)-1]
 }
 
 // WatchNetworks performs a long term watch of flannel networks and communicates
@@ -177,7 +183,7 @@ func WatchNetworks(ctx context.Context, sm Manager, receiver chan []Event) {
 			batch = nw.reset(res.Snapshot)
 		}
 
-		if batch != nil {
+		if len(batch) > 0 {
 			receiver <- batch
 		}
 	}

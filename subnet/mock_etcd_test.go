@@ -16,7 +16,6 @@ package subnet
 
 import (
 	"fmt"
-	"sync"
 	"testing"
 
 	etcd "github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/client"
@@ -85,6 +84,7 @@ func watchMockEtcd(ctx context.Context, watcher etcd.Watcher, result chan error)
 	numEvents := 0
 	for {
 		resp, err := watcher.Next(ctx)
+
 		if err != nil {
 			if err == context.Canceled {
 				break
@@ -138,19 +138,11 @@ func TestMockEtcd(t *testing.T) {
 	e = &etcd.Response{Action: "create", Index: 1002}
 	expectSuccess(t, r, err, e, "")
 
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	startWg := sync.WaitGroup{}
-	startWg.Add(1)
+	wopts := &etcd.WatcherOptions{AfterIndex: m.index, Recursive: true}
+	watcher := m.Watcher("/coreos.com/network", wopts)
+
 	result := make(chan error, 1)
-	go func() {
-		wopts := &etcd.WatcherOptions{AfterIndex: m.index, Recursive: true}
-		watcher := m.Watcher("/coreos.com/network", wopts)
-		startWg.Done()
-		watchMockEtcd(ctx, watcher, result)
-		wg.Done()
-	}()
-	startWg.Wait()
+	go watchMockEtcd(ctx, watcher, result)
 
 	// Populate etcd with some keys
 	netKey1 := "/coreos.com/network/foobar/config"
@@ -236,8 +228,6 @@ func TestMockEtcd(t *testing.T) {
 	if r != nil {
 		t.Fatalf("Unexpected non-nil response to get after delete %v", r)
 	}
-
-	wg.Wait()
 
 	// Check errors from watch goroutine
 	watchResult := <-result
