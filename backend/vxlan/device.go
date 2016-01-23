@@ -60,6 +60,7 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 		VtepDevIndex: devAttrs.vtepIndex,
 		SrcAddr:      devAttrs.vtepAddr,
 		Port:         devAttrs.vtepPort,
+		UDPCSum:      true,
 		Learning:     false,
 	}
 
@@ -302,7 +303,7 @@ func setAddr4(link *netlink.Vxlan, ipn *net.IPNet) error {
 		}
 	}
 
-	addr := netlink.Addr{ipn, ""}
+	addr := netlink.Addr{IPNet: ipn, Label: ""}
 	if err = netlink.AddrAdd(link, &addr); err != nil {
 		return fmt.Errorf("failed to add IP address %s to %s: %s", ipn.String(), link.Attrs().Name, err)
 	}
