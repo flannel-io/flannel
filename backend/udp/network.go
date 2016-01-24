@@ -64,7 +64,7 @@ func newNetwork(name string, sm subnet.Manager, extIface *backend.ExternalInterf
 	}
 
 	var err error
-	n.conn, err = net.ListenUDP("udp4", &net.UDPAddr{Port: port})
+	n.conn, err = net.ListenUDP("udp4", &net.UDPAddr{IP: extIface.IfaceAddr, Port: port})
 	if err != nil {
 		return nil, fmt.Errorf("failed to start listening on UDP socket: %v", err)
 	}
