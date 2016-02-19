@@ -6,26 +6,6 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "code.google.com/p/goauth2/compute/serviceaccount",
-			"Comment": "weekly-56",
-			"Rev": "afe77d958c701557ec5dc56f6936fcc194d15520"
-		},
-		{
-			"ImportPath": "code.google.com/p/goauth2/oauth",
-			"Comment": "weekly-56",
-			"Rev": "afe77d958c701557ec5dc56f6936fcc194d15520"
-		},
-		{
-			"ImportPath": "code.google.com/p/google-api-go-client/compute/v1",
-			"Comment": "release-107",
-			"Rev": "6ddfebb10ece847f1ae09c701834f1b15abbd8b2"
-		},
-		{
-			"ImportPath": "code.google.com/p/google-api-go-client/googleapi",
-			"Comment": "release-107",
-			"Rev": "6ddfebb10ece847f1ae09c701834f1b15abbd8b2"
-		},
-		{
 			"ImportPath": "github.com/aws/aws-sdk-go/aws",
 			"Comment": "v0.9.4rc5",
 			"Rev": "5c0313fff8cd85670ae4fc996254dd7d66cb4cf7"
@@ -108,6 +88,10 @@
 			"Rev": "d1c4472bf2efd3826f2b5bdcc02d8416798d678c"
 		},
 		{
+			"ImportPath": "github.com/golang/protobuf/proto",
+			"Rev": "127091107ff5f822298f1faa7487ffcf578adcf6"
+		},
+		{
 			"ImportPath": "github.com/gorilla/context",
 			"Rev": "50c25fb3b2b3b3cc724e9b6ac75fb44b3bccd0da"
 		},
@@ -129,7 +113,35 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "1dfe7915deaf3f80b962c163b918868d8a6d8974"
+			"Rev": "b6d7b1396ec874c3b00f6c84cd4301a17c56c8ed"
+		},
+		{
+			"ImportPath": "golang.org/x/oauth2",
+			"Rev": "188fb45fbef6ffd967b3a8abcfe176fd473361df"
+		},
+		{
+			"ImportPath": "google.golang.org/api/compute/v1",
+			"Rev": "e6294e63a06b2be522ff3d328d8cacded0b1bd31"
+		},
+		{
+			"ImportPath": "google.golang.org/api/gensupport",
+			"Rev": "e6294e63a06b2be522ff3d328d8cacded0b1bd31"
+		},
+		{
+			"ImportPath": "google.golang.org/api/googleapi",
+			"Rev": "e6294e63a06b2be522ff3d328d8cacded0b1bd31"
+		},
+		{
+			"ImportPath": "google.golang.org/appengine",
+			"Rev": "6a436539be38c296a8075a871cc536686b458371"
+		},
+		{
+			"ImportPath": "google.golang.org/cloud/compute/metadata",
+			"Rev": "872c736f496c2ba12786bedbb8325576bbdb33cf"
+		},
+		{
+			"ImportPath": "google.golang.org/cloud/internal",
+			"Rev": "872c736f496c2ba12786bedbb8325576bbdb33cf"
 		}
 	]
 }
