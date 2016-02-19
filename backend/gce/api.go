@@ -18,9 +18,11 @@ import (
 	"fmt"
 	"time"
 
-	"code.google.com/p/goauth2/compute/serviceaccount"
-	"code.google.com/p/google-api-go-client/compute/v1"
 	log "github.com/golang/glog"
+
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/compute/v1"
 )
 
 type gceAPI struct {
@@ -31,7 +33,7 @@ type gceAPI struct {
 }
 
 func newAPI() (*gceAPI, error) {
-	client, err := serviceaccount.NewClient(&serviceaccount.Options{})
+	client, err := google.DefaultClient(oauth2.NoContext)
 	if err != nil {
 		return nil, fmt.Errorf("error creating client: %v", err)
 	}
