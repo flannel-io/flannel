@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 usage() {
 	echo "$0 [-f FLANNEL-ENV-FILE] [-d DOCKER-ENV-FILE] [-i] [-c] [-m] [-k COMBINED-KEY]
@@ -77,20 +77,49 @@ if [ -n "$FLANNEL_IPMASQ" ] && [ $ipmasq = true ] ; then
 	fi
 fi
 
-eval docker_opts="\$${combined_opts_key}"
-docker_opts+=" "
-
 echo -n "" >$docker_env
-for opt in $(compgen -v DOCKER_OPT_); do
-	eval val=\$$opt
 
-	if [ "$indiv_opts" = true ]; then
-		echo "$opt=\"$val\"" >>$docker_env
+if [ "$indiv_opts" = true ]; then
+	# Add flannel_env opts.
+	if [[ ${DOCKER_OPT_BIP} ]]; then
+		echo "DOCKER_OPT_BIP=\"${DOCKER_OPT_BIP}\" " >>$docker_env
+	fi
+	if [[ ${DOCKER_OPT_IPMASQ} ]]; then
+		echo "DOCKER_OPT_IPMASQ=\"${DOCKER_OPT_IPMASQ}\" " >>$docker_env
+	fi
+	if [[ ${DOCKER_OPT_MTU} ]]; then
+		echo "DOCKER_OPT_MTU=\"${DOCKER_OPT_MTU}\" " >>$docker_env
 	fi
 
-	docker_opts+="$val "
-done
+	# Add opts from environment.
+	items=$(printenv)
+	old_ifs=${IFS}
+	IFS=$'\n'
+
+	for item in ${items}; do
+		if [[ "${item:0:11}" == "DOCKER_OPT_" ]]; then
+			echo "${item}" >>$docker_env
+		fi
+	done
+	IFS=${old_ifs}
+fi
 
 if [ "$combined_opts" = true ]; then
-	echo "${combined_opts_key}=\"${docker_opts}\"" >>$docker_env
+	echo -n "${combined_opts_key}=\"" >>$docker_env
+
+	# Add flannel_env opts.
+	if [[ ${DOCKER_OPT_BIP} ]]; then
+		echo -n "${DOCKER_OPT_BIP} " >>$docker_env
+	fi
+	if [[ ${DOCKER_OPT_IPMASQ} ]]; then
+		echo -n "${DOCKER_OPT_IPMASQ} " >>$docker_env
+	fi
+	if [[ ${DOCKER_OPT_MTU} ]]; then
+		echo -n "${DOCKER_OPT_MTU} " >>$docker_env
+	fi
+
+	# Add opts from combined_opts_key.
+	eval docker_opts="\$${combined_opts_key}"
+	echo "${docker_opts}\"" >>$docker_env
+
 fi
