@@ -58,7 +58,7 @@ func newFixture(t *testing.T) *fixture {
 	}()
 
 	var err error
-	f.sm, err = NewRemoteManager(f.srvAddr, "", "", "")
+	f.sm, err = NewRemoteManager(f.srvAddr, "", "", "", "", "")
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create remote mananager: %v", err))
 	}

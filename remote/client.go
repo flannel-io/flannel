@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"path"
 	"time"
 
@@ -57,7 +58,7 @@ func NewTransport(info transport.TLSInfo) (*Transport, error) {
 	return t, nil
 }
 
-func NewRemoteManager(listenAddr, cafile, certfile, keyfile string) (subnet.Manager, error) {
+func NewRemoteManager(listenAddr, cafile, certfile, keyfile, username, password string) (subnet.Manager, error) {
 	tls := transport.TLSInfo{
 		CAFile:   cafile,
 		CertFile: certfile,
@@ -76,8 +77,13 @@ func NewRemoteManager(listenAddr, cafile, certfile, keyfile string) (subnet.Mana
 		scheme = "https://"
 	}
 
+	var userInfo string
+	if username != "" && password != "" {
+		userInfo = username + ":" + password
+	}
+
 	return &RemoteManager{
-		base:      scheme + listenAddr + "/v1",
+		base:      scheme + userInfo + listenAddr + "/v1",
 		transport: t,
 	}, nil
 }
@@ -348,15 +354,24 @@ func (m *RemoteManager) httpDo(ctx context.Context, req *http.Request) (*http.Re
 	}
 }
 
-func (m *RemoteManager) httpVerb(ctx context.Context, method, url, contentType string, body []byte) (*http.Response, error) {
+func (m *RemoteManager) httpVerb(ctx context.Context, method, requestURL, contentType string, body []byte) (*http.Response, error) {
 	var r io.Reader
 	if body != nil {
 		r = bytes.NewBuffer(body)
 	}
 
-	req, err := http.NewRequest(method, url, r)
+	req, err := http.NewRequest(method, requestURL, r)
 	if err != nil {
 		return nil, err
+	}
+
+	u, err := url.Parse(requestURL)
+	if err != nil {
+		return nil, err
+	}
+	if u.User != nil {
+		password, _ := u.User.Password()
+		req.SetBasicAuth(u.User.Username(), password)
 	}
 
 	if contentType != "" {
