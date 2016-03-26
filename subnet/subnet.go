@@ -22,11 +22,14 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/pkg/capnslog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/coreos/flannel/pkg/ip"
 )
 
 var (
+	log = capnslog.NewPackageLogger("github.com/coreos/flannel/", "subnet")
+
 	ErrLeaseTaken  = errors.New("subnet: lease already taken")
 	ErrNoMoreTries = errors.New("subnet: no more tries")
 )

@@ -17,10 +17,13 @@ package backend
 import (
 	"net"
 
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/pkg/capnslog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
 	"github.com/coreos/flannel/subnet"
 )
+
+var log = capnslog.NewPackageLogger("github.com/coreos/flannel/", "backend")
 
 type ExternalInterface struct {
 	Iface     *net.Interface

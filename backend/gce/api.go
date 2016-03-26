@@ -20,7 +20,6 @@ import (
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/code.google.com/p/goauth2/compute/serviceaccount"
 	"github.com/coreos/flannel/Godeps/_workspace/src/code.google.com/p/google-api-go-client/compute/v1"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 )
 
 type gceAPI struct {

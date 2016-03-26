@@ -16,8 +16,10 @@ package udp
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/pkg/capnslog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
 	"github.com/coreos/flannel/backend"
@@ -25,7 +27,13 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
+var (
+	log       = capnslog.NewPackageLogger("github.com/coreos/flannel/", "udp")
+	verbosity uint
+)
+
 func init() {
+	flag.UintVar(&verbosity, "v", 0, "verbosity level")
 	backend.Register("udp", New)
 }
 

@@ -23,14 +23,12 @@ import (
 	"reflect"
 	"unsafe"
 
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
-
 	"github.com/coreos/flannel/pkg/ip"
 )
 
 func runCProxy(tun *os.File, conn *net.UDPConn, ctl *os.File, tunIP ip.IP4, tunMTU int) {
 	var log_errors int
-	if log.V(1) {
+	if verbosity > 0 {
 		log_errors = 1
 	}
 

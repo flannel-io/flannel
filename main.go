@@ -23,8 +23,8 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/pkg/capnslog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/pkg/flagutil"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
 	"github.com/coreos/flannel/network"
@@ -57,6 +57,7 @@ type CmdLineOpts struct {
 }
 
 var opts CmdLineOpts
+var log = capnslog.NewPackageLogger("github.com/coreos/flannel/", "main")
 
 func init() {
 	flag.StringVar(&opts.etcdEndpoints, "etcd-endpoints", "http://127.0.0.1:4001,http://127.0.0.1:2379", "a comma-delimited list of etcd endpoints")
@@ -90,10 +91,6 @@ func newSubnetManager() (subnet.Manager, error) {
 }
 
 func main() {
-	// glog will log to tmp files by default. override so all entries
-	// can flow into journald (if running under systemd)
-	flag.Set("logtostderr", "true")
-
 	// now parse command line args
 	flag.Parse()
 

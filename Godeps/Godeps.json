@@ -100,12 +100,16 @@
 			"Rev": "a606a1e936df81b70d85448221c7b1c6d8a74ef1"
 		},
 		{
-			"ImportPath": "github.com/coreos/pkg/flagutil",
-			"Rev": "b0d3d81732aea341039d191d8618a3466fe54395"
+			"ImportPath": "github.com/coreos/go-systemd/journal",
+			"Rev": "7b2428fec40033549c68f54e26e89e7ca9a9ce31"
 		},
 		{
-			"ImportPath": "github.com/golang/glog",
-			"Rev": "d1c4472bf2efd3826f2b5bdcc02d8416798d678c"
+			"ImportPath": "github.com/coreos/pkg/capnslog",
+			"Rev": "1914e367e85eaf0c25d495b48e060dfe6190f8d0"
+		},
+		{
+			"ImportPath": "github.com/coreos/pkg/flagutil",
+			"Rev": "b0d3d81732aea341039d191d8618a3466fe54395"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",

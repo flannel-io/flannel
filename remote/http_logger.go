@@ -15,7 +15,6 @@
 package remote
 
 import (
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"net/http"
 )
 
