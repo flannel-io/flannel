@@ -24,7 +24,10 @@ The following diagram demonstrates the path a packet takes as it traverses the o
 * Step 1: Make sure you have required dependencies installed on your machine. On Ubuntu, run `sudo apt-get install linux-libc-dev golang gcc`.
 On Fedora/Redhat, run `sudo yum install kernel-headers golang gcc`.
 * Step 2: Git clone the flannel repo: `git clone https://github.com/coreos/flannel.git`
-* Step 3: Run the build script: `cd flannel; make dist/flanneld`
+* Step 3 (on Linux): 
+  * Run the build script: `cd flannel; make dist/flanneld`
+* Step 3 (on Windows):
+  * Run the build script in PowerShell: `cd flannel ; .\build.ps1`
 
 ### Building in a Docker container
 To build flannel in a container run `make dist/flanneld-amd64` (replace the `amd64` suffix to build on other architectures. See the Makefile for supported architectures).
@@ -56,12 +59,14 @@ This is the only mandatory key.
 * udp: use UDP to encapsulate the packets.
   * `Type` (string): `udp`
   * `Port` (number): UDP port to use for sending encapsulated packets. Defaults to 8285.
+  * **Note**: The udp backend is not currently supported in Windows.
 
 * vxlan: use in-kernel VXLAN to encapsulate the packets.
   * `Type` (string): `vxlan`
   * `VNI`  (number): VXLAN Identifier (VNI) to be used. Defaults to 1.
   * `Port` (number): UDP port to use for sending encapsulated packets. Defaults to kernel default, currently 8472.
   * `GBP` (boolean): Enable [VXLAN Group Based Policy](https://github.com/torvalds/linux/commit/3511494ce2f3d3b77544c79b87511a4ddb61dc89).  Defaults to false.
+  * **Note**: The udp backend is not currently supported in Windows.
 
 * host-gw: create IP routes to subnets via remote machine IPs.
   Note that this requires direct layer2 connectivity between hosts running flannel.
@@ -77,19 +82,19 @@ This is the only mandatory key.
      flannel can automatically detect the id of the route table if the optional `DescribeInstances` is granted to the EC2 instance.
 
   Authentication is handled via either environment variables or the node's IAM role.
-  If the node has insufficient privileges to modify the VPC routing table specified, ensure that appropriate `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optionally `AWS_SECURITY_TOKEN` environment variables are set when running the flanneld process. 
- 
-  Note: Currently, AWS [limits](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Appendix_Limits.html) the number of entries per route table to 50. 
+  If the node has insufficient privileges to modify the VPC routing table specified, ensure that appropriate `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optionally `AWS_SECURITY_TOKEN` environment variables are set when running the flanneld process.
+
+  Note: Currently, AWS [limits](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Appendix_Limits.html) the number of entries per route table to 50.
 
 * gce: create IP routes in a [Google Compute Engine Network](https://cloud.google.com/compute/docs/networking#networks)
   * Requirements:
     * [Enable IP forwarding for the instances](https://cloud.google.com/compute/docs/networking#canipforward).
-    * [Instance service account](https://cloud.google.com/compute/docs/authentication#using) with read-write compute permissions. 
+    * [Instance service account](https://cloud.google.com/compute/docs/authentication#using) with read-write compute permissions.
   * `Type` (string): `gce`  
-  
+
   Command to create a compute instance with the correct permissions and IP forwarding enabled:  
   `$ gcloud compute instances create INSTANCE --can-ip-forward --scopes compute-rw`  
-  
+
   Note: Currently, GCE [limits](https://cloud.google.com/compute/docs/resource-quotas) the number of routes for every *project* to 100.
 
 * alloc: only perform subnet allocation (no forwarding of data packets).
@@ -179,7 +184,7 @@ $ flanneld --remote=10.0.0.3:8888 --networks=blue,green
 --iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
 --subnet-file=/run/flannel/subnet.env: filename where env variables (subnet and MTU values) will be written to.
 --ip-masq=false: setup IP masquerade for traffic destined for outside the flannel network. Flannel assumes that the default policy is ACCEPT in the NAT POSTROUTING chain.
---listen="": if specified, will run in server mode. Value is IP and port (e.g. `0.0.0.0:8888`) to listen on or `fd://` for [socket activation](http://www.freedesktop.org/software/systemd/man/systemd.socket.html).
+--listen="": if specified, will run in server mode. Value is IP and port (e.g. `0.0.0.0:8888`) to listen on or `fd://` for [socket activation](http://www.freedesktop.org/software/systemd/man/systemd.socket.html). on Linux.
 --remote="": if specified, will run in client mode. Value is IP and port of the server.
 --remote-keyfile="": SSL key file used to secure client/server communication.
 --remote-certfile="": SSL certification file used to secure client/server communication.
