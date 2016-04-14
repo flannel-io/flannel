@@ -18,23 +18,23 @@ import (
 	"bytes"
 	"net"
 	"sync"
+	"syscall"
 	"time"
 
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/coreos/flannel/pkg/routes"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/subnet"
 )
 
 type network struct {
-	name      string
-	extIface  *backend.ExternalInterface
-	linkIndex int
-	rl        []netlink.Route
-	lease     *subnet.Lease
-	sm        subnet.Manager
+	name     string
+	extIface *backend.ExternalInterface
+	rl       []routes.Route
+	lease    *subnet.Lease
+	sm       subnet.Manager
 }
 
 func (n *network) Lease() *subnet.Lease {
@@ -56,7 +56,7 @@ func (n *network) Run(ctx context.Context) {
 		wg.Done()
 	}()
 
-	n.rl = make([]netlink.Route, 0, 10)
+	n.rl = make([]routes.Route, 0, 10)
 	wg.Add(1)
 	go func() {
 		n.routeCheck(ctx)
@@ -87,15 +87,24 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				continue
 			}
 
-			route := netlink.Route{
-				Dst:       evt.Lease.Subnet.ToIPNet(),
-				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
-				LinkIndex: n.linkIndex,
+			route := routes.Route{
+				Destination: evt.Lease.Subnet.ToIPNet(),
+				Gateway:     evt.Lease.Attrs.PublicIP.ToIP(),
+				LinkIndex:   n.extIface.Iface.Index,
 			}
-			if err := netlink.RouteAdd(&route); err != nil {
+
+			if err := routes.AddRoute(&route); err != nil {
+				errno, ok := err.(syscall.Errno)
+				// The Windows errno for "The object already exists" is 0x1392
+				if ok && errno == syscall.EEXIST || errno == 0x1392 {
+					log.Infof("Route to %v via %v already exists", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
+					continue
+				}
+
 				log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, err)
 				continue
 			}
+
 			n.addToRouteList(route)
 
 		case subnet.EventRemoved:
@@ -106,12 +115,18 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				continue
 			}
 
-			route := netlink.Route{
-				Dst:       evt.Lease.Subnet.ToIPNet(),
-				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
-				LinkIndex: n.linkIndex,
+			route := routes.Route{
+				Destination: evt.Lease.Subnet.ToIPNet(),
+				Gateway:     evt.Lease.Attrs.PublicIP.ToIP(),
+				LinkIndex:   n.extIface.Iface.Index,
 			}
-			if err := netlink.RouteDel(&route); err != nil {
+			if err := routes.DeleteRoute(&route); err != nil {
+				errno, ok := err.(syscall.Errno)
+				if ok && errno == syscall.EEXIST {
+					log.Infof("Route to %v does not exist", evt.Lease.Subnet)
+					continue
+				}
+
 				log.Errorf("Error deleting route to %v: %v", evt.Lease.Subnet, err)
 				continue
 			}
@@ -123,11 +138,11 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 	}
 }
 
-func (n *network) addToRouteList(route netlink.Route) {
+func (n *network) addToRouteList(route routes.Route) {
 	n.rl = append(n.rl, route)
 }
 
-func (n *network) removeFromRouteList(route netlink.Route) {
+func (n *network) removeFromRouteList(route routes.Route) {
 	for index, r := range n.rl {
 		if routeEqual(r, route) {
 			n.rl = append(n.rl[:index], n.rl[index+1:]...)
@@ -148,12 +163,12 @@ func (n *network) routeCheck(ctx context.Context) {
 }
 
 func (n *network) checkSubnetExistInRoutes() {
-	routeList, err := netlink.RouteList(nil, netlink.FAMILY_V4)
+	routeList, err := routes.RouteList()
 	if err == nil {
 		for _, route := range n.rl {
 			exist := false
 			for _, r := range routeList {
-				if r.Dst == nil {
+				if r.Destination == nil {
 					continue
 				}
 				if routeEqual(r, route) {
@@ -162,21 +177,21 @@ func (n *network) checkSubnetExistInRoutes() {
 				}
 			}
 			if !exist {
-				if err := netlink.RouteAdd(&route); err != nil {
+				if err := routes.AddRoute(&route); err != nil {
 					if nerr, ok := err.(net.Error); !ok {
-						log.Errorf("Error recovering route to %v: %v, %v", route.Dst, route.Gw, nerr)
+						log.Errorf("Error recovering route to %s: %s, %v", route.Destination.IP, route.Gateway, nerr)
 					}
 					continue
 				} else {
-					log.Infof("Route recovered %v : %v", route.Dst, route.Gw)
+					log.Infof("Route recovered %s : %s", route.Destination.IP, route.Gateway)
 				}
 			}
 		}
 	}
 }
 
-func routeEqual(x, y netlink.Route) bool {
-	if x.Dst.IP.Equal(y.Dst.IP) && x.Gw.Equal(y.Gw) && bytes.Equal(x.Dst.Mask, y.Dst.Mask) {
+func routeEqual(x, y routes.Route) bool {
+	if x.Destination.IP.Equal(y.Destination.IP) && x.Gateway.Equal(y.Gateway) && bytes.Equal(x.Destination.Mask, y.Destination.Mask) {
 		return true
 	}
 	return false
