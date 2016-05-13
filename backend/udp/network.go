@@ -155,7 +155,7 @@ func configureIface(ifname string, ipn ip.IP4Net, mtu int) error {
 		return fmt.Errorf("failed to lookup interface %v", ifname)
 	}
 
-	err = netlink.AddrAdd(iface, &netlink.Addr{ipn.ToIPNet(), ""})
+	err = netlink.AddrAdd(iface, &netlink.Addr{ipn.ToIPNet(), "", 0, 0})
 	if err != nil {
 		return fmt.Errorf("failed to add IP address %v to %v: %v", ipn.String(), ifname, err)
 	}
