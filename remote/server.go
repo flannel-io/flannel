@@ -24,12 +24,12 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/pkg/transport"
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/activation"
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/go-systemd/daemon"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/coreos/etcd/pkg/transport"
+	"github.com/coreos/go-systemd/activation"
+	"github.com/coreos/go-systemd/daemon"
+	log "github.com/golang/glog"
+	"github.com/gorilla/mux"
+	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/subnet"
 )

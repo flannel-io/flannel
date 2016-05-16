@@ -21,9 +21,9 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink/nl"
+	log "github.com/golang/glog"
+	"github.com/vishvananda/netlink"
+	"github.com/vishvananda/netlink/nl"
 
 	"github.com/coreos/flannel/pkg/ip"
 )

@@ -20,8 +20,8 @@ import (
 	"sync"
 	"time"
 
-	etcd "github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/client"
-	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+	etcd "github.com/coreos/etcd/client"
+	"golang.org/x/net/context"
 )
 
 const DEFAULT_TTL time.Duration = 8760 * time.Hour // one year

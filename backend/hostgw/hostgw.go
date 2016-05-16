@@ -17,7 +17,7 @@ package hostgw
 import (
 	"fmt"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+	"golang.org/x/net/context"
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"

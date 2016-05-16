@@ -19,7 +19,7 @@ import (
 	"net"
 	"syscall"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
+	"github.com/vishvananda/netlink"
 )
 
 func getIfaceAddrs(iface *net.Interface) ([]netlink.Addr, error) {

@@ -17,7 +17,7 @@ package backend
 import (
 	"net"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/subnet"
 )

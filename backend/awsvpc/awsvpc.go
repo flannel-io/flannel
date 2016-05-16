@@ -18,12 +18,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws"
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/ec2"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	log "github.com/golang/glog"
+	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
