@@ -55,6 +55,8 @@ type EtcdConfig struct {
 	Certfile  string
 	CAFile    string
 	Prefix    string
+	Username  string
+	Password  string
 }
 
 type etcdNewFunc func(c *EtcdConfig) (etcd.KeysAPI, error)
@@ -79,10 +81,16 @@ func newEtcdClient(c *EtcdConfig) (etcd.KeysAPI, error) {
 		return nil, err
 	}
 
-	cli, err := etcd.New(etcd.Config{
+	eCfg := etcd.Config{
 		Endpoints: c.Endpoints,
 		Transport: t,
-	})
+	}
+	if c.Username != "" && c.Password != "" {
+		eCfg.Username = c.Username
+		eCfg.Password = c.Password
+	}
+
+	cli, err := etcd.New(eCfg)
 	if err != nil {
 		return nil, err
 	}
