@@ -18,7 +18,13 @@ function linker_dashX {
 ORG_PATH="github.com/coreos"
 REPO_PATH="${ORG_PATH}/flannel"
 VERSION=$(git describe --dirty)
-GLDFLAGS="-X $(linker_dashX github.com/coreos/flannel/version.Version ${VERSION})"
+
+STATIC_LINK=${STATIC_LINK:-1}
+if [[ ${STATIC_LINK} == 1 ]]; then
+	STATIC_FLAGS="-extldflags '-static'"
+fi
+
+GLDFLAGS="-X $(linker_dashX github.com/coreos/flannel/version.Version ${VERSION}) ${STATIC_FLAGS}"
 
 if [ ! -h gopath/src/${REPO_PATH} ]; then
 	mkdir -p gopath/src/${ORG_PATH}
