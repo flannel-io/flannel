@@ -2,6 +2,8 @@
 
 When running within an Amazon VPC, we recommend using the aws-vpc backend which, instead of using encapsulation, manipulates IP routes to achieve maximum performance. Because of this, a separate flannel interface is not created.
 
+The biggest advantage of using Flannel AWS-VPC backend is that the AWS knows about that IP. That makes it possible to setup ELB to route directly to that container.
+
 In order to run flannel on AWS we need to first create an [Amazon VPC](http://aws.amazon.com/vpc/).
 Amazon VPC enables us to launch EC2 instances into a virtual network, which we can configure via its route table.
 
