@@ -27,6 +27,7 @@ import (
 	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
+	"github.com/coreos/flannel/backend/ipsec"
 	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/remote"
 	"github.com/coreos/flannel/subnet"
@@ -56,6 +57,7 @@ type CmdLineOpts struct {
 	remoteKeyfile  string
 	remoteCertfile string
 	remoteCAFile   string
+	charonPath     string
 }
 
 var opts CmdLineOpts
@@ -73,6 +75,7 @@ func init() {
 	flag.StringVar(&opts.remoteKeyfile, "remote-keyfile", "", "SSL key file used to secure client/server communication")
 	flag.StringVar(&opts.remoteCertfile, "remote-certfile", "", "SSL certification file used to secure client/server communication")
 	flag.StringVar(&opts.remoteCAFile, "remote-cafile", "", "SSL Certificate Authority file used to secure client/server communication")
+	flag.StringVar(&opts.charonPath, "charon-path", "", "path to charon executable")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
 }
@@ -150,6 +153,10 @@ func main() {
 		runFunc = func(ctx context.Context) {
 			nm.Run(ctx)
 		}
+	}
+
+	if opts.charonPath != "" {
+		ipsec.CharonPath = opts.charonPath
 	}
 
 	wg := sync.WaitGroup{}

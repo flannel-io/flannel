@@ -61,7 +61,6 @@ func handleGetNetworkConfig(ctx context.Context, sm subnet.Manager, w http.Respo
 	jsonResponse(w, http.StatusOK, c)
 }
 
-// POST /{network}/leases
 func handleAcquireLease(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
 	network := mux.Vars(r)["network"]
 	if network == "_" {
@@ -126,6 +125,48 @@ func handleRevokeLease(ctx context.Context, sm subnet.Manager, w http.ResponseWr
 		fmt.Fprint(w, err)
 		return
 	}
+}
+
+func handleGetBackendData(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	network := mux.Vars(r)["network"]
+	if network == "_" {
+		network = ""
+	}
+
+	p, err := sm.GetBackendData(ctx, network)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, err)
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, p)
+}
+
+func handleCreateBackendData(ctx context.Context, sm subnet.Manager, w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	network := mux.Vars(r)["network"]
+	if network == "_" {
+		network = ""
+	}
+
+	data := ""
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "JSON decoding error: ", err)
+		return
+	}
+
+	if err := sm.CreateBackendData(ctx, network, data); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func getCursor(u *url.URL) interface{} {
@@ -375,6 +416,8 @@ func RunServer(ctx context.Context, sm subnet.Manager, listenAddr, cafile, certf
 	r.HandleFunc("/v1/{network}/leases/{subnet}", bindHandler(handleRevokeLease, ctx, sm)).Methods("DELETE")
 	r.HandleFunc("/v1/{network}/leases", bindHandler(handleWatchLeases, ctx, sm)).Methods("GET")
 	r.HandleFunc("/v1/", bindHandler(handleNetworks, ctx, sm)).Methods("GET")
+	r.HandleFunc("/v1/{network}/backend-data", bindHandler(handleGetBackendData, ctx, sm)).Methods("GET")
+	r.HandleFunc("/v1/{network}/backend-data", bindHandler(handleCreateBackendData, ctx, sm)).Methods("POST")
 
 	r.HandleFunc("/v1/{network}/reservations", bindHandler(handleListReservations, ctx, sm)).Methods("GET")
 	r.HandleFunc("/v1/{network}/reservations", bindHandler(handleAddReservation, ctx, sm)).Methods("POST")

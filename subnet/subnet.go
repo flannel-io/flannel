@@ -45,6 +45,11 @@ type Lease struct {
 	asof uint64
 }
 
+type BackendAttrs struct {
+	Password    string
+	BackendType string
+}
+
 func (l *Lease) Key() string {
 	return MakeSubnetKey(l.Subnet)
 }
@@ -143,4 +148,7 @@ type Manager interface {
 	AddReservation(ctx context.Context, network string, r *Reservation) error
 	RemoveReservation(ctx context.Context, network string, subnet ip.IP4Net) error
 	ListReservations(ctx context.Context, network string) ([]Reservation, error)
+
+	GetBackendData(ctx context.Context, network string) (string, error)
+	CreateBackendData(ctx context.Context, network, data string) error
 }
