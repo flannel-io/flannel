@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/pkg/capnslog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
@@ -30,6 +30,8 @@ import (
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
 )
+
+var log = capnslog.NewPackageLogger("github.com/coreos/flannel/", "vxlan")
 
 type network struct {
 	backend.SimpleNetwork

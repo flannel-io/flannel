@@ -43,7 +43,7 @@ import (
 	"sync"
 
 	"github.com/coreos/flannel/Godeps/_workspace/src/code.google.com/p/google-api-go-client/googleapi"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/pkg/capnslog"
 	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 
 	"github.com/coreos/flannel/backend"
@@ -56,6 +56,7 @@ func init() {
 }
 
 var metadataEndpoint = "http://169.254.169.254/computeMetadata/v1"
+var log = capnslog.NewPackageLogger("github.com/coreos/flannel/", "gce")
 
 var replacer = strings.NewReplacer(".", "-", "/", "-")
 
