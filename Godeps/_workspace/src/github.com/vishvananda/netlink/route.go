@@ -24,22 +24,25 @@ const (
 	FLAG_PERVASIVE NextHopFlag = syscall.RTNH_F_PERVASIVE
 )
 
-// Route represents a netlink route. A route is associated with a link,
-// has a destination network, an optional source ip, and optional
-// gateway. Advanced route parameters and non-main routing tables are
-// currently not supported.
+// Route represents a netlink route.
 type Route struct {
-	LinkIndex int
-	Scope     Scope
-	Dst       *net.IPNet
-	Src       net.IP
-	Gw        net.IP
-	Flags     int
+	LinkIndex  int
+	ILinkIndex int
+	Scope      Scope
+	Dst        *net.IPNet
+	Src        net.IP
+	Gw         net.IP
+	Protocol   int
+	Priority   int
+	Table      int
+	Type       int
+	Tos        int
+	Flags      int
 }
 
 func (r Route) String() string {
-	return fmt.Sprintf("{Ifindex: %d Dst: %s Src: %s Gw: %s Flags: %s}", r.LinkIndex, r.Dst,
-		r.Src, r.Gw, r.ListFlags())
+	return fmt.Sprintf("{Ifindex: %d Dst: %s Src: %s Gw: %s Flags: %s Table: %d}", r.LinkIndex, r.Dst,
+		r.Src, r.Gw, r.ListFlags(), r.Table)
 }
 
 func (r *Route) SetFlag(flag NextHopFlag) {
@@ -56,8 +59,8 @@ type flagString struct {
 }
 
 var testFlags = []flagString{
-	flagString{f: FLAG_ONLINK, s: "onlink"},
-	flagString{f: FLAG_PERVASIVE, s: "pervasive"},
+	{f: FLAG_ONLINK, s: "onlink"},
+	{f: FLAG_PERVASIVE, s: "pervasive"},
 }
 
 func (r *Route) ListFlags() []string {

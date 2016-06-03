@@ -1,11 +1,5 @@
-// Package netns allows ultra-simple network namespace handling. NsHandles
-// can be retrieved and set. Note that the current namespace is thread
-// local so actions that set and reset namespaces should use LockOSThread
-// to make sure the namespace doesn't change due to a goroutine switch.
-// It is best to close NsHandles when you are done with them. This can be
-// accomplished via a `defer ns.Close()` on the handle. Changing namespaces
-// requires elevated privileges, so in most cases this code needs to be run
-// as root.
+// +build linux
+
 package netns
 
 import (
@@ -13,14 +7,25 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
 )
 
+// SYS_SETNS syscall allows changing the namespace of the current process.
+var SYS_SETNS = map[string]uintptr{
+	"386":     346,
+	"amd64":   308,
+	"arm64":   268,
+	"arm":     375,
+	"ppc64":   350,
+	"ppc64le": 350,
+	"s390x":   339,
+}[runtime.GOARCH]
+
+// Deprecated: use syscall pkg instead (go >= 1.5 needed).
 const (
-	// These constants belong in the syscall library but have not been
-	// added yet.
 	CLONE_NEWUTS  = 0x04000000 /* New utsname group? */
 	CLONE_NEWIPC  = 0x08000000 /* New ipcs */
 	CLONE_NEWUSER = 0x10000000 /* New user namespace */
@@ -39,48 +44,6 @@ func Setns(ns NsHandle, nstype int) (err error) {
 	return
 }
 
-// NsHandle is a handle to a network namespace. It can be cast directly
-// to an int and used as a file descriptor.
-type NsHandle int
-
-// Equal determines if two network handles refer to the same network
-// namespace. This is done by comparing the device and inode that the
-// file descripors point to.
-func (ns NsHandle) Equal(other NsHandle) bool {
-	var s1, s2 syscall.Stat_t
-	if err := syscall.Fstat(int(ns), &s1); err != nil {
-		return false
-	}
-	if err := syscall.Fstat(int(other), &s2); err != nil {
-		return false
-	}
-	return (s1.Dev == s2.Dev) && (s1.Ino == s2.Ino)
-}
-
-// String shows the file descriptor number and its dev and inode.
-func (ns NsHandle) String() string {
-	var s syscall.Stat_t
-	if err := syscall.Fstat(int(ns), &s); err != nil {
-		return fmt.Sprintf("NS(%d: unknown)", ns)
-	}
-	return fmt.Sprintf("NS(%d: %d, %d)", ns, s.Dev, s.Ino)
-}
-
-// IsOpen returns true if Close() has not been called.
-func (ns NsHandle) IsOpen() bool {
-	return ns != -1
-}
-
-// Close closes the NsHandle and resets its file descriptor to -1.
-// It is not safe to use an NsHandle after Close() is called.
-func (ns *NsHandle) Close() error {
-	if err := syscall.Close(int(*ns)); err != nil {
-		return err
-	}
-	(*ns) = -1
-	return nil
-}
-
 // Set sets the current network namespace to the namespace represented
 // by NsHandle.
 func Set(ns NsHandle) (err error) {
@@ -97,29 +60,36 @@ func New() (ns NsHandle, err error) {
 
 // Get gets a handle to the current threads network namespace.
 func Get() (NsHandle, error) {
-	return GetFromPid(os.Getpid())
+	return GetFromThread(os.Getpid(), syscall.Gettid())
+}
+
+// GetFromPath gets a handle to a network namespace
+// identified by the path
+func GetFromPath(path string) (NsHandle, error) {
+	fd, err := syscall.Open(path, syscall.O_RDONLY, 0)
+	if err != nil {
+		return -1, err
+	}
+	return NsHandle(fd), nil
 }
 
 // GetFromName gets a handle to a named network namespace such as one
 // created by `ip netns add`.
 func GetFromName(name string) (NsHandle, error) {
-	fd, err := syscall.Open(fmt.Sprintf("/var/run/netns/%s", name), syscall.O_RDONLY, 0)
-	if err != nil {
-		return -1, err
-	}
-	return NsHandle(fd), nil
+	return GetFromPath(fmt.Sprintf("/var/run/netns/%s", name))
 }
 
-// GetFromName gets a handle to the network namespace of a given pid.
+// GetFromPid gets a handle to the network namespace of a given pid.
 func GetFromPid(pid int) (NsHandle, error) {
-	fd, err := syscall.Open(fmt.Sprintf("/proc/%d/ns/net", pid), syscall.O_RDONLY, 0)
-	if err != nil {
-		return -1, err
-	}
-	return NsHandle(fd), nil
+	return GetFromPath(fmt.Sprintf("/proc/%d/ns/net", pid))
 }
 
-// GetFromName gets a handle to the network namespace of a docker container.
+// GetFromThread gets a handle to the network namespace of a given pid and tid.
+func GetFromThread(pid, tid int) (NsHandle, error) {
+	return GetFromPath(fmt.Sprintf("/proc/%d/task/%d/ns/net", pid, tid))
+}
+
+// GetFromDocker gets a handle to the network namespace of a docker container.
 // Id is prefixed matched against the running docker containers, so a short
 // identifier can be used as long as it isn't ambiguous.
 func GetFromDocker(id string) (NsHandle, error) {
@@ -185,6 +155,7 @@ func getThisCgroup(cgroupType string) (string, error) {
 // borrowed from docker/utils/utils.go
 // modified to only return the first pid
 // modified to glob with id
+// modified to search for newer docker containers
 func getPidForContainer(id string) (int, error) {
 	pid := 0
 
@@ -203,24 +174,31 @@ func getPidForContainer(id string) (int, error) {
 
 	id += "*"
 
-	filename := filepath.Join(cgroupRoot, cgroupThis, id, "tasks")
-	filenames, _ := filepath.Glob(filename)
-	if len(filenames) > 1 {
-		return pid, fmt.Errorf("Ambiguous id supplied: %v", filenames)
-	} else if len(filenames) == 1 {
-		filename = filenames[0]
-	}
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
+	attempts := []string{
+		filepath.Join(cgroupRoot, cgroupThis, id, "tasks"),
 		// With more recent lxc versions use, cgroup will be in lxc/
-		filename = filepath.Join(cgroupRoot, cgroupThis, "lxc", id, "tasks")
-		filenames, _ = filepath.Glob(filename)
+		filepath.Join(cgroupRoot, cgroupThis, "lxc", id, "tasks"),
+		// With more recent docker, cgroup will be in docker/
+		filepath.Join(cgroupRoot, cgroupThis, "docker", id, "tasks"),
+		// Even more recent docker versions under systemd use docker-<id>.scope/
+		filepath.Join(cgroupRoot, "system.slice", "docker-"+id+".scope", "tasks"),
+		// Even more recent docker versions under cgroup/systemd/docker/<id>/
+		filepath.Join(cgroupRoot, "..", "systemd", "docker", id, "tasks"),
+	}
+
+	var filename string
+	for _, attempt := range attempts {
+		filenames, _ := filepath.Glob(attempt)
 		if len(filenames) > 1 {
 			return pid, fmt.Errorf("Ambiguous id supplied: %v", filenames)
 		} else if len(filenames) == 1 {
 			filename = filenames[0]
-		} else {
-			return pid, fmt.Errorf("Unable to find container: %v", id[:len(id)-1])
+			break
 		}
+	}
+
+	if filename == "" {
+		return pid, fmt.Errorf("Unable to find container: %v", id[:len(id)-1])
 	}
 
 	output, err := ioutil.ReadFile(filename)
