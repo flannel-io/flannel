@@ -15,8 +15,10 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"net"
 	"os"
 	"os/signal"
 	"strings"
@@ -44,21 +46,23 @@ import (
 )
 
 type CmdLineOpts struct {
-	etcdEndpoints string
-	etcdPrefix    string
-	etcdKeyfile   string
-	etcdCertfile  string
-	etcdCAFile    string
-	etcdUsername  string
-	etcdPassword  string
-	help          bool
-	version       bool
-	kubeSubnetMgr bool
+	etcdEndpoints    string
+	etcdPrefix       string
+	etcdKeyfile      string
+	etcdCertfile     string
+	etcdCAFile       string
+	etcdUsername     string
+	etcdPassword     string
+	help             bool
+	version          bool
+	kubeSubnetMgr    bool
+	etcdDiscoverySRV string
 }
 
 var opts CmdLineOpts
 
 func init() {
+	flag.StringVar(&opts.etcdDiscoverySRV, "etcd-discovery-srv", "", "DNS domain to discover etcd nodes")
 	flag.StringVar(&opts.etcdEndpoints, "etcd-endpoints", "http://127.0.0.1:4001,http://127.0.0.1:2379", "a comma-delimited list of etcd endpoints")
 	flag.StringVar(&opts.etcdPrefix, "etcd-prefix", "/coreos.com/network", "etcd prefix")
 	flag.StringVar(&opts.etcdKeyfile, "etcd-keyfile", "", "SSL key file used to secure etcd communication")
@@ -89,6 +93,38 @@ func newSubnetManager() (subnet.Manager, error) {
 	return etcdv2.NewLocalManager(cfg)
 }
 
+func endpointsFromSRV(domain string) ([]string, error) {
+	endpoints := make([]string, 0)
+
+	// we lookup the version without ssl first to be consistent with etcd SRV discovery
+	// https://coreos.com/etcd/docs/latest/clustering.html#dns-discovery
+	_, addrs, err := net.LookupSRV("etcd-client", "tcp", domain)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(addrs) > 0 {
+		for _, addr := range addrs {
+			endpoints = append(endpoints, fmt.Sprintf("http://%s:%d", addr.Target, addr.Port))
+		}
+		return endpoints, nil
+	}
+
+	_, addrs, err = net.LookupSRV("etcd-client-ssl", "tcp", domain)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(addrs) > 0 {
+		for _, addr := range addrs {
+			endpoints = append(endpoints, fmt.Sprintf("https://%s:%d", addr.Target, addr.Port))
+		}
+		return endpoints, nil
+	}
+
+	return nil, errors.New("etcd SRV discovery failed: no SRV records were found")
+}
+
 func main() {
 	// glog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
@@ -110,7 +146,22 @@ func main() {
 
 	flagutil.SetFlagsFromEnv(flag.CommandLine, "FLANNELD")
 
-	sm, err := newSubnetManager()
+	endpoints := strings.Split(opts.etcdEndpoints, ",")
+	domain := opts.etcdDiscoverySRV
+	if domain != "" {
+		log.Infof("etcd DNS discovery enabled on domain %s", domain)
+
+		var err error
+		endpoints, err = endpointsFromSRV(domain)
+		if err != nil {
+			log.Error("Failed to obtain etcd addresses: ", err)
+			os.Exit(1)
+		}
+		log.Infof("%d etcd addresses discovered by DNS: %s",
+			len(endpoints), strings.Join(endpoints, ", "))
+	}
+
+	sm, err := newSubnetManager(endpoints)
 	if err != nil {
 		log.Error("Failed to create SubnetManager: ", err)
 		os.Exit(1)
