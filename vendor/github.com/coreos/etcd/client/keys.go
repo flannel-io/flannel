@@ -14,31 +14,28 @@
 
 package client
 
-//go:generate codecgen -r "Node|Response" -o keys.generated.go keys.go
-
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/coreos/etcd/pkg/pathutil"
 	"golang.org/x/net/context"
 )
 
 const (
-	ErrorCodeKeyNotFound  = 100
-	ErrorCodeTestFailed   = 101
-	ErrorCodeNotFile      = 102
-	ErrorCodeNotDir       = 104
-	ErrorCodeNodeExist    = 105
-	ErrorCodeRootROnly    = 107
-	ErrorCodeDirNotEmpty  = 108
-	ErrorCodeUnauthorized = 110
+	ErrorCodeKeyNotFound = 100
+	ErrorCodeTestFailed  = 101
+	ErrorCodeNotFile     = 102
+	ErrorCodeNotDir      = 104
+	ErrorCodeNodeExist   = 105
+	ErrorCodeRootROnly   = 107
+	ErrorCodeDirNotEmpty = 108
 
 	ErrorCodePrevValueRequired = 201
 	ErrorCodeTTLNaN            = 202
@@ -69,7 +66,7 @@ var (
 	ErrEmptyBody   = errors.New("client: response body is empty")
 )
 
-// PrevExistType is used to ;define an existence condition when setting
+// PrevExistType is used to define an existence condition when setting
 // or deleting Nodes.
 type PrevExistType string
 
@@ -139,7 +136,7 @@ type WatcherOptions struct {
 	// index, whatever that may be.
 	AfterIndex uint64
 
-	// Recursive specifies whether or not the Watcher should emit
+	// Recursive specifices whether or not the Watcher should emit
 	// events that occur in children of the given keyspace. If set
 	// to false (default), events will be limited to those that
 	// occur for the exact key.
@@ -255,7 +252,7 @@ type Response struct {
 	Node *Node `json:"node"`
 
 	// PrevNode represents the previous state of the Node. PrevNode is non-nil
-	// only if the Node existed before the action occurred and the action
+	// only if the Node existed before the action occured and the action
 	// caused a change to the Node.
 	PrevNode *Node `json:"prevNode"`
 
@@ -448,16 +445,7 @@ func (hw *httpWatcher) Next(ctx context.Context) (*Response, error) {
 // provided endpoint's path to the root of the keys API
 // (typically "/v2/keys").
 func v2KeysURL(ep url.URL, prefix, key string) *url.URL {
-	// We concatenate all parts together manually. We cannot use
-	// path.Join because it does not reserve trailing slash.
-	// We call CanonicalURLPath to further cleanup the path.
-	if prefix != "" && prefix[0] != '/' {
-		prefix = "/" + prefix
-	}
-	if key != "" && key[0] != '/' {
-		key = "/" + key
-	}
-	ep.Path = pathutil.CanonicalURLPath(ep.Path + prefix + key)
+	ep.Path = path.Join(ep.Path, prefix, key)
 	return &ep
 }
 

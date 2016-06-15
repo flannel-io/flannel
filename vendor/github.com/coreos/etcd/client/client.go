@@ -384,8 +384,6 @@ func (c *simpleHTTPClient) Do(ctx context.Context, act httpAction) (*http.Respon
 	}
 	defer hcancel()
 
-	reqcancel := requestCanceler(c.transport, req)
-
 	rtchan := make(chan roundTripResponse, 1)
 	go func() {
 		resp, err := c.transport.RoundTrip(req)
@@ -401,14 +399,14 @@ func (c *simpleHTTPClient) Do(ctx context.Context, act httpAction) (*http.Respon
 		resp, err = rtresp.resp, rtresp.err
 	case <-hctx.Done():
 		// cancel and wait for request to actually exit before continuing
-		reqcancel()
+		c.transport.CancelRequest(req)
 		rtresp := <-rtchan
 		resp = rtresp.resp
 		switch {
 		case ctx.Err() != nil:
 			err = ctx.Err()
 		case hctx.Err() != nil:
-			err = fmt.Errorf("client: endpoint %s exceeded header timeout", c.endpoint.String())
+			err = fmt.Errorf("client: endpoint %s exceeded header timeout", c.endpoint)
 		default:
 			panic("failed to get error from context")
 		}

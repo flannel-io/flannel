@@ -22,8 +22,9 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/coreos/etcd/pkg/types"
 	"golang.org/x/net/context"
+
+	"github.com/coreos/etcd/pkg/types"
 )
 
 var (
