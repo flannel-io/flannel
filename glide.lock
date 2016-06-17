@@ -1,5 +1,5 @@
-hash: b37f2f98ef5d80a4d6a2c3338a8facd8d12e49b4ca82e8071ec8674a1ec4ba3a
-updated: 2016-06-15T11:14:13.332489872-07:00
+hash: d21f17e2078ce20f063091179f7688d67568e1508519fcfb7d9a39a65865eb0b
+updated: 2016-06-15T14:05:51.080462474-07:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 5c0313fff8cd85670ae4fc996254dd7d66cb4cf7
@@ -58,9 +58,11 @@ imports:
 - name: github.com/vaughan0/go-ini
   version: a98ad7ee00ec53921f08832bc06ecf7fd600e6a1
 - name: github.com/vishvananda/netlink
-  version: a57a12c1b1d8aa37cf2f9da4fa7657b1f1fed88c
+  version: 293adec04146bfb07bf34f75921ebc9c1ee2cd74
   subpackages:
   - nl
+- name: github.com/vishvananda/netns
+  version: 8ba1072b58e0c2a240eb5f6120165c7776c3e7b8
 - name: golang.org/x/net
   version: b6d7b1396ec874c3b00f6c84cd4301a17c56c8ed
   subpackages:

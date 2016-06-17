@@ -269,14 +269,14 @@ func TestHtbClassAddHtbClassChangeDel(t *testing.T) {
 	// For change to work, the handle and parent cannot be changed.
 
 	// First, test it fails if we change the Handle.
-	old_handle := classattrs.Handle
+	oldHandle := classattrs.Handle
 	classattrs.Handle = MakeHandle(0xffff, 3)
 	class = NewHtbClass(classattrs, htbclassattrs)
 	if err := ClassChange(class); err == nil {
 		t.Fatal("ClassChange should not work when using a different handle.")
 	}
 	// It should work with the same handle
-	classattrs.Handle = old_handle
+	classattrs.Handle = oldHandle
 	htbclassattrs.Rate = 4321000
 	class = NewHtbClass(classattrs, htbclassattrs)
 	if err := ClassChange(class); err != nil {

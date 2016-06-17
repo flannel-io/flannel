@@ -11,6 +11,8 @@ import (
 type Addr struct {
 	*net.IPNet
 	Label string
+	Flags int
+	Scope int
 }
 
 // String returns $ip/$netmask $label
