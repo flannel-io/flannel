@@ -22,8 +22,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/coreos/flannel/pkg/ip"
+	"golang.org/x/net/context"
 )
 
 var (

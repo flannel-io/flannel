@@ -14,6 +14,6 @@
 
 package subnet
 
-import "github.com/coreos/flannel/Godeps/_workspace/src/github.com/jonboulle/clockwork"
+import "github.com/jonboulle/clockwork"
 
 var clock clockwork.Clock = clockwork.NewRealClock()

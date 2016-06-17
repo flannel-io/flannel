@@ -23,9 +23,9 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/pkg/flagutil"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/coreos/pkg/flagutil"
+	log "github.com/golang/glog"
+	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/remote"

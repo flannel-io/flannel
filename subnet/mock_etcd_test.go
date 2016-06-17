@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"testing"
 
-	etcd "github.com/coreos/flannel/Godeps/_workspace/src/github.com/coreos/etcd/client"
-	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+	etcd "github.com/coreos/etcd/client"
+	"golang.org/x/net/context"
 )
 
 func expectSuccess(t *testing.T, r *etcd.Response, err error, expected *etcd.Response, expectedValue string) {

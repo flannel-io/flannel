@@ -14,7 +14,7 @@
 
 package awsvpc
 
-import "github.com/coreos/flannel/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/ec2"
+import "github.com/aws/aws-sdk-go/service/ec2"
 
 type ecFilter []*ec2.Filter
 

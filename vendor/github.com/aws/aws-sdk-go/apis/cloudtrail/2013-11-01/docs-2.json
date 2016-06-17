@@ -1,0 +1,328 @@
+{
+  "version": "2.0",
+  "operations": {
+    "CreateTrail": "<p>From the command line, use <code>create-subscription</code>. </p> <p>Creates a trail that specifies the settings for delivery of log data to an Amazon S3 bucket. </p>",
+    "DeleteTrail": "<p>Deletes a trail.</p>",
+    "DescribeTrails": "<p>Retrieves settings for the trail associated with the current region for your account.</p>",
+    "GetTrailStatus": "<p>Returns a JSON-formatted list of information about the specified trail. Fields include information on delivery errors, Amazon SNS and Amazon S3 errors, and start and stop logging times for each trail. </p>",
+    "LookupEvents": "<p>Looks up API activity events captured by CloudTrail that create, update, or delete resources in your account. Events for a region can be looked up for the times in which you had CloudTrail turned on in that region during the last seven days. Lookup supports five different attributes: time range (defined by a start time and end time), user name, event name, resource type, and resource name. All attributes are optional. The maximum number of attributes that can be specified in any one lookup request are time range and one other attribute. The default number of results returned is 10, with a maximum of 50 possible. The response includes a token that you can use to get the next page of results. The rate of lookup requests is limited to one per second per account.</p> <important>Events that occurred during the selected time range will not be available for lookup if CloudTrail logging was not enabled when the events occurred.</important>",
+    "StartLogging": "<p>Starts the recording of AWS API calls and log file delivery for a trail.</p>",
+    "StopLogging": "<p>Suspends the recording of AWS API calls and log file delivery for the specified trail. Under most circumstances, there is no need to use this action. You can update a trail without stopping it first. This action is the only way to stop recording.</p>",
+    "UpdateTrail": "<p>From the command line, use <code>update-subscription</code>.</p> <p>Updates the settings that specify delivery of log files. Changes to a trail do not require stopping the CloudTrail service. Use this action to designate an existing bucket for log delivery. If the existing bucket has previously been a target for CloudTrail log files, an IAM policy exists for the bucket. </p>"
+  },
+  "service": "<fullname>AWS CloudTrail</fullname> <p>This is the CloudTrail API Reference. It provides descriptions of actions, data types, common parameters, and common errors for CloudTrail.</p> <p>CloudTrail is a web service that records AWS API calls for your AWS account and delivers log files to an Amazon S3 bucket. The recorded information includes the identity of the user, the start time of the AWS API call, the source IP address, the request parameters, and the response elements returned by the service.</p> <note> As an alternative to using the API, you can use one of the AWS SDKs, which consist of libraries and sample code for various programming languages and platforms (Java, Ruby, .NET, iOS, Android, etc.). The SDKs provide a convenient way to create programmatic access to AWSCloudTrail. For example, the SDKs take care of cryptographically signing requests, managing errors, and retrying requests automatically. For information about the AWS SDKs, including how to download and install them, see the <a href=\"http://aws.amazon.com/tools/\">Tools for Amazon Web Services page</a>. </note> <p>See the CloudTrail User Guide for information about the data that is included with each AWS API call listed in the log files.</p>",
+  "shapes": {
+    "Boolean": {
+      "base": null,
+      "refs": {
+        "CreateTrailRequest$IncludeGlobalServiceEvents": "<p>Specifies whether the trail is publishing events from global services such as IAM to the log files. </p>",
+        "CreateTrailResponse$IncludeGlobalServiceEvents": "<p>Specifies whether the trail is publishing events from global services such as IAM to the log files. </p>",
+        "GetTrailStatusResponse$IsLogging": "<p>Whether the CloudTrail is currently logging AWS API calls.</p>",
+        "Trail$IncludeGlobalServiceEvents": "<p>Set to <b>True</b> to include AWS API calls from AWS global services such as IAM. Otherwise, <b>False</b>.</p>",
+        "UpdateTrailRequest$IncludeGlobalServiceEvents": "<p>Specifies whether the trail is publishing events from global services such as IAM to the log files. </p>",
+        "UpdateTrailResponse$IncludeGlobalServiceEvents": "<p>Specifies whether the trail is publishing events from global services such as IAM to the log files. </p>"
+      }
+    },
+    "CloudWatchLogsDeliveryUnavailableException": {
+      "base": "<p>Cannot set a CloudWatch Logs delivery for this region.</p>",
+      "refs": {
+      }
+    },
+    "CreateTrailRequest": {
+      "base": "<p>Specifies the settings for each trail.</p>",
+      "refs": {
+      }
+    },
+    "CreateTrailResponse": {
+      "base": "Returns the objects or data listed below if successful. Otherwise, returns an error.",
+      "refs": {
+      }
+    },
+    "Date": {
+      "base": null,
+      "refs": {
+        "Event$EventTime": "<p>The date and time of the event returned.</p>",
+        "GetTrailStatusResponse$LatestDeliveryTime": "<p>Specifies the date and time that CloudTrail last delivered log files to an account's Amazon S3 bucket.</p>",
+        "GetTrailStatusResponse$LatestNotificationTime": "<p>Specifies the date and time of the most recent Amazon SNS notification that CloudTrail has written a new log file to an account's Amazon S3 bucket. </p>",
+        "GetTrailStatusResponse$StartLoggingTime": "<p>Specifies the most recent date and time when CloudTrail started recording API calls for an AWS account. </p>",
+        "GetTrailStatusResponse$StopLoggingTime": "<p>Specifies the most recent date and time when CloudTrail stopped recording API calls for an AWS account. </p>",
+        "GetTrailStatusResponse$LatestCloudWatchLogsDeliveryTime": "<p>Displays the most recent date and time when CloudTrail delivered logs to CloudWatch Logs.</p>",
+        "LookupEventsRequest$StartTime": "<p>Specifies that only events that occur after or at the specified time are returned. If the specified start time is after the specified end time, an error is returned.</p>",
+        "LookupEventsRequest$EndTime": "<p>Specifies that only events that occur before or at the specified time are returned. If the specified end time is before the specified start time, an error is returned.</p>"
+      }
+    },
+    "DeleteTrailRequest": {
+      "base": "<a>The request that specifies the name of a trail to delete.</a>",
+      "refs": {
+      }
+    },
+    "DeleteTrailResponse": {
+      "base": "<p>Returns the objects or data listed below if successful. Otherwise, returns an error.</p>",
+      "refs": {
+      }
+    },
+    "DescribeTrailsRequest": {
+      "base": "<p>Returns information about the trail.</p>",
+      "refs": {
+      }
+    },
+    "DescribeTrailsResponse": {
+      "base": "<p>Returns the objects or data listed below if successful. Otherwise, returns an error.</p>",
+      "refs": {
+      }
+    },
+    "Event": {
+      "base": "<p>Contains information about an event that was returned by a lookup request. The result includes a representation of a CloudTrail event. </p>",
+      "refs": {
+        "EventsList$member": null
+      }
+    },
+    "EventsList": {
+      "base": null,
+      "refs": {
+        "LookupEventsResponse$Events": "<p>A list of events returned based on the lookup attributes specified and the CloudTrail event. The events list is sorted by time. The most recent event is listed first.</p>"
+      }
+    },
+    "GetTrailStatusRequest": {
+      "base": "<p>The name of a trail about which you want the current status.</p>",
+      "refs": {
+      }
+    },
+    "GetTrailStatusResponse": {
+      "base": "<p>Returns the objects or data listed below if successful. Otherwise, returns an error.</p>",
+      "refs": {
+      }
+    },
+    "InsufficientS3BucketPolicyException": {
+      "base": "<p>This exception is thrown when the policy on the S3 bucket is not sufficient.</p>",
+      "refs": {
+      }
+    },
+    "InsufficientSnsTopicPolicyException": {
+      "base": "<p>This exception is thrown when the policy on the SNS topic is not sufficient.</p>",
+      "refs": {
+      }
+    },
+    "InvalidCloudWatchLogsLogGroupArnException": {
+      "base": "<p>This exception is thrown when the provided CloudWatch log group is not valid.</p>",
+      "refs": {
+      }
+    },
+    "InvalidCloudWatchLogsRoleArnException": {
+      "base": "<p>This exception is thrown when the provided role is not valid.</p>",
+      "refs": {
+      }
+    },
+    "InvalidLookupAttributesException": {
+      "base": "<p>Occurs when an invalid lookup attribute is specified.</p>",
+      "refs": {
+      }
+    },
+    "InvalidMaxResultsException": {
+      "base": "<p>This exception is thrown if the limit specified is invalid. </p>",
+      "refs": {
+      }
+    },
+    "InvalidNextTokenException": {
+      "base": "<p>Invalid token or token that was previously used in a request with different parameters. This exception is thrown if the token is invalid. </p>",
+      "refs": {
+      }
+    },
+    "InvalidS3BucketNameException": {
+      "base": "<p>This exception is thrown when the provided S3 bucket name is not valid.</p>",
+      "refs": {
+      }
+    },
+    "InvalidS3PrefixException": {
+      "base": "<p>This exception is thrown when the provided S3 prefix is not valid.</p>",
+      "refs": {
+      }
+    },
+    "InvalidSnsTopicNameException": {
+      "base": "<p>This exception is thrown when the provided SNS topic name is not valid. </p>",
+      "refs": {
+      }
+    },
+    "InvalidTimeRangeException": {
+      "base": "<p>Occurs if the timestamp values are invalid. Either the start time occurs after the end time or the time range is outside the range of possible values. </p>",
+      "refs": {
+      }
+    },
+    "InvalidTrailNameException": {
+      "base": "<p>This exception is thrown when the provided trail name is not valid.</p>",
+      "refs": {
+      }
+    },
+    "LookupAttribute": {
+      "base": "<p>Specifies an attribute and value that filter the events returned.</p>",
+      "refs": {
+        "LookupAttributesList$member": null
+      }
+    },
+    "LookupAttributeKey": {
+      "base": null,
+      "refs": {
+        "LookupAttribute$AttributeKey": "<p>Specifies an attribute on which to filter the events returned.</p>"
+      }
+    },
+    "LookupAttributesList": {
+      "base": null,
+      "refs": {
+        "LookupEventsRequest$LookupAttributes": "<p>Contains a list of lookup attributes. Currently the list can contain only one item.</p>"
+      }
+    },
+    "LookupEventsRequest": {
+      "base": "<p>Contains a request for LookupEvents.</p>",
+      "refs": {
+      }
+    },
+    "LookupEventsResponse": {
+      "base": "<p>Contains a response to a LookupEvents action.</p>",
+      "refs": {
+      }
+    },
+    "MaxResults": {
+      "base": null,
+      "refs": {
+        "LookupEventsRequest$MaxResults": "<p>The number of events to return. Possible values are 1 through 50. The default is 10.</p>"
+      }
+    },
+    "MaximumNumberOfTrailsExceededException": {
+      "base": "<p>This exception is thrown when the maximum number of trails is reached.</p>",
+      "refs": {
+      }
+    },
+    "NextToken": {
+      "base": null,
+      "refs": {
+        "LookupEventsRequest$NextToken": "<p>The token to use to get the next page of results after a previous API call. This token must be passed in with the same parameters that were specified in the the original call. For example, if the original call specified an AttributeKey of 'Username' with a value of 'root', the call with NextToken should include those same parameters.</p>",
+        "LookupEventsResponse$NextToken": "<p>The token to use to get the next page of results after a previous API call. If the token does not appear, there are no more results to return. The token must be passed in with the same parameters as the previous call. For example, if the original call specified an AttributeKey of 'Username' with a value of 'root', the call with NextToken should include those same parameters.</p>"
+      }
+    },
+    "Resource": {
+      "base": "<p>Specifies the type and name of a resource referenced by an event.</p>",
+      "refs": {
+        "ResourceList$member": null
+      }
+    },
+    "ResourceList": {
+      "base": "<p>A list of resources referenced by the event returned.</p>",
+      "refs": {
+        "Event$Resources": "<p>A list of resources referenced by the event returned.</p>"
+      }
+    },
+    "S3BucketDoesNotExistException": {
+      "base": "<p>This exception is thrown when the specified S3 bucket does not exist.</p>",
+      "refs": {
+      }
+    },
+    "StartLoggingRequest": {
+      "base": "<p>The request to CloudTrail to start logging AWS API calls for an account.</p>",
+      "refs": {
+      }
+    },
+    "StartLoggingResponse": {
+      "base": "<p>Returns the objects or data listed below if successful. Otherwise, returns an error.</p>",
+      "refs": {
+      }
+    },
+    "StopLoggingRequest": {
+      "base": "<p>Passes the request to CloudTrail to stop logging AWS API calls for the specified account.</p>",
+      "refs": {
+      }
+    },
+    "StopLoggingResponse": {
+      "base": "<p>Returns the objects or data listed below if successful. Otherwise, returns an error.</p>",
+      "refs": {
+      }
+    },
+    "String": {
+      "base": null,
+      "refs": {
+        "CreateTrailRequest$Name": "<p>Specifies the name of the trail.</p>",
+        "CreateTrailRequest$S3BucketName": "<p>Specifies the name of the Amazon S3 bucket designated for publishing log files.</p>",
+        "CreateTrailRequest$S3KeyPrefix": "<p>Specifies the Amazon S3 key prefix that precedes the name of the bucket you have designated for log file delivery.</p>",
+        "CreateTrailRequest$SnsTopicName": "<p>Specifies the name of the Amazon SNS topic defined for notification of log file delivery.</p>",
+        "CreateTrailRequest$CloudWatchLogsLogGroupArn": "<p>Specifies a log group name using an Amazon Resource Name (ARN), a unique identifier that represents the log group to which CloudTrail logs will be delivered. Not required unless you specify CloudWatchLogsRoleArn.</p>",
+        "CreateTrailRequest$CloudWatchLogsRoleArn": "<p>Specifies the role for the CloudWatch Logs endpoint to assume to write to a user’s log group.</p>",
+        "CreateTrailResponse$Name": "<p>Specifies the name of the trail.</p>",
+        "CreateTrailResponse$S3BucketName": "<p>Specifies the name of the Amazon S3 bucket designated for publishing log files.</p>",
+        "CreateTrailResponse$S3KeyPrefix": "<p>Specifies the Amazon S3 key prefix that precedes the name of the bucket you have designated for log file delivery.</p>",
+        "CreateTrailResponse$SnsTopicName": "<p>Specifies the name of the Amazon SNS topic defined for notification of log file delivery.</p>",
+        "CreateTrailResponse$CloudWatchLogsLogGroupArn": "<p>Specifies the Amazon Resource Name (ARN) of the log group to which CloudTrail logs will be delivered.</p>",
+        "CreateTrailResponse$CloudWatchLogsRoleArn": "<p>Specifies the role for the CloudWatch Logs endpoint to assume to write to a user’s log group.</p>",
+        "DeleteTrailRequest$Name": "<p>The name of a trail to be deleted.</p>",
+        "Event$EventId": "<p>The CloudTrail ID of the event returned.</p>",
+        "Event$EventName": "<p>The name of the event returned.</p>",
+        "Event$Username": "<p>A user name or role name of the requester that called the API in the event returned.</p>",
+        "Event$CloudTrailEvent": "<p>A JSON string that contains a representation of the event returned.</p>",
+        "GetTrailStatusRequest$Name": "<p>The name of the trail for which you are requesting the current status.</p>",
+        "GetTrailStatusResponse$LatestDeliveryError": "<p>Displays any Amazon S3 error that CloudTrail encountered when attempting to deliver log files to the designated bucket. For more information see the topic <a href=\"http://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html\">Error Responses</a> in the Amazon S3 API Reference. </p>",
+        "GetTrailStatusResponse$LatestNotificationError": "<p>Displays any Amazon SNS error that CloudTrail encountered when attempting to send a notification. For more information about Amazon SNS errors, see the <a href=\"http://docs.aws.amazon.com/sns/latest/dg/welcome.html\">Amazon SNS Developer Guide</a>. </p>",
+        "GetTrailStatusResponse$LatestCloudWatchLogsDeliveryError": "<p>Displays any CloudWatch Logs error that CloudTrail encountered when attempting to deliver logs to CloudWatch Logs.</p>",
+        "LookupAttribute$AttributeValue": "<p>Specifies a value for the specified AttributeKey.</p>",
+        "Resource$ResourceType": "<p>The type of a resource referenced by the event returned. When the resource type cannot be determined, null is returned. Some examples of resource types are: <b>Instance</b> for EC2, <b>Trail</b> for CloudTrail, <b>DBInstance</b> for RDS, and <b>AccessKey</b> for IAM. For a list of resource types supported for event lookup, see <a href=\"http://docs.aws.amazon.com/awscloudtrail/latest/userguide/lookup_supported_resourcetypes.html\">Resource Types Supported for Event Lookup</a>.</p>",
+        "Resource$ResourceName": "<p>The name of the resource referenced by the event returned. These are user-created names whose values will depend on the environment. For example, the resource name might be \"auto-scaling-test-group\" for an Auto Scaling Group or \"i-1234567\" for an EC2 Instance.</p>",
+        "StartLoggingRequest$Name": "<p>The name of the trail for which CloudTrail logs AWS API calls.</p>",
+        "StopLoggingRequest$Name": "<p>Communicates to CloudTrail the name of the trail for which to stop logging AWS API calls.</p>",
+        "Trail$Name": "<p>Name of the trail set by calling <a>CreateTrail</a>.</p>",
+        "Trail$S3BucketName": "<p>Name of the Amazon S3 bucket into which CloudTrail delivers your trail files. </p>",
+        "Trail$S3KeyPrefix": "<p>Value of the Amazon S3 prefix.</p>",
+        "Trail$SnsTopicName": "<p>Name of the existing Amazon SNS topic that CloudTrail uses to notify the account owner when new CloudTrail log files have been delivered. </p>",
+        "Trail$CloudWatchLogsLogGroupArn": "<p>Specifies an Amazon Resource Name (ARN), a unique identifier that represents the log group to which CloudTrail logs will be delivered.</p>",
+        "Trail$CloudWatchLogsRoleArn": "<p>Specifies the role for the CloudWatch Logs endpoint to assume to write to a user’s log group.</p>",
+        "TrailNameList$member": null,
+        "UpdateTrailRequest$Name": "<p>Specifies the name of the trail.</p>",
+        "UpdateTrailRequest$S3BucketName": "<p>Specifies the name of the Amazon S3 bucket designated for publishing log files.</p>",
+        "UpdateTrailRequest$S3KeyPrefix": "<p>Specifies the Amazon S3 key prefix that precedes the name of the bucket you have designated for log file delivery.</p>",
+        "UpdateTrailRequest$SnsTopicName": "<p>Specifies the name of the Amazon SNS topic defined for notification of log file delivery.</p>",
+        "UpdateTrailRequest$CloudWatchLogsLogGroupArn": "<p>Specifies a log group name using an Amazon Resource Name (ARN), a unique identifier that represents the log group to which CloudTrail logs will be delivered. Not required unless you specify CloudWatchLogsRoleArn.</p>",
+        "UpdateTrailRequest$CloudWatchLogsRoleArn": "<p>Specifies the role for the CloudWatch Logs endpoint to assume to write to a user’s log group.</p>",
+        "UpdateTrailResponse$Name": "<p>Specifies the name of the trail.</p>",
+        "UpdateTrailResponse$S3BucketName": "<p>Specifies the name of the Amazon S3 bucket designated for publishing log files.</p>",
+        "UpdateTrailResponse$S3KeyPrefix": "<p>Specifies the Amazon S3 key prefix that precedes the name of the bucket you have designated for log file delivery.</p>",
+        "UpdateTrailResponse$SnsTopicName": "<p>Specifies the name of the Amazon SNS topic defined for notification of log file delivery.</p>",
+        "UpdateTrailResponse$CloudWatchLogsLogGroupArn": "<p>Specifies the Amazon Resource Name (ARN) of the log group to which CloudTrail logs will be delivered.</p>",
+        "UpdateTrailResponse$CloudWatchLogsRoleArn": "<p>Specifies the role for the CloudWatch Logs endpoint to assume to write to a user’s log group.</p>"
+      }
+    },
+    "Trail": {
+      "base": "<p>The settings for a trail.</p>",
+      "refs": {
+        "TrailList$member": null
+      }
+    },
+    "TrailAlreadyExistsException": {
+      "base": "<p>This exception is thrown when the specified trail already exists.</p>",
+      "refs": {
+      }
+    },
+    "TrailList": {
+      "base": null,
+      "refs": {
+        "DescribeTrailsResponse$trailList": "<p>The list of trails.</p>"
+      }
+    },
+    "TrailNameList": {
+      "base": null,
+      "refs": {
+        "DescribeTrailsRequest$trailNameList": "<p>The trail returned.</p>"
+      }
+    },
+    "TrailNotFoundException": {
+      "base": "<p>This exception is thrown when the trail with the given name is not found.</p>",
+      "refs": {
+      }
+    },
+    "UpdateTrailRequest": {
+      "base": "<p>Specifies settings to update for the trail.</p>",
+      "refs": {
+      }
+    },
+    "UpdateTrailResponse": {
+      "base": "Returns the objects or data listed below if successful. Otherwise, returns an error.",
+      "refs": {
+      }
+    }
+  }
+}

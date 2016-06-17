@@ -42,9 +42,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/coreos/flannel/Godeps/_workspace/src/code.google.com/p/google-api-go-client/googleapi"
-	log "github.com/coreos/flannel/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/coreos/flannel/Godeps/_workspace/src/golang.org/x/net/context"
+	log "github.com/golang/glog"
+	"golang.org/x/net/context"
+	"google.golang.org/api/googleapi"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
