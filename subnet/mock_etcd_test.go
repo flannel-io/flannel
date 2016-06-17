@@ -127,7 +127,7 @@ func TestMockEtcd(t *testing.T) {
 	// Sanity tests for our mock etcd
 
 	// Ensure no entries yet exist
-	opts := &etcd.GetOptions{Recursive: true}
+	opts := &etcd.GetOptions{Recursive: true, Quorum: true}
 	r, err := m.Get(ctx, "/", opts)
 	e := &etcd.Response{Action: "get", Index: 1000, Node: m.nodes["/"]}
 	expectSuccess(t, r, err, e, "")
@@ -159,7 +159,7 @@ func TestMockEtcd(t *testing.T) {
 
 	// Get it again
 	expectedNode := r.Node
-	opts = &etcd.GetOptions{Recursive: false}
+	opts = &etcd.GetOptions{Recursive: false, Quorum: true}
 	r, err = m.Get(ctx, netKey2, opts)
 	e = &etcd.Response{Action: "get", Index: m.index, Node: expectedNode}
 	expectSuccess(t, r, err, e, netValue)
@@ -171,13 +171,13 @@ func TestMockEtcd(t *testing.T) {
 	expectSuccess(t, r, err, e, netValue)
 
 	// Get it again
-	opts = &etcd.GetOptions{Recursive: false}
+	opts = &etcd.GetOptions{Recursive: false, Quorum: true}
 	r, err = m.Get(ctx, netKey2, opts)
 	e = &etcd.Response{Action: "get", Index: m.index}
 	expectSuccess(t, r, err, e, netValue)
 
 	// test directory listing
-	opts = &etcd.GetOptions{Recursive: true}
+	opts = &etcd.GetOptions{Recursive: true, Quorum: true}
 	r, err = m.Get(ctx, "/coreos.com/network/", opts)
 	e = &etcd.Response{Action: "get", Index: 1007}
 	expectSuccess(t, r, err, e, "")
@@ -220,7 +220,7 @@ func TestMockEtcd(t *testing.T) {
 	expectSuccess(t, r, err, e, "")
 
 	// Get it again; should fail
-	opts = &etcd.GetOptions{Recursive: false}
+	opts = &etcd.GetOptions{Recursive: false, Quorum: true}
 	r, err = m.Get(ctx, netKey1, opts)
 	if err == nil {
 		t.Fatalf("Get of %s after delete unexpectedly succeeded", netKey1)
