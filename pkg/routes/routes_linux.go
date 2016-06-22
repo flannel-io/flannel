@@ -17,7 +17,7 @@
 package routes
 
 import (
-	"github.com/coreos/flannel/Godeps/_workspace/src/github.com/vishvananda/netlink"
+	"github.com/vishvananda/netlink"
 )
 
 // AddRoute adds a route to the system's routing table
