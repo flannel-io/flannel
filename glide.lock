@@ -1,5 +1,5 @@
-hash: d21f17e2078ce20f063091179f7688d67568e1508519fcfb7d9a39a65865eb0b
-updated: 2016-06-15T14:05:51.080462474-07:00
+hash: ae9f09c90f4bb4230fb7dc06798b809078b98816df63c91f4ad636b89ff31e38
+updated: 2016-06-23T13:29:22.013543886Z
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 5c0313fff8cd85670ae4fc996254dd7d66cb4cf7
@@ -40,7 +40,7 @@ imports:
   - activation
   - daemon
 - name: github.com/coreos/pkg
-  version: b0d3d81732aea341039d191d8618a3466fe54395
+  version: 7f080b6c11ac2d2347c3cd7521e810207ea1a041
   subpackages:
   - flagutil
 - name: github.com/golang/glog
