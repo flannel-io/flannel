@@ -1,3 +1,5 @@
+// +build linux !windows
+
 // Copyright 2015 CoreOS, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -319,7 +321,7 @@ static int tun_to_udp(int tun, int sock, char *buf, size_t buflen) {
 	ssize_t pktlen = tun_recv_packet(tun, buf, buflen);
 	if( pktlen < 0 )
 		return 0;
-	
+
 	iph = (struct iphdr *)buf;
 
 	next_hop = find_route((in_addr_t) iph->daddr);
@@ -462,4 +464,3 @@ void run_proxy(int tun, int sock, int ctl, in_addr_t tun_ip, size_t tun_mtu, int
 
 	free(buf);
 }
-
