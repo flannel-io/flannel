@@ -22,10 +22,8 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"strconv"
 
 	"github.com/coreos/etcd/pkg/transport"
-	"github.com/coreos/go-systemd/activation"
 	"github.com/coreos/go-systemd/daemon"
 	log "github.com/golang/glog"
 	"github.com/gorilla/mux"
@@ -290,32 +288,6 @@ func bindHandler(h handler, ctx context.Context, sm subnet.Manager) http.Handler
 	return func(resp http.ResponseWriter, req *http.Request) {
 		h(ctx, sm, resp, req)
 	}
-}
-
-func fdListener(addr string) (net.Listener, error) {
-	fdOffset := 0
-	if addr != "" {
-		fd, err := strconv.Atoi(addr)
-		if err != nil {
-			return nil, fmt.Errorf("fd index is not a number")
-		}
-		fdOffset = fd - 3
-	}
-
-	listeners, err := activation.Listeners(false)
-	if err != nil {
-		return nil, err
-	}
-
-	if fdOffset >= len(listeners) {
-		return nil, fmt.Errorf("fd %v is out of range (%v)", addr, len(listeners)+3)
-	}
-
-	if listeners[fdOffset] == nil {
-		return nil, fmt.Errorf("fd %v was not socket activated", addr)
-	}
-
-	return listeners[fdOffset], nil
 }
 
 func listener(addr, cafile, certfile, keyfile string) (net.Listener, error) {
