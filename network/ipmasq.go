@@ -29,7 +29,7 @@ func rules(ipn ip.IP4Net) [][]string {
 
 	return [][]string{
 		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-		{"-s", n, "-d", n, "-j", "ACCEPT"},
+		{"-s", n, "-d", n, "-j", "RETURN"},
 		// NAT if it's not multicast traffic
 		{"-s", n, "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE"},
 		// Masquerade anything headed towards flannel from the host
