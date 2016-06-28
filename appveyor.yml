@@ -3,7 +3,6 @@ clone_folder: C:\GOPATH\src\github.com\coreos\flannel
 environment:
   GOPATH: C:\GOPATH
 build_script:
-- cmd: go get golang.org/x/sys/windows
 - cmd: powershell -File build.ps1
 test_script:
 - cmd: powershell -File test.ps1

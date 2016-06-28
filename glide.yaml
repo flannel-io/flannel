@@ -30,7 +30,7 @@ import:
   - activation
   - daemon
 - package: github.com/coreos/pkg
-  version: v2 
+  version: v2
   subpackages:
   - flagutil
 - package: github.com/golang/glog
@@ -83,3 +83,6 @@ import:
   - pkg/runtime
   - pkg/util/runtime
   - pkg/watch
+- package: golang.org/x/sys
+  subpackages:
+  - windows

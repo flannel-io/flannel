@@ -43,7 +43,7 @@ if (-not (Test-Path "./$etcdVersion.zip")){
   exit 255
 }
 
-cmd /C "7z x $etcdVersion.zip"
+cmd /C "7z x -y $etcdVersion.zip"
 cmd /C "copy $etcdVersion\etcd.exe etcd.exe"
 cmd /C "copy $etcdVersion\etcdctl.exe etcdctl.exe"
 
@@ -55,6 +55,9 @@ If (-Not($?)){
   Write-Host "Could not start etcd server"
   exit 255
 }
+
+#We wait for etcd to come online
+sleep -s 10
 
 
 #set initial subnet config
@@ -87,17 +90,17 @@ If (-Not($?)){
   exit 255
 }
 
-#curl -L -H "ContentType: application/json" -X POST http://10.11.0.43:8888/v1/_/leases -d "{\"PublicIP\": \"10.12.10.10\",\"BackendType\":\"host-gw\"}"
+#Request a fake lease so that we can check that a route with this IP will be found in the routing table
 $curlAdd = -join("curl -L -H `"ContentType: application/json`" -X POST http://",$ip,":8888/v1/_/leases -d `"{\`"PublicIP\`":\`"$fakeIP\`",\`"BackendType\`":\`"host-gw\`"}`"")
 Write-Host "Running $curlAdd"
-$rez = cmd /C $curlAdd
+$addedSubnet = cmd /C $curlAdd
 
 If (-Not($?)){
   Write-Host "Could not add networks to flanneld server"
   exit 255
 }
 
-$val = ConvertFrom-json $rez
+$val = ConvertFrom-json $addedSubnet
 $searchTerm = $val.Subnet
 
 Write-Host "Looking for $searchTerm"

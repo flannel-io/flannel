@@ -114,6 +114,10 @@ imports:
   - internal
   - jws
   - jwt
+- name: golang.org/x/sys
+  version: 62bee037599929a6e9146f29d10dd5208c43507d
+  subpackages:
+  - windows
 - name: google.golang.org/api
   version: e6294e63a06b2be522ff3d328d8cacded0b1bd31
   subpackages:
