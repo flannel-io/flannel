@@ -596,6 +596,39 @@ func TestLinkAddDelVxlan(t *testing.T) {
 	}
 }
 
+func TestLinkAddDelVxlanGbp(t *testing.T) {
+	if os.Getenv("TRAVIS_BUILD_DIR") != "" {
+		t.Skipf("Kernel in travis is too old for this test")
+	}
+
+	tearDown := setUpNetlinkTest(t)
+	defer tearDown()
+
+	parent := &Dummy{
+		LinkAttrs{Name: "foo"},
+	}
+	if err := LinkAdd(parent); err != nil {
+		t.Fatal(err)
+	}
+
+	vxlan := Vxlan{
+		LinkAttrs: LinkAttrs{
+			Name: "bar",
+		},
+		VxlanId:      10,
+		VtepDevIndex: parent.Index,
+		Learning:     true,
+		L2miss:       true,
+		L3miss:       true,
+		GBP:          true,
+	}
+
+	testLinkAddDel(t, &vxlan)
+	if err := LinkDel(parent); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestLinkAddDelIPVlanL2(t *testing.T) {
 	if os.Getenv("TRAVIS_BUILD_DIR") != "" {
 		t.Skipf("Kernel in travis is too old for this test")
@@ -810,6 +843,54 @@ func TestLinkSubscribe(t *testing.T) {
 	}
 
 	if !expectLinkUpdate(ch, "foo", false) {
+		t.Fatal("Del update not received as expected")
+	}
+}
+
+func TestLinkSubscribeAt(t *testing.T) {
+	// Create an handle on a custom netns
+	newNs, err := netns.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer newNs.Close()
+
+	nh, err := NewHandleAt(newNs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer nh.Delete()
+
+	// Subscribe for Link events on the custom netns
+	ch := make(chan LinkUpdate)
+	done := make(chan struct{})
+	defer close(done)
+	if err := LinkSubscribeAt(newNs, ch, done); err != nil {
+		t.Fatal(err)
+	}
+
+	link := &Veth{LinkAttrs{Name: "test", TxQLen: testTxQLen, MTU: 1400}, "bar"}
+	if err := nh.LinkAdd(link); err != nil {
+		t.Fatal(err)
+	}
+
+	if !expectLinkUpdate(ch, "test", false) {
+		t.Fatal("Add update not received as expected")
+	}
+
+	if err := nh.LinkSetUp(link); err != nil {
+		t.Fatal(err)
+	}
+
+	if !expectLinkUpdate(ch, "test", true) {
+		t.Fatal("Link Up update not received as expected")
+	}
+
+	if err := nh.LinkDel(link); err != nil {
+		t.Fatal(err)
+	}
+
+	if !expectLinkUpdate(ch, "test", false) {
 		t.Fatal("Del update not received as expected")
 	}
 }

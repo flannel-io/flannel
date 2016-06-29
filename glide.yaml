@@ -48,7 +48,7 @@ import:
 - package: github.com/vaughan0/go-ini
   version: a98ad7ee00ec53921f08832bc06ecf7fd600e6a1
 - package: github.com/vishvananda/netlink
-  version: 293adec04146bfb07bf34f75921ebc9c1ee2cd74
+  version: e73bad418fd727ed3a02830b1af1ad0283a1de6c
   subpackages:
   - nl
 - package: golang.org/x/net

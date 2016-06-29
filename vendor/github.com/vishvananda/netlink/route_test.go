@@ -5,6 +5,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/vishvananda/netns"
 )
 
 func TestRouteAddDel(t *testing.T) {
@@ -136,6 +138,62 @@ func TestRouteSubscribe(t *testing.T) {
 		t.Fatal("Add update not received as expected")
 	}
 	if err := RouteDel(&route); err != nil {
+		t.Fatal(err)
+	}
+	if !expectRouteUpdate(ch, syscall.RTM_DELROUTE, dst.IP) {
+		t.Fatal("Del update not received as expected")
+	}
+}
+
+func TestRouteSubscribeAt(t *testing.T) {
+	// Create an handle on a custom netns
+	newNs, err := netns.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer newNs.Close()
+
+	nh, err := NewHandleAt(newNs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer nh.Delete()
+
+	// Subscribe for Route events on the custom netns
+	ch := make(chan RouteUpdate)
+	done := make(chan struct{})
+	defer close(done)
+	if err := RouteSubscribeAt(newNs, ch, done); err != nil {
+		t.Fatal(err)
+	}
+
+	// get loopback interface
+	link, err := nh.LinkByName("lo")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// bring the interface up
+	if err = nh.LinkSetUp(link); err != nil {
+		t.Fatal(err)
+	}
+
+	// add a gateway route
+	dst := &net.IPNet{
+		IP:   net.IPv4(192, 169, 0, 0),
+		Mask: net.CIDRMask(24, 32),
+	}
+
+	ip := net.IPv4(127, 100, 1, 1)
+	route := Route{LinkIndex: link.Attrs().Index, Dst: dst, Src: ip}
+	if err := nh.RouteAdd(&route); err != nil {
+		t.Fatal(err)
+	}
+
+	if !expectRouteUpdate(ch, syscall.RTM_NEWROUTE, dst.IP) {
+		t.Fatal("Add update not received as expected")
+	}
+	if err := nh.RouteDel(&route); err != nil {
 		t.Fatal(err)
 	}
 	if !expectRouteUpdate(ch, syscall.RTM_DELROUTE, dst.IP) {

@@ -2,16 +2,20 @@ package netlink
 
 import (
 	"bytes"
+	"encoding/hex"
 	"net"
 	"testing"
 )
 
 func TestXfrmStateAddGetDel(t *testing.T) {
+	for _, s := range []*XfrmState{getBaseState(), getAeadState()} {
+		testXfrmStateAddGetDel(t, s)
+	}
+}
+
+func testXfrmStateAddGetDel(t *testing.T, state *XfrmState) {
 	tearDown := setUpNetlinkTest(t)
 	defer tearDown()
-
-	state := getBaseState()
-
 	if err := XfrmStateAdd(state); err != nil {
 		t.Fatal(err)
 	}
@@ -176,6 +180,23 @@ func getBaseState() *XfrmState {
 	}
 }
 
+func getAeadState() *XfrmState {
+	// 128 key bits + 32 salt bits
+	k, _ := hex.DecodeString("d0562776bf0e75830ba3f7f8eb6c09b555aa1177")
+	return &XfrmState{
+		Src:   net.ParseIP("192.168.1.1"),
+		Dst:   net.ParseIP("192.168.2.2"),
+		Proto: XFRM_PROTO_ESP,
+		Mode:  XFRM_MODE_TUNNEL,
+		Spi:   2,
+		Aead: &XfrmStateAlgo{
+			Name:   "rfc4106(gcm(aes))",
+			Key:    k,
+			ICVLen: 64,
+		},
+	}
+}
+
 func compareStates(a, b *XfrmState) bool {
 	if a == b {
 		return true
@@ -185,9 +206,10 @@ func compareStates(a, b *XfrmState) bool {
 	}
 	return a.Src.Equal(b.Src) && a.Dst.Equal(b.Dst) &&
 		a.Mode == b.Mode && a.Spi == b.Spi && a.Proto == b.Proto &&
-		a.Auth.Name == b.Auth.Name && bytes.Equal(a.Auth.Key, b.Auth.Key) &&
-		a.Crypt.Name == b.Crypt.Name && bytes.Equal(a.Crypt.Key, b.Crypt.Key) &&
-		a.Mark.Value == b.Mark.Value && a.Mark.Mask == b.Mark.Mask
+		compareAlgo(a.Auth, b.Auth) &&
+		compareAlgo(a.Crypt, b.Crypt) &&
+		compareAlgo(a.Aead, b.Aead) &&
+		compareMarks(a.Mark, b.Mark)
 }
 
 func compareLimits(a, b *XfrmState) bool {
@@ -199,4 +221,26 @@ func compareLimits(a, b *XfrmState) bool {
 		a.Limits.ByteSoft == b.Limits.ByteSoft &&
 		a.Limits.TimeUseHard == b.Limits.TimeUseHard &&
 		a.Limits.TimeUseSoft == b.Limits.TimeUseSoft
+}
+
+func compareAlgo(a, b *XfrmStateAlgo) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return a.Name == b.Name && bytes.Equal(a.Key, b.Key) &&
+		(a.TruncateLen == 0 || a.TruncateLen == b.TruncateLen) &&
+		(a.ICVLen == 0 || a.ICVLen == b.ICVLen)
+}
+
+func compareMarks(a, b *XfrmMark) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return a.Value == b.Value && a.Mask == b.Mask
 }
