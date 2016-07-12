@@ -70,6 +70,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, network string, con
 	cfg := struct {
 		VNI  int
 		Port int
+		GBP  bool
 	}{
 		VNI: defaultVNI,
 	}
@@ -86,6 +87,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, network string, con
 		vtepIndex: be.extIface.Iface.Index,
 		vtepAddr:  be.extIface.IfaceAddr,
 		vtepPort:  cfg.Port,
+		gbp:       cfg.GBP,
 	}
 
 	dev, err := newVXLANDevice(&devAttrs)

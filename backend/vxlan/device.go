@@ -34,6 +34,7 @@ type vxlanDeviceAttrs struct {
 	vtepIndex int
 	vtepAddr  net.IP
 	vtepPort  int
+	gbp       bool
 }
 
 type vxlanDevice struct {
@@ -61,6 +62,7 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 		SrcAddr:      devAttrs.vtepAddr,
 		Port:         devAttrs.vtepPort,
 		Learning:     false,
+		GBP:          devAttrs.gbp,
 	}
 
 	link, err := ensureLink(link)

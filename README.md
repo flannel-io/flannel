@@ -72,6 +72,7 @@ This is the only mandatory key.
   * `Type` (string): `vxlan`
   * `VNI`  (number): VXLAN Identifier (VNI) to be used. Defaults to 1.
   * `Port` (number): UDP port to use for sending encapsulated packets. Defaults to kernel default, currently 8472.
+  * `GBP` (boolean): Enable [VXLAN Group Based Policy](https://github.com/torvalds/linux/commit/3511494ce2f3d3b77544c79b87511a4ddb61dc89).  Defaults to false.
 
 * host-gw: create IP routes to subnets via remote machine IPs.
   Note that this requires direct layer2 connectivity between hosts running flannel.

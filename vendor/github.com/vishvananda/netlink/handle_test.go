@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/vishvananda/netlink/nl"
 	"github.com/vishvananda/netns"
 )
 
@@ -18,12 +19,18 @@ func TestHandleCreateDelete(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if h.routeSocket == nil || h.xfrmSocket == nil {
-		t.Fatalf("Handle socket(s) were not created")
+	for _, f := range nl.SupportedNlFamilies {
+		sh, ok := h.sockets[f]
+		if !ok {
+			t.Fatalf("Handle socket(s) for family %d was not created", f)
+		}
+		if sh.Socket == nil {
+			t.Fatalf("Socket for family %d was not created", f)
+		}
 	}
 
 	h.Delete()
-	if h.routeSocket != nil || h.xfrmSocket != nil {
+	if h.sockets != nil {
 		t.Fatalf("Handle socket(s) were not destroyed")
 	}
 }
