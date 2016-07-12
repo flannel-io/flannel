@@ -30,7 +30,7 @@ import:
   - activation
   - daemon
 - package: github.com/coreos/pkg
-  version: b0d3d81732aea341039d191d8618a3466fe54395
+  version: v2 
   subpackages:
   - flagutil
 - package: github.com/golang/glog
