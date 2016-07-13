@@ -1,0 +1,4 @@
+FROM armel/busybox:glibc
+COPY flanneld /opt/bin/
+COPY dist/mk-docker-opts.sh /opt/bin/
+CMD ["/opt/bin/flanneld"]
