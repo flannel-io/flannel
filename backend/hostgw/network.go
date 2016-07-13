@@ -94,19 +94,9 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 			}
 
 			// Check if route exists before attempting to add it
-			//   Search for route with same Dst Address and Interface
-			routeAf := netlink.FAMILY_V4
-
-			// XXX Comment this in as soon as we have net library with IP.To4()
-			// 
-			// routeAf := netlink.FAMILY_V6
-			// if route.Dst.To4() != nil {
-			//	routeAf = netlink.FAMILY_V4
-			// }
-			routeList, err := netlink.RouteListFiltered(routeAf, &netlink.Route{
-				Dst:       route.Dst,
-				LinkIndex: route.LinkIndex,
-			}, netlink.RT_FILTER_DST|netlink.RT_FILTER_OIF)
+			routeList, err := netlink.RouteListFiltered(netlink.FAMILY_V4, &netlink.Route{
+				Dst: route.Dst,
+			}, netlink.RT_FILTER_DST)
 			if err != nil {
 				log.Warningf("Unable to list routes: %v", err)
 			}
@@ -121,7 +111,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 			}
 			if len(routeList) > 0 && routeList[0].Gw.Equal(route.Gw) {
 				// Same Dst and same Gw, keep it and do not attempt to add it.
-				log.Infof("Route to %v via %v allready exists, skipping.", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
+				log.Infof("Route to %v via %v already exists, skipping.", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
 			} else if err := netlink.RouteAdd(&route); err != nil {
 				log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, err)
 				continue
