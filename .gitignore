@@ -1,4 +1,9 @@
-flannel
-coverage
-bin
+dist/*.tar.gz
+dist/flanneld*
+dist/iptables-*
+dist/*.aci
+dist/*.docker
 cover.out
+.editorconfig
+.idea/
+
