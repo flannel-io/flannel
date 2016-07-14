@@ -11,19 +11,19 @@ tag=$1
 tgt=$(mktemp -d)
 
 # Build flannel inside 
-docker run -v `pwd`/../:/opt/flannel -i -t golang:1.4.2 /bin/bash -c "cd /opt/flannel && ./build"
+docker run -v `pwd`/../:/go/src/github.com/coreos/flannel -i -t golang:1.6 /bin/bash -c "cd /go/src/github.com/coreos/flannel && make binary"
 
 # Generate Dockerfile into target tmp dir
 cat <<DF >${tgt}/Dockerfile
 FROM quay.io/coreos/flannelbox:1.0
-MAINTAINER Eugene Yakubovich <eugene.yakubovich@coreos.com>
+MAINTAINER Tom Denham <tom@tigera.io>
 ADD ./flanneld /opt/bin/
 ADD ./mk-docker-opts.sh /opt/bin/
 CMD /opt/bin/flanneld
 DF
 
 # Copy artifcats into target dir and build the image
-cp ../bin/flanneld $tgt
+cp ../artifacts/flanneld $tgt
 cp ./mk-docker-opts.sh $tgt
 docker build -t quay.io/coreos/flannel:${tag} $tgt
 
