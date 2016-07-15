@@ -33,10 +33,10 @@ ARCH?=amd64
 
 default: help
 all: test				    ## Run all the tests
-binary: flanneld  ## Create the flanneld binary
+binary: dist/flanneld       ## Create the flanneld binary
 
-flanneld: $(shell find . -type f  -name '*.go')
-	go build -o flanneld \
+dist/flanneld: $(shell find . -type f  -name '*.go')
+	go build -o dist/flanneld \
 	  -ldflags "-extldflags -static -X github.com/coreos/flannel/version.Version=$(shell git describe --dirty)"
 
 test:
@@ -56,32 +56,52 @@ gofmt-fix:
 	gofmt -w $(PACKAGES)
 
 license-check:
-	dist/license-check.sh
+	dist/license-check.sh #TODO - Move this to a new location
 
-# WHat does this create? Given an ARCH, from src to binary and container?
-build:
+clean:
+	rm -f dist/flanneld
+	rm -f dist/iptables
 
-#TODO artifacts dir, make it and
-	docker run -it -v $(PWD):/flannel:ro gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c \
-		&& cd /flannel && GOARM=$(GOARM) GOARCH=$(ARCH) CC=$(CC) CGO_ENABLED=1 make flanneld; file flanneld"
+build: clean
+    # Build for other platforms with ARCH=$ARCH make build
+    # valid values for $ARCH are amd64 amd arm64 and ppc64le
+	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) -it \
+	    -v ${PWD}:/go/src/github.com/coreos/flannel:ro \
+        -v ${PWD}/dist:/go/src/github.com/coreos/flannel/dist \
+	    gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
+	    curl http://www.netfilter.org/projects/iptables/files/iptables-1.4.21.tar.bz2 | tar -jxv && \
+	    cd iptables-1.4.21 && \
+	    ./configure \
+            --prefix=/usr \
+            --mandir=/usr/man \
+            --disable-shared \
+            --disable-devel \
+            --disable-nftables \
+            --enable-static \
+            --host=amd64 && \
+        make && \
+        cp iptables/xtables-multi /go/src/github.com/coreos/flannel/dist/iptables && \
+		cd /go/src/github.com/coreos/flannel && \
+		CGO_ENABLED=1 make dist/flanneld && \
+		file dist/iptables dist/flanneld && \
+		chown -R $(shell id -u):$(shell id -u) dist'
 
 
-	curl http://www.netfilter.org/projects/iptables/files/iptables-1.4.21.tar.bz2 | tar -jxv
-cd iptables-1.4.21
-export CC=arm-linux-gnueabi-gcc
-./configure \
-    --prefix=/usr \
-    --mandir=/usr/man \
-    --disable-shared \
-    --disable-devel \
-    --disable-nftables \
-    --enable-static \
-    --host=amd64
-make
-cp iptables/xtables-multi
-
-	# And build the image
-	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY)/flannel-$(ARCH):$(TAG) .
+#curl http://www.netfilter.org/projects/iptables/files/iptables-1.4.21.tar.bz2 | tar -jxv
+#cd iptables-1.4.21
+#export CC=arm-linux-gnueabi-gcc
+#./configure \
+#    --prefix=/usr \
+#    --mandir=/usr/man \
+#    --disable-shared \
+#    --disable-devel \
+#    --disable-nftables \
+#    --enable-static \
+#    --host=amd64
+#make
+#cp iptables/xtables-multi
+# And build the image
+#	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY)/flannel-$(ARCH):$(TAG) .
 
 
 ## Display this help text
