@@ -20,6 +20,7 @@ artifacts/flanneld: $(shell find . -type f  -name '*.go')
 
 test:
 	go test -cover $(TEST_PACKAGES_EXPANDED)
+	cd dist; ./mk-docker-opts_tests.sh
 
 cover:
 	#A single package must be given - e.g. 'PACKAGES=pkg/ip make cover'

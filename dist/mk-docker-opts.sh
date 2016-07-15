@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 usage() {
 	echo "$0 [-f FLANNEL-ENV-FILE] [-d DOCKER-ENV-FILE] [-i] [-c] [-m] [-k COMBINED-KEY]
@@ -11,7 +11,7 @@ OPTIONS:
 	-c	Output combined Docker options into DOCKER_OPTS var
 	-k	Set the combined options key to this value (default DOCKER_OPTS=)
 	-m	Do not output --ip-masq (useful for older Docker version)
-" >/dev/stderr 
+" >&2
 
 	exit 1
 }
@@ -23,7 +23,7 @@ indiv_opts=false
 combined_opts=false
 ipmasq=true
 
-while getopts "f:d:icmk:" opt; do
+while getopts "f:d:icmk:?h" opt; do
 	case $opt in
 		f)
 			flannel_env=$OPTARG
@@ -43,7 +43,7 @@ while getopts "f:d:icmk:" opt; do
 		k)
 			combined_opts_key=$OPTARG
 			;;
-		\?)
+		[\?h])
 			usage
 			;;
 	esac
@@ -55,7 +55,7 @@ if [ $indiv_opts = false ] && [ $combined_opts = false ]; then
 fi
 
 if [ -f "$flannel_env" ]; then
-	source $flannel_env
+	. $flannel_env
 fi
 
 if [ -n "$FLANNEL_SUBNET" ]; then
@@ -72,23 +72,30 @@ if [ -n "$FLANNEL_IPMASQ" ] && [ $ipmasq = true ] ; then
 	elif [ "$FLANNEL_IPMASQ" = false ] ; then
 		DOCKER_OPT_IPMASQ="--ip-masq=true"
 	else
-		echo "Invalid value of FLANNEL_IPMASQ: $FLANNEL_IPMASQ" > /dev/stderr
+		echo "Invalid value of FLANNEL_IPMASQ: $FLANNEL_IPMASQ" >&2
 		exit 1
 	fi
 fi
 
 eval docker_opts="\$${combined_opts_key}"
-docker_opts+=" "
+
+if [ "$docker_opts" ]; then
+	docker_opts="$docker_opts ";
+fi
 
 echo -n "" >$docker_env
-for opt in $(compgen -v DOCKER_OPT_); do
-	eval val=\$$opt
+
+for opt in $(set | grep "DOCKER_OPT_"); do
+
+	OPT_NAME=$(echo $opt | awk -F "=" '{print $1;}');
+	OPT_VALUE=$(eval echo "\$$OPT_NAME");
 
 	if [ "$indiv_opts" = true ]; then
-		echo "$opt=\"$val\"" >>$docker_env
+		echo "$OPT_NAME=\"$OPT_VALUE\"" >>$docker_env;
 	fi
 
-	docker_opts+="$val "
+	docker_opts="$docker_opts $OPT_VALUE";
+
 done
 
 if [ "$combined_opts" = true ]; then
