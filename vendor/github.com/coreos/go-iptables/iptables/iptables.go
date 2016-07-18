@@ -17,7 +17,7 @@ package iptables
 import (
 	"bytes"
 	"fmt"
-	"log"
+	"io"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -40,7 +40,9 @@ func (e *Error) Error() string {
 }
 
 type IPTables struct {
-	path string
+	path     string
+	hasCheck bool
+	hasWait  bool
 }
 
 func New() (*IPTables, error) {
@@ -48,33 +50,34 @@ func New() (*IPTables, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return &IPTables{path}, nil
+	checkPresent, waitPresent, err := getIptablesCommandSupport()
+	if err != nil {
+		return nil, fmt.Errorf("error checking iptables version: %v", err)
+	}
+	ipt := IPTables{
+		path:     path,
+		hasCheck: checkPresent,
+		hasWait:  waitPresent,
+	}
+	return &ipt, nil
 }
 
 // Exists checks if given rulespec in specified table/chain exists
 func (ipt *IPTables) Exists(table, chain string, rulespec ...string) (bool, error) {
-	checkPresent, err := getIptablesHasCheckCommand()
-	if err != nil {
-		log.Printf("Error checking iptables version, assuming version at least 1.4.11: %v", err)
-		checkPresent = true
+	if !ipt.hasCheck {
+		return ipt.existsForOldIptables(table, chain, rulespec)
+
 	}
-
-	if !checkPresent {
-		cmd := append([]string{"-A", chain}, rulespec...)
-		return existsForOldIpTables(table, strings.Join(cmd, " "))
-	} else {
-		cmd := append([]string{"-t", table, "-C", chain}, rulespec...)
-		err := ipt.run(cmd...)
-
-		switch {
-		case err == nil:
-			return true, nil
-		case err.(*Error).ExitStatus() == 1:
-			return false, nil
-		default:
-			return false, err
-		}
+	cmd := append([]string{"-t", table, "-C", chain}, rulespec...)
+	err := ipt.run(cmd...)
+	eerr, eok := err.(*Error)
+	switch {
+	case err == nil:
+		return true, nil
+	case eok && eerr.ExitStatus() == 1:
+		return false, nil
+	default:
+		return false, err
 	}
 }
 
@@ -112,16 +115,10 @@ func (ipt *IPTables) Delete(table, chain string, rulespec ...string) error {
 
 // List rules in specified table/chain
 func (ipt *IPTables) List(table, chain string) ([]string, error) {
-	var stdout, stderr bytes.Buffer
-	cmd := exec.Cmd{
-		Path:   ipt.path,
-		Args:   []string{ipt.path, "--wait", "-t", table, "-S", chain},
-		Stdout: &stdout,
-		Stderr: &stderr,
-	}
-
-	if err := cmd.Run(); err != nil {
-		return nil, &Error{*(err.(*exec.ExitError)), stderr.String()}
+	args := []string{"-t", table, "-S", chain}
+	var stdout bytes.Buffer
+	if err := ipt.runWithOutput(args, &stdout); err != nil {
+		return nil, err
 	}
 
 	rules := strings.Split(stdout.String(), "\n")
@@ -136,20 +133,26 @@ func (ipt *IPTables) NewChain(table, chain string) error {
 	return ipt.run("-t", table, "-N", chain)
 }
 
-// ClearChain flushed (deletes all rules) in the specifed table/chain.
-// If the chain does not exist, new one will be created
+// ClearChain flushed (deletes all rules) in the specified table/chain.
+// If the chain does not exist, a new one will be created
 func (ipt *IPTables) ClearChain(table, chain string) error {
 	err := ipt.NewChain(table, chain)
 
+	eerr, eok := err.(*Error)
 	switch {
 	case err == nil:
 		return nil
-	case err.(*Error).ExitStatus() == 1:
+	case eok && eerr.ExitStatus() == 1:
 		// chain already exists. Flush (clear) it.
 		return ipt.run("-t", table, "-F", chain)
 	default:
 		return err
 	}
+}
+
+// RenameChain renames the old chain to the new one.
+func (ipt *IPTables) RenameChain(table, oldChain, newChain string) error {
+	return ipt.run("-t", table, "-E", oldChain, newChain)
 }
 
 // DeleteChain deletes the chain in the specified table.
@@ -158,12 +161,35 @@ func (ipt *IPTables) DeleteChain(table, chain string) error {
 	return ipt.run("-t", table, "-X", chain)
 }
 
+// run runs an iptables command with the given arguments, ignoring
+// any stdout output
 func (ipt *IPTables) run(args ...string) error {
+	return ipt.runWithOutput(args, nil)
+}
+
+// runWithOutput runs an iptables command with the given arguments,
+// writing any stdout output to the given writer
+func (ipt *IPTables) runWithOutput(args []string, stdout io.Writer) error {
+	args = append([]string{ipt.path}, args...)
+	if ipt.hasWait {
+		args = append(args, "--wait")
+	} else {
+		fmu, err := newXtablesFileLock()
+		if err != nil {
+			return err
+		}
+		ul, err := fmu.tryLock()
+		if err != nil {
+			return err
+		}
+		defer ul.Unlock()
+	}
+
 	var stderr bytes.Buffer
-	args = append([]string{"--wait"}, args...)
 	cmd := exec.Cmd{
 		Path:   ipt.path,
-		Args:   append([]string{ipt.path}, args...),
+		Args:   args,
+		Stdout: stdout,
 		Stderr: &stderr,
 	}
 
@@ -174,19 +200,19 @@ func (ipt *IPTables) run(args ...string) error {
 	return nil
 }
 
-// Checks if iptables has the "-C" flag
-func getIptablesHasCheckCommand() (bool, error) {
+// Checks if iptables has the "-C" and "--wait" flag
+func getIptablesCommandSupport() (bool, bool, error) {
 	vstring, err := getIptablesVersionString()
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
 
 	v1, v2, v3, err := extractIptablesVersion(vstring)
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
 
-	return iptablesHasCheckCommand(v1, v2, v3), nil
+	return iptablesHasCheckCommand(v1, v2, v3), iptablesHasWaitCommand(v1, v2, v3), nil
 }
 
 // getIptablesVersion returns the first three components of the iptables version.
@@ -242,15 +268,28 @@ func iptablesHasCheckCommand(v1 int, v2 int, v3 int) bool {
 	return false
 }
 
+// Checks if an iptables version is after 1.4.20, when --wait was added
+func iptablesHasWaitCommand(v1 int, v2 int, v3 int) bool {
+	if v1 > 1 {
+		return true
+	}
+	if v1 == 1 && v2 > 4 {
+		return true
+	}
+	if v1 == 1 && v2 == 4 && v3 >= 20 {
+		return true
+	}
+	return false
+}
+
 // Checks if a rule specification exists for a table
-func existsForOldIpTables(table string, ruleSpec string) (bool, error) {
-	cmd := exec.Command("iptables", "-t", table, "-S")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
+func (ipt *IPTables) existsForOldIptables(table, chain string, rulespec []string) (bool, error) {
+	rs := strings.Join(append([]string{"-A", chain}, rulespec...), " ")
+	args := []string{"-t", table, "-S"}
+	var stdout bytes.Buffer
+	err := ipt.runWithOutput(args, &stdout)
 	if err != nil {
 		return false, err
 	}
-	rules := out.String()
-	return strings.Contains(rules, ruleSpec), nil
+	return strings.Contains(stdout.String(), rs), nil
 }

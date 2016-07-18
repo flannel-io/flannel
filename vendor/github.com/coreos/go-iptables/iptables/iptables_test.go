@@ -16,6 +16,7 @@ package iptables
 
 import (
 	"crypto/rand"
+	"fmt"
 	"math/big"
 	"reflect"
 	"testing"
@@ -30,16 +31,46 @@ func randChain(t *testing.T) string {
 	return "TEST-" + n.String()
 }
 
-func TestChain(t *testing.T) {
-	chain := randChain(t)
-
+// Create an array of IPTables with different hasWait/hasCheck to
+// test different behaviours
+func mustTestableIptables() []*IPTables {
 	ipt, err := New()
 	if err != nil {
-		t.Fatalf("New failed: %v", err)
+		panic(fmt.Sprintf("New failed: %v", err))
 	}
+	ipts := []*IPTables{ipt}
+	// ensure we check one variant without built-in locking
+	if ipt.hasWait {
+		iptNoWait := &IPTables{
+			path:    ipt.path,
+			hasWait: false,
+		}
+		ipts = append(ipts, iptNoWait)
+	}
+	// ensure we check one variant without built-in checking
+	if ipt.hasCheck {
+		iptNoCheck := &IPTables{
+			path:     ipt.path,
+			hasCheck: false,
+		}
+		ipts = append(ipts, iptNoCheck)
+	}
+	return ipts
+}
+
+func TestChain(t *testing.T) {
+	for _, ipt := range mustTestableIptables() {
+		runChainTests(t, ipt)
+	}
+}
+
+func runChainTests(t *testing.T, ipt *IPTables) {
+	t.Logf("testing iptables (hasWait=%t, hasCheck=%t)", ipt.hasWait, ipt.hasCheck)
+
+	chain := randChain(t)
 
 	// chain shouldn't exist, this will create new
-	err = ipt.ClearChain("filter", chain)
+	err := ipt.ClearChain("filter", chain)
 	if err != nil {
 		t.Fatalf("ClearChain (of missing) failed: %v", err)
 	}
@@ -67,23 +98,33 @@ func TestChain(t *testing.T) {
 		t.Fatalf("ClearChain (of non-empty) failed: %v", err)
 	}
 
+	// rename the chain
+	newChain := randChain(t)
+	err = ipt.RenameChain("filter", chain, newChain)
+	if err != nil {
+		t.Fatalf("RenameChain failed: %v", err)
+	}
+
 	// chain empty, should be ok
-	err = ipt.DeleteChain("filter", chain)
+	err = ipt.DeleteChain("filter", newChain)
 	if err != nil {
 		t.Fatalf("DeleteChain of empty chain failed: %v", err)
 	}
 }
 
 func TestRules(t *testing.T) {
+	for _, ipt := range mustTestableIptables() {
+		runRulesTests(t, ipt)
+	}
+}
+
+func runRulesTests(t *testing.T, ipt *IPTables) {
+	t.Logf("testing iptables (hasWait=%t, hasCheck=%t)", ipt.hasWait, ipt.hasCheck)
+
 	chain := randChain(t)
 
-	ipt, err := New()
-	if err != nil {
-		t.Fatalf("New failed: %v", err)
-	}
-
 	// chain shouldn't exist, this will create new
-	err = ipt.ClearChain("filter", chain)
+	err := ipt.ClearChain("filter", chain)
 	if err != nil {
 		t.Fatalf("ClearChain (of missing) failed: %v", err)
 	}
@@ -132,5 +173,17 @@ func TestRules(t *testing.T) {
 
 	if !reflect.DeepEqual(rules, expected) {
 		t.Fatalf("List mismatch: \ngot  %#v \nneed %#v", rules, expected)
+	}
+
+	// Clear the chain that was created.
+	err = ipt.ClearChain("filter", chain)
+	if err != nil {
+		t.Fatalf("Failed to clear test chain: %v", err)
+	}
+
+	// Delete the chain that was created
+	err = ipt.DeleteChain("filter", chain)
+	if err != nil {
+		t.Fatalf("Failed to delete test chain: %v", err)
 	}
 }
