@@ -1,0 +1,11 @@
+#!/bin/sh
+
+export SRC_DIR=`pwd`
+
+sudo rkt run \
+    --volume src-dir,kind=host,source=${SRC_DIR} \
+    --volume build-dir,kind=host,source=${SRC_DIR} \
+    --interactive \
+    coreos.com/rkt/builder:1.0.1 \
+    --exec /bin/sh \
+	-- -c 'mkdir -p /opt/src/github.com/coreos/ && ln -s /opt/rkt /opt/src/github.com/coreos/flannel && export GOPATH=/opt && cd /opt/src/github.com/coreos/flannel && make binary'
