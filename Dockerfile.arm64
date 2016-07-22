@@ -1,0 +1,9 @@
+FROM aarch64/busybox:glibc
+
+MAINTAINER Tom Denham <tom@tigera.io>
+
+COPY dist/flanneld-arm64 /opt/bin/flanneld
+COPY dist/iptables-arm64 /usr/local/bin/iptables
+COPY dist/mk-docker-opts.sh /opt/bin/
+CMD ["/opt/bin/flanneld"]
+

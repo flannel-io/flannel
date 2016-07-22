@@ -1,0 +1,9 @@
+FROM ppc64le/busybox:glibc
+
+MAINTAINER Tom Denham <tom@tigera.io>
+
+COPY dist/flanneld-ppc64le /opt/bin/flanneld
+COPY dist/iptables-ppc64le /usr/local/bin/iptables
+COPY dist/mk-docker-opts.sh /opt/bin/
+CMD ["/opt/bin/flanneld"]
+

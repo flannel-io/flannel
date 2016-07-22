@@ -236,3 +236,12 @@ Vagrant has a tendency to give the default interface (one with the default route
 This causes flannel to register multiple nodes with the same IP.
 To work around this issue, use `--iface` option to specify the interface that has a unique IP.
 If you're running on CoreOS, use cloud-config to set `coreos.flannel.interface` to `$public_ipv4`.
+
+
+# Release Process
+* Create a release on Github and use it to create a tag
+* Check the tag out and run
+  * `make release`
+* Attach all the files in `dist` to the Github release
+* Run `make docker-push-all` to push all the images to a registry
+
