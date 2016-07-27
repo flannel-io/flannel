@@ -71,7 +71,9 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 	}
 	// this enables ARP requests being sent to userspace via netlink
 	sysctlPath := fmt.Sprintf("/proc/sys/net/ipv4/neigh/%s/app_solicit", devAttrs.name)
-	sysctlSet(sysctlPath, "3")
+	if err := sysctlSet(sysctlPath, "3"); err != nil {
+		return nil, err
+	}
 
 	return &vxlanDevice{
 		link: link,
