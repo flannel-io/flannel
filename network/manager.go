@@ -152,7 +152,7 @@ func lookupExtIface(ifname string) (*backend.ExternalInterface, error) {
 	if len(opts.publicIP) > 0 {
 		eaddr = net.ParseIP(opts.publicIP)
 		if eaddr == nil {
-			return nil, fmt.Errorf("invalid public IP address", opts.publicIP)
+			return nil, fmt.Errorf("invalid public IP address: %s", opts.publicIP)
 		}
 	}
 
