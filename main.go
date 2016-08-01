@@ -30,6 +30,7 @@ import (
 	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/remote"
 	"github.com/coreos/flannel/subnet"
+	"github.com/coreos/flannel/subnet/kube"
 	"github.com/coreos/flannel/version"
 
 	// Backends need to be imported for their init() to get executed and them to register
@@ -56,6 +57,7 @@ type CmdLineOpts struct {
 	remoteKeyfile  string
 	remoteCertfile string
 	remoteCAFile   string
+	kubeSubnetMgr  bool
 }
 
 var opts CmdLineOpts
@@ -73,6 +75,7 @@ func init() {
 	flag.StringVar(&opts.remoteKeyfile, "remote-keyfile", "", "SSL key file used to secure client/server communication")
 	flag.StringVar(&opts.remoteCertfile, "remote-certfile", "", "SSL certification file used to secure client/server communication")
 	flag.StringVar(&opts.remoteCAFile, "remote-cafile", "", "SSL Certificate Authority file used to secure client/server communication")
+	flag.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "Contact the Kubernetes API for subnet assignement instead of etcd or flannel-server.")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
 }
@@ -80,6 +83,9 @@ func init() {
 func newSubnetManager() (subnet.Manager, error) {
 	if opts.remote != "" {
 		return remote.NewRemoteManager(opts.remote, opts.remoteCAFile, opts.remoteCertfile, opts.remoteKeyfile)
+	}
+	if opts.kubeSubnetMgr {
+		return kube.NewSubnetManager()
 	}
 
 	cfg := &subnet.EtcdConfig{
