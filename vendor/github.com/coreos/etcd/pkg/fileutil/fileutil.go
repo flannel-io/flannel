@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package fileutil implements utility functions related to files and paths.
 package fileutil
 
 import (
@@ -25,6 +26,8 @@ import (
 
 const (
 	privateFileMode = 0600
+	// owner can make/remove files inside the directory
+	privateDirMode = 0700
 )
 
 var (
@@ -54,4 +57,19 @@ func ReadDir(dirpath string) ([]string, error) {
 	}
 	sort.Strings(names)
 	return names, nil
+}
+
+// TouchDirAll is similar to os.MkdirAll. It creates directories with 0700 permission if any directory
+// does not exists. TouchDirAll also ensures the given directory is writable.
+func TouchDirAll(dir string) error {
+	err := os.MkdirAll(dir, privateDirMode)
+	if err != nil && err != os.ErrExist {
+		return err
+	}
+	return IsDirWriteable(dir)
+}
+
+func Exist(name string) bool {
+	_, err := os.Stat(name)
+	return err == nil
 }

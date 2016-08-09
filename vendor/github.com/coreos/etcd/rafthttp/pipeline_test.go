@@ -16,6 +16,7 @@ package rafthttp
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -36,7 +37,8 @@ func TestPipelineSend(t *testing.T) {
 	tr := &roundTripperRecorder{}
 	picker := mustNewURLPicker(t, []string{"http://localhost:2380"})
 	fs := &stats.FollowerStats{}
-	p := newPipeline(tr, picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), fs, &fakeRaft{}, nil)
+	tp := &Transport{pipelineRt: tr}
+	p := newPipeline(tp, picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), fs, &fakeRaft{}, nil)
 
 	p.msgc <- raftpb.Message{Type: raftpb.MsgApp}
 	testutil.WaitSchedule()
@@ -52,11 +54,35 @@ func TestPipelineSend(t *testing.T) {
 	}
 }
 
+// TestPipelineKeepSendingWhenPostError tests that pipeline can keep
+// sending messages if previous messages meet post error.
+func TestPipelineKeepSendingWhenPostError(t *testing.T) {
+	tr := &respRoundTripper{err: fmt.Errorf("roundtrip error")}
+	picker := mustNewURLPicker(t, []string{"http://localhost:2380"})
+	fs := &stats.FollowerStats{}
+	tp := &Transport{pipelineRt: tr}
+	p := newPipeline(tp, picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), fs, &fakeRaft{}, nil)
+
+	for i := 0; i < 50; i++ {
+		p.msgc <- raftpb.Message{Type: raftpb.MsgApp}
+	}
+	testutil.WaitSchedule()
+	p.stop()
+
+	// check it send out 50 requests
+	tr.mu.Lock()
+	defer tr.mu.Unlock()
+	if tr.reqCount != 50 {
+		t.Errorf("request count = %d, want 50", tr.reqCount)
+	}
+}
+
 func TestPipelineExceedMaximumServing(t *testing.T) {
 	tr := newRoundTripperBlocker()
 	picker := mustNewURLPicker(t, []string{"http://localhost:2380"})
 	fs := &stats.FollowerStats{}
-	p := newPipeline(tr, picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), fs, &fakeRaft{}, nil)
+	tp := &Transport{pipelineRt: tr}
+	p := newPipeline(tp, picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), fs, &fakeRaft{}, nil)
 
 	// keep the sender busy and make the buffer full
 	// nothing can go out as we block the sender
@@ -96,7 +122,8 @@ func TestPipelineExceedMaximumServing(t *testing.T) {
 func TestPipelineSendFailed(t *testing.T) {
 	picker := mustNewURLPicker(t, []string{"http://localhost:2380"})
 	fs := &stats.FollowerStats{}
-	p := newPipeline(newRespRoundTripper(0, errors.New("blah")), picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), fs, &fakeRaft{}, nil)
+	tp := &Transport{pipelineRt: newRespRoundTripper(0, errors.New("blah"))}
+	p := newPipeline(tp, picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), fs, &fakeRaft{}, nil)
 
 	p.msgc <- raftpb.Message{Type: raftpb.MsgApp}
 	testutil.WaitSchedule()
@@ -112,9 +139,10 @@ func TestPipelineSendFailed(t *testing.T) {
 func TestPipelinePost(t *testing.T) {
 	tr := &roundTripperRecorder{}
 	picker := mustNewURLPicker(t, []string{"http://localhost:2380"})
-	p := newPipeline(tr, picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), nil, &fakeRaft{}, nil)
+	tp := &Transport{pipelineRt: tr}
+	p := newPipeline(tp, picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), nil, &fakeRaft{}, nil)
 	if err := p.post([]byte("some data")); err != nil {
-		t.Fatalf("unexpect post error: %v", err)
+		t.Fatalf("unexpected post error: %v", err)
 	}
 	p.stop()
 
@@ -159,7 +187,8 @@ func TestPipelinePostBad(t *testing.T) {
 	}
 	for i, tt := range tests {
 		picker := mustNewURLPicker(t, []string{tt.u})
-		p := newPipeline(newRespRoundTripper(tt.code, tt.err), picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), nil, &fakeRaft{}, make(chan error))
+		tp := &Transport{pipelineRt: newRespRoundTripper(tt.code, tt.err)}
+		p := newPipeline(tp, picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), nil, &fakeRaft{}, make(chan error))
 		err := p.post([]byte("some data"))
 		p.stop()
 
@@ -180,7 +209,8 @@ func TestPipelinePostErrorc(t *testing.T) {
 	for i, tt := range tests {
 		picker := mustNewURLPicker(t, []string{tt.u})
 		errorc := make(chan error, 1)
-		p := newPipeline(newRespRoundTripper(tt.code, tt.err), picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), nil, &fakeRaft{}, errorc)
+		tp := &Transport{pipelineRt: newRespRoundTripper(tt.code, tt.err)}
+		p := newPipeline(tp, picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), nil, &fakeRaft{}, errorc)
 		p.post([]byte("some data"))
 		p.stop()
 		select {
@@ -193,7 +223,8 @@ func TestPipelinePostErrorc(t *testing.T) {
 
 func TestStopBlockedPipeline(t *testing.T) {
 	picker := mustNewURLPicker(t, []string{"http://localhost:2380"})
-	p := newPipeline(newRoundTripperBlocker(), picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), nil, &fakeRaft{}, nil)
+	tp := &Transport{pipelineRt: newRoundTripperBlocker()}
+	p := newPipeline(tp, picker, types.ID(2), types.ID(1), types.ID(1), newPeerStatus(types.ID(1)), nil, &fakeRaft{}, nil)
 	// send many messages that most of them will be blocked in buffer
 	for i := 0; i < connPerPipeline*10; i++ {
 		p.msgc <- raftpb.Message{}
@@ -223,21 +254,11 @@ func newRoundTripperBlocker() *roundTripperBlocker {
 		cancel:   make(map[*http.Request]chan struct{}),
 	}
 }
-func (t *roundTripperBlocker) RoundTrip(req *http.Request) (*http.Response, error) {
-	c := make(chan struct{}, 1)
-	t.mu.Lock()
-	t.cancel[req] = c
-	t.mu.Unlock()
-	select {
-	case <-t.unblockc:
-		return &http.Response{StatusCode: http.StatusNoContent, Body: &nopReadCloser{}}, nil
-	case <-c:
-		return nil, errors.New("request canceled")
-	}
-}
+
 func (t *roundTripperBlocker) unblock() {
 	close(t.unblockc)
 }
+
 func (t *roundTripperBlocker) CancelRequest(req *http.Request) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -248,6 +269,9 @@ func (t *roundTripperBlocker) CancelRequest(req *http.Request) {
 }
 
 type respRoundTripper struct {
+	mu       sync.Mutex
+	reqCount int
+
 	code   int
 	header http.Header
 	err    error
@@ -257,6 +281,9 @@ func newRespRoundTripper(code int, err error) *respRoundTripper {
 	return &respRoundTripper{code: code, err: err}
 }
 func (t *respRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.reqCount++
 	return &http.Response{StatusCode: t.code, Header: t.header, Body: &nopReadCloser{}}, t.err
 }
 

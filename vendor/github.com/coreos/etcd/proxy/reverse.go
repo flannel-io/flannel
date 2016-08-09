@@ -26,23 +26,30 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/coreos/etcd/etcdserver/etcdhttp/httptypes"
 	"time"
+
+	"github.com/coreos/etcd/etcdserver/api/v2http/httptypes"
+	"github.com/coreos/etcd/pkg/httputil"
+	"github.com/coreos/pkg/capnslog"
 )
 
-// Hop-by-hop headers. These are removed when sent to the backend.
-// http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html
-// This list of headers borrowed from stdlib httputil.ReverseProxy
-var singleHopHeaders = []string{
-	"Connection",
-	"Keep-Alive",
-	"Proxy-Authenticate",
-	"Proxy-Authorization",
-	"Te", // canonicalized version of "TE"
-	"Trailers",
-	"Transfer-Encoding",
-	"Upgrade",
-}
+var (
+	plog = capnslog.NewPackageLogger("github.com/coreos/etcd", "proxy")
+
+	// Hop-by-hop headers. These are removed when sent to the backend.
+	// http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html
+	// This list of headers borrowed from stdlib httputil.ReverseProxy
+	singleHopHeaders = []string{
+		"Connection",
+		"Keep-Alive",
+		"Proxy-Authenticate",
+		"Proxy-Authorization",
+		"Te", // canonicalized version of "TE"
+		"Trailers",
+		"Transfer-Encoding",
+		"Upgrade",
+	}
+)
 
 func removeSingleHopHeaders(hdrs *http.Header) {
 	for _, h := range singleHopHeaders {
@@ -56,6 +63,7 @@ type reverseProxy struct {
 }
 
 func (p *reverseProxy) ServeHTTP(rw http.ResponseWriter, clientreq *http.Request) {
+	reportIncomingRequest(clientreq)
 	proxyreq := new(http.Request)
 	*proxyreq = *clientreq
 	startTime := time.Now()
@@ -70,7 +78,9 @@ func (p *reverseProxy) ServeHTTP(rw http.ResponseWriter, clientreq *http.Request
 		if err != nil {
 			msg := fmt.Sprintf("proxy: failed to read request body: %v", err)
 			e := httptypes.NewHTTPError(http.StatusInternalServerError, msg)
-			e.WriteTo(rw)
+			if we := e.WriteTo(rw); we != nil {
+				plog.Debugf("error writing HTTPError (%v) to %s", we, clientreq.RemoteAddr)
+			}
 			return
 		}
 	}
@@ -91,24 +101,23 @@ func (p *reverseProxy) ServeHTTP(rw http.ResponseWriter, clientreq *http.Request
 		// TODO: limit the rate of the error logging.
 		log.Printf(msg)
 		e := httptypes.NewHTTPError(http.StatusServiceUnavailable, msg)
-		e.WriteTo(rw)
+		if we := e.WriteTo(rw); we != nil {
+			plog.Debugf("error writing HTTPError (%v) to %s", we, clientreq.RemoteAddr)
+		}
 		return
 	}
 
 	var requestClosed int32
 	completeCh := make(chan bool, 1)
 	closeNotifier, ok := rw.(http.CloseNotifier)
+	cancel := httputil.RequestCanceler(p.transport, proxyreq)
 	if ok {
 		go func() {
 			select {
 			case <-closeNotifier.CloseNotify():
 				atomic.StoreInt32(&requestClosed, 1)
 				log.Printf("proxy: client %v closed request prematurely", clientreq.RemoteAddr)
-
-				tp, ok := p.transport.(*http.Transport)
-				if ok {
-					tp.CancelRequest(proxyreq)
-				}
+				cancel()
 			case <-completeCh:
 			}
 		}()
@@ -146,7 +155,9 @@ func (p *reverseProxy) ServeHTTP(rw http.ResponseWriter, clientreq *http.Request
 		reportRequestDropped(clientreq, failedGettingResponse)
 		log.Printf(msg)
 		e := httptypes.NewHTTPError(http.StatusBadGateway, msg)
-		e.WriteTo(rw)
+		if we := e.WriteTo(rw); we != nil {
+			plog.Debugf("error writing HTTPError (%v) to %s", we, clientreq.RemoteAddr)
+		}
 		return
 	}
 

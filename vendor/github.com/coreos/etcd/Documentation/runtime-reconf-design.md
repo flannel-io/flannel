@@ -1,12 +1,12 @@
-### Design of Runtime Reconfiguration
+# Design of Runtime Reconfiguration
 
 Runtime reconfiguration is one of the hardest and most error prone features in a distributed system, especially in a consensus based system like etcd.
 
 Read on to learn about the design of etcd's runtime reconfiguration commands and how we tackled these problems.
 
-### Two Phase Config Changes Keep you Safe
+## Two Phase Config Changes Keep you Safe
 
-In etcd, every runtime reconfiguration has to go through [two phases](Documentation/runtime-configuration.md#add-a-new-member) for safety reasons. For example, to add a member you need to first inform cluster of new configuration and then start the new member.
+In etcd, every runtime reconfiguration has to go through [two phases][add-member] for safety reasons. For example, to add a member you need to first inform cluster of new configuration and then start the new member.
 
 Phase 1 - Inform cluster of new configuration
 
@@ -22,15 +22,15 @@ Without the explicit workflow around cluster membership etcd would be vulnerable
 
 We think runtime reconfiguration should be a low frequent operation. We made the decision to keep it explicit and user-driven to ensure configuration safety and keep your cluster always running smoothly under your control.
 
-### Permanent Loss of Quorum Requires New Cluster
+## Permanent Loss of Quorum Requires New Cluster
 
 If a cluster permanently loses a majority of its members, a new cluster will need to be started from an old data directory to recover the previous state.
 
 It is entirely possible to force removing the failed members from the existing cluster to recover. However, we decided not to support this method since it bypasses the normal consensus committing phase, which is unsafe. If the member to remove is not actually dead or you force to remove different members through different members in the same cluster, you will end up with diverged cluster with same clusterID. This is very dangerous and hard to debug/fix afterwards. 
 
-If you have a correct deployment, the possibility of permanent majority lose is very low. But it is a severe enough problem that worth special care. We strongly suggest you to read the [disaster recovery documentation](admin_guide.md#disaster-recovery) and prepare for permanent majority lose before you put etcd into production.
+If you have a correct deployment, the possibility of permanent majority lose is very low. But it is a severe enough problem that worth special care. We strongly suggest you to read the [disaster recovery documentation][disaster-recovery] and prepare for permanent majority lose before you put etcd into production.
 
-### Do Not Use Public Discovery Service For Runtime Reconfiguration
+## Do Not Use Public Discovery Service For Runtime Reconfiguration
 
 The public discovery service should only be used for bootstrapping a cluster. To join member into an existing cluster, you should use runtime reconfiguration API. 
 
@@ -38,10 +38,13 @@ Discovery service is designed for bootstrapping an etcd cluster in the cloud env
 
 It seems that using public discovery service is a convenient way to do runtime reconfiguration, after all discovery service already has all the cluster configuration information. However relying on public discovery service brings troubles: 
 
-1. it introduces a external dependencies for the entire life-cycle of your cluster, not just bootstrap time. If there is a network issue between your cluster and public discover service, your cluster will suffer from it.
+1. it introduces external dependencies for the entire life-cycle of your cluster, not just bootstrap time. If there is a network issue between your cluster and public discovery service, your cluster will suffer from it.
  
 2. public discovery service must reflect correct runtime configuration of your cluster during it life-cycle. It has to provide security mechanism to avoid bad actions, and it is hard. 
 
 3. public discovery service has to keep tens of thousands of cluster configurations. Our public discovery service backend is not ready for that workload.
 
 If you want to have a discovery service that supports runtime reconfiguration, the best choice is to build your private one.
+
+[add-member]: runtime-configuration.md#add-a-new-member
+[disaster-recovery]: admin_guide.md#disaster-recovery

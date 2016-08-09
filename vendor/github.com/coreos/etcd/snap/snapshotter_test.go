@@ -124,7 +124,8 @@ func TestSnapNames(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 	for i := 1; i <= 5; i++ {
-		if f, err := os.Create(path.Join(dir, fmt.Sprintf("%d.snap", i))); err != nil {
+		var f *os.File
+		if f, err = os.Create(path.Join(dir, fmt.Sprintf("%d.snap", i))); err != nil {
 			t.Fatal(err)
 		} else {
 			f.Close()
@@ -206,7 +207,7 @@ func TestEmptySnapshot(t *testing.T) {
 	}
 }
 
-// TestAllSnapshotBroken ensures snapshotter returens
+// TestAllSnapshotBroken ensures snapshotter returns
 // ErrNoSnapshot if all the snapshots are broken.
 func TestAllSnapshotBroken(t *testing.T) {
 	dir := path.Join(os.TempDir(), "snapshot")

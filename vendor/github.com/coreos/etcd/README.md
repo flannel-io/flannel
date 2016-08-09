@@ -1,34 +1,43 @@
 # etcd
 
-[![Build Status](https://travis-ci.org/coreos/etcd.png?branch=master)](https://travis-ci.org/coreos/etcd)
+[![Go Report Card](https://goreportcard.com/badge/github.com/coreos/etcd)](https://goreportcard.com/report/github.com/coreos/etcd)
+[![Build Status](https://travis-ci.org/coreos/etcd.svg?branch=master)](https://travis-ci.org/coreos/etcd)
+[![Build Status](https://semaphoreci.com/api/v1/projects/406f9909-2f4f-4839-b59e-95082cb088f1/575109/badge.svg)](https://semaphoreci.com/coreos/etcd)
 [![Docker Repository on Quay.io](https://quay.io/repository/coreos/etcd-git/status "Docker Repository on Quay.io")](https://quay.io/repository/coreos/etcd-git)
+
+**Note**: The `master` branch may be in an *unstable or even broken state* during development. Please use [releases][github-release] instead of the `master` branch in order to get stable binaries.
 
 ![etcd Logo](logos/etcd-horizontal-color.png)
 
 etcd is a distributed, consistent key-value store for shared configuration and service discovery, with a focus on being:
 
-* *Simple*: curl'able user facing API (HTTP+JSON)
+* *Simple*: curl'able user-facing API (HTTP+JSON)
 * *Secure*: optional SSL client cert authentication
 * *Fast*: benchmarked 1000s of writes/s per instance
 * *Reliable*: properly distributed using Raft
 
 etcd is written in Go and uses the [Raft][raft] consensus algorithm to manage a highly-available replicated log.
 
+etcd is used [in production by many companies](./Documentation/production-users.md), and the development team stands behind it in critical deployment scenarios, where etcd is frequently teamed with applications such as [Kubernetes][k8s], [fleet][fleet], [locksmith][locksmith], [vulcand][vulcand], and many others.
+
 See [etcdctl][etcdctl] for a simple command line client.
-Or feel free to just use curl, as in the examples below.
+Or feel free to just use `curl`, as in the examples below.
 
-[raft]: http://raftconsensus.github.io/
+[raft]: https://raft.github.io/
+[k8s]: http://kubernetes.io/
+[fleet]: https://github.com/coreos/fleet
+[locksmith]: https://github.com/coreos/locksmith
+[vulcand]: https://github.com/vulcand/vulcand
 [etcdctl]: https://github.com/coreos/etcd/tree/master/etcdctl
-
-If you're considering etcd for production use, please see: [production-ready.md](./Documentation/production-ready.md)
 
 ## Getting Started
 
 ### Getting etcd
 
-The easiest way to get etcd is to install one of the pre-built binaries from the tagged releases: instructions are available on [GitHub][github-release].
+The easiest way to get etcd is to use one of the pre-built release binaries which are available for OSX, Linux, Windows, AppC (ACI), and Docker. Instructions for using these binaries are on the [GitHub releases page][github-release].
 
 For those wanting to try the very latest version, you can build the latest version of etcd from the `master` branch.
+You will first need [*Go*](https://golang.org/) installed on your machine (version 1.5+ is required).
 All development occurs on `master`, including new features and bug fixes.
 Bug fixes are first targeted at `master` and subsequently ported to release branches, as described in the [branch management][branch-management] guide.
 
@@ -54,6 +63,12 @@ curl -L http://127.0.0.1:2379/v2/keys/mykey
 
 You have successfully started an etcd and written a key to the store.
 
+### etcd TCP ports
+
+The [official etcd ports][iana-ports] are 2379 for client requests, and 2380 for peer communication. To maintain compatibility, some etcd configuration and documentation continues to refer to the legacy ports 4001 and 7001, but all new etcd use and discussion should adopt the IANA-assigned ports. The legacy ports 4001 and 7001 will be fully deprecated, and support for their use removed, in future etcd releases.
+
+[iana-ports]: https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?search=etcd
+
 ### Running local etcd cluster
 
 First install [goreman](https://github.com/mattn/goreman), which manages Procfile-based applications.
@@ -78,7 +93,7 @@ Now it's time to dig into the full etcd API and other guides.
 - Find [language bindings and tools][libraries-and-tools].
 - Use TLS to [secure an etcd cluster][security].
 - [Tune etcd][tuning].
-- [Upgrade from 0.4.6 to 2.0.0][upgrade].
+- [Upgrade from 0.4.9+ to 2.2.0][upgrade].
 
 [api]: ./Documentation/api.md
 [clustering]: ./Documentation/clustering.md
@@ -86,7 +101,7 @@ Now it's time to dig into the full etcd API and other guides.
 [libraries-and-tools]: ./Documentation/libraries-and-tools.md
 [security]: ./Documentation/security.md
 [tuning]: ./Documentation/tuning.md
-[upgrade]: ./tools/etcd-migrate/README.md
+[upgrade]: ./Documentation/04_to_2_snapshot_migration.md
 
 ## Contact
 
@@ -101,7 +116,7 @@ See [CONTRIBUTING](CONTRIBUTING.md) for details on submitting patches and the co
 
 ## Reporting bugs
 
-See [reporting bugs](Documentation/reporting_bugs.md) for details about reporting any issue you may encounter..
+See [reporting bugs](Documentation/reporting_bugs.md) for details about reporting any issue you may encounter.
 
 ## Project Details
 
@@ -125,6 +140,9 @@ The `v2` API responses should not change after the 2.0.0 release but new feature
 #### 32-bit systems
 
 etcd has known issues on 32-bit systems due to a bug in the Go runtime. See #[358][358] for more information.
+
+To avoid inadvertantly producing an unstable etcd server, 32-bit builds emit an `etcd` that prints
+a warning message and immediately exits.
 
 [358]: https://github.com/coreos/etcd/issues/358
 

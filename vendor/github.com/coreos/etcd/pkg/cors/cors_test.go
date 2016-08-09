@@ -91,7 +91,7 @@ func TestCORSHandler(t *testing.T) {
 		return http.Header{
 			"Access-Control-Allow-Methods": []string{"POST, GET, OPTIONS, PUT, DELETE"},
 			"Access-Control-Allow-Origin":  []string{origin},
-			"Access-Control-Allow-Headers": []string{"accept, content-type"},
+			"Access-Control-Allow-Headers": []string{"accept, content-type, authorization"},
 		}
 	}
 	tests := []struct {
@@ -117,6 +117,7 @@ func TestCORSHandler(t *testing.T) {
 		}
 		// it is set by http package, and there is no need to test it
 		rr.HeaderMap.Del("Content-Type")
+		rr.HeaderMap.Del("X-Content-Type-Options")
 		if !reflect.DeepEqual(rr.HeaderMap, tt.wheader) {
 			t.Errorf("#%d: header = %+v, want %+v", i, rr.HeaderMap, tt.wheader)
 		}

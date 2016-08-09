@@ -1,12 +1,10 @@
-# security model
+# Security Model
 
 etcd supports SSL/TLS as well as authentication through client certificates, both for clients to server as well as peer (server to server / cluster) communication.
 
 To get up and running you first need to have a CA certificate and a signed key pair for one member. It is recommended to create and sign a new key pair for every member in a cluster.
 
-For convenience the [etcd-ca](https://github.com/coreos/etcd-ca) tool provides an easy interface to certificate generation, alternatively this site provides a good reference on how to generate self-signed key pairs:
-
-http://www.g-loaded.eu/2005/11/10/be-your-own-ca/
+For convenience, the [cfssl] tool provides an easy interface to certificate generation, and we provide an example using the tool [here][tls-setup]. You can also examine this [alternative guide to generating self-signed key pairs][tls-guide].
 
 ## Basic setup
 
@@ -43,9 +41,9 @@ For this you need your CA certificate (`ca.crt`) and signed key pair (`server.cr
 Let us configure etcd to provide simple HTTPS transport security step by step:
 
 ```sh
-$ etcd -name infra0 -data-dir infra0 \
-  -cert-file=/path/to/server.crt -key-file=/path/to/server.key \
-  -advertise-client-urls=https://127.0.0.1:2379 -listen-client-urls=https://127.0.0.1:2379
+$ etcd --name infra0 --data-dir infra0 \
+  --cert-file=/path/to/server.crt --key-file=/path/to/server.key \
+  --advertise-client-urls=https://127.0.0.1:2379 --listen-client-urls=https://127.0.0.1:2379
 ```
 
 This should start up fine and you can now test the configuration by speaking HTTPS to etcd:
@@ -71,9 +69,9 @@ The clients will provide their certificates to the server and the server will ch
 You need the same files mentioned in the first example for this, as well as a key pair for the client (`client.crt`, `client.key`) signed by the same certificate authority.
 
 ```sh
-$ etcd -name infra0 -data-dir infra0 \
-  -client-cert-auth -trusted-ca-file=/path/to/ca.crt -cert-file=/path/to/server.crt -key-file=/path/to/server.key \
-  -advertise-client-urls https://127.0.0.1:2379 -listen-client-urls https://127.0.0.1:2379
+$ etcd --name infra0 --data-dir infra0 \
+  --client-cert-auth --trusted-ca-file=/path/to/ca.crt --cert-file=/path/to/server.crt --key-file=/path/to/server.key \
+  --advertise-client-urls https://127.0.0.1:2379 --listen-client-urls https://127.0.0.1:2379
 ```
 
 Now try the same request as above to this server:
@@ -97,7 +95,7 @@ $ curl --cacert /path/to/ca.crt --cert /path/to/client.crt --key /path/to/client
   -L https://127.0.0.1:2379/v2/keys/foo -XPUT -d value=bar -v
 ```
 
-You should able to see:
+You should be able to see:
 
 ```
 ...
@@ -131,19 +129,27 @@ Assuming we have our `ca.crt` and two members with their own keypairs (`member1.
 DISCOVERY_URL=... # from https://discovery.etcd.io/new
 
 # member1
-$ etcd -name infra1 -data-dir infra1 \
-  -peer-client-cert-auth -peer-trusted-ca-file=/path/to/ca.crt -peer-cert-file=/path/to/member1.crt -peer-key-file=/path/to/member1.key \
-  -initial-advertise-peer-urls=https://10.0.1.10:2380 -listen-peer-urls=https://10.0.1.10:2380 \
-  -discovery ${DISCOVERY_URL}
+$ etcd --name infra1 --data-dir infra1 \
+  --peer-client-cert-auth --peer-trusted-ca-file=/path/to/ca.crt --peer-cert-file=/path/to/member1.crt --peer-key-file=/path/to/member1.key \
+  --initial-advertise-peer-urls=https://10.0.1.10:2380 --listen-peer-urls=https://10.0.1.10:2380 \
+  --discovery ${DISCOVERY_URL}
 
 # member2
-$ etcd -name infra2 -data-dir infra2 \
-  -peer-client-cert-atuh -peer-trusted-ca-file=/path/to/ca.crt -peer-cert-file=/path/to/member2.crt -peer-key-file=/path/to/member2.key \
-  -initial-advertise-peer-urls=https://10.0.1.11:2380 -listen-peer-urls=https://10.0.1.11:2380 \
-  -discovery ${DISCOVERY_URL}
+$ etcd --name infra2 --data-dir infra2 \
+  --peer-client-cert-auth --peer-trusted-ca-file=/path/to/ca.crt --peer-cert-file=/path/to/member2.crt --peer-key-file=/path/to/member2.key \
+  --initial-advertise-peer-urls=https://10.0.1.11:2380 --listen-peer-urls=https://10.0.1.11:2380 \
+  --discovery ${DISCOVERY_URL}
 ```
 
 The etcd members will form a cluster and all communication between members in the cluster will be encrypted and authenticated using the client certificates. You will see in the output of etcd that the addresses it connects to use HTTPS.
+
+## Notes For etcd Proxy
+
+etcd proxy terminates the TLS from its client if the connection is secure, and uses proxy's own key/cert specified in `--peer-key-file` and `--peer-cert-file` to communicate with etcd members.
+
+The proxy communicates with etcd members through both the `--advertise-client-urls` and `--advertise-peer-urls` of a given member. It forwards client requests to etcd members’ advertised client urls, and it syncs the initial cluster configuration through etcd members’ advertised peer urls.
+
+When client authentication is enabled for an etcd member, the administrator must ensure that the peer certificate specified in the proxy's `--peer-cert-file` option is valid for that authentication. The proxy's peer certificate must also be valid for peer authentication if peer authentication is enabled.
 
 ## Frequently Asked Questions
 
@@ -152,7 +158,7 @@ The etcd members will form a cluster and all communication between members in th
 The internal protocol of etcd v2.0.x uses a lot of short-lived HTTP connections.
 So, when enabling TLS you may need to increase the heartbeat interval and election timeouts to reduce internal cluster connection churn.
 A reasonable place to start are these values: ` --heartbeat-interval 500 --election-timeout 2500`.
-This issues is resolved in the etcd v2.1.x series of releases which uses fewer connections.
+These issues are resolved in the etcd v2.1.x series of releases which uses fewer connections.
 
 ### I'm seeing a SSLv3 alert handshake failure when using SSL client authentication?
 
@@ -179,4 +185,9 @@ $ openssl ca -config openssl.cnf -policy policy_anything -extensions ssl_client 
 ### With peer certificate authentication I receive "certificate is valid for 127.0.0.1, not $MY_IP"
 Make sure that you sign your certificates with a Subject Name your member's public IP address. The `etcd-ca` tool for example provides an `--ip=` option for its `new-cert` command.
 
-If you need your certificate to be signed for your member's FQDN in its Subject Name then you could use Subject Alternative Names (short IP SANs) to add your IP address. The `etcd-ca` tool provides `--domain=` option for its `new-cert` command, and openssl can make [it](http://wiki.cacert.org/FAQ/subjectAltName) too.
+If you need your certificate to be signed for your member's FQDN in its Subject Name then you could use Subject Alternative Names (short IP SANs) to add your IP address. The `etcd-ca` tool provides `--domain=` option for its `new-cert` command, and openssl can make [it][alt-name] too.
+
+[cfssl]: https://github.com/cloudflare/cfssl
+[tls-setup]: /hack/tls-setup
+[tls-guide]: https://github.com/coreos/docs/blob/master/os/generate-self-signed-certificates.md
+[alt-name]: http://wiki.cacert.org/FAQ/subjectAltName

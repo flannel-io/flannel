@@ -41,7 +41,7 @@ type watcherHub struct {
 	EventHistory *EventHistory
 }
 
-// newWatchHub creates a watchHub. The capacity determines how many events we will
+// newWatchHub creates a watcherHub. The capacity determines how many events we will
 // keep in the eventHistory.
 // Typically, we only need to keep a small size of history[smaller than 20K].
 // Ideally, it should smaller than 20K/s[max throughput] * 2 * 50ms[RTT] = 2000
@@ -78,8 +78,9 @@ func (wh *watcherHub) watch(key string, recursive, stream bool, index, storeInde
 	defer wh.mutex.Unlock()
 	// If the event exists in the known history, append the EtcdIndex and return immediately
 	if event != nil {
-		event.EtcdIndex = storeIndex
-		w.eventChan <- event
+		ne := event.Clone()
+		ne.EtcdIndex = storeIndex
+		w.eventChan <- ne
 		return w, nil
 	}
 

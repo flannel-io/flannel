@@ -1,10 +1,31 @@
 language: go
 sudo: false
-go:
-  - 1.4
 
+go:
+  - 1.5
+  - 1.6
+  - tip
+
+matrix:
+  allow_failures:
+    - go: tip
+
+addons:
+  apt:
+    packages:
+    - libpcap-dev
+    - libaspell-dev
+    - libhunspell-dev
+
+env:
+ - GO15VENDOREXPERIMENT=1
+
+before_install:
+ - go get -v github.com/chzchzchz/goword
+
+# disable godep restore override
 install:
- - go get github.com/barakmich/go-nyet
+ - pushd cmd/ && go get -t -v ./... && popd
 
 script:
- - INTEGRATION=y ./test
+ - ./test

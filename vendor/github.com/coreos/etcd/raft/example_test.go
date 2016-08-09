@@ -23,16 +23,17 @@ func sendMessages(msgs []pb.Message)  {}
 func saveStateToDisk(st pb.HardState) {}
 func saveToDisk(ents []pb.Entry)      {}
 
-func Example_Node() {
+func ExampleNode() {
 	c := &Config{}
 	n := StartNode(c, nil)
+	defer n.Stop()
 
 	// stuff to n happens in other goroutines
 
 	// the last known state
 	var prev pb.HardState
 	for {
-		// ReadState blocks until there is new state ready.
+		// Ready blocks until there is new state ready.
 		rd := <-n.Ready()
 		if !isHardStateEqual(prev, rd.HardState) {
 			saveStateToDisk(rd.HardState)

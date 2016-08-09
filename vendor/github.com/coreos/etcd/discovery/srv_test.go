@@ -47,9 +47,9 @@ func TestSRVGetCluster(t *testing.T) {
 		},
 		{
 			[]*net.SRV{
-				&net.SRV{Target: "10.0.0.1", Port: 2480},
-				&net.SRV{Target: "10.0.0.2", Port: 2480},
-				&net.SRV{Target: "10.0.0.3", Port: 2480},
+				{Target: "10.0.0.1", Port: 2480},
+				{Target: "10.0.0.2", Port: 2480},
+				{Target: "10.0.0.3", Port: 2480},
 			},
 			[]*net.SRV{},
 			nil,
@@ -59,12 +59,12 @@ func TestSRVGetCluster(t *testing.T) {
 		},
 		{
 			[]*net.SRV{
-				&net.SRV{Target: "10.0.0.1", Port: 2480},
-				&net.SRV{Target: "10.0.0.2", Port: 2480},
-				&net.SRV{Target: "10.0.0.3", Port: 2480},
+				{Target: "10.0.0.1", Port: 2480},
+				{Target: "10.0.0.2", Port: 2480},
+				{Target: "10.0.0.3", Port: 2480},
 			},
 			[]*net.SRV{
-				&net.SRV{Target: "10.0.0.1", Port: 2380},
+				{Target: "10.0.0.1", Port: 2380},
 			},
 			nil,
 			nil,
@@ -72,12 +72,12 @@ func TestSRVGetCluster(t *testing.T) {
 		},
 		{
 			[]*net.SRV{
-				&net.SRV{Target: "10.0.0.1", Port: 2480},
-				&net.SRV{Target: "10.0.0.2", Port: 2480},
-				&net.SRV{Target: "10.0.0.3", Port: 2480},
+				{Target: "10.0.0.1", Port: 2480},
+				{Target: "10.0.0.2", Port: 2480},
+				{Target: "10.0.0.3", Port: 2480},
 			},
 			[]*net.SRV{
-				&net.SRV{Target: "10.0.0.1", Port: 2380},
+				{Target: "10.0.0.1", Port: 2380},
 			},
 			[]string{"https://10.0.0.1:2480"},
 			nil,
@@ -86,9 +86,9 @@ func TestSRVGetCluster(t *testing.T) {
 		// matching local member with resolved addr and return unresolved hostnames
 		{
 			[]*net.SRV{
-				&net.SRV{Target: "1.example.com.", Port: 2480},
-				&net.SRV{Target: "2.example.com.", Port: 2480},
-				&net.SRV{Target: "3.example.com.", Port: 2480},
+				{Target: "1.example.com.", Port: 2480},
+				{Target: "2.example.com.", Port: 2480},
+				{Target: "3.example.com.", Port: 2480},
 			},
 			nil,
 			[]string{"https://10.0.0.1:2480"},
@@ -106,7 +106,7 @@ func TestSRVGetCluster(t *testing.T) {
 			if service == "etcd-server" {
 				return "", tt.withoutSSL, nil
 			}
-			return "", nil, errors.New("Unkown service in mock")
+			return "", nil, errors.New("Unknown service in mock")
 		}
 		resolveTCPAddr = func(network, addr string) (*net.TCPAddr, error) {
 			if tt.dns == nil || tt.dns[addr] == "" {

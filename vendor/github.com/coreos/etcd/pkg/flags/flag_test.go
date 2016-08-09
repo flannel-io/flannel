@@ -56,7 +56,7 @@ func TestSetFlagsFromEnv(t *testing.T) {
 	}
 
 	// now read the env and verify flags were updated as expected
-	err := SetFlagsFromEnv(fs)
+	err := SetFlagsFromEnv("ETCD", fs)
 	if err != nil {
 		t.Errorf("err=%v, want nil", err)
 	}
@@ -76,7 +76,7 @@ func TestSetFlagsFromEnvBad(t *testing.T) {
 	fs := flag.NewFlagSet("testing", flag.ExitOnError)
 	fs.Int("x", 0, "")
 	os.Setenv("ETCD_X", "not_a_number")
-	if err := SetFlagsFromEnv(fs); err == nil {
+	if err := SetFlagsFromEnv("ETCD", fs); err == nil {
 		t.Errorf("err=nil, want != nil")
 	}
 }
@@ -141,7 +141,7 @@ func TestURLsFromFlags(t *testing.T) {
 			args:    []string{},
 			tlsInfo: transport.TLSInfo{},
 			wantURLs: []url.URL{
-				url.URL{Scheme: "http", Host: "127.0.0.1:2379"},
+				{Scheme: "http", Host: "127.0.0.1:2379"},
 			},
 			wantFail: false,
 		},
@@ -151,8 +151,8 @@ func TestURLsFromFlags(t *testing.T) {
 			args:    []string{"-urls=https://192.0.3.17:2930,http://127.0.0.1:1024"},
 			tlsInfo: transport.TLSInfo{},
 			wantURLs: []url.URL{
-				url.URL{Scheme: "http", Host: "127.0.0.1:1024"},
-				url.URL{Scheme: "https", Host: "192.0.3.17:2930"},
+				{Scheme: "http", Host: "127.0.0.1:1024"},
+				{Scheme: "https", Host: "192.0.3.17:2930"},
 			},
 			wantFail: false,
 		},
@@ -162,7 +162,7 @@ func TestURLsFromFlags(t *testing.T) {
 			args:    []string{"-addr=192.0.2.3:1024"},
 			tlsInfo: transport.TLSInfo{},
 			wantURLs: []url.URL{
-				url.URL{Scheme: "http", Host: "192.0.2.3:1024"},
+				{Scheme: "http", Host: "192.0.2.3:1024"},
 			},
 			wantFail: false,
 		},
@@ -175,7 +175,7 @@ func TestURLsFromFlags(t *testing.T) {
 				KeyFile:  "/tmp/bar",
 			},
 			wantURLs: []url.URL{
-				url.URL{Scheme: "https", Host: "192.0.2.3:1024"},
+				{Scheme: "https", Host: "192.0.2.3:1024"},
 			},
 			wantFail: false,
 		},

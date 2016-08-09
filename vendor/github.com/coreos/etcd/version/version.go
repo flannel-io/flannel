@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package version implements etcd version parsing and contains latest version
+// information.
 package version
 
 import (
+	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/coreos/etcd/pkg/fileutil"
 	"github.com/coreos/etcd/pkg/types"
@@ -24,14 +28,14 @@ import (
 
 var (
 	// MinClusterVersion is the min cluster version this etcd binary is compatible with.
-	MinClusterVersion = "2.0.0"
-	Version           = "2.1.1+git"
+	MinClusterVersion = "2.2.0"
+	Version           = "2.3.0+git"
 
 	// Git SHA Value will be set during build
 	GitSHA = "Not provided (use ./build instead of go build)"
 )
 
-// WalVersion is an enum for versions of etcd logs.
+// DataDirVersion is an enum for versions of etcd logs.
 type DataDirVersion string
 
 const (
@@ -75,4 +79,13 @@ func DetectDataDir(dirpath string) (DataDirVersion, error) {
 		return DataDir2_0Proxy, nil
 	}
 	return DataDirUnknown, nil
+}
+
+// Cluster only keeps the major.minor.
+func Cluster(v string) string {
+	vs := strings.Split(v, ".")
+	if len(vs) <= 2 {
+		return v
+	}
+	return fmt.Sprintf("%s.%s", vs[0], vs[1])
 }

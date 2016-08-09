@@ -1,3 +1,17 @@
+// Copyright 2015 CoreOS, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package storage
 
 import (
@@ -5,39 +19,59 @@ import (
 	"testing"
 )
 
-func TestIndexPutAndGet(t *testing.T) {
-	index := newTestTreeIndex()
+func TestIndexGet(t *testing.T) {
+	ti := newTreeIndex()
+	ti.Put([]byte("foo"), revision{main: 2})
+	ti.Put([]byte("foo"), revision{main: 4})
+	ti.Tombstone([]byte("foo"), revision{main: 6})
 
-	tests := []T{
-		{[]byte("foo"), 0, ErrReversionNotFound, 0},
-		{[]byte("foo"), 1, nil, 1},
-		{[]byte("foo"), 3, nil, 1},
-		{[]byte("foo"), 5, nil, 5},
-		{[]byte("foo"), 6, nil, 5},
+	tests := []struct {
+		rev int64
 
-		{[]byte("foo1"), 0, ErrReversionNotFound, 0},
-		{[]byte("foo1"), 1, ErrReversionNotFound, 0},
-		{[]byte("foo1"), 2, nil, 2},
-		{[]byte("foo1"), 5, nil, 2},
-		{[]byte("foo1"), 6, nil, 6},
-
-		{[]byte("foo2"), 0, ErrReversionNotFound, 0},
-		{[]byte("foo2"), 1, ErrReversionNotFound, 0},
-		{[]byte("foo2"), 3, nil, 3},
-		{[]byte("foo2"), 4, nil, 4},
-		{[]byte("foo2"), 6, nil, 4},
+		wrev     revision
+		wcreated revision
+		wver     int64
+		werr     error
+	}{
+		{0, revision{}, revision{}, 0, ErrRevisionNotFound},
+		{1, revision{}, revision{}, 0, ErrRevisionNotFound},
+		{2, revision{main: 2}, revision{main: 2}, 1, nil},
+		{3, revision{main: 2}, revision{main: 2}, 1, nil},
+		{4, revision{main: 4}, revision{main: 2}, 2, nil},
+		{5, revision{main: 4}, revision{main: 2}, 2, nil},
+		{6, revision{}, revision{}, 0, ErrRevisionNotFound},
 	}
-	verify(t, index, tests)
+	for i, tt := range tests {
+		rev, created, ver, err := ti.Get([]byte("foo"), tt.rev)
+		if err != tt.werr {
+			t.Errorf("#%d: err = %v, want %v", i, err, tt.werr)
+		}
+		if rev != tt.wrev {
+			t.Errorf("#%d: rev = %+v, want %+v", i, rev, tt.wrev)
+		}
+		if created != tt.wcreated {
+			t.Errorf("#%d: created = %+v, want %+v", i, created, tt.wcreated)
+		}
+		if ver != tt.wver {
+			t.Errorf("#%d: ver = %d, want %d", i, ver, tt.wver)
+		}
+	}
 }
 
 func TestIndexRange(t *testing.T) {
-	atRev := int64(3)
 	allKeys := [][]byte{[]byte("foo"), []byte("foo1"), []byte("foo2")}
-	allRevs := []reversion{{main: 1}, {main: 2}, {main: 3}}
+	allRevs := []revision{{main: 1}, {main: 2}, {main: 3}}
+
+	ti := newTreeIndex()
+	for i := range allKeys {
+		ti.Put(allKeys[i], allRevs[i])
+	}
+
+	atRev := int64(3)
 	tests := []struct {
 		key, end []byte
 		wkeys    [][]byte
-		wrevs    []reversion
+		wrevs    []revision
 	}{
 		// single key that not found
 		{
@@ -73,8 +107,7 @@ func TestIndexRange(t *testing.T) {
 		},
 	}
 	for i, tt := range tests {
-		index := newTestTreeIndex()
-		keys, revs := index.Range(tt.key, tt.end, atRev)
+		keys, revs := ti.Range(tt.key, tt.end, atRev)
 		if !reflect.DeepEqual(keys, tt.wkeys) {
 			t.Errorf("#%d: keys = %+v, want %+v", i, keys, tt.wkeys)
 		}
@@ -85,143 +118,206 @@ func TestIndexRange(t *testing.T) {
 }
 
 func TestIndexTombstone(t *testing.T) {
-	index := newTestTreeIndex()
+	ti := newTreeIndex()
+	ti.Put([]byte("foo"), revision{main: 1})
 
-	err := index.Tombstone([]byte("foo"), reversion{main: 7})
+	err := ti.Tombstone([]byte("foo"), revision{main: 2})
 	if err != nil {
 		t.Errorf("tombstone error = %v, want nil", err)
 	}
-	rev, _, _, err := index.Get([]byte("foo"), 7)
-	if err != nil {
+
+	_, _, _, err = ti.Get([]byte("foo"), 2)
+	if err != ErrRevisionNotFound {
 		t.Errorf("get error = %v, want nil", err)
 	}
-	w := reversion{main: 7}
-	if !reflect.DeepEqual(rev, w) {
-		t.Errorf("get reversion = %+v, want %+v", rev, w)
+	err = ti.Tombstone([]byte("foo"), revision{main: 3})
+	if err != ErrRevisionNotFound {
+		t.Errorf("tombstone error = %v, want %v", err, ErrRevisionNotFound)
 	}
 }
 
-func TestContinuousCompact(t *testing.T) {
-	index := newTestTreeIndex()
+func TestIndexRangeSince(t *testing.T) {
+	allKeys := [][]byte{[]byte("foo"), []byte("foo1"), []byte("foo2"), []byte("foo2"), []byte("foo1"), []byte("foo")}
+	allRevs := []revision{{main: 1}, {main: 2}, {main: 3}, {main: 4}, {main: 5}, {main: 6}}
 
-	tests := []T{
-		{[]byte("foo"), 0, ErrReversionNotFound, 0},
-		{[]byte("foo"), 1, nil, 1},
-		{[]byte("foo"), 3, nil, 1},
-		{[]byte("foo"), 5, nil, 5},
-		{[]byte("foo"), 6, nil, 5},
+	ti := newTreeIndex()
+	for i := range allKeys {
+		ti.Put(allKeys[i], allRevs[i])
+	}
 
-		{[]byte("foo1"), 0, ErrReversionNotFound, 0},
-		{[]byte("foo1"), 1, ErrReversionNotFound, 0},
-		{[]byte("foo1"), 2, nil, 2},
-		{[]byte("foo1"), 5, nil, 2},
-		{[]byte("foo1"), 6, nil, 6},
-
-		{[]byte("foo2"), 0, ErrReversionNotFound, 0},
-		{[]byte("foo2"), 1, ErrReversionNotFound, 0},
-		{[]byte("foo2"), 3, nil, 3},
-		{[]byte("foo2"), 4, nil, 4},
-		{[]byte("foo2"), 6, nil, 4},
+	atRev := int64(1)
+	tests := []struct {
+		key, end []byte
+		wrevs    []revision
+	}{
+		// single key that not found
+		{
+			[]byte("bar"), nil, nil,
+		},
+		// single key that found
+		{
+			[]byte("foo"), nil, []revision{{main: 1}, {main: 6}},
+		},
+		// range keys, return first member
+		{
+			[]byte("foo"), []byte("foo1"), []revision{{main: 1}, {main: 6}},
+		},
+		// range keys, return first two members
+		{
+			[]byte("foo"), []byte("foo2"), []revision{{main: 1}, {main: 2}, {main: 5}, {main: 6}},
+		},
+		// range keys, return all members
+		{
+			[]byte("foo"), []byte("fop"), allRevs,
+		},
+		// range keys, return last two members
+		{
+			[]byte("foo1"), []byte("fop"), []revision{{main: 2}, {main: 3}, {main: 4}, {main: 5}},
+		},
+		// range keys, return last member
+		{
+			[]byte("foo2"), []byte("fop"), []revision{{main: 3}, {main: 4}},
+		},
+		// range keys, return nothing
+		{
+			[]byte("foo3"), []byte("fop"), nil,
+		},
 	}
-	wa := map[reversion]struct{}{
-		reversion{main: 1}: struct{}{},
-	}
-	ga := index.Compact(1)
-	if !reflect.DeepEqual(ga, wa) {
-		t.Errorf("a = %v, want %v", ga, wa)
-	}
-	verify(t, index, tests)
-
-	wa = map[reversion]struct{}{
-		reversion{main: 1}: struct{}{},
-		reversion{main: 2}: struct{}{},
-	}
-	ga = index.Compact(2)
-	if !reflect.DeepEqual(ga, wa) {
-		t.Errorf("a = %v, want %v", ga, wa)
-	}
-	verify(t, index, tests)
-
-	wa = map[reversion]struct{}{
-		reversion{main: 1}: struct{}{},
-		reversion{main: 2}: struct{}{},
-		reversion{main: 3}: struct{}{},
-	}
-	ga = index.Compact(3)
-	if !reflect.DeepEqual(ga, wa) {
-		t.Errorf("a = %v, want %v", ga, wa)
-	}
-	verify(t, index, tests)
-
-	wa = map[reversion]struct{}{
-		reversion{main: 1}: struct{}{},
-		reversion{main: 2}: struct{}{},
-		reversion{main: 4}: struct{}{},
-	}
-	ga = index.Compact(4)
-	delete(wa, reversion{main: 3})
-	tests[12] = T{[]byte("foo2"), 3, ErrReversionNotFound, 0}
-	if !reflect.DeepEqual(wa, ga) {
-		t.Errorf("a = %v, want %v", ga, wa)
-	}
-	verify(t, index, tests)
-
-	wa = map[reversion]struct{}{
-		reversion{main: 2}: struct{}{},
-		reversion{main: 4}: struct{}{},
-		reversion{main: 5}: struct{}{},
-	}
-	ga = index.Compact(5)
-	delete(wa, reversion{main: 1})
-	if !reflect.DeepEqual(ga, wa) {
-		t.Errorf("a = %v, want %v", ga, wa)
-	}
-	tests[1] = T{[]byte("foo"), 1, ErrReversionNotFound, 0}
-	tests[2] = T{[]byte("foo"), 3, ErrReversionNotFound, 0}
-	verify(t, index, tests)
-
-	wa = map[reversion]struct{}{
-		reversion{main: 4}: struct{}{},
-		reversion{main: 5}: struct{}{},
-		reversion{main: 6}: struct{}{},
-	}
-	ga = index.Compact(6)
-	delete(wa, reversion{main: 2})
-	if !reflect.DeepEqual(ga, wa) {
-		t.Errorf("a = %v, want %v", ga, wa)
-	}
-	tests[7] = T{[]byte("foo1"), 2, ErrReversionNotFound, 0}
-	tests[8] = T{[]byte("foo1"), 5, ErrReversionNotFound, 0}
-	verify(t, index, tests)
-}
-
-func verify(t *testing.T, index index, tests []T) {
 	for i, tt := range tests {
-		h, _, _, err := index.Get(tt.key, tt.rev)
-		if err != tt.werr {
-			t.Errorf("#%d: err = %v, want %v", i, err, tt.werr)
-		}
-		if h.main != tt.wrev {
-			t.Errorf("#%d: rev = %d, want %d", i, h.main, tt.wrev)
+		revs := ti.RangeSince(tt.key, tt.end, atRev)
+		if !reflect.DeepEqual(revs, tt.wrevs) {
+			t.Errorf("#%d: revs = %+v, want %+v", i, revs, tt.wrevs)
 		}
 	}
 }
 
-type T struct {
-	key []byte
-	rev int64
+func TestIndexCompact(t *testing.T) {
+	maxRev := int64(20)
+	tests := []struct {
+		key     []byte
+		remove  bool
+		rev     revision
+		created revision
+		ver     int64
+	}{
+		{[]byte("foo"), false, revision{main: 1}, revision{main: 1}, 1},
+		{[]byte("foo1"), false, revision{main: 2}, revision{main: 2}, 1},
+		{[]byte("foo2"), false, revision{main: 3}, revision{main: 3}, 1},
+		{[]byte("foo2"), false, revision{main: 4}, revision{main: 3}, 2},
+		{[]byte("foo"), false, revision{main: 5}, revision{main: 1}, 2},
+		{[]byte("foo1"), false, revision{main: 6}, revision{main: 2}, 2},
+		{[]byte("foo1"), true, revision{main: 7}, revision{}, 0},
+		{[]byte("foo2"), true, revision{main: 8}, revision{}, 0},
+		{[]byte("foo"), true, revision{main: 9}, revision{}, 0},
+		{[]byte("foo"), false, revision{10, 0}, revision{10, 0}, 1},
+		{[]byte("foo1"), false, revision{10, 1}, revision{10, 1}, 1},
+	}
 
-	werr error
-	wrev int64
+	// Continuous Compact
+	ti := newTreeIndex()
+	for _, tt := range tests {
+		if tt.remove {
+			ti.Tombstone(tt.key, tt.rev)
+		} else {
+			ti.Put(tt.key, tt.rev)
+		}
+	}
+	for i := int64(1); i < maxRev; i++ {
+		am := ti.Compact(i)
+
+		wti := newTreeIndex()
+		for _, tt := range tests {
+			if _, ok := am[tt.rev]; ok || tt.rev.GreaterThan(revision{main: i}) {
+				if tt.remove {
+					wti.Tombstone(tt.key, tt.rev)
+				} else {
+					wti.Restore(tt.key, tt.created, tt.rev, tt.ver)
+				}
+			}
+		}
+		if !ti.Equal(wti) {
+			t.Errorf("#%d: not equal ti", i)
+		}
+	}
+
+	// Once Compact
+	for i := int64(1); i < maxRev; i++ {
+		ti := newTreeIndex()
+		for _, tt := range tests {
+			if tt.remove {
+				ti.Tombstone(tt.key, tt.rev)
+			} else {
+				ti.Put(tt.key, tt.rev)
+			}
+		}
+		am := ti.Compact(i)
+
+		wti := newTreeIndex()
+		for _, tt := range tests {
+			if _, ok := am[tt.rev]; ok || tt.rev.GreaterThan(revision{main: i}) {
+				if tt.remove {
+					wti.Tombstone(tt.key, tt.rev)
+				} else {
+					wti.Restore(tt.key, tt.created, tt.rev, tt.ver)
+				}
+			}
+		}
+		if !ti.Equal(wti) {
+			t.Errorf("#%d: not equal ti", i)
+		}
+	}
 }
 
-func newTestTreeIndex() index {
-	index := newTreeIndex()
-	index.Put([]byte("foo"), reversion{main: 1})
-	index.Put([]byte("foo1"), reversion{main: 2})
-	index.Put([]byte("foo2"), reversion{main: 3})
-	index.Put([]byte("foo2"), reversion{main: 4})
-	index.Put([]byte("foo"), reversion{main: 5})
-	index.Put([]byte("foo1"), reversion{main: 6})
-	return index
+func TestIndexRestore(t *testing.T) {
+	key := []byte("foo")
+
+	tests := []struct {
+		created  revision
+		modified revision
+		ver      int64
+	}{
+		{revision{1, 0}, revision{1, 0}, 1},
+		{revision{1, 0}, revision{1, 1}, 2},
+		{revision{1, 0}, revision{2, 0}, 3},
+	}
+
+	// Continuous Restore
+	ti := newTreeIndex()
+	for i, tt := range tests {
+		ti.Restore(key, tt.created, tt.modified, tt.ver)
+
+		modified, created, ver, err := ti.Get(key, tt.modified.main)
+		if modified != tt.modified {
+			t.Errorf("#%d: modified = %v, want %v", i, modified, tt.modified)
+		}
+		if created != tt.created {
+			t.Errorf("#%d: created = %v, want %v", i, created, tt.created)
+		}
+		if ver != tt.ver {
+			t.Errorf("#%d: ver = %d, want %d", i, ver, tt.ver)
+		}
+		if err != nil {
+			t.Errorf("#%d: err = %v, want nil", i, err)
+		}
+	}
+
+	// Once Restore
+	for i, tt := range tests {
+		ti := newTreeIndex()
+		ti.Restore(key, tt.created, tt.modified, tt.ver)
+
+		modified, created, ver, err := ti.Get(key, tt.modified.main)
+		if modified != tt.modified {
+			t.Errorf("#%d: modified = %v, want %v", i, modified, tt.modified)
+		}
+		if created != tt.created {
+			t.Errorf("#%d: created = %v, want %v", i, created, tt.created)
+		}
+		if ver != tt.ver {
+			t.Errorf("#%d: ver = %d, want %d", i, ver, tt.ver)
+		}
+		if err != nil {
+			t.Errorf("#%d: err = %v, want nil", i, err)
+		}
+	}
 }

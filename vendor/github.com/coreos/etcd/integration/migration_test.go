@@ -17,11 +17,13 @@ package integration
 import (
 	"os/exec"
 	"testing"
+
+	"github.com/coreos/etcd/pkg/testutil"
 )
 
 func TestUpgradeMember(t *testing.T) {
-	defer afterTest(t)
-	m := mustNewMember(t, "integration046", false)
+	defer testutil.AfterTest(t)
+	m := mustNewMember(t, "integration046", nil, nil)
 	cmd := exec.Command("cp", "-r", "testdata/integration046_data/conf", "testdata/integration046_data/log", "testdata/integration046_data/snapshot", m.DataDir)
 	err := cmd.Run()
 	if err != nil {
