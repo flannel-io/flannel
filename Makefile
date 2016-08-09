@@ -35,6 +35,7 @@ GOARM=7
 # List images with gcloud alpha container images list-tags gcr.io/google_containers/kube-cross
 KUBE_CROSS_TAG=v1.8.3-1
 IPTABLES_VERSION=1.4.21
+STRONGSWAN_VERSION=5.5.0
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
 	go build -o dist/flanneld \
@@ -83,11 +84,12 @@ bash_unit:
 
 clean:
 	rm -f dist/flanneld*
+	rm -rf dist/strongswan*
 	rm -f dist/*.docker
 	rm -f dist/*.tar.gz
 
 ## Create a docker image on disk for a specific arch and tag
-dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH)
+dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH) dist/libpthread.so.0-$(ARCH) dist/strongswan-$(ARCH)
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
 	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY):$(TAG)-$(ARCH)
 
@@ -153,8 +155,47 @@ dist/iptables-$(ARCH):
             cd /go/src/github.com/coreos/flannel && \
             file dist/iptables-$(ARCH)'
 
+## Build an architecture specific StrongSwan (we need charon daemon)
+dist/strongswan-$(ARCH):
+	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) -it \
+            -v ${PWD}:/go/src/github.com/coreos/flannel:ro \
+            -v ${PWD}/dist:/go/src/github.com/coreos/flannel/dist \
+            gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
+	    apt-get update && apt-get install -y libgmp3-dev && \
+	    curl --sSL https://download.strongswan.org/strongswan-$(STRONGSWAN_VERSION).tar.bz2 | tar -jxv && \
+	    cd strongswan-$(STRONGSWAN_VERSION) && \
+	    ./configure \
+	        --prefix=/go/src/github.com/coreos/flannel/dist/strongswan-$(ARCH) \
+		--enable-static=no \
+	        --enable-vici \
+		--disable-swanctl \
+	        --disable-attr \
+	        --disable-constraints \
+	        --disable-dnskey \
+	        --disable-fips-prf \
+	        --disable-ikev2 \
+	        --disable-md5 \
+	        --disable-pgp \
+	        --disable-pem \
+	        --disable-pkcs1 \
+	        --disable-pkcs7 \
+	        --disable-pkcs8 \
+	        --disable-pkcs12 \
+	        --disable-pki \
+	        --disable-pubkey \
+	        --disable-rc2 \
+	        --disable-resolve \
+	        --disable-revocation \
+	        --disable-scepclient \
+	        --disable-stroke \
+	        --disable-updown \
+	        --disable-x509 \
+	        --disable-xauth-generic && \
+	    make && \
+	    make install'
+
 ## Build a .tar.gz for the amd64 ppc64le arm arm64 flanneld binary
-tar.gz:	
+tar.gz:
 	ARCH=amd64 make dist/flanneld-amd64
 	tar --transform='flags=r;s|-amd64||' -zcvf dist/flannel-$(TAG)-linux-amd64.tar.gz -C dist flanneld-amd64 mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-amd64.tar.gz

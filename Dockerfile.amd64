@@ -7,6 +7,7 @@ ENV FLANNEL_ARCH=amd64
 RUN apk add --no-cache iproute2 net-tools ca-certificates && update-ca-certificates
 COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld
 COPY dist/iptables-$FLANNEL_ARCH /usr/local/bin/iptables
+COPY dist/strongswan-amd64 /usr/local/
 COPY dist/mk-docker-opts.sh /opt/bin/
 
 ENTRYPOINT ["/opt/bin/flanneld"]
