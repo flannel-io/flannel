@@ -76,7 +76,7 @@ func newEtcdClient(c *EtcdConfig) (etcd.KeysAPI, error) {
 		CAFile:   c.CAFile,
 	}
 
-	t, err := transport.NewTransport(tlsInfo)
+	t, err := transport.NewTransport(tlsInfo, time.Second)
 	if err != nil {
 		return nil, err
 	}
