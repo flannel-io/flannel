@@ -4,6 +4,7 @@ MAINTAINER Tom Denham <tom@tigera.io>
 
 COPY dist/flanneld-arm /opt/bin/flanneld
 COPY dist/iptables-arm /usr/local/bin/iptables
+COPY dist/strongswan-arm /usr/local/
 COPY dist/mk-docker-opts.sh /opt/bin/
 COPY dist/libpthread.so.0-arm /lib/libpthread.so.0
 CMD ["/opt/bin/flanneld"]

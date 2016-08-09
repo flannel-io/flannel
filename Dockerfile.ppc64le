@@ -4,6 +4,7 @@ MAINTAINER Tom Denham <tom@tigera.io>
 
 COPY dist/flanneld-ppc64le /opt/bin/flanneld
 COPY dist/iptables-ppc64le /usr/local/bin/iptables
+COPY dist/strongswan-amd64 /usr/local/
 COPY dist/mk-docker-opts.sh /opt/bin/
 COPY dist/libpthread.so.0-ppc64le /lib/libpthread.so.0
 CMD ["/opt/bin/flanneld"]
