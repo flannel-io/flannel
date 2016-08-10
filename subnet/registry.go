@@ -116,7 +116,7 @@ func newEtcdSubnetRegistry(config *EtcdConfig, cliNewFunc etcdNewFunc) (Registry
 
 func (esr *etcdSubnetRegistry) getNetworkConfig(ctx context.Context, network string) (string, error) {
 	key := path.Join(esr.etcdCfg.Prefix, network, "config")
-	resp, err := esr.client().Get(ctx, key, nil)
+	resp, err := esr.client().Get(ctx, key, &etcd.GetOptions{Quorum: true})
 	if err != nil {
 		return "", err
 	}
@@ -128,7 +128,7 @@ func (esr *etcdSubnetRegistry) getNetworkConfig(ctx context.Context, network str
 // point for etcd watch.
 func (esr *etcdSubnetRegistry) getSubnets(ctx context.Context, network string) ([]Lease, uint64, error) {
 	key := path.Join(esr.etcdCfg.Prefix, network, "subnets")
-	resp, err := esr.client().Get(ctx, key, &etcd.GetOptions{Recursive: true})
+	resp, err := esr.client().Get(ctx, key, &etcd.GetOptions{Recursive: true, Quorum: true})
 	if err != nil {
 		if etcdErr, ok := err.(etcd.Error); ok && etcdErr.Code == etcd.ErrorCodeKeyNotFound {
 			// key not found: treat it as empty set
@@ -153,7 +153,7 @@ func (esr *etcdSubnetRegistry) getSubnets(ctx context.Context, network string) (
 
 func (esr *etcdSubnetRegistry) getSubnet(ctx context.Context, network string, sn ip.IP4Net) (*Lease, uint64, error) {
 	key := path.Join(esr.etcdCfg.Prefix, network, "subnets", MakeSubnetKey(sn))
-	resp, err := esr.client().Get(ctx, key, nil)
+	resp, err := esr.client().Get(ctx, key, &etcd.GetOptions{Quorum: true})
 	if err != nil {
 		return nil, 0, err
 	}
@@ -250,7 +250,7 @@ func (esr *etcdSubnetRegistry) watchSubnet(ctx context.Context, network string, 
 // networks along with the 'as-of' etcd-index that can be used as the starting
 // point for etcd watch.
 func (esr *etcdSubnetRegistry) getNetworks(ctx context.Context) ([]string, uint64, error) {
-	resp, err := esr.client().Get(ctx, esr.etcdCfg.Prefix, &etcd.GetOptions{Recursive: true})
+	resp, err := esr.client().Get(ctx, esr.etcdCfg.Prefix, &etcd.GetOptions{Recursive: true, Quorum: true})
 
 	networks := []string{}
 
