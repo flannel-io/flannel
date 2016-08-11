@@ -32,7 +32,7 @@ IPTABLES_VERSION=1.4.21
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
 	go build -o dist/flanneld \
-	  -ldflags "-extldflags -static -X github.com/coreos/flannel/version.Version=$(TAG)"
+	  -ldflags "-X github.com/coreos/flannel/version.Version=$(TAG)"
 
 test: license-check gofmt
 	go test -cover $(TEST_PACKAGES_EXPANDED)
@@ -87,7 +87,7 @@ ifeq ($(ARCH),amd64)
 	docker push $(REGISTRY)/flannel:$(TAG)
 endif
 
-## Build an architecture specific static flanneld binary
+## Build an architecture specific flanneld binary
 dist/flanneld-$(ARCH):
 	# Build for other platforms with ARCH=$ARCH make build
 	# valid values for $ARCH are [amd64 arm arm64 ppc64le]
