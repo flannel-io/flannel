@@ -1,4 +1,4 @@
-.PHONY: test cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all
+.PHONY: test e2e-test cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos
@@ -38,6 +38,9 @@ test: license-check gofmt
 	go test -cover $(TEST_PACKAGES_EXPANDED)
 	cd dist; ./mk-docker-opts_tests.sh
 
+e2e-test: dist/flanneld-$(ARCH)-$(TAG).aci
+	cd dist; sudo -E ./functional-test.sh flanneld-$(ARCH)-$(TAG).aci
+
 cover:
 	# A single package must be given - e.g. 'PACKAGES=pkg/ip make cover'
 	go test -coverprofile cover.out $(PACKAGES_EXPANDED)
@@ -76,6 +79,7 @@ dist/flanneld-$(ARCH)-$(TAG).aci: dist/flanneld-$(ARCH)-$(TAG).docker
 	docker2aci dist/flanneld-$(ARCH)-$(TAG).docker
 	mv quay.io-coreos-flannel-$(ARCH)-$(TAG).aci dist/flanneld-$(ARCH)-$(TAG).aci
 	actool patch-manifest --replace --capability=CAP_NET_ADMIN \
+      --seccomp-mode=retain --seccomp-set=@appc.io/all \
       --mounts=run-flannel,path=/run/flannel,readOnly=false:etc-ssl-etcd,path=/etc/ssl/etcd,readOnly=true:dev-net,path=/dev/net,readOnly=false \
       dist/flanneld-$(ARCH)-$(TAG).aci
 
