@@ -62,9 +62,9 @@ clean:
 	rm -f dist/*.tar.gz
 
 ## Create a docker image on disk for a specific arch and tag
-dist/flanneld-$(ARCH)-$(TAG).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH)
-	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY)/flannel-$(ARCH):$(TAG) .
-	docker save -o dist/flanneld-$(ARCH)-$(TAG).docker $(REGISTRY)/flannel-$(ARCH):$(TAG)
+dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH)
+	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY)/flannel:$(TAG)-$(ARCH) .
+	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY)/flannel:$(TAG)-$(ARCH)
 
 # amd64 gets an image with the suffix too (i.e. it's the default)
 ifeq ($(ARCH),amd64)
@@ -73,14 +73,14 @@ endif
 
 ## Create an ACI on disk for a specific arch and tag
 dist/flanneld-$(ARCH)-$(TAG).aci: dist/flanneld-$(ARCH)-$(TAG).docker
-	docker2aci dist/flanneld-$(ARCH)-$(TAG).docker
+	docker2aci dist/flanneld-$(TAG)-$(ARCH).docker
 	mv quay.io-coreos-flannel-$(ARCH)-$(TAG).aci dist/flanneld-$(ARCH)-$(TAG).aci
 	actool patch-manifest --replace --capability=CAP_NET_ADMIN \
       --mounts=run-flannel,path=/run/flannel,readOnly=false:etc-ssl-etcd,path=/etc/ssl/etcd,readOnly=true:dev-net,path=/dev/net,readOnly=false \
       dist/flanneld-$(ARCH)-$(TAG).aci
 
-docker-push: dist/flanneld-$(ARCH)-$(TAG).docker
-	docker push $(REGISTRY)/flannel-$(ARCH):$(TAG)
+docker-push: dist/flanneld-$(TAG)-$(ARCH).docker
+	docker push $(REGISTRY)/flannel:$(TAG)-$(ARCH)
 
 # amd64 gets an image with the suffix too (i.e. it's the default)
 ifeq ($(ARCH),amd64)
