@@ -71,13 +71,27 @@ ifeq ($(ARCH),amd64)
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY)/flannel:$(TAG) .
 endif
 
+# Does not work as we can't have a docker dep
+aci_base_image_amd64=busybox:1.25.0-glibc
+aci_base_image_arm=armel/busybox:glibc
+aci_base_image_arm64=aarch64/busybox:glibc
+aci_base_image_ppc64le=ppc64le/busybox:glibc
+
 ## Create an ACI on disk for a specific arch and tag
-dist/flanneld-$(ARCH)-$(TAG).aci: dist/flanneld-$(ARCH)-$(TAG).docker
-	docker2aci dist/flanneld-$(ARCH)-$(TAG).docker
-	mv quay.io-coreos-flannel-$(ARCH)-$(TAG).aci dist/flanneld-$(ARCH)-$(TAG).aci
-	actool patch-manifest --replace --capability=CAP_NET_ADMIN \
-      --mounts=run-flannel,path=/run/flannel,readOnly=false:etc-ssl-etcd,path=/etc/ssl/etcd,readOnly=true:dev-net,path=/dev/net,readOnly=false \
-      dist/flanneld-$(ARCH)-$(TAG).aci
+dist/flanneld-$(ARCH)-$(TAG).aci: dist/flanneld dist/flanneld-$(ARCH) dist/iptables-$(ARCH)
+	acbuild begin
+	acbuild set-name quay.io/coreos/flannel
+	acbuild dependency add $(aci_base_image_$(ARCH))
+	acbuild mount add run-flannel /run/flannel
+	acbuild mount add --read-only etc-ssl-etcd /etc/ssl/etcd
+	acbuild mount add dev-net /dev/net
+	acbuild copy dist/flanneld-$(ARCH) /opt/bin/flanneld
+	acbuild copy dist/iptables-$(ARCH) /usr/local/bin/iptables
+	acbuild copy dist/mk-docker-opts.sh /opt/bin/mk-docker-opts.sh
+	acbuild set-exec -- /opt/bin/flanneld
+	echo '{ "set": ["CAP_NET_ADMIN"] }' | acbuild isolator add "os/linux/capabilities-retain-set" -
+	acbuild write dist/flanneld-$(ARCH)-$(TAG).aci --sign --overwrite
+	acbuild end
 
 docker-push: dist/flanneld-$(ARCH)-$(TAG).docker
 	docker push $(REGISTRY)/flannel-$(ARCH):$(TAG)
