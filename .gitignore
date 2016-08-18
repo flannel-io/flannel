@@ -1,6 +1,7 @@
 dist/*.tar.gz
 dist/flanneld*
 dist/iptables-*
+dist/libpthread*
 dist/*.aci
 dist/*.docker
 cover.out

@@ -15,15 +15,19 @@ PACKAGES_EXPANDED=$(PACKAGES:%=github.com/coreos/flannel/%)
 
 # Set the (cross) compiler to use for different architectures
 ifeq ($(ARCH),amd64)
+	LIB_DIR=x86_64-linux-gnu
 	CC=gcc
 endif
 ifeq ($(ARCH),arm)
+	LIB_DIR=arm-linux-gnueabi
 	CC=arm-linux-gnueabi-gcc
 endif
 ifeq ($(ARCH),arm64)
+	LIB_DIR=aarch64-linux-gnu
 	CC=aarch64-linux-gnu-gcc
 endif
 ifeq ($(ARCH),ppc64le)
+	LIB_DIR=powerpc64le-linux-gnu
 	CC=powerpc64le-linux-gnu-gcc
 endif
 GOARM=6
@@ -62,7 +66,7 @@ clean:
 	rm -f dist/*.tar.gz
 
 ## Create a docker image on disk for a specific arch and tag
-dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH)
+dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH) dist/libpthread.so.0-$(ARCH)
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY)/flannel:$(TAG)-$(ARCH) .
 	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY)/flannel:$(TAG)-$(ARCH)
 
@@ -72,12 +76,12 @@ ifeq ($(ARCH),amd64)
 endif
 
 ## Create an ACI on disk for a specific arch and tag
-dist/flanneld-$(ARCH)-$(TAG).aci: dist/flanneld-$(ARCH)-$(TAG).docker
+dist/flanneld-$(TAG)-$(ARCH).aci: dist/flanneld-$(TAG)-$(ARCH).docker
 	docker2aci dist/flanneld-$(TAG)-$(ARCH).docker
-	mv quay.io-coreos-flannel-$(ARCH)-$(TAG).aci dist/flanneld-$(ARCH)-$(TAG).aci
+	mv quay.io-coreos-flannel-$(TAG)-$(ARCH).aci dist/flanneld-$(TAG)-$(ARCH).aci
 	actool patch-manifest --replace --capability=CAP_NET_ADMIN \
       --mounts=run-flannel,path=/run/flannel,readOnly=false:etc-ssl-etcd,path=/etc/ssl/etcd,readOnly=true:dev-net,path=/dev/net,readOnly=false \
-      dist/flanneld-$(ARCH)-$(TAG).aci
+      dist/flanneld-$(TAG)-$(ARCH).aci
 
 docker-push: dist/flanneld-$(TAG)-$(ARCH).docker
 	docker push $(REGISTRY)/flannel:$(TAG)-$(ARCH)
@@ -89,8 +93,8 @@ endif
 
 ## Build an architecture specific flanneld binary
 dist/flanneld-$(ARCH):
-	# Build for other platforms with ARCH=$ARCH make build
-	# valid values for $ARCH are [amd64 arm arm64 ppc64le]
+	# Build for other platforms with ARCH=$$ARCH make build
+	# valid values for $$ARCH are [amd64 arm arm64 ppc64le]
 	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) -it \
 		-u $(shell id -u):$(shell id -u) \
 	    -v ${PWD}:/go/src/github.com/coreos/flannel:ro \
@@ -100,6 +104,10 @@ dist/flanneld-$(ARCH):
 		CGO_ENABLED=1 make -e dist/flanneld && \
 		mv dist/flanneld dist/flanneld-$(ARCH) && \
 		file dist/flanneld-$(ARCH)'
+
+## Busybox images are missing pthread. Pull it out of the kube-cross image
+dist/libpthread.so.0-$(ARCH):
+	docker run -ti --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp /lib/$(LIB_DIR)/libpthread.so.0 /host/dist/libpthread.so.0-$(ARCH)
 
 ## Build an architecture specific iptables binary
 dist/iptables-$(ARCH):
@@ -132,10 +140,10 @@ dist/flannel-$(TAG)-linux-amd64.tar.gz:
 
 ## Make a release after creating a tag
 release: dist/flannel-$(TAG)-linux-amd64.tar.gz
-	ARCH=amd64 make dist/flanneld-amd64-$(TAG).aci
-	ARCH=arm make dist/flanneld-arm-$(TAG).aci
-	ARCH=arm64 make dist/flanneld-arm64-$(TAG).aci
-	ARCH=ppc64le make dist/flanneld-ppc64le-$(TAG).aci
+	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.aci
+	ARCH=arm make dist/flanneld-$(TAG)-arm.aci
+	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.aci
+	ARCH=ppc64le make dist/flanneld-$(TAG)-ppc64le.aci
 	@echo "Everything should be built for $(TAG)"
 	@echo "Add all *.aci, flanneld-* and *.tar.gz files from dist/ to the Github release"
 	@echo "Use make docker-push-all to push the images to a registry"
