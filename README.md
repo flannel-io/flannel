@@ -220,7 +220,7 @@ Since flannel writes out the acquired subnet and MTU values into a file, the scr
 
 ```bash
 source /run/flannel/subnet.env
-docker -d --bip=${FLANNEL_SUBNET} --mtu=${FLANNEL_MTU}
+docker daemon --bip=${FLANNEL_SUBNET} --mtu=${FLANNEL_MTU} &
 ```
 
 Systemd users can use `EnvironmentFile` directive in the .service file to pull in `/run/flannel/subnet.env`
