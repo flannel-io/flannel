@@ -21,4 +21,5 @@ type Route struct {
 	Destination *net.IPNet
 	Gateway     net.IP
 	LinkIndex   int
+	Type        int
 }

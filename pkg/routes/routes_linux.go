@@ -16,8 +16,26 @@
 
 package routes
 
-import (
-	"github.com/vishvananda/netlink"
+import "github.com/vishvananda/netlink"
+
+//This mimics the exact values from github.com/vishvananda/netlink/nl/nl_linux.go
+const (
+	FAMILY_ALL = netlink.FAMILY_ALL
+	FAMILY_V4  = netlink.FAMILY_V4
+	FAMILY_V6  = netlink.FAMILY_V6
+)
+
+const (
+	RT_FILTER_PROTOCOL = netlink.RT_FILTER_PROTOCOL
+	RT_FILTER_SCOPE    = netlink.RT_FILTER_SCOPE
+	RT_FILTER_TYPE     = netlink.RT_FILTER_TYPE
+	RT_FILTER_TOS      = netlink.RT_FILTER_TOS
+	RT_FILTER_IIF      = netlink.RT_FILTER_IIF
+	RT_FILTER_OIF      = netlink.RT_FILTER_OIF
+	RT_FILTER_DST      = netlink.RT_FILTER_DST
+	RT_FILTER_SRC      = netlink.RT_FILTER_SRC
+	RT_FILTER_GW       = netlink.RT_FILTER_GW
+	RT_FILTER_TABLE    = netlink.RT_FILTER_TABLE
 )
 
 // AddRoute adds a route to the system's routing table
@@ -57,4 +75,8 @@ func RouteList() ([]Route, error) {
 	}
 
 	return result, nil
+}
+
+func RouteListFiltered(family int, filter *Route, filterMask uint64) ([]Route, error) {
+	return netlink.RouteListFiltered(family, filter, filterMask)
 }

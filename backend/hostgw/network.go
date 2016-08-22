@@ -21,9 +21,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/coreos/flannel/pkg/routes"
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
-	"github.com/coreos/flannel/pkg/routes"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/subnet"
@@ -93,42 +93,41 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				LinkIndex:   n.extIface.Iface.Index,
 			}
 
-
 			// Check if route exists before attempting to add it
-			routeList, err := netlink.RouteListFiltered(netlink.FAMILY_V4, &netlink.Route{
-				Dst: route.Dst,
-			}, netlink.RT_FILTER_DST)
+			routeList, err := routes.RouteListFiltered(routes.FAMILY_V4, &routes.Route{
+				Destination: route.Destination,
+			}, routes.RT_FILTER_DST)
 			if err != nil {
 				log.Warningf("Unable to list routes: %v", err)
 			}
 			//   Check match on Dst for match on Gw
-			if len(routeList) > 0 && !routeList[0].Gw.Equal(route.Gw) {
+			if len(routeList) > 0 && !routeList[0].Gateway.Equal(route.Gateway) {
 				// Same Dst different Gw. Remove it, correct route will be added below.
-				log.Warningf("Replacing existing route to %v via %v with %v via %v.", evt.Lease.Subnet, routeList[0].Gw, evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
-				if err := netlink.RouteDel(&route); err != nil {
+				log.Warningf("Replacing existing route to %v via %v with %v via %v.", evt.Lease.Subnet, routeList[0].Gateway, evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
+				if err := routes.DeleteRoute(&route); err != nil {
 					log.Errorf("Error deleting route to %v: %v", evt.Lease.Subnet, err)
 					continue
 				}
 			}
-			if len(routeList) > 0 && routeList[0].Gw.Equal(route.Gw) {
+			if len(routeList) > 0 && routeList[0].Gateway.Equal(route.Gateway) {
 				// Same Dst and same Gw, keep it and do not attempt to add it.
 				log.Infof("Route to %v via %v already exists, skipping.", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
-			} else if err := netlink.RouteAdd(&route); err != nil {
+			} else if err := routes.AddRoute(&route); err != nil {
 
-			if err := routes.AddRoute(&route); err != nil {
-				errno, ok := err.(syscall.Errno)
-				// The Windows errno for "The object already exists" is 0x1392
-				if ok && errno == syscall.EEXIST || errno == 0x1392 {
-					log.Infof("Route to %v via %v already exists", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
+				if err := routes.AddRoute(&route); err != nil {
+					errno, ok := err.(syscall.Errno)
+					// The Windows errno for "The object already exists" is 0x1392
+					if ok && errno == syscall.EEXIST || errno == 0x1392 {
+						log.Infof("Route to %v via %v already exists", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
+						continue
+					}
+
+					log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, err)
 					continue
 				}
 
-				log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, err)
-				continue
+				n.addToRouteList(route)
 			}
-
-			n.addToRouteList(route)
-
 		case subnet.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
 
