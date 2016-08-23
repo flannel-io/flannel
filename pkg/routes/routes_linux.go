@@ -77,6 +77,27 @@ func RouteList() ([]Route, error) {
 	return result, nil
 }
 
+//RouteListFiltered returns a list of routes filtered by
+//the parameters passed to the function
 func RouteListFiltered(family int, filter *Route, filterMask uint64) ([]Route, error) {
-	return netlink.RouteListFiltered(family, filter, filterMask)
+	nr := netlink.Route{
+		Dst:       filter.Destination,
+		Gw:        filter.Gateway,
+		LinkIndex: filter.LinkIndex,
+	}
+	routes, err := netlink.RouteListFiltered(family, &nr, filterMask)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]Route, len(routes))
+
+	for i, r := range routes {
+		result[i] = Route{
+			Destination: r.Dst,
+			Gateway:     r.Gw,
+			LinkIndex:   r.LinkIndex,
+		}
+	}
+	return result, nil
 }
