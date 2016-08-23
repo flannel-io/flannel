@@ -135,7 +135,7 @@ dist/iptables-$(ARCH):
 tar.gz: dist/flannel-$(TAG)-linux-amd64.tar.gz
 dist/flannel-$(TAG)-linux-amd64.tar.gz:
 	ARCH=amd64 make dist/flanneld-amd64
-	tar --transform='flags=r;s|-amd64||' -cvf dist/flannel-$(TAG)-linux-amd64.tar.gz -C dist flanneld-amd64 mk-docker-opts.sh ../README.md
+	tar --transform='flags=r;s|-amd64||' -zcvf dist/flannel-$(TAG)-linux-amd64.tar.gz -C dist flanneld-amd64 mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-amd64.tar.gz
 
 ## Make a release after creating a tag
