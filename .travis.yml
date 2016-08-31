@@ -1,14 +1,9 @@
-language: go
+sudo: required
 
-matrix:
-  include:
-    - go: 1.5.4
-      env: GO15VENDOREXPERIMENT=1
-    - go: 1.6.2
-      env: FLANNEL_GIT=1
-    - go: tip
-  allow_failures: 
-    - go: tip
+services:
+    - docker
+
+language: go
 
 env:
   global:
@@ -19,14 +14,14 @@ install:
  - go get ${TOOLS_CMD}/cover
 
 script:
- - make test
-
-notifications:
-  email: false
+ - make test flannel-git
 
 after_success:
-  - if [ "$TRAVIS_BRANCH" = "flannel-git" ] && [ -n "$FLANNEL_GIT" ]; then
+  - if [ "$TRAVIS_BRANCH" = "flannel-git" ]; then
     make flannel-git;
     docker login -e="$QUAY_EMAIL" -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD";
     docker push quay.io/coreos/flannel-git;
     fi
+
+notifications:
+  email: false
