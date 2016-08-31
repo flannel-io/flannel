@@ -5,6 +5,7 @@ matrix:
     - go: 1.5.4
       env: GO15VENDOREXPERIMENT=1
     - go: 1.6.2
+      env: FLANNEL_GIT=1
     - go: tip
   allow_failures: 
     - go: tip
@@ -22,3 +23,10 @@ script:
 
 notifications:
   email: false
+
+after_success:
+  - if [ "$TRAVIS_BRANCH" = "flannel-git" ] && [ -n "$FLANNEL_GIT" ]; then
+    make flannel-git;
+    docker login -e="$QUAY_EMAIL" -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD";
+    docker push quay.io/coreos/flannel-git;
+    fi
