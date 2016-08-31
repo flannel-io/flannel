@@ -1,13 +1,9 @@
-language: go
+sudo: required
 
-matrix:
-  include:
-    - go: 1.5.4
-      env: GO15VENDOREXPERIMENT=1
-    - go: 1.6.2
-    - go: tip
-  allow_failures: 
-    - go: tip
+services:
+    - docker
+
+language: go
 
 env:
   global:
@@ -19,6 +15,13 @@ install:
 
 script:
  - make test
+
+after_success:
+  - if [ "$TRAVIS_BRANCH" = "master" ]; then
+    make flannel-git;
+    docker login -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD" quay.io;
+    docker push quay.io/coreos/flannel-git;
+    fi
 
 notifications:
   email: false

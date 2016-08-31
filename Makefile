@@ -1,4 +1,4 @@
-.PHONY: test e2e-test cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all
+.PHONY: test e2e-test cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all flannel-git
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos
@@ -156,3 +156,6 @@ docker-push-all:
 	ARCH=arm make docker-push
 	ARCH=arm64 make docker-push
 	ARCH=ppc64le make docker-push
+
+flannel-git: dist/flanneld-amd64 dist/iptables-amd64 dist/libpthread.so.0-amd64
+	docker build -f Dockerfile.amd64 -t quay.io/coreos/flannel-git .
