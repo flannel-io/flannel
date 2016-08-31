@@ -1,4 +1,4 @@
-.PHONY: test cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all
+.PHONY: test e2e-test cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos
@@ -41,6 +41,9 @@ dist/flanneld: $(shell find . -type f  -name '*.go')
 test: license-check gofmt
 	go test -cover $(TEST_PACKAGES_EXPANDED)
 	cd dist; ./mk-docker-opts_tests.sh
+
+e2e-test: dist/flanneld-$(TAG)-$(ARCH).docker
+	cd dist; ./functional-test.sh $(REGISTRY)/flannel:$(TAG)-$(ARCH)
 
 cover:
 	# A single package must be given - e.g. 'PACKAGES=pkg/ip make cover'
