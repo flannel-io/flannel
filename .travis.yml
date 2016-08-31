@@ -14,7 +14,14 @@ install:
  - go get ${TOOLS_CMD}/cover
 
 script:
- - make test
+ - make test flannel-git
+
+after_success:
+  - if [ "$TRAVIS_BRANCH" = "flannel-git" ]; then
+    make flannel-git;
+    docker login -e="$QUAY_EMAIL" -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD";
+    docker push quay.io/coreos/flannel-git;
+    fi
 
 after_success:
   - if [ "$TRAVIS_BRANCH" = "master" ]; then
