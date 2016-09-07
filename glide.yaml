@@ -14,7 +14,7 @@ import:
   - aws/awserr
   - aws/ec2metadata
 - package: github.com/coreos/etcd
-  version: a1ef699aebbe7ebb4da2f90a42e0f612eec08384
+  version: 8b320e7c550067b1dfb37bd1682e8067023e0751
   subpackages:
   - client
   - pkg/pathutil
@@ -34,7 +34,7 @@ import:
   subpackages:
   - flagutil
 - package: github.com/golang/glog
-  version: d1c4472bf2efd3826f2b5bdcc02d8416798d678c
+  version: 44145f04b68cf362d9c4df2182967c2275eaefed
 - package: github.com/golang/protobuf
   version: 127091107ff5f822298f1faa7487ffcf578adcf6
   subpackages:
@@ -72,3 +72,14 @@ import:
   subpackages:
   - compute/metadata
   - internal
+- package: k8s.io/kubernetes
+  version: v1.4.0-beta.0
+  subpackages:
+  - pkg/api
+  - pkg/client/cache
+  - pkg/client/clientset_generated/internalclientset
+  - pkg/client/restclient
+  - pkg/controller/framework
+  - pkg/runtime
+  - pkg/util/runtime
+  - pkg/watch
