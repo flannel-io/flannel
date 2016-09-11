@@ -37,7 +37,7 @@ If you would like to build inside a Docker container but to produce a binary on 
 
 ```
 # Replace $SRC with the absolute path to your flannel source code
-docker run -v $SRC:/opt/flannel -i -t google/golang /bin/bash -c "cd /opt/flannel && ./build"
+docker run -v $SRC:/opt/flannel -i -t golang:1.6 /bin/bash -c "cd /opt/flannel && ./build"
 ```
 
 ## Configuration
