@@ -24,10 +24,10 @@ From the VPC dashboard start out by running the "VPC Wizard":
 
 Now that we have set up our VPC and subnet, let’s create an Identity and Access Management ([IAM](http://aws.amazon.com/iam/)) role to grant the required permissions to our EC2 instances. 
 
-From the console, select Services -> Administration & Security -> IAM. 
+From the console, select Services -> Security & Identity -> IAM. 
 
 We first need to create a [policy](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_overview.html) that we will later assign to an IAM role.
-Under "Create Policy" select the "Create Your Own Policy" option.
+Under "Policies" on the left, select "Create Policy", then "Create Your Own Policy".
 The following permissions are required as shown below in the sample policy document.
 
 - ec2:CreateRoute
@@ -67,6 +67,7 @@ Note that although the first three permissions can be tied to the route table re
 For simplicity, we leave the "Resource" as wildcard in both. 
 
 With the policy added, let's attach it to a new IAM role by clicking the "Create New Role" button and setting the following options:
+Under "Roles" on the left, select "Create New Role".
 
 - Role Name: `demo-role`
 - Role Type: "Amazon EC2"
