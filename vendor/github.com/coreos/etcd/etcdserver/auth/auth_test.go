@@ -23,7 +23,6 @@ import (
 	"github.com/coreos/etcd/etcdserver"
 	"github.com/coreos/etcd/etcdserver/etcdserverpb"
 	etcdstore "github.com/coreos/etcd/store"
-	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/context"
 )
 
@@ -74,7 +73,7 @@ func TestMergeUser(t *testing.T) {
 		},
 		{
 			User{User: "foo"},
-			User{User: "foo", Password: "bar"},
+			User{User: "foo", Password: "$2a$10$aUPOdbOGNawaVSusg3g2wuC3AH6XxIr9/Ms4VgDvzrAVOJPYzZILa"},
 			User{User: "foo", Roles: []string{}, Password: "$2a$10$aUPOdbOGNawaVSusg3g2wuC3AH6XxIr9/Ms4VgDvzrAVOJPYzZILa"},
 			false,
 		},
@@ -86,10 +85,6 @@ func TestMergeUser(t *testing.T) {
 			t.Fatalf("Got unexpected error on item %d", i)
 		}
 		if !tt.iserr {
-			err := bcrypt.CompareHashAndPassword([]byte(out.Password), []byte(tt.merge.Password))
-			if err == nil {
-				tt.expect.Password = out.Password
-			}
 			if !reflect.DeepEqual(out, tt.expect) {
 				t.Errorf("Unequal merge expectation on item %d: got: %#v, expect: %#v", i, out, tt.expect)
 			}
@@ -196,10 +191,10 @@ func TestAllUsers(t *testing.T) {
 					Action: etcdstore.Get,
 					Node: &etcdstore.NodeExtern{
 						Nodes: etcdstore.NodeExterns([]*etcdstore.NodeExtern{
-							&etcdstore.NodeExtern{
+							{
 								Key: StorePermsPrefix + "/users/cat",
 							},
-							&etcdstore.NodeExtern{
+							{
 								Key: StorePermsPrefix + "/users/dog",
 							},
 						}),
@@ -210,7 +205,7 @@ func TestAllUsers(t *testing.T) {
 	}
 	expected := []string{"cat", "dog"}
 
-	s := store{d, testTimeout, false}
+	s := store{server: d, timeout: testTimeout, ensuredOnce: false}
 	users, err := s.AllUsers()
 	if err != nil {
 		t.Error("Unexpected error", err)
@@ -238,7 +233,7 @@ func TestGetAndDeleteUser(t *testing.T) {
 	}
 	expected := User{User: "cat", Roles: []string{"animal"}}
 
-	s := store{d, testTimeout, false}
+	s := store{server: d, timeout: testTimeout, ensuredOnce: false}
 	out, err := s.GetUser("cat")
 	if err != nil {
 		t.Error("Unexpected error", err)
@@ -260,10 +255,10 @@ func TestAllRoles(t *testing.T) {
 					Action: etcdstore.Get,
 					Node: &etcdstore.NodeExtern{
 						Nodes: etcdstore.NodeExterns([]*etcdstore.NodeExtern{
-							&etcdstore.NodeExtern{
+							{
 								Key: StorePermsPrefix + "/roles/animal",
 							},
-							&etcdstore.NodeExtern{
+							{
 								Key: StorePermsPrefix + "/roles/human",
 							},
 						}),
@@ -275,7 +270,7 @@ func TestAllRoles(t *testing.T) {
 	}
 	expected := []string{"animal", "human", "root"}
 
-	s := store{d, testTimeout, false}
+	s := store{server: d, timeout: testTimeout, ensuredOnce: false}
 	out, err := s.AllRoles()
 	if err != nil {
 		t.Error("Unexpected error", err)
@@ -303,7 +298,7 @@ func TestGetAndDeleteRole(t *testing.T) {
 	}
 	expected := Role{Role: "animal"}
 
-	s := store{d, testTimeout, false}
+	s := store{server: d, timeout: testTimeout, ensuredOnce: false}
 	out, err := s.GetRole("animal")
 	if err != nil {
 		t.Error("Unexpected error", err)
@@ -350,12 +345,21 @@ func TestEnsure(t *testing.T) {
 		},
 	}
 
-	s := store{d, testTimeout, false}
+	s := store{server: d, timeout: testTimeout, ensuredOnce: false}
 	err := s.ensureAuthDirectories()
 	if err != nil {
 		t.Error("Unexpected error", err)
 	}
 }
+
+type fastPasswordStore struct {
+}
+
+func (_ fastPasswordStore) CheckPassword(user User, password string) bool {
+	return user.Password == password
+}
+
+func (_ fastPasswordStore) HashPassword(password string) (string, error) { return password, nil }
 
 func TestCreateAndUpdateUser(t *testing.T) {
 	olduser := `{"user": "cat", "roles" : ["animal"]}`
@@ -410,7 +414,7 @@ func TestCreateAndUpdateUser(t *testing.T) {
 	update := User{User: "cat", Grant: []string{"pet"}}
 	expected := User{User: "cat", Roles: []string{"animal", "pet"}}
 
-	s := store{d, testTimeout, true}
+	s := store{server: d, timeout: testTimeout, ensuredOnce: true, PasswordStore: fastPasswordStore{}}
 	out, created, err := s.CreateOrUpdateUser(user)
 	if created == false {
 		t.Error("Should have created user, instead updated?")
@@ -465,7 +469,7 @@ func TestUpdateRole(t *testing.T) {
 	update := Role{Role: "animal", Grant: &Permissions{KV: RWPermission{Read: []string{}, Write: []string{"/animal"}}}}
 	expected := Role{Role: "animal", Permissions: Permissions{KV: RWPermission{Read: []string{"/animal"}, Write: []string{"/animal"}}}}
 
-	s := store{d, testTimeout, true}
+	s := store{server: d, timeout: testTimeout, ensuredOnce: true}
 	out, err := s.UpdateRole(update)
 	if err != nil {
 		t.Error("Unexpected error", err)
@@ -496,7 +500,7 @@ func TestCreateRole(t *testing.T) {
 	}
 	r := Role{Role: "animal", Permissions: Permissions{KV: RWPermission{Read: []string{"/animal"}, Write: []string{}}}}
 
-	s := store{d, testTimeout, true}
+	s := store{server: d, timeout: testTimeout, ensuredOnce: true}
 	err := s.CreateRole(Role{Role: "root"})
 	if err == nil {
 		t.Error("Should error creating root role")
@@ -562,7 +566,7 @@ func TestEnableAuth(t *testing.T) {
 		},
 		explicitlyEnabled: false,
 	}
-	s := store{d, testTimeout, true}
+	s := store{server: d, timeout: testTimeout, ensuredOnce: true}
 	err := s.EnableAuth()
 	if err != nil {
 		t.Error("Unexpected error", err)
@@ -605,11 +609,12 @@ func TestDisableAuth(t *testing.T) {
 		},
 		explicitlyEnabled: false,
 	}
-	s := store{d, testTimeout, true}
+	s := store{server: d, timeout: testTimeout, ensuredOnce: true}
 	err := s.DisableAuth()
 	if err == nil {
 		t.Error("Expected error; already disabled")
 	}
+
 	err = s.DisableAuth()
 	if err != nil {
 		t.Error("Unexpected error", err)

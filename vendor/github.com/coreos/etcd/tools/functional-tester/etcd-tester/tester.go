@@ -15,7 +15,6 @@
 package main
 
 import (
-	"log"
 	"sync"
 	"time"
 )
@@ -37,44 +36,159 @@ func (tt *tester) runLoop() {
 	}
 	for i := 0; i < tt.limit; i++ {
 		tt.status.setRound(i)
+		roundTotalCounter.Inc()
 
+		var currentRevision int64
 		for j, f := range tt.failures {
+			caseTotalCounter.WithLabelValues(f.Desc()).Inc()
+
 			tt.status.setCase(j)
 
 			if err := tt.cluster.WaitHealth(); err != nil {
-				log.Printf("etcd-tester: [round#%d case#%d] wait full health error: %v", i, j, err)
+				plog.Printf("[round#%d case#%d] wait full health error: %v", i, j, err)
 				if err := tt.cleanup(i, j); err != nil {
-					log.Printf("etcd-tester: [round#%d case#%d] cleanup error: %v", i, j, err)
+					plog.Printf("[round#%d case#%d] cleanup error: %v", i, j, err)
 					return
 				}
 				continue
 			}
-			log.Printf("etcd-tester: [round#%d case#%d] start failure %s", i, j, f.Desc())
-			log.Printf("etcd-tester: [round#%d case#%d] start injecting failure...", i, j)
+			plog.Printf("[round#%d case#%d] start failure %s", i, j, f.Desc())
+
+			plog.Printf("[round#%d case#%d] start injecting failure...", i, j)
 			if err := f.Inject(tt.cluster, i); err != nil {
-				log.Printf("etcd-tester: [round#%d case#%d] injection error: %v", i, j, err)
+				plog.Printf("[round#%d case#%d] injection error: %v", i, j, err)
 				if err := tt.cleanup(i, j); err != nil {
-					log.Printf("etcd-tester: [round#%d case#%d] cleanup error: %v", i, j, err)
+					plog.Printf("[round#%d case#%d] cleanup error: %v", i, j, err)
 					return
 				}
 				continue
 			}
-			log.Printf("etcd-tester: [round#%d case#%d] start recovering failure...", i, j)
+			plog.Printf("[round#%d case#%d] injected failure", i, j)
+
+			plog.Printf("[round#%d case#%d] start recovering failure...", i, j)
 			if err := f.Recover(tt.cluster, i); err != nil {
-				log.Printf("etcd-tester: [round#%d case#%d] recovery error: %v", i, j, err)
+				plog.Printf("[round#%d case#%d] recovery error: %v", i, j, err)
 				if err := tt.cleanup(i, j); err != nil {
-					log.Printf("etcd-tester: [round#%d case#%d] cleanup error: %v", i, j, err)
+					plog.Printf("[round#%d case#%d] cleanup error: %v", i, j, err)
 					return
 				}
 				continue
 			}
-			log.Printf("etcd-tester: [round#%d case#%d] succeed!", i, j)
+			plog.Printf("[round#%d case#%d] recovered failure", i, j)
+
+			if tt.cluster.v2Only {
+				plog.Printf("[round#%d case#%d] succeed!", i, j)
+				continue
+			}
+
+			plog.Printf("[round#%d case#%d] canceling the stressers...", i, j)
+			for _, s := range tt.cluster.Stressers {
+				s.Cancel()
+			}
+			plog.Printf("[round#%d case#%d] canceled stressers", i, j)
+
+			plog.Printf("[round#%d case#%d] checking current revisions...", i, j)
+			var (
+				revs   map[string]int64
+				hashes map[string]int64
+				rerr   error
+				ok     bool
+			)
+			for k := 0; k < 5; k++ {
+				time.Sleep(time.Second)
+
+				revs, hashes, rerr = tt.cluster.getRevisionHash()
+				if rerr != nil {
+					plog.Printf("[round#%d case#%d.%d] failed to get current revisions (%v)", i, j, k, rerr)
+					continue
+				}
+				if currentRevision, ok = getSameValue(revs); ok {
+					break
+				}
+
+				plog.Printf("[round#%d case#%d.%d] inconsistent current revisions %+v", i, j, k, revs)
+			}
+			if !ok || rerr != nil {
+				plog.Printf("[round#%d case#%d] checking current revisions failed (%v)", i, j, revs)
+				if err := tt.cleanup(i, j); err != nil {
+					plog.Printf("[round#%d case#%d] cleanup error: %v", i, j, err)
+					return
+				}
+				continue
+			}
+			plog.Printf("[round#%d case#%d] all members are consistent with current revisions", i, j)
+
+			plog.Printf("[round#%d case#%d] checking current storage hashes...", i, j)
+			if _, ok = getSameValue(hashes); !ok {
+				plog.Printf("[round#%d case#%d] checking current storage hashes failed (%v)", i, j, hashes)
+				if err := tt.cleanup(i, j); err != nil {
+					plog.Printf("[round#%d case#%d] cleanup error: %v", i, j, err)
+					return
+				}
+				continue
+			}
+			plog.Printf("[round#%d case#%d] all members are consistent with storage hashes", i, j)
+
+			plog.Printf("[round#%d case#%d] restarting the stressers...", i, j)
+			for _, s := range tt.cluster.Stressers {
+				go s.Stress()
+			}
+
+			plog.Printf("[round#%d case#%d] succeed!", i, j)
+		}
+
+		revToCompact := max(0, currentRevision-10000)
+		plog.Printf("[round#%d] compacting storage at %d (current revision %d)", i, revToCompact, currentRevision)
+		if err := tt.cluster.compactKV(revToCompact); err != nil {
+			plog.Printf("[round#%d] compactKV error (%v)", i, err)
+			if err := tt.cleanup(i, 0); err != nil {
+				plog.Printf("[round#%d] cleanup error: %v", i, err)
+				return
+			}
+			continue
+		}
+		plog.Printf("[round#%d] compacted storage", i)
+
+		plog.Printf("[round#%d] check compaction at %d", i, revToCompact)
+		if err := tt.cluster.checkCompact(revToCompact); err != nil {
+			plog.Printf("[round#%d] checkCompact error (%v)", i, err)
+			if err := tt.cleanup(i, 0); err != nil {
+				plog.Printf("[round#%d] cleanup error: %v", i, err)
+				return
+			}
+		}
+		plog.Printf("[round#%d] confirmed compaction at %d", i, revToCompact)
+
+		if i > 0 && i%500 == 0 { // every 500 rounds
+			plog.Printf("[round#%d] canceling the stressers...", i)
+			for _, s := range tt.cluster.Stressers {
+				s.Cancel()
+			}
+			plog.Printf("[round#%d] canceled stressers", i)
+
+			plog.Printf("[round#%d] deframenting...", i)
+			if err := tt.cluster.defrag(); err != nil {
+				plog.Printf("[round#%d] defrag error (%v)", i, err)
+				if err := tt.cleanup(i, 0); err != nil {
+					plog.Printf("[round#%d] cleanup error: %v", i, err)
+					return
+				}
+			}
+			plog.Printf("[round#%d] deframented...", i)
+
+			plog.Printf("[round#%d] restarting the stressers...", i)
+			for _, s := range tt.cluster.Stressers {
+				go s.Stress()
+			}
 		}
 	}
 }
 
 func (tt *tester) cleanup(i, j int) error {
-	log.Printf("etcd-tester: [round#%d case#%d] cleaning up...", i, j)
+	roundFailedTotalCounter.Inc()
+	caseFailedTotalCounter.WithLabelValues(tt.failures[j].Desc()).Inc()
+
+	plog.Printf("[round#%d case#%d] cleaning up...", i, j)
 	if err := tt.cluster.Cleanup(); err != nil {
 		return err
 	}

@@ -16,42 +16,69 @@ package main
 
 import (
 	"flag"
-	"log"
+	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/coreos/pkg/capnslog"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
+var plog = capnslog.NewPackageLogger("github.com/coreos/etcd", "etcd-tester")
+
 func main() {
-	endpointStr := flag.String("agent-endpoints", ":9027", "HTTP RPC endpoints of agents")
-	datadir := flag.String("data-dir", "agent.etcd", "etcd data directory location on agent machine")
-	stressKeySize := flag.Int("stress-key-size", 100, "the size of each key written into etcd")
-	stressKeySuffixRange := flag.Int("stress-key-count", 250000, "the count of key range written into etcd")
-	limit := flag.Int("limit", 3, "the limit of rounds to run failure set")
+	endpointStr := flag.String("agent-endpoints", "localhost:9027", "HTTP RPC endpoints of agents. Do not specify the schema.")
+	datadir := flag.String("data-dir", "agent.etcd", "etcd data directory location on agent machine.")
+	stressKeySize := flag.Int("stress-key-size", 100, "the size of each key written into etcd.")
+	stressKeySuffixRange := flag.Int("stress-key-count", 250000, "the count of key range written into etcd.")
+	limit := flag.Int("limit", 3, "the limit of rounds to run failure set.")
+	schedCases := flag.String("schedule-cases", "", "test case schedule")
+
+	isV2Only := flag.Bool("v2-only", false, "'true' to run V2 only tester.")
 	flag.Parse()
 
 	endpoints := strings.Split(*endpointStr, ",")
-	c, err := newCluster(endpoints, *datadir, *stressKeySize, *stressKeySuffixRange)
+	c, err := newCluster(endpoints, *datadir, *stressKeySize, *stressKeySuffixRange, *isV2Only)
 	if err != nil {
-		log.Fatal(err)
+		plog.Fatal(err)
 	}
 	defer c.Terminate()
 
+	failures := []failure{
+		newFailureKillAll(),
+		newFailureKillMajority(),
+		newFailureKillOne(),
+		newFailureKillLeader(),
+		newFailureKillOneForLongTime(),
+		newFailureKillLeaderForLongTime(),
+		newFailureIsolate(),
+		newFailureIsolateAll(),
+	}
+
+	schedule := failures
+	if schedCases != nil && *schedCases != "" {
+		cases := strings.Split(*schedCases, " ")
+		schedule = make([]failure, len(cases))
+		for i := range cases {
+			caseNum := 0
+			n, err := fmt.Sscanf(cases[i], "%d", &caseNum)
+			if n == 0 || err != nil {
+				plog.Fatalf(`couldn't parse case "%s" (%v)`, cases[i], err)
+			}
+			schedule[i] = failures[caseNum]
+		}
+	}
+
 	t := &tester{
-		failures: []failure{
-			newFailureKillAll(),
-			newFailureKillMajority(),
-			newFailureKillOne(),
-			newFailureKillOneForLongTime(),
-			newFailureIsolate(),
-			newFailureIsolateAll(),
-		},
-		cluster: c,
-		limit:   *limit,
+		failures: schedule,
+		cluster:  c,
+		limit:    *limit,
 	}
 
 	sh := statusHandler{status: &t.status}
 	http.Handle("/status", sh)
-	go func() { log.Fatal(http.ListenAndServe(":9028", nil)) }()
+	http.Handle("/metrics", prometheus.Handler())
+	go func() { plog.Fatal(http.ListenAndServe(":9028", nil)) }()
 
 	t.runLoop()
 }

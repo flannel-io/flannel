@@ -14,6 +14,8 @@
 
 package etcdmain
 
+import "strconv"
+
 var (
 	usageline = `usage: etcd [flags]
        start an etcd server
@@ -31,6 +33,8 @@ member flags:
 		human-readable name for this member.
 	--data-dir '${name}.etcd'
 		path to the data directory.
+	--wal-dir ''
+		path to the dedicated wal directory.
 	--snapshot-count '10000'
 		number of committed transactions to trigger a snapshot to disk.
 	--heartbeat-interval '100'
@@ -41,7 +45,11 @@ member flags:
 		list of URLs to listen on for peer traffic.
 	--listen-client-urls 'http://localhost:2379,http://localhost:4001'
 		list of URLs to listen on for client traffic.
-	-cors ''
+	--max-snapshots '` + strconv.Itoa(defaultMaxSnapshots) + `'
+		maximum number of snapshot files to retain (0 is unlimited).
+	--max-wals '` + strconv.Itoa(defaultMaxWALs) + `'
+		maximum number of wal files to retain (0 is unlimited).
+	--cors ''
 		comma-separated whitelist of origins for CORS (cross-origin resource sharing).
 
 
@@ -55,6 +63,7 @@ clustering flags:
 		initial cluster state ('new' or 'existing').
 	--initial-cluster-token 'etcd-cluster'
 		initial cluster token for the etcd cluster during bootstrap.
+		Specifying this can protect you from unintended cross-cluster interaction when running multiple clusters.
 	--advertise-client-urls 'http://localhost:2379,http://localhost:4001'
 		list of this member's client URLs to advertise to the public.
 		The client URLs advertised should be accessible to machines that talk to etcd cluster. etcd client libraries parse these URLs to connect to the cluster.
@@ -66,7 +75,8 @@ clustering flags:
 		HTTP proxy to use for traffic to discovery service.
 	--discovery-srv ''
 		dns srv domain used to bootstrap the cluster.
-
+	--strict-reconfig-check
+		reject reconfiguration requests that would cause quorum loss.
 
 proxy flags:
 
@@ -87,7 +97,7 @@ proxy flags:
 security flags:
 
 	--ca-file '' [DEPRECATED]
-		path to the client server TLS CA file.
+		path to the client server TLS CA file. '-ca-file ca.crt' could be replaced by '-trusted-ca-file ca.crt -client-cert-auth' and etcd will perform the same.
 	--cert-file ''
 		path to the client server TLS cert file.
 	--key-file ''
@@ -97,7 +107,7 @@ security flags:
 	--trusted-ca-file ''
 		path to the client server TLS trusted CA key file.
 	--peer-ca-file '' [DEPRECATED]
-		path to the peer server TLS CA file.
+		path to the peer server TLS CA file. '-peer-ca-file ca.crt' could be replaced by '-peer-trusted-ca-file ca.crt -peer-client-cert-auth' and etcd will perform the same.
 	--peer-cert-file ''
 		path to the peer server TLS cert file.
 	--peer-key-file ''
@@ -106,13 +116,15 @@ security flags:
 		enable peer client cert authentication.
 	--peer-trusted-ca-file ''
 		path to the peer server TLS trusted CA file.
+	--peer-auto-tls 'false'
+		peer TLS using self-generated certificates if --peer-key-file and --peer-cert-file are not provided.
 
 logging flags
 
 	--debug 'false'
 		enable debug-level logging for etcd.
 	--log-package-levels ''
-		set individual packages to various log levels (eg: 'etcdmain=CRITICAL,etcdserver=DEBUG')
+		specify a particular log level for each etcd package (eg: 'etcdmain=CRITICAL,etcdserver=DEBUG').
 
 unsafe flags:
 
@@ -125,7 +137,11 @@ given by the consensus protocol.
 
 experimental flags:
 
-	--experimental-v3demo 'false'
-		enable experimental v3 demo API
+	--experimental-auto-compaction-retention '0'
+		auto compaction retention in hour. 0 means disable auto compaction.
+
+profiling flags:
+	--enable-pprof 'false'
+		Enable runtime profiling data via HTTP server. Address is at client URL + "/debug/pprof"
 `
 )

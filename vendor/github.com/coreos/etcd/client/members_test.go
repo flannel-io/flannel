@@ -48,8 +48,8 @@ func TestMembersAPIActionAdd(t *testing.T) {
 	ep := url.URL{Scheme: "http", Host: "example.com"}
 	act := &membersAPIActionAdd{
 		peerURLs: types.URLs([]url.URL{
-			url.URL{Scheme: "https", Host: "127.0.0.1:8081"},
-			url.URL{Scheme: "http", Host: "127.0.0.1:8080"},
+			{Scheme: "https", Host: "127.0.0.1:8081"},
+			{Scheme: "http", Host: "127.0.0.1:8080"},
 		}),
 	}
 
@@ -75,8 +75,8 @@ func TestMembersAPIActionUpdate(t *testing.T) {
 	act := &membersAPIActionUpdate{
 		memberID: "0xabcd",
 		peerURLs: types.URLs([]url.URL{
-			url.URL{Scheme: "https", Host: "127.0.0.1:8081"},
-			url.URL{Scheme: "http", Host: "127.0.0.1:8080"},
+			{Scheme: "https", Host: "127.0.0.1:8081"},
+			{Scheme: "http", Host: "127.0.0.1:8080"},
 		}),
 	}
 
@@ -109,6 +109,23 @@ func TestMembersAPIActionRemove(t *testing.T) {
 
 	got := *act.HTTPRequest(ep)
 	err := assertRequest(got, "DELETE", wantURL, http.Header{}, nil)
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestMembersAPIActionLeader(t *testing.T) {
+	ep := url.URL{Scheme: "http", Host: "example.com"}
+	act := &membersAPIActionLeader{}
+
+	wantURL := &url.URL{
+		Scheme: "http",
+		Host:   "example.com",
+		Path:   "/v2/members/leader",
+	}
+
+	got := *act.HTTPRequest(ep)
+	err := assertRequest(got, "GET", wantURL, http.Header{}, nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -289,8 +306,8 @@ func TestMemberCollectionUnmarshal(t *testing.T) {
 func TestMemberCreateRequestMarshal(t *testing.T) {
 	req := memberCreateOrUpdateRequest{
 		PeerURLs: types.URLs([]url.URL{
-			url.URL{Scheme: "http", Host: "127.0.0.1:8081"},
-			url.URL{Scheme: "https", Host: "127.0.0.1:8080"},
+			{Scheme: "http", Host: "127.0.0.1:8081"},
+			{Scheme: "https", Host: "127.0.0.1:8080"},
 		}),
 	}
 	want := []byte(`{"peerURLs":["http://127.0.0.1:8081","https://127.0.0.1:8080"]}`)
@@ -308,7 +325,7 @@ func TestMemberCreateRequestMarshal(t *testing.T) {
 func TestHTTPMembersAPIAddSuccess(t *testing.T) {
 	wantAction := &membersAPIActionAdd{
 		peerURLs: types.URLs([]url.URL{
-			url.URL{Scheme: "http", Host: "127.0.0.1:7002"},
+			{Scheme: "http", Host: "127.0.0.1:7002"},
 		}),
 	}
 
@@ -473,7 +490,7 @@ func TestHTTPMembersAPIListSuccess(t *testing.T) {
 	}
 
 	wantResponseMembers := []Member{
-		Member{
+		{
 			ID:         "94088180e21eb87b",
 			Name:       "node2",
 			PeerURLs:   []string{"http://127.0.0.1:7002"},
@@ -517,6 +534,66 @@ func TestHTTPMembersAPIListError(t *testing.T) {
 		}
 		if ms != nil {
 			t.Errorf("#%d: got non-nil Member slice", i)
+		}
+	}
+}
+
+func TestHTTPMembersAPILeaderSuccess(t *testing.T) {
+	wantAction := &membersAPIActionLeader{}
+	mAPI := &httpMembersAPI{
+		client: &actionAssertingHTTPClient{
+			t:   t,
+			act: wantAction,
+			resp: http.Response{
+				StatusCode: http.StatusOK,
+			},
+			body: []byte(`{"id":"94088180e21eb87b","name":"node2","peerURLs":["http://127.0.0.1:7002"],"clientURLs":["http://127.0.0.1:4002"]}`),
+		},
+	}
+
+	wantResponseMember := &Member{
+		ID:         "94088180e21eb87b",
+		Name:       "node2",
+		PeerURLs:   []string{"http://127.0.0.1:7002"},
+		ClientURLs: []string{"http://127.0.0.1:4002"},
+	}
+
+	m, err := mAPI.Leader(context.Background())
+	if err != nil {
+		t.Errorf("err = %v, want %v", err, nil)
+	}
+	if !reflect.DeepEqual(wantResponseMember, m) {
+		t.Errorf("incorrect member: member = %v, want %v", wantResponseMember, m)
+	}
+}
+
+func TestHTTPMembersAPILeaderError(t *testing.T) {
+	tests := []httpClient{
+		// generic httpClient failure
+		&staticHTTPClient{err: errors.New("fail!")},
+
+		// unrecognized HTTP status code
+		&staticHTTPClient{
+			resp: http.Response{StatusCode: http.StatusTeapot},
+		},
+
+		// fail to unmarshal body on StatusOK
+		&staticHTTPClient{
+			resp: http.Response{
+				StatusCode: http.StatusOK,
+			},
+			body: []byte(`[{"id":"XX`),
+		},
+	}
+
+	for i, tt := range tests {
+		mAPI := &httpMembersAPI{client: tt}
+		m, err := mAPI.Leader(context.Background())
+		if err == nil {
+			t.Errorf("#%d: err = nil, want not nil", i)
+		}
+		if m != nil {
+			t.Errorf("member slice = %v, want nil", m)
 		}
 	}
 }

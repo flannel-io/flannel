@@ -12,39 +12,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// TODO: support arm64
+// +build amd64
+
 package etcdmain
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"path"
 	"reflect"
 	"runtime"
-	"strconv"
+	"strings"
 	"time"
 
 	"github.com/coreos/etcd/discovery"
 	"github.com/coreos/etcd/etcdserver"
-	"github.com/coreos/etcd/etcdserver/api/v3rpc"
-	"github.com/coreos/etcd/etcdserver/etcdhttp"
-	"github.com/coreos/etcd/etcdserver/etcdserverpb"
+	"github.com/coreos/etcd/etcdserver/api/v2http"
 	"github.com/coreos/etcd/pkg/cors"
 	"github.com/coreos/etcd/pkg/fileutil"
+	pkgioutil "github.com/coreos/etcd/pkg/ioutil"
 	"github.com/coreos/etcd/pkg/osutil"
 	runtimeutil "github.com/coreos/etcd/pkg/runtime"
 	"github.com/coreos/etcd/pkg/transport"
 	"github.com/coreos/etcd/pkg/types"
 	"github.com/coreos/etcd/proxy"
 	"github.com/coreos/etcd/rafthttp"
+	"github.com/coreos/etcd/version"
 	"github.com/coreos/go-systemd/daemon"
 	systemdutil "github.com/coreos/go-systemd/util"
 	"github.com/coreos/pkg/capnslog"
 	"github.com/prometheus/client_golang/prometheus"
-	"google.golang.org/grpc"
 )
 
 type dirType string
@@ -89,12 +93,13 @@ func Main() {
 
 	var stopped <-chan struct{}
 
-	GoMaxProcs := 1
-	if envMaxProcs, err := strconv.Atoi(os.Getenv("GOMAXPROCS")); err == nil {
-		GoMaxProcs = envMaxProcs
-	}
+	plog.Infof("etcd Version: %s\n", version.Version)
+	plog.Infof("Git SHA: %s\n", version.GitSHA)
+	plog.Infof("Go Version: %s\n", runtime.Version())
+	plog.Infof("Go OS/Arch: %s/%s\n", runtime.GOOS, runtime.GOARCH)
+
+	GoMaxProcs := runtime.GOMAXPROCS(0)
 	plog.Infof("setting maximum number of CPUs to %d, total number of available CPUs is %d", GoMaxProcs, runtime.NumCPU())
-	runtime.GOMAXPROCS(GoMaxProcs)
 
 	// TODO: check whether fields are set instead of whether fields have default value
 	if cfg.name != defaultName && cfg.initialCluster == initialClusterFromName(defaultName) {
@@ -121,9 +126,11 @@ func Main() {
 		shouldProxy := cfg.isProxy()
 		if !shouldProxy {
 			stopped, err = startEtcd(cfg)
-			if err == discovery.ErrFullCluster && cfg.shouldFallbackToProxy() {
-				plog.Noticef("discovery cluster full, falling back to %s", fallbackFlagProxy)
-				shouldProxy = true
+			if derr, ok := err.(*etcdserver.DiscoveryError); ok && derr.Err == discovery.ErrFullCluster {
+				if cfg.shouldFallbackToProxy() {
+					plog.Noticef("discovery cluster full, falling back to %s", fallbackFlagProxy)
+					shouldProxy = true
+				}
 			}
 		}
 		if shouldProxy {
@@ -132,20 +139,39 @@ func Main() {
 	}
 
 	if err != nil {
-		switch err {
-		case discovery.ErrDuplicateID:
-			plog.Errorf("member %q has previously registered with discovery service token (%s).", cfg.name, cfg.durl)
-			plog.Errorf("But etcd could not find valid cluster configuration in the given data dir (%s).", cfg.dir)
-			plog.Infof("Please check the given data dir path if the previous bootstrap succeeded")
-			plog.Infof("or use a new discovery token if the previous bootstrap failed.")
+		if derr, ok := err.(*etcdserver.DiscoveryError); ok {
+			switch derr.Err {
+			case discovery.ErrDuplicateID:
+				plog.Errorf("member %q has previously registered with discovery service token (%s).", cfg.name, cfg.durl)
+				plog.Errorf("But etcd could not find valid cluster configuration in the given data dir (%s).", cfg.dir)
+				plog.Infof("Please check the given data dir path if the previous bootstrap succeeded")
+				plog.Infof("or use a new discovery token if the previous bootstrap failed.")
+			case discovery.ErrDuplicateName:
+				plog.Errorf("member with duplicated name has registered with discovery service token(%s).", cfg.durl)
+				plog.Errorf("please check (cURL) the discovery token for more information.")
+				plog.Errorf("please do not reuse the discovery token and generate a new one to bootstrap the cluster.")
+			default:
+				plog.Errorf("%v", err)
+				plog.Infof("discovery token %s was used, but failed to bootstrap the cluster.", cfg.durl)
+				plog.Infof("please generate a new discovery token and try to bootstrap again.")
+			}
 			os.Exit(1)
-		case discovery.ErrDuplicateName:
-			plog.Errorf("member with duplicated name has registered with discovery service token(%s).", cfg.durl)
-			plog.Errorf("please check (cURL) the discovery token for more information.")
-			plog.Errorf("please do not reuse the discovery token and generate a new one to bootstrap the cluster.")
-		default:
-			plog.Fatalf("%v", err)
 		}
+
+		if strings.Contains(err.Error(), "include") && strings.Contains(err.Error(), "--initial-cluster") {
+			plog.Infof("%v", err)
+			if cfg.initialCluster == initialClusterFromName(cfg.name) {
+				plog.Infof("forgot to set --initial-cluster flag?")
+			}
+			if types.URLs(cfg.apurls).String() == defaultInitialAdvertisePeerURLs {
+				plog.Infof("forgot to set --initial-advertise-peer-urls flag?")
+			}
+			if cfg.initialCluster == initialClusterFromName(cfg.name) && len(cfg.durl) == 0 {
+				plog.Infof("if you want to use discovery service, please set --discovery flag.")
+			}
+			os.Exit(1)
+		}
+		plog.Fatalf("%v", err)
 	}
 
 	osutil.HandleInterrupts()
@@ -159,7 +185,10 @@ func Main() {
 		// for less than one second.
 		err := daemon.SdNotify("READY=1")
 		if err != nil {
-			plog.Errorf("failed to notify systemd for readiness")
+			plog.Errorf("failed to notify systemd for readiness: %v", err)
+			if err == daemon.SdNotifyNoSocket {
+				plog.Errorf("forgot to set Type=notify in systemd service file?")
+			}
 		}
 	}
 
@@ -169,14 +198,22 @@ func Main() {
 
 // startEtcd launches the etcd server and HTTP handlers for client/server communication.
 func startEtcd(cfg *config) (<-chan struct{}, error) {
-	urlsmap, token, err := getPeerURLsMapAndToken(cfg)
+	urlsmap, token, err := getPeerURLsMapAndToken(cfg, "etcd")
 	if err != nil {
 		return nil, fmt.Errorf("error setting up initial cluster: %v", err)
 	}
 
-	pt, err := transport.NewTimeoutTransport(cfg.peerTLSInfo, rafthttp.DialTimeout, rafthttp.ConnReadTimeout, rafthttp.ConnWriteTimeout)
-	if err != nil {
-		return nil, err
+	if cfg.peerAutoTLS && cfg.peerTLSInfo.Empty() {
+		phosts := make([]string, 0)
+		for _, u := range cfg.lpurls {
+			phosts = append(phosts, u.Host)
+		}
+		cfg.peerTLSInfo, err = transport.SelfCert(cfg.dir, phosts)
+		if err != nil {
+			plog.Fatalf("could not get certs (%v)", err)
+		}
+	} else if cfg.peerAutoTLS {
+		plog.Warningf("ignoring peer auto TLS since certs given")
 	}
 
 	if !cfg.peerTLSInfo.Empty() {
@@ -184,11 +221,27 @@ func startEtcd(cfg *config) (<-chan struct{}, error) {
 	}
 	plns := make([]net.Listener, 0)
 	for _, u := range cfg.lpurls {
-		if u.Scheme == "http" && !cfg.peerTLSInfo.Empty() {
-			plog.Warningf("The scheme of peer url %s is http while peer key/cert files are presented. Ignored peer key/cert files.", u.String())
+		if u.Scheme == "http" {
+			if !cfg.peerTLSInfo.Empty() {
+				plog.Warningf("The scheme of peer url %s is HTTP while peer key/cert files are presented. Ignored peer key/cert files.", u.String())
+			}
+			if cfg.peerTLSInfo.ClientCertAuth {
+				plog.Warningf("The scheme of peer url %s is HTTP while client cert auth (--peer-client-cert-auth) is enabled. Ignored client cert auth for this url.", u.String())
+			}
 		}
-		var l net.Listener
-		l, err = transport.NewTimeoutListener(u.Host, u.Scheme, cfg.peerTLSInfo, rafthttp.ConnReadTimeout, rafthttp.ConnWriteTimeout)
+		var (
+			l      net.Listener
+			tlscfg *tls.Config
+		)
+
+		if !cfg.peerTLSInfo.Empty() {
+			tlscfg, err = cfg.peerTLSInfo.ServerConfig()
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		l, err = rafthttp.NewListener(u, tlscfg)
 		if err != nil {
 			return nil, err
 		}
@@ -204,64 +257,99 @@ func startEtcd(cfg *config) (<-chan struct{}, error) {
 		plns = append(plns, l)
 	}
 
+	var ctlscfg *tls.Config
 	if !cfg.clientTLSInfo.Empty() {
 		plog.Infof("clientTLS: %s", cfg.clientTLSInfo)
-	}
-	clns := make([]net.Listener, 0)
-	for _, u := range cfg.lcurls {
-		if u.Scheme == "http" && !cfg.clientTLSInfo.Empty() {
-			plog.Warningf("The scheme of client url %s is http while client key/cert files are presented. Ignored client key/cert files.", u.String())
-		}
-		var l net.Listener
-		l, err = transport.NewKeepAliveListener(u.Host, u.Scheme, cfg.clientTLSInfo)
+		ctlscfg, err = cfg.clientTLSInfo.ServerConfig()
 		if err != nil {
 			return nil, err
 		}
-		if fdLimit, err := runtimeutil.FDLimit(); err == nil {
+	}
+	sctxs := make(map[string]*serveCtx)
+	for _, u := range cfg.lcurls {
+		if u.Scheme == "http" {
+			if !cfg.clientTLSInfo.Empty() {
+				plog.Warningf("The scheme of client url %s is HTTP while peer key/cert files are presented. Ignored key/cert files.", u.String())
+			}
+			if cfg.clientTLSInfo.ClientCertAuth {
+				plog.Warningf("The scheme of client url %s is HTTP while client cert auth (--client-cert-auth) is enabled. Ignored client cert auth for this url.", u.String())
+			}
+		}
+		if u.Scheme == "https" && ctlscfg == nil {
+			return nil, fmt.Errorf("TLS key/cert (--cert-file, --key-file) must be provided for client url %s with HTTPs scheme", u.String())
+		}
+
+		ctx := &serveCtx{host: u.Host}
+
+		if u.Scheme == "https" {
+			ctx.secure = true
+		} else {
+			ctx.insecure = true
+		}
+
+		if sctxs[u.Host] != nil {
+			if ctx.secure {
+				sctxs[u.Host].secure = true
+			}
+			if ctx.insecure {
+				sctxs[u.Host].insecure = true
+			}
+			continue
+		}
+
+		var l net.Listener
+
+		l, err = net.Listen("tcp", u.Host)
+		if err != nil {
+			return nil, err
+		}
+
+		var fdLimit uint64
+		if fdLimit, err = runtimeutil.FDLimit(); err == nil {
 			if fdLimit <= reservedInternalFDNum {
 				plog.Fatalf("file descriptor limit[%d] of etcd process is too low, and should be set higher than %d to ensure internal usage", fdLimit, reservedInternalFDNum)
 			}
-			l = &transport.LimitedConnListener{Listener: l, RuntimeFDLimit: fdLimit - reservedInternalFDNum}
+			l = transport.LimitListener(l, int(fdLimit-reservedInternalFDNum))
 		}
 
-		urlStr := u.String()
-		plog.Info("listening for client requests on ", urlStr)
+		l, err = transport.NewKeepAliveListener(l, "tcp", nil)
+		ctx.l = l
+		if err != nil {
+			return nil, err
+		}
+
+		plog.Info("listening for client requests on ", u.Host)
 		defer func() {
 			if err != nil {
 				l.Close()
-				plog.Info("stopping listening for client requests on ", urlStr)
+				plog.Info("stopping listening for client requests on ", u.Host)
 			}
 		}()
-		clns = append(clns, l)
-	}
-
-	var v3l net.Listener
-	if cfg.v3demo {
-		v3l, err = net.Listen("tcp", "127.0.0.1:12379")
-		if err != nil {
-			plog.Fatal(err)
-		}
-		plog.Infof("listening for client rpc on 127.0.0.1:12379")
+		sctxs[u.Host] = ctx
 	}
 
 	srvcfg := &etcdserver.ServerConfig{
-		Name:                cfg.name,
-		ClientURLs:          cfg.acurls,
-		PeerURLs:            cfg.apurls,
-		DataDir:             cfg.dir,
-		SnapCount:           cfg.snapCount,
-		MaxSnapFiles:        cfg.maxSnapFiles,
-		MaxWALFiles:         cfg.maxWalFiles,
-		InitialPeerURLsMap:  urlsmap,
-		InitialClusterToken: token,
-		DiscoveryURL:        cfg.durl,
-		DiscoveryProxy:      cfg.dproxy,
-		NewCluster:          cfg.isNewCluster(),
-		ForceNewCluster:     cfg.forceNewCluster,
-		Transport:           pt,
-		TickMs:              cfg.TickMs,
-		ElectionTicks:       cfg.electionTicks(),
-		V3demo:              cfg.v3demo,
+		Name:                    cfg.name,
+		ClientURLs:              cfg.acurls,
+		PeerURLs:                cfg.apurls,
+		DataDir:                 cfg.dir,
+		DedicatedWALDir:         cfg.walDir,
+		SnapCount:               cfg.snapCount,
+		MaxSnapFiles:            cfg.maxSnapFiles,
+		MaxWALFiles:             cfg.maxWalFiles,
+		InitialPeerURLsMap:      urlsmap,
+		InitialClusterToken:     token,
+		DiscoveryURL:            cfg.durl,
+		DiscoveryProxy:          cfg.dproxy,
+		NewCluster:              cfg.isNewCluster(),
+		ForceNewCluster:         cfg.forceNewCluster,
+		PeerTLSInfo:             cfg.peerTLSInfo,
+		TickMs:                  cfg.TickMs,
+		ElectionTicks:           cfg.electionTicks(),
+		AutoCompactionRetention: cfg.autoCompactionRetention,
+		QuotaBackendBytes:       cfg.quotaBackendBytes,
+		StrictReconfigCheck:     cfg.strictReconfigCheck,
+		EnablePprof:             cfg.enablePprof,
 	}
 	var s *etcdserver.EtcdServer
 	s, err = etcdserver.NewServer(srvcfg)
@@ -274,31 +362,25 @@ func startEtcd(cfg *config) (<-chan struct{}, error) {
 	if cfg.corsInfo.String() != "" {
 		plog.Infof("cors = %s", cfg.corsInfo)
 	}
-	ch := &cors.CORSHandler{
-		Handler: etcdhttp.NewClientHandler(s),
+	ch := http.Handler(&cors.CORSHandler{
+		Handler: v2http.NewClientHandler(s, srvcfg.ReqTimeout()),
 		Info:    cfg.corsInfo,
-	}
-	ph := etcdhttp.NewPeerHandler(s.Cluster(), s.RaftHandler())
+	})
+	ph := v2http.NewPeerHandler(s)
+
 	// Start the peer server in a goroutine
 	for _, l := range plns {
 		go func(l net.Listener) {
-			plog.Fatal(serveHTTP(l, ph, 5*time.Minute))
+			plog.Fatal(servePeerHTTP(l, ph))
 		}(l)
 	}
 	// Start a client server goroutine for each listen address
-	for _, l := range clns {
-		go func(l net.Listener) {
+	for _, sctx := range sctxs {
+		go func(sctx *serveCtx) {
 			// read timeout does not work with http close notify
 			// TODO: https://github.com/golang/go/issues/9524
-			plog.Fatal(serveHTTP(l, ch, 0))
-		}(l)
-	}
-
-	if cfg.v3demo {
-		// set up v3 demo rpc
-		grpcServer := grpc.NewServer()
-		etcdserverpb.RegisterEtcdServer(grpcServer, v3rpc.New(s))
-		go plog.Fatal(grpcServer.Serve(v3l))
+			plog.Fatal(serve(sctx, s, ctlscfg, ch))
+		}(sctx)
 	}
 
 	return s.StopNotify(), nil
@@ -306,16 +388,11 @@ func startEtcd(cfg *config) (<-chan struct{}, error) {
 
 // startProxy launches an HTTP proxy for client communication which proxies to other etcd nodes.
 func startProxy(cfg *config) error {
-	urlsmap, _, err := getPeerURLsMapAndToken(cfg)
-	if err != nil {
-		return fmt.Errorf("error setting up initial cluster: %v", err)
-	}
-
 	pt, err := transport.NewTimeoutTransport(cfg.peerTLSInfo, time.Duration(cfg.proxyDialTimeoutMs)*time.Millisecond, time.Duration(cfg.proxyReadTimeoutMs)*time.Millisecond, time.Duration(cfg.proxyWriteTimeoutMs)*time.Millisecond)
-	pt.MaxIdleConnsPerHost = proxy.DefaultMaxIdleConnsPerHost
 	if err != nil {
 		return err
 	}
+	pt.MaxIdleConnsPerHost = proxy.DefaultMaxIdleConnsPerHost
 
 	tr, err := transport.NewTimeoutTransport(cfg.peerTLSInfo, time.Duration(cfg.proxyDialTimeoutMs)*time.Millisecond, time.Duration(cfg.proxyReadTimeoutMs)*time.Millisecond, time.Duration(cfg.proxyWriteTimeoutMs)*time.Millisecond)
 	if err != nil {
@@ -323,7 +400,7 @@ func startProxy(cfg *config) error {
 	}
 
 	cfg.dir = path.Join(cfg.dir, "proxy")
-	err = os.MkdirAll(cfg.dir, 0700)
+	err = os.MkdirAll(cfg.dir, privateDirMode)
 	if err != nil {
 		return err
 	}
@@ -337,16 +414,26 @@ func startProxy(cfg *config) error {
 		if cfg.durl != "" {
 			plog.Warningf("discovery token ignored since the proxy has already been initialized. Valid cluster file found at %q", clusterfile)
 		}
+		if cfg.dnsCluster != "" {
+			plog.Warningf("DNS SRV discovery ignored since the proxy has already been initialized. Valid cluster file found at %q", clusterfile)
+		}
 		urls := struct{ PeerURLs []string }{}
-		err := json.Unmarshal(b, &urls)
+		err = json.Unmarshal(b, &urls)
 		if err != nil {
 			return err
 		}
 		peerURLs = urls.PeerURLs
 		plog.Infof("proxy: using peer urls %v from cluster file %q", peerURLs, clusterfile)
 	case os.IsNotExist(err):
+		var urlsmap types.URLsMap
+		urlsmap, _, err = getPeerURLsMapAndToken(cfg, "proxy")
+		if err != nil {
+			return fmt.Errorf("error setting up initial cluster: %v", err)
+		}
+
 		if cfg.durl != "" {
-			s, err := discovery.GetCluster(cfg.durl, cfg.dproxy)
+			var s string
+			s, err = discovery.GetCluster(cfg.durl, cfg.dproxy)
 			if err != nil {
 				return err
 			}
@@ -362,11 +449,11 @@ func startProxy(cfg *config) error {
 
 	clientURLs := []string{}
 	uf := func() []string {
-		gcls, err := etcdserver.GetClusterFromRemotePeers(peerURLs, tr)
-		// TODO: remove the 2nd check when we fix GetClusterFromPeers
-		// GetClusterFromPeers should not return nil error with an invaild empty cluster
-		if err != nil {
-			plog.Warningf("proxy: %v", err)
+		gcls, gerr := etcdserver.GetClusterFromRemotePeers(peerURLs, tr)
+		// TODO: remove the 2nd check when we fix GetClusterFromRemotePeers
+		// GetClusterFromRemotePeers should not return nil error with an invalid empty cluster
+		if gerr != nil {
+			plog.Warningf("proxy: %v", gerr)
 			return []string{}
 		}
 		if len(gcls.Members()) == 0 {
@@ -375,13 +462,13 @@ func startProxy(cfg *config) error {
 		clientURLs = gcls.ClientURLs()
 
 		urls := struct{ PeerURLs []string }{gcls.PeerURLs()}
-		b, err := json.Marshal(urls)
-		if err != nil {
-			plog.Warningf("proxy: error on marshal peer urls %s", err)
+		b, jerr := json.Marshal(urls)
+		if jerr != nil {
+			plog.Warningf("proxy: error on marshal peer urls %s", jerr)
 			return clientURLs
 		}
 
-		err = ioutil.WriteFile(clusterfile+".bak", b, 0600)
+		err = pkgioutil.WriteAndSyncFile(clusterfile+".bak", b, 0600)
 		if err != nil {
 			plog.Warningf("proxy: error on writing urls %s", err)
 			return clientURLs
@@ -409,12 +496,23 @@ func startProxy(cfg *config) error {
 	}
 	// Start a proxy server goroutine for each listen address
 	for _, u := range cfg.lcurls {
-		l, err := transport.NewListener(u.Host, u.Scheme, cfg.clientTLSInfo)
+		var (
+			l      net.Listener
+			tlscfg *tls.Config
+		)
+		if !cfg.clientTLSInfo.Empty() {
+			tlscfg, err = cfg.clientTLSInfo.ServerConfig()
+			if err != nil {
+				return err
+			}
+		}
+
+		l, err := transport.NewListener(u.Host, u.Scheme, tlscfg)
 		if err != nil {
 			return err
 		}
 
-		host := u.Host
+		host := u.String()
 		go func() {
 			plog.Info("proxy: listening for client requests on ", host)
 			mux := http.NewServeMux()
@@ -427,7 +525,7 @@ func startProxy(cfg *config) error {
 }
 
 // getPeerURLsMapAndToken sets up an initial peer URLsMap and cluster token for bootstrap or discovery.
-func getPeerURLsMapAndToken(cfg *config) (urlsmap types.URLsMap, token string, err error) {
+func getPeerURLsMapAndToken(cfg *config, which string) (urlsmap types.URLsMap, token string, err error) {
 	switch {
 	case cfg.durl != "":
 		urlsmap = types.URLsMap{}
@@ -442,8 +540,12 @@ func getPeerURLsMapAndToken(cfg *config) (urlsmap types.URLsMap, token string, e
 			return nil, "", err
 		}
 		urlsmap, err = types.NewURLsMap(clusterStr)
-		if _, ok := urlsmap[cfg.name]; !ok {
-			return nil, "", fmt.Errorf("cannot find local etcd member %q in SRV records", cfg.name)
+		// only etcd member must belong to the discovered cluster.
+		// proxy does not need to belong to the discovered cluster.
+		if which == "etcd" {
+			if _, ok := urlsmap[cfg.name]; !ok {
+				return nil, "", fmt.Errorf("cannot find local etcd member %q in SRV records", cfg.name)
+			}
 		}
 	default:
 		// We're statically configured, and cluster has appropriately been set.

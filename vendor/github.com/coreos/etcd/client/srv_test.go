@@ -36,40 +36,40 @@ func TestSRVDiscover(t *testing.T) {
 		},
 		{
 			[]*net.SRV{
-				&net.SRV{Target: "10.0.0.1", Port: 2480},
-				&net.SRV{Target: "10.0.0.2", Port: 2480},
-				&net.SRV{Target: "10.0.0.3", Port: 2480},
+				{Target: "10.0.0.1", Port: 2480},
+				{Target: "10.0.0.2", Port: 2480},
+				{Target: "10.0.0.3", Port: 2480},
 			},
 			[]*net.SRV{},
 			[]string{"https://10.0.0.1:2480", "https://10.0.0.2:2480", "https://10.0.0.3:2480"},
 		},
 		{
 			[]*net.SRV{
-				&net.SRV{Target: "10.0.0.1", Port: 2480},
-				&net.SRV{Target: "10.0.0.2", Port: 2480},
-				&net.SRV{Target: "10.0.0.3", Port: 2480},
+				{Target: "10.0.0.1", Port: 2480},
+				{Target: "10.0.0.2", Port: 2480},
+				{Target: "10.0.0.3", Port: 2480},
 			},
 			[]*net.SRV{
-				&net.SRV{Target: "10.0.0.1", Port: 7001},
-			},
-			[]string{"https://10.0.0.1:2480", "https://10.0.0.2:2480", "https://10.0.0.3:2480", "http://10.0.0.1:7001"},
-		},
-		{
-			[]*net.SRV{
-				&net.SRV{Target: "10.0.0.1", Port: 2480},
-				&net.SRV{Target: "10.0.0.2", Port: 2480},
-				&net.SRV{Target: "10.0.0.3", Port: 2480},
-			},
-			[]*net.SRV{
-				&net.SRV{Target: "10.0.0.1", Port: 7001},
+				{Target: "10.0.0.1", Port: 7001},
 			},
 			[]string{"https://10.0.0.1:2480", "https://10.0.0.2:2480", "https://10.0.0.3:2480", "http://10.0.0.1:7001"},
 		},
 		{
 			[]*net.SRV{
-				&net.SRV{Target: "a.example.com", Port: 2480},
-				&net.SRV{Target: "b.example.com", Port: 2480},
-				&net.SRV{Target: "c.example.com", Port: 2480},
+				{Target: "10.0.0.1", Port: 2480},
+				{Target: "10.0.0.2", Port: 2480},
+				{Target: "10.0.0.3", Port: 2480},
+			},
+			[]*net.SRV{
+				{Target: "10.0.0.1", Port: 7001},
+			},
+			[]string{"https://10.0.0.1:2480", "https://10.0.0.2:2480", "https://10.0.0.3:2480", "http://10.0.0.1:7001"},
+		},
+		{
+			[]*net.SRV{
+				{Target: "a.example.com", Port: 2480},
+				{Target: "b.example.com", Port: 2480},
+				{Target: "c.example.com", Port: 2480},
 			},
 			[]*net.SRV{},
 			[]string{"https://a.example.com:2480", "https://b.example.com:2480", "https://c.example.com:2480"},
@@ -78,13 +78,13 @@ func TestSRVDiscover(t *testing.T) {
 
 	for i, tt := range tests {
 		lookupSRV = func(service string, proto string, domain string) (string, []*net.SRV, error) {
-			if service == "etcd-server-ssl" {
+			if service == "etcd-client-ssl" {
 				return "", tt.withSSL, nil
 			}
-			if service == "etcd-server" {
+			if service == "etcd-client" {
 				return "", tt.withoutSSL, nil
 			}
-			return "", nil, errors.New("Unkown service in mock")
+			return "", nil, errors.New("Unknown service in mock")
 		}
 
 		d := NewSRVDiscover()

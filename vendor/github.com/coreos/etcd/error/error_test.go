@@ -23,13 +23,13 @@ import (
 )
 
 func TestErrorWriteTo(t *testing.T) {
-	for k, _ := range errors {
+	for k := range errors {
 		err := NewError(k, "", 1)
 		rr := httptest.NewRecorder()
 		err.WriteTo(rr)
 
-		if err.statusCode() != rr.Code {
-			t.Errorf("HTTP status code %d, want %d", rr.Code, err.statusCode())
+		if err.StatusCode() != rr.Code {
+			t.Errorf("HTTP status code %d, want %d", rr.Code, err.StatusCode())
 		}
 
 		gbody := strings.TrimSuffix(rr.Body.String(), "\n")
@@ -38,8 +38,8 @@ func TestErrorWriteTo(t *testing.T) {
 		}
 
 		wheader := http.Header(map[string][]string{
-			"Content-Type": []string{"application/json"},
-			"X-Etcd-Index": []string{"1"},
+			"Content-Type": {"application/json"},
+			"X-Etcd-Index": {"1"},
 		})
 
 		if !reflect.DeepEqual(wheader, rr.HeaderMap) {

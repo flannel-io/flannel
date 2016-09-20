@@ -23,7 +23,7 @@ import (
 // TestNewTimeoutListener tests that NewTimeoutListener returns a
 // rwTimeoutListener struct with timeouts set.
 func TestNewTimeoutListener(t *testing.T) {
-	l, err := NewTimeoutListener("127.0.0.1:0", "http", TLSInfo{}, time.Hour, time.Hour)
+	l, err := NewTimeoutListener("127.0.0.1:0", "http", nil, time.Hour, time.Hour)
 	if err != nil {
 		t.Fatalf("unexpected NewTimeoutListener error: %v", err)
 	}
@@ -50,9 +50,9 @@ func TestWriteReadTimeoutListener(t *testing.T) {
 	stop := make(chan struct{})
 
 	blocker := func() {
-		conn, err := net.Dial("tcp", ln.Addr().String())
-		if err != nil {
-			t.Fatalf("unexpected dail error: %v", err)
+		conn, derr := net.Dial("tcp", ln.Addr().String())
+		if derr != nil {
+			t.Fatalf("unexpected dail error: %v", derr)
 		}
 		defer conn.Close()
 		// block the receiver until the writer timeout
@@ -68,18 +68,24 @@ func TestWriteReadTimeoutListener(t *testing.T) {
 
 	// fill the socket buffer
 	data := make([]byte, 5*1024*1024)
-	timer := time.AfterFunc(wln.wtimeoutd*5, func() {
-		t.Fatal("wait timeout")
-	})
-	defer timer.Stop()
+	done := make(chan struct{})
+	go func() {
+		_, err = conn.Write(data)
+		done <- struct{}{}
+	}()
 
-	_, err = conn.Write(data)
+	select {
+	case <-done:
+	// It waits 1s more to avoid delay in low-end system.
+	case <-time.After(wln.wtimeoutd*10 + time.Second):
+		t.Fatal("wait timeout")
+	}
+
 	if operr, ok := err.(*net.OpError); !ok || operr.Op != "write" || !operr.Timeout() {
 		t.Errorf("err = %v, want write i/o timeout error", err)
 	}
 	stop <- struct{}{}
 
-	timer.Reset(wln.rdtimeoutd * 5)
 	go blocker()
 
 	conn, err = wln.Accept()
@@ -87,7 +93,18 @@ func TestWriteReadTimeoutListener(t *testing.T) {
 		t.Fatalf("unexpected accept error: %v", err)
 	}
 	buf := make([]byte, 10)
-	_, err = conn.Read(buf)
+
+	go func() {
+		_, err = conn.Read(buf)
+		done <- struct{}{}
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(wln.rdtimeoutd * 10):
+		t.Fatal("wait timeout")
+	}
+
 	if operr, ok := err.(*net.OpError); !ok || operr.Op != "read" || !operr.Timeout() {
 		t.Errorf("err = %v, want write i/o timeout error", err)
 	}

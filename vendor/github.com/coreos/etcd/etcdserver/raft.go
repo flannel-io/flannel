@@ -19,10 +19,13 @@ import (
 	"expvar"
 	"os"
 	"sort"
+	"sync"
 	"sync/atomic"
 	"time"
 
 	pb "github.com/coreos/etcd/etcdserver/etcdserverpb"
+	"github.com/coreos/etcd/etcdserver/membership"
+	"github.com/coreos/etcd/pkg/contention"
 	"github.com/coreos/etcd/pkg/pbutil"
 	"github.com/coreos/etcd/pkg/types"
 	"github.com/coreos/etcd/raft"
@@ -30,7 +33,6 @@ import (
 	"github.com/coreos/etcd/rafthttp"
 	"github.com/coreos/etcd/wal"
 	"github.com/coreos/etcd/wal/walpb"
-
 	"github.com/coreos/pkg/capnslog"
 )
 
@@ -51,6 +53,8 @@ const (
 )
 
 var (
+	// protects raftStatus
+	raftStatusMu sync.Mutex
 	// indirection for expvar func interface
 	// expvar panics when publishing duplicate name
 	// expvar does not support remove a registered name
@@ -61,7 +65,11 @@ var (
 
 func init() {
 	raft.SetLogger(capnslog.NewPackageLogger("github.com/coreos/etcd", "raft"))
-	expvar.Publish("raft.status", expvar.Func(func() interface{} { return raftStatus() }))
+	expvar.Publish("raft.status", expvar.Func(func() interface{} {
+		raftStatusMu.Lock()
+		defer raftStatusMu.Unlock()
+		return raftStatus()
+	}))
 }
 
 type RaftTimer interface {
@@ -69,13 +77,14 @@ type RaftTimer interface {
 	Term() uint64
 }
 
-// apply contains entries, snapshot be applied.
-// After applied all the items, the application needs
-// to send notification to done chan.
+// apply contains entries, snapshot to be applied. Once
+// an apply is consumed, the entries will be persisted to
+// to raft storage concurrently; the application must read
+// raftDone before assuming the raft messages are stable.
 type apply struct {
 	entries  []raftpb.Entry
 	snapshot raftpb.Snapshot
-	done     chan struct{}
+	raftDone <-chan struct{} // rx {} after raft has persisted messages
 }
 
 type raftNode struct {
@@ -85,6 +94,10 @@ type raftNode struct {
 	index uint64
 	term  uint64
 	lead  uint64
+
+	mu sync.Mutex
+	// last lead elected time
+	lt time.Time
 
 	raft.Node
 
@@ -106,6 +119,8 @@ type raftNode struct {
 	// If transport is nil, server will panic.
 	transport rafthttp.Transporter
 
+	td *contention.TimeoutDetector
+
 	stopped chan struct{}
 	done    chan struct{}
 }
@@ -119,39 +134,79 @@ func (r *raftNode) start(s *EtcdServer) {
 	r.stopped = make(chan struct{})
 	r.done = make(chan struct{})
 
+	heartbeat := 200 * time.Millisecond
+	if s.cfg != nil {
+		heartbeat = time.Duration(s.cfg.TickMs) * time.Millisecond
+	}
+	// set up contention detectors for raft heartbeat message.
+	// expect to send a heartbeat within 2 heartbeat intervals.
+	r.td = contention.NewTimeoutDetector(2 * heartbeat)
+
 	go func() {
 		var syncC <-chan time.Time
 
 		defer r.onStop()
+		islead := false
+
 		for {
 			select {
 			case <-r.ticker:
 				r.Tick()
 			case rd := <-r.Ready():
 				if rd.SoftState != nil {
+					if lead := atomic.LoadUint64(&r.lead); rd.SoftState.Lead != raft.None && lead != rd.SoftState.Lead {
+						r.mu.Lock()
+						r.lt = time.Now()
+						r.mu.Unlock()
+					}
 					atomic.StoreUint64(&r.lead, rd.SoftState.Lead)
 					if rd.RaftState == raft.StateLeader {
+						islead = true
+						// TODO: raft should send server a notification through chan when
+						// it promotes or demotes instead of modifying server directly.
 						syncC = r.s.SyncTicker
+						if r.s.lessor != nil {
+							r.s.lessor.Promote(r.s.cfg.electionTimeout())
+						}
 						// TODO: remove the nil checking
 						// current test utility does not provide the stats
 						if r.s.stats != nil {
 							r.s.stats.BecomeLeader()
 						}
+						if r.s.compactor != nil {
+							r.s.compactor.Resume()
+						}
+						r.td.Reset()
 					} else {
+						islead = false
+						if r.s.lessor != nil {
+							r.s.lessor.Demote()
+						}
+						if r.s.compactor != nil {
+							r.s.compactor.Pause()
+						}
 						syncC = nil
 					}
 				}
 
-				apply := apply{
+				raftDone := make(chan struct{}, 1)
+				ap := apply{
 					entries:  rd.CommittedEntries,
 					snapshot: rd.Snapshot,
-					done:     make(chan struct{}),
+					raftDone: raftDone,
 				}
 
 				select {
-				case r.applyc <- apply:
+				case r.applyc <- ap:
 				case <-r.stopped:
 					return
+				}
+
+				// the leader can write to its disk in parallel with replicating to the followers and them
+				// writing to their disks.
+				// For more details, check raft thesis 10.2.1
+				if islead {
+					r.s.send(rd.Messages)
 				}
 
 				if !raft.IsEmptySnap(rd.Snapshot) {
@@ -166,16 +221,13 @@ func (r *raftNode) start(s *EtcdServer) {
 				}
 				r.raftStorage.Append(rd.Entries)
 
-				r.s.send(rd.Messages)
-
-				select {
-				case <-apply.done:
-				case <-r.stopped:
-					return
+				if !islead {
+					r.s.send(rd.Messages)
 				}
+				raftDone <- struct{}{}
 				r.Advance()
 			case <-syncC:
-				r.s.sync(defaultSyncTimeout)
+				r.s.sync(r.s.cfg.ReqTimeout())
 			case <-r.stopped:
 				return
 			}
@@ -185,6 +237,12 @@ func (r *raftNode) start(s *EtcdServer) {
 
 func (r *raftNode) apply() chan apply {
 	return r.applyc
+}
+
+func (r *raftNode) leadElectedTime() time.Time {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.lt
 }
 
 func (r *raftNode) stop() {
@@ -222,7 +280,7 @@ func advanceTicksForElection(n raft.Node, electionTicks int) {
 	}
 }
 
-func startNode(cfg *ServerConfig, cl *cluster, ids []types.ID) (id types.ID, n raft.Node, s *raft.MemoryStorage, w *wal.WAL) {
+func startNode(cfg *ServerConfig, cl *membership.RaftCluster, ids []types.ID) (id types.ID, n raft.Node, s *raft.MemoryStorage, w *wal.WAL) {
 	var err error
 	member := cl.MemberByName(cfg.Name)
 	metadata := pbutil.MustMarshal(
@@ -231,7 +289,7 @@ func startNode(cfg *ServerConfig, cl *cluster, ids []types.ID) (id types.ID, n r
 			ClusterID: uint64(cl.ID()),
 		},
 	)
-	if err := os.MkdirAll(cfg.SnapDir(), privateDirMode); err != nil {
+	if err = os.MkdirAll(cfg.SnapDir(), privateDirMode); err != nil {
 		plog.Fatalf("create snapshot directory error: %v", err)
 	}
 	if w, err = wal.Create(cfg.WALDir(), metadata); err != nil {
@@ -255,14 +313,18 @@ func startNode(cfg *ServerConfig, cl *cluster, ids []types.ID) (id types.ID, n r
 		Storage:         s,
 		MaxSizePerMsg:   maxSizePerMsg,
 		MaxInflightMsgs: maxInflightMsgs,
+		CheckQuorum:     true,
 	}
+
 	n = raft.StartNode(c, peers)
+	raftStatusMu.Lock()
 	raftStatus = n.Status
+	raftStatusMu.Unlock()
 	advanceTicksForElection(n, c.ElectionTick)
 	return
 }
 
-func restartNode(cfg *ServerConfig, snapshot *raftpb.Snapshot) (types.ID, *cluster, raft.Node, *raft.MemoryStorage, *wal.WAL) {
+func restartNode(cfg *ServerConfig, snapshot *raftpb.Snapshot) (types.ID, *membership.RaftCluster, raft.Node, *raft.MemoryStorage, *wal.WAL) {
 	var walsnap walpb.Snapshot
 	if snapshot != nil {
 		walsnap.Index, walsnap.Term = snapshot.Metadata.Index, snapshot.Metadata.Term
@@ -270,7 +332,7 @@ func restartNode(cfg *ServerConfig, snapshot *raftpb.Snapshot) (types.ID, *clust
 	w, id, cid, st, ents := readWAL(cfg.WALDir(), walsnap)
 
 	plog.Infof("restarting member %s in cluster %s at commit index %d", id, cid, st.Commit)
-	cl := newCluster("")
+	cl := membership.NewCluster("")
 	cl.SetID(cid)
 	s := raft.NewMemoryStorage()
 	if snapshot != nil {
@@ -285,14 +347,18 @@ func restartNode(cfg *ServerConfig, snapshot *raftpb.Snapshot) (types.ID, *clust
 		Storage:         s,
 		MaxSizePerMsg:   maxSizePerMsg,
 		MaxInflightMsgs: maxInflightMsgs,
+		CheckQuorum:     true,
 	}
+
 	n := raft.RestartNode(c)
+	raftStatusMu.Lock()
 	raftStatus = n.Status
+	raftStatusMu.Unlock()
 	advanceTicksForElection(n, c.ElectionTick)
 	return id, cl, n, s, w
 }
 
-func restartAsStandaloneNode(cfg *ServerConfig, snapshot *raftpb.Snapshot) (types.ID, *cluster, raft.Node, *raft.MemoryStorage, *wal.WAL) {
+func restartAsStandaloneNode(cfg *ServerConfig, snapshot *raftpb.Snapshot) (types.ID, *membership.RaftCluster, raft.Node, *raft.MemoryStorage, *wal.WAL) {
 	var walsnap walpb.Snapshot
 	if snapshot != nil {
 		walsnap.Index, walsnap.Term = snapshot.Metadata.Index, snapshot.Metadata.Term
@@ -322,7 +388,7 @@ func restartAsStandaloneNode(cfg *ServerConfig, snapshot *raftpb.Snapshot) (type
 	}
 
 	plog.Printf("forcing restart of member %s in cluster %s at commit index %d", id, cid, st.Commit)
-	cl := newCluster("")
+	cl := membership.NewCluster("")
 	cl.SetID(cid)
 	s := raft.NewMemoryStorage()
 	if snapshot != nil {
@@ -347,7 +413,7 @@ func restartAsStandaloneNode(cfg *ServerConfig, snapshot *raftpb.Snapshot) (type
 // the entries. The given snapshot/entries can contain two kinds of
 // ID-related entry:
 // - ConfChangeAddNode, in which case the contained ID will be added into the set.
-// - ConfChangeAddRemove, in which case the contained ID will be removed from the set.
+// - ConfChangeRemoveNode, in which case the contained ID will be removed from the set.
 func getIDs(snap *raftpb.Snapshot, ents []raftpb.Entry) []uint64 {
 	ids := make(map[uint64]bool)
 	if snap != nil {
@@ -366,6 +432,8 @@ func getIDs(snap *raftpb.Snapshot, ents []raftpb.Entry) []uint64 {
 			ids[cc.NodeID] = true
 		case raftpb.ConfChangeRemoveNode:
 			delete(ids, cc.NodeID)
+		case raftpb.ConfChangeUpdateNode:
+			// do nothing
 		default:
 			plog.Panicf("ConfChange Type should be either ConfChangeAddNode or ConfChangeRemoveNode!")
 		}
@@ -406,9 +474,9 @@ func createConfigChangeEnts(ids []uint64, self uint64, term, index uint64) []raf
 		next++
 	}
 	if !found {
-		m := Member{
+		m := membership.Member{
 			ID:             types.ID(self),
-			RaftAttributes: RaftAttributes{PeerURLs: []string{"http://localhost:7001", "http://localhost:2380"}},
+			RaftAttributes: membership.RaftAttributes{PeerURLs: []string{"http://localhost:7001", "http://localhost:2380"}},
 		}
 		ctx, err := json.Marshal(m)
 		if err != nil {

@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -27,13 +26,17 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/coreos/etcd/pkg/testutil"
+	"github.com/coreos/pkg/capnslog"
 )
 
 func init() {
-	log.SetOutput(ioutil.Discard)
+	capnslog.SetGlobalLogLevel(capnslog.CRITICAL)
 }
 
 func TestV2Set(t *testing.T) {
+	defer testutil.AfterTest(t)
 	cl := NewCluster(t, 1)
 	cl.Launch(t)
 	defer cl.Terminate(t)
@@ -86,6 +89,7 @@ func TestV2Set(t *testing.T) {
 }
 
 func TestV2CreateUpdate(t *testing.T) {
+	defer testutil.AfterTest(t)
 	cl := NewCluster(t, 1)
 	cl.Launch(t)
 	defer cl.Terminate(t)
@@ -196,6 +200,7 @@ func TestV2CreateUpdate(t *testing.T) {
 }
 
 func TestV2CAS(t *testing.T) {
+	defer testutil.AfterTest(t)
 	cl := NewCluster(t, 1)
 	cl.Launch(t)
 	defer cl.Terminate(t)
@@ -324,6 +329,7 @@ func TestV2CAS(t *testing.T) {
 }
 
 func TestV2Delete(t *testing.T) {
+	defer testutil.AfterTest(t)
 	cl := NewCluster(t, 1)
 	cl.Launch(t)
 	defer cl.Terminate(t)
@@ -423,6 +429,7 @@ func TestV2Delete(t *testing.T) {
 }
 
 func TestV2CAD(t *testing.T) {
+	defer testutil.AfterTest(t)
 	cl := NewCluster(t, 1)
 	cl.Launch(t)
 	defer cl.Terminate(t)
@@ -522,6 +529,7 @@ func TestV2CAD(t *testing.T) {
 }
 
 func TestV2Unique(t *testing.T) {
+	defer testutil.AfterTest(t)
 	cl := NewCluster(t, 1)
 	cl.Launch(t)
 	defer cl.Terminate(t)
@@ -541,7 +549,7 @@ func TestV2Unique(t *testing.T) {
 			http.StatusCreated,
 			map[string]interface{}{
 				"node": map[string]interface{}{
-					"key":   "/foo/4",
+					"key":   "/foo/00000000000000000004",
 					"value": "XXX",
 				},
 				"action": "create",
@@ -553,7 +561,7 @@ func TestV2Unique(t *testing.T) {
 			http.StatusCreated,
 			map[string]interface{}{
 				"node": map[string]interface{}{
-					"key":   "/foo/5",
+					"key":   "/foo/00000000000000000005",
 					"value": "XXX",
 				},
 				"action": "create",
@@ -565,7 +573,7 @@ func TestV2Unique(t *testing.T) {
 			http.StatusCreated,
 			map[string]interface{}{
 				"node": map[string]interface{}{
-					"key":   "/bar/6",
+					"key":   "/bar/00000000000000000006",
 					"value": "XXX",
 				},
 				"action": "create",
@@ -588,6 +596,7 @@ func TestV2Unique(t *testing.T) {
 }
 
 func TestV2Get(t *testing.T) {
+	defer testutil.AfterTest(t)
 	cl := NewCluster(t, 1)
 	cl.Launch(t)
 	defer cl.Terminate(t)
@@ -685,6 +694,7 @@ func TestV2Get(t *testing.T) {
 }
 
 func TestV2QuorumGet(t *testing.T) {
+	defer testutil.AfterTest(t)
 	cl := NewCluster(t, 1)
 	cl.Launch(t)
 	defer cl.Terminate(t)
@@ -782,6 +792,7 @@ func TestV2QuorumGet(t *testing.T) {
 }
 
 func TestV2Watch(t *testing.T) {
+	defer testutil.AfterTest(t)
 	cl := NewCluster(t, 1)
 	cl.Launch(t)
 	defer cl.Terminate(t)
@@ -819,6 +830,7 @@ func TestV2Watch(t *testing.T) {
 }
 
 func TestV2WatchWithIndex(t *testing.T) {
+	defer testutil.AfterTest(t)
 	cl := NewCluster(t, 1)
 	cl.Launch(t)
 	defer cl.Terminate(t)
@@ -885,6 +897,7 @@ func TestV2WatchWithIndex(t *testing.T) {
 }
 
 func TestV2WatchKeyInDir(t *testing.T) {
+	defer testutil.AfterTest(t)
 	cl := NewCluster(t, 1)
 	cl.Launch(t)
 	defer cl.Terminate(t)
@@ -945,6 +958,7 @@ func TestV2WatchKeyInDir(t *testing.T) {
 }
 
 func TestV2Head(t *testing.T) {
+	defer testutil.AfterTest(t)
 	cl := NewCluster(t, 1)
 	cl.Launch(t)
 	defer cl.Terminate(t)

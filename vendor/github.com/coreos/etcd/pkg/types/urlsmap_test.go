@@ -67,3 +67,49 @@ func TestNameURLPairsString(t *testing.T) {
 		t.Fatalf("NameURLPairs.String():\ngot  %#v\nwant %#v", g, w)
 	}
 }
+
+func TestParse(t *testing.T) {
+	tests := []struct {
+		s  string
+		wm map[string][]string
+	}{
+		{
+			"",
+			map[string][]string{},
+		},
+		{
+			"a=b",
+			map[string][]string{"a": {"b"}},
+		},
+		{
+			"a=b,a=c",
+			map[string][]string{"a": {"b", "c"}},
+		},
+		{
+			"a=b,a1=c",
+			map[string][]string{"a": {"b"}, "a1": {"c"}},
+		},
+	}
+	for i, tt := range tests {
+		m := parse(tt.s)
+		if !reflect.DeepEqual(m, tt.wm) {
+			t.Errorf("#%d: m = %+v, want %+v", i, m, tt.wm)
+		}
+	}
+}
+
+// TestNewURLsMapIPV6 is only tested in Go1.5+ because Go1.4 doesn't support literal IPv6 address with zone in
+// URI (https://github.com/golang/go/issues/6530).
+func TestNewURLsMapIPV6(t *testing.T) {
+	c, err := NewURLsMap("mem1=http://[2001:db8::1]:2380,mem1=http://[fe80::6e40:8ff:feb1:58e4%25en0]:2380,mem2=http://[fe80::92e2:baff:fe7c:3224%25ext0]:2380")
+	if err != nil {
+		t.Fatalf("unexpected parse error: %v", err)
+	}
+	wc := URLsMap(map[string]URLs{
+		"mem1": testutil.MustNewURLs(t, []string{"http://[2001:db8::1]:2380", "http://[fe80::6e40:8ff:feb1:58e4%25en0]:2380"}),
+		"mem2": testutil.MustNewURLs(t, []string{"http://[fe80::92e2:baff:fe7c:3224%25ext0]:2380"}),
+	})
+	if !reflect.DeepEqual(c, wc) {
+		t.Errorf("cluster = %#v, want %#v", c, wc)
+	}
+}

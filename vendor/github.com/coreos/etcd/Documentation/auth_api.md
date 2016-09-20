@@ -19,7 +19,7 @@ Each role has exact one associated Permission List. An permission list exists fo
 
 The special static ROOT (named `root`) role has a full permissions on all key-value resources, the permission to manage user resources and settings resources. Only the ROOT role has the permission to manage user resources and modify settings resources. The ROOT role is built-in and does not need to be created.
 
-There is also a special GUEST role, named 'guest'. These are the permissions given to unauthenticated requests to etcd. This role will be created automatically, and by default allows access to the full keyspace due to backward compatability. (etcd did not previously authenticate any actions.). This role can be modified by a ROOT role holder at any time, to reduce the capabilities of unauthenticated users.
+There is also a special GUEST role, named 'guest'. These are the permissions given to unauthenticated requests to etcd. This role will be created automatically, and by default allows access to the full keyspace due to backward compatibility. (etcd did not previously authenticate any actions.). This role can be modified by a ROOT role holder at any time, to reduce the capabilities of unauthenticated users.
 
 #### Permissions
 
@@ -40,7 +40,7 @@ Specific settings for the cluster as a whole. This can include adding and removi
 ## v2 Auth
 
 ### Basic Auth
-We only support [Basic Auth](http://en.wikipedia.org/wiki/Basic_access_authentication) for the first version. Client needs to attach the basic auth to the HTTP Authorization Header. 
+We only support [Basic Auth][basic-auth] for the first version. Client needs to attach the basic auth to the HTTP Authorization Header.
 
 ### Authorization field for operations
 Added to requests to /v2/keys, /v2/auth
@@ -124,7 +124,7 @@ The User JSON object is formed as follows:
 
 Password is only passed when necessary.
 
-**Get a list of users**
+**Get a List of Users**
 
 GET/HEAD  /v2/auth/users
 
@@ -137,7 +137,36 @@ GET/HEAD  /v2/auth/users
         Content-type: application/json
     200 Body:
         {
-          "users": ["alice", "bob", "eve"]
+          "users": [
+            {
+              "user": "alice",
+              "roles": [
+                {
+                  "role": "root",
+                  "permissions": {
+                    "kv": {
+                      "read": ["*"],
+                      "write": ["*"]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "user": "bob",
+              "roles": [
+                {
+                  "role": "guest",
+                  "permissions": {
+                    "kv": {
+                      "read": ["*"],
+                      "write": ["*"]
+                    }
+                  }
+                }
+              ]
+            }
+          ]
         }
 
 **Get User Details**
@@ -155,7 +184,26 @@ GET/HEAD  /v2/auth/users/alice
     200 Body:
         {
           "user" : "alice",
-          "roles" : ["fleet", "etcd"]
+          "roles" : [
+            {
+              "role": "fleet",
+              "permissions" : {
+                "kv" : {
+                  "read": [ "/fleet/" ],
+                  "write": [ "/fleet/" ]
+                }
+              }
+            },
+            {
+              "role": "etcd",
+              "permissions" : {
+                "kv" : {
+                  "read": [ "*" ],
+                  "write": [ "*" ]
+                }
+              }
+            }
+          ]
         }
 
 **Create Or Update A User**
@@ -213,22 +261,6 @@ A full role structure may look like this. A Permission List structure is used fo
 }
 ```
 
-**Get a list of Roles**
-
-GET/HEAD  /v2/auth/roles
-
-    Sent Headers:
-        Authorization: Basic <BasicAuthString>
-    Possible Status Codes:
-        200 OK
-        401 Unauthorized
-    200 Headers:
-        Content-type: application/json
-    200 Body:
-        {
-          "roles": ["fleet", "etcd", "quay"]
-        }
-
 **Get Role Details**
 
 GET/HEAD  /v2/auth/roles/fleet
@@ -250,6 +282,50 @@ GET/HEAD  /v2/auth/roles/fleet
               "write": [ "/fleet/" ]
             }
           }
+        }
+
+**Get a list of Roles**
+
+GET/HEAD  /v2/auth/roles
+
+    Sent Headers:
+        Authorization: Basic <BasicAuthString>
+    Possible Status Codes:
+        200 OK
+        401 Unauthorized
+    200 Headers:
+        Content-type: application/json
+    200 Body:
+        {
+          "roles": [
+            {
+              "role": "fleet",
+              "permissions": {
+                "kv": {
+                  "read": ["/fleet/"],
+                  "write": ["/fleet/"]
+                }
+              }
+            },
+            {
+              "role": "etcd",
+              "permissions": {
+                "kv": {
+                  "read": ["*"],
+                  "write": ["*"]
+                }
+              }
+            },
+            {
+              "role": "quay",
+              "permissions": {
+                "kv": {
+                  "read": ["*"],
+                  "write": ["*"]
+                }
+              }
+            }
+          ]
         }
 
 **Create Or Update A Role**
@@ -432,3 +508,4 @@ PUT /v2/keys/rkt/RktData
 
 Reads and writes outside the prefixes granted will fail with a 401 Unauthorized.
 
+[basic-auth]: https://en.wikipedia.org/wiki/Basic_access_authentication

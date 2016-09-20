@@ -78,12 +78,9 @@ X-Raft-Index: 5398
 X-Raft-Term: 1
 ```
 
-- `X-Etcd-Index` is the current etcd index as explained above. When request is a watch on key space, `X-Etcd-Index` is the current etcd index when the watch starts, which means that the watched event may happen after `X-Etcd-Index`.
-- `X-Raft-Index` is similar to the etcd index but is for the underlying raft protocol
-- `X-Raft-Term` is an integer that will increase whenever an etcd master election happens in the cluster. If this number is increasing rapidly, you may need to tune the election timeout. See the [tuning][tuning] section for details.
-
-[tuning]: #tuning
-
+* `X-Etcd-Index` is the current etcd index as explained above. When request is a watch on key space, `X-Etcd-Index` is the current etcd index when the watch starts, which means that the watched event may happen after `X-Etcd-Index`.
+* `X-Raft-Index` is similar to the etcd index but is for the underlying raft protocol.
+* `X-Raft-Term` is an integer that will increase whenever an etcd leader election happens in the cluster. If this number is increasing rapidly, you may need to tune the election timeout. See the [tuning][tuning] section for details.
 
 ### Get the value of a key
 
@@ -234,6 +231,50 @@ curl http://127.0.0.1:2379/v2/keys/foo -XPUT -d value=bar -d ttl= -d prevExist=t
 }
 ```
 
+### Refreshing key TTL
+
+Keys in etcd can be refreshed without notifying watchers
+this can be achieved by setting the refresh to true when updating a TTL
+
+You cannot update the value of a key when refreshing it
+
+```sh
+curl http://127.0.0.1:2379/v2/keys/foo -XPUT -d value=bar -d ttl=5
+curl http://127.0.0.1:2379/v2/keys/foo -XPUT -d ttl=5 -d refresh=true -d prevExist=true
+```
+
+```json
+{
+    "action": "set",
+    "node": {
+        "createdIndex": 5,
+        "expiration": "2013-12-04T12:01:21.874888581-08:00",
+        "key": "/foo",
+        "modifiedIndex": 5,
+        "ttl": 5,
+        "value": "bar"
+    }
+}
+{
+   "action":"update",
+   "node":{
+       "key":"/foo",
+       "value":"bar",
+       "expiration": "2013-12-04T12:01:26.874888581-08:00",
+       "ttl":5,
+       "modifiedIndex":6,
+       "createdIndex":5
+    },
+   "prevNode":{
+       "key":"/foo",
+       "value":"bar",
+       "expiration":"2013-12-04T12:01:21.874888581-08:00",
+       "ttl":3,
+       "modifiedIndex":5,
+       "createdIndex":5
+     }
+}
+```
 
 ### Waiting for a change
 
@@ -359,7 +400,7 @@ curl 'http://127.0.0.1:2379/v2/keys/foo?wait=true&waitIndex=2008'
 #### Connection being closed prematurely
 
 The server may close a long polling connection before emitting any events.
-This can happend due to a timeout or the server being shutdown.
+This can happen due to a timeout or the server being shutdown.
 Since the HTTP header is sent immediately upon accepting the connection, the response will be seen as empty: `200 OK` and empty body.
 The clients should be prepared to deal with this scenario and retry the watch.
 
@@ -380,7 +421,7 @@ curl http://127.0.0.1:2379/v2/keys/queue -XPOST -d value=Job1
     "action": "create",
     "node": {
         "createdIndex": 6,
-        "key": "/queue/6",
+        "key": "/queue/00000000000000000006",
         "modifiedIndex": 6,
         "value": "Job1"
     }
@@ -399,7 +440,7 @@ curl http://127.0.0.1:2379/v2/keys/queue -XPOST -d value=Job2
     "action": "create",
     "node": {
         "createdIndex": 29,
-        "key": "/queue/29",
+        "key": "/queue/00000000000000000029",
         "modifiedIndex": 29,
         "value": "Job2"
     }
@@ -423,13 +464,13 @@ curl -s 'http://127.0.0.1:2379/v2/keys/queue?recursive=true&sorted=true'
         "nodes": [
             {
                 "createdIndex": 2,
-                "key": "/queue/2",
+                "key": "/queue/00000000000000000002",
                 "modifiedIndex": 2,
                 "value": "Job1"
             },
             {
                 "createdIndex": 3,
-                "key": "/queue/3",
+                "key": "/queue/00000000000000000003",
                 "modifiedIndex": 3,
                 "value": "Job2"
             }
@@ -472,7 +513,7 @@ curl http://127.0.0.1:2379/v2/keys/dir -XPUT -d ttl=30 -d dir=true -d prevExist=
 Keys that are under this directory work as usual, but when the directory expires, a watcher on a key under the directory will get an expire event:
 
 ```sh
-curl 'http://127.0.0.1:2379/v2/keys/dir/asdf?wait=true'
+curl 'http://127.0.0.1:2379/v2/keys/dir?wait=true'
 ```
 
 ```json
@@ -500,13 +541,15 @@ etcd can be used as a centralized coordination service in a cluster, and `Compar
 
 This command will set the value of a key only if the client-provided conditions are equal to the current conditions.
 
+*Note that `CompareAndSwap` does not work with [directories][directories]. If an attempt is made to `CompareAndSwap` a directory, a 102 "Not a file" error will be returned.*
+
 The current comparable conditions are:
 
 1. `prevValue` - checks the previous value of the key.
 
 2. `prevIndex` - checks the previous modifiedIndex of the key.
 
-3. `prevExist` - checks existence of the key: if `prevExist` is true, it is an `update` request; if prevExist is `false`, it is a `create` request.
+3. `prevExist` - checks existence of the key: if `prevExist` is true, it is an `update` request; if `prevExist` is `false`, it is a `create` request.
 
 Here is a simple example.
 Let's create a key-value pair first: `foo=one`.
@@ -584,6 +627,8 @@ We successfully changed the value from "one" to "two" since we gave the correct 
 ### Atomic Compare-and-Delete
 
 This command will delete a key only if the client-provided conditions are equal to the current conditions.
+
+*Note that `CompareAndDelete` does not work with [directories]. If an attempt is made to `CompareAndDelete` a directory, a 102 "Not a file" error will be returned.*
 
 The current comparable conditions are:
 
@@ -1048,6 +1093,7 @@ curl http://127.0.0.1:2379/v2/stats/self
 ### Store Statistics
 
 The store statistics include information about the operations that this node has handled.
+Note that v2 `store Statistics` is stored in-memory. When a member stops, store statistics will reset on restart.
 
 Operations that modify the store's state like create, delete, set and update are seen by the entire cluster and the number will increase on all nodes.
 Operations like get and watch are node local and will only be seen on this node.
@@ -1077,6 +1123,8 @@ curl http://127.0.0.1:2379/v2/stats/store
 
 ## Cluster Config
 
-See the [other etcd APIs][other-apis] for details on the cluster management.
+See the [members API][members-api] for details on the cluster management.
 
-[other-apis]: other_apis.md
+[directories]: #listing-a-directory
+[members-api]: members_api.md
+[tuning]: tuning.md

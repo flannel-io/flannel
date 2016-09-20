@@ -16,7 +16,7 @@ package raft
 
 import pb "github.com/coreos/etcd/raft/raftpb"
 
-// unstable.entris[i] has raft log position i+unstable.offset.
+// unstable.entries[i] has raft log position i+unstable.offset.
 // Note that unstable.offset may be less than the highest log
 // position in storage; this means that the next write to storage
 // might need to truncate the log before persisting unstable.entries.
@@ -26,6 +26,8 @@ type unstable struct {
 	// all entries that have not yet been written to storage.
 	entries []pb.Entry
 	offset  uint64
+
+	logger Logger
 }
 
 // maybeFirstIndex returns the index of the first possible entry in entries
@@ -49,7 +51,7 @@ func (u *unstable) maybeLastIndex() (uint64, bool) {
 	return 0, false
 }
 
-// myabeTerm returns the term of the entry at index i, if there
+// maybeTerm returns the term of the entry at index i, if there
 // is any.
 func (u *unstable) maybeTerm(i uint64) (uint64, bool) {
 	if i < u.offset {
@@ -77,8 +79,8 @@ func (u *unstable) stableTo(i, t uint64) {
 	if !ok {
 		return
 	}
-	// if i < offest, term is matched with the snapshot
-	// only update the unstalbe entries if term is matched with
+	// if i < offset, term is matched with the snapshot
+	// only update the unstable entries if term is matched with
 	// an unstable entry.
 	if gt == t && i >= u.offset {
 		u.entries = u.entries[i+1-u.offset:]
@@ -106,7 +108,7 @@ func (u *unstable) truncateAndAppend(ents []pb.Entry) {
 		// directly append
 		u.entries = append(u.entries, ents...)
 	case after < u.offset:
-		raftLogger.Infof("replace the unstable entries from index %d", after+1)
+		u.logger.Infof("replace the unstable entries from index %d", after+1)
 		// The log is being truncated to before our current offset
 		// portion, so set the offset and replace the entries
 		u.offset = after + 1
@@ -114,7 +116,7 @@ func (u *unstable) truncateAndAppend(ents []pb.Entry) {
 	default:
 		// truncate to after and copy to u.entries
 		// then append
-		raftLogger.Infof("truncate the unstable entries to index %d", after)
+		u.logger.Infof("truncate the unstable entries to index %d", after)
 		u.entries = append([]pb.Entry{}, u.slice(u.offset, after+1)...)
 		u.entries = append(u.entries, ents...)
 	}
@@ -128,10 +130,10 @@ func (u *unstable) slice(lo uint64, hi uint64) []pb.Entry {
 // u.offset <= lo <= hi <= u.offset+len(u.offset)
 func (u *unstable) mustCheckOutOfBounds(lo, hi uint64) {
 	if lo > hi {
-		raftLogger.Panicf("invalid unstable.slice %d > %d", lo, hi)
+		u.logger.Panicf("invalid unstable.slice %d > %d", lo, hi)
 	}
 	upper := u.offset + uint64(len(u.entries))
 	if lo < u.offset || hi > upper {
-		raftLogger.Panicf("unstable.slice[%d,%d) out of bound [%d,%d]", lo, hi, u.offset, upper)
+		u.logger.Panicf("unstable.slice[%d,%d) out of bound [%d,%d]", lo, hi, u.offset, upper)
 	}
 }

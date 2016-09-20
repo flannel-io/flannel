@@ -8,14 +8,14 @@ The other main focus of this release was a more reliable Raft implementation, bu
 
 The major flag changes are to mostly related to bootstrapping. The `initial-*` flags provide an improved way to specify the required criteria to start the cluster. The advertised URLs now support a list of values instead of a single value, which allows etcd users to gracefully migrate to the new set of IANA-assigned ports (2379/client and 2380/peers) while maintaining backward compatibility with the old ports.
 
- - `-addr` is replaced by `-advertise-client-urls`.
- - `-bind-addr` is replaced by `-listen-client-urls`.
- - `-peer-addr` is replaced by `-initial-advertise-peer-urls`.
- - `-peer-bind-addr` is replaced by `-listen-peer-urls`.
- - `-peers` is replaced by `-initial-cluster`.
- - `-peers-file` is replaced by `-initial-cluster`.
- - `-peer-heartbeat-interval` is replaced by `-heartbeat-interval`.
- - `-peer-election-timeout` is replaced by `-election-timeout`.
+ - `addr` is replaced by `advertise-client-urls`.
+ - `bind-addr` is replaced by `listen-client-urls`.
+ - `peer-addr` is replaced by `initial-advertise-peer-urls`.
+ - `peer-bind-addr` is replaced by `listen-peer-urls`.
+ - `peers` is replaced by `initial-cluster`.
+ - `peers-file` is replaced by `initial-cluster`.
+ - `peer-heartbeat-interval` is replaced by `heartbeat-interval`.
+ - `peer-election-timeout` is replaced by `election-timeout`.
 
 The documentation of new command line flags can be found at
 https://github.com/coreos/etcd/blob/master/Documentation/configuration.md.
@@ -32,7 +32,7 @@ The consistent flag for read operations is removed in etcd 2.0.0. The normal rea
 
 The read consistency guarantees are:
 
-The consistent read guarantees the sequential consistency within one client that talks to one etcd server. Read/Write from one client to one etcd member should be observed in order. If one client write a value to a etcd server successfully, it should be able to get the value out of the server immediately. 
+The consistent read guarantees the sequential consistency within one client that talks to one etcd server. Read/Write from one client to one etcd member should be observed in order. If one client write a value to an etcd server successfully, it should be able to get the value out of the server immediately. 
 
 Each etcd member will proxy the request to leader and only return the result to user after the result is applied on the local member. Thus after the write succeed, the user is guaranteed to see the value on the member it sent the request to.
 
@@ -60,9 +60,9 @@ A size key needs to be provided inside a [discovery token][discoverytoken].
 
 ## HTTP Admin API
 
-`v2/admin` on peer url and `v2/keys/_etcd` are unified under the new [v2/member API][memberapi] to better explain which machines are part of an etcd cluster, and to simplify the keyspace for all your use cases.
+`v2/admin` on peer url and `v2/keys/_etcd` are unified under the new [v2/members API][members-api] to better explain which machines are part of an etcd cluster, and to simplify the keyspace for all your use cases.
 
-[memberapi]: other_apis.md
+[members-api]: members_api.md
 
 ## HTTP Key Value API
 - The follower can now transparently proxy write requests to the leader. Clients will no longer see 307 redirections to the leader from etcd.

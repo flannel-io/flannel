@@ -20,10 +20,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/coreos/etcd/etcdserver/membership"
+	"github.com/coreos/etcd/pkg/mock/mockstorage"
 	"github.com/coreos/etcd/pkg/pbutil"
 	"github.com/coreos/etcd/pkg/types"
 	"github.com/coreos/etcd/raft"
 	"github.com/coreos/etcd/raft/raftpb"
+	"github.com/coreos/etcd/rafthttp"
 )
 
 func TestGetIDs(t *testing.T) {
@@ -32,6 +35,8 @@ func TestGetIDs(t *testing.T) {
 	removecc := &raftpb.ConfChange{Type: raftpb.ConfChangeRemoveNode, NodeID: 2}
 	removeEntry := raftpb.Entry{Type: raftpb.EntryConfChange, Data: pbutil.MustMarshal(removecc)}
 	normalEntry := raftpb.Entry{Type: raftpb.EntryNormal}
+	updatecc := &raftpb.ConfChange{Type: raftpb.ConfChangeUpdateNode, NodeID: 2}
+	updateEntry := raftpb.Entry{Type: raftpb.EntryConfChange, Data: pbutil.MustMarshal(updatecc)}
 
 	tests := []struct {
 		confState *raftpb.ConfState
@@ -49,6 +54,8 @@ func TestGetIDs(t *testing.T) {
 		{&raftpb.ConfState{Nodes: []uint64{1}},
 			[]raftpb.Entry{addEntry, normalEntry}, []uint64{1, 2}},
 		{&raftpb.ConfState{Nodes: []uint64{1}},
+			[]raftpb.Entry{addEntry, normalEntry, updateEntry}, []uint64{1, 2}},
+		{&raftpb.ConfState{Nodes: []uint64{1}},
 			[]raftpb.Entry{addEntry, removeEntry, normalEntry}, []uint64{1}},
 	}
 
@@ -65,9 +72,9 @@ func TestGetIDs(t *testing.T) {
 }
 
 func TestCreateConfigChangeEnts(t *testing.T) {
-	m := Member{
+	m := membership.Member{
 		ID:             types.ID(1),
-		RaftAttributes: RaftAttributes{PeerURLs: []string{"http://localhost:7001", "http://localhost:2380"}},
+		RaftAttributes: membership.RaftAttributes{PeerURLs: []string{"http://localhost:7001", "http://localhost:2380"}},
 	}
 	ctx, err := json.Marshal(m)
 	if err != nil {
@@ -145,24 +152,24 @@ func TestCreateConfigChangeEnts(t *testing.T) {
 }
 
 func TestStopRaftWhenWaitingForApplyDone(t *testing.T) {
-	n := newReadyNode()
-	r := raftNode{
+	n := newNopReadyNode()
+	srv := &EtcdServer{r: raftNode{
 		Node:        n,
-		storage:     &storageRecorder{},
+		storage:     mockstorage.NewStorageRecorder(""),
 		raftStorage: raft.NewMemoryStorage(),
-		transport:   &nopTransporter{},
-	}
-	r.start(&EtcdServer{r: r})
+		transport:   rafthttp.NewNopTransporter(),
+	}}
+	srv.r.start(srv)
 	n.readyc <- raft.Ready{}
 	select {
-	case <-r.applyc:
+	case <-srv.r.applyc:
 	case <-time.After(time.Second):
 		t.Fatalf("failed to receive apply struct")
 	}
 
-	r.stopped <- struct{}{}
+	srv.r.stopped <- struct{}{}
 	select {
-	case <-r.done:
+	case <-srv.r.done:
 	case <-time.After(time.Second):
 		t.Fatalf("failed to stop raft loop")
 	}
