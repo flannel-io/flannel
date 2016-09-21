@@ -42,7 +42,7 @@ spec:
       hostNetwork: true
       containers:
       - name: kube-flannel
-        image: gcr.io/mikedanese-k8s/flannel:v9
+        image: quay.io/coreos/flannel-git:latest
         command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
         securityContext:
           privileged: true
@@ -62,7 +62,7 @@ spec:
           mountPath: /etc/kube-flannel/
       - name: install-cni
         image: busybox
-        command: [ "/bin/sh", "-c", "set -e -x; TMP=/cni/net.d/.tmp-flannel-cfg; cp /etc/kube-flannel/cni-conf.json ${TMP}; mv ${TMP} /cni/net.d/10-flannel.conf; while :; do sleep 3600; done" ]
+        command: [ "/bin/sh", "-c", "set -e -x; TMP=/etc/cni/net.d/.tmp-flannel-cfg; cp /etc/kube-flannel/cni-conf.json ${TMP}; mv ${TMP} /etc/cni/net.d/10-flannel.conf; while :; do sleep 3600; done" ]
         volumeMounts:
         - name: cni
           mountPath: /etc/cni/net.d
