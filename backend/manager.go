@@ -19,7 +19,6 @@ import (
 	"strings"
 	"sync"
 
-	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/subnet"
@@ -96,6 +95,5 @@ func (bm *manager) Wait() {
 }
 
 func Register(name string, ctor BackendCtor) {
-	log.Infof("Register: %v", name)
 	backendCtors[name] = ctor
 }
