@@ -266,3 +266,11 @@ func (ksm *kubeSubnetManager) RemoveReservation(ctx context.Context, network str
 func (ksm *kubeSubnetManager) ListReservations(ctx context.Context, network string) ([]subnet.Reservation, error) {
 	return nil, ErrUnimplemented
 }
+
+func (ksm *kubeSubnetManager) GetBackendData(ctx context.Context, network string) (string, error) {
+	return "", ErrUnimplemented
+}
+
+func (ksm *kubeSubnetManager) CreateBackendData(ctx context.Context, network, data string) error {
+	return ErrUnimplemented
+}
