@@ -83,3 +83,5 @@ import:
   - pkg/runtime
   - pkg/util/runtime
   - pkg/watch
+- package: github.com/bronze1man/goStrongswanVici
+  version: 385ce24ffa11c0831da96e3e28b603464eaaa1a7

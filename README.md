@@ -95,6 +95,10 @@ This is the only mandatory key.
 * alloc: only perform subnet allocation (no forwarding of data packets).
   * `Type` (string): `alloc`
 
+* IPSEC (EXPERIMENTAL): Encrypts traffic between hosts. Runs IPSEC in tunnel mode.
+  * `Type` (string): `ipsec`
+  * `UDPEncap` (boolean): Defaults to `false`.
+ 
 ### Example configuration JSON
 
 The following configuration illustrates the use of most options with `udp` backend.

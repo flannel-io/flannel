@@ -27,6 +27,7 @@ import (
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
+	"github.com/coreos/flannel/backend/ipsec"
 	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/remote"
 	"github.com/coreos/flannel/subnet"
@@ -58,6 +59,7 @@ type CmdLineOpts struct {
 	remoteCertfile string
 	remoteCAFile   string
 	kubeSubnetMgr  bool
+	charonPath     string
 }
 
 var opts CmdLineOpts
@@ -76,6 +78,7 @@ func init() {
 	flag.StringVar(&opts.remoteCertfile, "remote-certfile", "", "SSL certification file used to secure client/server communication")
 	flag.StringVar(&opts.remoteCAFile, "remote-cafile", "", "SSL Certificate Authority file used to secure client/server communication")
 	flag.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "Contact the Kubernetes API for subnet assignement instead of etcd or flannel-server.")
+	flag.StringVar(&opts.charonPath, "charon-path", "", "path to charon executable")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
 }
@@ -156,6 +159,10 @@ func main() {
 		runFunc = func(ctx context.Context) {
 			nm.Run(ctx)
 		}
+	}
+
+	if opts.charonPath != "" {
+		ipsec.CharonPath = opts.charonPath
 	}
 
 	wg := sync.WaitGroup{}
