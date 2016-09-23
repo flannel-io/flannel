@@ -158,7 +158,7 @@ docker-push-all:
 	ARCH=ppc64le make docker-push
 
 flannel-git:
-	ARCH=amd64 REGISTRY=quay.io/coreos/flannel-git make dist/flanneld-$(TAG)-amd64.docker docker-push
-	ARCH=arm REGISTRY=quay.io/coreos/flannel-git make dist/flanneld-$(TAG)-arm.docker docker-push
-	ARCH=arm64 REGISTRY=quay.io/coreos/flannel-git make dist/flanneld-$(TAG)-arm64.docker docker-push
-	ARCH=ppc64le REGISTRY=quay.io/coreos/flannel-git make dist/flanneld-$(TAG)-ppc64le.docker docker-push
+	ARCH=amd64 REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-amd64.docker docker-push
+	ARCH=arm REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-arm.docker docker-push
+	ARCH=arm64 REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-arm64.docker docker-push
+	ARCH=ppc64le REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-ppc64le.docker docker-push
