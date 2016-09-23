@@ -18,9 +18,8 @@ script:
 
 after_success:
   - if [ "$TRAVIS_BRANCH" = "master" ]; then
-    make flannel-git;
     docker login -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD" quay.io;
-    docker push quay.io/coreos/flannel-git;
+    make flannel-git;
     fi
 
 notifications:

@@ -1,7 +1,7 @@
 .PHONY: test e2e-test cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all flannel-git
 
 # Registry used for publishing images
-REGISTRY?=quay.io/coreos
+REGISTRY?=quay.io/coreos/flannel
 
 # Default tag and architecture. Can be overridden
 TAG?=$(shell git describe --tags --dirty)
@@ -43,7 +43,7 @@ test: license-check gofmt
 	cd dist; ./mk-docker-opts_tests.sh
 
 e2e-test: dist/flanneld-$(TAG)-$(ARCH).docker
-	cd dist; ./functional-test.sh $(REGISTRY)/flannel:$(TAG)-$(ARCH)
+	cd dist; ./functional-test.sh $(REGISTRY):$(TAG)-$(ARCH)
 
 cover:
 	# A single package must be given - e.g. 'PACKAGES=pkg/ip make cover'
@@ -70,12 +70,12 @@ clean:
 
 ## Create a docker image on disk for a specific arch and tag
 dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH) dist/libpthread.so.0-$(ARCH)
-	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY)/flannel:$(TAG)-$(ARCH) .
-	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY)/flannel:$(TAG)-$(ARCH)
+	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
+	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY):$(TAG)-$(ARCH)
 
 # amd64 gets an image with the suffix too (i.e. it's the default)
 ifeq ($(ARCH),amd64)
-	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY)/flannel:$(TAG) .
+	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG) .
 endif
 
 ## Create an ACI on disk for a specific arch and tag
@@ -87,11 +87,11 @@ dist/flanneld-$(TAG)-$(ARCH).aci: dist/flanneld-$(TAG)-$(ARCH).docker
       dist/flanneld-$(TAG)-$(ARCH).aci
 
 docker-push: dist/flanneld-$(TAG)-$(ARCH).docker
-	docker push $(REGISTRY)/flannel:$(TAG)-$(ARCH)
+	docker push $(REGISTRY):$(TAG)-$(ARCH)
 
 # amd64 gets an image with the suffix too (i.e. it's the default)
 ifeq ($(ARCH),amd64)
-	docker push $(REGISTRY)/flannel:$(TAG)
+	docker push $(REGISTRY):$(TAG)
 endif
 
 ## Build an architecture specific flanneld binary
@@ -157,5 +157,8 @@ docker-push-all:
 	ARCH=arm64 make docker-push
 	ARCH=ppc64le make docker-push
 
-flannel-git: dist/flanneld-amd64 dist/iptables-amd64 dist/libpthread.so.0-amd64
-	docker build -f Dockerfile.amd64 -t quay.io/coreos/flannel-git .
+flannel-git:
+	ARCH=amd64 REGISTRY=quay.io/coreos/flannel-git make dist/flanneld-$(TAG)-amd64.docker docker-push
+	ARCH=arm REGISTRY=quay.io/coreos/flannel-git make dist/flanneld-$(TAG)-arm.docker docker-push
+	ARCH=arm64 REGISTRY=quay.io/coreos/flannel-git make dist/flanneld-$(TAG)-arm64.docker docker-push
+	ARCH=ppc64le REGISTRY=quay.io/coreos/flannel-git make dist/flanneld-$(TAG)-ppc64le.docker docker-push
