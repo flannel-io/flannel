@@ -73,14 +73,20 @@ func (n *network) Run(ctx context.Context) {
 	}()
 
 	defer wg.Wait()
-	initialEvtsBatch := <-evts
-	for {
-		err := n.handleInitialSubnetEvents(initialEvtsBatch)
-		if err == nil {
-			break
+
+	select {
+	case initialEvtsBatch := <-evts:
+		for {
+			err := n.handleInitialSubnetEvents(initialEvtsBatch)
+			if err == nil {
+				break
+			}
+			log.Error(err, " About to retry")
+			time.Sleep(time.Second)
 		}
-		log.Error(err, " About to retry")
-		time.Sleep(time.Second)
+
+	case <-ctx.Done():
+		return
 	}
 
 	for {
