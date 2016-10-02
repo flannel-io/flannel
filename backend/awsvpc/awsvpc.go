@@ -17,6 +17,7 @@ package awsvpc
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -104,6 +105,12 @@ func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, co
 	}
 
 	log.Info("RouteRouteTableID: ", cfg.RouteTableID)
+	networkConfig, err := be.sm.GetNetworkConfig(ctx, network)
+
+	err = be.cleanupInvalidRoutes(cfg.RouteTableID, networkConfig.Network, ec2c)
+	if err != nil {
+		log.Errorf("Error cleaning up route table: %v", err)
+	}
 
 	matchingRouteFound, err := be.checkMatchingRoutes(cfg.RouteTableID, instanceID, l.Subnet.String(), ec2c)
 	if err != nil {
@@ -136,6 +143,37 @@ func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, co
 		SubnetLease: l,
 		ExtIface:    be.extIface,
 	}, nil
+}
+
+func (be *AwsVpcBackend) cleanupInvalidRoutes(routeTableID string, network ip.IP4Net, ec2c *ec2.EC2) error {
+	filter := newFilter()
+	filter.Add("route.state", "blackhole")
+
+	input := ec2.DescribeRouteTablesInput{Filters: filter, RouteTableIds: []*string{&routeTableID}}
+	resp, err := ec2c.DescribeRouteTables(&input)
+	if err != nil {
+		return err
+	}
+
+	for _, routeTable := range resp.RouteTables {
+		for _, route := range routeTable.Routes {
+			if *route.State == "blackhole" && route.DestinationCidrBlock != nil {
+				_, subnet, err := net.ParseCIDR(*route.DestinationCidrBlock)
+				if err == nil && network.Contains(ip.FromIP(subnet.IP)) {
+					log.Info("Removing route: ", *route.DestinationCidrBlock)
+					deleteRouteInput := &ec2.DeleteRouteInput{RouteTableId: &routeTableID, DestinationCidrBlock: route.DestinationCidrBlock}
+					if _, err := ec2c.DeleteRoute(deleteRouteInput); err != nil {
+						if ec2err, ok := err.(awserr.Error); !ok || ec2err.Code() != "InvalidRoute.NotFound" {
+							// an error other than the route not already existing occurred
+							return err
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func (be *AwsVpcBackend) checkMatchingRoutes(routeTableID, instanceID, subnet string, ec2c *ec2.EC2) (bool, error) {
