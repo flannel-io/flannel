@@ -31,7 +31,7 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/restclient"
+	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"k8s.io/kubernetes/pkg/controller/framework"
 	"k8s.io/kubernetes/pkg/runtime"
 	utilruntime "k8s.io/kubernetes/pkg/util/runtime"
@@ -66,8 +66,8 @@ type kubeSubnetManager struct {
 	selfEvents     chan subnet.Event
 }
 
-func NewSubnetManager() (subnet.Manager, error) {
-	cfg, err := restclient.InClusterConfig()
+func NewSubnetManager(masterUrl, kubeconfigPath string) (subnet.Manager, error) {
+	cfg, err := clientcmd.BuildConfigFromFlags(masterUrl, kubeconfigPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize inclusterconfig: %v", err)
 	}
