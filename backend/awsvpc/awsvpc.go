@@ -192,7 +192,7 @@ func (be *AwsVpcBackend) checkMatchingRoutes(routeTableID, instanceID, subnet st
 
 	for _, routeTable := range resp.RouteTables {
 		for _, route := range routeTable.Routes {
-			if subnet == *route.DestinationCidrBlock && *route.State == "active" {
+			if route.DestinationCidrBlock != nil && subnet == *route.DestinationCidrBlock && *route.State == "active" {
 
 				if *route.InstanceId == instanceID {
 					matchingRouteFound = true
