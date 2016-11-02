@@ -4,53 +4,75 @@ package workspaces
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/defaults"
+	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/service"
-	"github.com/aws/aws-sdk-go/aws/service/serviceinfo"
-	"github.com/aws/aws-sdk-go/internal/protocol/jsonrpc"
-	"github.com/aws/aws-sdk-go/internal/signer/v4"
+	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
-// This is the Amazon WorkSpaces API Reference. This guide provides detailed
-// information about Amazon WorkSpaces operations, data types, parameters, and
-// errors.
+// This reference provides detailed information about the Amazon WorkSpaces
+// operations.
+//The service client's operations are safe to be used concurrently.
+// It is not safe to mutate any of the client's properties though.
 type WorkSpaces struct {
-	*service.Service
+	*client.Client
 }
 
-// Used for custom service initialization logic
-var initService func(*service.Service)
+// Used for custom client initialization logic
+var initClient func(*client.Client)
 
 // Used for custom request initialization logic
 var initRequest func(*request.Request)
 
-// New returns a new WorkSpaces client.
-func New(config *aws.Config) *WorkSpaces {
-	service := &service.Service{
-		ServiceInfo: serviceinfo.ServiceInfo{
-			Config:       defaults.DefaultConfig.Merge(config),
-			ServiceName:  "workspaces",
-			APIVersion:   "2015-04-08",
-			JSONVersion:  "1.1",
-			TargetPrefix: "WorkspacesService",
-		},
+// A ServiceName is the name of the service the client will make API calls to.
+const ServiceName = "workspaces"
+
+// New creates a new instance of the WorkSpaces client with a session.
+// If additional configuration is needed for the client instance use the optional
+// aws.Config parameter to add your extra config.
+//
+// Example:
+//     // Create a WorkSpaces client from just a session.
+//     svc := workspaces.New(mySession)
+//
+//     // Create a WorkSpaces client with additional configuration
+//     svc := workspaces.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+func New(p client.ConfigProvider, cfgs ...*aws.Config) *WorkSpaces {
+	c := p.ClientConfig(ServiceName, cfgs...)
+	return newClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+}
+
+// newClient creates, initializes and returns a new service client instance.
+func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *WorkSpaces {
+	svc := &WorkSpaces{
+		Client: client.New(
+			cfg,
+			metadata.ClientInfo{
+				ServiceName:   ServiceName,
+				SigningRegion: signingRegion,
+				Endpoint:      endpoint,
+				APIVersion:    "2015-04-08",
+				JSONVersion:   "1.1",
+				TargetPrefix:  "WorkspacesService",
+			},
+			handlers,
+		),
 	}
-	service.Initialize()
 
 	// Handlers
-	service.Handlers.Sign.PushBack(v4.Sign)
-	service.Handlers.Build.PushBack(jsonrpc.Build)
-	service.Handlers.Unmarshal.PushBack(jsonrpc.Unmarshal)
-	service.Handlers.UnmarshalMeta.PushBack(jsonrpc.UnmarshalMeta)
-	service.Handlers.UnmarshalError.PushBack(jsonrpc.UnmarshalError)
+	svc.Handlers.Sign.PushBackNamed(v4.SignRequestHandler)
+	svc.Handlers.Build.PushBackNamed(jsonrpc.BuildHandler)
+	svc.Handlers.Unmarshal.PushBackNamed(jsonrpc.UnmarshalHandler)
+	svc.Handlers.UnmarshalMeta.PushBackNamed(jsonrpc.UnmarshalMetaHandler)
+	svc.Handlers.UnmarshalError.PushBackNamed(jsonrpc.UnmarshalErrorHandler)
 
-	// Run custom service initialization if present
-	if initService != nil {
-		initService(service)
+	// Run custom client initialization if present
+	if initClient != nil {
+		initClient(svc.Client)
 	}
 
-	return &WorkSpaces{service}
+	return svc
 }
 
 // newRequest creates a new request for a WorkSpaces operation and runs any

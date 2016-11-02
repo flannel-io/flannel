@@ -4,57 +4,111 @@ package codecommit
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/defaults"
+	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/service"
-	"github.com/aws/aws-sdk-go/aws/service/serviceinfo"
-	"github.com/aws/aws-sdk-go/internal/protocol/jsonrpc"
-	"github.com/aws/aws-sdk-go/internal/signer/v4"
+	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
 // This is the AWS CodeCommit API Reference. This reference provides descriptions
-// of the AWS CodeCommit API.
+// of the operations and data types for AWS CodeCommit API.
 //
 // You can use the AWS CodeCommit API to work with the following objects:
 //
-//  Repositories Branches Commits  For information about how to use AWS CodeCommit,
-// see the AWS CodeCommit User Guide.
+//    * Repositories, by calling the following: BatchGetRepositories, which
+//    returns information about one or more repositories associated with your
+//    AWS account
+// CreateRepository, which creates an AWS CodeCommit repository
+// DeleteRepository, which deletes an AWS CodeCommit repository
+// GetRepository, which returns information about a specified repository
+// ListRepositories, which lists all AWS CodeCommit repositories associated
+//    with your AWS account
+// UpdateRepositoryDescription, which sets or updates the description of the
+//    repository
+// UpdateRepositoryName, which changes the name of the repository. If you change
+//    the name of a repository, no other users of that repository will be able
+//    to access it until you send them the new HTTPS or SSH URL to use.
+//
+//    * Branches, by calling the following: CreateBranch, which creates a new
+//    branch in a specified repository
+// GetBranch, which returns information about a specified branch
+// ListBranches, which lists all branches for a specified repository
+// UpdateDefaultBranch, which changes the default branch for a repository
+//
+//    * Information about committed code in a repository, by calling the following:
+//    GetCommit, which returns information about a commit, including commit
+//    messages and committer information.
+//
+//    * Triggers, by calling the following: GetRepositoryTriggers, which returns
+//    information about triggers configured for a repository
+// PutRepositoryTriggers, which replaces all triggers for a repository and can
+//    be used to create or delete triggers
+// TestRepositoryTriggers, which tests the functionality of a repository trigger
+//    by sending data to the trigger target
+//
+// For information about how to use AWS CodeCommit, see the AWS CodeCommit User
+// Guide (http://docs.aws.amazon.com/codecommit/latest/userguide/welcome.html).
+//The service client's operations are safe to be used concurrently.
+// It is not safe to mutate any of the client's properties though.
 type CodeCommit struct {
-	*service.Service
+	*client.Client
 }
 
-// Used for custom service initialization logic
-var initService func(*service.Service)
+// Used for custom client initialization logic
+var initClient func(*client.Client)
 
 // Used for custom request initialization logic
 var initRequest func(*request.Request)
 
-// New returns a new CodeCommit client.
-func New(config *aws.Config) *CodeCommit {
-	service := &service.Service{
-		ServiceInfo: serviceinfo.ServiceInfo{
-			Config:       defaults.DefaultConfig.Merge(config),
-			ServiceName:  "codecommit",
-			APIVersion:   "2015-04-13",
-			JSONVersion:  "1.1",
-			TargetPrefix: "CodeCommit_20150413",
-		},
+// A ServiceName is the name of the service the client will make API calls to.
+const ServiceName = "codecommit"
+
+// New creates a new instance of the CodeCommit client with a session.
+// If additional configuration is needed for the client instance use the optional
+// aws.Config parameter to add your extra config.
+//
+// Example:
+//     // Create a CodeCommit client from just a session.
+//     svc := codecommit.New(mySession)
+//
+//     // Create a CodeCommit client with additional configuration
+//     svc := codecommit.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+func New(p client.ConfigProvider, cfgs ...*aws.Config) *CodeCommit {
+	c := p.ClientConfig(ServiceName, cfgs...)
+	return newClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+}
+
+// newClient creates, initializes and returns a new service client instance.
+func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *CodeCommit {
+	svc := &CodeCommit{
+		Client: client.New(
+			cfg,
+			metadata.ClientInfo{
+				ServiceName:   ServiceName,
+				SigningRegion: signingRegion,
+				Endpoint:      endpoint,
+				APIVersion:    "2015-04-13",
+				JSONVersion:   "1.1",
+				TargetPrefix:  "CodeCommit_20150413",
+			},
+			handlers,
+		),
 	}
-	service.Initialize()
 
 	// Handlers
-	service.Handlers.Sign.PushBack(v4.Sign)
-	service.Handlers.Build.PushBack(jsonrpc.Build)
-	service.Handlers.Unmarshal.PushBack(jsonrpc.Unmarshal)
-	service.Handlers.UnmarshalMeta.PushBack(jsonrpc.UnmarshalMeta)
-	service.Handlers.UnmarshalError.PushBack(jsonrpc.UnmarshalError)
+	svc.Handlers.Sign.PushBackNamed(v4.SignRequestHandler)
+	svc.Handlers.Build.PushBackNamed(jsonrpc.BuildHandler)
+	svc.Handlers.Unmarshal.PushBackNamed(jsonrpc.UnmarshalHandler)
+	svc.Handlers.UnmarshalMeta.PushBackNamed(jsonrpc.UnmarshalMetaHandler)
+	svc.Handlers.UnmarshalError.PushBackNamed(jsonrpc.UnmarshalErrorHandler)
 
-	// Run custom service initialization if present
-	if initService != nil {
-		initService(service)
+	// Run custom client initialization if present
+	if initClient != nil {
+		initClient(svc.Client)
 	}
 
-	return &CodeCommit{service}
+	return svc
 }
 
 // newRequest creates a new request for a CodeCommit operation and runs any

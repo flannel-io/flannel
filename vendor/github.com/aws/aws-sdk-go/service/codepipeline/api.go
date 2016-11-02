@@ -4,15 +4,41 @@
 package codepipeline
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/private/protocol"
+	"github.com/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
 const opAcknowledgeJob = "AcknowledgeJob"
 
-// AcknowledgeJobRequest generates a request for the AcknowledgeJob operation.
+// AcknowledgeJobRequest generates a "aws/request.Request" representing the
+// client's request for the AcknowledgeJob operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See AcknowledgeJob for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the AcknowledgeJob method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the AcknowledgeJobRequest method.
+//    req, resp := client.AcknowledgeJobRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) AcknowledgeJobRequest(input *AcknowledgeJobInput) (req *request.Request, output *AcknowledgeJobOutput) {
 	op := &request.Operation{
 		Name:       opAcknowledgeJob,
@@ -30,8 +56,28 @@ func (c *CodePipeline) AcknowledgeJobRequest(input *AcknowledgeJobInput) (req *r
 	return
 }
 
+// AcknowledgeJob API operation for AWS CodePipeline.
+//
 // Returns information about a specified job and whether that job has been received
 // by the job worker. Only used for custom actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation AcknowledgeJob for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * InvalidNonceException
+//   The specified nonce was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) AcknowledgeJob(input *AcknowledgeJobInput) (*AcknowledgeJobOutput, error) {
 	req, out := c.AcknowledgeJobRequest(input)
 	err := req.Send()
@@ -40,7 +86,30 @@ func (c *CodePipeline) AcknowledgeJob(input *AcknowledgeJobInput) (*AcknowledgeJ
 
 const opAcknowledgeThirdPartyJob = "AcknowledgeThirdPartyJob"
 
-// AcknowledgeThirdPartyJobRequest generates a request for the AcknowledgeThirdPartyJob operation.
+// AcknowledgeThirdPartyJobRequest generates a "aws/request.Request" representing the
+// client's request for the AcknowledgeThirdPartyJob operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See AcknowledgeThirdPartyJob for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the AcknowledgeThirdPartyJob method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the AcknowledgeThirdPartyJobRequest method.
+//    req, resp := client.AcknowledgeThirdPartyJobRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) AcknowledgeThirdPartyJobRequest(input *AcknowledgeThirdPartyJobInput) (req *request.Request, output *AcknowledgeThirdPartyJobOutput) {
 	op := &request.Operation{
 		Name:       opAcknowledgeThirdPartyJob,
@@ -58,8 +127,31 @@ func (c *CodePipeline) AcknowledgeThirdPartyJobRequest(input *AcknowledgeThirdPa
 	return
 }
 
+// AcknowledgeThirdPartyJob API operation for AWS CodePipeline.
+//
 // Confirms a job worker has received the specified job. Only used for partner
 // actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation AcknowledgeThirdPartyJob for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * InvalidNonceException
+//   The specified nonce was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
+//   * InvalidClientTokenException
+//   The client token was specified in an invalid format
+//
 func (c *CodePipeline) AcknowledgeThirdPartyJob(input *AcknowledgeThirdPartyJobInput) (*AcknowledgeThirdPartyJobOutput, error) {
 	req, out := c.AcknowledgeThirdPartyJobRequest(input)
 	err := req.Send()
@@ -68,7 +160,30 @@ func (c *CodePipeline) AcknowledgeThirdPartyJob(input *AcknowledgeThirdPartyJobI
 
 const opCreateCustomActionType = "CreateCustomActionType"
 
-// CreateCustomActionTypeRequest generates a request for the CreateCustomActionType operation.
+// CreateCustomActionTypeRequest generates a "aws/request.Request" representing the
+// client's request for the CreateCustomActionType operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See CreateCustomActionType for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the CreateCustomActionType method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the CreateCustomActionTypeRequest method.
+//    req, resp := client.CreateCustomActionTypeRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) CreateCustomActionTypeRequest(input *CreateCustomActionTypeInput) (req *request.Request, output *CreateCustomActionTypeOutput) {
 	op := &request.Operation{
 		Name:       opCreateCustomActionType,
@@ -86,8 +201,26 @@ func (c *CodePipeline) CreateCustomActionTypeRequest(input *CreateCustomActionTy
 	return
 }
 
+// CreateCustomActionType API operation for AWS CodePipeline.
+//
 // Creates a new custom action that can be used in all pipelines associated
 // with the AWS account. Only used for custom actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation CreateCustomActionType for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * LimitExceededException
+//   The number of pipelines associated with the AWS account has exceeded the
+//   limit allowed for the account.
+//
 func (c *CodePipeline) CreateCustomActionType(input *CreateCustomActionTypeInput) (*CreateCustomActionTypeOutput, error) {
 	req, out := c.CreateCustomActionTypeRequest(input)
 	err := req.Send()
@@ -96,7 +229,30 @@ func (c *CodePipeline) CreateCustomActionType(input *CreateCustomActionTypeInput
 
 const opCreatePipeline = "CreatePipeline"
 
-// CreatePipelineRequest generates a request for the CreatePipeline operation.
+// CreatePipelineRequest generates a "aws/request.Request" representing the
+// client's request for the CreatePipeline operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See CreatePipeline for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the CreatePipeline method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the CreatePipelineRequest method.
+//    req, resp := client.CreatePipelineRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) CreatePipelineRequest(input *CreatePipelineInput) (req *request.Request, output *CreatePipelineOutput) {
 	op := &request.Operation{
 		Name:       opCreatePipeline,
@@ -114,7 +270,40 @@ func (c *CodePipeline) CreatePipelineRequest(input *CreatePipelineInput) (req *r
 	return
 }
 
+// CreatePipeline API operation for AWS CodePipeline.
+//
 // Creates a pipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation CreatePipeline for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNameInUseException
+//   The specified pipeline name is already in use.
+//
+//   * InvalidStageDeclarationException
+//   The specified stage declaration was specified in an invalid format.
+//
+//   * InvalidActionDeclarationException
+//   The specified action declaration was specified in an invalid format.
+//
+//   * InvalidBlockerDeclarationException
+//   Reserved for future use.
+//
+//   * InvalidStructureException
+//   The specified structure was specified in an invalid format.
+//
+//   * LimitExceededException
+//   The number of pipelines associated with the AWS account has exceeded the
+//   limit allowed for the account.
+//
 func (c *CodePipeline) CreatePipeline(input *CreatePipelineInput) (*CreatePipelineOutput, error) {
 	req, out := c.CreatePipelineRequest(input)
 	err := req.Send()
@@ -123,7 +312,30 @@ func (c *CodePipeline) CreatePipeline(input *CreatePipelineInput) (*CreatePipeli
 
 const opDeleteCustomActionType = "DeleteCustomActionType"
 
-// DeleteCustomActionTypeRequest generates a request for the DeleteCustomActionType operation.
+// DeleteCustomActionTypeRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteCustomActionType operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DeleteCustomActionType for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DeleteCustomActionType method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DeleteCustomActionTypeRequest method.
+//    req, resp := client.DeleteCustomActionTypeRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) DeleteCustomActionTypeRequest(input *DeleteCustomActionTypeInput) (req *request.Request, output *DeleteCustomActionTypeOutput) {
 	op := &request.Operation{
 		Name:       opDeleteCustomActionType,
@@ -136,16 +348,32 @@ func (c *CodePipeline) DeleteCustomActionTypeRequest(input *DeleteCustomActionTy
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &DeleteCustomActionTypeOutput{}
 	req.Data = output
 	return
 }
 
+// DeleteCustomActionType API operation for AWS CodePipeline.
+//
 // Marks a custom action as deleted. PollForJobs for the custom action will
 // fail after the action is marked for deletion. Only used for custom actions.
 //
 // You cannot recreate a custom action after it has been deleted unless you
 // increase the version number of the action.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation DeleteCustomActionType for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
 func (c *CodePipeline) DeleteCustomActionType(input *DeleteCustomActionTypeInput) (*DeleteCustomActionTypeOutput, error) {
 	req, out := c.DeleteCustomActionTypeRequest(input)
 	err := req.Send()
@@ -154,7 +382,30 @@ func (c *CodePipeline) DeleteCustomActionType(input *DeleteCustomActionTypeInput
 
 const opDeletePipeline = "DeletePipeline"
 
-// DeletePipelineRequest generates a request for the DeletePipeline operation.
+// DeletePipelineRequest generates a "aws/request.Request" representing the
+// client's request for the DeletePipeline operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DeletePipeline for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DeletePipeline method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DeletePipelineRequest method.
+//    req, resp := client.DeletePipelineRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) DeletePipelineRequest(input *DeletePipelineInput) (req *request.Request, output *DeletePipelineOutput) {
 	op := &request.Operation{
 		Name:       opDeletePipeline,
@@ -167,12 +418,28 @@ func (c *CodePipeline) DeletePipelineRequest(input *DeletePipelineInput) (req *r
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &DeletePipelineOutput{}
 	req.Data = output
 	return
 }
 
+// DeletePipeline API operation for AWS CodePipeline.
+//
 // Deletes the specified pipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation DeletePipeline for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
 func (c *CodePipeline) DeletePipeline(input *DeletePipelineInput) (*DeletePipelineOutput, error) {
 	req, out := c.DeletePipelineRequest(input)
 	err := req.Send()
@@ -181,7 +448,30 @@ func (c *CodePipeline) DeletePipeline(input *DeletePipelineInput) (*DeletePipeli
 
 const opDisableStageTransition = "DisableStageTransition"
 
-// DisableStageTransitionRequest generates a request for the DisableStageTransition operation.
+// DisableStageTransitionRequest generates a "aws/request.Request" representing the
+// client's request for the DisableStageTransition operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DisableStageTransition for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DisableStageTransition method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DisableStageTransitionRequest method.
+//    req, resp := client.DisableStageTransitionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) DisableStageTransitionRequest(input *DisableStageTransitionInput) (req *request.Request, output *DisableStageTransitionOutput) {
 	op := &request.Operation{
 		Name:       opDisableStageTransition,
@@ -194,13 +484,35 @@ func (c *CodePipeline) DisableStageTransitionRequest(input *DisableStageTransiti
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &DisableStageTransitionOutput{}
 	req.Data = output
 	return
 }
 
+// DisableStageTransition API operation for AWS CodePipeline.
+//
 // Prevents artifacts in a pipeline from transitioning to the next stage in
 // the pipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation DisableStageTransition for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * StageNotFoundException
+//   The specified stage was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) DisableStageTransition(input *DisableStageTransitionInput) (*DisableStageTransitionOutput, error) {
 	req, out := c.DisableStageTransitionRequest(input)
 	err := req.Send()
@@ -209,7 +521,30 @@ func (c *CodePipeline) DisableStageTransition(input *DisableStageTransitionInput
 
 const opEnableStageTransition = "EnableStageTransition"
 
-// EnableStageTransitionRequest generates a request for the EnableStageTransition operation.
+// EnableStageTransitionRequest generates a "aws/request.Request" representing the
+// client's request for the EnableStageTransition operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See EnableStageTransition for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the EnableStageTransition method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the EnableStageTransitionRequest method.
+//    req, resp := client.EnableStageTransitionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) EnableStageTransitionRequest(input *EnableStageTransitionInput) (req *request.Request, output *EnableStageTransitionOutput) {
 	op := &request.Operation{
 		Name:       opEnableStageTransition,
@@ -222,12 +557,34 @@ func (c *CodePipeline) EnableStageTransitionRequest(input *EnableStageTransition
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &EnableStageTransitionOutput{}
 	req.Data = output
 	return
 }
 
+// EnableStageTransition API operation for AWS CodePipeline.
+//
 // Enables artifacts in a pipeline to transition to a stage in a pipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation EnableStageTransition for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * StageNotFoundException
+//   The specified stage was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) EnableStageTransition(input *EnableStageTransitionInput) (*EnableStageTransitionOutput, error) {
 	req, out := c.EnableStageTransitionRequest(input)
 	err := req.Send()
@@ -236,7 +593,30 @@ func (c *CodePipeline) EnableStageTransition(input *EnableStageTransitionInput) 
 
 const opGetJobDetails = "GetJobDetails"
 
-// GetJobDetailsRequest generates a request for the GetJobDetails operation.
+// GetJobDetailsRequest generates a "aws/request.Request" representing the
+// client's request for the GetJobDetails operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetJobDetails for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetJobDetails method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetJobDetailsRequest method.
+//    req, resp := client.GetJobDetailsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) GetJobDetailsRequest(input *GetJobDetailsInput) (req *request.Request, output *GetJobDetailsOutput) {
 	op := &request.Operation{
 		Name:       opGetJobDetails,
@@ -254,12 +634,29 @@ func (c *CodePipeline) GetJobDetailsRequest(input *GetJobDetailsInput) (req *req
 	return
 }
 
+// GetJobDetails API operation for AWS CodePipeline.
+//
 // Returns information about a job. Only used for custom actions.
 //
-// When this API is called, AWS CodePipeline returns temporary credentials
-// for the Amazon S3 bucket used to store artifacts for the pipeline, if the
-// action requires access to that Amazon S3 bucket for input or output artifacts.
-// Additionally, this API returns any secret values defined for the action.
+// When this API is called, AWS CodePipeline returns temporary credentials for
+// the Amazon S3 bucket used to store artifacts for the pipeline, if the action
+// requires access to that Amazon S3 bucket for input or output artifacts. Additionally,
+// this API returns any secret values defined for the action.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation GetJobDetails for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) GetJobDetails(input *GetJobDetailsInput) (*GetJobDetailsOutput, error) {
 	req, out := c.GetJobDetailsRequest(input)
 	err := req.Send()
@@ -268,7 +665,30 @@ func (c *CodePipeline) GetJobDetails(input *GetJobDetailsInput) (*GetJobDetailsO
 
 const opGetPipeline = "GetPipeline"
 
-// GetPipelineRequest generates a request for the GetPipeline operation.
+// GetPipelineRequest generates a "aws/request.Request" representing the
+// client's request for the GetPipeline operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetPipeline for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetPipeline method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetPipelineRequest method.
+//    req, resp := client.GetPipelineRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) GetPipelineRequest(input *GetPipelineInput) (req *request.Request, output *GetPipelineOutput) {
 	op := &request.Operation{
 		Name:       opGetPipeline,
@@ -286,18 +706,135 @@ func (c *CodePipeline) GetPipelineRequest(input *GetPipelineInput) (req *request
 	return
 }
 
+// GetPipeline API operation for AWS CodePipeline.
+//
 // Returns the metadata, structure, stages, and actions of a pipeline. Can be
 // used to return the entire structure of a pipeline in JSON format, which can
 // then be modified and used to update the pipeline structure with UpdatePipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation GetPipeline for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * PipelineVersionNotFoundException
+//   The specified pipeline version was specified in an invalid format or cannot
+//   be found.
+//
 func (c *CodePipeline) GetPipeline(input *GetPipelineInput) (*GetPipelineOutput, error) {
 	req, out := c.GetPipelineRequest(input)
 	err := req.Send()
 	return out, err
 }
 
+const opGetPipelineExecution = "GetPipelineExecution"
+
+// GetPipelineExecutionRequest generates a "aws/request.Request" representing the
+// client's request for the GetPipelineExecution operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetPipelineExecution for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetPipelineExecution method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetPipelineExecutionRequest method.
+//    req, resp := client.GetPipelineExecutionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *CodePipeline) GetPipelineExecutionRequest(input *GetPipelineExecutionInput) (req *request.Request, output *GetPipelineExecutionOutput) {
+	op := &request.Operation{
+		Name:       opGetPipelineExecution,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetPipelineExecutionInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &GetPipelineExecutionOutput{}
+	req.Data = output
+	return
+}
+
+// GetPipelineExecution API operation for AWS CodePipeline.
+//
+// Returns information about an execution of a pipeline, including details about
+// artifacts, the pipeline execution ID, and the name, version, and status of
+// the pipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation GetPipelineExecution for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * PipelineExecutionNotFoundException
+//   The pipeline execution was specified in an invalid format or cannot be found,
+//   or an execution ID does not belong to the specified pipeline.
+//
+func (c *CodePipeline) GetPipelineExecution(input *GetPipelineExecutionInput) (*GetPipelineExecutionOutput, error) {
+	req, out := c.GetPipelineExecutionRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opGetPipelineState = "GetPipelineState"
 
-// GetPipelineStateRequest generates a request for the GetPipelineState operation.
+// GetPipelineStateRequest generates a "aws/request.Request" representing the
+// client's request for the GetPipelineState operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetPipelineState for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetPipelineState method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetPipelineStateRequest method.
+//    req, resp := client.GetPipelineStateRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) GetPipelineStateRequest(input *GetPipelineStateInput) (req *request.Request, output *GetPipelineStateOutput) {
 	op := &request.Operation{
 		Name:       opGetPipelineState,
@@ -315,8 +852,25 @@ func (c *CodePipeline) GetPipelineStateRequest(input *GetPipelineStateInput) (re
 	return
 }
 
-// Returns information about the state of a pipeline, including the stages,
-// actions, and details about the last run of the pipeline.
+// GetPipelineState API operation for AWS CodePipeline.
+//
+// Returns information about the state of a pipeline, including the stages and
+// actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation GetPipelineState for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) GetPipelineState(input *GetPipelineStateInput) (*GetPipelineStateOutput, error) {
 	req, out := c.GetPipelineStateRequest(input)
 	err := req.Send()
@@ -325,7 +879,30 @@ func (c *CodePipeline) GetPipelineState(input *GetPipelineStateInput) (*GetPipel
 
 const opGetThirdPartyJobDetails = "GetThirdPartyJobDetails"
 
-// GetThirdPartyJobDetailsRequest generates a request for the GetThirdPartyJobDetails operation.
+// GetThirdPartyJobDetailsRequest generates a "aws/request.Request" representing the
+// client's request for the GetThirdPartyJobDetails operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetThirdPartyJobDetails for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetThirdPartyJobDetails method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetThirdPartyJobDetailsRequest method.
+//    req, resp := client.GetThirdPartyJobDetailsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) GetThirdPartyJobDetailsRequest(input *GetThirdPartyJobDetailsInput) (req *request.Request, output *GetThirdPartyJobDetailsOutput) {
 	op := &request.Operation{
 		Name:       opGetThirdPartyJobDetails,
@@ -343,13 +920,36 @@ func (c *CodePipeline) GetThirdPartyJobDetailsRequest(input *GetThirdPartyJobDet
 	return
 }
 
+// GetThirdPartyJobDetails API operation for AWS CodePipeline.
+//
 // Requests the details of a job for a third party action. Only used for partner
 // actions.
 //
-// When this API is called, AWS CodePipeline returns temporary credentials
-// for the Amazon S3 bucket used to store artifacts for the pipeline, if the
-// action requires access to that Amazon S3 bucket for input or output artifacts.
-// Additionally, this API returns any secret values defined for the action.
+// When this API is called, AWS CodePipeline returns temporary credentials for
+// the Amazon S3 bucket used to store artifacts for the pipeline, if the action
+// requires access to that Amazon S3 bucket for input or output artifacts. Additionally,
+// this API returns any secret values defined for the action.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation GetThirdPartyJobDetails for usage and error information.
+//
+// Returned Error Codes:
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * InvalidClientTokenException
+//   The client token was specified in an invalid format
+//
+//   * InvalidJobException
+//   The specified job was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) GetThirdPartyJobDetails(input *GetThirdPartyJobDetailsInput) (*GetThirdPartyJobDetailsOutput, error) {
 	req, out := c.GetThirdPartyJobDetailsRequest(input)
 	err := req.Send()
@@ -358,7 +958,30 @@ func (c *CodePipeline) GetThirdPartyJobDetails(input *GetThirdPartyJobDetailsInp
 
 const opListActionTypes = "ListActionTypes"
 
-// ListActionTypesRequest generates a request for the ListActionTypes operation.
+// ListActionTypesRequest generates a "aws/request.Request" representing the
+// client's request for the ListActionTypes operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See ListActionTypes for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the ListActionTypes method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the ListActionTypesRequest method.
+//    req, resp := client.ListActionTypesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) ListActionTypesRequest(input *ListActionTypesInput) (req *request.Request, output *ListActionTypesOutput) {
 	op := &request.Operation{
 		Name:       opListActionTypes,
@@ -376,8 +999,26 @@ func (c *CodePipeline) ListActionTypesRequest(input *ListActionTypesInput) (req 
 	return
 }
 
+// ListActionTypes API operation for AWS CodePipeline.
+//
 // Gets a summary of all AWS CodePipeline action types associated with your
 // account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation ListActionTypes for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * InvalidNextTokenException
+//   The next token was specified in an invalid format. Make sure that the next
+//   token you provided is the token returned by a previous call.
+//
 func (c *CodePipeline) ListActionTypes(input *ListActionTypesInput) (*ListActionTypesOutput, error) {
 	req, out := c.ListActionTypesRequest(input)
 	err := req.Send()
@@ -386,7 +1027,30 @@ func (c *CodePipeline) ListActionTypes(input *ListActionTypesInput) (*ListAction
 
 const opListPipelines = "ListPipelines"
 
-// ListPipelinesRequest generates a request for the ListPipelines operation.
+// ListPipelinesRequest generates a "aws/request.Request" representing the
+// client's request for the ListPipelines operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See ListPipelines for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the ListPipelines method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the ListPipelinesRequest method.
+//    req, resp := client.ListPipelinesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) ListPipelinesRequest(input *ListPipelinesInput) (req *request.Request, output *ListPipelinesOutput) {
 	op := &request.Operation{
 		Name:       opListPipelines,
@@ -404,7 +1068,22 @@ func (c *CodePipeline) ListPipelinesRequest(input *ListPipelinesInput) (req *req
 	return
 }
 
+// ListPipelines API operation for AWS CodePipeline.
+//
 // Gets a summary of all of the pipelines associated with your account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation ListPipelines for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidNextTokenException
+//   The next token was specified in an invalid format. Make sure that the next
+//   token you provided is the token returned by a previous call.
+//
 func (c *CodePipeline) ListPipelines(input *ListPipelinesInput) (*ListPipelinesOutput, error) {
 	req, out := c.ListPipelinesRequest(input)
 	err := req.Send()
@@ -413,7 +1092,30 @@ func (c *CodePipeline) ListPipelines(input *ListPipelinesInput) (*ListPipelinesO
 
 const opPollForJobs = "PollForJobs"
 
-// PollForJobsRequest generates a request for the PollForJobs operation.
+// PollForJobsRequest generates a "aws/request.Request" representing the
+// client's request for the PollForJobs operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See PollForJobs for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the PollForJobs method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the PollForJobsRequest method.
+//    req, resp := client.PollForJobsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) PollForJobsRequest(input *PollForJobsInput) (req *request.Request, output *PollForJobsOutput) {
 	op := &request.Operation{
 		Name:       opPollForJobs,
@@ -431,12 +1133,29 @@ func (c *CodePipeline) PollForJobsRequest(input *PollForJobsInput) (req *request
 	return
 }
 
+// PollForJobs API operation for AWS CodePipeline.
+//
 // Returns information about any jobs for AWS CodePipeline to act upon.
 //
-// When this API is called, AWS CodePipeline returns temporary credentials
-// for the Amazon S3 bucket used to store artifacts for the pipeline, if the
-// action requires access to that Amazon S3 bucket for input or output artifacts.
-// Additionally, this API returns any secret values defined for the action.
+// When this API is called, AWS CodePipeline returns temporary credentials for
+// the Amazon S3 bucket used to store artifacts for the pipeline, if the action
+// requires access to that Amazon S3 bucket for input or output artifacts. Additionally,
+// this API returns any secret values defined for the action.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PollForJobs for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * ActionTypeNotFoundException
+//   The specified action type cannot be found.
+//
 func (c *CodePipeline) PollForJobs(input *PollForJobsInput) (*PollForJobsOutput, error) {
 	req, out := c.PollForJobsRequest(input)
 	err := req.Send()
@@ -445,7 +1164,30 @@ func (c *CodePipeline) PollForJobs(input *PollForJobsInput) (*PollForJobsOutput,
 
 const opPollForThirdPartyJobs = "PollForThirdPartyJobs"
 
-// PollForThirdPartyJobsRequest generates a request for the PollForThirdPartyJobs operation.
+// PollForThirdPartyJobsRequest generates a "aws/request.Request" representing the
+// client's request for the PollForThirdPartyJobs operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See PollForThirdPartyJobs for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the PollForThirdPartyJobs method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the PollForThirdPartyJobsRequest method.
+//    req, resp := client.PollForThirdPartyJobsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) PollForThirdPartyJobsRequest(input *PollForThirdPartyJobsInput) (req *request.Request, output *PollForThirdPartyJobsOutput) {
 	op := &request.Operation{
 		Name:       opPollForThirdPartyJobs,
@@ -463,12 +1205,29 @@ func (c *CodePipeline) PollForThirdPartyJobsRequest(input *PollForThirdPartyJobs
 	return
 }
 
+// PollForThirdPartyJobs API operation for AWS CodePipeline.
+//
 // Determines whether there are any third party jobs for a job worker to act
 // on. Only used for partner actions.
 //
-// When this API is called, AWS CodePipeline returns temporary credentials
-// for the Amazon S3 bucket used to store artifacts for the pipeline, if the
-// action requires access to that Amazon S3 bucket for input or output artifacts.
+// When this API is called, AWS CodePipeline returns temporary credentials for
+// the Amazon S3 bucket used to store artifacts for the pipeline, if the action
+// requires access to that Amazon S3 bucket for input or output artifacts.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PollForThirdPartyJobs for usage and error information.
+//
+// Returned Error Codes:
+//   * ActionTypeNotFoundException
+//   The specified action type cannot be found.
+//
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
 func (c *CodePipeline) PollForThirdPartyJobs(input *PollForThirdPartyJobsInput) (*PollForThirdPartyJobsOutput, error) {
 	req, out := c.PollForThirdPartyJobsRequest(input)
 	err := req.Send()
@@ -477,7 +1236,30 @@ func (c *CodePipeline) PollForThirdPartyJobs(input *PollForThirdPartyJobsInput) 
 
 const opPutActionRevision = "PutActionRevision"
 
-// PutActionRevisionRequest generates a request for the PutActionRevision operation.
+// PutActionRevisionRequest generates a "aws/request.Request" representing the
+// client's request for the PutActionRevision operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See PutActionRevision for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the PutActionRevision method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the PutActionRevisionRequest method.
+//    req, resp := client.PutActionRevisionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) PutActionRevisionRequest(input *PutActionRevisionInput) (req *request.Request, output *PutActionRevisionOutput) {
 	op := &request.Operation{
 		Name:       opPutActionRevision,
@@ -495,16 +1277,142 @@ func (c *CodePipeline) PutActionRevisionRequest(input *PutActionRevisionInput) (
 	return
 }
 
+// PutActionRevision API operation for AWS CodePipeline.
+//
 // Provides information to AWS CodePipeline about new revisions to a source.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PutActionRevision for usage and error information.
+//
+// Returned Error Codes:
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * StageNotFoundException
+//   The specified stage was specified in an invalid format or cannot be found.
+//
+//   * ActionNotFoundException
+//   The specified action cannot be found.
+//
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
 func (c *CodePipeline) PutActionRevision(input *PutActionRevisionInput) (*PutActionRevisionOutput, error) {
 	req, out := c.PutActionRevisionRequest(input)
 	err := req.Send()
 	return out, err
 }
 
+const opPutApprovalResult = "PutApprovalResult"
+
+// PutApprovalResultRequest generates a "aws/request.Request" representing the
+// client's request for the PutApprovalResult operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See PutApprovalResult for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the PutApprovalResult method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the PutApprovalResultRequest method.
+//    req, resp := client.PutApprovalResultRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *CodePipeline) PutApprovalResultRequest(input *PutApprovalResultInput) (req *request.Request, output *PutApprovalResultOutput) {
+	op := &request.Operation{
+		Name:       opPutApprovalResult,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PutApprovalResultInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &PutApprovalResultOutput{}
+	req.Data = output
+	return
+}
+
+// PutApprovalResult API operation for AWS CodePipeline.
+//
+// Provides the response to a manual approval request to AWS CodePipeline. Valid
+// responses include Approved and Rejected.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PutApprovalResult for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidApprovalTokenException
+//   The approval request already received a response or has expired.
+//
+//   * ApprovalAlreadyCompletedException
+//   The approval action has already been approved or rejected.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * StageNotFoundException
+//   The specified stage was specified in an invalid format or cannot be found.
+//
+//   * ActionNotFoundException
+//   The specified action cannot be found.
+//
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+func (c *CodePipeline) PutApprovalResult(input *PutApprovalResultInput) (*PutApprovalResultOutput, error) {
+	req, out := c.PutApprovalResultRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opPutJobFailureResult = "PutJobFailureResult"
 
-// PutJobFailureResultRequest generates a request for the PutJobFailureResult operation.
+// PutJobFailureResultRequest generates a "aws/request.Request" representing the
+// client's request for the PutJobFailureResult operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See PutJobFailureResult for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the PutJobFailureResult method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the PutJobFailureResultRequest method.
+//    req, resp := client.PutJobFailureResultRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) PutJobFailureResultRequest(input *PutJobFailureResultInput) (req *request.Request, output *PutJobFailureResultOutput) {
 	op := &request.Operation{
 		Name:       opPutJobFailureResult,
@@ -517,13 +1425,35 @@ func (c *CodePipeline) PutJobFailureResultRequest(input *PutJobFailureResultInpu
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutJobFailureResultOutput{}
 	req.Data = output
 	return
 }
 
+// PutJobFailureResult API operation for AWS CodePipeline.
+//
 // Represents the failure of a job as returned to the pipeline by a job worker.
 // Only used for custom actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PutJobFailureResult for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
+//   * InvalidJobStateException
+//   The specified job state was specified in an invalid format.
+//
 func (c *CodePipeline) PutJobFailureResult(input *PutJobFailureResultInput) (*PutJobFailureResultOutput, error) {
 	req, out := c.PutJobFailureResultRequest(input)
 	err := req.Send()
@@ -532,7 +1462,30 @@ func (c *CodePipeline) PutJobFailureResult(input *PutJobFailureResultInput) (*Pu
 
 const opPutJobSuccessResult = "PutJobSuccessResult"
 
-// PutJobSuccessResultRequest generates a request for the PutJobSuccessResult operation.
+// PutJobSuccessResultRequest generates a "aws/request.Request" representing the
+// client's request for the PutJobSuccessResult operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See PutJobSuccessResult for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the PutJobSuccessResult method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the PutJobSuccessResultRequest method.
+//    req, resp := client.PutJobSuccessResultRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) PutJobSuccessResultRequest(input *PutJobSuccessResultInput) (req *request.Request, output *PutJobSuccessResultOutput) {
 	op := &request.Operation{
 		Name:       opPutJobSuccessResult,
@@ -545,13 +1498,35 @@ func (c *CodePipeline) PutJobSuccessResultRequest(input *PutJobSuccessResultInpu
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutJobSuccessResultOutput{}
 	req.Data = output
 	return
 }
 
+// PutJobSuccessResult API operation for AWS CodePipeline.
+//
 // Represents the success of a job as returned to the pipeline by a job worker.
 // Only used for custom actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PutJobSuccessResult for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
+//   * InvalidJobStateException
+//   The specified job state was specified in an invalid format.
+//
 func (c *CodePipeline) PutJobSuccessResult(input *PutJobSuccessResultInput) (*PutJobSuccessResultOutput, error) {
 	req, out := c.PutJobSuccessResultRequest(input)
 	err := req.Send()
@@ -560,7 +1535,30 @@ func (c *CodePipeline) PutJobSuccessResult(input *PutJobSuccessResultInput) (*Pu
 
 const opPutThirdPartyJobFailureResult = "PutThirdPartyJobFailureResult"
 
-// PutThirdPartyJobFailureResultRequest generates a request for the PutThirdPartyJobFailureResult operation.
+// PutThirdPartyJobFailureResultRequest generates a "aws/request.Request" representing the
+// client's request for the PutThirdPartyJobFailureResult operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See PutThirdPartyJobFailureResult for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the PutThirdPartyJobFailureResult method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the PutThirdPartyJobFailureResultRequest method.
+//    req, resp := client.PutThirdPartyJobFailureResultRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) PutThirdPartyJobFailureResultRequest(input *PutThirdPartyJobFailureResultInput) (req *request.Request, output *PutThirdPartyJobFailureResultOutput) {
 	op := &request.Operation{
 		Name:       opPutThirdPartyJobFailureResult,
@@ -573,13 +1571,38 @@ func (c *CodePipeline) PutThirdPartyJobFailureResultRequest(input *PutThirdParty
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutThirdPartyJobFailureResultOutput{}
 	req.Data = output
 	return
 }
 
+// PutThirdPartyJobFailureResult API operation for AWS CodePipeline.
+//
 // Represents the failure of a third party job as returned to the pipeline by
 // a job worker. Only used for partner actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PutThirdPartyJobFailureResult for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
+//   * InvalidJobStateException
+//   The specified job state was specified in an invalid format.
+//
+//   * InvalidClientTokenException
+//   The client token was specified in an invalid format
+//
 func (c *CodePipeline) PutThirdPartyJobFailureResult(input *PutThirdPartyJobFailureResultInput) (*PutThirdPartyJobFailureResultOutput, error) {
 	req, out := c.PutThirdPartyJobFailureResultRequest(input)
 	err := req.Send()
@@ -588,7 +1611,30 @@ func (c *CodePipeline) PutThirdPartyJobFailureResult(input *PutThirdPartyJobFail
 
 const opPutThirdPartyJobSuccessResult = "PutThirdPartyJobSuccessResult"
 
-// PutThirdPartyJobSuccessResultRequest generates a request for the PutThirdPartyJobSuccessResult operation.
+// PutThirdPartyJobSuccessResultRequest generates a "aws/request.Request" representing the
+// client's request for the PutThirdPartyJobSuccessResult operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See PutThirdPartyJobSuccessResult for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the PutThirdPartyJobSuccessResult method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the PutThirdPartyJobSuccessResultRequest method.
+//    req, resp := client.PutThirdPartyJobSuccessResultRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) PutThirdPartyJobSuccessResultRequest(input *PutThirdPartyJobSuccessResultInput) (req *request.Request, output *PutThirdPartyJobSuccessResultOutput) {
 	op := &request.Operation{
 		Name:       opPutThirdPartyJobSuccessResult,
@@ -601,22 +1647,150 @@ func (c *CodePipeline) PutThirdPartyJobSuccessResultRequest(input *PutThirdParty
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutThirdPartyJobSuccessResultOutput{}
 	req.Data = output
 	return
 }
 
+// PutThirdPartyJobSuccessResult API operation for AWS CodePipeline.
+//
 // Represents the success of a third party job as returned to the pipeline by
 // a job worker. Only used for partner actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PutThirdPartyJobSuccessResult for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
+//   * InvalidJobStateException
+//   The specified job state was specified in an invalid format.
+//
+//   * InvalidClientTokenException
+//   The client token was specified in an invalid format
+//
 func (c *CodePipeline) PutThirdPartyJobSuccessResult(input *PutThirdPartyJobSuccessResultInput) (*PutThirdPartyJobSuccessResultOutput, error) {
 	req, out := c.PutThirdPartyJobSuccessResultRequest(input)
 	err := req.Send()
 	return out, err
 }
 
+const opRetryStageExecution = "RetryStageExecution"
+
+// RetryStageExecutionRequest generates a "aws/request.Request" representing the
+// client's request for the RetryStageExecution operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See RetryStageExecution for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the RetryStageExecution method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the RetryStageExecutionRequest method.
+//    req, resp := client.RetryStageExecutionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *CodePipeline) RetryStageExecutionRequest(input *RetryStageExecutionInput) (req *request.Request, output *RetryStageExecutionOutput) {
+	op := &request.Operation{
+		Name:       opRetryStageExecution,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &RetryStageExecutionInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &RetryStageExecutionOutput{}
+	req.Data = output
+	return
+}
+
+// RetryStageExecution API operation for AWS CodePipeline.
+//
+// Resumes the pipeline execution by retrying the last failed actions in a stage.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation RetryStageExecution for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * StageNotFoundException
+//   The specified stage was specified in an invalid format or cannot be found.
+//
+//   * StageNotRetryableException
+//   The specified stage can't be retried because the pipeline structure or stage
+//   state changed after the stage was not completed; the stage contains no failed
+//   actions; one or more actions are still in progress; or another retry attempt
+//   is already in progress.
+//
+//   * NotLatestPipelineExecutionException
+//   The stage has failed in a later run of the pipeline and the pipelineExecutionId
+//   associated with the request is out of date.
+//
+func (c *CodePipeline) RetryStageExecution(input *RetryStageExecutionInput) (*RetryStageExecutionOutput, error) {
+	req, out := c.RetryStageExecutionRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opStartPipelineExecution = "StartPipelineExecution"
 
-// StartPipelineExecutionRequest generates a request for the StartPipelineExecution operation.
+// StartPipelineExecutionRequest generates a "aws/request.Request" representing the
+// client's request for the StartPipelineExecution operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See StartPipelineExecution for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the StartPipelineExecution method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the StartPipelineExecutionRequest method.
+//    req, resp := client.StartPipelineExecutionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) StartPipelineExecutionRequest(input *StartPipelineExecutionInput) (req *request.Request, output *StartPipelineExecutionOutput) {
 	op := &request.Operation{
 		Name:       opStartPipelineExecution,
@@ -634,8 +1808,25 @@ func (c *CodePipeline) StartPipelineExecutionRequest(input *StartPipelineExecuti
 	return
 }
 
+// StartPipelineExecution API operation for AWS CodePipeline.
+//
 // Starts the specified pipeline. Specifically, it begins processing the latest
 // commit to the source location specified as part of the pipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation StartPipelineExecution for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) StartPipelineExecution(input *StartPipelineExecutionInput) (*StartPipelineExecutionOutput, error) {
 	req, out := c.StartPipelineExecutionRequest(input)
 	err := req.Send()
@@ -644,7 +1835,30 @@ func (c *CodePipeline) StartPipelineExecution(input *StartPipelineExecutionInput
 
 const opUpdatePipeline = "UpdatePipeline"
 
-// UpdatePipelineRequest generates a request for the UpdatePipeline operation.
+// UpdatePipelineRequest generates a "aws/request.Request" representing the
+// client's request for the UpdatePipeline operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See UpdatePipeline for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the UpdatePipeline method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the UpdatePipelineRequest method.
+//    req, resp := client.UpdatePipelineRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *CodePipeline) UpdatePipelineRequest(input *UpdatePipelineInput) (req *request.Request, output *UpdatePipelineOutput) {
 	op := &request.Operation{
 		Name:       opUpdatePipeline,
@@ -662,10 +1876,36 @@ func (c *CodePipeline) UpdatePipelineRequest(input *UpdatePipelineInput) (req *r
 	return
 }
 
+// UpdatePipeline API operation for AWS CodePipeline.
+//
 // Updates a specified pipeline with edits or changes to its structure. Use
 // a JSON file with the pipeline structure in conjunction with UpdatePipeline
 // to provide the full structure of the pipeline. Updating the pipeline increases
 // the version number of the pipeline by 1.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation UpdatePipeline for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * InvalidStageDeclarationException
+//   The specified stage declaration was specified in an invalid format.
+//
+//   * InvalidActionDeclarationException
+//   The specified action declaration was specified in an invalid format.
+//
+//   * InvalidBlockerDeclarationException
+//   Reserved for future use.
+//
+//   * InvalidStructureException
+//   The specified structure was specified in an invalid format.
+//
 func (c *CodePipeline) UpdatePipeline(input *UpdatePipelineInput) (*UpdatePipelineOutput, error) {
 	req, out := c.UpdatePipelineRequest(input)
 	err := req.Send()
@@ -677,20 +1917,22 @@ func (c *CodePipeline) UpdatePipeline(input *UpdatePipelineInput) (*UpdatePipeli
 // used to access input and output artifacts in the Amazon S3 bucket used to
 // store artifact for the pipeline in AWS CodePipeline.
 type AWSSessionCredentials struct {
+	_ struct{} `type:"structure"`
+
 	// The access key for the session.
+	//
+	// AccessKeyId is a required field
 	AccessKeyId *string `locationName:"accessKeyId" type:"string" required:"true"`
 
 	// The secret access key for the session.
+	//
+	// SecretAccessKey is a required field
 	SecretAccessKey *string `locationName:"secretAccessKey" type:"string" required:"true"`
 
 	// The token for the session.
+	//
+	// SessionToken is a required field
 	SessionToken *string `locationName:"sessionToken" type:"string" required:"true"`
-
-	metadataAWSSessionCredentials `json:"-" xml:"-"`
-}
-
-type metadataAWSSessionCredentials struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -705,19 +1947,19 @@ func (s AWSSessionCredentials) GoString() string {
 
 // Represents the input of an acknowledge job action.
 type AcknowledgeJobInput struct {
+	_ struct{} `type:"structure"`
+
 	// The unique system-generated ID of the job for which you want to confirm receipt.
+	//
+	// JobId is a required field
 	JobId *string `locationName:"jobId" type:"string" required:"true"`
 
 	// A system-generated random number that AWS CodePipeline uses to ensure that
 	// the job is being worked on by only one job worker. This number must be returned
 	// in the response.
+	//
+	// Nonce is a required field
 	Nonce *string `locationName:"nonce" type:"string" required:"true"`
-
-	metadataAcknowledgeJobInput `json:"-" xml:"-"`
-}
-
-type metadataAcknowledgeJobInput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -730,16 +1972,28 @@ func (s AcknowledgeJobInput) GoString() string {
 	return s.String()
 }
 
-// Represents the output of an acknowledge job action.
-type AcknowledgeJobOutput struct {
-	// Whether the job worker has received the specified job.
-	Status *string `locationName:"status" type:"string" enum:"JobStatus"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AcknowledgeJobInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AcknowledgeJobInput"}
+	if s.JobId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JobId"))
+	}
+	if s.Nonce == nil {
+		invalidParams.Add(request.NewErrParamRequired("Nonce"))
+	}
 
-	metadataAcknowledgeJobOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataAcknowledgeJobOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Represents the output of an acknowledge job action.
+type AcknowledgeJobOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Whether the job worker has received the specified job.
+	Status *string `locationName:"status" type:"string" enum:"JobStatus"`
 }
 
 // String returns the string representation
@@ -754,23 +2008,25 @@ func (s AcknowledgeJobOutput) GoString() string {
 
 // Represents the input of an acknowledge third party job action.
 type AcknowledgeThirdPartyJobInput struct {
+	_ struct{} `type:"structure"`
+
 	// The clientToken portion of the clientId and clientToken pair used to verify
 	// that the calling entity is allowed access to the job and its details.
+	//
+	// ClientToken is a required field
 	ClientToken *string `locationName:"clientToken" type:"string" required:"true"`
 
 	// The unique system-generated ID of the job.
-	JobId *string `locationName:"jobId" type:"string" required:"true"`
+	//
+	// JobId is a required field
+	JobId *string `locationName:"jobId" min:"1" type:"string" required:"true"`
 
 	// A system-generated random number that AWS CodePipeline uses to ensure that
 	// the job is being worked on by only one job worker. This number must be returned
 	// in the response.
+	//
+	// Nonce is a required field
 	Nonce *string `locationName:"nonce" type:"string" required:"true"`
-
-	metadataAcknowledgeThirdPartyJobInput `json:"-" xml:"-"`
-}
-
-type metadataAcknowledgeThirdPartyJobInput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -783,16 +2039,34 @@ func (s AcknowledgeThirdPartyJobInput) GoString() string {
 	return s.String()
 }
 
-// Represents the output of an acknowledge third party job action.
-type AcknowledgeThirdPartyJobOutput struct {
-	// The status information for the third party job, if any.
-	Status *string `locationName:"status" type:"string" enum:"JobStatus"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AcknowledgeThirdPartyJobInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AcknowledgeThirdPartyJobInput"}
+	if s.ClientToken == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClientToken"))
+	}
+	if s.JobId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JobId"))
+	}
+	if s.JobId != nil && len(*s.JobId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JobId", 1))
+	}
+	if s.Nonce == nil {
+		invalidParams.Add(request.NewErrParamRequired("Nonce"))
+	}
 
-	metadataAcknowledgeThirdPartyJobOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataAcknowledgeThirdPartyJobOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Represents the output of an acknowledge third party job action.
+type AcknowledgeThirdPartyJobOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The status information for the third party job, if any.
+	Status *string `locationName:"status" type:"string" enum:"JobStatus"`
 }
 
 // String returns the string representation
@@ -807,14 +2081,10 @@ func (s AcknowledgeThirdPartyJobOutput) GoString() string {
 
 // Represents information about an action configuration.
 type ActionConfiguration struct {
+	_ struct{} `type:"structure"`
+
 	// The configuration data for the action.
 	Configuration map[string]*string `locationName:"configuration" type:"map"`
-
-	metadataActionConfiguration `json:"-" xml:"-"`
-}
-
-type metadataActionConfiguration struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -829,15 +2099,21 @@ func (s ActionConfiguration) GoString() string {
 
 // Represents information about an action configuration property.
 type ActionConfigurationProperty struct {
+	_ struct{} `type:"structure"`
+
 	// The description of the action configuration property that will be displayed
 	// to users.
-	Description *string `locationName:"description" type:"string"`
+	Description *string `locationName:"description" min:"1" type:"string"`
 
 	// Whether the configuration property is a key.
+	//
+	// Key is a required field
 	Key *bool `locationName:"key" type:"boolean" required:"true"`
 
 	// The name of the action configuration property.
-	Name *string `locationName:"name" type:"string" required:"true"`
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
 	// Indicates that the proprety will be used in conjunction with PollForJobs.
 	// When creating a custom action, an action can have up to one queryable property.
@@ -851,6 +2127,8 @@ type ActionConfigurationProperty struct {
 	Queryable *bool `locationName:"queryable" type:"boolean"`
 
 	// Whether the configuration property is a required value.
+	//
+	// Required is a required field
 	Required *bool `locationName:"required" type:"boolean" required:"true"`
 
 	// Whether the configuration property is secret. Secrets are hidden from all
@@ -859,16 +2137,12 @@ type ActionConfigurationProperty struct {
 	//
 	// When updating a pipeline, passing * * * * * without changing any other values
 	// of the action will preserve the prior value of the secret.
+	//
+	// Secret is a required field
 	Secret *bool `locationName:"secret" type:"boolean" required:"true"`
 
 	// The type of the configuration property.
 	Type *string `locationName:"type" type:"string" enum:"ActionConfigurationPropertyType"`
-
-	metadataActionConfigurationProperty `json:"-" xml:"-"`
-}
-
-type metadataActionConfigurationProperty struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -881,17 +2155,41 @@ func (s ActionConfigurationProperty) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ActionConfigurationProperty) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ActionConfigurationProperty"}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Required == nil {
+		invalidParams.Add(request.NewErrParamRequired("Required"))
+	}
+	if s.Secret == nil {
+		invalidParams.Add(request.NewErrParamRequired("Secret"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Represents the context of an action within the stage of a pipeline to a job
 // worker.
 type ActionContext struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the action within the context of a job.
-	Name *string `locationName:"name" type:"string"`
-
-	metadataActionContext `json:"-" xml:"-"`
-}
-
-type metadataActionContext struct {
-	SDKShapeTraits bool `type:"structure"`
+	Name *string `locationName:"name" min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -906,7 +2204,11 @@ func (s ActionContext) GoString() string {
 
 // Represents information about an action declaration.
 type ActionDeclaration struct {
+	_ struct{} `type:"structure"`
+
 	// The configuration information for the action type.
+	//
+	// ActionTypeId is a required field
 	ActionTypeId *ActionTypeId `locationName:"actionTypeId" type:"structure" required:"true"`
 
 	// The action declaration's configuration.
@@ -917,7 +2219,9 @@ type ActionDeclaration struct {
 	InputArtifacts []*InputArtifact `locationName:"inputArtifacts" type:"list"`
 
 	// The action declaration's name.
-	Name *string `locationName:"name" type:"string" required:"true"`
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
 	// The name or ID of the result of the action declaration, such as a test or
 	// build artifact.
@@ -928,13 +2232,7 @@ type ActionDeclaration struct {
 	RoleArn *string `locationName:"roleArn" type:"string"`
 
 	// The order in which actions are run.
-	RunOrder *int64 `locationName:"runOrder" type:"integer"`
-
-	metadataActionDeclaration `json:"-" xml:"-"`
-}
-
-type metadataActionDeclaration struct {
-	SDKShapeTraits bool `type:"structure"`
+	RunOrder *int64 `locationName:"runOrder" min:"1" type:"integer"`
 }
 
 // String returns the string representation
@@ -947,20 +2245,72 @@ func (s ActionDeclaration) GoString() string {
 	return s.String()
 }
 
-// Represents information about how an action runs.
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ActionDeclaration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ActionDeclaration"}
+	if s.ActionTypeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ActionTypeId"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.RunOrder != nil && *s.RunOrder < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("RunOrder", 1))
+	}
+	if s.ActionTypeId != nil {
+		if err := s.ActionTypeId.Validate(); err != nil {
+			invalidParams.AddNested("ActionTypeId", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.InputArtifacts != nil {
+		for i, v := range s.InputArtifacts {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "InputArtifacts", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.OutputArtifacts != nil {
+		for i, v := range s.OutputArtifacts {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "OutputArtifacts", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents information about the run of an action.
 type ActionExecution struct {
+	_ struct{} `type:"structure"`
+
 	// The details of an error returned by a URL external to AWS.
 	ErrorDetails *ErrorDetails `locationName:"errorDetails" type:"structure"`
 
 	// The external ID of the run of the action.
-	ExternalExecutionId *string `locationName:"externalExecutionId" type:"string"`
+	ExternalExecutionId *string `locationName:"externalExecutionId" min:"1" type:"string"`
 
 	// The URL of a resource external to AWS that will be used when running the
 	// action, for example an external repository URL.
-	ExternalExecutionUrl *string `locationName:"externalExecutionUrl" type:"string"`
+	ExternalExecutionUrl *string `locationName:"externalExecutionUrl" min:"1" type:"string"`
 
 	// The last status change of the action.
 	LastStatusChange *time.Time `locationName:"lastStatusChange" type:"timestamp" timestampFormat:"unix"`
+
+	// The ARN of the user who last changed the pipeline.
+	LastUpdatedBy *string `locationName:"lastUpdatedBy" type:"string"`
 
 	// A percentage of completeness of the action as it runs.
 	PercentComplete *int64 `locationName:"percentComplete" type:"integer"`
@@ -972,11 +2322,11 @@ type ActionExecution struct {
 	// A summary of the run of the action.
 	Summary *string `locationName:"summary" type:"string"`
 
-	metadataActionExecution `json:"-" xml:"-"`
-}
-
-type metadataActionExecution struct {
-	SDKShapeTraits bool `type:"structure"`
+	// The system-generated token used to identify a unique approval request. The
+	// token for each open approval request can be obtained using the GetPipelineState
+	// command and is used to validate that the approval request corresponding to
+	// this token is still valid.
+	Token *string `locationName:"token" type:"string"`
 }
 
 // String returns the string representation
@@ -991,23 +2341,25 @@ func (s ActionExecution) GoString() string {
 
 // Represents information about the version (or revision) of an action.
 type ActionRevision struct {
+	_ struct{} `type:"structure"`
+
 	// The date and time when the most recent version of the action was created,
 	// in timestamp format.
+	//
+	// Created is a required field
 	Created *time.Time `locationName:"created" type:"timestamp" timestampFormat:"unix" required:"true"`
 
 	// The unique identifier of the change that set the state to this revision,
 	// for example a deployment ID or timestamp.
-	RevisionChangeId *string `locationName:"revisionChangeId" type:"string"`
+	//
+	// RevisionChangeId is a required field
+	RevisionChangeId *string `locationName:"revisionChangeId" min:"1" type:"string" required:"true"`
 
 	// The system-generated unique ID that identifies the revision number of the
 	// action.
-	RevisionId *string `locationName:"revisionId" type:"string" required:"true"`
-
-	metadataActionRevision `json:"-" xml:"-"`
-}
-
-type metadataActionRevision struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// RevisionId is a required field
+	RevisionId *string `locationName:"revisionId" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -1020,30 +2372,51 @@ func (s ActionRevision) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ActionRevision) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ActionRevision"}
+	if s.Created == nil {
+		invalidParams.Add(request.NewErrParamRequired("Created"))
+	}
+	if s.RevisionChangeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RevisionChangeId"))
+	}
+	if s.RevisionChangeId != nil && len(*s.RevisionChangeId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RevisionChangeId", 1))
+	}
+	if s.RevisionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RevisionId"))
+	}
+	if s.RevisionId != nil && len(*s.RevisionId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RevisionId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Represents information about the state of an action.
 type ActionState struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the action.
-	ActionName *string `locationName:"actionName" type:"string"`
+	ActionName *string `locationName:"actionName" min:"1" type:"string"`
 
 	// Represents information about the version (or revision) of an action.
 	CurrentRevision *ActionRevision `locationName:"currentRevision" type:"structure"`
 
 	// A URL link for more information about the state of the action, such as a
 	// deployment group details page.
-	EntityUrl *string `locationName:"entityUrl" type:"string"`
+	EntityUrl *string `locationName:"entityUrl" min:"1" type:"string"`
 
-	// Represents information about how an action runs.
+	// Represents information about the run of an action.
 	LatestExecution *ActionExecution `locationName:"latestExecution" type:"structure"`
 
 	// A URL link for more information about the revision, such as a commit details
 	// page.
-	RevisionUrl *string `locationName:"revisionUrl" type:"string"`
-
-	metadataActionState `json:"-" xml:"-"`
-}
-
-type metadataActionState struct {
-	SDKShapeTraits bool `type:"structure"`
+	RevisionUrl *string `locationName:"revisionUrl" min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -1058,26 +2431,28 @@ func (s ActionState) GoString() string {
 
 // Returns information about the details of an action type.
 type ActionType struct {
+	_ struct{} `type:"structure"`
+
 	// The configuration properties for the action type.
 	ActionConfigurationProperties []*ActionConfigurationProperty `locationName:"actionConfigurationProperties" type:"list"`
 
 	// Represents information about an action type.
+	//
+	// Id is a required field
 	Id *ActionTypeId `locationName:"id" type:"structure" required:"true"`
 
 	// The details of the input artifact for the action, such as its commit ID.
+	//
+	// InputArtifactDetails is a required field
 	InputArtifactDetails *ArtifactDetails `locationName:"inputArtifactDetails" type:"structure" required:"true"`
 
 	// The details of the output artifact of the action, such as its commit ID.
+	//
+	// OutputArtifactDetails is a required field
 	OutputArtifactDetails *ArtifactDetails `locationName:"outputArtifactDetails" type:"structure" required:"true"`
 
 	// The settings for the action type.
 	Settings *ActionTypeSettings `locationName:"settings" type:"structure"`
-
-	metadataActionType `json:"-" xml:"-"`
-}
-
-type metadataActionType struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1092,28 +2467,32 @@ func (s ActionType) GoString() string {
 
 // Represents information about an action type.
 type ActionTypeId struct {
+	_ struct{} `type:"structure"`
+
 	// A category defines what kind of action can be taken in the stage, and constrains
 	// the provider type for the action. Valid categories are limited to one of
 	// the values below.
+	//
+	// Category is a required field
 	Category *string `locationName:"category" type:"string" required:"true" enum:"ActionCategory"`
 
 	// The creator of the action being called.
+	//
+	// Owner is a required field
 	Owner *string `locationName:"owner" type:"string" required:"true" enum:"ActionOwner"`
 
 	// The provider of the service being called by the action. Valid providers are
 	// determined by the action category. For example, an action in the Deploy category
 	// type might have a provider of AWS CodeDeploy, which would be specified as
 	// CodeDeploy.
-	Provider *string `locationName:"provider" type:"string" required:"true"`
+	//
+	// Provider is a required field
+	Provider *string `locationName:"provider" min:"1" type:"string" required:"true"`
 
 	// A string that identifies the action type.
-	Version *string `locationName:"version" type:"string" required:"true"`
-
-	metadataActionTypeId `json:"-" xml:"-"`
-}
-
-type metadataActionTypeId struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// Version is a required field
+	Version *string `locationName:"version" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -1126,35 +2505,59 @@ func (s ActionTypeId) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ActionTypeId) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ActionTypeId"}
+	if s.Category == nil {
+		invalidParams.Add(request.NewErrParamRequired("Category"))
+	}
+	if s.Owner == nil {
+		invalidParams.Add(request.NewErrParamRequired("Owner"))
+	}
+	if s.Provider == nil {
+		invalidParams.Add(request.NewErrParamRequired("Provider"))
+	}
+	if s.Provider != nil && len(*s.Provider) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Provider", 1))
+	}
+	if s.Version == nil {
+		invalidParams.Add(request.NewErrParamRequired("Version"))
+	}
+	if s.Version != nil && len(*s.Version) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Version", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Returns information about the settings for an action type.
 type ActionTypeSettings struct {
+	_ struct{} `type:"structure"`
+
 	// The URL returned to the AWS CodePipeline console that provides a deep link
 	// to the resources of the external system, such as the configuration page for
 	// an AWS CodeDeploy deployment group. This link is provided as part of the
 	// action display within the pipeline.
-	EntityUrlTemplate *string `locationName:"entityUrlTemplate" type:"string"`
+	EntityUrlTemplate *string `locationName:"entityUrlTemplate" min:"1" type:"string"`
 
 	// The URL returned to the AWS CodePipeline console that contains a link to
 	// the top-level landing page for the external system, such as console page
 	// for AWS CodeDeploy. This link is shown on the pipeline view page in the AWS
 	// CodePipeline console and provides a link to the execution entity of the external
 	// action.
-	ExecutionUrlTemplate *string `locationName:"executionUrlTemplate" type:"string"`
+	ExecutionUrlTemplate *string `locationName:"executionUrlTemplate" min:"1" type:"string"`
 
 	// The URL returned to the AWS CodePipeline console that contains a link to
 	// the page where customers can update or change the configuration of the external
 	// action.
-	RevisionUrlTemplate *string `locationName:"revisionUrlTemplate" type:"string"`
+	RevisionUrlTemplate *string `locationName:"revisionUrlTemplate" min:"1" type:"string"`
 
 	// The URL of a sign-up page where users can sign up for an external service
 	// and perform initial configuration of the action provided by that service.
-	ThirdPartyConfigurationUrl *string `locationName:"thirdPartyConfigurationUrl" type:"string"`
-
-	metadataActionTypeSettings `json:"-" xml:"-"`
-}
-
-type metadataActionTypeSettings struct {
-	SDKShapeTraits bool `type:"structure"`
+	ThirdPartyConfigurationUrl *string `locationName:"thirdPartyConfigurationUrl" min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -1167,24 +2570,83 @@ func (s ActionTypeSettings) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ActionTypeSettings) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ActionTypeSettings"}
+	if s.EntityUrlTemplate != nil && len(*s.EntityUrlTemplate) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EntityUrlTemplate", 1))
+	}
+	if s.ExecutionUrlTemplate != nil && len(*s.ExecutionUrlTemplate) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExecutionUrlTemplate", 1))
+	}
+	if s.RevisionUrlTemplate != nil && len(*s.RevisionUrlTemplate) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RevisionUrlTemplate", 1))
+	}
+	if s.ThirdPartyConfigurationUrl != nil && len(*s.ThirdPartyConfigurationUrl) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ThirdPartyConfigurationUrl", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents information about the result of an approval request.
+type ApprovalResult struct {
+	_ struct{} `type:"structure"`
+
+	// The response submitted by a reviewer assigned to an approval action request.
+	//
+	// Status is a required field
+	Status *string `locationName:"status" type:"string" required:"true" enum:"ApprovalStatus"`
+
+	// The summary of the current status of the approval request.
+	//
+	// Summary is a required field
+	Summary *string `locationName:"summary" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ApprovalResult) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ApprovalResult) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ApprovalResult) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ApprovalResult"}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+	if s.Summary == nil {
+		invalidParams.Add(request.NewErrParamRequired("Summary"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Represents information about an artifact that will be worked upon by actions
 // in the pipeline.
 type Artifact struct {
+	_ struct{} `type:"structure"`
+
 	// The location of an artifact.
 	Location *ArtifactLocation `locationName:"location" type:"structure"`
 
 	// The artifact's name.
-	Name *string `locationName:"name" type:"string"`
+	Name *string `locationName:"name" min:"1" type:"string"`
 
 	// The artifact's revision ID. Depending on the type of object, this could be
 	// a commit ID (GitHub) or a revision ID (Amazon S3).
-	Revision *string `locationName:"revision" type:"string"`
-
-	metadataArtifact `json:"-" xml:"-"`
-}
-
-type metadataArtifact struct {
-	SDKShapeTraits bool `type:"structure"`
+	Revision *string `locationName:"revision" min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -1199,17 +2661,17 @@ func (s Artifact) GoString() string {
 
 // Returns information about the details of an artifact.
 type ArtifactDetails struct {
+	_ struct{} `type:"structure"`
+
 	// The maximum number of artifacts allowed for the action type.
+	//
+	// MaximumCount is a required field
 	MaximumCount *int64 `locationName:"maximumCount" type:"integer" required:"true"`
 
 	// The minimum number of artifacts allowed for the action type.
+	//
+	// MinimumCount is a required field
 	MinimumCount *int64 `locationName:"minimumCount" type:"integer" required:"true"`
-
-	metadataArtifactDetails `json:"-" xml:"-"`
-}
-
-type metadataArtifactDetails struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1222,19 +2684,31 @@ func (s ArtifactDetails) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ArtifactDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ArtifactDetails"}
+	if s.MaximumCount == nil {
+		invalidParams.Add(request.NewErrParamRequired("MaximumCount"))
+	}
+	if s.MinimumCount == nil {
+		invalidParams.Add(request.NewErrParamRequired("MinimumCount"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Represents information about the location of an artifact.
 type ArtifactLocation struct {
+	_ struct{} `type:"structure"`
+
 	// The Amazon S3 bucket that contains the artifact.
 	S3Location *S3ArtifactLocation `locationName:"s3Location" type:"structure"`
 
 	// The type of artifact in the location.
 	Type *string `locationName:"type" type:"string" enum:"ArtifactLocationType"`
-
-	metadataArtifactLocation `json:"-" xml:"-"`
-}
-
-type metadataArtifactLocation struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1247,27 +2721,68 @@ func (s ArtifactLocation) GoString() string {
 	return s.String()
 }
 
+// Represents revision details of an artifact.
+type ArtifactRevision struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time when the most recent revision of the artifact was created,
+	// in timestamp format.
+	Created *time.Time `locationName:"created" type:"timestamp" timestampFormat:"unix"`
+
+	// The name of an artifact. This name might be system-generated, such as "MyApp",
+	// or might be defined by the user when an action is created.
+	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// An additional identifier for a revision, such as a commit date or, for artifacts
+	// stored in Amazon S3 buckets, the ETag value.
+	RevisionChangeIdentifier *string `locationName:"revisionChangeIdentifier" min:"1" type:"string"`
+
+	// The revision ID of the artifact.
+	RevisionId *string `locationName:"revisionId" min:"1" type:"string"`
+
+	// Summary information about the most recent revision of the artifact. For GitHub
+	// and AWS CodeCommit repositories, the commit message. For Amazon S3 buckets
+	// or actions, the user-provided content of a codepipeline-artifact-revision-summary
+	// key specified in the object metadata.
+	RevisionSummary *string `locationName:"revisionSummary" min:"1" type:"string"`
+
+	// The commit ID for the artifact revision. For artifacts stored in GitHub or
+	// AWS CodeCommit repositories, the commit ID is linked to a commit details
+	// page.
+	RevisionUrl *string `locationName:"revisionUrl" min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s ArtifactRevision) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ArtifactRevision) GoString() string {
+	return s.String()
+}
+
 // The Amazon S3 location where artifacts are stored for the pipeline. If this
 // Amazon S3 bucket is created manually, it must meet the requirements for AWS
-// CodePipeline. For more information, see the Concepts.
+// CodePipeline. For more information, see the Concepts (http://docs.aws.amazon.com/codepipeline/latest/userguide/concepts.html#CPS3Bucket).
 type ArtifactStore struct {
-	// The AWS Key Management Service (AWS KMS) key used to encrypt the data in
-	// the artifact store. If this is undefined, the default key for Amazon S3 is
-	// used.
+	_ struct{} `type:"structure"`
+
+	// The encryption key used to encrypt the data in the artifact store, such as
+	// an AWS Key Management Service (AWS KMS) key. If this is undefined, the default
+	// key for Amazon S3 is used.
 	EncryptionKey *EncryptionKey `locationName:"encryptionKey" type:"structure"`
 
 	// The location for storing the artifacts for a pipeline, such as an S3 bucket
 	// or folder.
-	Location *string `locationName:"location" type:"string" required:"true"`
+	//
+	// Location is a required field
+	Location *string `locationName:"location" min:"3" type:"string" required:"true"`
 
 	// The type of the artifact store, such as S3.
+	//
+	// Type is a required field
 	Type *string `locationName:"type" type:"string" required:"true" enum:"ArtifactStoreType"`
-
-	metadataArtifactStore `json:"-" xml:"-"`
-}
-
-type metadataArtifactStore struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1280,19 +2795,43 @@ func (s ArtifactStore) GoString() string {
 	return s.String()
 }
 
-// Represents information about a gate declaration.
-type BlockerDeclaration struct {
-	// The name of the gate declaration.
-	Name *string `locationName:"name" type:"string" required:"true"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ArtifactStore) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ArtifactStore"}
+	if s.Location == nil {
+		invalidParams.Add(request.NewErrParamRequired("Location"))
+	}
+	if s.Location != nil && len(*s.Location) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("Location", 3))
+	}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+	if s.EncryptionKey != nil {
+		if err := s.EncryptionKey.Validate(); err != nil {
+			invalidParams.AddNested("EncryptionKey", err.(request.ErrInvalidParams))
+		}
+	}
 
-	// The type of the gate declaration.
-	Type *string `locationName:"type" type:"string" required:"true" enum:"BlockerType"`
-
-	metadataBlockerDeclaration `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataBlockerDeclaration struct {
-	SDKShapeTraits bool `type:"structure"`
+// Reserved for future use.
+type BlockerDeclaration struct {
+	_ struct{} `type:"structure"`
+
+	// Reserved for future use.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// Reserved for future use.
+	//
+	// Type is a required field
+	Type *string `locationName:"type" type:"string" required:"true" enum:"BlockerType"`
 }
 
 // String returns the string representation
@@ -1305,37 +2844,67 @@ func (s BlockerDeclaration) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BlockerDeclaration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BlockerDeclaration"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Represents the input of a create custom action operation.
 type CreateCustomActionTypeInput struct {
-	// The category of the custom action, such as a source action or a build action.
+	_ struct{} `type:"structure"`
+
+	// The category of the custom action, such as a build action or a test action.
+	//
+	// Although Source and Approval are listed as valid values, they are not currently
+	// functional. These values are reserved for future use.
+	//
+	// Category is a required field
 	Category *string `locationName:"category" type:"string" required:"true" enum:"ActionCategory"`
 
 	// The configuration properties for the custom action.
+	//
+	// You can refer to a name in the configuration properties of the custom action
+	// within the URL templates by following the format of {Config:name}, as long
+	// as the configuration property is both required and not secret. For more information,
+	// see Create a Custom Action for a Pipeline (http://docs.aws.amazon.com/codepipeline/latest/userguide/how-to-create-custom-action.html).
 	ConfigurationProperties []*ActionConfigurationProperty `locationName:"configurationProperties" type:"list"`
 
 	// Returns information about the details of an artifact.
+	//
+	// InputArtifactDetails is a required field
 	InputArtifactDetails *ArtifactDetails `locationName:"inputArtifactDetails" type:"structure" required:"true"`
 
 	// Returns information about the details of an artifact.
+	//
+	// OutputArtifactDetails is a required field
 	OutputArtifactDetails *ArtifactDetails `locationName:"outputArtifactDetails" type:"structure" required:"true"`
 
 	// The provider of the service used in the custom action, such as AWS CodeDeploy.
-	Provider *string `locationName:"provider" type:"string" required:"true"`
+	//
+	// Provider is a required field
+	Provider *string `locationName:"provider" min:"1" type:"string" required:"true"`
 
 	// Returns information about the settings for an action type.
 	Settings *ActionTypeSettings `locationName:"settings" type:"structure"`
 
-	// The version number of the custom action.
+	// The version identifier of the custom action.
 	//
-	// A newly-created custom action is always assigned a version number of 1.
-	// This is required.
-	Version *string `locationName:"version" type:"string" required:"true"`
-
-	metadataCreateCustomActionTypeInput `json:"-" xml:"-"`
-}
-
-type metadataCreateCustomActionTypeInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	// Version is a required field
+	Version *string `locationName:"version" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -1348,16 +2917,70 @@ func (s CreateCustomActionTypeInput) GoString() string {
 	return s.String()
 }
 
-// Represents the output of a create custom action operation.
-type CreateCustomActionTypeOutput struct {
-	// Returns information about the details of an action type.
-	ActionType *ActionType `locationName:"actionType" type:"structure" required:"true"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateCustomActionTypeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateCustomActionTypeInput"}
+	if s.Category == nil {
+		invalidParams.Add(request.NewErrParamRequired("Category"))
+	}
+	if s.InputArtifactDetails == nil {
+		invalidParams.Add(request.NewErrParamRequired("InputArtifactDetails"))
+	}
+	if s.OutputArtifactDetails == nil {
+		invalidParams.Add(request.NewErrParamRequired("OutputArtifactDetails"))
+	}
+	if s.Provider == nil {
+		invalidParams.Add(request.NewErrParamRequired("Provider"))
+	}
+	if s.Provider != nil && len(*s.Provider) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Provider", 1))
+	}
+	if s.Version == nil {
+		invalidParams.Add(request.NewErrParamRequired("Version"))
+	}
+	if s.Version != nil && len(*s.Version) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Version", 1))
+	}
+	if s.ConfigurationProperties != nil {
+		for i, v := range s.ConfigurationProperties {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "ConfigurationProperties", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.InputArtifactDetails != nil {
+		if err := s.InputArtifactDetails.Validate(); err != nil {
+			invalidParams.AddNested("InputArtifactDetails", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.OutputArtifactDetails != nil {
+		if err := s.OutputArtifactDetails.Validate(); err != nil {
+			invalidParams.AddNested("OutputArtifactDetails", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Settings != nil {
+		if err := s.Settings.Validate(); err != nil {
+			invalidParams.AddNested("Settings", err.(request.ErrInvalidParams))
+		}
+	}
 
-	metadataCreateCustomActionTypeOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataCreateCustomActionTypeOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Represents the output of a create custom action operation.
+type CreateCustomActionTypeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Returns information about the details of an action type.
+	//
+	// ActionType is a required field
+	ActionType *ActionType `locationName:"actionType" type:"structure" required:"true"`
 }
 
 // String returns the string representation
@@ -1372,14 +2995,12 @@ func (s CreateCustomActionTypeOutput) GoString() string {
 
 // Represents the input of a create pipeline action.
 type CreatePipelineInput struct {
+	_ struct{} `type:"structure"`
+
 	// Represents the structure of actions and stages to be performed in the pipeline.
+	//
+	// Pipeline is a required field
 	Pipeline *PipelineDeclaration `locationName:"pipeline" type:"structure" required:"true"`
-
-	metadataCreatePipelineInput `json:"-" xml:"-"`
-}
-
-type metadataCreatePipelineInput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1392,16 +3013,30 @@ func (s CreatePipelineInput) GoString() string {
 	return s.String()
 }
 
-// Represents the output of a create pipeline action.
-type CreatePipelineOutput struct {
-	// Represents the structure of actions and stages to be performed in the pipeline.
-	Pipeline *PipelineDeclaration `locationName:"pipeline" type:"structure"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreatePipelineInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreatePipelineInput"}
+	if s.Pipeline == nil {
+		invalidParams.Add(request.NewErrParamRequired("Pipeline"))
+	}
+	if s.Pipeline != nil {
+		if err := s.Pipeline.Validate(); err != nil {
+			invalidParams.AddNested("Pipeline", err.(request.ErrInvalidParams))
+		}
+	}
 
-	metadataCreatePipelineOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataCreatePipelineOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Represents the output of a create pipeline action.
+type CreatePipelineOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Represents the structure of actions and stages to be performed in the pipeline.
+	Pipeline *PipelineDeclaration `locationName:"pipeline" type:"structure"`
 }
 
 // String returns the string representation
@@ -1416,17 +3051,24 @@ func (s CreatePipelineOutput) GoString() string {
 
 // Represents information about a current revision.
 type CurrentRevision struct {
+	_ struct{} `type:"structure"`
+
 	// The change identifier for the current revision.
-	ChangeIdentifier *string `locationName:"changeIdentifier" type:"string" required:"true"`
+	//
+	// ChangeIdentifier is a required field
+	ChangeIdentifier *string `locationName:"changeIdentifier" min:"1" type:"string" required:"true"`
+
+	// The date and time when the most recent revision of the artifact was created,
+	// in timestamp format.
+	Created *time.Time `locationName:"created" type:"timestamp" timestampFormat:"unix"`
 
 	// The revision ID of the current version of an artifact.
-	Revision *string `locationName:"revision" type:"string" required:"true"`
+	//
+	// Revision is a required field
+	Revision *string `locationName:"revision" min:"1" type:"string" required:"true"`
 
-	metadataCurrentRevision `json:"-" xml:"-"`
-}
-
-type metadataCurrentRevision struct {
-	SDKShapeTraits bool `type:"structure"`
+	// The summary of the most recent revision of the artifact.
+	RevisionSummary *string `locationName:"revisionSummary" min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -1439,24 +3081,51 @@ func (s CurrentRevision) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CurrentRevision) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CurrentRevision"}
+	if s.ChangeIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("ChangeIdentifier"))
+	}
+	if s.ChangeIdentifier != nil && len(*s.ChangeIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ChangeIdentifier", 1))
+	}
+	if s.Revision == nil {
+		invalidParams.Add(request.NewErrParamRequired("Revision"))
+	}
+	if s.Revision != nil && len(*s.Revision) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Revision", 1))
+	}
+	if s.RevisionSummary != nil && len(*s.RevisionSummary) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RevisionSummary", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Represents the input of a delete custom action operation. The custom action
 // will be marked as deleted.
 type DeleteCustomActionTypeInput struct {
+	_ struct{} `type:"structure"`
+
 	// The category of the custom action that you want to delete, such as source
 	// or deploy.
+	//
+	// Category is a required field
 	Category *string `locationName:"category" type:"string" required:"true" enum:"ActionCategory"`
 
 	// The provider of the service used in the custom action, such as AWS CodeDeploy.
-	Provider *string `locationName:"provider" type:"string" required:"true"`
+	//
+	// Provider is a required field
+	Provider *string `locationName:"provider" min:"1" type:"string" required:"true"`
 
 	// The version of the custom action to delete.
-	Version *string `locationName:"version" type:"string" required:"true"`
-
-	metadataDeleteCustomActionTypeInput `json:"-" xml:"-"`
-}
-
-type metadataDeleteCustomActionTypeInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// Version is a required field
+	Version *string `locationName:"version" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -1469,12 +3138,33 @@ func (s DeleteCustomActionTypeInput) GoString() string {
 	return s.String()
 }
 
-type DeleteCustomActionTypeOutput struct {
-	metadataDeleteCustomActionTypeOutput `json:"-" xml:"-"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteCustomActionTypeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteCustomActionTypeInput"}
+	if s.Category == nil {
+		invalidParams.Add(request.NewErrParamRequired("Category"))
+	}
+	if s.Provider == nil {
+		invalidParams.Add(request.NewErrParamRequired("Provider"))
+	}
+	if s.Provider != nil && len(*s.Provider) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Provider", 1))
+	}
+	if s.Version == nil {
+		invalidParams.Add(request.NewErrParamRequired("Version"))
+	}
+	if s.Version != nil && len(*s.Version) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Version", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataDeleteCustomActionTypeOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+type DeleteCustomActionTypeOutput struct {
+	_ struct{} `type:"structure"`
 }
 
 // String returns the string representation
@@ -1489,14 +3179,12 @@ func (s DeleteCustomActionTypeOutput) GoString() string {
 
 // Represents the input of a delete pipeline action.
 type DeletePipelineInput struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the pipeline to be deleted.
-	Name *string `locationName:"name" type:"string" required:"true"`
-
-	metadataDeletePipelineInput `json:"-" xml:"-"`
-}
-
-type metadataDeletePipelineInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -1509,12 +3197,24 @@ func (s DeletePipelineInput) GoString() string {
 	return s.String()
 }
 
-type DeletePipelineOutput struct {
-	metadataDeletePipelineOutput `json:"-" xml:"-"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeletePipelineInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeletePipelineInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataDeletePipelineOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+type DeletePipelineOutput struct {
+	_ struct{} `type:"structure"`
 }
 
 // String returns the string representation
@@ -1529,30 +3229,34 @@ func (s DeletePipelineOutput) GoString() string {
 
 // Represents the input of a disable stage transition input action.
 type DisableStageTransitionInput struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the pipeline in which you want to disable the flow of artifacts
 	// from one stage to another.
-	PipelineName *string `locationName:"pipelineName" type:"string" required:"true"`
+	//
+	// PipelineName is a required field
+	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
 
 	// The reason given to the user why a stage is disabled, such as waiting for
 	// manual approval or manual tests. This message is displayed in the pipeline
 	// console UI.
-	Reason *string `locationName:"reason" type:"string" required:"true"`
+	//
+	// Reason is a required field
+	Reason *string `locationName:"reason" min:"1" type:"string" required:"true"`
 
 	// The name of the stage where you want to disable the inbound or outbound transition
 	// of artifacts.
-	StageName *string `locationName:"stageName" type:"string" required:"true"`
+	//
+	// StageName is a required field
+	StageName *string `locationName:"stageName" min:"1" type:"string" required:"true"`
 
 	// Specifies whether artifacts will be prevented from transitioning into the
 	// stage and being processed by the actions in that stage (inbound), or prevented
 	// from transitioning from the stage after they have been processed by the actions
 	// in that stage (outbound).
+	//
+	// TransitionType is a required field
 	TransitionType *string `locationName:"transitionType" type:"string" required:"true" enum:"StageTransitionType"`
-
-	metadataDisableStageTransitionInput `json:"-" xml:"-"`
-}
-
-type metadataDisableStageTransitionInput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1565,12 +3269,39 @@ func (s DisableStageTransitionInput) GoString() string {
 	return s.String()
 }
 
-type DisableStageTransitionOutput struct {
-	metadataDisableStageTransitionOutput `json:"-" xml:"-"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisableStageTransitionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisableStageTransitionInput"}
+	if s.PipelineName == nil {
+		invalidParams.Add(request.NewErrParamRequired("PipelineName"))
+	}
+	if s.PipelineName != nil && len(*s.PipelineName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PipelineName", 1))
+	}
+	if s.Reason == nil {
+		invalidParams.Add(request.NewErrParamRequired("Reason"))
+	}
+	if s.Reason != nil && len(*s.Reason) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Reason", 1))
+	}
+	if s.StageName == nil {
+		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
+	}
+	if s.TransitionType == nil {
+		invalidParams.Add(request.NewErrParamRequired("TransitionType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataDisableStageTransitionOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+type DisableStageTransitionOutput struct {
+	_ struct{} `type:"structure"`
 }
 
 // String returns the string representation
@@ -1585,24 +3316,26 @@ func (s DisableStageTransitionOutput) GoString() string {
 
 // Represents the input of an enable stage transition action.
 type EnableStageTransitionInput struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the pipeline in which you want to enable the flow of artifacts
 	// from one stage to another.
-	PipelineName *string `locationName:"pipelineName" type:"string" required:"true"`
+	//
+	// PipelineName is a required field
+	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
 
 	// The name of the stage where you want to enable the transition of artifacts,
 	// either into the stage (inbound) or from that stage to the next stage (outbound).
-	StageName *string `locationName:"stageName" type:"string" required:"true"`
+	//
+	// StageName is a required field
+	StageName *string `locationName:"stageName" min:"1" type:"string" required:"true"`
 
 	// Specifies whether artifacts will be allowed to enter the stage and be processed
 	// by the actions in that stage (inbound) or whether already-processed artifacts
 	// will be allowed to transition to the next stage (outbound).
+	//
+	// TransitionType is a required field
 	TransitionType *string `locationName:"transitionType" type:"string" required:"true" enum:"StageTransitionType"`
-
-	metadataEnableStageTransitionInput `json:"-" xml:"-"`
-}
-
-type metadataEnableStageTransitionInput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1615,12 +3348,33 @@ func (s EnableStageTransitionInput) GoString() string {
 	return s.String()
 }
 
-type EnableStageTransitionOutput struct {
-	metadataEnableStageTransitionOutput `json:"-" xml:"-"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EnableStageTransitionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EnableStageTransitionInput"}
+	if s.PipelineName == nil {
+		invalidParams.Add(request.NewErrParamRequired("PipelineName"))
+	}
+	if s.PipelineName != nil && len(*s.PipelineName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PipelineName", 1))
+	}
+	if s.StageName == nil {
+		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
+	}
+	if s.TransitionType == nil {
+		invalidParams.Add(request.NewErrParamRequired("TransitionType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataEnableStageTransitionOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+type EnableStageTransitionOutput struct {
+	_ struct{} `type:"structure"`
 }
 
 // String returns the string representation
@@ -1633,20 +3387,22 @@ func (s EnableStageTransitionOutput) GoString() string {
 	return s.String()
 }
 
-// Represents information about the AWS Key Management Service (AWS KMS) key
-// used to encrypt data in the artifact store.
+// Represents information about the key used to encrypt data in the artifact
+// store, such as an AWS Key Management Service (AWS KMS) key.
 type EncryptionKey struct {
-	// The ID of the AWS KMS key.
-	Id *string `locationName:"id" type:"string" required:"true"`
+	_ struct{} `type:"structure"`
 
-	// The type of AWS KMS key, such as a customer master key.
+	// The ID used to identify the key. For an AWS KMS key, this is the key ID or
+	// key ARN.
+	//
+	// Id is a required field
+	Id *string `locationName:"id" min:"1" type:"string" required:"true"`
+
+	// The type of encryption key, such as an AWS Key Management Service (AWS KMS)
+	// key. When creating or updating a pipeline, the value must be set to 'KMS'.
+	//
+	// Type is a required field
 	Type *string `locationName:"type" type:"string" required:"true" enum:"EncryptionKeyType"`
-
-	metadataEncryptionKey `json:"-" xml:"-"`
-}
-
-type metadataEncryptionKey struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1659,19 +3415,34 @@ func (s EncryptionKey) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EncryptionKey) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EncryptionKey"}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Represents information about an error in AWS CodePipeline.
 type ErrorDetails struct {
+	_ struct{} `type:"structure"`
+
 	// The system ID or error number code of the error.
 	Code *string `locationName:"code" type:"string"`
 
 	// The text of the error message.
 	Message *string `locationName:"message" type:"string"`
-
-	metadataErrorDetails `json:"-" xml:"-"`
-}
-
-type metadataErrorDetails struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1687,9 +3458,11 @@ func (s ErrorDetails) GoString() string {
 // The details of the actions taken and results produced on an artifact as it
 // passes through stages in the pipeline.
 type ExecutionDetails struct {
+	_ struct{} `type:"structure"`
+
 	// The system-generated unique ID of this action used to identify this job worker
 	// in any external systems, such as AWS CodeDeploy.
-	ExternalExecutionId *string `locationName:"externalExecutionId" type:"string"`
+	ExternalExecutionId *string `locationName:"externalExecutionId" min:"1" type:"string"`
 
 	// The percentage of work completed on the action, represented on a scale of
 	// zero to one hundred percent.
@@ -1697,12 +3470,6 @@ type ExecutionDetails struct {
 
 	// The summary of the current status of the actions.
 	Summary *string `locationName:"summary" type:"string"`
-
-	metadataExecutionDetails `json:"-" xml:"-"`
-}
-
-type metadataExecutionDetails struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1715,22 +3482,35 @@ func (s ExecutionDetails) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ExecutionDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ExecutionDetails"}
+	if s.ExternalExecutionId != nil && len(*s.ExternalExecutionId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExternalExecutionId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Represents information about failure details.
 type FailureDetails struct {
+	_ struct{} `type:"structure"`
+
 	// The external ID of the run of the action that failed.
-	ExternalExecutionId *string `locationName:"externalExecutionId" type:"string"`
+	ExternalExecutionId *string `locationName:"externalExecutionId" min:"1" type:"string"`
 
 	// The message about the failure.
+	//
+	// Message is a required field
 	Message *string `locationName:"message" type:"string" required:"true"`
 
 	// The type of the failure.
+	//
+	// Type is a required field
 	Type *string `locationName:"type" type:"string" required:"true" enum:"FailureType"`
-
-	metadataFailureDetails `json:"-" xml:"-"`
-}
-
-type metadataFailureDetails struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1743,16 +3523,33 @@ func (s FailureDetails) GoString() string {
 	return s.String()
 }
 
-// Represents the input of a get job details action.
-type GetJobDetailsInput struct {
-	// The unique system-generated ID for the job.
-	JobId *string `locationName:"jobId" type:"string" required:"true"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FailureDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FailureDetails"}
+	if s.ExternalExecutionId != nil && len(*s.ExternalExecutionId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExternalExecutionId", 1))
+	}
+	if s.Message == nil {
+		invalidParams.Add(request.NewErrParamRequired("Message"))
+	}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
 
-	metadataGetJobDetailsInput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataGetJobDetailsInput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Represents the input of a get job details action.
+type GetJobDetailsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique system-generated ID for the job.
+	//
+	// JobId is a required field
+	JobId *string `locationName:"jobId" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -1765,19 +3562,28 @@ func (s GetJobDetailsInput) GoString() string {
 	return s.String()
 }
 
-// Represents the output of a get job details action.
-type GetJobDetailsOutput struct {
-	// The details of the job.
-	//
-	//  If AWSSessionCredentials is used, a long-running job can call GetJobDetails
-	// again to obtain new credentials.
-	JobDetails *JobDetails `locationName:"jobDetails" type:"structure"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetJobDetailsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetJobDetailsInput"}
+	if s.JobId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JobId"))
+	}
 
-	metadataGetJobDetailsOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataGetJobDetailsOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Represents the output of a get job details action.
+type GetJobDetailsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The details of the job.
+	//
+	// If AWSSessionCredentials is used, a long-running job can call GetJobDetails
+	// again to obtain new credentials.
+	JobDetails *JobDetails `locationName:"jobDetails" type:"structure"`
 }
 
 // String returns the string representation
@@ -1790,21 +3596,81 @@ func (s GetJobDetailsOutput) GoString() string {
 	return s.String()
 }
 
+// Represents the input of a get pipeline execution action.
+type GetPipelineExecutionInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the pipeline execution about which you want to get execution details.
+	//
+	// PipelineExecutionId is a required field
+	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string" required:"true"`
+
+	// The name of the pipeline about which you want to get execution details.
+	//
+	// PipelineName is a required field
+	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetPipelineExecutionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetPipelineExecutionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetPipelineExecutionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetPipelineExecutionInput"}
+	if s.PipelineExecutionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("PipelineExecutionId"))
+	}
+	if s.PipelineName == nil {
+		invalidParams.Add(request.NewErrParamRequired("PipelineName"))
+	}
+	if s.PipelineName != nil && len(*s.PipelineName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PipelineName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents the output of a get pipeline execution action.
+type GetPipelineExecutionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Represents information about the execution of a pipeline.
+	PipelineExecution *PipelineExecution `locationName:"pipelineExecution" type:"structure"`
+}
+
+// String returns the string representation
+func (s GetPipelineExecutionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetPipelineExecutionOutput) GoString() string {
+	return s.String()
+}
+
 // Represents the input of a get pipeline action.
 type GetPipelineInput struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the pipeline for which you want to get information. Pipeline
 	// names must be unique under an Amazon Web Services (AWS) user account.
-	Name *string `locationName:"name" type:"string" required:"true"`
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
 	// The version number of the pipeline. If you do not specify a version, defaults
 	// to the most current version.
-	Version *int64 `locationName:"version" type:"integer"`
-
-	metadataGetPipelineInput `json:"-" xml:"-"`
-}
-
-type metadataGetPipelineInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	Version *int64 `locationName:"version" min:"1" type:"integer"`
 }
 
 // String returns the string representation
@@ -1817,16 +3683,31 @@ func (s GetPipelineInput) GoString() string {
 	return s.String()
 }
 
-// Represents the output of a get pipeline action.
-type GetPipelineOutput struct {
-	// Represents the structure of actions and stages to be performed in the pipeline.
-	Pipeline *PipelineDeclaration `locationName:"pipeline" type:"structure"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetPipelineInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetPipelineInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Version != nil && *s.Version < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Version", 1))
+	}
 
-	metadataGetPipelineOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataGetPipelineOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Represents the output of a get pipeline action.
+type GetPipelineOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Represents the structure of actions and stages to be performed in the pipeline.
+	Pipeline *PipelineDeclaration `locationName:"pipeline" type:"structure"`
 }
 
 // String returns the string representation
@@ -1841,14 +3722,12 @@ func (s GetPipelineOutput) GoString() string {
 
 // Represents the input of a get pipeline state action.
 type GetPipelineStateInput struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the pipeline about which you want to get information.
-	Name *string `locationName:"name" type:"string" required:"true"`
-
-	metadataGetPipelineStateInput `json:"-" xml:"-"`
-}
-
-type metadataGetPipelineStateInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -1861,18 +3740,36 @@ func (s GetPipelineStateInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetPipelineStateInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetPipelineStateInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Represents the output of a get pipeline state action.
 type GetPipelineStateOutput struct {
+	_ struct{} `type:"structure"`
+
 	// The date and time the pipeline was created, in timestamp format.
 	Created *time.Time `locationName:"created" type:"timestamp" timestampFormat:"unix"`
 
 	// The name of the pipeline for which you want to get the state.
-	PipelineName *string `locationName:"pipelineName" type:"string"`
+	PipelineName *string `locationName:"pipelineName" min:"1" type:"string"`
 
 	// The version number of the pipeline.
 	//
 	// A newly-created pipeline is always assigned a version number of 1.
-	PipelineVersion *int64 `locationName:"pipelineVersion" type:"integer"`
+	PipelineVersion *int64 `locationName:"pipelineVersion" min:"1" type:"integer"`
 
 	// A list of the pipeline stage output information, including stage name, state,
 	// most recent run details, whether the stage is disabled, and other data.
@@ -1880,12 +3777,6 @@ type GetPipelineStateOutput struct {
 
 	// The date and time the pipeline was last updated, in timestamp format.
 	Updated *time.Time `locationName:"updated" type:"timestamp" timestampFormat:"unix"`
-
-	metadataGetPipelineStateOutput `json:"-" xml:"-"`
-}
-
-type metadataGetPipelineStateOutput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1900,18 +3791,18 @@ func (s GetPipelineStateOutput) GoString() string {
 
 // Represents the input of a get third party job details action.
 type GetThirdPartyJobDetailsInput struct {
+	_ struct{} `type:"structure"`
+
 	// The clientToken portion of the clientId and clientToken pair used to verify
 	// that the calling entity is allowed access to the job and its details.
+	//
+	// ClientToken is a required field
 	ClientToken *string `locationName:"clientToken" type:"string" required:"true"`
 
 	// The unique system-generated ID used for identifying the job.
-	JobId *string `locationName:"jobId" type:"string" required:"true"`
-
-	metadataGetThirdPartyJobDetailsInput `json:"-" xml:"-"`
-}
-
-type metadataGetThirdPartyJobDetailsInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// JobId is a required field
+	JobId *string `locationName:"jobId" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -1924,16 +3815,31 @@ func (s GetThirdPartyJobDetailsInput) GoString() string {
 	return s.String()
 }
 
-// Represents the output of a get third party job details action.
-type GetThirdPartyJobDetailsOutput struct {
-	// The details of the job, including any protected values defined for the job.
-	JobDetails *ThirdPartyJobDetails `locationName:"jobDetails" type:"structure"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetThirdPartyJobDetailsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetThirdPartyJobDetailsInput"}
+	if s.ClientToken == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClientToken"))
+	}
+	if s.JobId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JobId"))
+	}
+	if s.JobId != nil && len(*s.JobId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JobId", 1))
+	}
 
-	metadataGetThirdPartyJobDetailsOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataGetThirdPartyJobDetailsOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Represents the output of a get third party job details action.
+type GetThirdPartyJobDetailsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The details of the job, including any protected values defined for the job.
+	JobDetails *ThirdPartyJobDetails `locationName:"jobDetails" type:"structure"`
 }
 
 // String returns the string representation
@@ -1949,6 +3855,8 @@ func (s GetThirdPartyJobDetailsOutput) GoString() string {
 // Represents information about an artifact to be worked on, such as a test
 // or build artifact.
 type InputArtifact struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the artifact to be worked on, for example, "My App".
 	//
 	// The input artifact of an action must exactly match the output artifact declared
@@ -1956,13 +3864,9 @@ type InputArtifact struct {
 	// action in strict sequence from the action that provided the output artifact.
 	// Actions in parallel can declare different output artifacts, which are in
 	// turn consumed by different following actions.
-	Name *string `locationName:"name" type:"string" required:"true"`
-
-	metadataInputArtifact `json:"-" xml:"-"`
-}
-
-type metadataInputArtifact struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -1975,8 +3879,26 @@ func (s InputArtifact) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InputArtifact) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InputArtifact"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Represents information about a job.
 type Job struct {
+	_ struct{} `type:"structure"`
+
 	// The ID of the AWS account to use when performing the job.
 	AccountId *string `locationName:"accountId" type:"string"`
 
@@ -1990,12 +3912,6 @@ type Job struct {
 	// the job is being worked on by only one job worker. This number must be returned
 	// in the response.
 	Nonce *string `locationName:"nonce" type:"string"`
-
-	metadataJob `json:"-" xml:"-"`
-}
-
-type metadataJob struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2011,6 +3927,8 @@ func (s Job) GoString() string {
 // Represents additional information about a job required for a job worker to
 // complete the job.
 type JobData struct {
+	_ struct{} `type:"structure"`
+
 	// Represents information about an action configuration.
 	ActionConfiguration *ActionConfiguration `locationName:"actionConfiguration" type:"structure"`
 
@@ -2027,8 +3945,8 @@ type JobData struct {
 	// job requires in order to continue the job asynchronously.
 	ContinuationToken *string `locationName:"continuationToken" type:"string"`
 
-	// Represents information about the AWS Key Management Service (AWS KMS) key
-	// used to encrypt data in the artifact store.
+	// Represents information about the key used to encrypt data in the artifact
+	// store, such as an AWS Key Management Service (AWS KMS) key.
 	EncryptionKey *EncryptionKey `locationName:"encryptionKey" type:"structure"`
 
 	// The artifact supplied to the job.
@@ -2039,12 +3957,6 @@ type JobData struct {
 
 	// Represents information about a pipeline to a job worker.
 	PipelineContext *PipelineContext `locationName:"pipelineContext" type:"structure"`
-
-	metadataJobData `json:"-" xml:"-"`
-}
-
-type metadataJobData struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2059,6 +3971,8 @@ func (s JobData) GoString() string {
 
 // Represents information about the details of a job.
 type JobDetails struct {
+	_ struct{} `type:"structure"`
+
 	// The AWS account ID associated with the job.
 	AccountId *string `locationName:"accountId" type:"string"`
 
@@ -2068,12 +3982,6 @@ type JobDetails struct {
 
 	// The unique system-generated ID of the job.
 	Id *string `locationName:"id" type:"string"`
-
-	metadataJobDetails `json:"-" xml:"-"`
-}
-
-type metadataJobDetails struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2088,18 +3996,14 @@ func (s JobDetails) GoString() string {
 
 // Represents the input of a list action types action.
 type ListActionTypesInput struct {
+	_ struct{} `type:"structure"`
+
 	// Filters the list of action types to those created by a specified entity.
 	ActionOwnerFilter *string `locationName:"actionOwnerFilter" type:"string" enum:"ActionOwner"`
 
 	// An identifier that was returned from the previous list action types call,
 	// which can be used to return the next set of action types in the list.
 	NextToken *string `locationName:"nextToken" type:"string"`
-
-	metadataListActionTypesInput `json:"-" xml:"-"`
-}
-
-type metadataListActionTypesInput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2114,19 +4018,17 @@ func (s ListActionTypesInput) GoString() string {
 
 // Represents the output of a list action types action.
 type ListActionTypesOutput struct {
+	_ struct{} `type:"structure"`
+
 	// Provides details of the action types.
+	//
+	// ActionTypes is a required field
 	ActionTypes []*ActionType `locationName:"actionTypes" type:"list" required:"true"`
 
 	// If the amount of returned information is significantly large, an identifier
 	// is also returned which can be used in a subsequent list action types call
 	// to return the next set of action types in the list.
 	NextToken *string `locationName:"nextToken" type:"string"`
-
-	metadataListActionTypesOutput `json:"-" xml:"-"`
-}
-
-type metadataListActionTypesOutput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2141,15 +4043,11 @@ func (s ListActionTypesOutput) GoString() string {
 
 // Represents the input of a list pipelines action.
 type ListPipelinesInput struct {
+	_ struct{} `type:"structure"`
+
 	// An identifier that was returned from the previous list pipelines call, which
 	// can be used to return the next set of pipelines in the list.
 	NextToken *string `locationName:"nextToken" type:"string"`
-
-	metadataListPipelinesInput `json:"-" xml:"-"`
-}
-
-type metadataListPipelinesInput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2164,6 +4062,8 @@ func (s ListPipelinesInput) GoString() string {
 
 // Represents the output of a list pipelines action.
 type ListPipelinesOutput struct {
+	_ struct{} `type:"structure"`
+
 	// If the amount of returned information is significantly large, an identifier
 	// is also returned which can be used in a subsequent list pipelines call to
 	// return the next set of pipelines in the list.
@@ -2171,12 +4071,6 @@ type ListPipelinesOutput struct {
 
 	// The list of pipelines.
 	Pipelines []*PipelineSummary `locationName:"pipelines" type:"list"`
-
-	metadataListPipelinesOutput `json:"-" xml:"-"`
-}
-
-type metadataListPipelinesOutput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2191,6 +4085,8 @@ func (s ListPipelinesOutput) GoString() string {
 
 // Represents information about the output of an action.
 type OutputArtifact struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the output of an artifact, such as "My App".
 	//
 	// The input artifact of an action must exactly match the output artifact declared
@@ -2200,13 +4096,9 @@ type OutputArtifact struct {
 	// turn consumed by different following actions.
 	//
 	// Output artifact names must be unique within a pipeline.
-	Name *string `locationName:"name" type:"string" required:"true"`
-
-	metadataOutputArtifact `json:"-" xml:"-"`
-}
-
-type metadataOutputArtifact struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -2219,24 +4111,36 @@ func (s OutputArtifact) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *OutputArtifact) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "OutputArtifact"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Represents information about a pipeline to a job worker.
 type PipelineContext struct {
+	_ struct{} `type:"structure"`
+
 	// Represents the context of an action within the stage of a pipeline to a job
 	// worker.
 	Action *ActionContext `locationName:"action" type:"structure"`
 
 	// The name of the pipeline. This is a user-specified value. Pipeline names
 	// must be unique across all pipeline names under an Amazon Web Services account.
-	PipelineName *string `locationName:"pipelineName" type:"string"`
+	PipelineName *string `locationName:"pipelineName" min:"1" type:"string"`
 
 	// The stage of the pipeline.
 	Stage *StageContext `locationName:"stage" type:"structure"`
-
-	metadataPipelineContext `json:"-" xml:"-"`
-}
-
-type metadataPipelineContext struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2251,31 +4155,35 @@ func (s PipelineContext) GoString() string {
 
 // Represents the structure of actions and stages to be performed in the pipeline.
 type PipelineDeclaration struct {
+	_ struct{} `type:"structure"`
+
 	// The Amazon S3 location where artifacts are stored for the pipeline. If this
 	// Amazon S3 bucket is created manually, it must meet the requirements for AWS
-	// CodePipeline. For more information, see the Concepts.
+	// CodePipeline. For more information, see the Concepts (http://docs.aws.amazon.com/codepipeline/latest/userguide/concepts.html#CPS3Bucket).
+	//
+	// ArtifactStore is a required field
 	ArtifactStore *ArtifactStore `locationName:"artifactStore" type:"structure" required:"true"`
 
 	// The name of the action to be performed.
-	Name *string `locationName:"name" type:"string" required:"true"`
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
 	// The Amazon Resource Name (ARN) for AWS CodePipeline to use to either perform
 	// actions with no actionRoleArn, or to use to assume roles for actions with
 	// an actionRoleArn.
+	//
+	// RoleArn is a required field
 	RoleArn *string `locationName:"roleArn" type:"string" required:"true"`
 
 	// The stage in which to perform the action.
+	//
+	// Stages is a required field
 	Stages []*StageDeclaration `locationName:"stages" type:"list" required:"true"`
 
 	// The version number of the pipeline. A new pipeline always has a version number
 	// of 1. This number is automatically incremented when a pipeline is updated.
-	Version *int64 `locationName:"version" type:"integer"`
-
-	metadataPipelineDeclaration `json:"-" xml:"-"`
-}
-
-type metadataPipelineDeclaration struct {
-	SDKShapeTraits bool `type:"structure"`
+	Version *int64 `locationName:"version" min:"1" type:"integer"`
 }
 
 // String returns the string representation
@@ -2288,25 +4196,104 @@ func (s PipelineDeclaration) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PipelineDeclaration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PipelineDeclaration"}
+	if s.ArtifactStore == nil {
+		invalidParams.Add(request.NewErrParamRequired("ArtifactStore"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.RoleArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoleArn"))
+	}
+	if s.Stages == nil {
+		invalidParams.Add(request.NewErrParamRequired("Stages"))
+	}
+	if s.Version != nil && *s.Version < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Version", 1))
+	}
+	if s.ArtifactStore != nil {
+		if err := s.ArtifactStore.Validate(); err != nil {
+			invalidParams.AddNested("ArtifactStore", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Stages != nil {
+		for i, v := range s.Stages {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Stages", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents information about an execution of a pipeline.
+type PipelineExecution struct {
+	_ struct{} `type:"structure"`
+
+	// A list of ArtifactRevision objects included in a pipeline execution.
+	ArtifactRevisions []*ArtifactRevision `locationName:"artifactRevisions" type:"list"`
+
+	// The ID of the pipeline execution.
+	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string"`
+
+	// The name of the pipeline that was executed.
+	PipelineName *string `locationName:"pipelineName" min:"1" type:"string"`
+
+	// The version number of the pipeline that was executed.
+	PipelineVersion *int64 `locationName:"pipelineVersion" min:"1" type:"integer"`
+
+	// The status of the pipeline execution.
+	//
+	//    * InProgress: The pipeline execution is currently running.
+	//
+	//    * Succeeded: The pipeline execution completed successfully.
+	//
+	//    * Superseded: While this pipeline execution was waiting for the next stage
+	//    to be completed, a newer pipeline execution caught up and continued through
+	//    the pipeline instead.
+	//
+	//    * Failed: The pipeline did not complete successfully.
+	Status *string `locationName:"status" type:"string" enum:"PipelineExecutionStatus"`
+}
+
+// String returns the string representation
+func (s PipelineExecution) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PipelineExecution) GoString() string {
+	return s.String()
+}
+
 // Returns a summary of a pipeline.
 type PipelineSummary struct {
+	_ struct{} `type:"structure"`
+
 	// The date and time the pipeline was created, in timestamp format.
 	Created *time.Time `locationName:"created" type:"timestamp" timestampFormat:"unix"`
 
 	// The name of the pipeline.
-	Name *string `locationName:"name" type:"string"`
+	Name *string `locationName:"name" min:"1" type:"string"`
 
 	// The date and time of the last update to the pipeline, in timestamp format.
 	Updated *time.Time `locationName:"updated" type:"timestamp" timestampFormat:"unix"`
 
 	// The version number of the pipeline.
-	Version *int64 `locationName:"version" type:"integer"`
-
-	metadataPipelineSummary `json:"-" xml:"-"`
-}
-
-type metadataPipelineSummary struct {
-	SDKShapeTraits bool `type:"structure"`
+	Version *int64 `locationName:"version" min:"1" type:"integer"`
 }
 
 // String returns the string representation
@@ -2321,23 +4308,21 @@ func (s PipelineSummary) GoString() string {
 
 // Represents the input of a poll for jobs action.
 type PollForJobsInput struct {
+	_ struct{} `type:"structure"`
+
 	// Represents information about an action type.
+	//
+	// ActionTypeId is a required field
 	ActionTypeId *ActionTypeId `locationName:"actionTypeId" type:"structure" required:"true"`
 
 	// The maximum number of jobs to return in a poll for jobs call.
-	MaxBatchSize *int64 `locationName:"maxBatchSize" type:"integer"`
+	MaxBatchSize *int64 `locationName:"maxBatchSize" min:"1" type:"integer"`
 
 	// A map of property names and values. For an action type with no queryable
 	// properties, this value must be null or an empty map. For an action type with
 	// a queryable property, you must supply that property as a key in the map.
 	// Only jobs whose action configuration matches the mapped value will be returned.
 	QueryParam map[string]*string `locationName:"queryParam" type:"map"`
-
-	metadataPollForJobsInput `json:"-" xml:"-"`
-}
-
-type metadataPollForJobsInput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2350,16 +4335,33 @@ func (s PollForJobsInput) GoString() string {
 	return s.String()
 }
 
-// Represents the output of a poll for jobs action.
-type PollForJobsOutput struct {
-	// Information about the jobs to take action on.
-	Jobs []*Job `locationName:"jobs" type:"list"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PollForJobsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PollForJobsInput"}
+	if s.ActionTypeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ActionTypeId"))
+	}
+	if s.MaxBatchSize != nil && *s.MaxBatchSize < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxBatchSize", 1))
+	}
+	if s.ActionTypeId != nil {
+		if err := s.ActionTypeId.Validate(); err != nil {
+			invalidParams.AddNested("ActionTypeId", err.(request.ErrInvalidParams))
+		}
+	}
 
-	metadataPollForJobsOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataPollForJobsOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Represents the output of a poll for jobs action.
+type PollForJobsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the jobs to take action on.
+	Jobs []*Job `locationName:"jobs" type:"list"`
 }
 
 // String returns the string representation
@@ -2374,17 +4376,15 @@ func (s PollForJobsOutput) GoString() string {
 
 // Represents the input of a poll for third party jobs action.
 type PollForThirdPartyJobsInput struct {
+	_ struct{} `type:"structure"`
+
 	// Represents information about an action type.
+	//
+	// ActionTypeId is a required field
 	ActionTypeId *ActionTypeId `locationName:"actionTypeId" type:"structure" required:"true"`
 
 	// The maximum number of jobs to return in a poll for jobs call.
-	MaxBatchSize *int64 `locationName:"maxBatchSize" type:"integer"`
-
-	metadataPollForThirdPartyJobsInput `json:"-" xml:"-"`
-}
-
-type metadataPollForThirdPartyJobsInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	MaxBatchSize *int64 `locationName:"maxBatchSize" min:"1" type:"integer"`
 }
 
 // String returns the string representation
@@ -2397,16 +4397,33 @@ func (s PollForThirdPartyJobsInput) GoString() string {
 	return s.String()
 }
 
-// Represents the output of a poll for third party jobs action.
-type PollForThirdPartyJobsOutput struct {
-	// Information about the jobs to take action on.
-	Jobs []*ThirdPartyJob `locationName:"jobs" type:"list"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PollForThirdPartyJobsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PollForThirdPartyJobsInput"}
+	if s.ActionTypeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ActionTypeId"))
+	}
+	if s.MaxBatchSize != nil && *s.MaxBatchSize < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxBatchSize", 1))
+	}
+	if s.ActionTypeId != nil {
+		if err := s.ActionTypeId.Validate(); err != nil {
+			invalidParams.AddNested("ActionTypeId", err.(request.ErrInvalidParams))
+		}
+	}
 
-	metadataPollForThirdPartyJobsOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataPollForThirdPartyJobsOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Represents the output of a poll for third party jobs action.
+type PollForThirdPartyJobsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the jobs to take action on.
+	Jobs []*ThirdPartyJob `locationName:"jobs" type:"list"`
 }
 
 // String returns the string representation
@@ -2421,23 +4438,27 @@ func (s PollForThirdPartyJobsOutput) GoString() string {
 
 // Represents the input of a put action revision action.
 type PutActionRevisionInput struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the action that will process the revision.
-	ActionName *string `locationName:"actionName" type:"string" required:"true"`
+	//
+	// ActionName is a required field
+	ActionName *string `locationName:"actionName" min:"1" type:"string" required:"true"`
 
 	// Represents information about the version (or revision) of an action.
+	//
+	// ActionRevision is a required field
 	ActionRevision *ActionRevision `locationName:"actionRevision" type:"structure" required:"true"`
 
 	// The name of the pipeline that will start processing the revision to the source.
-	PipelineName *string `locationName:"pipelineName" type:"string" required:"true"`
+	//
+	// PipelineName is a required field
+	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
 
 	// The name of the stage that contains the action that will act upon the revision.
-	StageName *string `locationName:"stageName" type:"string" required:"true"`
-
-	metadataPutActionRevisionInput `json:"-" xml:"-"`
-}
-
-type metadataPutActionRevisionInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// StageName is a required field
+	StageName *string `locationName:"stageName" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -2450,19 +4471,52 @@ func (s PutActionRevisionInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutActionRevisionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutActionRevisionInput"}
+	if s.ActionName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ActionName"))
+	}
+	if s.ActionName != nil && len(*s.ActionName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ActionName", 1))
+	}
+	if s.ActionRevision == nil {
+		invalidParams.Add(request.NewErrParamRequired("ActionRevision"))
+	}
+	if s.PipelineName == nil {
+		invalidParams.Add(request.NewErrParamRequired("PipelineName"))
+	}
+	if s.PipelineName != nil && len(*s.PipelineName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PipelineName", 1))
+	}
+	if s.StageName == nil {
+		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
+	}
+	if s.ActionRevision != nil {
+		if err := s.ActionRevision.Validate(); err != nil {
+			invalidParams.AddNested("ActionRevision", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Represents the output of a put action revision action.
 type PutActionRevisionOutput struct {
-	// The new revision number or ID for the revision after the action completes.
+	_ struct{} `type:"structure"`
+
+	// Indicates whether the artifact revision was previously used in an execution
+	// of the specified pipeline.
 	NewRevision *bool `locationName:"newRevision" type:"boolean"`
 
 	// The ID of the current workflow state of the pipeline.
 	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string"`
-
-	metadataPutActionRevisionOutput `json:"-" xml:"-"`
-}
-
-type metadataPutActionRevisionOutput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2475,20 +4529,120 @@ func (s PutActionRevisionOutput) GoString() string {
 	return s.String()
 }
 
+// Represents the input of a put approval result action.
+type PutApprovalResultInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the action for which approval is requested.
+	//
+	// ActionName is a required field
+	ActionName *string `locationName:"actionName" min:"1" type:"string" required:"true"`
+
+	// The name of the pipeline that contains the action.
+	//
+	// PipelineName is a required field
+	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
+
+	// Represents information about the result of the approval request.
+	//
+	// Result is a required field
+	Result *ApprovalResult `locationName:"result" type:"structure" required:"true"`
+
+	// The name of the stage that contains the action.
+	//
+	// StageName is a required field
+	StageName *string `locationName:"stageName" min:"1" type:"string" required:"true"`
+
+	// The system-generated token used to identify a unique approval request. The
+	// token for each open approval request can be obtained using the GetPipelineState
+	// action and is used to validate that the approval request corresponding to
+	// this token is still valid.
+	//
+	// Token is a required field
+	Token *string `locationName:"token" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s PutApprovalResultInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PutApprovalResultInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutApprovalResultInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutApprovalResultInput"}
+	if s.ActionName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ActionName"))
+	}
+	if s.ActionName != nil && len(*s.ActionName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ActionName", 1))
+	}
+	if s.PipelineName == nil {
+		invalidParams.Add(request.NewErrParamRequired("PipelineName"))
+	}
+	if s.PipelineName != nil && len(*s.PipelineName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PipelineName", 1))
+	}
+	if s.Result == nil {
+		invalidParams.Add(request.NewErrParamRequired("Result"))
+	}
+	if s.StageName == nil {
+		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
+	}
+	if s.Token == nil {
+		invalidParams.Add(request.NewErrParamRequired("Token"))
+	}
+	if s.Result != nil {
+		if err := s.Result.Validate(); err != nil {
+			invalidParams.AddNested("Result", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents the output of a put approval result action.
+type PutApprovalResultOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The timestamp showing when the approval or rejection was submitted.
+	ApprovedAt *time.Time `locationName:"approvedAt" type:"timestamp" timestampFormat:"unix"`
+}
+
+// String returns the string representation
+func (s PutApprovalResultOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PutApprovalResultOutput) GoString() string {
+	return s.String()
+}
+
 // Represents the input of a put job failure result action.
 type PutJobFailureResultInput struct {
+	_ struct{} `type:"structure"`
+
 	// The details about the failure of a job.
+	//
+	// FailureDetails is a required field
 	FailureDetails *FailureDetails `locationName:"failureDetails" type:"structure" required:"true"`
 
 	// The unique system-generated ID of the job that failed. This is the same ID
 	// returned from PollForJobs.
+	//
+	// JobId is a required field
 	JobId *string `locationName:"jobId" type:"string" required:"true"`
-
-	metadataPutJobFailureResultInput `json:"-" xml:"-"`
-}
-
-type metadataPutJobFailureResultInput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2501,12 +4655,29 @@ func (s PutJobFailureResultInput) GoString() string {
 	return s.String()
 }
 
-type PutJobFailureResultOutput struct {
-	metadataPutJobFailureResultOutput `json:"-" xml:"-"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutJobFailureResultInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutJobFailureResultInput"}
+	if s.FailureDetails == nil {
+		invalidParams.Add(request.NewErrParamRequired("FailureDetails"))
+	}
+	if s.JobId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JobId"))
+	}
+	if s.FailureDetails != nil {
+		if err := s.FailureDetails.Validate(); err != nil {
+			invalidParams.AddNested("FailureDetails", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataPutJobFailureResultOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+type PutJobFailureResultOutput struct {
+	_ struct{} `type:"structure"`
 }
 
 // String returns the string representation
@@ -2521,8 +4692,14 @@ func (s PutJobFailureResultOutput) GoString() string {
 
 // Represents the input of a put job success result action.
 type PutJobSuccessResultInput struct {
-	// A system-generated token, such as a AWS CodeDeploy deployment ID, that the
-	// successful job used to complete a job asynchronously.
+	_ struct{} `type:"structure"`
+
+	// A token generated by a job worker, such as an AWS CodeDeploy deployment ID,
+	// that a successful job provides to identify a custom action in progress. Future
+	// jobs will use this token in order to identify the running instance of the
+	// action. It can be reused to return additional information about the progress
+	// of the custom action. When the action is complete, no continuation token
+	// should be supplied.
 	ContinuationToken *string `locationName:"continuationToken" type:"string"`
 
 	// The ID of the current revision of the artifact successfully worked upon by
@@ -2535,13 +4712,9 @@ type PutJobSuccessResultInput struct {
 
 	// The unique system-generated ID of the job that succeeded. This is the same
 	// ID returned from PollForJobs.
+	//
+	// JobId is a required field
 	JobId *string `locationName:"jobId" type:"string" required:"true"`
-
-	metadataPutJobSuccessResultInput `json:"-" xml:"-"`
-}
-
-type metadataPutJobSuccessResultInput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2554,12 +4727,31 @@ func (s PutJobSuccessResultInput) GoString() string {
 	return s.String()
 }
 
-type PutJobSuccessResultOutput struct {
-	metadataPutJobSuccessResultOutput `json:"-" xml:"-"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutJobSuccessResultInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutJobSuccessResultInput"}
+	if s.JobId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JobId"))
+	}
+	if s.CurrentRevision != nil {
+		if err := s.CurrentRevision.Validate(); err != nil {
+			invalidParams.AddNested("CurrentRevision", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.ExecutionDetails != nil {
+		if err := s.ExecutionDetails.Validate(); err != nil {
+			invalidParams.AddNested("ExecutionDetails", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataPutJobSuccessResultOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+type PutJobSuccessResultOutput struct {
+	_ struct{} `type:"structure"`
 }
 
 // String returns the string representation
@@ -2574,21 +4766,23 @@ func (s PutJobSuccessResultOutput) GoString() string {
 
 // Represents the input of a third party job failure result action.
 type PutThirdPartyJobFailureResultInput struct {
+	_ struct{} `type:"structure"`
+
 	// The clientToken portion of the clientId and clientToken pair used to verify
 	// that the calling entity is allowed access to the job and its details.
+	//
+	// ClientToken is a required field
 	ClientToken *string `locationName:"clientToken" type:"string" required:"true"`
 
 	// Represents information about failure details.
+	//
+	// FailureDetails is a required field
 	FailureDetails *FailureDetails `locationName:"failureDetails" type:"structure" required:"true"`
 
 	// The ID of the job that failed. This is the same ID returned from PollForThirdPartyJobs.
-	JobId *string `locationName:"jobId" type:"string" required:"true"`
-
-	metadataPutThirdPartyJobFailureResultInput `json:"-" xml:"-"`
-}
-
-type metadataPutThirdPartyJobFailureResultInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// JobId is a required field
+	JobId *string `locationName:"jobId" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -2601,12 +4795,35 @@ func (s PutThirdPartyJobFailureResultInput) GoString() string {
 	return s.String()
 }
 
-type PutThirdPartyJobFailureResultOutput struct {
-	metadataPutThirdPartyJobFailureResultOutput `json:"-" xml:"-"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutThirdPartyJobFailureResultInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutThirdPartyJobFailureResultInput"}
+	if s.ClientToken == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClientToken"))
+	}
+	if s.FailureDetails == nil {
+		invalidParams.Add(request.NewErrParamRequired("FailureDetails"))
+	}
+	if s.JobId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JobId"))
+	}
+	if s.JobId != nil && len(*s.JobId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JobId", 1))
+	}
+	if s.FailureDetails != nil {
+		if err := s.FailureDetails.Validate(); err != nil {
+			invalidParams.AddNested("FailureDetails", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataPutThirdPartyJobFailureResultOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+type PutThirdPartyJobFailureResultOutput struct {
+	_ struct{} `type:"structure"`
 }
 
 // String returns the string representation
@@ -2621,12 +4838,20 @@ func (s PutThirdPartyJobFailureResultOutput) GoString() string {
 
 // Represents the input of a put third party job success result action.
 type PutThirdPartyJobSuccessResultInput struct {
+	_ struct{} `type:"structure"`
+
 	// The clientToken portion of the clientId and clientToken pair used to verify
 	// that the calling entity is allowed access to the job and its details.
+	//
+	// ClientToken is a required field
 	ClientToken *string `locationName:"clientToken" type:"string" required:"true"`
 
-	// A system-generated token, such as a AWS CodeDeploy deployment ID, that a
-	// job uses in order to continue the job asynchronously.
+	// A token generated by a job worker, such as an AWS CodeDeploy deployment ID,
+	// that a successful job provides to identify a partner action in progress.
+	// Future jobs will use this token in order to identify the running instance
+	// of the action. It can be reused to return additional information about the
+	// progress of the partner action. When the action is complete, no continuation
+	// token should be supplied.
 	ContinuationToken *string `locationName:"continuationToken" type:"string"`
 
 	// Represents information about a current revision.
@@ -2638,13 +4863,9 @@ type PutThirdPartyJobSuccessResultInput struct {
 
 	// The ID of the job that successfully completed. This is the same ID returned
 	// from PollForThirdPartyJobs.
-	JobId *string `locationName:"jobId" type:"string" required:"true"`
-
-	metadataPutThirdPartyJobSuccessResultInput `json:"-" xml:"-"`
-}
-
-type metadataPutThirdPartyJobSuccessResultInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// JobId is a required field
+	JobId *string `locationName:"jobId" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -2657,12 +4878,37 @@ func (s PutThirdPartyJobSuccessResultInput) GoString() string {
 	return s.String()
 }
 
-type PutThirdPartyJobSuccessResultOutput struct {
-	metadataPutThirdPartyJobSuccessResultOutput `json:"-" xml:"-"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutThirdPartyJobSuccessResultInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutThirdPartyJobSuccessResultInput"}
+	if s.ClientToken == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClientToken"))
+	}
+	if s.JobId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JobId"))
+	}
+	if s.JobId != nil && len(*s.JobId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JobId", 1))
+	}
+	if s.CurrentRevision != nil {
+		if err := s.CurrentRevision.Validate(); err != nil {
+			invalidParams.AddNested("CurrentRevision", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.ExecutionDetails != nil {
+		if err := s.ExecutionDetails.Validate(); err != nil {
+			invalidParams.AddNested("ExecutionDetails", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataPutThirdPartyJobSuccessResultOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+type PutThirdPartyJobSuccessResultOutput struct {
+	_ struct{} `type:"structure"`
 }
 
 // String returns the string representation
@@ -2675,20 +4921,103 @@ func (s PutThirdPartyJobSuccessResultOutput) GoString() string {
 	return s.String()
 }
 
+// Represents the input of a retry stage execution action.
+type RetryStageExecutionInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the pipeline execution in the failed stage to be retried. Use the
+	// GetPipelineState action to retrieve the current pipelineExecutionId of the
+	// failed stage
+	//
+	// PipelineExecutionId is a required field
+	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string" required:"true"`
+
+	// The name of the pipeline that contains the failed stage.
+	//
+	// PipelineName is a required field
+	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
+
+	// The scope of the retry attempt. Currently, the only supported value is FAILED_ACTIONS.
+	//
+	// RetryMode is a required field
+	RetryMode *string `locationName:"retryMode" type:"string" required:"true" enum:"StageRetryMode"`
+
+	// The name of the failed stage to be retried.
+	//
+	// StageName is a required field
+	StageName *string `locationName:"stageName" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s RetryStageExecutionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RetryStageExecutionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RetryStageExecutionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RetryStageExecutionInput"}
+	if s.PipelineExecutionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("PipelineExecutionId"))
+	}
+	if s.PipelineName == nil {
+		invalidParams.Add(request.NewErrParamRequired("PipelineName"))
+	}
+	if s.PipelineName != nil && len(*s.PipelineName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PipelineName", 1))
+	}
+	if s.RetryMode == nil {
+		invalidParams.Add(request.NewErrParamRequired("RetryMode"))
+	}
+	if s.StageName == nil {
+		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents the output of a retry stage execution action.
+type RetryStageExecutionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the current workflow execution in the failed stage.
+	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string"`
+}
+
+// String returns the string representation
+func (s RetryStageExecutionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RetryStageExecutionOutput) GoString() string {
+	return s.String()
+}
+
 // The location of the Amazon S3 bucket that contains a revision.
 type S3ArtifactLocation struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the Amazon S3 bucket.
+	//
+	// BucketName is a required field
 	BucketName *string `locationName:"bucketName" type:"string" required:"true"`
 
 	// The key of the object in the Amazon S3 bucket, which uniquely identifies
 	// the object in the bucket.
+	//
+	// ObjectKey is a required field
 	ObjectKey *string `locationName:"objectKey" type:"string" required:"true"`
-
-	metadataS3ArtifactLocation `json:"-" xml:"-"`
-}
-
-type metadataS3ArtifactLocation struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2703,14 +5032,10 @@ func (s S3ArtifactLocation) GoString() string {
 
 // Represents information about a stage to a job worker.
 type StageContext struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the stage.
-	Name *string `locationName:"name" type:"string"`
-
-	metadataStageContext `json:"-" xml:"-"`
-}
-
-type metadataStageContext struct {
-	SDKShapeTraits bool `type:"structure"`
+	Name *string `locationName:"name" min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -2725,20 +5050,20 @@ func (s StageContext) GoString() string {
 
 // Represents information about a stage and its definition.
 type StageDeclaration struct {
+	_ struct{} `type:"structure"`
+
 	// The actions included in a stage.
+	//
+	// Actions is a required field
 	Actions []*ActionDeclaration `locationName:"actions" type:"list" required:"true"`
 
-	// The gates included in a stage.
+	// Reserved for future use.
 	Blockers []*BlockerDeclaration `locationName:"blockers" type:"list"`
 
 	// The name of the stage.
-	Name *string `locationName:"name" type:"string" required:"true"`
-
-	metadataStageDeclaration `json:"-" xml:"-"`
-}
-
-type metadataStageDeclaration struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -2751,22 +5076,87 @@ func (s StageDeclaration) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StageDeclaration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StageDeclaration"}
+	if s.Actions == nil {
+		invalidParams.Add(request.NewErrParamRequired("Actions"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Actions != nil {
+		for i, v := range s.Actions {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Actions", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Blockers != nil {
+		for i, v := range s.Blockers {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Blockers", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents information about the run of a stage.
+type StageExecution struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the pipeline execution associated with the stage.
+	//
+	// PipelineExecutionId is a required field
+	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string" required:"true"`
+
+	// The status of the stage, or for a completed stage, the last status of the
+	// stage.
+	//
+	// Status is a required field
+	Status *string `locationName:"status" type:"string" required:"true" enum:"StageExecutionStatus"`
+}
+
+// String returns the string representation
+func (s StageExecution) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StageExecution) GoString() string {
+	return s.String()
+}
+
 // Represents information about the state of the stage.
 type StageState struct {
+	_ struct{} `type:"structure"`
+
 	// The state of the stage.
 	ActionStates []*ActionState `locationName:"actionStates" type:"list"`
 
 	// The state of the inbound transition, which is either enabled or disabled.
 	InboundTransitionState *TransitionState `locationName:"inboundTransitionState" type:"structure"`
 
+	// Information about the latest execution in the stage, including its ID and
+	// status.
+	LatestExecution *StageExecution `locationName:"latestExecution" type:"structure"`
+
 	// The name of the stage.
-	StageName *string `locationName:"stageName" type:"string"`
-
-	metadataStageState `json:"-" xml:"-"`
-}
-
-type metadataStageState struct {
-	SDKShapeTraits bool `type:"structure"`
+	StageName *string `locationName:"stageName" min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -2781,14 +5171,12 @@ func (s StageState) GoString() string {
 
 // Represents the input of a start pipeline execution action.
 type StartPipelineExecutionInput struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the pipeline to start.
-	Name *string `locationName:"name" type:"string" required:"true"`
-
-	metadataStartPipelineExecutionInput `json:"-" xml:"-"`
-}
-
-type metadataStartPipelineExecutionInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -2801,16 +5189,28 @@ func (s StartPipelineExecutionInput) GoString() string {
 	return s.String()
 }
 
-// Represents the output of a start pipeline execution action.
-type StartPipelineExecutionOutput struct {
-	// The unique system-generated ID of the pipeline that was started.
-	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartPipelineExecutionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartPipelineExecutionInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
 
-	metadataStartPipelineExecutionOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataStartPipelineExecutionOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Represents the output of a start pipeline execution action.
+type StartPipelineExecutionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique system-generated ID of the pipeline execution that was started.
+	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string"`
 }
 
 // String returns the string representation
@@ -2826,18 +5226,14 @@ func (s StartPipelineExecutionOutput) GoString() string {
 // A response to a PollForThirdPartyJobs request returned by AWS CodePipeline
 // when there is a job to be worked upon by a partner action.
 type ThirdPartyJob struct {
+	_ struct{} `type:"structure"`
+
 	// The clientToken portion of the clientId and clientToken pair used to verify
 	// that the calling entity is allowed access to the job and its details.
 	ClientId *string `locationName:"clientId" type:"string"`
 
 	// The identifier used to identify the job in AWS CodePipeline.
 	JobId *string `locationName:"jobId" type:"string"`
-
-	metadataThirdPartyJob `json:"-" xml:"-"`
-}
-
-type metadataThirdPartyJob struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2852,6 +5248,8 @@ func (s ThirdPartyJob) GoString() string {
 
 // Represents information about the job data for a partner action.
 type ThirdPartyJobData struct {
+	_ struct{} `type:"structure"`
+
 	// Represents information about an action configuration.
 	ActionConfiguration *ActionConfiguration `locationName:"actionConfiguration" type:"structure"`
 
@@ -2868,8 +5266,9 @@ type ThirdPartyJobData struct {
 	// job requires in order to continue the job asynchronously.
 	ContinuationToken *string `locationName:"continuationToken" type:"string"`
 
-	// The AWS Key Management Service (AWS KMS) key used to encrypt and decrypt
-	// data in the artifact store for the pipeline.
+	// The encryption key used to encrypt and decrypt data in the artifact store
+	// for the pipeline, such as an AWS Key Management Service (AWS KMS) key. This
+	// is optional and might not be present.
 	EncryptionKey *EncryptionKey `locationName:"encryptionKey" type:"structure"`
 
 	// The name of the artifact that will be worked upon by the action, if any.
@@ -2886,12 +5285,6 @@ type ThirdPartyJobData struct {
 
 	// Represents information about a pipeline to a job worker.
 	PipelineContext *PipelineContext `locationName:"pipelineContext" type:"structure"`
-
-	metadataThirdPartyJobData `json:"-" xml:"-"`
-}
-
-type metadataThirdPartyJobData struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2906,22 +5299,18 @@ func (s ThirdPartyJobData) GoString() string {
 
 // The details of a job sent in response to a GetThirdPartyJobDetails request.
 type ThirdPartyJobDetails struct {
+	_ struct{} `type:"structure"`
+
 	// The data to be returned by the third party job worker.
 	Data *ThirdPartyJobData `locationName:"data" type:"structure"`
 
 	// The identifier used to identify the job details in AWS CodePipeline.
-	Id *string `locationName:"id" type:"string"`
+	Id *string `locationName:"id" min:"1" type:"string"`
 
 	// A system-generated random number that AWS CodePipeline uses to ensure that
 	// the job is being worked on by only one job worker. This number must be returned
 	// in the response.
 	Nonce *string `locationName:"nonce" type:"string"`
-
-	metadataThirdPartyJobDetails `json:"-" xml:"-"`
-}
-
-type metadataThirdPartyJobDetails struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2937,9 +5326,11 @@ func (s ThirdPartyJobDetails) GoString() string {
 // Represents information about the state of transitions between one stage and
 // another stage.
 type TransitionState struct {
+	_ struct{} `type:"structure"`
+
 	// The user-specified reason why the transition between two stages of a pipeline
 	// was disabled.
-	DisabledReason *string `locationName:"disabledReason" type:"string"`
+	DisabledReason *string `locationName:"disabledReason" min:"1" type:"string"`
 
 	// Whether the transition between stages is enabled (true) or disabled (false).
 	Enabled *bool `locationName:"enabled" type:"boolean"`
@@ -2949,12 +5340,6 @@ type TransitionState struct {
 
 	// The ID of the user who last changed the transition state.
 	LastChangedBy *string `locationName:"lastChangedBy" type:"string"`
-
-	metadataTransitionState `json:"-" xml:"-"`
-}
-
-type metadataTransitionState struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2969,14 +5354,12 @@ func (s TransitionState) GoString() string {
 
 // Represents the input of an update pipeline action.
 type UpdatePipelineInput struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the pipeline to be updated.
+	//
+	// Pipeline is a required field
 	Pipeline *PipelineDeclaration `locationName:"pipeline" type:"structure" required:"true"`
-
-	metadataUpdatePipelineInput `json:"-" xml:"-"`
-}
-
-type metadataUpdatePipelineInput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -2989,16 +5372,30 @@ func (s UpdatePipelineInput) GoString() string {
 	return s.String()
 }
 
-// Represents the output of an update pipeline action.
-type UpdatePipelineOutput struct {
-	// The structure of the updated pipeline.
-	Pipeline *PipelineDeclaration `locationName:"pipeline" type:"structure"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdatePipelineInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdatePipelineInput"}
+	if s.Pipeline == nil {
+		invalidParams.Add(request.NewErrParamRequired("Pipeline"))
+	}
+	if s.Pipeline != nil {
+		if err := s.Pipeline.Validate(); err != nil {
+			invalidParams.AddNested("Pipeline", err.(request.ErrInvalidParams))
+		}
+	}
 
-	metadataUpdatePipelineOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataUpdatePipelineOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Represents the output of an update pipeline action.
+type UpdatePipelineOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The structure of the updated pipeline.
+	Pipeline *PipelineDeclaration `locationName:"pipeline" type:"structure"`
 }
 
 // String returns the string representation
@@ -3012,100 +5409,163 @@ func (s UpdatePipelineOutput) GoString() string {
 }
 
 const (
-	// @enum ActionCategory
+	// ActionCategorySource is a ActionCategory enum value
 	ActionCategorySource = "Source"
-	// @enum ActionCategory
+
+	// ActionCategoryBuild is a ActionCategory enum value
 	ActionCategoryBuild = "Build"
-	// @enum ActionCategory
+
+	// ActionCategoryDeploy is a ActionCategory enum value
 	ActionCategoryDeploy = "Deploy"
-	// @enum ActionCategory
+
+	// ActionCategoryTest is a ActionCategory enum value
 	ActionCategoryTest = "Test"
-	// @enum ActionCategory
+
+	// ActionCategoryInvoke is a ActionCategory enum value
 	ActionCategoryInvoke = "Invoke"
+
+	// ActionCategoryApproval is a ActionCategory enum value
+	ActionCategoryApproval = "Approval"
 )
 
 const (
-	// @enum ActionConfigurationPropertyType
+	// ActionConfigurationPropertyTypeString is a ActionConfigurationPropertyType enum value
 	ActionConfigurationPropertyTypeString = "String"
-	// @enum ActionConfigurationPropertyType
+
+	// ActionConfigurationPropertyTypeNumber is a ActionConfigurationPropertyType enum value
 	ActionConfigurationPropertyTypeNumber = "Number"
-	// @enum ActionConfigurationPropertyType
+
+	// ActionConfigurationPropertyTypeBoolean is a ActionConfigurationPropertyType enum value
 	ActionConfigurationPropertyTypeBoolean = "Boolean"
 )
 
 const (
-	// @enum ActionExecutionStatus
+	// ActionExecutionStatusInProgress is a ActionExecutionStatus enum value
 	ActionExecutionStatusInProgress = "InProgress"
-	// @enum ActionExecutionStatus
+
+	// ActionExecutionStatusSucceeded is a ActionExecutionStatus enum value
 	ActionExecutionStatusSucceeded = "Succeeded"
-	// @enum ActionExecutionStatus
+
+	// ActionExecutionStatusFailed is a ActionExecutionStatus enum value
 	ActionExecutionStatusFailed = "Failed"
 )
 
 const (
-	// @enum ActionOwner
+	// ActionOwnerAws is a ActionOwner enum value
 	ActionOwnerAws = "AWS"
-	// @enum ActionOwner
+
+	// ActionOwnerThirdParty is a ActionOwner enum value
 	ActionOwnerThirdParty = "ThirdParty"
-	// @enum ActionOwner
+
+	// ActionOwnerCustom is a ActionOwner enum value
 	ActionOwnerCustom = "Custom"
 )
 
 const (
-	// @enum ArtifactLocationType
+	// ApprovalStatusApproved is a ApprovalStatus enum value
+	ApprovalStatusApproved = "Approved"
+
+	// ApprovalStatusRejected is a ApprovalStatus enum value
+	ApprovalStatusRejected = "Rejected"
+)
+
+const (
+	// ArtifactLocationTypeS3 is a ArtifactLocationType enum value
 	ArtifactLocationTypeS3 = "S3"
 )
 
 const (
-	// @enum ArtifactStoreType
+	// ArtifactStoreTypeS3 is a ArtifactStoreType enum value
 	ArtifactStoreTypeS3 = "S3"
 )
 
 const (
-	// @enum BlockerType
+	// BlockerTypeSchedule is a BlockerType enum value
 	BlockerTypeSchedule = "Schedule"
 )
 
 const (
-	// @enum EncryptionKeyType
+	// EncryptionKeyTypeKms is a EncryptionKeyType enum value
 	EncryptionKeyTypeKms = "KMS"
 )
 
 const (
-	// @enum FailureType
+	// FailureTypeJobFailed is a FailureType enum value
 	FailureTypeJobFailed = "JobFailed"
-	// @enum FailureType
+
+	// FailureTypeConfigurationError is a FailureType enum value
 	FailureTypeConfigurationError = "ConfigurationError"
-	// @enum FailureType
+
+	// FailureTypePermissionError is a FailureType enum value
 	FailureTypePermissionError = "PermissionError"
-	// @enum FailureType
+
+	// FailureTypeRevisionOutOfSync is a FailureType enum value
 	FailureTypeRevisionOutOfSync = "RevisionOutOfSync"
-	// @enum FailureType
+
+	// FailureTypeRevisionUnavailable is a FailureType enum value
 	FailureTypeRevisionUnavailable = "RevisionUnavailable"
-	// @enum FailureType
+
+	// FailureTypeSystemUnavailable is a FailureType enum value
 	FailureTypeSystemUnavailable = "SystemUnavailable"
 )
 
 const (
-	// @enum JobStatus
+	// JobStatusCreated is a JobStatus enum value
 	JobStatusCreated = "Created"
-	// @enum JobStatus
+
+	// JobStatusQueued is a JobStatus enum value
 	JobStatusQueued = "Queued"
-	// @enum JobStatus
+
+	// JobStatusDispatched is a JobStatus enum value
 	JobStatusDispatched = "Dispatched"
-	// @enum JobStatus
+
+	// JobStatusInProgress is a JobStatus enum value
 	JobStatusInProgress = "InProgress"
-	// @enum JobStatus
+
+	// JobStatusTimedOut is a JobStatus enum value
 	JobStatusTimedOut = "TimedOut"
-	// @enum JobStatus
+
+	// JobStatusSucceeded is a JobStatus enum value
 	JobStatusSucceeded = "Succeeded"
-	// @enum JobStatus
+
+	// JobStatusFailed is a JobStatus enum value
 	JobStatusFailed = "Failed"
 )
 
 const (
-	// @enum StageTransitionType
+	// PipelineExecutionStatusInProgress is a PipelineExecutionStatus enum value
+	PipelineExecutionStatusInProgress = "InProgress"
+
+	// PipelineExecutionStatusSucceeded is a PipelineExecutionStatus enum value
+	PipelineExecutionStatusSucceeded = "Succeeded"
+
+	// PipelineExecutionStatusSuperseded is a PipelineExecutionStatus enum value
+	PipelineExecutionStatusSuperseded = "Superseded"
+
+	// PipelineExecutionStatusFailed is a PipelineExecutionStatus enum value
+	PipelineExecutionStatusFailed = "Failed"
+)
+
+const (
+	// StageExecutionStatusInProgress is a StageExecutionStatus enum value
+	StageExecutionStatusInProgress = "InProgress"
+
+	// StageExecutionStatusFailed is a StageExecutionStatus enum value
+	StageExecutionStatusFailed = "Failed"
+
+	// StageExecutionStatusSucceeded is a StageExecutionStatus enum value
+	StageExecutionStatusSucceeded = "Succeeded"
+)
+
+const (
+	// StageRetryModeFailedActions is a StageRetryMode enum value
+	StageRetryModeFailedActions = "FAILED_ACTIONS"
+)
+
+const (
+	// StageTransitionTypeInbound is a StageTransitionType enum value
 	StageTransitionTypeInbound = "Inbound"
-	// @enum StageTransitionType
+
+	// StageTransitionTypeOutbound is a StageTransitionType enum value
 	StageTransitionTypeOutbound = "Outbound"
 )

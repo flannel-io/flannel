@@ -7,19 +7,19 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/internal/test/unit"
+	"github.com/aws/aws-sdk-go/awstesting/unit"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/stretchr/testify/assert"
 )
 
-var _ = unit.Imported
 var db *dynamodb.DynamoDB
 
 func TestMain(m *testing.M) {
-	db = dynamodb.New(&aws.Config{
+	db = dynamodb.New(unit.Session, &aws.Config{
 		MaxRetries: aws.Int(2),
 	})
 	db.Handlers.Send.Clear() // mock sending
@@ -34,18 +34,24 @@ func mockCRCResponse(svc *dynamodb.DynamoDB, status int, body, crc string) (req 
 	req, _ = svc.ListTablesRequest(nil)
 	req.Handlers.Send.PushBack(func(*request.Request) {
 		req.HTTPResponse = &http.Response{
-			StatusCode: status,
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(body))),
-			Header:     header,
+			ContentLength: int64(len(body)),
+			StatusCode:    status,
+			Body:          ioutil.NopCloser(bytes.NewReader([]byte(body))),
+			Header:        header,
 		}
 	})
 	req.Send()
 	return
 }
 
+func TestDefaultRetryRules(t *testing.T) {
+	d := dynamodb.New(unit.Session, &aws.Config{MaxRetries: aws.Int(-1)})
+	assert.Equal(t, d.MaxRetries(), 10)
+}
+
 func TestCustomRetryRules(t *testing.T) {
-	d := dynamodb.New(&aws.Config{MaxRetries: aws.Int(-1)})
-	assert.Equal(t, d.MaxRetries(), uint(10))
+	d := dynamodb.New(unit.Session, &aws.Config{MaxRetries: aws.Int(2)})
+	assert.Equal(t, d.MaxRetries(), 2)
 }
 
 func TestValidateCRC32NoHeaderSkip(t *testing.T) {
@@ -79,11 +85,11 @@ func TestValidateCRC32DoesNotMatch(t *testing.T) {
 	assert.Error(t, req.Error)
 
 	assert.Equal(t, "CRC32CheckFailed", req.Error.(awserr.Error).Code())
-	assert.Equal(t, 2, int(req.RetryCount))
+	assert.Equal(t, 2, req.RetryCount)
 }
 
 func TestValidateCRC32DoesNotMatchNoComputeChecksum(t *testing.T) {
-	svc := dynamodb.New(&aws.Config{
+	svc := dynamodb.New(unit.Session, &aws.Config{
 		MaxRetries:              aws.Int(2),
 		DisableComputeChecksums: aws.Bool(true),
 	})

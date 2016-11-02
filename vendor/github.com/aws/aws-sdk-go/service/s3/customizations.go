@@ -1,35 +1,46 @@
 package s3
 
 import (
+	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/service"
 )
 
 func init() {
-	initService = func(s *service.Service) {
-		// Support building custom host-style bucket endpoints
-		s.Handlers.Build.PushFront(updateHostWithBucket)
+	initClient = defaultInitClientFn
+	initRequest = defaultInitRequestFn
+}
 
-		// Require SSL when using SSE keys
-		s.Handlers.Validate.PushBack(validateSSERequiresSSL)
-		s.Handlers.Build.PushBack(computeSSEKeys)
+func defaultInitClientFn(c *client.Client) {
+	// Support building custom endpoints based on config
+	c.Handlers.Build.PushFront(updateEndpointForS3Config)
 
-		// S3 uses custom error unmarshaling logic
-		s.Handlers.UnmarshalError.Clear()
-		s.Handlers.UnmarshalError.PushBack(unmarshalError)
-	}
+	// Require SSL when using SSE keys
+	c.Handlers.Validate.PushBack(validateSSERequiresSSL)
+	c.Handlers.Build.PushBack(computeSSEKeys)
 
-	initRequest = func(r *request.Request) {
-		switch r.Operation.Name {
-		case opPutBucketCors, opPutBucketLifecycle, opPutBucketPolicy, opPutBucketTagging, opDeleteObjects:
-			// These S3 operations require Content-MD5 to be set
-			r.Handlers.Build.PushBack(contentMD5)
-		case opGetBucketLocation:
-			// GetBucketLocation has custom parsing logic
-			r.Handlers.Unmarshal.PushFront(buildGetBucketLocation)
-		case opCreateBucket:
-			// Auto-populate LocationConstraint with current region
-			r.Handlers.Validate.PushFront(populateLocationConstraint)
-		}
+	// S3 uses custom error unmarshaling logic
+	c.Handlers.UnmarshalError.Clear()
+	c.Handlers.UnmarshalError.PushBack(unmarshalError)
+}
+
+func defaultInitRequestFn(r *request.Request) {
+	// Add reuest handlers for specific platforms.
+	// e.g. 100-continue support for PUT requests using Go 1.6
+	platformRequestHandlers(r)
+
+	switch r.Operation.Name {
+	case opPutBucketCors, opPutBucketLifecycle, opPutBucketPolicy,
+		opPutBucketTagging, opDeleteObjects, opPutBucketLifecycleConfiguration,
+		opPutBucketReplication:
+		// These S3 operations require Content-MD5 to be set
+		r.Handlers.Build.PushBack(contentMD5)
+	case opGetBucketLocation:
+		// GetBucketLocation has custom parsing logic
+		r.Handlers.Unmarshal.PushFront(buildGetBucketLocation)
+	case opCreateBucket:
+		// Auto-populate LocationConstraint with current region
+		r.Handlers.Validate.PushFront(populateLocationConstraint)
+	case opCopyObject, opUploadPartCopy, opCompleteMultipartUpload:
+		r.Handlers.Unmarshal.PushFront(copyMultipartStatusOKUnmarhsalError)
 	}
 }

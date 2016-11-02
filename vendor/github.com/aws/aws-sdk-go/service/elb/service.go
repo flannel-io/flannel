@@ -4,61 +4,98 @@ package elb
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/defaults"
+	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/service"
-	"github.com/aws/aws-sdk-go/aws/service/serviceinfo"
-	"github.com/aws/aws-sdk-go/internal/protocol/query"
-	"github.com/aws/aws-sdk-go/internal/signer/v4"
+	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/aws/aws-sdk-go/private/protocol/query"
 )
 
-// Elastic Load Balancing distributes incoming traffic across your EC2 instances.
+// A load balancer distributes incoming traffic across your EC2 instances. This
+// enables you to increase the availability of your application. The load balancer
+// also monitors the health of its registered instances and ensures that it
+// routes traffic only to healthy instances. You configure your load balancer
+// to accept incoming traffic by specifying one or more listeners, which are
+// configured with a protocol and port number for connections from clients to
+// the load balancer and a protocol and port number for connections from the
+// load balancer to the instances.
 //
-// For information about the features of Elastic Load Balancing, see What Is
-// Elastic Load Balancing? (http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/elastic-load-balancing.html)
-// in the Elastic Load Balancing Developer Guide.
+// Elastic Load Balancing supports two types of load balancers: Classic load
+// balancers and Application load balancers (new). A Classic load balancer makes
+// routing and load balancing decisions either at the transport layer (TCP/SSL)
+// or the application layer (HTTP/HTTPS), and supports either EC2-Classic or
+// a VPC. An Application load balancer makes routing and load balancing decisions
+// at the application layer (HTTP/HTTPS), supports path-based routing, and can
+// route requests to one or more ports on each EC2 instance or container instance
+// in your virtual private cloud (VPC). For more information, see the .
 //
-// For information about the AWS regions supported by Elastic Load Balancing,
-// see Regions and Endpoints - Elastic Load Balancing (http://docs.aws.amazon.com/general/latest/gr/rande.html#elb_region)
-// in the Amazon Web Services General Reference.
+// This reference covers the 2012-06-01 API, which supports Classic load balancers.
+// The 2015-12-01 API supports Application load balancers.
+//
+// To get started, create a load balancer with one or more listeners using CreateLoadBalancer.
+// Register your instances with the load balancer using RegisterInstancesWithLoadBalancer.
 //
 // All Elastic Load Balancing operations are idempotent, which means that they
 // complete at most one time. If you repeat an operation, it succeeds with a
 // 200 OK response code.
+//The service client's operations are safe to be used concurrently.
+// It is not safe to mutate any of the client's properties though.
 type ELB struct {
-	*service.Service
+	*client.Client
 }
 
-// Used for custom service initialization logic
-var initService func(*service.Service)
+// Used for custom client initialization logic
+var initClient func(*client.Client)
 
 // Used for custom request initialization logic
 var initRequest func(*request.Request)
 
-// New returns a new ELB client.
-func New(config *aws.Config) *ELB {
-	service := &service.Service{
-		ServiceInfo: serviceinfo.ServiceInfo{
-			Config:      defaults.DefaultConfig.Merge(config),
-			ServiceName: "elasticloadbalancing",
-			APIVersion:  "2012-06-01",
-		},
+// A ServiceName is the name of the service the client will make API calls to.
+const ServiceName = "elasticloadbalancing"
+
+// New creates a new instance of the ELB client with a session.
+// If additional configuration is needed for the client instance use the optional
+// aws.Config parameter to add your extra config.
+//
+// Example:
+//     // Create a ELB client from just a session.
+//     svc := elb.New(mySession)
+//
+//     // Create a ELB client with additional configuration
+//     svc := elb.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+func New(p client.ConfigProvider, cfgs ...*aws.Config) *ELB {
+	c := p.ClientConfig(ServiceName, cfgs...)
+	return newClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+}
+
+// newClient creates, initializes and returns a new service client instance.
+func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *ELB {
+	svc := &ELB{
+		Client: client.New(
+			cfg,
+			metadata.ClientInfo{
+				ServiceName:   ServiceName,
+				SigningRegion: signingRegion,
+				Endpoint:      endpoint,
+				APIVersion:    "2012-06-01",
+			},
+			handlers,
+		),
 	}
-	service.Initialize()
 
 	// Handlers
-	service.Handlers.Sign.PushBack(v4.Sign)
-	service.Handlers.Build.PushBack(query.Build)
-	service.Handlers.Unmarshal.PushBack(query.Unmarshal)
-	service.Handlers.UnmarshalMeta.PushBack(query.UnmarshalMeta)
-	service.Handlers.UnmarshalError.PushBack(query.UnmarshalError)
+	svc.Handlers.Sign.PushBackNamed(v4.SignRequestHandler)
+	svc.Handlers.Build.PushBackNamed(query.BuildHandler)
+	svc.Handlers.Unmarshal.PushBackNamed(query.UnmarshalHandler)
+	svc.Handlers.UnmarshalMeta.PushBackNamed(query.UnmarshalMetaHandler)
+	svc.Handlers.UnmarshalError.PushBackNamed(query.UnmarshalErrorHandler)
 
-	// Run custom service initialization if present
-	if initService != nil {
-		initService(service)
+	// Run custom client initialization if present
+	if initClient != nil {
+		initClient(svc.Client)
 	}
 
-	return &ELB{service}
+	return svc
 }
 
 // newRequest creates a new request for a ELB operation and runs any

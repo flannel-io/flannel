@@ -1,26 +1,32 @@
-hash: aacbd7adecc400e430302af3a361025ad2af44a30749ae156c99956f10477d6d
-updated: 2016-09-07T14:46:44.675823172-07:00
+hash: 0c68184c3f3cc19fb664ef1918c50b26ab325deff98d714869b6567c7aab7363
+updated: 2016-10-28T15:31:56.900140259+01:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 5c0313fff8cd85670ae4fc996254dd7d66cb4cf7
+  version: 6c577e9e7b08a6d10bad1c9703227cd0403a8dd7
   subpackages:
   - aws
   - aws/awserr
   - aws/awsutil
-  - aws/corehandlers
+  - aws/client
+  - aws/client/metadata
   - aws/credentials
-  - aws/credentials/ec2rolecreds
-  - aws/defaults
   - aws/ec2metadata
   - aws/request
-  - aws/service
-  - aws/service/serviceinfo
+  - aws/session
+  - aws/signer/v4
   - internal/endpoints
   - internal/protocol/ec2query
   - internal/protocol/query/queryutil
   - internal/protocol/rest
   - internal/protocol/xml/xmlutil
   - internal/signer/v4
+  - private/endpoints
+  - private/protocol
+  - private/protocol/ec2query
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/xml/xmlutil
+  - private/waiter
   - service/ec2
 - name: github.com/blang/semver
   version: 60ec3488bfea7cca02b021d106d9911120d25fe9

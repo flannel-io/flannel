@@ -4,12 +4,13 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/internal/util/utilassert"
+	"github.com/aws/aws-sdk-go/awstesting"
+	"github.com/aws/aws-sdk-go/awstesting/unit"
 	"github.com/aws/aws-sdk-go/service/route53"
 )
 
 func TestBuildCorrectURI(t *testing.T) {
-	svc := route53.New(nil)
+	svc := route53.New(unit.Session)
 	svc.Handlers.Validate.Clear()
 	req, _ := svc.GetHostedZoneRequest(&route53.GetHostedZoneInput{
 		Id: aws.String("/hostedzone/ABCDEFG"),
@@ -17,5 +18,5 @@ func TestBuildCorrectURI(t *testing.T) {
 
 	req.Build()
 
-	utilassert.Match(t, `\/hostedzone\/ABCDEFG$`, req.HTTPRequest.URL.String())
+	awstesting.Match(t, `\/hostedzone\/ABCDEFG$`, req.HTTPRequest.URL.String())
 }

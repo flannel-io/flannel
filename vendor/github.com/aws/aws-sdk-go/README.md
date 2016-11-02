@@ -1,41 +1,43 @@
 # AWS SDK for Go
 
+<span style="display: inline-block;">
 [![API Reference](http://img.shields.io/badge/api-reference-blue.svg)](http://docs.aws.amazon.com/sdk-for-go/api)
 [![Join the chat at https://gitter.im/aws/aws-sdk-go](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aws/aws-sdk-go?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://img.shields.io/travis/aws/aws-sdk-go.svg)](https://travis-ci.org/aws/aws-sdk-go)
 [![Apache V2 License](http://img.shields.io/badge/license-Apache%20V2-blue.svg)](https://github.com/aws/aws-sdk-go/blob/master/LICENSE.txt)
+</span>
 
 aws-sdk-go is the official AWS SDK for the Go programming language.
 
 Checkout our [release notes](https://github.com/aws/aws-sdk-go/releases) for information about the latest bug fixes, updates, and features added to the SDK.
 
-**Release [v0.9.0rc1](http://aws.amazon.com/releasenotes/2948141298714307) introduced a breaking change to the SDK. See the release notes for details of the change and instructions to migrate to the latest SDK version.**
-
-## Caution
-
-The SDK is currently in the process of being developed, and not everything
-may be working fully yet. Please be patient and report any bugs or problems
-you experience. The APIs may change radically without much warning, so please
-vendor your dependencies with Godep or similar.
-
-Please do not confuse this for a stable, feature-complete library.
-
-Note that while most AWS protocols are currently supported, not all services
-available in this package are implemented fully, as some require extra
-customizations to work with the SDK. If you've encountered such a scenario,
-please open a [GitHub issue](https://github.com/aws/aws-sdk-go/issues)
-so we can track work for the service.
-
 ## Installing
 
-Install your specific service package with the following `go get` command.
-For example, EC2 support might be installed with:
+If you are using Go 1.5 with the `GO15VENDOREXPERIMENT=1` vendoring flag, or 1.6 and higher you can use the following command to retrieve the SDK. The SDK's non-testing dependencies will be included and are vendored in the `vendor` folder.
 
-    $ go get github.com/aws/aws-sdk-go/service/ec2
+    go get -u github.com/aws/aws-sdk-go
 
-You can also install the entire SDK by installing the root package, including all of the SDK's dependencies:
+Otherwise if your Go environment does not have vendoring support enabled, or you do not want to include the vendored SDK's dependencies you can use the following command to retrieve the SDK and its non-testing dependencies using `go get`.
 
-    $ go get -u github.com/aws/aws-sdk-go/...
+    go get -u github.com/aws/aws-sdk-go/aws/...
+    go get -u github.com/aws/aws-sdk-go/service/...
+
+If you're looking to retrieve just the SDK without any dependencies use the following command.
+
+    go get -d github.com/aws/aws-sdk-go/
+
+These two processes will still include the `vendor` folder and it should be deleted if its not going to be used by your environment.
+
+    rm -rf $GOPATH/src/github.com/aws/aws-sdk-go/vendor
+
+## Reference Documentation
+[`Getting Started Guide`](https://aws.amazon.com/sdk-for-go/) - This document is a general introduction how to configure and make requests with the SDK. If this is your first time using the SDK, this documentation and the API documentation will help you get started. This document focuses on the syntax and behavior of the SDK. The [Service Developer Guide](https://aws.amazon.com/documentation/) will help you get started using specific AWS services.
+
+[`SDK API Reference Documentation`](https://docs.aws.amazon.com/sdk-for-go/api/) - Use this document to look up all API operation input and output parameters for AWS services supported by the SDK. The API reference also includes documentation of the SDK, and examples how to using the SDK, service client API operations, and API operation require parameters.
+
+[`Service Developer Guide`](https://aws.amazon.com/documentation/) - Use this documentation to learn how to interface with an AWS service. These are great guides both, if you're getting started with a service, or looking for more information on a service. You should not need this document for coding, though in some cases, services may supply helpful samples that you might want to look out for.
+
+[`SDK Examples`](https://github.com/aws/aws-sdk-go/tree/master/example) - Included in the SDK's repo are a several hand crafted examples using the SDK features and AWS services.
 
 ## Configuring Credentials
 
@@ -59,10 +61,13 @@ AWS_ACCESS_KEY_ID=AKID1234567890
 AWS_SECRET_ACCESS_KEY=MY-SECRET-KEY
 ```
 
-## Using
+### AWS shared config file (`~/.aws/config`)
+The AWS SDK for Go added support the shared config file in release [v1.3.0](https://github.com/aws/aws-sdk-go/releases/tag/v1.3.0). You can opt into enabling support for the shared config by setting the environment variable `AWS_SDK_LOAD_CONFIG` to a truthy value. See the [Session](https://github.com/aws/aws-sdk-go/wiki/sessions) wiki for more information about this feature.
+
+## Using the Go SDK
 
 To use a service in the SDK, create a service variable by calling the `New()`
-function. Once you have a service, you can call API operations which each
+function. Once you have a service client, you can call API operations which each
 return response data and a possible error.
 
 To list a set of instance IDs from EC2, you could run:
@@ -74,6 +79,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
@@ -81,7 +87,7 @@ func main() {
 	// Create an EC2 service object in the "us-west-2" region
 	// Note that you can also configure your region globally by
 	// exporting the AWS_REGION environment variable
-	svc := ec2.New(&aws.Config{Region: aws.String("us-west-2")})
+	svc := ec2.New(session.NewSession(), &aws.Config{Region: aws.String("us-west-2")})
 
 	// Call the DescribeInstances Operation
 	resp, err := svc.DescribeInstances(nil)

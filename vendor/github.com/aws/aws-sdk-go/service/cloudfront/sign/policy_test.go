@@ -115,7 +115,7 @@ func TestSignEncodedPolicy(t *testing.T) {
 	}
 
 	hash := sha1.New()
-	if _, err := bytes.NewReader(jsonPolicy).WriteTo(hash); err != nil {
+	if _, err = bytes.NewReader(jsonPolicy).WriteTo(hash); err != nil {
 		t.Fatalf("Unexpected hash error, %#v", err)
 	}
 

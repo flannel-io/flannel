@@ -4,12 +4,11 @@ package support
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/defaults"
+	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/service"
-	"github.com/aws/aws-sdk-go/aws/service/serviceinfo"
-	"github.com/aws/aws-sdk-go/internal/protocol/jsonrpc"
-	"github.com/aws/aws-sdk-go/internal/signer/v4"
+	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
 // The AWS Support API reference is intended for programmers who need detailed
@@ -17,72 +16,111 @@ import (
 // enables you to manage your AWS Support cases programmatically. It uses HTTP
 // methods that return results in JSON format.
 //
-// The AWS Support service also exposes a set of Trusted Advisor (https://aws.amazon.com/premiumsupport/trustedadvisor/)
+// The AWS Support service also exposes a set of Trusted Advisor (http://aws.amazon.com/premiumsupport/trustedadvisor/)
 // features. You can retrieve a list of checks and their descriptions, get check
 // results, specify checks to refresh, and get the refresh status of checks.
 //
 // The following list describes the AWS Support case management operations:
 //
-//   Service names, issue categories, and available severity levels. The DescribeServices
-// and DescribeSeverityLevels operations return AWS service names, service codes,
-// service categories, and problem severity levels. You use these values when
-// you call the CreateCase operation.   Case creation, case details, and case
-// resolution. The CreateCase, DescribeCases, DescribeAttachment, and ResolveCase
-// operations create AWS Support cases, retrieve information about cases, and
-// resolve cases.  Case communication. The DescribeCommunications, AddCommunicationToCase,
-// and AddAttachmentsToSet operations retrieve and add communications and attachments
-// to AWS Support cases.   The following list describes the operations available
-// from the AWS Support service for Trusted Advisor:
+//    * Service names, issue categories, and available severity levels. The
+//    DescribeServices and DescribeSeverityLevels operations return AWS service
+//    names, service codes, service categories, and problem severity levels.
+//    You use these values when you call the CreateCase operation.
 //
-//   DescribeTrustedAdvisorChecks returns the list of checks that run against
-// your AWS resources. Using the CheckId for a specific check returned by DescribeTrustedAdvisorChecks,
-// you can call DescribeTrustedAdvisorCheckResult to obtain the results for
-// the check you specified.  DescribeTrustedAdvisorCheckSummaries returns summarized
-// results for one or more Trusted Advisor checks.  RefreshTrustedAdvisorCheck
-// requests that Trusted Advisor rerun a specified check.   DescribeTrustedAdvisorCheckRefreshStatuses
-// reports the refresh status of one or more checks.   For authentication of
-// requests, AWS Support uses Signature Version 4 Signing Process (http://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
+//    * Case creation, case details, and case resolution. The CreateCase, DescribeCases,
+//    DescribeAttachment, and ResolveCase operations create AWS Support cases,
+//    retrieve information about cases, and resolve cases.
+//
+//    * Case communication. The DescribeCommunications, AddCommunicationToCase,
+//    and AddAttachmentsToSet operations retrieve and add communications and
+//    attachments to AWS Support cases.
+//
+// The following list describes the operations available from the AWS Support
+// service for Trusted Advisor:
+//
+//    * DescribeTrustedAdvisorChecks returns the list of checks that run against
+//    your AWS resources.
+//
+//    * Using the checkId for a specific check returned by DescribeTrustedAdvisorChecks,
+//    you can call DescribeTrustedAdvisorCheckResult to obtain the results for
+//    the check you specified.
+//
+//    * DescribeTrustedAdvisorCheckSummaries returns summarized results for
+//    one or more Trusted Advisor checks.
+//
+//    * RefreshTrustedAdvisorCheck requests that Trusted Advisor rerun a specified
+//    check.
+//
+//    * DescribeTrustedAdvisorCheckRefreshStatuses reports the refresh status
+//    of one or more checks.
+//
+// For authentication of requests, AWS Support uses Signature Version 4 Signing
+// Process (http://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
 //
 // See About the AWS Support API (http://docs.aws.amazon.com/awssupport/latest/user/Welcome.html)
 // in the AWS Support User Guide for information about how to use this service
 // to create and manage your support cases, and how to call Trusted Advisor
 // for results of checks on your resources.
+//The service client's operations are safe to be used concurrently.
+// It is not safe to mutate any of the client's properties though.
 type Support struct {
-	*service.Service
+	*client.Client
 }
 
-// Used for custom service initialization logic
-var initService func(*service.Service)
+// Used for custom client initialization logic
+var initClient func(*client.Client)
 
 // Used for custom request initialization logic
 var initRequest func(*request.Request)
 
-// New returns a new Support client.
-func New(config *aws.Config) *Support {
-	service := &service.Service{
-		ServiceInfo: serviceinfo.ServiceInfo{
-			Config:       defaults.DefaultConfig.Merge(config),
-			ServiceName:  "support",
-			APIVersion:   "2013-04-15",
-			JSONVersion:  "1.1",
-			TargetPrefix: "AWSSupport_20130415",
-		},
+// A ServiceName is the name of the service the client will make API calls to.
+const ServiceName = "support"
+
+// New creates a new instance of the Support client with a session.
+// If additional configuration is needed for the client instance use the optional
+// aws.Config parameter to add your extra config.
+//
+// Example:
+//     // Create a Support client from just a session.
+//     svc := support.New(mySession)
+//
+//     // Create a Support client with additional configuration
+//     svc := support.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+func New(p client.ConfigProvider, cfgs ...*aws.Config) *Support {
+	c := p.ClientConfig(ServiceName, cfgs...)
+	return newClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+}
+
+// newClient creates, initializes and returns a new service client instance.
+func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *Support {
+	svc := &Support{
+		Client: client.New(
+			cfg,
+			metadata.ClientInfo{
+				ServiceName:   ServiceName,
+				SigningRegion: signingRegion,
+				Endpoint:      endpoint,
+				APIVersion:    "2013-04-15",
+				JSONVersion:   "1.1",
+				TargetPrefix:  "AWSSupport_20130415",
+			},
+			handlers,
+		),
 	}
-	service.Initialize()
 
 	// Handlers
-	service.Handlers.Sign.PushBack(v4.Sign)
-	service.Handlers.Build.PushBack(jsonrpc.Build)
-	service.Handlers.Unmarshal.PushBack(jsonrpc.Unmarshal)
-	service.Handlers.UnmarshalMeta.PushBack(jsonrpc.UnmarshalMeta)
-	service.Handlers.UnmarshalError.PushBack(jsonrpc.UnmarshalError)
+	svc.Handlers.Sign.PushBackNamed(v4.SignRequestHandler)
+	svc.Handlers.Build.PushBackNamed(jsonrpc.BuildHandler)
+	svc.Handlers.Unmarshal.PushBackNamed(jsonrpc.UnmarshalHandler)
+	svc.Handlers.UnmarshalMeta.PushBackNamed(jsonrpc.UnmarshalMetaHandler)
+	svc.Handlers.UnmarshalError.PushBackNamed(jsonrpc.UnmarshalErrorHandler)
 
-	// Run custom service initialization if present
-	if initService != nil {
-		initService(service)
+	// Run custom client initialization if present
+	if initClient != nil {
+		initClient(svc.Client)
 	}
 
-	return &Support{service}
+	return svc
 }
 
 // newRequest creates a new request for a Support operation and runs any

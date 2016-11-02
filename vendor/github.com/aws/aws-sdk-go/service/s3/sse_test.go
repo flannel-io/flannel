@@ -5,15 +5,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/internal/test/unit"
+	"github.com/aws/aws-sdk-go/awstesting/unit"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/stretchr/testify/assert"
 )
 
-var _ = unit.Imported
-
 func TestSSECustomerKeyOverHTTPError(t *testing.T) {
-	s := s3.New(&aws.Config{DisableSSL: aws.Bool(true)})
+	s := s3.New(unit.Session, &aws.Config{DisableSSL: aws.Bool(true)})
 	req, _ := s.CopyObjectRequest(&s3.CopyObjectInput{
 		Bucket:         aws.String("bucket"),
 		CopySource:     aws.String("bucket/source"),
@@ -28,7 +26,7 @@ func TestSSECustomerKeyOverHTTPError(t *testing.T) {
 }
 
 func TestCopySourceSSECustomerKeyOverHTTPError(t *testing.T) {
-	s := s3.New(&aws.Config{DisableSSL: aws.Bool(true)})
+	s := s3.New(unit.Session, &aws.Config{DisableSSL: aws.Bool(true)})
 	req, _ := s.CopyObjectRequest(&s3.CopyObjectInput{
 		Bucket:     aws.String("bucket"),
 		CopySource: aws.String("bucket/source"),
@@ -43,7 +41,7 @@ func TestCopySourceSSECustomerKeyOverHTTPError(t *testing.T) {
 }
 
 func TestComputeSSEKeys(t *testing.T) {
-	s := s3.New(nil)
+	s := s3.New(unit.Session)
 	req, _ := s.CopyObjectRequest(&s3.CopyObjectInput{
 		Bucket:                   aws.String("bucket"),
 		CopySource:               aws.String("bucket/source"),
@@ -61,7 +59,7 @@ func TestComputeSSEKeys(t *testing.T) {
 }
 
 func TestComputeSSEKeysShortcircuit(t *testing.T) {
-	s := s3.New(nil)
+	s := s3.New(unit.Session)
 	req, _ := s.CopyObjectRequest(&s3.CopyObjectInput{
 		Bucket:                      aws.String("bucket"),
 		CopySource:                  aws.String("bucket/source"),

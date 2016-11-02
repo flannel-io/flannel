@@ -1,3 +1,5 @@
+// +build go1.5,deprecated
+
 package rename
 
 import (
@@ -7,10 +9,10 @@ import (
 	"go/format"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"io/ioutil"
 
 	"golang.org/x/tools/go/loader"
-	"golang.org/x/tools/go/types"
 )
 
 var dryRun = flag.Bool("dryrun", false, "Dry run")
@@ -55,7 +57,7 @@ func (r *renamer) dryInfo() string {
 	return "[!]"
 }
 
-func (r *renamer) print(msg string, args ...interface{}) {
+func (r *renamer) printf(msg string, args ...interface{}) {
 	if *verbose {
 		fmt.Printf(msg, args...)
 	}
@@ -91,19 +93,19 @@ func (r *renamer) parseUses(pkg *loader.PackageInfo) {
 				switch t := v.(type) {
 				case *types.Func:
 					if newName, ok := renames.operations[t.Name()]; ok && newName != name {
-						r.print("%s Rename [OPERATION]: %q -> %q\n", r.dryInfo(), name, newName)
+						r.printf("%s Rename [OPERATION]: %q -> %q\n", r.dryInfo(), name, newName)
 						r.files[r.Fset.File(k.Pos())] = true
 						k.Name = newName
 					}
 				case *types.TypeName:
 					if newName, ok := renames.shapes[name]; ok && newName != name {
-						r.print("%s Rename [SHAPE]: %q -> %q\n", r.dryInfo(), t.Name(), newName)
+						r.printf("%s Rename [SHAPE]: %q -> %q\n", r.dryInfo(), t.Name(), newName)
 						r.files[r.Fset.File(k.Pos())] = true
 						k.Name = newName
 					}
 				case *types.Var:
 					if newName, ok := renames.fields[name]; ok && newName != name {
-						r.print("%s Rename [FIELD]: %q -> %q\n", r.dryInfo(), t.Name(), newName)
+						r.printf("%s Rename [FIELD]: %q -> %q\n", r.dryInfo(), t.Name(), newName)
 						r.files[r.Fset.File(k.Pos())] = true
 						k.Name = newName
 					}
