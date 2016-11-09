@@ -6,18 +6,17 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/internal/test/unit"
+	"github.com/aws/aws-sdk-go/awstesting/unit"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/stretchr/testify/assert"
 )
 
-var _ = unit.Imported
-
 var svc = func() *sqs.SQS {
-	s := sqs.New(&aws.Config{
+	s := sqs.New(unit.Session, &aws.Config{
 		DisableParamValidation: aws.Bool(true),
 	})
 	s.Handlers.Send.Clear()
@@ -60,7 +59,7 @@ func TestSendMessageChecksumInvalid(t *testing.T) {
 }
 
 func TestSendMessageChecksumInvalidNoValidation(t *testing.T) {
-	s := sqs.New(&aws.Config{
+	s := sqs.New(unit.Session, &aws.Config{
 		DisableParamValidation:  aws.Bool(true),
 		DisableComputeChecksums: aws.Bool(true),
 	})
@@ -141,6 +140,7 @@ func TestRecieveMessageChecksumInvalid(t *testing.T) {
 				{Body: aws.String("test"), MD5OfBody: &md5},
 				{Body: aws.String("test"), MD5OfBody: aws.String("000"), MessageId: aws.String("123")},
 				{Body: aws.String("test"), MD5OfBody: aws.String("000"), MessageId: aws.String("456")},
+				{Body: aws.String("test"), MD5OfBody: aws.String("000")},
 				{Body: aws.String("test"), MD5OfBody: &md5},
 			},
 		}

@@ -4,48 +4,76 @@ package efs
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/defaults"
+	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/service"
-	"github.com/aws/aws-sdk-go/aws/service/serviceinfo"
-	"github.com/aws/aws-sdk-go/internal/protocol/restjson"
-	"github.com/aws/aws-sdk-go/internal/signer/v4"
+	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/aws/aws-sdk-go/private/protocol/restjson"
 )
 
+// Amazon Elastic File System (Amazon EFS) provides simple, scalable file storage
+// for use with Amazon EC2 instances in the AWS Cloud. With Amazon EFS, storage
+// capacity is elastic, growing and shrinking automatically as you add and remove
+// files, so your applications have the storage they need, when they need it.
+// For more information, see the User Guide (http://docs.aws.amazon.com/efs/latest/ug/api-reference.html).
+//The service client's operations are safe to be used concurrently.
+// It is not safe to mutate any of the client's properties though.
 type EFS struct {
-	*service.Service
+	*client.Client
 }
 
-// Used for custom service initialization logic
-var initService func(*service.Service)
+// Used for custom client initialization logic
+var initClient func(*client.Client)
 
 // Used for custom request initialization logic
 var initRequest func(*request.Request)
 
-// New returns a new EFS client.
-func New(config *aws.Config) *EFS {
-	service := &service.Service{
-		ServiceInfo: serviceinfo.ServiceInfo{
-			Config:      defaults.DefaultConfig.Merge(config),
-			ServiceName: "elasticfilesystem",
-			APIVersion:  "2015-02-01",
-		},
+// A ServiceName is the name of the service the client will make API calls to.
+const ServiceName = "elasticfilesystem"
+
+// New creates a new instance of the EFS client with a session.
+// If additional configuration is needed for the client instance use the optional
+// aws.Config parameter to add your extra config.
+//
+// Example:
+//     // Create a EFS client from just a session.
+//     svc := efs.New(mySession)
+//
+//     // Create a EFS client with additional configuration
+//     svc := efs.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+func New(p client.ConfigProvider, cfgs ...*aws.Config) *EFS {
+	c := p.ClientConfig(ServiceName, cfgs...)
+	return newClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+}
+
+// newClient creates, initializes and returns a new service client instance.
+func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *EFS {
+	svc := &EFS{
+		Client: client.New(
+			cfg,
+			metadata.ClientInfo{
+				ServiceName:   ServiceName,
+				SigningRegion: signingRegion,
+				Endpoint:      endpoint,
+				APIVersion:    "2015-02-01",
+			},
+			handlers,
+		),
 	}
-	service.Initialize()
 
 	// Handlers
-	service.Handlers.Sign.PushBack(v4.Sign)
-	service.Handlers.Build.PushBack(restjson.Build)
-	service.Handlers.Unmarshal.PushBack(restjson.Unmarshal)
-	service.Handlers.UnmarshalMeta.PushBack(restjson.UnmarshalMeta)
-	service.Handlers.UnmarshalError.PushBack(restjson.UnmarshalError)
+	svc.Handlers.Sign.PushBackNamed(v4.SignRequestHandler)
+	svc.Handlers.Build.PushBackNamed(restjson.BuildHandler)
+	svc.Handlers.Unmarshal.PushBackNamed(restjson.UnmarshalHandler)
+	svc.Handlers.UnmarshalMeta.PushBackNamed(restjson.UnmarshalMetaHandler)
+	svc.Handlers.UnmarshalError.PushBackNamed(restjson.UnmarshalErrorHandler)
 
-	// Run custom service initialization if present
-	if initService != nil {
-		initService(service)
+	// Run custom client initialization if present
+	if initClient != nil {
+		initClient(svc.Client)
 	}
 
-	return &EFS{service}
+	return svc
 }
 
 // newRequest creates a new request for a EFS operation and runs any

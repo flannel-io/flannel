@@ -4,13 +4,109 @@
 package workspaces
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/aws/request"
 )
 
+const opCreateTags = "CreateTags"
+
+// CreateTagsRequest generates a "aws/request.Request" representing the
+// client's request for the CreateTags operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See CreateTags for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the CreateTags method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the CreateTagsRequest method.
+//    req, resp := client.CreateTagsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *WorkSpaces) CreateTagsRequest(input *CreateTagsInput) (req *request.Request, output *CreateTagsOutput) {
+	op := &request.Operation{
+		Name:       opCreateTags,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateTagsInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &CreateTagsOutput{}
+	req.Data = output
+	return
+}
+
+// CreateTags API operation for Amazon WorkSpaces.
+//
+// Creates tags for a WorkSpace.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation CreateTags for usage and error information.
+//
+// Returned Error Codes:
+//   * ResourceNotFoundException
+//   The resource could not be found.
+//
+//   * InvalidParameterValuesException
+//   One or more parameter values are not valid.
+//
+//   * ResourceLimitExceededException
+//   Your resource limits have been exceeded.
+//
+func (c *WorkSpaces) CreateTags(input *CreateTagsInput) (*CreateTagsOutput, error) {
+	req, out := c.CreateTagsRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opCreateWorkspaces = "CreateWorkspaces"
 
-// CreateWorkspacesRequest generates a request for the CreateWorkspaces operation.
+// CreateWorkspacesRequest generates a "aws/request.Request" representing the
+// client's request for the CreateWorkspaces operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See CreateWorkspaces for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the CreateWorkspaces method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the CreateWorkspacesRequest method.
+//    req, resp := client.CreateWorkspacesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *WorkSpaces) CreateWorkspacesRequest(input *CreateWorkspacesInput) (req *request.Request, output *CreateWorkspacesOutput) {
 	op := &request.Operation{
 		Name:       opCreateWorkspaces,
@@ -28,18 +124,189 @@ func (c *WorkSpaces) CreateWorkspacesRequest(input *CreateWorkspacesInput) (req 
 	return
 }
 
+// CreateWorkspaces API operation for Amazon WorkSpaces.
+//
 // Creates one or more WorkSpaces.
 //
-//  This operation is asynchronous and returns before the WorkSpaces are created.
+// This operation is asynchronous and returns before the WorkSpaces are created.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation CreateWorkspaces for usage and error information.
+//
+// Returned Error Codes:
+//   * ResourceLimitExceededException
+//   Your resource limits have been exceeded.
+//
+//   * InvalidParameterValuesException
+//   One or more parameter values are not valid.
+//
 func (c *WorkSpaces) CreateWorkspaces(input *CreateWorkspacesInput) (*CreateWorkspacesOutput, error) {
 	req, out := c.CreateWorkspacesRequest(input)
 	err := req.Send()
 	return out, err
 }
 
+const opDeleteTags = "DeleteTags"
+
+// DeleteTagsRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteTags operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DeleteTags for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DeleteTags method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DeleteTagsRequest method.
+//    req, resp := client.DeleteTagsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *WorkSpaces) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, output *DeleteTagsOutput) {
+	op := &request.Operation{
+		Name:       opDeleteTags,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteTagsInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &DeleteTagsOutput{}
+	req.Data = output
+	return
+}
+
+// DeleteTags API operation for Amazon WorkSpaces.
+//
+// Deletes tags from a WorkSpace.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation DeleteTags for usage and error information.
+//
+// Returned Error Codes:
+//   * ResourceNotFoundException
+//   The resource could not be found.
+//
+//   * InvalidParameterValuesException
+//   One or more parameter values are not valid.
+//
+func (c *WorkSpaces) DeleteTags(input *DeleteTagsInput) (*DeleteTagsOutput, error) {
+	req, out := c.DeleteTagsRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opDescribeTags = "DescribeTags"
+
+// DescribeTagsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeTags operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DescribeTags for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DescribeTags method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DescribeTagsRequest method.
+//    req, resp := client.DescribeTagsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *WorkSpaces) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeTags,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeTagsInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &DescribeTagsOutput{}
+	req.Data = output
+	return
+}
+
+// DescribeTags API operation for Amazon WorkSpaces.
+//
+// Describes tags for a WorkSpace.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation DescribeTags for usage and error information.
+//
+// Returned Error Codes:
+//   * ResourceNotFoundException
+//   The resource could not be found.
+//
+func (c *WorkSpaces) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
+	req, out := c.DescribeTagsRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opDescribeWorkspaceBundles = "DescribeWorkspaceBundles"
 
-// DescribeWorkspaceBundlesRequest generates a request for the DescribeWorkspaceBundles operation.
+// DescribeWorkspaceBundlesRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeWorkspaceBundles operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DescribeWorkspaceBundles for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DescribeWorkspaceBundles method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DescribeWorkspaceBundlesRequest method.
+//    req, resp := client.DescribeWorkspaceBundlesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *WorkSpaces) DescribeWorkspaceBundlesRequest(input *DescribeWorkspaceBundlesInput) (req *request.Request, output *DescribeWorkspaceBundlesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeWorkspaceBundles,
@@ -63,6 +330,8 @@ func (c *WorkSpaces) DescribeWorkspaceBundlesRequest(input *DescribeWorkspaceBun
 	return
 }
 
+// DescribeWorkspaceBundles API operation for Amazon WorkSpaces.
+//
 // Obtains information about the WorkSpace bundles that are available to your
 // account in the specified region.
 //
@@ -73,14 +342,44 @@ func (c *WorkSpaces) DescribeWorkspaceBundlesRequest(input *DescribeWorkspaceBun
 // and response parameters. If more results are available, the NextToken response
 // member contains a token that you pass in the next call to this operation
 // to retrieve the next set of items.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation DescribeWorkspaceBundles for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterValuesException
+//   One or more parameter values are not valid.
+//
 func (c *WorkSpaces) DescribeWorkspaceBundles(input *DescribeWorkspaceBundlesInput) (*DescribeWorkspaceBundlesOutput, error) {
 	req, out := c.DescribeWorkspaceBundlesRequest(input)
 	err := req.Send()
 	return out, err
 }
 
+// DescribeWorkspaceBundlesPages iterates over the pages of a DescribeWorkspaceBundles operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeWorkspaceBundles method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//    // Example iterating over at most 3 pages of a DescribeWorkspaceBundles operation.
+//    pageNum := 0
+//    err := client.DescribeWorkspaceBundlesPages(params,
+//        func(page *DescribeWorkspaceBundlesOutput, lastPage bool) bool {
+//            pageNum++
+//            fmt.Println(page)
+//            return pageNum <= 3
+//        })
+//
 func (c *WorkSpaces) DescribeWorkspaceBundlesPages(input *DescribeWorkspaceBundlesInput, fn func(p *DescribeWorkspaceBundlesOutput, lastPage bool) (shouldContinue bool)) error {
 	page, _ := c.DescribeWorkspaceBundlesRequest(input)
+	page.Handlers.Build.PushBack(request.MakeAddToUserAgentFreeFormHandler("Paginator"))
 	return page.EachPage(func(p interface{}, lastPage bool) bool {
 		return fn(p.(*DescribeWorkspaceBundlesOutput), lastPage)
 	})
@@ -88,7 +387,30 @@ func (c *WorkSpaces) DescribeWorkspaceBundlesPages(input *DescribeWorkspaceBundl
 
 const opDescribeWorkspaceDirectories = "DescribeWorkspaceDirectories"
 
-// DescribeWorkspaceDirectoriesRequest generates a request for the DescribeWorkspaceDirectories operation.
+// DescribeWorkspaceDirectoriesRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeWorkspaceDirectories operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DescribeWorkspaceDirectories for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DescribeWorkspaceDirectories method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DescribeWorkspaceDirectoriesRequest method.
+//    req, resp := client.DescribeWorkspaceDirectoriesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *WorkSpaces) DescribeWorkspaceDirectoriesRequest(input *DescribeWorkspaceDirectoriesInput) (req *request.Request, output *DescribeWorkspaceDirectoriesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeWorkspaceDirectories,
@@ -112,6 +434,8 @@ func (c *WorkSpaces) DescribeWorkspaceDirectoriesRequest(input *DescribeWorkspac
 	return
 }
 
+// DescribeWorkspaceDirectories API operation for Amazon WorkSpaces.
+//
 // Retrieves information about the AWS Directory Service directories in the
 // region that are registered with Amazon WorkSpaces and are available to your
 // account.
@@ -120,14 +444,44 @@ func (c *WorkSpaces) DescribeWorkspaceDirectoriesRequest(input *DescribeWorkspac
 // and response parameters. If more results are available, the NextToken response
 // member contains a token that you pass in the next call to this operation
 // to retrieve the next set of items.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation DescribeWorkspaceDirectories for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterValuesException
+//   One or more parameter values are not valid.
+//
 func (c *WorkSpaces) DescribeWorkspaceDirectories(input *DescribeWorkspaceDirectoriesInput) (*DescribeWorkspaceDirectoriesOutput, error) {
 	req, out := c.DescribeWorkspaceDirectoriesRequest(input)
 	err := req.Send()
 	return out, err
 }
 
+// DescribeWorkspaceDirectoriesPages iterates over the pages of a DescribeWorkspaceDirectories operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeWorkspaceDirectories method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//    // Example iterating over at most 3 pages of a DescribeWorkspaceDirectories operation.
+//    pageNum := 0
+//    err := client.DescribeWorkspaceDirectoriesPages(params,
+//        func(page *DescribeWorkspaceDirectoriesOutput, lastPage bool) bool {
+//            pageNum++
+//            fmt.Println(page)
+//            return pageNum <= 3
+//        })
+//
 func (c *WorkSpaces) DescribeWorkspaceDirectoriesPages(input *DescribeWorkspaceDirectoriesInput, fn func(p *DescribeWorkspaceDirectoriesOutput, lastPage bool) (shouldContinue bool)) error {
 	page, _ := c.DescribeWorkspaceDirectoriesRequest(input)
+	page.Handlers.Build.PushBack(request.MakeAddToUserAgentFreeFormHandler("Paginator"))
 	return page.EachPage(func(p interface{}, lastPage bool) bool {
 		return fn(p.(*DescribeWorkspaceDirectoriesOutput), lastPage)
 	})
@@ -135,7 +489,30 @@ func (c *WorkSpaces) DescribeWorkspaceDirectoriesPages(input *DescribeWorkspaceD
 
 const opDescribeWorkspaces = "DescribeWorkspaces"
 
-// DescribeWorkspacesRequest generates a request for the DescribeWorkspaces operation.
+// DescribeWorkspacesRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeWorkspaces operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DescribeWorkspaces for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DescribeWorkspaces method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DescribeWorkspacesRequest method.
+//    req, resp := client.DescribeWorkspacesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *WorkSpaces) DescribeWorkspacesRequest(input *DescribeWorkspacesInput) (req *request.Request, output *DescribeWorkspacesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeWorkspaces,
@@ -159,6 +536,8 @@ func (c *WorkSpaces) DescribeWorkspacesRequest(input *DescribeWorkspacesInput) (
 	return
 }
 
+// DescribeWorkspaces API operation for Amazon WorkSpaces.
+//
 // Obtains information about the specified WorkSpaces.
 //
 // Only one of the filter parameters, such as BundleId, DirectoryId, or WorkspaceIds,
@@ -168,22 +547,227 @@ func (c *WorkSpaces) DescribeWorkspacesRequest(input *DescribeWorkspacesInput) (
 // and response parameters. If more results are available, the NextToken response
 // member contains a token that you pass in the next call to this operation
 // to retrieve the next set of items.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation DescribeWorkspaces for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterValuesException
+//   One or more parameter values are not valid.
+//
+//   * ResourceUnavailableException
+//   The specified resource is not available.
+//
 func (c *WorkSpaces) DescribeWorkspaces(input *DescribeWorkspacesInput) (*DescribeWorkspacesOutput, error) {
 	req, out := c.DescribeWorkspacesRequest(input)
 	err := req.Send()
 	return out, err
 }
 
+// DescribeWorkspacesPages iterates over the pages of a DescribeWorkspaces operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeWorkspaces method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//    // Example iterating over at most 3 pages of a DescribeWorkspaces operation.
+//    pageNum := 0
+//    err := client.DescribeWorkspacesPages(params,
+//        func(page *DescribeWorkspacesOutput, lastPage bool) bool {
+//            pageNum++
+//            fmt.Println(page)
+//            return pageNum <= 3
+//        })
+//
 func (c *WorkSpaces) DescribeWorkspacesPages(input *DescribeWorkspacesInput, fn func(p *DescribeWorkspacesOutput, lastPage bool) (shouldContinue bool)) error {
 	page, _ := c.DescribeWorkspacesRequest(input)
+	page.Handlers.Build.PushBack(request.MakeAddToUserAgentFreeFormHandler("Paginator"))
 	return page.EachPage(func(p interface{}, lastPage bool) bool {
 		return fn(p.(*DescribeWorkspacesOutput), lastPage)
 	})
 }
 
+const opDescribeWorkspacesConnectionStatus = "DescribeWorkspacesConnectionStatus"
+
+// DescribeWorkspacesConnectionStatusRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeWorkspacesConnectionStatus operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DescribeWorkspacesConnectionStatus for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DescribeWorkspacesConnectionStatus method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DescribeWorkspacesConnectionStatusRequest method.
+//    req, resp := client.DescribeWorkspacesConnectionStatusRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *WorkSpaces) DescribeWorkspacesConnectionStatusRequest(input *DescribeWorkspacesConnectionStatusInput) (req *request.Request, output *DescribeWorkspacesConnectionStatusOutput) {
+	op := &request.Operation{
+		Name:       opDescribeWorkspacesConnectionStatus,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeWorkspacesConnectionStatusInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &DescribeWorkspacesConnectionStatusOutput{}
+	req.Data = output
+	return
+}
+
+// DescribeWorkspacesConnectionStatus API operation for Amazon WorkSpaces.
+//
+// Describes the connection status of a specified WorkSpace.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation DescribeWorkspacesConnectionStatus for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterValuesException
+//   One or more parameter values are not valid.
+//
+func (c *WorkSpaces) DescribeWorkspacesConnectionStatus(input *DescribeWorkspacesConnectionStatusInput) (*DescribeWorkspacesConnectionStatusOutput, error) {
+	req, out := c.DescribeWorkspacesConnectionStatusRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opModifyWorkspaceProperties = "ModifyWorkspaceProperties"
+
+// ModifyWorkspacePropertiesRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyWorkspaceProperties operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See ModifyWorkspaceProperties for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the ModifyWorkspaceProperties method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the ModifyWorkspacePropertiesRequest method.
+//    req, resp := client.ModifyWorkspacePropertiesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *WorkSpaces) ModifyWorkspacePropertiesRequest(input *ModifyWorkspacePropertiesInput) (req *request.Request, output *ModifyWorkspacePropertiesOutput) {
+	op := &request.Operation{
+		Name:       opModifyWorkspaceProperties,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyWorkspacePropertiesInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &ModifyWorkspacePropertiesOutput{}
+	req.Data = output
+	return
+}
+
+// ModifyWorkspaceProperties API operation for Amazon WorkSpaces.
+//
+// Modifies the WorkSpace properties, including the RunningMode and AutoStop
+// time.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation ModifyWorkspaceProperties for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterValuesException
+//   One or more parameter values are not valid.
+//
+//   * InvalidResourceStateException
+//   The specified WorkSpace has an invalid state for this operation.
+//
+//   * OperationInProgressException
+//   The properties of this WorkSpace are currently being modified. Try again
+//   in a moment.
+//
+//   * UnsupportedWorkspaceConfigurationException
+//   The WorkSpace does not have the supported configuration for this operation.
+//   For more information, see the Amazon WorkSpaces Administration Guide (http://docs.aws.amazon.com/workspaces/latest/adminguide).
+//
+//   * ResourceNotFoundException
+//   The resource could not be found.
+//
+//   * AccessDeniedException
+
+//
+//   * ResourceUnavailableException
+//   The specified resource is not available.
+//
+func (c *WorkSpaces) ModifyWorkspaceProperties(input *ModifyWorkspacePropertiesInput) (*ModifyWorkspacePropertiesOutput, error) {
+	req, out := c.ModifyWorkspacePropertiesRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opRebootWorkspaces = "RebootWorkspaces"
 
-// RebootWorkspacesRequest generates a request for the RebootWorkspaces operation.
+// RebootWorkspacesRequest generates a "aws/request.Request" representing the
+// client's request for the RebootWorkspaces operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See RebootWorkspaces for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the RebootWorkspaces method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the RebootWorkspacesRequest method.
+//    req, resp := client.RebootWorkspacesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *WorkSpaces) RebootWorkspacesRequest(input *RebootWorkspacesInput) (req *request.Request, output *RebootWorkspacesOutput) {
 	op := &request.Operation{
 		Name:       opRebootWorkspaces,
@@ -201,13 +785,21 @@ func (c *WorkSpaces) RebootWorkspacesRequest(input *RebootWorkspacesInput) (req 
 	return
 }
 
+// RebootWorkspaces API operation for Amazon WorkSpaces.
+//
 // Reboots the specified WorkSpaces.
 //
 // To be able to reboot a WorkSpace, the WorkSpace must have a State of AVAILABLE,
 // IMPAIRED, or INOPERABLE.
 //
-//  This operation is asynchronous and will return before the WorkSpaces have
-// rebooted.
+// This operation is asynchronous and returns before the WorkSpaces have rebooted.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation RebootWorkspaces for usage and error information.
 func (c *WorkSpaces) RebootWorkspaces(input *RebootWorkspacesInput) (*RebootWorkspacesOutput, error) {
 	req, out := c.RebootWorkspacesRequest(input)
 	err := req.Send()
@@ -216,7 +808,30 @@ func (c *WorkSpaces) RebootWorkspaces(input *RebootWorkspacesInput) (*RebootWork
 
 const opRebuildWorkspaces = "RebuildWorkspaces"
 
-// RebuildWorkspacesRequest generates a request for the RebuildWorkspaces operation.
+// RebuildWorkspacesRequest generates a "aws/request.Request" representing the
+// client's request for the RebuildWorkspaces operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See RebuildWorkspaces for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the RebuildWorkspaces method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the RebuildWorkspacesRequest method.
+//    req, resp := client.RebuildWorkspacesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *WorkSpaces) RebuildWorkspacesRequest(input *RebuildWorkspacesInput) (req *request.Request, output *RebuildWorkspacesOutput) {
 	op := &request.Operation{
 		Name:       opRebuildWorkspaces,
@@ -234,31 +849,187 @@ func (c *WorkSpaces) RebuildWorkspacesRequest(input *RebuildWorkspacesInput) (re
 	return
 }
 
+// RebuildWorkspaces API operation for Amazon WorkSpaces.
+//
 // Rebuilds the specified WorkSpaces.
 //
 // Rebuilding a WorkSpace is a potentially destructive action that can result
 // in the loss of data. Rebuilding a WorkSpace causes the following to occur:
 //
-//  The system is restored to the image of the bundle that the WorkSpace is
-// created from. Any applications that have been installed, or system settings
-// that have been made since the WorkSpace was created will be lost. The data
-// drive (D drive) is re-created from the last automatic snapshot taken of the
-// data drive. The current contents of the data drive are overwritten. Automatic
-// snapshots of the data drive are taken every 12 hours, so the snapshot can
-// be as much as 12 hours old.  To be able to rebuild a WorkSpace, the WorkSpace
-// must have a State of AVAILABLE or ERROR.
+//    * The system is restored to the image of the bundle that the WorkSpace
+//    is created from. Any applications that have been installed, or system
+//    settings that have been made since the WorkSpace was created will be lost.
 //
-//  This operation is asynchronous and will return before the WorkSpaces have
-// been completely rebuilt.
+//    * The data drive (D drive) is re-created from the last automatic snapshot
+//    taken of the data drive. The current contents of the data drive are overwritten.
+//    Automatic snapshots of the data drive are taken every 12 hours, so the
+//    snapshot can be as much as 12 hours old.
+//
+// To be able to rebuild a WorkSpace, the WorkSpace must have a State of AVAILABLE
+// or ERROR.
+//
+// This operation is asynchronous and returns before the WorkSpaces have been
+// completely rebuilt.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation RebuildWorkspaces for usage and error information.
 func (c *WorkSpaces) RebuildWorkspaces(input *RebuildWorkspacesInput) (*RebuildWorkspacesOutput, error) {
 	req, out := c.RebuildWorkspacesRequest(input)
 	err := req.Send()
 	return out, err
 }
 
+const opStartWorkspaces = "StartWorkspaces"
+
+// StartWorkspacesRequest generates a "aws/request.Request" representing the
+// client's request for the StartWorkspaces operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See StartWorkspaces for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the StartWorkspaces method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the StartWorkspacesRequest method.
+//    req, resp := client.StartWorkspacesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *WorkSpaces) StartWorkspacesRequest(input *StartWorkspacesInput) (req *request.Request, output *StartWorkspacesOutput) {
+	op := &request.Operation{
+		Name:       opStartWorkspaces,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &StartWorkspacesInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &StartWorkspacesOutput{}
+	req.Data = output
+	return
+}
+
+// StartWorkspaces API operation for Amazon WorkSpaces.
+//
+// Starts the specified WorkSpaces. The API only works with WorkSpaces that
+// have RunningMode configured as AutoStop and the State set to “STOPPED.”
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation StartWorkspaces for usage and error information.
+func (c *WorkSpaces) StartWorkspaces(input *StartWorkspacesInput) (*StartWorkspacesOutput, error) {
+	req, out := c.StartWorkspacesRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opStopWorkspaces = "StopWorkspaces"
+
+// StopWorkspacesRequest generates a "aws/request.Request" representing the
+// client's request for the StopWorkspaces operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See StopWorkspaces for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the StopWorkspaces method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the StopWorkspacesRequest method.
+//    req, resp := client.StopWorkspacesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *WorkSpaces) StopWorkspacesRequest(input *StopWorkspacesInput) (req *request.Request, output *StopWorkspacesOutput) {
+	op := &request.Operation{
+		Name:       opStopWorkspaces,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &StopWorkspacesInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &StopWorkspacesOutput{}
+	req.Data = output
+	return
+}
+
+// StopWorkspaces API operation for Amazon WorkSpaces.
+//
+// Stops the specified WorkSpaces. The API only works with WorkSpaces that have
+// RunningMode configured as AutoStop and the State set to AVAILABLE, IMPAIRED,
+// UNHEALTHY, or ERROR.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation StopWorkspaces for usage and error information.
+func (c *WorkSpaces) StopWorkspaces(input *StopWorkspacesInput) (*StopWorkspacesOutput, error) {
+	req, out := c.StopWorkspacesRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opTerminateWorkspaces = "TerminateWorkspaces"
 
-// TerminateWorkspacesRequest generates a request for the TerminateWorkspaces operation.
+// TerminateWorkspacesRequest generates a "aws/request.Request" representing the
+// client's request for the TerminateWorkspaces operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See TerminateWorkspaces for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the TerminateWorkspaces method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the TerminateWorkspacesRequest method.
+//    req, resp := client.TerminateWorkspacesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
 func (c *WorkSpaces) TerminateWorkspacesRequest(input *TerminateWorkspacesInput) (req *request.Request, output *TerminateWorkspacesOutput) {
 	op := &request.Operation{
 		Name:       opTerminateWorkspaces,
@@ -276,16 +1047,25 @@ func (c *WorkSpaces) TerminateWorkspacesRequest(input *TerminateWorkspacesInput)
 	return
 }
 
+// TerminateWorkspaces API operation for Amazon WorkSpaces.
+//
 // Terminates the specified WorkSpaces.
 //
-// Terminating a WorkSpace is a permanent action and cannot be undone. The
-// user's data is not maintained and will be destroyed. If you need to archive
-// any user data, contact Amazon Web Services before terminating the WorkSpace.
+// Terminating a WorkSpace is a permanent action and cannot be undone. The user's
+// data is not maintained and will be destroyed. If you need to archive any
+// user data, contact Amazon Web Services before terminating the WorkSpace.
 //
 // You can terminate a WorkSpace that is in any state except SUSPENDED.
 //
-//  This operation is asynchronous and will return before the WorkSpaces have
-// been completely terminated.
+// This operation is asynchronous and returns before the WorkSpaces have been
+// completely terminated.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces's
+// API operation TerminateWorkspaces for usage and error information.
 func (c *WorkSpaces) TerminateWorkspaces(input *TerminateWorkspacesInput) (*TerminateWorkspacesOutput, error) {
 	req, out := c.TerminateWorkspacesRequest(input)
 	err := req.Send()
@@ -294,14 +1074,10 @@ func (c *WorkSpaces) TerminateWorkspaces(input *TerminateWorkspacesInput) (*Term
 
 // Contains information about the compute type of a WorkSpace bundle.
 type ComputeType struct {
+	_ struct{} `type:"structure"`
+
 	// The name of the compute type for the bundle.
 	Name *string `type:"string" enum:"Compute"`
-
-	metadataComputeType `json:"-" xml:"-"`
-}
-
-type metadataComputeType struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -314,16 +1090,83 @@ func (s ComputeType) GoString() string {
 	return s.String()
 }
 
-// Contains the inputs for the CreateWorkspaces operation.
-type CreateWorkspacesInput struct {
-	// An array of structures that specify the WorkSpaces to create.
-	Workspaces []*WorkspaceRequest `type:"list" required:"true"`
+// The request of the CreateTags operation.
+type CreateTagsInput struct {
+	_ struct{} `type:"structure"`
 
-	metadataCreateWorkspacesInput `json:"-" xml:"-"`
+	// The resource ID of the request.
+	//
+	// ResourceId is a required field
+	ResourceId *string `min:"1" type:"string" required:"true"`
+
+	// The tags of the request.
+	//
+	// Tags is a required field
+	Tags []*Tag `type:"list" required:"true"`
 }
 
-type metadataCreateWorkspacesInput struct {
-	SDKShapeTraits bool `type:"structure"`
+// String returns the string representation
+func (s CreateTagsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateTagsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateTagsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateTagsInput"}
+	if s.ResourceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
+	if s.Tags == nil {
+		invalidParams.Add(request.NewErrParamRequired("Tags"))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// The result of the CreateTags operation.
+type CreateTagsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateTagsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateTagsOutput) GoString() string {
+	return s.String()
+}
+
+// Contains the inputs for the CreateWorkspaces operation.
+type CreateWorkspacesInput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of structures that specify the WorkSpaces to create.
+	//
+	// Workspaces is a required field
+	Workspaces []*WorkspaceRequest `min:"1" type:"list" required:"true"`
 }
 
 // String returns the string representation
@@ -336,8 +1179,36 @@ func (s CreateWorkspacesInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateWorkspacesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateWorkspacesInput"}
+	if s.Workspaces == nil {
+		invalidParams.Add(request.NewErrParamRequired("Workspaces"))
+	}
+	if s.Workspaces != nil && len(s.Workspaces) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Workspaces", 1))
+	}
+	if s.Workspaces != nil {
+		for i, v := range s.Workspaces {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Workspaces", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Contains the result of the CreateWorkspaces operation.
 type CreateWorkspacesOutput struct {
+	_ struct{} `type:"structure"`
+
 	// An array of structures that represent the WorkSpaces that could not be created.
 	FailedRequests []*FailedCreateWorkspaceRequest `type:"list"`
 
@@ -347,12 +1218,6 @@ type CreateWorkspacesOutput struct {
 	// not immediately available. If you immediately call DescribeWorkspaces with
 	// this identifier, no information will be returned.
 	PendingRequests []*Workspace `type:"list"`
-
-	metadataCreateWorkspacesOutput `json:"-" xml:"-"`
-}
-
-type metadataCreateWorkspacesOutput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -367,6 +1232,8 @@ func (s CreateWorkspacesOutput) GoString() string {
 
 // Contains default WorkSpace creation information.
 type DefaultWorkspaceCreationProperties struct {
+	_ struct{} `type:"structure"`
+
 	// The identifier of any custom security groups that are applied to the WorkSpaces
 	// when they are created.
 	CustomSecurityGroupId *string `type:"string"`
@@ -384,12 +1251,6 @@ type DefaultWorkspaceCreationProperties struct {
 
 	// The WorkSpace user is an administrator on the WorkSpace.
 	UserEnabledAsLocalAdministrator *bool `type:"boolean"`
-
-	metadataDefaultWorkspaceCreationProperties `json:"-" xml:"-"`
-}
-
-type metadataDefaultWorkspaceCreationProperties struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -402,30 +1263,140 @@ func (s DefaultWorkspaceCreationProperties) GoString() string {
 	return s.String()
 }
 
+// The request of the DeleteTags operation.
+type DeleteTagsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The resource ID of the request.
+	//
+	// ResourceId is a required field
+	ResourceId *string `min:"1" type:"string" required:"true"`
+
+	// The tag keys of the request.
+	//
+	// TagKeys is a required field
+	TagKeys []*string `type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteTagsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteTagsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteTagsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteTagsInput"}
+	if s.ResourceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
+	if s.TagKeys == nil {
+		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// The result of the DeleteTags operation.
+type DeleteTagsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteTagsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteTagsOutput) GoString() string {
+	return s.String()
+}
+
+// The request of the DescribeTags operation.
+type DescribeTagsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The resource ID of the request.
+	//
+	// ResourceId is a required field
+	ResourceId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DescribeTagsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeTagsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeTagsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeTagsInput"}
+	if s.ResourceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.ResourceId != nil && len(*s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// The result of the DescribeTags operation.
+type DescribeTagsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of tags.
+	TagList []*Tag `type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeTagsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeTagsOutput) GoString() string {
+	return s.String()
+}
+
 // Contains the inputs for the DescribeWorkspaceBundles operation.
 type DescribeWorkspaceBundlesInput struct {
+	_ struct{} `type:"structure"`
+
 	// An array of strings that contains the identifiers of the bundles to retrieve.
 	// This parameter cannot be combined with any other filter parameter.
-	BundleIds []*string `type:"list"`
+	BundleIds []*string `min:"1" type:"list"`
 
 	// The NextToken value from a previous call to this operation. Pass null if
 	// this is the first call.
-	NextToken *string `type:"string"`
+	NextToken *string `min:"1" type:"string"`
 
 	// The owner of the bundles to retrieve. This parameter cannot be combined with
 	// any other filter parameter.
 	//
 	// This contains one of the following values:
 	//
-	//  null - Retrieves the bundles that belong to the account making the call.
-	//  AMAZON - Retrieves the bundles that are provided by AWS.
+	//    * null- Retrieves the bundles that belong to the account making the call.
+	//
+	//    * AMAZON- Retrieves the bundles that are provided by AWS.
 	Owner *string `type:"string"`
-
-	metadataDescribeWorkspaceBundlesInput `json:"-" xml:"-"`
-}
-
-type metadataDescribeWorkspaceBundlesInput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -438,21 +1409,34 @@ func (s DescribeWorkspaceBundlesInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeWorkspaceBundlesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeWorkspaceBundlesInput"}
+	if s.BundleIds != nil && len(s.BundleIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BundleIds", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Contains the results of the DescribeWorkspaceBundles operation.
 type DescribeWorkspaceBundlesOutput struct {
+	_ struct{} `type:"structure"`
+
 	// An array of structures that contain information about the bundles.
 	Bundles []*WorkspaceBundle `type:"list"`
 
 	// If not null, more results are available. Pass this value for the NextToken
 	// parameter in a subsequent call to this operation to retrieve the next set
-	// of items. This token is valid for one day and must be used within that timeframe.
-	NextToken *string `type:"string"`
-
-	metadataDescribeWorkspaceBundlesOutput `json:"-" xml:"-"`
-}
-
-type metadataDescribeWorkspaceBundlesOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+	// of items. This token is valid for one day and must be used within that time
+	// frame.
+	NextToken *string `min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -467,19 +1451,15 @@ func (s DescribeWorkspaceBundlesOutput) GoString() string {
 
 // Contains the inputs for the DescribeWorkspaceDirectories operation.
 type DescribeWorkspaceDirectoriesInput struct {
+	_ struct{} `type:"structure"`
+
 	// An array of strings that contains the directory identifiers to retrieve information
 	// for. If this member is null, all directories are retrieved.
-	DirectoryIds []*string `type:"list"`
+	DirectoryIds []*string `min:"1" type:"list"`
 
 	// The NextToken value from a previous call to this operation. Pass null if
 	// this is the first call.
-	NextToken *string `type:"string"`
-
-	metadataDescribeWorkspaceDirectoriesInput `json:"-" xml:"-"`
-}
-
-type metadataDescribeWorkspaceDirectoriesInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	NextToken *string `min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -492,21 +1472,34 @@ func (s DescribeWorkspaceDirectoriesInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeWorkspaceDirectoriesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeWorkspaceDirectoriesInput"}
+	if s.DirectoryIds != nil && len(s.DirectoryIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DirectoryIds", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Contains the results of the DescribeWorkspaceDirectories operation.
 type DescribeWorkspaceDirectoriesOutput struct {
+	_ struct{} `type:"structure"`
+
 	// An array of structures that contain information about the directories.
 	Directories []*WorkspaceDirectory `type:"list"`
 
 	// If not null, more results are available. Pass this value for the NextToken
 	// parameter in a subsequent call to this operation to retrieve the next set
-	// of items. This token is valid for one day and must be used within that timeframe.
-	NextToken *string `type:"string"`
-
-	metadataDescribeWorkspaceDirectoriesOutput `json:"-" xml:"-"`
-}
-
-type metadataDescribeWorkspaceDirectoriesOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+	// of items. This token is valid for one day and must be used within that time
+	// frame.
+	NextToken *string `min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -519,8 +1512,66 @@ func (s DescribeWorkspaceDirectoriesOutput) GoString() string {
 	return s.String()
 }
 
+type DescribeWorkspacesConnectionStatusInput struct {
+	_ struct{} `type:"structure"`
+
+	// The next token of the request.
+	NextToken *string `min:"1" type:"string"`
+
+	// An array of strings that contain the identifiers of the WorkSpaces.
+	WorkspaceIds []*string `min:"1" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeWorkspacesConnectionStatusInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeWorkspacesConnectionStatusInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeWorkspacesConnectionStatusInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeWorkspacesConnectionStatusInput"}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.WorkspaceIds != nil && len(s.WorkspaceIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("WorkspaceIds", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+type DescribeWorkspacesConnectionStatusOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The next token of the result.
+	NextToken *string `min:"1" type:"string"`
+
+	// The connection status of the WorkSpace.
+	WorkspacesConnectionStatus []*WorkspaceConnectionStatus `type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeWorkspacesConnectionStatusOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeWorkspacesConnectionStatusOutput) GoString() string {
+	return s.String()
+}
+
 // Contains the inputs for the DescribeWorkspaces operation.
 type DescribeWorkspacesInput struct {
+	_ struct{} `type:"structure"`
+
 	// The identifier of a bundle to obtain the WorkSpaces for. All WorkSpaces that
 	// are created from this bundle will be retrieved. This parameter cannot be
 	// combined with any other filter parameter.
@@ -532,30 +1583,24 @@ type DescribeWorkspacesInput struct {
 	DirectoryId *string `type:"string"`
 
 	// The maximum number of items to return.
-	Limit *int64 `type:"integer"`
+	Limit *int64 `min:"1" type:"integer"`
 
 	// The NextToken value from a previous call to this operation. Pass null if
 	// this is the first call.
-	NextToken *string `type:"string"`
+	NextToken *string `min:"1" type:"string"`
 
-	// Used with the DirectoryId parameter to specify the directory user for which
+	// Used with the DirectoryId parameter to specify the directory user for whom
 	// to obtain the WorkSpace.
-	UserName *string `type:"string"`
+	UserName *string `min:"1" type:"string"`
 
 	// An array of strings that contain the identifiers of the WorkSpaces for which
 	// to retrieve information. This parameter cannot be combined with any other
 	// filter parameter.
 	//
-	// Because the CreateWorkspaces operation is asynchronous, the identifier returned
-	// by CreateWorkspaces is not immediately available. If you immediately call
-	// DescribeWorkspaces with this identifier, no information will be returned.
-	WorkspaceIds []*string `type:"list"`
-
-	metadataDescribeWorkspacesInput `json:"-" xml:"-"`
-}
-
-type metadataDescribeWorkspacesInput struct {
-	SDKShapeTraits bool `type:"structure"`
+	// Because the CreateWorkspaces operation is asynchronous, the identifier it
+	// returns is not immediately available. If you immediately call DescribeWorkspaces
+	// with this identifier, no information is returned.
+	WorkspaceIds []*string `min:"1" type:"list"`
 }
 
 // String returns the string representation
@@ -568,24 +1613,43 @@ func (s DescribeWorkspacesInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeWorkspacesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeWorkspacesInput"}
+	if s.Limit != nil && *s.Limit < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Limit", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.UserName != nil && len(*s.UserName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserName", 1))
+	}
+	if s.WorkspaceIds != nil && len(s.WorkspaceIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("WorkspaceIds", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Contains the results for the DescribeWorkspaces operation.
 type DescribeWorkspacesOutput struct {
+	_ struct{} `type:"structure"`
+
 	// If not null, more results are available. Pass this value for the NextToken
 	// parameter in a subsequent call to this operation to retrieve the next set
-	// of items. This token is valid for one day and must be used within that timeframe.
-	NextToken *string `type:"string"`
+	// of items. This token is valid for one day and must be used within that time
+	// frame.
+	NextToken *string `min:"1" type:"string"`
 
 	// An array of structures that contain the information about the WorkSpaces.
 	//
 	// Because the CreateWorkspaces operation is asynchronous, some of this information
 	// may be incomplete for a newly-created WorkSpace.
 	Workspaces []*Workspace `type:"list"`
-
-	metadataDescribeWorkspacesOutput `json:"-" xml:"-"`
-}
-
-type metadataDescribeWorkspacesOutput struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -600,21 +1664,17 @@ func (s DescribeWorkspacesOutput) GoString() string {
 
 // Contains information about a WorkSpace that could not be created.
 type FailedCreateWorkspaceRequest struct {
+	_ struct{} `type:"structure"`
+
 	// The error code.
 	ErrorCode *string `type:"string"`
 
 	// The textual error message.
 	ErrorMessage *string `type:"string"`
 
-	// A WorkspaceRequest object that contains the information about the WorkSpace
-	// that could not be created.
+	// A FailedCreateWorkspaceRequest$WorkspaceRequest object that contains the
+	// information about the WorkSpace that could not be created.
 	WorkspaceRequest *WorkspaceRequest `type:"structure"`
-
-	metadataFailedCreateWorkspaceRequest `json:"-" xml:"-"`
-}
-
-type metadataFailedCreateWorkspaceRequest struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -628,8 +1688,11 @@ func (s FailedCreateWorkspaceRequest) GoString() string {
 }
 
 // Contains information about a WorkSpace that could not be rebooted (RebootWorkspaces),
-// rebuilt (RebuildWorkspaces), or terminated (TerminateWorkspaces).
+// rebuilt (RebuildWorkspaces), terminated (TerminateWorkspaces), started (StartWorkspaces),
+// or stopped (StopWorkspaces).
 type FailedWorkspaceChangeRequest struct {
+	_ struct{} `type:"structure"`
+
 	// The error code.
 	ErrorCode *string `type:"string"`
 
@@ -638,12 +1701,6 @@ type FailedWorkspaceChangeRequest struct {
 
 	// The identifier of the WorkSpace.
 	WorkspaceId *string `type:"string"`
-
-	metadataFailedWorkspaceChangeRequest `json:"-" xml:"-"`
-}
-
-type metadataFailedWorkspaceChangeRequest struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -656,17 +1713,69 @@ func (s FailedWorkspaceChangeRequest) GoString() string {
 	return s.String()
 }
 
+type ModifyWorkspacePropertiesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the WorkSpace.
+	//
+	// WorkspaceId is a required field
+	WorkspaceId *string `type:"string" required:"true"`
+
+	// The WorkSpace properties of the request.
+	//
+	// WorkspaceProperties is a required field
+	WorkspaceProperties *WorkspaceProperties `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s ModifyWorkspacePropertiesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyWorkspacePropertiesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyWorkspacePropertiesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyWorkspacePropertiesInput"}
+	if s.WorkspaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("WorkspaceId"))
+	}
+	if s.WorkspaceProperties == nil {
+		invalidParams.Add(request.NewErrParamRequired("WorkspaceProperties"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+type ModifyWorkspacePropertiesOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s ModifyWorkspacePropertiesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyWorkspacePropertiesOutput) GoString() string {
+	return s.String()
+}
+
 // Contains information used with the RebootWorkspaces operation to reboot a
 // WorkSpace.
 type RebootRequest struct {
+	_ struct{} `type:"structure"`
+
 	// The identifier of the WorkSpace to reboot.
+	//
+	// WorkspaceId is a required field
 	WorkspaceId *string `type:"string" required:"true"`
-
-	metadataRebootRequest `json:"-" xml:"-"`
-}
-
-type metadataRebootRequest struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -679,16 +1788,27 @@ func (s RebootRequest) GoString() string {
 	return s.String()
 }
 
-// Contains the inputs for the RebootWorkspaces operation.
-type RebootWorkspacesInput struct {
-	// An array of structures that specify the WorkSpaces to reboot.
-	RebootWorkspaceRequests []*RebootRequest `type:"list" required:"true"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RebootRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RebootRequest"}
+	if s.WorkspaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("WorkspaceId"))
+	}
 
-	metadataRebootWorkspacesInput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataRebootWorkspacesInput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Contains the inputs for the RebootWorkspaces operation.
+type RebootWorkspacesInput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of structures that specify the WorkSpaces to reboot.
+	//
+	// RebootWorkspaceRequests is a required field
+	RebootWorkspaceRequests []*RebootRequest `min:"1" type:"list" required:"true"`
 }
 
 // String returns the string representation
@@ -701,16 +1821,38 @@ func (s RebootWorkspacesInput) GoString() string {
 	return s.String()
 }
 
-// Contains the results of the RebootWorkspaces operation.
-type RebootWorkspacesOutput struct {
-	// An array of structures that represent any WorkSpaces that could not be rebooted.
-	FailedRequests []*FailedWorkspaceChangeRequest `type:"list"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RebootWorkspacesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RebootWorkspacesInput"}
+	if s.RebootWorkspaceRequests == nil {
+		invalidParams.Add(request.NewErrParamRequired("RebootWorkspaceRequests"))
+	}
+	if s.RebootWorkspaceRequests != nil && len(s.RebootWorkspaceRequests) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RebootWorkspaceRequests", 1))
+	}
+	if s.RebootWorkspaceRequests != nil {
+		for i, v := range s.RebootWorkspaceRequests {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "RebootWorkspaceRequests", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
 
-	metadataRebootWorkspacesOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataRebootWorkspacesOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Contains the results of the RebootWorkspaces operation.
+type RebootWorkspacesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of structures representing any WorkSpaces that could not be rebooted.
+	FailedRequests []*FailedWorkspaceChangeRequest `type:"list"`
 }
 
 // String returns the string representation
@@ -726,14 +1868,12 @@ func (s RebootWorkspacesOutput) GoString() string {
 // Contains information used with the RebuildWorkspaces operation to rebuild
 // a WorkSpace.
 type RebuildRequest struct {
+	_ struct{} `type:"structure"`
+
 	// The identifier of the WorkSpace to rebuild.
+	//
+	// WorkspaceId is a required field
 	WorkspaceId *string `type:"string" required:"true"`
-
-	metadataRebuildRequest `json:"-" xml:"-"`
-}
-
-type metadataRebuildRequest struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -746,16 +1886,27 @@ func (s RebuildRequest) GoString() string {
 	return s.String()
 }
 
-// Contains the inputs for the RebuildWorkspaces operation.
-type RebuildWorkspacesInput struct {
-	// An array of structures that specify the WorkSpaces to rebuild.
-	RebuildWorkspaceRequests []*RebuildRequest `type:"list" required:"true"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RebuildRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RebuildRequest"}
+	if s.WorkspaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("WorkspaceId"))
+	}
 
-	metadataRebuildWorkspacesInput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataRebuildWorkspacesInput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Contains the inputs for the RebuildWorkspaces operation.
+type RebuildWorkspacesInput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of structures that specify the WorkSpaces to rebuild.
+	//
+	// RebuildWorkspaceRequests is a required field
+	RebuildWorkspaceRequests []*RebuildRequest `min:"1" type:"list" required:"true"`
 }
 
 // String returns the string representation
@@ -768,16 +1919,38 @@ func (s RebuildWorkspacesInput) GoString() string {
 	return s.String()
 }
 
-// Contains the results of the RebuildWorkspaces operation.
-type RebuildWorkspacesOutput struct {
-	// An array of structures that represent any WorkSpaces that could not be rebuilt.
-	FailedRequests []*FailedWorkspaceChangeRequest `type:"list"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RebuildWorkspacesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RebuildWorkspacesInput"}
+	if s.RebuildWorkspaceRequests == nil {
+		invalidParams.Add(request.NewErrParamRequired("RebuildWorkspaceRequests"))
+	}
+	if s.RebuildWorkspaceRequests != nil && len(s.RebuildWorkspaceRequests) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RebuildWorkspaceRequests", 1))
+	}
+	if s.RebuildWorkspaceRequests != nil {
+		for i, v := range s.RebuildWorkspaceRequests {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "RebuildWorkspaceRequests", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
 
-	metadataRebuildWorkspacesOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataRebuildWorkspacesOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Contains the results of the RebuildWorkspaces operation.
+type RebuildWorkspacesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of structures representing any WorkSpaces that could not be rebuilt.
+	FailedRequests []*FailedWorkspaceChangeRequest `type:"list"`
 }
 
 // String returns the string representation
@@ -790,17 +1963,194 @@ func (s RebuildWorkspacesOutput) GoString() string {
 	return s.String()
 }
 
+// Describes the start request.
+type StartRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the WorkSpace.
+	WorkspaceId *string `type:"string"`
+}
+
+// String returns the string representation
+func (s StartRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StartRequest) GoString() string {
+	return s.String()
+}
+
+type StartWorkspacesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The requests.
+	//
+	// StartWorkspaceRequests is a required field
+	StartWorkspaceRequests []*StartRequest `min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s StartWorkspacesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StartWorkspacesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartWorkspacesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartWorkspacesInput"}
+	if s.StartWorkspaceRequests == nil {
+		invalidParams.Add(request.NewErrParamRequired("StartWorkspaceRequests"))
+	}
+	if s.StartWorkspaceRequests != nil && len(s.StartWorkspaceRequests) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StartWorkspaceRequests", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+type StartWorkspacesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The failed requests.
+	FailedRequests []*FailedWorkspaceChangeRequest `type:"list"`
+}
+
+// String returns the string representation
+func (s StartWorkspacesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StartWorkspacesOutput) GoString() string {
+	return s.String()
+}
+
+// Describes the stop request.
+type StopRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the WorkSpace.
+	WorkspaceId *string `type:"string"`
+}
+
+// String returns the string representation
+func (s StopRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StopRequest) GoString() string {
+	return s.String()
+}
+
+type StopWorkspacesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The requests.
+	//
+	// StopWorkspaceRequests is a required field
+	StopWorkspaceRequests []*StopRequest `min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s StopWorkspacesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StopWorkspacesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StopWorkspacesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StopWorkspacesInput"}
+	if s.StopWorkspaceRequests == nil {
+		invalidParams.Add(request.NewErrParamRequired("StopWorkspaceRequests"))
+	}
+	if s.StopWorkspaceRequests != nil && len(s.StopWorkspaceRequests) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StopWorkspaceRequests", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+type StopWorkspacesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The failed requests.
+	FailedRequests []*FailedWorkspaceChangeRequest `type:"list"`
+}
+
+// String returns the string representation
+func (s StopWorkspacesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StopWorkspacesOutput) GoString() string {
+	return s.String()
+}
+
+// Describes the tag of the WorkSpace.
+type Tag struct {
+	_ struct{} `type:"structure"`
+
+	// The key of the tag.
+	//
+	// Key is a required field
+	Key *string `min:"1" type:"string" required:"true"`
+
+	// The value of the tag.
+	Value *string `type:"string"`
+}
+
+// String returns the string representation
+func (s Tag) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Tag) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Tag) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Tag"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Contains information used with the TerminateWorkspaces operation to terminate
 // a WorkSpace.
 type TerminateRequest struct {
+	_ struct{} `type:"structure"`
+
 	// The identifier of the WorkSpace to terminate.
+	//
+	// WorkspaceId is a required field
 	WorkspaceId *string `type:"string" required:"true"`
-
-	metadataTerminateRequest `json:"-" xml:"-"`
-}
-
-type metadataTerminateRequest struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -813,16 +2163,27 @@ func (s TerminateRequest) GoString() string {
 	return s.String()
 }
 
-// Contains the inputs for the TerminateWorkspaces operation.
-type TerminateWorkspacesInput struct {
-	// An array of structures that specify the WorkSpaces to terminate.
-	TerminateWorkspaceRequests []*TerminateRequest `type:"list" required:"true"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TerminateRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TerminateRequest"}
+	if s.WorkspaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("WorkspaceId"))
+	}
 
-	metadataTerminateWorkspacesInput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataTerminateWorkspacesInput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Contains the inputs for the TerminateWorkspaces operation.
+type TerminateWorkspacesInput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of structures that specify the WorkSpaces to terminate.
+	//
+	// TerminateWorkspaceRequests is a required field
+	TerminateWorkspaceRequests []*TerminateRequest `min:"1" type:"list" required:"true"`
 }
 
 // String returns the string representation
@@ -835,16 +2196,38 @@ func (s TerminateWorkspacesInput) GoString() string {
 	return s.String()
 }
 
-// Contains the results of the TerminateWorkspaces operation.
-type TerminateWorkspacesOutput struct {
-	// An array of structures that represent any WorkSpaces that could not be terminated.
-	FailedRequests []*FailedWorkspaceChangeRequest `type:"list"`
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TerminateWorkspacesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TerminateWorkspacesInput"}
+	if s.TerminateWorkspaceRequests == nil {
+		invalidParams.Add(request.NewErrParamRequired("TerminateWorkspaceRequests"))
+	}
+	if s.TerminateWorkspaceRequests != nil && len(s.TerminateWorkspaceRequests) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TerminateWorkspaceRequests", 1))
+	}
+	if s.TerminateWorkspaceRequests != nil {
+		for i, v := range s.TerminateWorkspaceRequests {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "TerminateWorkspaceRequests", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
 
-	metadataTerminateWorkspacesOutput `json:"-" xml:"-"`
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
-type metadataTerminateWorkspacesOutput struct {
-	SDKShapeTraits bool `type:"structure"`
+// Contains the results of the TerminateWorkspaces operation.
+type TerminateWorkspacesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of structures representing any WorkSpaces that could not be terminated.
+	FailedRequests []*FailedWorkspaceChangeRequest `type:"list"`
 }
 
 // String returns the string representation
@@ -859,14 +2242,10 @@ func (s TerminateWorkspacesOutput) GoString() string {
 
 // Contains information about the user storage for a WorkSpace bundle.
 type UserStorage struct {
+	_ struct{} `type:"structure"`
+
 	// The amount of user storage for the bundle.
-	Capacity *string `type:"string"`
-
-	metadataUserStorage `json:"-" xml:"-"`
-}
-
-type metadataUserStorage struct {
-	SDKShapeTraits bool `type:"structure"`
+	Capacity *string `min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -881,8 +2260,13 @@ func (s UserStorage) GoString() string {
 
 // Contains information about a WorkSpace.
 type Workspace struct {
+	_ struct{} `type:"structure"`
+
 	// The identifier of the bundle that the WorkSpace was created from.
 	BundleId *string `type:"string"`
+
+	// The name of the WorkSpace as seen by the operating system.
+	ComputerName *string `type:"string"`
 
 	// The identifier of the AWS Directory Service directory that the WorkSpace
 	// belongs to.
@@ -898,6 +2282,9 @@ type Workspace struct {
 	// The IP address of the WorkSpace.
 	IpAddress *string `type:"string"`
 
+	// Specifies whether the data stored on the root volume, or C: drive, is encrypted.
+	RootVolumeEncryptionEnabled *bool `type:"boolean"`
+
 	// The operational state of the WorkSpace.
 	State *string `type:"string" enum:"WorkspaceState"`
 
@@ -905,16 +2292,19 @@ type Workspace struct {
 	SubnetId *string `type:"string"`
 
 	// The user that the WorkSpace is assigned to.
-	UserName *string `type:"string"`
+	UserName *string `min:"1" type:"string"`
+
+	// Specifies whether the data stored on the user volume, or D: drive, is encrypted.
+	UserVolumeEncryptionEnabled *bool `type:"boolean"`
+
+	// The KMS key used to encrypt data stored on your WorkSpace.
+	VolumeEncryptionKey *string `type:"string"`
 
 	// The identifier of the WorkSpace.
 	WorkspaceId *string `type:"string"`
 
-	metadataWorkspace `json:"-" xml:"-"`
-}
-
-type metadataWorkspace struct {
-	SDKShapeTraits bool `type:"structure"`
+	// Describes the properties of a WorkSpace.
+	WorkspaceProperties *WorkspaceProperties `type:"structure"`
 }
 
 // String returns the string representation
@@ -929,6 +2319,8 @@ func (s Workspace) GoString() string {
 
 // Contains information about a WorkSpace bundle.
 type WorkspaceBundle struct {
+	_ struct{} `type:"structure"`
+
 	// The bundle identifier.
 	BundleId *string `type:"string"`
 
@@ -939,7 +2331,7 @@ type WorkspaceBundle struct {
 	Description *string `type:"string"`
 
 	// The name of the bundle.
-	Name *string `type:"string"`
+	Name *string `min:"1" type:"string"`
 
 	// The owner of the bundle. This contains the owner's account identifier, or
 	// AMAZON if the bundle is provided by AWS.
@@ -948,12 +2340,6 @@ type WorkspaceBundle struct {
 	// A UserStorage object that specifies the amount of user storage that the bundle
 	// contains.
 	UserStorage *UserStorage `type:"structure"`
-
-	metadataWorkspaceBundle `json:"-" xml:"-"`
-}
-
-type metadataWorkspaceBundle struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -966,14 +2352,44 @@ func (s WorkspaceBundle) GoString() string {
 	return s.String()
 }
 
+// Describes the connection status of a WorkSpace.
+type WorkspaceConnectionStatus struct {
+	_ struct{} `type:"structure"`
+
+	// The connection state of the WorkSpace. Returns UNKOWN if the WorkSpace is
+	// in a Stopped state.
+	ConnectionState *string `type:"string" enum:"ConnectionState"`
+
+	// The timestamp of the connection state check.
+	ConnectionStateCheckTimestamp *time.Time `type:"timestamp" timestampFormat:"unix"`
+
+	// The timestamp of the last known user connection.
+	LastKnownUserConnectionTimestamp *time.Time `type:"timestamp" timestampFormat:"unix"`
+
+	// The ID of the WorkSpace.
+	WorkspaceId *string `type:"string"`
+}
+
+// String returns the string representation
+func (s WorkspaceConnectionStatus) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s WorkspaceConnectionStatus) GoString() string {
+	return s.String()
+}
+
 // Contains information about an AWS Directory Service directory for use with
 // Amazon WorkSpaces.
 type WorkspaceDirectory struct {
+	_ struct{} `type:"structure"`
+
 	// The directory alias.
 	Alias *string `type:"string"`
 
 	// The user name for the service account.
-	CustomerUserName *string `type:"string"`
+	CustomerUserName *string `min:"1" type:"string"`
 
 	// The directory identifier.
 	DirectoryId *string `type:"string"`
@@ -994,7 +2410,7 @@ type WorkspaceDirectory struct {
 
 	// The registration code for the directory. This is the code that users enter
 	// in their Amazon WorkSpaces client application to connect to the directory.
-	RegistrationCode *string `type:"string"`
+	RegistrationCode *string `min:"1" type:"string"`
 
 	// The state of the directory's registration with Amazon WorkSpaces
 	State *string `type:"string" enum:"WorkspaceDirectoryState"`
@@ -1009,12 +2425,6 @@ type WorkspaceDirectory struct {
 
 	// The identifier of the security group that is assigned to new WorkSpaces.
 	WorkspaceSecurityGroupId *string `type:"string"`
-
-	metadataWorkspaceDirectory `json:"-" xml:"-"`
-}
-
-type metadataWorkspaceDirectory struct {
-	SDKShapeTraits bool `type:"structure"`
 }
 
 // String returns the string representation
@@ -1027,27 +2437,68 @@ func (s WorkspaceDirectory) GoString() string {
 	return s.String()
 }
 
+// Describes the properties of a WorkSpace.
+type WorkspaceProperties struct {
+	_ struct{} `type:"structure"`
+
+	// The running mode of the WorkSpace. AlwaysOn WorkSpaces are billed monthly.
+	// AutoStop WorkSpaces are billed by the hour and stopped when no longer being
+	// used in order to save on costs.
+	RunningMode *string `type:"string" enum:"RunningMode"`
+
+	// The time after a user logs off when WorkSpaces are automatically stopped.
+	// Configured in 60 minute intervals.
+	RunningModeAutoStopTimeoutInMinutes *int64 `type:"integer"`
+}
+
+// String returns the string representation
+func (s WorkspaceProperties) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s WorkspaceProperties) GoString() string {
+	return s.String()
+}
+
 // Contains information about a WorkSpace creation request.
 type WorkspaceRequest struct {
+	_ struct{} `type:"structure"`
+
 	// The identifier of the bundle to create the WorkSpace from. You can use the
 	// DescribeWorkspaceBundles operation to obtain a list of the bundles that are
 	// available.
+	//
+	// BundleId is a required field
 	BundleId *string `type:"string" required:"true"`
 
 	// The identifier of the AWS Directory Service directory to create the WorkSpace
 	// in. You can use the DescribeWorkspaceDirectories operation to obtain a list
 	// of the directories that are available.
+	//
+	// DirectoryId is a required field
 	DirectoryId *string `type:"string" required:"true"`
+
+	// Specifies whether the data stored on the root volume, or C: drive, is encrypted.
+	RootVolumeEncryptionEnabled *bool `type:"boolean"`
+
+	// The tags of the WorkSpace request.
+	Tags []*Tag `type:"list"`
 
 	// The username that the WorkSpace is assigned to. This username must exist
 	// in the AWS Directory Service directory specified by the DirectoryId member.
-	UserName *string `type:"string" required:"true"`
+	//
+	// UserName is a required field
+	UserName *string `min:"1" type:"string" required:"true"`
 
-	metadataWorkspaceRequest `json:"-" xml:"-"`
-}
+	// Specifies whether the data stored on the user volume, or D: drive, is encrypted.
+	UserVolumeEncryptionEnabled *bool `type:"boolean"`
 
-type metadataWorkspaceRequest struct {
-	SDKShapeTraits bool `type:"structure"`
+	// The KMS key used to encrypt data stored on your WorkSpace.
+	VolumeEncryptionKey *string `type:"string"`
+
+	// Describes the properties of a WorkSpace.
+	WorkspaceProperties *WorkspaceProperties `type:"structure"`
 }
 
 // String returns the string representation
@@ -1060,54 +2511,133 @@ func (s WorkspaceRequest) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *WorkspaceRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "WorkspaceRequest"}
+	if s.BundleId == nil {
+		invalidParams.Add(request.NewErrParamRequired("BundleId"))
+	}
+	if s.DirectoryId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DirectoryId"))
+	}
+	if s.UserName == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserName"))
+	}
+	if s.UserName != nil && len(*s.UserName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserName", 1))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 const (
-	// @enum Compute
+	// ComputeValue is a Compute enum value
 	ComputeValue = "VALUE"
-	// @enum Compute
+
+	// ComputeStandard is a Compute enum value
 	ComputeStandard = "STANDARD"
-	// @enum Compute
+
+	// ComputePerformance is a Compute enum value
 	ComputePerformance = "PERFORMANCE"
 )
 
 const (
-	// @enum WorkspaceDirectoryState
+	// ConnectionStateConnected is a ConnectionState enum value
+	ConnectionStateConnected = "CONNECTED"
+
+	// ConnectionStateDisconnected is a ConnectionState enum value
+	ConnectionStateDisconnected = "DISCONNECTED"
+
+	// ConnectionStateUnknown is a ConnectionState enum value
+	ConnectionStateUnknown = "UNKNOWN"
+)
+
+const (
+	// RunningModeAutoStop is a RunningMode enum value
+	RunningModeAutoStop = "AUTO_STOP"
+
+	// RunningModeAlwaysOn is a RunningMode enum value
+	RunningModeAlwaysOn = "ALWAYS_ON"
+)
+
+const (
+	// WorkspaceDirectoryStateRegistering is a WorkspaceDirectoryState enum value
 	WorkspaceDirectoryStateRegistering = "REGISTERING"
-	// @enum WorkspaceDirectoryState
+
+	// WorkspaceDirectoryStateRegistered is a WorkspaceDirectoryState enum value
 	WorkspaceDirectoryStateRegistered = "REGISTERED"
-	// @enum WorkspaceDirectoryState
+
+	// WorkspaceDirectoryStateDeregistering is a WorkspaceDirectoryState enum value
 	WorkspaceDirectoryStateDeregistering = "DEREGISTERING"
-	// @enum WorkspaceDirectoryState
+
+	// WorkspaceDirectoryStateDeregistered is a WorkspaceDirectoryState enum value
 	WorkspaceDirectoryStateDeregistered = "DEREGISTERED"
-	// @enum WorkspaceDirectoryState
+
+	// WorkspaceDirectoryStateError is a WorkspaceDirectoryState enum value
 	WorkspaceDirectoryStateError = "ERROR"
 )
 
 const (
-	// @enum WorkspaceDirectoryType
+	// WorkspaceDirectoryTypeSimpleAd is a WorkspaceDirectoryType enum value
 	WorkspaceDirectoryTypeSimpleAd = "SIMPLE_AD"
-	// @enum WorkspaceDirectoryType
+
+	// WorkspaceDirectoryTypeAdConnector is a WorkspaceDirectoryType enum value
 	WorkspaceDirectoryTypeAdConnector = "AD_CONNECTOR"
 )
 
 const (
-	// @enum WorkspaceState
+	// WorkspaceStatePending is a WorkspaceState enum value
 	WorkspaceStatePending = "PENDING"
-	// @enum WorkspaceState
+
+	// WorkspaceStateAvailable is a WorkspaceState enum value
 	WorkspaceStateAvailable = "AVAILABLE"
-	// @enum WorkspaceState
+
+	// WorkspaceStateImpaired is a WorkspaceState enum value
 	WorkspaceStateImpaired = "IMPAIRED"
-	// @enum WorkspaceState
+
+	// WorkspaceStateUnhealthy is a WorkspaceState enum value
 	WorkspaceStateUnhealthy = "UNHEALTHY"
-	// @enum WorkspaceState
+
+	// WorkspaceStateRebooting is a WorkspaceState enum value
 	WorkspaceStateRebooting = "REBOOTING"
-	// @enum WorkspaceState
+
+	// WorkspaceStateStarting is a WorkspaceState enum value
+	WorkspaceStateStarting = "STARTING"
+
+	// WorkspaceStateRebuilding is a WorkspaceState enum value
 	WorkspaceStateRebuilding = "REBUILDING"
-	// @enum WorkspaceState
+
+	// WorkspaceStateMaintenance is a WorkspaceState enum value
+	WorkspaceStateMaintenance = "MAINTENANCE"
+
+	// WorkspaceStateTerminating is a WorkspaceState enum value
 	WorkspaceStateTerminating = "TERMINATING"
-	// @enum WorkspaceState
+
+	// WorkspaceStateTerminated is a WorkspaceState enum value
 	WorkspaceStateTerminated = "TERMINATED"
-	// @enum WorkspaceState
+
+	// WorkspaceStateSuspended is a WorkspaceState enum value
 	WorkspaceStateSuspended = "SUSPENDED"
-	// @enum WorkspaceState
+
+	// WorkspaceStateStopping is a WorkspaceState enum value
+	WorkspaceStateStopping = "STOPPING"
+
+	// WorkspaceStateStopped is a WorkspaceState enum value
+	WorkspaceStateStopped = "STOPPED"
+
+	// WorkspaceStateError is a WorkspaceState enum value
 	WorkspaceStateError = "ERROR"
 )

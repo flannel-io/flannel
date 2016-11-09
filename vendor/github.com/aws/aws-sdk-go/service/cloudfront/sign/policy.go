@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"unicode"
 )
 
 // An AWSEpochTime wraps a time value providing JSON serialization needed for
@@ -79,11 +80,8 @@ var randReader = rand.Reader
 // guidelines in:
 // http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-signed-urls.html
 func (p *Policy) Sign(privKey *rsa.PrivateKey) (b64Signature, b64Policy []byte, err error) {
-	if len(p.Statements) != 1 {
-		return nil, nil, fmt.Errorf("invalid number of policy statements expected 1 got %d", len(p.Statements))
-	}
-	if p.Statements[0].Resource == "" {
-		return nil, nil, fmt.Errorf("no resource in profile statement")
+	if err = p.Validate(); err != nil {
+		return nil, nil, err
 	}
 
 	// Build and escape the policy
@@ -103,12 +101,33 @@ func (p *Policy) Sign(privKey *rsa.PrivateKey) (b64Signature, b64Policy []byte, 
 	return b64Signature, b64Policy, nil
 }
 
+// Validate verifies that the policy is valid and usable, and returns an
+// error if there is a problem.
+func (p *Policy) Validate() error {
+	if len(p.Statements) == 0 {
+		return fmt.Errorf("at least one policy statement is required")
+	}
+	for i, s := range p.Statements {
+		if s.Resource == "" {
+			return fmt.Errorf("statement at index %d does not have a resource", i)
+		}
+		if !isASCII(s.Resource) {
+			return fmt.Errorf("unable to sign resource, [%s]. "+
+				"Resources must only contain ascii characters. "+
+				"Hostnames with unicode should be encoded as Punycode, (e.g. golang.org/x/net/idna), "+
+				"and URL unicode path/query characters should be escaped.", s.Resource)
+		}
+	}
+
+	return nil
+}
+
 // CreateResource constructs, validates, and returns a resource URL string. An
 // error will be returned if unable to create the resource string.
 func CreateResource(scheme, u string) (string, error) {
 	scheme = strings.ToLower(scheme)
 
-	if scheme == "http" || scheme == "https" {
+	if scheme == "http" || scheme == "https" || scheme == "http*" || scheme == "*" {
 		return u, nil
 	}
 
@@ -195,4 +214,13 @@ func awsEscapeEncoded(b []byte) {
 			b[i] = r
 		}
 	}
+}
+
+func isASCII(u string) bool {
+	for _, c := range u {
+		if c > unicode.MaxASCII {
+			return false
+		}
+	}
+	return true
 }

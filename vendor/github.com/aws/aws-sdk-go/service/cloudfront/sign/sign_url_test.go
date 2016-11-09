@@ -27,6 +27,10 @@ var testSignURL = []struct {
 		"http://example.com/a?Expires=1257894000&Signature=Y6qvWOZNl99uNPMGprvrKXEmXpLWJ-xXKVHL~nmF0BR1jPb2XA2jor0MUYKBE4ViTkWZZ1dz46zSFMsEEfw~n6-SVYXZ2QHBBTkSAoxGtH6dH33Ph9pz~f9Wy7aYXq~9I-Ah0E6yC~BMiQuXe5qAOucuMPorKgPfC0dvLMw2EF0_&Key-Pair-Id=KeyID",
 	},
 	{
+		"http://example.com/Ƿ", nil, testSignTime, false, true,
+		"http://example.com/Ƿ?Expires=1257894000&Signature=Y6qvWOZNl99uNPMGprvrKXEmXpLWJ-xXKVHL~nmF0BR1jPb2XA2jor0MUYKBE4ViTkWZZ1dz46zSFMsEEfw~n6-SVYXZ2QHBBTkSAoxGtH6dH33Ph9pz~f9Wy7aYXq~9I-Ah0E6yC~BMiQuXe5qAOucuMPorKgPfC0dvLMw2EF0_&Key-Pair-Id=KeyID",
+	},
+	{
 		"http://example.com/a", &Policy{}, time.Time{}, true, true,
 		"http://example.com/a?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovL2V4YW1wbGUuY29tL2EiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjEyNTc4OTQwMDB9fX1dfQ__&Signature=Y6qvWOZNl99uNPMGprvrKXEmXpLWJ-xXKVHL~nmF0BR1jPb2XA2jor0MUYKBE4ViTkWZZ1dz46zSFMsEEfw~n6-SVYXZ2QHBBTkSAoxGtH6dH33Ph9pz~f9Wy7aYXq~9I-Ah0E6yC~BMiQuXe5qAOucuMPorKgPfC0dvLMw2EF0_&Key-Pair-Id=KeyID",
 	},

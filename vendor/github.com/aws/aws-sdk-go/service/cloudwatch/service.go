@@ -4,88 +4,86 @@ package cloudwatch
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/defaults"
+	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/service"
-	"github.com/aws/aws-sdk-go/aws/service/serviceinfo"
-	"github.com/aws/aws-sdk-go/internal/protocol/query"
-	"github.com/aws/aws-sdk-go/internal/signer/v4"
+	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/aws/aws-sdk-go/private/protocol/query"
 )
 
-// This is the Amazon CloudWatch API Reference. This guide provides detailed
-// information about Amazon CloudWatch actions, data types, parameters, and
-// errors. For detailed information about Amazon CloudWatch features and their
-// associated API calls, go to the Amazon CloudWatch Developer Guide (http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide).
+// Amazon CloudWatch monitors your Amazon Web Services (AWS) resources and the
+// applications you run on AWS in real-time. You can use CloudWatch to collect
+// and track metrics, which are the variables you want to measure for your resources
+// and applications.
 //
-// Amazon CloudWatch is a web service that enables you to publish, monitor,
-// and manage various metrics, as well as configure alarm actions based on data
-// from metrics. For more information about this product go to http://aws.amazon.com/cloudwatch
-// (http://aws.amazon.com/cloudwatch).
+// CloudWatch alarms send notifications or automatically make changes to the
+// resources you are monitoring based on rules that you define. For example,
+// you can monitor the CPU usage and disk reads and writes of your Amazon Elastic
+// Compute Cloud (Amazon EC2) instances and then use this data to determine
+// whether you should launch additional instances to handle increased load.
+// You can also use this data to stop under-used instances to save money.
 //
-//  For information about the namespace, metric names, and dimensions that
-// other Amazon Web Services products use to send metrics to Cloudwatch, go
-// to Amazon CloudWatch Metrics, Namespaces, and Dimensions Reference (http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/CW_Support_For_AWS.html)
-// in the Amazon CloudWatch Developer Guide.
-//
-// Use the following links to get started using the Amazon CloudWatch API Reference:
-//
-//   Actions (http://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Operations.html):
-// An alphabetical list of all Amazon CloudWatch actions.  Data Types (http://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Types.html):
-// An alphabetical list of all Amazon CloudWatch data types.  Common Parameters
-// (http://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/CommonParameters.html):
-// Parameters that all Query actions can use.  Common Errors (http://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/CommonErrors.html):
-// Client and server errors that all actions can return.  Regions and Endpoints
-// (http://docs.aws.amazon.com/general/latest/gr/index.html?rande.html): Itemized
-// regions and endpoints for all AWS products.  WSDL Location (http://monitoring.amazonaws.com/doc/2010-08-01/CloudWatch.wsdl):
-// http://monitoring.amazonaws.com/doc/2010-08-01/CloudWatch.wsdl  In addition
-// to using the Amazon CloudWatch API, you can also use the following SDKs and
-// third-party libraries to access Amazon CloudWatch programmatically.
-//
-//  AWS SDK for Java Documentation (http://aws.amazon.com/documentation/sdkforjava/)
-// AWS SDK for .NET Documentation (http://aws.amazon.com/documentation/sdkfornet/)
-// AWS SDK for PHP Documentation (http://aws.amazon.com/documentation/sdkforphp/)
-// AWS SDK for Ruby Documentation (http://aws.amazon.com/documentation/sdkforruby/)
-//  Developers in the AWS developer community also provide their own libraries,
-// which you can find at the following AWS developer centers:
-//
-//  AWS Java Developer Center (http://aws.amazon.com/java/) AWS PHP Developer
-// Center (http://aws.amazon.com/php/) AWS Python Developer Center (http://aws.amazon.com/python/)
-// AWS Ruby Developer Center (http://aws.amazon.com/ruby/) AWS Windows and .NET
-// Developer Center (http://aws.amazon.com/net/)
+// In addition to monitoring the built-in metrics that come with AWS, you can
+// monitor your own custom metrics. With CloudWatch, you gain system-wide visibility
+// into resource utilization, application performance, and operational health.
+//The service client's operations are safe to be used concurrently.
+// It is not safe to mutate any of the client's properties though.
 type CloudWatch struct {
-	*service.Service
+	*client.Client
 }
 
-// Used for custom service initialization logic
-var initService func(*service.Service)
+// Used for custom client initialization logic
+var initClient func(*client.Client)
 
 // Used for custom request initialization logic
 var initRequest func(*request.Request)
 
-// New returns a new CloudWatch client.
-func New(config *aws.Config) *CloudWatch {
-	service := &service.Service{
-		ServiceInfo: serviceinfo.ServiceInfo{
-			Config:      defaults.DefaultConfig.Merge(config),
-			ServiceName: "monitoring",
-			APIVersion:  "2010-08-01",
-		},
+// A ServiceName is the name of the service the client will make API calls to.
+const ServiceName = "monitoring"
+
+// New creates a new instance of the CloudWatch client with a session.
+// If additional configuration is needed for the client instance use the optional
+// aws.Config parameter to add your extra config.
+//
+// Example:
+//     // Create a CloudWatch client from just a session.
+//     svc := cloudwatch.New(mySession)
+//
+//     // Create a CloudWatch client with additional configuration
+//     svc := cloudwatch.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+func New(p client.ConfigProvider, cfgs ...*aws.Config) *CloudWatch {
+	c := p.ClientConfig(ServiceName, cfgs...)
+	return newClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+}
+
+// newClient creates, initializes and returns a new service client instance.
+func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *CloudWatch {
+	svc := &CloudWatch{
+		Client: client.New(
+			cfg,
+			metadata.ClientInfo{
+				ServiceName:   ServiceName,
+				SigningRegion: signingRegion,
+				Endpoint:      endpoint,
+				APIVersion:    "2010-08-01",
+			},
+			handlers,
+		),
 	}
-	service.Initialize()
 
 	// Handlers
-	service.Handlers.Sign.PushBack(v4.Sign)
-	service.Handlers.Build.PushBack(query.Build)
-	service.Handlers.Unmarshal.PushBack(query.Unmarshal)
-	service.Handlers.UnmarshalMeta.PushBack(query.UnmarshalMeta)
-	service.Handlers.UnmarshalError.PushBack(query.UnmarshalError)
+	svc.Handlers.Sign.PushBackNamed(v4.SignRequestHandler)
+	svc.Handlers.Build.PushBackNamed(query.BuildHandler)
+	svc.Handlers.Unmarshal.PushBackNamed(query.UnmarshalHandler)
+	svc.Handlers.UnmarshalMeta.PushBackNamed(query.UnmarshalMetaHandler)
+	svc.Handlers.UnmarshalError.PushBackNamed(query.UnmarshalErrorHandler)
 
-	// Run custom service initialization if present
-	if initService != nil {
-		initService(service)
+	// Run custom client initialization if present
+	if initClient != nil {
+		initClient(svc.Client)
 	}
 
-	return &CloudWatch{service}
+	return svc
 }
 
 // newRequest creates a new request for a CloudWatch operation and runs any

@@ -8,21 +8,74 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/workspaces"
 )
 
 var _ time.Duration
 var _ bytes.Buffer
 
+func ExampleWorkSpaces_CreateTags() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
+
+	params := &workspaces.CreateTagsInput{
+		ResourceId: aws.String("NonEmptyString"), // Required
+		Tags: []*workspaces.Tag{ // Required
+			{ // Required
+				Key:   aws.String("TagKey"), // Required
+				Value: aws.String("TagValue"),
+			},
+			// More values...
+		},
+	}
+	resp, err := svc.CreateTags(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleWorkSpaces_CreateWorkspaces() {
-	svc := workspaces.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
 
 	params := &workspaces.CreateWorkspacesInput{
 		Workspaces: []*workspaces.WorkspaceRequest{ // Required
 			{ // Required
-				BundleId:    aws.String("BundleId"),    // Required
-				DirectoryId: aws.String("DirectoryId"), // Required
-				UserName:    aws.String("UserName"),    // Required
+				BundleId:                    aws.String("BundleId"),    // Required
+				DirectoryId:                 aws.String("DirectoryId"), // Required
+				UserName:                    aws.String("UserName"),    // Required
+				RootVolumeEncryptionEnabled: aws.Bool(true),
+				Tags: []*workspaces.Tag{
+					{ // Required
+						Key:   aws.String("TagKey"), // Required
+						Value: aws.String("TagValue"),
+					},
+					// More values...
+				},
+				UserVolumeEncryptionEnabled: aws.Bool(true),
+				VolumeEncryptionKey:         aws.String("VolumeEncryptionKey"),
+				WorkspaceProperties: &workspaces.WorkspaceProperties{
+					RunningMode:                         aws.String("RunningMode"),
+					RunningModeAutoStopTimeoutInMinutes: aws.Int64(1),
+				},
 			},
 			// More values...
 		},
@@ -40,8 +93,68 @@ func ExampleWorkSpaces_CreateWorkspaces() {
 	fmt.Println(resp)
 }
 
+func ExampleWorkSpaces_DeleteTags() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
+
+	params := &workspaces.DeleteTagsInput{
+		ResourceId: aws.String("NonEmptyString"), // Required
+		TagKeys: []*string{ // Required
+			aws.String("NonEmptyString"), // Required
+			// More values...
+		},
+	}
+	resp, err := svc.DeleteTags(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleWorkSpaces_DescribeTags() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
+
+	params := &workspaces.DescribeTagsInput{
+		ResourceId: aws.String("NonEmptyString"), // Required
+	}
+	resp, err := svc.DescribeTags(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleWorkSpaces_DescribeWorkspaceBundles() {
-	svc := workspaces.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
 
 	params := &workspaces.DescribeWorkspaceBundlesInput{
 		BundleIds: []*string{
@@ -65,7 +178,13 @@ func ExampleWorkSpaces_DescribeWorkspaceBundles() {
 }
 
 func ExampleWorkSpaces_DescribeWorkspaceDirectories() {
-	svc := workspaces.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
 
 	params := &workspaces.DescribeWorkspaceDirectoriesInput{
 		DirectoryIds: []*string{
@@ -88,7 +207,13 @@ func ExampleWorkSpaces_DescribeWorkspaceDirectories() {
 }
 
 func ExampleWorkSpaces_DescribeWorkspaces() {
-	svc := workspaces.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
 
 	params := &workspaces.DescribeWorkspacesInput{
 		BundleId:    aws.String("BundleId"),
@@ -114,8 +239,72 @@ func ExampleWorkSpaces_DescribeWorkspaces() {
 	fmt.Println(resp)
 }
 
+func ExampleWorkSpaces_DescribeWorkspacesConnectionStatus() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
+
+	params := &workspaces.DescribeWorkspacesConnectionStatusInput{
+		NextToken: aws.String("PaginationToken"),
+		WorkspaceIds: []*string{
+			aws.String("WorkspaceId"), // Required
+			// More values...
+		},
+	}
+	resp, err := svc.DescribeWorkspacesConnectionStatus(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleWorkSpaces_ModifyWorkspaceProperties() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
+
+	params := &workspaces.ModifyWorkspacePropertiesInput{
+		WorkspaceId: aws.String("WorkspaceId"), // Required
+		WorkspaceProperties: &workspaces.WorkspaceProperties{ // Required
+			RunningMode:                         aws.String("RunningMode"),
+			RunningModeAutoStopTimeoutInMinutes: aws.Int64(1),
+		},
+	}
+	resp, err := svc.ModifyWorkspaceProperties(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleWorkSpaces_RebootWorkspaces() {
-	svc := workspaces.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
 
 	params := &workspaces.RebootWorkspacesInput{
 		RebootWorkspaceRequests: []*workspaces.RebootRequest{ // Required
@@ -139,7 +328,13 @@ func ExampleWorkSpaces_RebootWorkspaces() {
 }
 
 func ExampleWorkSpaces_RebuildWorkspaces() {
-	svc := workspaces.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
 
 	params := &workspaces.RebuildWorkspacesInput{
 		RebuildWorkspaceRequests: []*workspaces.RebuildRequest{ // Required
@@ -162,8 +357,74 @@ func ExampleWorkSpaces_RebuildWorkspaces() {
 	fmt.Println(resp)
 }
 
+func ExampleWorkSpaces_StartWorkspaces() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
+
+	params := &workspaces.StartWorkspacesInput{
+		StartWorkspaceRequests: []*workspaces.StartRequest{ // Required
+			{ // Required
+				WorkspaceId: aws.String("WorkspaceId"),
+			},
+			// More values...
+		},
+	}
+	resp, err := svc.StartWorkspaces(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleWorkSpaces_StopWorkspaces() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
+
+	params := &workspaces.StopWorkspacesInput{
+		StopWorkspaceRequests: []*workspaces.StopRequest{ // Required
+			{ // Required
+				WorkspaceId: aws.String("WorkspaceId"),
+			},
+			// More values...
+		},
+	}
+	resp, err := svc.StopWorkspaces(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleWorkSpaces_TerminateWorkspaces() {
-	svc := workspaces.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := workspaces.New(sess)
 
 	params := &workspaces.TerminateWorkspacesInput{
 		TerminateWorkspaceRequests: []*workspaces.TerminateRequest{ // Required

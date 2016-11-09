@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
 
@@ -15,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleSQS_AddPermission() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.AddPermissionInput{
 		AWSAccountIds: []*string{ // Required
@@ -43,7 +50,13 @@ func ExampleSQS_AddPermission() {
 }
 
 func ExampleSQS_ChangeMessageVisibility() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.ChangeMessageVisibilityInput{
 		QueueUrl:          aws.String("String"), // Required
@@ -64,7 +77,13 @@ func ExampleSQS_ChangeMessageVisibility() {
 }
 
 func ExampleSQS_ChangeMessageVisibilityBatch() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.ChangeMessageVisibilityBatchInput{
 		Entries: []*sqs.ChangeMessageVisibilityBatchRequestEntry{ // Required
@@ -91,7 +110,13 @@ func ExampleSQS_ChangeMessageVisibilityBatch() {
 }
 
 func ExampleSQS_CreateQueue() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.CreateQueueInput{
 		QueueName: aws.String("String"), // Required
@@ -114,7 +139,13 @@ func ExampleSQS_CreateQueue() {
 }
 
 func ExampleSQS_DeleteMessage() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.DeleteMessageInput{
 		QueueUrl:      aws.String("String"), // Required
@@ -134,7 +165,13 @@ func ExampleSQS_DeleteMessage() {
 }
 
 func ExampleSQS_DeleteMessageBatch() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.DeleteMessageBatchInput{
 		Entries: []*sqs.DeleteMessageBatchRequestEntry{ // Required
@@ -160,7 +197,13 @@ func ExampleSQS_DeleteMessageBatch() {
 }
 
 func ExampleSQS_DeleteQueue() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.DeleteQueueInput{
 		QueueUrl: aws.String("String"), // Required
@@ -179,7 +222,13 @@ func ExampleSQS_DeleteQueue() {
 }
 
 func ExampleSQS_GetQueueAttributes() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.GetQueueAttributesInput{
 		QueueUrl: aws.String("String"), // Required
@@ -202,7 +251,13 @@ func ExampleSQS_GetQueueAttributes() {
 }
 
 func ExampleSQS_GetQueueUrl() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.GetQueueUrlInput{
 		QueueName:              aws.String("String"), // Required
@@ -222,7 +277,13 @@ func ExampleSQS_GetQueueUrl() {
 }
 
 func ExampleSQS_ListDeadLetterSourceQueues() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.ListDeadLetterSourceQueuesInput{
 		QueueUrl: aws.String("String"), // Required
@@ -241,7 +302,13 @@ func ExampleSQS_ListDeadLetterSourceQueues() {
 }
 
 func ExampleSQS_ListQueues() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.ListQueuesInput{
 		QueueNamePrefix: aws.String("String"),
@@ -260,7 +327,13 @@ func ExampleSQS_ListQueues() {
 }
 
 func ExampleSQS_PurgeQueue() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.PurgeQueueInput{
 		QueueUrl: aws.String("String"), // Required
@@ -279,7 +352,13 @@ func ExampleSQS_PurgeQueue() {
 }
 
 func ExampleSQS_ReceiveMessage() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.ReceiveMessageInput{
 		QueueUrl: aws.String("String"), // Required
@@ -309,7 +388,13 @@ func ExampleSQS_ReceiveMessage() {
 }
 
 func ExampleSQS_RemovePermission() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.RemovePermissionInput{
 		Label:    aws.String("String"), // Required
@@ -329,7 +414,13 @@ func ExampleSQS_RemovePermission() {
 }
 
 func ExampleSQS_SendMessage() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.SendMessageInput{
 		MessageBody:  aws.String("String"), // Required
@@ -366,7 +457,13 @@ func ExampleSQS_SendMessage() {
 }
 
 func ExampleSQS_SendMessageBatch() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.SendMessageBatchInput{
 		Entries: []*sqs.SendMessageBatchRequestEntry{ // Required
@@ -409,7 +506,13 @@ func ExampleSQS_SendMessageBatch() {
 }
 
 func ExampleSQS_SetQueueAttributes() {
-	svc := sqs.New(nil)
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := sqs.New(sess)
 
 	params := &sqs.SetQueueAttributesInput{
 		Attributes: map[string]*string{ // Required

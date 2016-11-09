@@ -4,12 +4,11 @@ package cloudtrail
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/defaults"
+	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/service"
-	"github.com/aws/aws-sdk-go/aws/service/serviceinfo"
-	"github.com/aws/aws-sdk-go/internal/protocol/jsonrpc"
-	"github.com/aws/aws-sdk-go/internal/signer/v4"
+	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
 // This is the CloudTrail API Reference. It provides descriptions of actions,
@@ -21,52 +20,77 @@ import (
 // IP address, the request parameters, and the response elements returned by
 // the service.
 //
-//  As an alternative to using the API, you can use one of the AWS SDKs, which
-// consist of libraries and sample code for various programming languages and
-// platforms (Java, Ruby, .NET, iOS, Android, etc.). The SDKs provide a convenient
-// way to create programmatic access to AWSCloudTrail. For example, the SDKs
-// take care of cryptographically signing requests, managing errors, and retrying
+// As an alternative to the API, you can use one of the AWS SDKs, which consist
+// of libraries and sample code for various programming languages and platforms
+// (Java, Ruby, .NET, iOS, Android, etc.). The SDKs provide a convenient way
+// to create programmatic access to AWSCloudTrail. For example, the SDKs take
+// care of cryptographically signing requests, managing errors, and retrying
 // requests automatically. For information about the AWS SDKs, including how
 // to download and install them, see the Tools for Amazon Web Services page
-// (http://aws.amazon.com/tools/).  See the CloudTrail User Guide for information
-// about the data that is included with each AWS API call listed in the log
-// files.
+// (http://aws.amazon.com/tools/).
+//
+// See the CloudTrail User Guide for information about the data that is included
+// with each AWS API call listed in the log files.
+//The service client's operations are safe to be used concurrently.
+// It is not safe to mutate any of the client's properties though.
 type CloudTrail struct {
-	*service.Service
+	*client.Client
 }
 
-// Used for custom service initialization logic
-var initService func(*service.Service)
+// Used for custom client initialization logic
+var initClient func(*client.Client)
 
 // Used for custom request initialization logic
 var initRequest func(*request.Request)
 
-// New returns a new CloudTrail client.
-func New(config *aws.Config) *CloudTrail {
-	service := &service.Service{
-		ServiceInfo: serviceinfo.ServiceInfo{
-			Config:       defaults.DefaultConfig.Merge(config),
-			ServiceName:  "cloudtrail",
-			APIVersion:   "2013-11-01",
-			JSONVersion:  "1.1",
-			TargetPrefix: "com.amazonaws.cloudtrail.v20131101.CloudTrail_20131101",
-		},
+// A ServiceName is the name of the service the client will make API calls to.
+const ServiceName = "cloudtrail"
+
+// New creates a new instance of the CloudTrail client with a session.
+// If additional configuration is needed for the client instance use the optional
+// aws.Config parameter to add your extra config.
+//
+// Example:
+//     // Create a CloudTrail client from just a session.
+//     svc := cloudtrail.New(mySession)
+//
+//     // Create a CloudTrail client with additional configuration
+//     svc := cloudtrail.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+func New(p client.ConfigProvider, cfgs ...*aws.Config) *CloudTrail {
+	c := p.ClientConfig(ServiceName, cfgs...)
+	return newClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+}
+
+// newClient creates, initializes and returns a new service client instance.
+func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *CloudTrail {
+	svc := &CloudTrail{
+		Client: client.New(
+			cfg,
+			metadata.ClientInfo{
+				ServiceName:   ServiceName,
+				SigningRegion: signingRegion,
+				Endpoint:      endpoint,
+				APIVersion:    "2013-11-01",
+				JSONVersion:   "1.1",
+				TargetPrefix:  "com.amazonaws.cloudtrail.v20131101.CloudTrail_20131101",
+			},
+			handlers,
+		),
 	}
-	service.Initialize()
 
 	// Handlers
-	service.Handlers.Sign.PushBack(v4.Sign)
-	service.Handlers.Build.PushBack(jsonrpc.Build)
-	service.Handlers.Unmarshal.PushBack(jsonrpc.Unmarshal)
-	service.Handlers.UnmarshalMeta.PushBack(jsonrpc.UnmarshalMeta)
-	service.Handlers.UnmarshalError.PushBack(jsonrpc.UnmarshalError)
+	svc.Handlers.Sign.PushBackNamed(v4.SignRequestHandler)
+	svc.Handlers.Build.PushBackNamed(jsonrpc.BuildHandler)
+	svc.Handlers.Unmarshal.PushBackNamed(jsonrpc.UnmarshalHandler)
+	svc.Handlers.UnmarshalMeta.PushBackNamed(jsonrpc.UnmarshalMetaHandler)
+	svc.Handlers.UnmarshalError.PushBackNamed(jsonrpc.UnmarshalErrorHandler)
 
-	// Run custom service initialization if present
-	if initService != nil {
-		initService(service)
+	// Run custom client initialization if present
+	if initClient != nil {
+		initClient(svc.Client)
 	}
 
-	return &CloudTrail{service}
+	return svc
 }
 
 // newRequest creates a new request for a CloudTrail operation and runs any

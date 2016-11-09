@@ -4,69 +4,88 @@ package elasticbeanstalk
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/defaults"
+	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/service"
-	"github.com/aws/aws-sdk-go/aws/service/serviceinfo"
-	"github.com/aws/aws-sdk-go/internal/protocol/query"
-	"github.com/aws/aws-sdk-go/internal/signer/v4"
+	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/aws/aws-sdk-go/private/protocol/query"
 )
 
-// This is the AWS Elastic Beanstalk API Reference. This guide provides detailed
-// information about AWS Elastic Beanstalk actions, data types, parameters,
-// and errors.
+// AWS Elastic Beanstalk makes it easy for you to create, deploy, and manage
+// scalable, fault-tolerant applications running on the Amazon Web Services
+// cloud.
 //
-// AWS Elastic Beanstalk is a tool that makes it easy for you to create, deploy,
-// and manage scalable, fault-tolerant applications running on Amazon Web Services
-// cloud resources.
-//
-//  For more information about this product, go to the AWS Elastic Beanstalk
+// For more information about this product, go to the AWS Elastic Beanstalk
 // (http://aws.amazon.com/elasticbeanstalk/) details page. The location of the
 // latest AWS Elastic Beanstalk WSDL is http://elasticbeanstalk.s3.amazonaws.com/doc/2010-12-01/AWSElasticBeanstalk.wsdl
 // (http://elasticbeanstalk.s3.amazonaws.com/doc/2010-12-01/AWSElasticBeanstalk.wsdl).
 // To install the Software Development Kits (SDKs), Integrated Development Environment
 // (IDE) Toolkits, and command line tools that enable you to access the API,
-// go to Tools for Amazon Web Services (https://aws.amazon.com/tools/).
+// go to Tools for Amazon Web Services (http://aws.amazon.com/tools/).
 //
 // Endpoints
 //
 // For a list of region-specific endpoints that AWS Elastic Beanstalk supports,
 // go to Regions and Endpoints (http://docs.aws.amazon.com/general/latest/gr/rande.html#elasticbeanstalk_region)
 // in the Amazon Web Services Glossary.
+//The service client's operations are safe to be used concurrently.
+// It is not safe to mutate any of the client's properties though.
 type ElasticBeanstalk struct {
-	*service.Service
+	*client.Client
 }
 
-// Used for custom service initialization logic
-var initService func(*service.Service)
+// Used for custom client initialization logic
+var initClient func(*client.Client)
 
 // Used for custom request initialization logic
 var initRequest func(*request.Request)
 
-// New returns a new ElasticBeanstalk client.
-func New(config *aws.Config) *ElasticBeanstalk {
-	service := &service.Service{
-		ServiceInfo: serviceinfo.ServiceInfo{
-			Config:      defaults.DefaultConfig.Merge(config),
-			ServiceName: "elasticbeanstalk",
-			APIVersion:  "2010-12-01",
-		},
+// A ServiceName is the name of the service the client will make API calls to.
+const ServiceName = "elasticbeanstalk"
+
+// New creates a new instance of the ElasticBeanstalk client with a session.
+// If additional configuration is needed for the client instance use the optional
+// aws.Config parameter to add your extra config.
+//
+// Example:
+//     // Create a ElasticBeanstalk client from just a session.
+//     svc := elasticbeanstalk.New(mySession)
+//
+//     // Create a ElasticBeanstalk client with additional configuration
+//     svc := elasticbeanstalk.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+func New(p client.ConfigProvider, cfgs ...*aws.Config) *ElasticBeanstalk {
+	c := p.ClientConfig(ServiceName, cfgs...)
+	return newClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+}
+
+// newClient creates, initializes and returns a new service client instance.
+func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *ElasticBeanstalk {
+	svc := &ElasticBeanstalk{
+		Client: client.New(
+			cfg,
+			metadata.ClientInfo{
+				ServiceName:   ServiceName,
+				SigningRegion: signingRegion,
+				Endpoint:      endpoint,
+				APIVersion:    "2010-12-01",
+			},
+			handlers,
+		),
 	}
-	service.Initialize()
 
 	// Handlers
-	service.Handlers.Sign.PushBack(v4.Sign)
-	service.Handlers.Build.PushBack(query.Build)
-	service.Handlers.Unmarshal.PushBack(query.Unmarshal)
-	service.Handlers.UnmarshalMeta.PushBack(query.UnmarshalMeta)
-	service.Handlers.UnmarshalError.PushBack(query.UnmarshalError)
+	svc.Handlers.Sign.PushBackNamed(v4.SignRequestHandler)
+	svc.Handlers.Build.PushBackNamed(query.BuildHandler)
+	svc.Handlers.Unmarshal.PushBackNamed(query.UnmarshalHandler)
+	svc.Handlers.UnmarshalMeta.PushBackNamed(query.UnmarshalMetaHandler)
+	svc.Handlers.UnmarshalError.PushBackNamed(query.UnmarshalErrorHandler)
 
-	// Run custom service initialization if present
-	if initService != nil {
-		initService(service)
+	// Run custom client initialization if present
+	if initClient != nil {
+		initClient(svc.Client)
 	}
 
-	return &ElasticBeanstalk{service}
+	return svc
 }
 
 // newRequest creates a new request for a ElasticBeanstalk operation and runs any

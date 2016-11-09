@@ -105,7 +105,7 @@ def apply_docs
     svc_name = ctor.source[/ServiceName:\s*"(.+?)",/, 1]
     api_ver = ctor.source[/APIVersion:\s*"(.+?)",/, 1]
     log.progress "Parsing service documentation for #{svc_name} (#{api_ver})"
-    file = Dir.glob("apis/#{svc_name}/#{api_ver}/docs-2.json").sort.last
+    file = Dir.glob("models/apis/#{svc_name}/#{api_ver}/docs-2.json").sort.last
     next if file.nil?
 
     next if svc.nil?

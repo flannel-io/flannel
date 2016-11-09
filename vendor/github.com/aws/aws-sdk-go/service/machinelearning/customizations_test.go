@@ -6,17 +6,16 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/internal/test/unit"
+	"github.com/aws/aws-sdk-go/awstesting/unit"
 	"github.com/aws/aws-sdk-go/service/machinelearning"
-	"github.com/stretchr/testify/assert"
 )
 
-var _ = unit.Imported
-
 func TestPredictEndpoint(t *testing.T) {
-	ml := machinelearning.New(nil)
+	ml := machinelearning.New(unit.Session)
 	ml.Handlers.Send.Clear()
 	ml.Handlers.Send.PushBack(func(r *request.Request) {
 		r.HTTPResponse = &http.Response{

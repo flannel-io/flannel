@@ -17,7 +17,7 @@ var (
 )
 
 func setupChecksumValidation(r *request.Request) {
-	if aws.BoolValue(r.Service.Config.DisableComputeChecksums) {
+	if aws.BoolValue(r.Config.DisableComputeChecksums) {
 		return
 	}
 
@@ -71,9 +71,19 @@ func verifyReceiveMessage(r *request.Request) {
 	if r.DataFilled() && r.ParamsFilled() {
 		ids := []string{}
 		out := r.Data.(*ReceiveMessageOutput)
-		for _, msg := range out.Messages {
+		for i, msg := range out.Messages {
 			err := checksumsMatch(msg.Body, msg.MD5OfBody)
 			if err != nil {
+				if msg.MessageId == nil {
+					if r.Config.Logger != nil {
+						r.Config.Logger.Log(fmt.Sprintf(
+							"WARN: SQS.ReceiveMessage failed checksum request id: %s, message %d has no message ID.",
+							r.RequestID, i,
+						))
+					}
+					continue
+				}
+
 				ids = append(ids, *msg.MessageId)
 			}
 		}

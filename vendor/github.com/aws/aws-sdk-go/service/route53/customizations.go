@@ -3,13 +3,22 @@ package route53
 import (
 	"regexp"
 
+	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/service"
+	"github.com/aws/aws-sdk-go/private/protocol/restxml"
 )
 
 func init() {
-	initService = func(s *service.Service) {
-		s.Handlers.Build.PushBack(sanitizeURL)
+	initClient = func(c *client.Client) {
+		c.Handlers.Build.PushBack(sanitizeURL)
+	}
+
+	initRequest = func(r *request.Request) {
+		switch r.Operation.Name {
+		case opChangeResourceRecordSets:
+			r.Handlers.UnmarshalError.Remove(restxml.UnmarshalErrorHandler)
+			r.Handlers.UnmarshalError.PushBack(unmarshalChangeResourceRecordSetsError)
+		}
 	}
 }
 

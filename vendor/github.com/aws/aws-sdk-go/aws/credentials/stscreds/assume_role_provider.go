@@ -9,40 +9,30 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/sts"
 )
+
+// ProviderName provides a name of AssumeRole provider
+const ProviderName = "AssumeRoleProvider"
 
 // AssumeRoler represents the minimal subset of the STS client API used by this provider.
 type AssumeRoler interface {
 	AssumeRole(input *sts.AssumeRoleInput) (*sts.AssumeRoleOutput, error)
 }
 
+// DefaultDuration is the default amount of time in minutes that the credentials
+// will be valid for.
+var DefaultDuration = time.Duration(15) * time.Minute
+
 // AssumeRoleProvider retrieves temporary credentials from the STS service, and
 // keeps track of their expiration time. This provider must be used explicitly,
 // as it is not included in the credentials chain.
-//
-// Example how to configure a service to use this provider:
-//
-//		config := &aws.Config{
-//			Credentials: stscreds.NewCredentials(nil, "arn-of-the-role-to-assume", 10*time.Second),
-//		})
-//		// Use config for creating your AWS service.
-//
-// Example how to obtain customised credentials:
-//
-//		provider := &stscreds.Provider{
-//			// Extend the duration to 1 hour.
-//			Duration: time.Hour,
-//			// Custom role name.
-//			RoleSessionName: "custom-session-name",
-//		}
-//		creds := credentials.NewCredentials(provider)
-//
 type AssumeRoleProvider struct {
 	credentials.Expiry
 
-	// Custom STS client. If not set the default STS client will be used.
+	// STS client to make assume role request with.
 	Client AssumeRoler
 
 	// Role to be assumed.
@@ -53,6 +43,29 @@ type AssumeRoleProvider struct {
 
 	// Expiry duration of the STS credentials. Defaults to 15 minutes if not set.
 	Duration time.Duration
+
+	// Optional ExternalID to pass along, defaults to nil if not set.
+	ExternalID *string
+
+	// The policy plain text must be 2048 bytes or shorter. However, an internal
+	// conversion compresses it into a packed binary format with a separate limit.
+	// The PackedPolicySize response element indicates by percentage how close to
+	// the upper size limit the policy is, with 100% equaling the maximum allowed
+	// size.
+	Policy *string
+
+	// The identification number of the MFA device that is associated with the user
+	// who is making the AssumeRole call. Specify this value if the trust policy
+	// of the role being assumed includes a condition that requires MFA authentication.
+	// The value is either the serial number for a hardware device (such as GAHT12345678)
+	// or an Amazon Resource Name (ARN) for a virtual device (such as arn:aws:iam::123456789012:mfa/user).
+	SerialNumber *string
+
+	// The value provided by the MFA device, if the trust policy of the role being
+	// assumed requires MFA (that is, if the policy includes a condition that tests
+	// for MFA). If the role being assumed requires MFA and if the TokenCode value
+	// is missing or expired, the AssumeRole call returns an "access denied" error.
+	TokenCode *string
 
 	// ExpiryWindow will allow the credentials to trigger refreshing prior to
 	// the credentials actually expiring. This is beneficial so race conditions
@@ -67,47 +80,73 @@ type AssumeRoleProvider struct {
 }
 
 // NewCredentials returns a pointer to a new Credentials object wrapping the
-// AssumeRoleProvider.  The credentials will expire every 15 minutes and the
+// AssumeRoleProvider. The credentials will expire every 15 minutes and the
 // role will be named after a nanosecond timestamp of this operation.
 //
-// The sts and roleARN parameters are used for building the "AssumeRole" call.
-// Pass nil as sts to use the default client.
+// Takes a Config provider to create the STS client. The ConfigProvider is
+// satisfied by the session.Session type.
+func NewCredentials(c client.ConfigProvider, roleARN string, options ...func(*AssumeRoleProvider)) *credentials.Credentials {
+	p := &AssumeRoleProvider{
+		Client:   sts.New(c),
+		RoleARN:  roleARN,
+		Duration: DefaultDuration,
+	}
+
+	for _, option := range options {
+		option(p)
+	}
+
+	return credentials.NewCredentials(p)
+}
+
+// NewCredentialsWithClient returns a pointer to a new Credentials object wrapping the
+// AssumeRoleProvider. The credentials will expire every 15 minutes and the
+// role will be named after a nanosecond timestamp of this operation.
 //
-// Window is the expiry window that will be subtracted from the expiry returned
-// by the role credential request. This is done so that the credentials will
-// expire sooner than their actual lifespan.
-func NewCredentials(client AssumeRoler, roleARN string, window time.Duration) *credentials.Credentials {
-	return credentials.NewCredentials(&AssumeRoleProvider{
-		Client:       client,
-		RoleARN:      roleARN,
-		ExpiryWindow: window,
-	})
+// Takes an AssumeRoler which can be satisfiede by the STS client.
+func NewCredentialsWithClient(svc AssumeRoler, roleARN string, options ...func(*AssumeRoleProvider)) *credentials.Credentials {
+	p := &AssumeRoleProvider{
+		Client:   svc,
+		RoleARN:  roleARN,
+		Duration: DefaultDuration,
+	}
+
+	for _, option := range options {
+		option(p)
+	}
+
+	return credentials.NewCredentials(p)
 }
 
 // Retrieve generates a new set of temporary credentials using STS.
 func (p *AssumeRoleProvider) Retrieve() (credentials.Value, error) {
 
 	// Apply defaults where parameters are not set.
-	if p.Client == nil {
-		p.Client = sts.New(nil)
-	}
 	if p.RoleSessionName == "" {
 		// Try to work out a role name that will hopefully end up unique.
 		p.RoleSessionName = fmt.Sprintf("%d", time.Now().UTC().UnixNano())
 	}
 	if p.Duration == 0 {
 		// Expire as often as AWS permits.
-		p.Duration = 15 * time.Minute
+		p.Duration = DefaultDuration
 	}
-
-	roleOutput, err := p.Client.AssumeRole(&sts.AssumeRoleInput{
+	input := &sts.AssumeRoleInput{
 		DurationSeconds: aws.Int64(int64(p.Duration / time.Second)),
 		RoleArn:         aws.String(p.RoleARN),
 		RoleSessionName: aws.String(p.RoleSessionName),
-	})
+		ExternalId:      p.ExternalID,
+	}
+	if p.Policy != nil {
+		input.Policy = p.Policy
+	}
+	if p.SerialNumber != nil && p.TokenCode != nil {
+		input.SerialNumber = p.SerialNumber
+		input.TokenCode = p.TokenCode
+	}
+	roleOutput, err := p.Client.AssumeRole(input)
 
 	if err != nil {
-		return credentials.Value{}, err
+		return credentials.Value{ProviderName: ProviderName}, err
 	}
 
 	// We will proactively generate new credentials before they expire.
@@ -117,5 +156,6 @@ func (p *AssumeRoleProvider) Retrieve() (credentials.Value, error) {
 		AccessKeyID:     *roleOutput.Credentials.AccessKeyId,
 		SecretAccessKey: *roleOutput.Credentials.SecretAccessKey,
 		SessionToken:    *roleOutput.Credentials.SessionToken,
+		ProviderName:    ProviderName,
 	}, nil
 }
