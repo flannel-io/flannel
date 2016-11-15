@@ -24,17 +24,10 @@ import (
 type IP4 uint32
 
 func FromBytes(ip []byte) IP4 {
-	if NativelyLittle() {
-		return IP4(uint32(ip[3]) |
-			(uint32(ip[2]) << 8) |
-			(uint32(ip[1]) << 16) |
-			(uint32(ip[0]) << 24))
-	} else {
-		return IP4(uint32(ip[0]) |
-			(uint32(ip[1]) << 8) |
-			(uint32(ip[2]) << 16) |
-			(uint32(ip[3]) << 24))
-	}
+	return IP4(uint32(ip[3]) |
+		(uint32(ip[2]) << 8) |
+		(uint32(ip[1]) << 16) |
+		(uint32(ip[0]) << 24))
 }
 
 func FromIP(ip net.IP) IP4 {
@@ -58,11 +51,7 @@ func MustParseIP4(s string) IP4 {
 }
 
 func (ip IP4) Octets() (a, b, c, d byte) {
-	if NativelyLittle() {
 		a, b, c, d = byte(ip>>24), byte(ip>>16), byte(ip>>8), byte(ip)
-	} else {
-		a, b, c, d = byte(ip), byte(ip>>8), byte(ip>>16), byte(ip>>24)
-	}
 	return
 }
 
@@ -71,12 +60,8 @@ func (ip IP4) ToIP() net.IP {
 }
 
 func (ip IP4) NetworkOrder() uint32 {
-	if NativelyLittle() {
-		a, b, c, d := byte(ip>>24), byte(ip>>16), byte(ip>>8), byte(ip)
-		return uint32(a) | (uint32(b) << 8) | (uint32(c) << 16) | (uint32(d) << 24)
-	} else {
-		return uint32(ip)
-	}
+	a, b, c, d := byte(ip>>24), byte(ip>>16), byte(ip>>8), byte(ip)
+	return uint32(a) | (uint32(b) << 8) | (uint32(c) << 16) | (uint32(d) << 24)
 }
 
 func (ip IP4) String() string {
