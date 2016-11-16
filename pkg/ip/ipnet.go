@@ -51,7 +51,7 @@ func MustParseIP4(s string) IP4 {
 }
 
 func (ip IP4) Octets() (a, b, c, d byte) {
-		a, b, c, d = byte(ip>>24), byte(ip>>16), byte(ip>>8), byte(ip)
+	a, b, c, d = byte(ip>>24), byte(ip>>16), byte(ip>>8), byte(ip)
 	return
 }
 
