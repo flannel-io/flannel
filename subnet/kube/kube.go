@@ -96,6 +96,7 @@ func NewSubnetManager() (subnet.Manager, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing subnet config: %s", err)
 	}
+
 	sm, err := newKubeSubnetManager(c, sc, nodeName)
 	if err != nil {
 		return nil, fmt.Errorf("error creating network manager: %s", err)
