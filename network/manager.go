@@ -36,13 +36,14 @@ import (
 )
 
 type CmdLineOpts struct {
-	publicIP      string
-	ipMasq        bool
-	subnetFile    string
-	subnetDir     string
-	iface         string
-	networks      string
-	watchNetworks bool
+	publicIP               string
+	ipMasq                 bool
+	subnetFile             string
+	subnetDir              string
+	iface                  string
+	networks               string
+	watchNetworks          bool
+	subnetLeaseRenewMargin int
 }
 
 var errAlreadyExists = errors.New("already exists")
@@ -55,6 +56,7 @@ func init() {
 	flag.StringVar(&opts.subnetDir, "subnet-dir", "/run/flannel/networks", "directory where files with env variables (subnet, MTU, ...) will be written to")
 	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
 	flag.StringVar(&opts.networks, "networks", "", "run in multi-network mode and service the specified networks")
+	flag.IntVar(&opts.subnetLeaseRenewMargin, "subnet-lease-renew-margin", 60, "Subnet lease renewal margin, in minutes.")
 	flag.BoolVar(&opts.watchNetworks, "watch-networks", false, "run in multi-network mode and watch for networks from 'networks' or all networks")
 	flag.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
 }
