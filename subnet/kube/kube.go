@@ -198,10 +198,18 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, network string, 
 	if !found {
 		return nil, fmt.Errorf("node %q not found", ksm.nodeName)
 	}
-	n, ok := nobj.(*api.Node)
+	cacheNode, ok := nobj.(*api.Node)
 	if !ok {
 		return nil, fmt.Errorf("nobj was not a *api.Node")
 	}
+
+	// Make a copy so we're not modifying state of our cache
+	objCopy, err := api.Scheme.Copy(cacheNode)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make copy of node: %v", err)
+	}
+	n := objCopy.(*api.Node)
+
 	if n.Spec.PodCIDR == "" {
 		return nil, fmt.Errorf("node %q pod cidr not assigned", ksm.nodeName)
 	}
