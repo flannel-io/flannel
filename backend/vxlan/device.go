@@ -128,6 +128,41 @@ func (dev *vxlanDevice) Configure(ipn ip.IP4Net) error {
 		return fmt.Errorf("failed to set interface %s to UP state: %s", dev.link.Attrs().Name, err)
 	}
 
+	// Remove all existing routes for this interface
+	mainFilter := &netlink.Route{
+		LinkIndex: dev.link.Attrs().Index,
+		Table:     syscall.RT_TABLE_MAIN,
+	}
+
+	localFilter := &netlink.Route{
+		LinkIndex: dev.link.Attrs().Index,
+		Table:     syscall.RT_TABLE_LOCAL,
+	}
+
+	mainRoutes, err := netlink.RouteListFiltered(netlink.FAMILY_ALL, mainFilter, netlink.RT_FILTER_OIF|netlink.RT_FILTER_TABLE)
+	if err != nil {
+		return fmt.Errorf("Failed to list routes: %v", err)
+	}
+
+	localRoutes, err := netlink.RouteListFiltered(netlink.FAMILY_ALL, localFilter, netlink.RT_FILTER_OIF|netlink.RT_FILTER_TABLE)
+	if err != nil {
+		return fmt.Errorf("Failed to list routes: %v", err)
+	}
+
+	for _, er := range localRoutes {
+		log.Infof("Removing local route: %s", er.String())
+		if err := netlink.RouteDel(&er); err != nil {
+			return fmt.Errorf("Failed to delete route: %v", err)
+		}
+	}
+
+	for _, er := range mainRoutes {
+		log.Infof("Removing main route: %s", er.String())
+		if err := netlink.RouteDel(&er); err != nil {
+			return fmt.Errorf("Failed to delete route: %v", err)
+		}
+	}
+
 	// explicitly add a route since there might be a route for a subnet already
 	// installed by Docker and then it won't get auto added
 	route := netlink.Route{
@@ -135,7 +170,7 @@ func (dev *vxlanDevice) Configure(ipn ip.IP4Net) error {
 		Scope:     netlink.SCOPE_UNIVERSE,
 		Dst:       ipn.Network().ToIPNet(),
 	}
-	if err := netlink.RouteAdd(&route); err != nil && err != syscall.EEXIST {
+	if err := netlink.RouteAdd(&route); err != nil {
 		return fmt.Errorf("failed to add route (%s -> %s): %v", ipn.Network().String(), dev.link.Attrs().Name, err)
 	}
 
