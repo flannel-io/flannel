@@ -45,7 +45,8 @@ var (
 )
 
 const (
-	resyncPeriod = 5 * time.Minute
+	resyncPeriod              = 5 * time.Minute
+	nodeControllerSyncTimeout = 10 * time.Minute
 
 	subnetKubeManagedAnnotation = "flannel.alpha.coreos.com/kube-subnet-manager"
 	backendDataAnnotation       = "flannel.alpha.coreos.com/backend-data"
@@ -105,12 +106,14 @@ func NewSubnetManager() (subnet.Manager, error) {
 	}
 	go sm.Run(context.Background())
 
-	err = wait.Poll(time.Second, 10*time.Second, func() (bool, error) {
+	glog.Infof("Waiting %s for node controller to sync", nodeControllerSyncTimeout)
+	err = wait.Poll(time.Second, nodeControllerSyncTimeout, func() (bool, error) {
 		return sm.nodeController.HasSynced(), nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error waiting for nodeController to sync state: %v", err)
 	}
+	glog.Infof("Node controller sync successful")
 
 	return sm, nil
 }
@@ -198,10 +201,18 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, network string, 
 	if !found {
 		return nil, fmt.Errorf("node %q not found", ksm.nodeName)
 	}
-	n, ok := nobj.(*api.Node)
+	cacheNode, ok := nobj.(*api.Node)
 	if !ok {
 		return nil, fmt.Errorf("nobj was not a *api.Node")
 	}
+
+	// Make a copy so we're not modifying state of our cache
+	objCopy, err := api.Scheme.Copy(cacheNode)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make copy of node: %v", err)
+	}
+	n := objCopy.(*api.Node)
+
 	if n.Spec.PodCIDR == "" {
 		return nil, fmt.Errorf("node %q pod cidr not assigned", ksm.nodeName)
 	}
