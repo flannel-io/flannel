@@ -35,6 +35,7 @@ import (
 	"k8s.io/kubernetes/pkg/controller/framework"
 	"k8s.io/kubernetes/pkg/runtime"
 	utilruntime "k8s.io/kubernetes/pkg/util/runtime"
+	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/pkg/watch"
 )
 
@@ -103,7 +104,15 @@ func NewSubnetManager() (subnet.Manager, error) {
 		return nil, fmt.Errorf("error creating network manager: %s", err)
 	}
 	go sm.Run(context.Background())
-	return sm, err
+
+	err = wait.Poll(time.Second, 10*time.Second, func() (bool, error) {
+		return sm.nodeController.HasSynced(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for nodeController to sync state: %v", err)
+	}
+
+	return sm, nil
 }
 
 func newKubeSubnetManager(c clientset.Interface, sc *subnet.Config, nodeName string) (*kubeSubnetManager, error) {
