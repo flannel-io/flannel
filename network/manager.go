@@ -114,12 +114,13 @@ func NewNetworkManager(ctx context.Context, sm subnet.Manager) (*Manager, error)
 
 func lookupExtIface(ifname string) (*backend.ExternalInterface, error) {
 	var iface *net.Interface
-	var iaddr net.IP
+	var ifaceAddr net.IP
 	var err error
 
 	if len(ifname) > 0 {
-		if iaddr = net.ParseIP(ifname); iaddr != nil {
-			iface, err = ip.GetInterfaceByIP(iaddr)
+		if ifaceAddr = net.ParseIP(ifname); ifaceAddr != nil {
+			log.Infof("Searching for interface using %s", ifaceAddr)
+			iface, err = ip.GetInterfaceByIP(ifaceAddr)
 			if err != nil {
 				return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
 			}
@@ -136,37 +137,38 @@ func lookupExtIface(ifname string) (*backend.ExternalInterface, error) {
 		}
 	}
 
-	if iaddr == nil {
-		iaddr, err = ip.GetIfaceIP4Addr(iface)
+	if ifaceAddr == nil {
+		ifaceAddr, err = ip.GetIfaceIP4Addr(iface)
 		if err != nil {
 			return nil, fmt.Errorf("failed to find IPv4 address for interface %s", iface.Name)
 		}
 	}
 
+	log.Infof("Using interface with name %s and address %s", iface.Name, ifaceAddr)
+
 	if iface.MTU == 0 {
-		return nil, fmt.Errorf("failed to determine MTU for %s interface", iaddr)
+		return nil, fmt.Errorf("failed to determine MTU for %s interface", ifaceAddr)
 	}
 
-	var eaddr net.IP
+	var extAddr net.IP
 
 	if len(opts.publicIP) > 0 {
-		eaddr = net.ParseIP(opts.publicIP)
-		if eaddr == nil {
+		extAddr = net.ParseIP(opts.publicIP)
+		if extAddr == nil {
 			return nil, fmt.Errorf("invalid public IP address: %s", opts.publicIP)
 		}
+		log.Infof("Using %s as external address", extAddr)
 	}
 
-	if eaddr == nil {
-		eaddr = iaddr
+	if extAddr == nil {
+		log.Infof("Defaulting external address to interface address (%s)", ifaceAddr)
+		extAddr = ifaceAddr
 	}
-
-	log.Infof("Using %s as external interface", iaddr)
-	log.Infof("Using %s as external endpoint", eaddr)
 
 	return &backend.ExternalInterface{
 		Iface:     iface,
-		IfaceAddr: iaddr,
-		ExtAddr:   eaddr,
+		IfaceAddr: ifaceAddr,
+		ExtAddr:   extAddr,
 	}, nil
 }
 
