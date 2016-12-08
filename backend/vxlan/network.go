@@ -57,7 +57,7 @@ func newNetwork(name string, sm subnet.Manager, extIface *backend.ExternalInterf
 func (n *network) Run(ctx context.Context) {
 	log.Info("Watching for L3 misses")
 	misses := make(chan *netlink.Neigh, 100)
-	// Unfrtunately MonitorMisses does not take a cancel channel
+	// Unfortunately MonitorMisses does not take a cancel channel
 	// as there's no wait to interrupt netlink socket recv
 	go n.dev.MonitorMisses(misses)
 
