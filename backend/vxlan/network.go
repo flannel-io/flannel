@@ -55,7 +55,7 @@ func newNetwork(name string, sm subnet.Manager, extIface *backend.ExternalInterf
 }
 
 func (n *network) Run(ctx context.Context) {
-	log.Info("Watching for L3 misses")
+	log.V(0).Info("Watching for L3 misses")
 	misses := make(chan *netlink.Neigh, 100)
 	// Unfortunately MonitorMisses does not take a cancel channel
 	// as there's no wait to interrupt netlink socket recv
@@ -63,12 +63,12 @@ func (n *network) Run(ctx context.Context) {
 
 	wg := sync.WaitGroup{}
 
-	log.Info("Watching for new subnet leases")
+	log.V(0).Info("Watching for new subnet leases")
 	evts := make(chan []subnet.Event)
 	wg.Add(1)
 	go func() {
 		subnet.WatchLeases(ctx, n.sm, n.name, n.SubnetLease, evts)
-		log.Info("WatchLeases exited")
+		log.V(1).Info("WatchLeases exited")
 		wg.Done()
 	}()
 
@@ -115,7 +115,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
 		case subnet.EventAdded:
-			log.Info("Subnet added: ", evt.Lease.Subnet)
+			log.V(1).Info("Subnet added: ", evt.Lease.Subnet)
 
 			if evt.Lease.Attrs.BackendType != "vxlan" {
 				log.Warningf("Ignoring non-vxlan subnet: type=%v", evt.Lease.Attrs.BackendType)
@@ -131,7 +131,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 			n.dev.AddL2(neigh{IP: evt.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)})
 
 		case subnet.EventRemoved:
-			log.Info("Subnet removed: ", evt.Lease.Subnet)
+			log.V(1).Info("Subnet removed: ", evt.Lease.Subnet)
 
 			if evt.Lease.Attrs.BackendType != "vxlan" {
 				log.Warningf("Ignoring non-vxlan subnet: type=%v", evt.Lease.Attrs.BackendType)
@@ -156,14 +156,14 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 }
 
 func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
-	log.Infof("Handling initial subnet events")
+	log.V(1).Infof("Handling initial subnet events")
 	fdbTable, err := n.dev.GetL2List()
 	if err != nil {
 		return fmt.Errorf("error fetching L2 table: %v", err)
 	}
 
 	for _, fdbEntry := range fdbTable {
-		log.Infof("fdb already populated with: %s %s ", fdbEntry.IP, fdbEntry.HardwareAddr)
+		log.V(1).Infof("fdb already populated with: %s %s ", fdbEntry.IP, fdbEntry.HardwareAddr)
 	}
 
 	evtMarker := make([]bool, len(batch))
@@ -217,28 +217,28 @@ func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
 func (n *network) handleMiss(miss *netlink.Neigh) {
 	switch {
 	case len(miss.IP) == 0 && len(miss.HardwareAddr) == 0:
-		log.Info("Ignoring nil miss")
+		log.V(2).Info("Ignoring nil miss")
 
 	case len(miss.HardwareAddr) == 0:
 		n.handleL3Miss(miss)
 
 	default:
-		log.Infof("Ignoring not a miss: %v, %v", miss.HardwareAddr, miss.IP)
+		log.V(2).Infof("Ignoring not a miss: %v, %v", miss.HardwareAddr, miss.IP)
 	}
 }
 
 func (n *network) handleL3Miss(miss *netlink.Neigh) {
-	log.Infof("L3 miss: %v", miss.IP)
+	log.V(2).Infof("L3 miss: %v", miss.IP)
 
 	rt := n.rts.findByNetwork(ip.FromIP(miss.IP))
 	if rt == nil {
-		log.Infof("Route for %v not found", miss.IP)
+		log.V(0).Infof("Route for %v not found", miss.IP)
 		return
 	}
 
 	if err := n.dev.AddL3(neigh{IP: ip.FromIP(miss.IP), MAC: rt.vtepMAC}); err != nil {
 		log.Errorf("AddL3 failed: %v", err)
 	} else {
-		log.Info("AddL3 succeeded")
+		log.V(2).Info("AddL3 succeeded")
 	}
 }
