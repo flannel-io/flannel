@@ -113,6 +113,7 @@ func ensureLink(vxlan *netlink.Vxlan) (*netlink.Vxlan, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't locate created vxlan device with index %v", ifindex)
 	}
+
 	var ok bool
 	if vxlan, ok = link.(*netlink.Vxlan); !ok {
 		return nil, fmt.Errorf("created vxlan device with index %v is not vxlan", ifindex)
@@ -154,7 +155,7 @@ func (dev *vxlanDevice) MTU() int {
 	return dev.link.MTU
 }
 
-type neigh struct {
+type neighbor struct {
 	MAC net.HardwareAddr
 	IP  ip.IP4
 }
@@ -164,7 +165,7 @@ func (dev *vxlanDevice) GetL2List() ([]netlink.Neigh, error) {
 	return netlink.NeighList(dev.link.Index, syscall.AF_BRIDGE)
 }
 
-func (dev *vxlanDevice) AddL2(n neigh) error {
+func (dev *vxlanDevice) AddL2(n neighbor) error {
 	log.V(4).Infof("calling NeighAdd: %v, %v", n.IP, n.MAC)
 	return netlink.NeighAdd(&netlink.Neigh{
 		LinkIndex:    dev.link.Index,
@@ -176,7 +177,7 @@ func (dev *vxlanDevice) AddL2(n neigh) error {
 	})
 }
 
-func (dev *vxlanDevice) DelL2(n neigh) error {
+func (dev *vxlanDevice) DelL2(n neighbor) error {
 	log.V(4).Infof("calling NeighDel: %v, %v", n.IP, n.MAC)
 	return netlink.NeighDel(&netlink.Neigh{
 		LinkIndex:    dev.link.Index,
@@ -187,7 +188,7 @@ func (dev *vxlanDevice) DelL2(n neigh) error {
 	})
 }
 
-func (dev *vxlanDevice) AddL3(n neigh) error {
+func (dev *vxlanDevice) AddL3(n neighbor) error {
 	log.V(4).Infof("calling NeighSet: %v, %v", n.IP, n.MAC)
 	return netlink.NeighSet(&netlink.Neigh{
 		LinkIndex:    dev.link.Index,
@@ -198,7 +199,7 @@ func (dev *vxlanDevice) AddL3(n neigh) error {
 	})
 }
 
-func (dev *vxlanDevice) DelL3(n neigh) error {
+func (dev *vxlanDevice) DelL3(n neighbor) error {
 	log.V(4).Infof("calling NeighDel: %v, %v", n.IP, n.MAC)
 	return netlink.NeighDel(&netlink.Neigh{
 		LinkIndex:    dev.link.Index,

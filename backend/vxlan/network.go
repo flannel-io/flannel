@@ -33,41 +33,41 @@ import (
 
 type network struct {
 	backend.SimpleNetwork
-	name     string
-	extIface *backend.ExternalInterface
-	dev      *vxlanDevice
-	rts      routes
-	sm       subnet.Manager
+	name      string
+	extIface  *backend.ExternalInterface
+	dev       *vxlanDevice
+	routes    routes
+	subnetMgr subnet.Manager
 }
 
-func newNetwork(name string, sm subnet.Manager, extIface *backend.ExternalInterface, dev *vxlanDevice, nw ip.IP4Net, l *subnet.Lease) (*network, error) {
-	n := &network{
+func newNetwork(name string, subnetMgr subnet.Manager, extIface *backend.ExternalInterface, dev *vxlanDevice, _ ip.IP4Net, lease *subnet.Lease) (*network, error) {
+	nw := &network{
 		SimpleNetwork: backend.SimpleNetwork{
-			SubnetLease: l,
+			SubnetLease: lease,
 			ExtIface:    extIface,
 		},
-		name: name,
-		sm:   sm,
-		dev:  dev,
+		name:      name,
+		subnetMgr: subnetMgr,
+		dev:       dev,
 	}
 
-	return n, nil
+	return nw, nil
 }
 
-func (n *network) Run(ctx context.Context) {
+func (nw *network) Run(ctx context.Context) {
 	log.V(0).Info("Watching for L3 misses")
 	misses := make(chan *netlink.Neigh, 100)
 	// Unfortunately MonitorMisses does not take a cancel channel
 	// as there's no wait to interrupt netlink socket recv
-	go n.dev.MonitorMisses(misses)
+	go nw.dev.MonitorMisses(misses)
 
 	wg := sync.WaitGroup{}
 
 	log.V(0).Info("Watching for new subnet leases")
-	evts := make(chan []subnet.Event)
+	events := make(chan []subnet.Event)
 	wg.Add(1)
 	go func() {
-		subnet.WatchLeases(ctx, n.sm, n.name, n.SubnetLease, evts)
+		subnet.WatchLeases(ctx, nw.subnetMgr, nw.name, nw.SubnetLease, events)
 		log.V(1).Info("WatchLeases exited")
 		wg.Done()
 	}()
@@ -75,9 +75,9 @@ func (n *network) Run(ctx context.Context) {
 	defer wg.Wait()
 
 	select {
-	case initialEvtsBatch := <-evts:
+	case initialEventsBatch := <-events:
 		for {
-			err := n.handleInitialSubnetEvents(initialEvtsBatch)
+			err := nw.handleInitialSubnetEvents(initialEventsBatch)
 			if err == nil {
 				break
 			}
@@ -92,10 +92,10 @@ func (n *network) Run(ctx context.Context) {
 	for {
 		select {
 		case miss := <-misses:
-			n.handleMiss(miss)
+			nw.handleMiss(miss)
 
-		case evtBatch := <-evts:
-			n.handleSubnetEvents(evtBatch)
+		case evtBatch := <-events:
+			nw.handleSubnetEvents(evtBatch)
 
 		case <-ctx.Done():
 			return
@@ -103,61 +103,61 @@ func (n *network) Run(ctx context.Context) {
 	}
 }
 
-func (n *network) MTU() int {
-	return n.dev.MTU()
+func (nw *network) MTU() int {
+	return nw.dev.MTU()
 }
 
 type vxlanLeaseAttrs struct {
 	VtepMAC hardwareAddr
 }
 
-func (n *network) handleSubnetEvents(batch []subnet.Event) {
-	for _, evt := range batch {
-		switch evt.Type {
+func (nw *network) handleSubnetEvents(batch []subnet.Event) {
+	for _, event := range batch {
+		switch event.Type {
 		case subnet.EventAdded:
-			log.V(1).Info("Subnet added: ", evt.Lease.Subnet)
+			log.V(1).Info("Subnet added: ", event.Lease.Subnet)
 
-			if evt.Lease.Attrs.BackendType != "vxlan" {
-				log.Warningf("Ignoring non-vxlan subnet: type=%v", evt.Lease.Attrs.BackendType)
+			if event.Lease.Attrs.BackendType != "vxlan" {
+				log.Warningf("Ignoring non-vxlan subnet: type=%v", event.Lease.Attrs.BackendType)
 				continue
 			}
 
 			var attrs vxlanLeaseAttrs
-			if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &attrs); err != nil {
+			if err := json.Unmarshal(event.Lease.Attrs.BackendData, &attrs); err != nil {
 				log.Error("Error decoding subnet lease JSON: ", err)
 				continue
 			}
-			n.rts.set(evt.Lease.Subnet, net.HardwareAddr(attrs.VtepMAC))
-			n.dev.AddL2(neigh{IP: evt.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)})
+			nw.routes.set(event.Lease.Subnet, net.HardwareAddr(attrs.VtepMAC))
+			nw.dev.AddL2(neighbor{IP: event.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)})
 
 		case subnet.EventRemoved:
-			log.V(1).Info("Subnet removed: ", evt.Lease.Subnet)
+			log.V(1).Info("Subnet removed: ", event.Lease.Subnet)
 
-			if evt.Lease.Attrs.BackendType != "vxlan" {
-				log.Warningf("Ignoring non-vxlan subnet: type=%v", evt.Lease.Attrs.BackendType)
+			if event.Lease.Attrs.BackendType != "vxlan" {
+				log.Warningf("Ignoring non-vxlan subnet: type=%v", event.Lease.Attrs.BackendType)
 				continue
 			}
 
 			var attrs vxlanLeaseAttrs
-			if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &attrs); err != nil {
+			if err := json.Unmarshal(event.Lease.Attrs.BackendData, &attrs); err != nil {
 				log.Error("Error decoding subnet lease JSON: ", err)
 				continue
 			}
 
 			if len(attrs.VtepMAC) > 0 {
-				n.dev.DelL2(neigh{IP: evt.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)})
+				nw.dev.DelL2(neighbor{IP: event.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)})
 			}
-			n.rts.remove(evt.Lease.Subnet)
+			nw.routes.remove(event.Lease.Subnet)
 
 		default:
-			log.Error("Internal error: unknown event type: ", int(evt.Type))
+			log.Error("Internal error: unknown event type: ", int(event.Type))
 		}
 	}
 }
 
-func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
+func (nw *network) handleInitialSubnetEvents(batch []subnet.Event) error {
 	log.V(1).Infof("Handling initial subnet events")
-	fdbTable, err := n.dev.GetL2List()
+	fdbTable, err := nw.dev.GetL2List()
 	if err != nil {
 		return fmt.Errorf("error fetching L2 table: %v", err)
 	}
@@ -168,44 +168,44 @@ func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
 	}
 
 	// "marked" events are skipped at the end.
-	evtMarker := make([]bool, len(batch))
+	eventMarker := make([]bool, len(batch))
 	leaseAttrsList := make([]vxlanLeaseAttrs, len(batch))
 	fdbEntryMarker := make([]bool, len(fdbTable))
 
 	// Run through the events "marking" ones that should be skipped
-	for i, evt := range batch {
+	for eventMarkerIndex, evt := range batch {
 		if evt.Lease.Attrs.BackendType != "vxlan" {
 			log.Warningf("Ignoring non-vxlan subnet(%s): type=%v", evt.Lease.Subnet, evt.Lease.Attrs.BackendType)
-			evtMarker[i] = true
+			eventMarker[eventMarkerIndex] = true
 			continue
 		}
 
 		// Parse the vxlan specific backend data
-		if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &leaseAttrsList[i]); err != nil {
+		if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &leaseAttrsList[eventMarkerIndex]); err != nil {
 			log.Error("Error decoding subnet lease JSON: ", err)
-			evtMarker[i] = true
+			eventMarker[eventMarkerIndex] = true
 			continue
 		}
 
 		// Check the existing VTEP->Public IP mappings.
 		// If there's already an entry with the right VTEP and Public IP then the event can be skipped and the FDB entry can be retained
 		for j, fdbEntry := range fdbTable {
-			if evt.Lease.Attrs.PublicIP.ToIP().Equal(fdbEntry.IP) && bytes.Equal([]byte(leaseAttrsList[i].VtepMAC), []byte(fdbEntry.HardwareAddr)) {
-				evtMarker[i] = true
+			if evt.Lease.Attrs.PublicIP.ToIP().Equal(fdbEntry.IP) && bytes.Equal([]byte(leaseAttrsList[eventMarkerIndex].VtepMAC), []byte(fdbEntry.HardwareAddr)) {
+				eventMarker[eventMarkerIndex] = true
 				fdbEntryMarker[j] = true
 				break
 			}
 		}
 
 		// Store off the subnet lease and VTEP
-		n.rts.set(evt.Lease.Subnet, net.HardwareAddr(leaseAttrsList[i].VtepMAC))
-		log.V(2).Infof("Adding subnet: %s PublicIP: %s VtepMAC: %s", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, net.HardwareAddr(leaseAttrsList[i].VtepMAC))
+		nw.routes.set(evt.Lease.Subnet, net.HardwareAddr(leaseAttrsList[eventMarkerIndex].VtepMAC))
+		log.V(2).Infof("Adding subnet: %s PublicIP: %s VtepMAC: %s", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, net.HardwareAddr(leaseAttrsList[eventMarkerIndex].VtepMAC))
 	}
 
 	// Loop over the existing FDB entries, deleting any that shouldn't be there
 	for j, marker := range fdbEntryMarker {
 		if !marker && fdbTable[j].IP != nil {
-			err := n.dev.DelL2(neigh{IP: ip.FromIP(fdbTable[j].IP), MAC: fdbTable[j].HardwareAddr})
+			err := nw.dev.DelL2(neighbor{IP: ip.FromIP(fdbTable[j].IP), MAC: fdbTable[j].HardwareAddr})
 			if err != nil {
 				log.Error("Delete L2 failed: ", err)
 			}
@@ -213,9 +213,9 @@ func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
 	}
 
 	// Loop over the events (skipping marked ones), adding them to the FDB table.
-	for i, marker := range evtMarker {
+	for i, marker := range eventMarker {
 		if !marker {
-			err := n.dev.AddL2(neigh{IP: batch[i].Lease.Attrs.PublicIP, MAC: net.HardwareAddr(leaseAttrsList[i].VtepMAC)})
+			err := nw.dev.AddL2(neighbor{IP: batch[i].Lease.Attrs.PublicIP, MAC: net.HardwareAddr(leaseAttrsList[i].VtepMAC)})
 			if err != nil {
 				log.Error("Add L2 failed: ", err)
 			}
@@ -224,27 +224,27 @@ func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
 	return nil
 }
 
-func (n *network) handleMiss(miss *netlink.Neigh) {
+func (nw *network) handleMiss(miss *netlink.Neigh) {
 	switch {
 	case len(miss.IP) == 0 && len(miss.HardwareAddr) == 0:
 		log.V(2).Info("Ignoring nil miss")
 
 	case len(miss.HardwareAddr) == 0:
-		n.handleL3Miss(miss)
+		nw.handleL3Miss(miss)
 
 	default:
 		log.V(4).Infof("Ignoring not a miss: %v, %v", miss.HardwareAddr, miss.IP)
 	}
 }
 
-func (n *network) handleL3Miss(miss *netlink.Neigh) {
-	rt := n.rts.findByNetwork(ip.FromIP(miss.IP))
-	if rt == nil {
+func (nw *network) handleL3Miss(miss *netlink.Neigh) {
+	route := nw.routes.findByNetwork(ip.FromIP(miss.IP))
+	if route == nil {
 		log.V(0).Infof("L3 miss but route for %v not found", miss.IP)
 		return
 	}
 
-	if err := n.dev.AddL3(neigh{IP: ip.FromIP(miss.IP), MAC: rt.vtepMAC}); err != nil {
+	if err := nw.dev.AddL3(neighbor{IP: ip.FromIP(miss.IP), MAC: route.vtepMAC}); err != nil {
 		log.Errorf("AddL3 failed: %v", err)
 	} else {
 		log.V(2).Infof("L3 miss: AddL3 for %s succeeded", miss.IP)
