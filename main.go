@@ -40,6 +40,7 @@ import (
 	_ "github.com/coreos/flannel/backend/hostgw"
 	_ "github.com/coreos/flannel/backend/udp"
 	_ "github.com/coreos/flannel/backend/vxlan"
+	_ "github.com/coreos/flannel/backend/alivpc"
 )
 
 type CmdLineOpts struct {
