@@ -305,7 +305,10 @@ func setAddr4(link *netlink.Vxlan, ipn *net.IPNet) error {
 			return fmt.Errorf("failed to delete IPv4 addr %s from %s", addr.String(), link.Attrs().Name)
 		}
 	}
-
+	// Ensure that the device has a /32 address so that no broadcast routes are created.
+	// This IP is just used as a source address for host to workload traffic (so
+	// the return path for the traffic has a decent address to use as the destination)
+	ipn.Mask = net.CIDRMask(32, 32)
 	addr := netlink.Addr{IPNet: ipn, Label: ""}
 	if err = netlink.AddrAdd(link, &addr); err != nil {
 		return fmt.Errorf("failed to add IP address %s to %s: %s", ipn.String(), link.Attrs().Name, err)
