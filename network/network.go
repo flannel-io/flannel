@@ -27,10 +27,6 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
-const (
-	renewMargin = time.Hour
-)
-
 var (
 	errInterrupted = errors.New("interrupted")
 	errCanceled    = errors.New("canceled")
@@ -147,6 +143,8 @@ func (n *Network) runOnce(extIface *backend.ExternalInterface, inited func(bn ba
 	}()
 
 	defer wg.Wait()
+
+	renewMargin := time.Duration(opts.subnetLeaseRenewMargin) * time.Minute
 
 	dur := n.bn.Lease().Expiration.Sub(time.Now()) - renewMargin
 	for {

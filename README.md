@@ -52,6 +52,9 @@ This is the only mandatory key.
    The list of available backends and the keys that can be put into the this dictionary are listed below.
    Defaults to "udp" backend.
 
+The lease on a subnet is hard-coded to 24h (see [`subnetTTL`](subnet/local_manager.go#L31)).
+Subnet lease are renewed within 1h of their expiration (can be overridden via `--subnet-lease-renew-margin`).
+
 ### Backends
 * udp: use UDP to encapsulate the packets.
   * `Type` (string): `udp`
@@ -178,6 +181,7 @@ $ flanneld --remote=10.0.0.3:8888 --networks=blue,green
 --etcd-cafile="": SSL Certificate Authority file used to secure etcd communication.
 --iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
 --subnet-file=/run/flannel/subnet.env: filename where env variables (subnet and MTU values) will be written to.
+--subnet-lease-renew-margin=60: subnet lease renewal margin, in minutes.
 --ip-masq=false: setup IP masquerade for traffic destined for outside the flannel network. Flannel assumes that the default policy is ACCEPT in the NAT POSTROUTING chain.
 --listen="": if specified, will run in server mode. Value is IP and port (e.g. `0.0.0.0:8888`) to listen on or `fd://` for [socket activation](http://www.freedesktop.org/software/systemd/man/systemd.socket.html).
 --remote="": if specified, will run in client mode. Value is IP and port of the server.
