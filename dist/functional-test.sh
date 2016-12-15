@@ -126,8 +126,7 @@ echo etcd launched
 
 global_exit_code=0
 
-backends="udp vxlan host-gw"
-
+backends=${BACKEND:-"udp vxlan host-gw"} 
 for backend in $backends; do
 	echo
 	echo "=== BACKEND: $backend ==============================================="
