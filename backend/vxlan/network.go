@@ -162,27 +162,33 @@ func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
 		return fmt.Errorf("error fetching L2 table: %v", err)
 	}
 
+	// Log the existing VTEP -> Public IP mappings
 	for _, fdbEntry := range fdbTable {
 		log.V(1).Infof("fdb already populated with: %s %s ", fdbEntry.IP, fdbEntry.HardwareAddr)
 	}
 
+	// "marked" events are skipped at the end.
 	evtMarker := make([]bool, len(batch))
 	leaseAttrsList := make([]vxlanLeaseAttrs, len(batch))
 	fdbEntryMarker := make([]bool, len(fdbTable))
 
+	// Run through the events "marking" ones that should be skipped
 	for i, evt := range batch {
 		if evt.Lease.Attrs.BackendType != "vxlan" {
-			log.Warningf("Ignoring non-vxlan subnet: type=%v", evt.Lease.Attrs.BackendType)
+			log.Warningf("Ignoring non-vxlan subnet(%s): type=%v", evt.Lease.Subnet, evt.Lease.Attrs.BackendType)
 			evtMarker[i] = true
 			continue
 		}
 
+		// Parse the vxlan specific backend data
 		if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &leaseAttrsList[i]); err != nil {
 			log.Error("Error decoding subnet lease JSON: ", err)
 			evtMarker[i] = true
 			continue
 		}
 
+		// Check the existing VTEP->Public IP mappings.
+		// If there's already an entry with the right VTEP and Public IP then the event can be skipped and the FDB entry can be retained
 		for j, fdbEntry := range fdbTable {
 			if evt.Lease.Attrs.PublicIP.ToIP().Equal(fdbEntry.IP) && bytes.Equal([]byte(leaseAttrsList[i].VtepMAC), []byte(fdbEntry.HardwareAddr)) {
 				evtMarker[i] = true
@@ -190,9 +196,13 @@ func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
 				break
 			}
 		}
+
+		// Store off the subnet lease and VTEP
 		n.rts.set(evt.Lease.Subnet, net.HardwareAddr(leaseAttrsList[i].VtepMAC))
+		log.V(2).Infof("Adding subnet: %s PublicIP: %s VtepMAC: %s", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, net.HardwareAddr(leaseAttrsList[i].VtepMAC))
 	}
 
+	// Loop over the existing FDB entries, deleting any that shouldn't be there
 	for j, marker := range fdbEntryMarker {
 		if !marker && fdbTable[j].IP != nil {
 			err := n.dev.DelL2(neigh{IP: ip.FromIP(fdbTable[j].IP), MAC: fdbTable[j].HardwareAddr})
@@ -202,13 +212,13 @@ func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
 		}
 	}
 
+	// Loop over the events (skipping marked ones), adding them to the FDB table.
 	for i, marker := range evtMarker {
 		if !marker {
 			err := n.dev.AddL2(neigh{IP: batch[i].Lease.Attrs.PublicIP, MAC: net.HardwareAddr(leaseAttrsList[i].VtepMAC)})
 			if err != nil {
 				log.Error("Add L2 failed: ", err)
 			}
-
 		}
 	}
 	return nil
@@ -223,22 +233,20 @@ func (n *network) handleMiss(miss *netlink.Neigh) {
 		n.handleL3Miss(miss)
 
 	default:
-		log.V(2).Infof("Ignoring not a miss: %v, %v", miss.HardwareAddr, miss.IP)
+		log.V(4).Infof("Ignoring not a miss: %v, %v", miss.HardwareAddr, miss.IP)
 	}
 }
 
 func (n *network) handleL3Miss(miss *netlink.Neigh) {
-	log.V(2).Infof("L3 miss: %v", miss.IP)
-
 	rt := n.rts.findByNetwork(ip.FromIP(miss.IP))
 	if rt == nil {
-		log.V(0).Infof("Route for %v not found", miss.IP)
+		log.V(0).Infof("L3 miss but route for %v not found", miss.IP)
 		return
 	}
 
 	if err := n.dev.AddL3(neigh{IP: ip.FromIP(miss.IP), MAC: rt.vtepMAC}); err != nil {
 		log.Errorf("AddL3 failed: %v", err)
 	} else {
-		log.V(2).Info("AddL3 succeeded")
+		log.V(2).Infof("L3 miss: AddL3 for %s succeeded", miss.IP)
 	}
 }
