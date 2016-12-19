@@ -99,7 +99,7 @@ dist/flanneld-$(ARCH):
 	# Build for other platforms with ARCH=$$ARCH make build
 	# valid values for $$ARCH are [amd64 arm arm64 ppc64le]
 	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) -it \
-		-u $(shell id -u):$(shell id -u) \
+		-u $(shell id -u):$(shell id -g) \
 	    -v ${PWD}:/go/src/github.com/coreos/flannel:ro \
         -v ${PWD}/dist:/go/src/github.com/coreos/flannel/dist \
 	    gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
@@ -115,7 +115,7 @@ dist/libpthread.so.0-$(ARCH):
 ## Build an architecture specific iptables binary
 dist/iptables-$(ARCH):
 	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) -it \
-			-u $(shell id -u):$(shell id -u) \
+			-u $(shell id -u):$(shell id -g) \
             -v ${PWD}:/go/src/github.com/coreos/flannel:ro \
             -v ${PWD}/dist:/go/src/github.com/coreos/flannel/dist \
             gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
