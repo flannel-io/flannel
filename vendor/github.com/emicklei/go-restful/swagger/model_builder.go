@@ -137,11 +137,6 @@ func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, mod
 		return "", "", prop
 	}
 
-	if field.Name == "XMLName" && field.Type.String() == "xml.Name" {
-		// property is metadata for the xml.Name attribute, can be skipped
-		return "", "", prop
-	}
-
 	if tag := field.Tag.Get("modelDescription"); tag != "" {
 		modelDescription = tag
 	}

@@ -84,3 +84,5 @@ import:
   - pkg/runtime
   - pkg/util/runtime
   - pkg/watch
+- package: github.com/go-ini/ini
+  version: v1.23.0

@@ -1,6 +1,4 @@
-// Protocol Buffers for Go with Gadgets
-//
-// Copyright (c) 2013, The GoGo Authors. All rights reserved.
+// Copyright (c) 2013, Vastech SA (PTY) LTD. All rights reserved.
 // http://github.com/gogo/protobuf
 //
 // Redistribution and use in source and binary forms, with or without
@@ -108,7 +106,6 @@ type gostring struct {
 	generator.PluginImports
 	atleastOne bool
 	localName  string
-	overwrite  bool
 }
 
 func NewGoString() *gostring {
@@ -117,10 +114,6 @@ func NewGoString() *gostring {
 
 func (p *gostring) Name() string {
 	return "gostring"
-}
-
-func (p *gostring) Overwrite() {
-	p.overwrite = true
 }
 
 func (p *gostring) Init(g *generator.Generator) {
@@ -146,7 +139,7 @@ func (p *gostring) Generate(file *generator.FileDescriptor) {
 	sortKeysPkg := p.NewImport("github.com/gogo/protobuf/sortkeys")
 
 	for _, message := range file.Messages() {
-		if !p.overwrite && !gogoproto.HasGoString(file.FileDescriptorProto, message.DescriptorProto) {
+		if !gogoproto.HasGoString(file.FileDescriptorProto, message.DescriptorProto) {
 			continue
 		}
 		if message.DescriptorProto.GetOptions().GetMapEntry() {
@@ -262,15 +255,15 @@ func (p *gostring) Generate(file *generator.FileDescriptor) {
 			}
 		}
 		if message.DescriptorProto.HasExtension() {
+			p.P(`if this.XXX_extensions != nil {`)
+			p.In()
 			if gogoproto.HasExtensionsMap(file.FileDescriptorProto, message.DescriptorProto) {
-				p.P(`s = append(s, "XXX_InternalExtensions: " + extensionToGoString`, p.localName, `(this) + ",\n")`)
+				p.P(`s = append(s, "XXX_extensions: " + extensionToGoString`, p.localName, `(this.XXX_extensions) + ",\n")`)
 			} else {
-				p.P(`if this.XXX_extensions != nil {`)
-				p.In()
 				p.P(`s = append(s, "XXX_extensions: " + `, fmtPkg.Use(), `.Sprintf("%#v", this.XXX_extensions) + ",\n")`)
-				p.Out()
-				p.P(`}`)
 			}
+			p.Out()
+			p.P(`}`)
 		}
 		if gogoproto.HasUnrecognized(file.FileDescriptorProto, message.DescriptorProto) {
 			p.P(`if this.XXX_unrecognized != nil {`)
@@ -338,11 +331,10 @@ func (p *gostring) Generate(file *generator.FileDescriptor) {
 	p.Out()
 	p.P(`}`)
 
-	p.P(`func extensionToGoString`, p.localName, `(m `, protoPkg.Use(), `.Message) string {`)
+	p.P(`func extensionToGoString`, p.localName, `(e map[int32]`, protoPkg.Use(), `.Extension) string {`)
 	p.In()
-	p.P(`e := `, protoPkg.Use(), `.GetUnsafeExtensionsMap(m)`)
 	p.P(`if e == nil { return "nil" }`)
-	p.P(`s := "proto.NewUnsafeXXX_InternalExtensions(map[int32]proto.Extension{"`)
+	p.P(`s := "map[int32]proto.Extension{"`)
 	p.P(`keys := make([]int, 0, len(e))`)
 	p.P(`for k := range e {`)
 	p.In()
@@ -356,7 +348,7 @@ func (p *gostring) Generate(file *generator.FileDescriptor) {
 	p.P(`ss = append(ss, `, strconvPkg.Use(), `.Itoa(k) + ": " + e[int32(k)].GoString())`)
 	p.Out()
 	p.P(`}`)
-	p.P(`s+=`, stringsPkg.Use(), `.Join(ss, ",") + "})"`)
+	p.P(`s+=`, stringsPkg.Use(), `.Join(ss, ",") + "}"`)
 	p.P(`return s`)
 	p.Out()
 	p.P(`}`)

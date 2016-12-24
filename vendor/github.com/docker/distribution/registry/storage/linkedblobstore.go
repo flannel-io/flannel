@@ -35,7 +35,7 @@ type linkedBlobStore struct {
 	// control the repository blob link set to which the blob store
 	// dispatches. This is required because manifest and layer blobs have not
 	// yet been fully merged. At some point, this functionality should be
-	// removed the blob links folder should be merged. The first entry is
+	// removed an the blob links folder should be merged. The first entry is
 	// treated as the "canonical" link location and will be used for writes.
 	linkPathFns []linkPathFunc
 
@@ -101,6 +101,15 @@ func (lbs *linkedBlobStore) Put(ctx context.Context, mediaType string, p []byte)
 	return desc, lbs.linkBlob(ctx, desc)
 }
 
+// createOptions is a collection of blob creation modifiers relevant to general
+// blob storage intended to be configured by the BlobCreateOption.Apply method.
+type createOptions struct {
+	Mount struct {
+		ShouldMount bool
+		From        reference.Canonical
+	}
+}
+
 type optionFunc func(interface{}) error
 
 func (f optionFunc) Apply(v interface{}) error {
@@ -111,7 +120,7 @@ func (f optionFunc) Apply(v interface{}) error {
 // mounted from the given canonical reference.
 func WithMountFrom(ref reference.Canonical) distribution.BlobCreateOption {
 	return optionFunc(func(v interface{}) error {
-		opts, ok := v.(*distribution.CreateOptions)
+		opts, ok := v.(*createOptions)
 		if !ok {
 			return fmt.Errorf("unexpected options type: %T", v)
 		}
@@ -127,7 +136,7 @@ func WithMountFrom(ref reference.Canonical) distribution.BlobCreateOption {
 func (lbs *linkedBlobStore) Create(ctx context.Context, options ...distribution.BlobCreateOption) (distribution.BlobWriter, error) {
 	context.GetLogger(ctx).Debug("(*linkedBlobStore).Writer")
 
-	var opts distribution.CreateOptions
+	var opts createOptions
 
 	for _, option := range options {
 		err := option.Apply(&opts)
@@ -137,7 +146,7 @@ func (lbs *linkedBlobStore) Create(ctx context.Context, options ...distribution.
 	}
 
 	if opts.Mount.ShouldMount {
-		desc, err := lbs.mount(ctx, opts.Mount.From, opts.Mount.From.Digest(), opts.Mount.Stat)
+		desc, err := lbs.mount(ctx, opts.Mount.From, opts.Mount.From.Digest())
 		if err == nil {
 			// Mount successful, no need to initiate an upload session
 			return nil, distribution.ErrBlobMounted{From: opts.Mount.From, Descriptor: desc}
@@ -280,21 +289,14 @@ func (lbs *linkedBlobStore) Enumerate(ctx context.Context, ingestor func(digest.
 	return nil
 }
 
-func (lbs *linkedBlobStore) mount(ctx context.Context, sourceRepo reference.Named, dgst digest.Digest, sourceStat *distribution.Descriptor) (distribution.Descriptor, error) {
-	var stat distribution.Descriptor
-	if sourceStat == nil {
-		// look up the blob info from the sourceRepo if not already provided
-		repo, err := lbs.registry.Repository(ctx, sourceRepo)
-		if err != nil {
-			return distribution.Descriptor{}, err
-		}
-		stat, err = repo.Blobs(ctx).Stat(ctx, dgst)
-		if err != nil {
-			return distribution.Descriptor{}, err
-		}
-	} else {
-		// use the provided blob info
-		stat = *sourceStat
+func (lbs *linkedBlobStore) mount(ctx context.Context, sourceRepo reference.Named, dgst digest.Digest) (distribution.Descriptor, error) {
+	repo, err := lbs.registry.Repository(ctx, sourceRepo)
+	if err != nil {
+		return distribution.Descriptor{}, err
+	}
+	stat, err := repo.Blobs(ctx).Stat(ctx, dgst)
+	if err != nil {
+		return distribution.Descriptor{}, err
 	}
 
 	desc := distribution.Descriptor{

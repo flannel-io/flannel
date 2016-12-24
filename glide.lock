@@ -1,5 +1,5 @@
-hash: 0c68184c3f3cc19fb664ef1918c50b26ab325deff98d714869b6567c7aab7363
-updated: 2016-10-28T15:31:56.900140259+01:00
+hash: 967206f585824e79df24ac36674b667cd220db170415cbdb29b30d748e9b8a9d
+updated: 2016-12-23T23:15:06.389503001-08:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 6c577e9e7b08a6d10bad1c9703227cd0403a8dd7
@@ -9,7 +9,12 @@ imports:
   - aws/awsutil
   - aws/client
   - aws/client/metadata
+  - aws/corehandlers
   - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/credentials/stscreds
+  - aws/defaults
   - aws/ec2metadata
   - aws/request
   - aws/session
@@ -23,15 +28,15 @@ imports:
   - private/endpoints
   - private/protocol
   - private/protocol/ec2query
+  - private/protocol/query
   - private/protocol/query/queryutil
   - private/protocol/rest
   - private/protocol/xml/xmlutil
   - private/waiter
   - service/ec2
+  - service/sts
 - name: github.com/blang/semver
-  version: 60ec3488bfea7cca02b021d106d9911120d25fe9
-- name: github.com/cloudfoundry-incubator/candiedyaml
-  version: 99c3df83b51532e3615f851d8c2dbb638f5313bf
+  version: 31b736133b98f26d5e078ec9eb591666edfd091f
 - name: github.com/coreos/etcd
   version: 8b320e7c550067b1dfb37bd1682e8067023e0751
   subpackages:
@@ -54,26 +59,51 @@ imports:
   subpackages:
   - flagutil
 - name: github.com/davecgh/go-spew
-  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
   - spew
 - name: github.com/docker/distribution
-  version: 5e8d18f615031aeb79f3bdedcc954b08f86e9719
+  version: cd27f179f2c10c5d300e6d09025b538c475b0d51
   subpackages:
   - digest
   - reference
 - name: github.com/emicklei/go-restful
-  version: bf50d2be18145391aa3d4339b07195807b25a427
+  version: 89ef8af493ab468a45a42bb0d89a06fccdd2fb22
   subpackages:
   - log
   - swagger
 - name: github.com/ghodss/yaml
-  version: aa0c862057666179de291b67d9f093d12b5a8473
+  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
+- name: github.com/go-ini/ini
+  version: 6f66b0e091edb3c7b380f7c4f0f884274d550b67
 - name: github.com/gogo/protobuf
-  version: d7788ac7ca647999a3775cb756e449ab177dd138
+  version: e18d7aa8f8c624c915db340349aad4c49b10d173
   subpackages:
+  - gogoproto
+  - plugin/compare
+  - plugin/defaultcheck
+  - plugin/description
+  - plugin/embedcheck
+  - plugin/enumstringer
+  - plugin/equal
+  - plugin/face
+  - plugin/gostring
+  - plugin/marshalto
+  - plugin/oneofcheck
+  - plugin/populate
+  - plugin/size
+  - plugin/stringer
+  - plugin/testgen
+  - plugin/union
+  - plugin/unmarshal
   - proto
+  - protoc-gen-gogo/descriptor
+  - protoc-gen-gogo/generator
+  - protoc-gen-gogo/grpc
+  - protoc-gen-gogo/plugin
   - sortkeys
+  - vanity
+  - vanity/command
 - name: github.com/golang/glog
   version: 44145f04b68cf362d9c4df2182967c2275eaefed
 - name: github.com/golang/protobuf
@@ -81,19 +111,23 @@ imports:
   subpackages:
   - proto
 - name: github.com/google/gofuzz
-  version: fd52762d25a41827db7ef64c43756fd4b9f7e382
+  version: bbcb9da2d746f8bdbd6a936686a0a6067ada0ec5
 - name: github.com/gorilla/context
   version: 50c25fb3b2b3b3cc724e9b6ac75fb44b3bccd0da
 - name: github.com/gorilla/mux
   version: e444e69cbd2e2e3e0749a2f3c717cec491552bbf
+- name: github.com/imdario/mergo
+  version: 6633656539c1639d9d78127b7d47c622b5d7b6dc
+- name: github.com/jmespath/go-jmespath
+  version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
 - name: github.com/jonboulle/clockwork
   version: fad208dd89dbc316a149043e332a192477f0e2a2
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/pborman/uuid
-  version: b984ec7fa9ff9e428bd0cf0abf429384dfbe3e37
+  version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - name: github.com/spf13/pflag
-  version: 6fd2ff4ff8dfcdf5556fbdc0ac0284408274b1a7
+  version: 1560c1005499d61b80f865c04d39ca7505bf7f0b
 - name: github.com/ugorji/go
   version: 5cd0f2b3b6cca8e3a0a4101821e41a73cb59bed6
   subpackages:
@@ -146,6 +180,8 @@ imports:
   - internal
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
+- name: gopkg.in/yaml.v2
+  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/kubernetes
   version: 44368db9916cc345ebef8b6fbde3cdf0dc9d79dc
   subpackages:
@@ -212,7 +248,11 @@ imports:
   - pkg/client/restclient
   - pkg/client/transport
   - pkg/client/typed/discovery
+  - pkg/client/unversioned/auth
+  - pkg/client/unversioned/clientcmd
   - pkg/client/unversioned/clientcmd/api
+  - pkg/client/unversioned/clientcmd/api/latest
+  - pkg/client/unversioned/clientcmd/api/v1
   - pkg/controller/framework
   - pkg/conversion
   - pkg/conversion/queryparams
@@ -239,6 +279,7 @@ imports:
   - pkg/util/flowcontrol
   - pkg/util/framer
   - pkg/util/hash
+  - pkg/util/homedir
   - pkg/util/integer
   - pkg/util/intstr
   - pkg/util/json
