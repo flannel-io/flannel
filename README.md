@@ -179,6 +179,7 @@ $ flanneld --remote=10.0.0.3:8888 --networks=blue,green
 --etcd-keyfile="": SSL key file used to secure etcd communication.
 --etcd-certfile="": SSL certification file used to secure etcd communication.
 --etcd-cafile="": SSL Certificate Authority file used to secure etcd communication.
+--kube-subnet-mgr: Contact the Kubernetes API for subnet assignement instead of etcd or flannel-server.
 --iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
 --subnet-file=/run/flannel/subnet.env: filename where env variables (subnet and MTU values) will be written to.
 --subnet-lease-renew-margin=60: subnet lease renewal margin, in minutes.
