@@ -20,14 +20,17 @@ The following diagram demonstrates the path a packet takes as it traverses the o
 ![Life of a packet](./packet-01.png)
 
 ## Building flannel
-
-* Step 1: Make sure you have required dependencies installed on your machine. On Ubuntu, run `sudo apt-get install linux-libc-dev golang gcc`.
-On Fedora/Redhat, run `sudo yum install kernel-headers golang gcc`.
-* Step 2: Git clone the flannel repo: `git clone https://github.com/coreos/flannel.git`
-* Step 3: Run the build script: `cd flannel; make dist/flanneld`
-
+The most reliable way to build flannel is by using Docker.
 ### Building in a Docker container
-To build flannel in a container run `make dist/flanneld-amd64` (replace the `amd64` suffix to build on other architectures. See the Makefile for supported architectures).
+To build flannel in a container run `make dist/flanneld-amd64`
+You will now have a `flanneld-amd64` binary in the `dist` directory.
+
+### Building manually
+* Step 1: Make sure you have required dependencies installed on your machine. 
+** On Ubuntu, run `sudo apt-get install linux-libc-dev golang gcc`.
+** On Fedora/Redhat, run `sudo yum install kernel-headers golang gcc`.
+* Step 2: Git clone the flannel repo. It MUST be placed in your GOPATH under `github.com/coreos/flannel`: `cd $GOPATH/src; git clone https://github.com/coreos/flannel.git`
+* Step 3: Run the build script, ensuring that `CGO_ENABLED=1`: `cd flannel; CGO_ENABLED=1 make dist/flanneldmake dist/flanneld`
 
 ## Configuration
 
