@@ -119,7 +119,7 @@ $ etcd2 -advertise-client-urls http://$INTERNAL_IP:2379 -listen-client-urls http
 ```
 $ etcdctl set /coreos.com/network/config '{"Network":"10.20.0.0/16", "Backend": {"Type": "aws-vpc"}}'
 ```
-- Fetch the latest release using wget from [here](https://github.com/coreos/flannel/releases/download/v0.5.0/flannel-0.5.0-linux-amd64.tar.gz)
+- Fetch the latest release using wget from [here](https://github.com/coreos/flannel/releases/download/v0.7.0/flannel-v0.7.0-linux-amd64.tar.gz)
 - Run flannel daemon:
 
 ```
