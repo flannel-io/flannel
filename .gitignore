@@ -7,4 +7,6 @@ dist/*.docker
 cover.out
 .editorconfig
 .idea/
+flannel.exe
+*.exe
 
