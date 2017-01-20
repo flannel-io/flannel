@@ -96,7 +96,7 @@ endif
 
 ## Build an architecture specific flanneld binary
 dist/flanneld-$(ARCH):
-	# Build for other platforms with ARCH=$$ARCH make build
+	# Build for other platforms with 'ARCH=$$ARCH make dist/flanneld-$$ARCH'
 	# valid values for $$ARCH are [amd64 arm arm64 ppc64le]
 	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) \
 		-u $(shell id -u):$(shell id -g) \
