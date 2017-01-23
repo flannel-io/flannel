@@ -101,6 +101,15 @@ Subnet lease are renewed within 1h of their expiration (can be overridden via `-
 * alloc: only perform subnet allocation (no forwarding of data packets).
   * `Type` (string): `alloc`
 
+* ali-vpc: create IP routes in a [alicloud VPC route table](https://vpc.console.aliyun.com)
+  * Requirements:
+    * Running on an ECS instance that is in an Alicloud VPC.
+    * Permission require accessid and keysecret 
+  * `Type` (string): `ali-vpc`
+  * `AccessKeyID` (string): api access key id. can also be configure with environment ACCESS_KEY_ID
+  * `AccessKeySecret` (string): api access key secret.can also be configure with environment ACCESS_KEY_SECRET
+  Note: Currently, AliVPC limit the number of entries per route table to 50.  
+
 ### Example configuration JSON
 
 The following configuration illustrates the use of most options with `udp` backend.
