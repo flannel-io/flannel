@@ -253,7 +253,7 @@ func (m *Manager) runNetwork(n *Network) {
 				log.Warningf("%v failed to write subnet file: %s", n.Name, err)
 				return
 			}
-			daemon.SdNotify("READY=1")
+			daemon.SdNotify(false, "READY=1")
 		}
 	})
 
