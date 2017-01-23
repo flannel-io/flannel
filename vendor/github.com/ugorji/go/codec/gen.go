@@ -27,6 +27,7 @@ import (
 // ---------------------------------------------------
 // codecgen supports the full cycle of reflection-based codec:
 //    - RawExt
+//    - Raw
 //    - Builtins
 //    - Extensions
 //    - (Binary|Text|JSON)(Unm|M)arshal
@@ -164,15 +165,9 @@ type genRunner struct {
 //
 // Library users: *DO NOT USE IT DIRECTLY. IT WILL CHANGE CONTINOUSLY WITHOUT NOTICE.*
 func Gen(w io.Writer, buildTags, pkgName, uid string, useUnsafe bool, ti *TypeInfos, typ ...reflect.Type) {
-	// trim out all types which already implement Selfer
-	typ2 := make([]reflect.Type, 0, len(typ))
-	for _, t := range typ {
-		if reflect.PtrTo(t).Implements(selferTyp) || t.Implements(selferTyp) {
-			continue
-		}
-		typ2 = append(typ2, t)
-	}
-	typ = typ2
+	// All types passed to this method do not have a codec.Selfer method implemented directly.
+	// codecgen already checks the AST and skips any types that define the codec.Selfer methods.
+	// Consequently, there's no need to check and trim them if they implement codec.Selfer
 
 	if len(typ) == 0 {
 		return
@@ -211,7 +206,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, useUnsafe bool, ti *TypeIn
 		x.genRefPkgs(t)
 	}
 	if buildTags != "" {
-		x.line("//+build " + buildTags)
+		x.line("// +build " + buildTags)
 		x.line("")
 	}
 	x.line(`
@@ -701,13 +696,17 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 	}
 
 	// check if
-	//   - type is RawExt
+	//   - type is RawExt, Raw
 	//   - the type implements (Text|JSON|Binary)(Unm|M)arshal
 	x.linef("%sm%s := z.EncBinary()", genTempVarPfx, mi)
 	x.linef("_ = %sm%s", genTempVarPfx, mi)
 	x.line("if false {")           //start if block
 	defer func() { x.line("}") }() //end if block
 
+	if t == rawTyp {
+		x.linef("} else { z.EncRaw(%v)", varname)
+		return
+	}
 	if t == rawExtTyp {
 		x.linef("} else { r.EncodeRawExt(%v, e)", varname)
 		return
@@ -1131,7 +1130,7 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 	}
 
 	// check if
-	//   - type is RawExt
+	//   - type is Raw, RawExt
 	//   - the type implements (Text|JSON|Binary)(Unm|M)arshal
 	mi := x.varsfx()
 	x.linef("%sm%s := z.DecBinary()", genTempVarPfx, mi)
@@ -1139,6 +1138,10 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 	x.line("if false {")           //start if block
 	defer func() { x.line("}") }() //end if block
 
+	if t == rawTyp {
+		x.linef("} else { *%v = z.DecRaw()", varname)
+		return
+	}
 	if t == rawExtTyp {
 		x.linef("} else { r.DecodeExt(%v, 0, nil)", varname)
 		return

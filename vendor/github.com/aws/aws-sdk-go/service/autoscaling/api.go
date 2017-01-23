@@ -39,6 +39,7 @@ const opAttachInstances = "AttachInstances"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachInstances
 func (c *AutoScaling) AttachInstancesRequest(input *AttachInstancesInput) (req *request.Request, output *AttachInstancesOutput) {
 	op := &request.Operation{
 		Name:       opAttachInstances,
@@ -50,11 +51,10 @@ func (c *AutoScaling) AttachInstancesRequest(input *AttachInstancesInput) (req *
 		input = &AttachInstancesInput{}
 	}
 
+	output = &AttachInstancesOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AttachInstancesOutput{}
-	req.Data = output
 	return
 }
 
@@ -88,6 +88,7 @@ func (c *AutoScaling) AttachInstancesRequest(input *AttachInstancesInput) (req *
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachInstances
 func (c *AutoScaling) AttachInstances(input *AttachInstancesInput) (*AttachInstancesOutput, error) {
 	req, out := c.AttachInstancesRequest(input)
 	err := req.Send()
@@ -120,6 +121,7 @@ const opAttachLoadBalancerTargetGroups = "AttachLoadBalancerTargetGroups"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachLoadBalancerTargetGroups
 func (c *AutoScaling) AttachLoadBalancerTargetGroupsRequest(input *AttachLoadBalancerTargetGroupsInput) (req *request.Request, output *AttachLoadBalancerTargetGroupsOutput) {
 	op := &request.Operation{
 		Name:       opAttachLoadBalancerTargetGroups,
@@ -131,9 +133,8 @@ func (c *AutoScaling) AttachLoadBalancerTargetGroupsRequest(input *AttachLoadBal
 		input = &AttachLoadBalancerTargetGroupsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AttachLoadBalancerTargetGroupsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -160,6 +161,7 @@ func (c *AutoScaling) AttachLoadBalancerTargetGroupsRequest(input *AttachLoadBal
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachLoadBalancerTargetGroups
 func (c *AutoScaling) AttachLoadBalancerTargetGroups(input *AttachLoadBalancerTargetGroupsInput) (*AttachLoadBalancerTargetGroupsOutput, error) {
 	req, out := c.AttachLoadBalancerTargetGroupsRequest(input)
 	err := req.Send()
@@ -192,6 +194,7 @@ const opAttachLoadBalancers = "AttachLoadBalancers"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachLoadBalancers
 func (c *AutoScaling) AttachLoadBalancersRequest(input *AttachLoadBalancersInput) (req *request.Request, output *AttachLoadBalancersOutput) {
 	op := &request.Operation{
 		Name:       opAttachLoadBalancers,
@@ -203,9 +206,8 @@ func (c *AutoScaling) AttachLoadBalancersRequest(input *AttachLoadBalancersInput
 		input = &AttachLoadBalancersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AttachLoadBalancersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -235,6 +237,7 @@ func (c *AutoScaling) AttachLoadBalancersRequest(input *AttachLoadBalancersInput
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachLoadBalancers
 func (c *AutoScaling) AttachLoadBalancers(input *AttachLoadBalancersInput) (*AttachLoadBalancersOutput, error) {
 	req, out := c.AttachLoadBalancersRequest(input)
 	err := req.Send()
@@ -267,6 +270,7 @@ const opCompleteLifecycleAction = "CompleteLifecycleAction"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CompleteLifecycleAction
 func (c *AutoScaling) CompleteLifecycleActionRequest(input *CompleteLifecycleActionInput) (req *request.Request, output *CompleteLifecycleActionOutput) {
 	op := &request.Operation{
 		Name:       opCompleteLifecycleAction,
@@ -278,9 +282,8 @@ func (c *AutoScaling) CompleteLifecycleActionRequest(input *CompleteLifecycleAct
 		input = &CompleteLifecycleActionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CompleteLifecycleActionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -322,6 +325,7 @@ func (c *AutoScaling) CompleteLifecycleActionRequest(input *CompleteLifecycleAct
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CompleteLifecycleAction
 func (c *AutoScaling) CompleteLifecycleAction(input *CompleteLifecycleActionInput) (*CompleteLifecycleActionOutput, error) {
 	req, out := c.CompleteLifecycleActionRequest(input)
 	err := req.Send()
@@ -354,6 +358,7 @@ const opCreateAutoScalingGroup = "CreateAutoScalingGroup"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CreateAutoScalingGroup
 func (c *AutoScaling) CreateAutoScalingGroupRequest(input *CreateAutoScalingGroupInput) (req *request.Request, output *CreateAutoScalingGroupOutput) {
 	op := &request.Operation{
 		Name:       opCreateAutoScalingGroup,
@@ -365,11 +370,10 @@ func (c *AutoScaling) CreateAutoScalingGroupRequest(input *CreateAutoScalingGrou
 		input = &CreateAutoScalingGroupInput{}
 	}
 
+	output = &CreateAutoScalingGroupOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &CreateAutoScalingGroupOutput{}
-	req.Data = output
 	return
 }
 
@@ -405,6 +409,7 @@ func (c *AutoScaling) CreateAutoScalingGroupRequest(input *CreateAutoScalingGrou
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CreateAutoScalingGroup
 func (c *AutoScaling) CreateAutoScalingGroup(input *CreateAutoScalingGroupInput) (*CreateAutoScalingGroupOutput, error) {
 	req, out := c.CreateAutoScalingGroupRequest(input)
 	err := req.Send()
@@ -437,6 +442,7 @@ const opCreateLaunchConfiguration = "CreateLaunchConfiguration"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CreateLaunchConfiguration
 func (c *AutoScaling) CreateLaunchConfigurationRequest(input *CreateLaunchConfigurationInput) (req *request.Request, output *CreateLaunchConfigurationOutput) {
 	op := &request.Operation{
 		Name:       opCreateLaunchConfiguration,
@@ -448,11 +454,10 @@ func (c *AutoScaling) CreateLaunchConfigurationRequest(input *CreateLaunchConfig
 		input = &CreateLaunchConfigurationInput{}
 	}
 
+	output = &CreateLaunchConfigurationOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &CreateLaunchConfigurationOutput{}
-	req.Data = output
 	return
 }
 
@@ -488,6 +493,7 @@ func (c *AutoScaling) CreateLaunchConfigurationRequest(input *CreateLaunchConfig
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CreateLaunchConfiguration
 func (c *AutoScaling) CreateLaunchConfiguration(input *CreateLaunchConfigurationInput) (*CreateLaunchConfigurationOutput, error) {
 	req, out := c.CreateLaunchConfigurationRequest(input)
 	err := req.Send()
@@ -520,6 +526,7 @@ const opCreateOrUpdateTags = "CreateOrUpdateTags"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CreateOrUpdateTags
 func (c *AutoScaling) CreateOrUpdateTagsRequest(input *CreateOrUpdateTagsInput) (req *request.Request, output *CreateOrUpdateTagsOutput) {
 	op := &request.Operation{
 		Name:       opCreateOrUpdateTags,
@@ -531,11 +538,10 @@ func (c *AutoScaling) CreateOrUpdateTagsRequest(input *CreateOrUpdateTagsInput) 
 		input = &CreateOrUpdateTagsInput{}
 	}
 
+	output = &CreateOrUpdateTagsOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &CreateOrUpdateTagsOutput{}
-	req.Data = output
 	return
 }
 
@@ -570,6 +576,7 @@ func (c *AutoScaling) CreateOrUpdateTagsRequest(input *CreateOrUpdateTagsInput) 
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CreateOrUpdateTags
 func (c *AutoScaling) CreateOrUpdateTags(input *CreateOrUpdateTagsInput) (*CreateOrUpdateTagsOutput, error) {
 	req, out := c.CreateOrUpdateTagsRequest(input)
 	err := req.Send()
@@ -602,6 +609,7 @@ const opDeleteAutoScalingGroup = "DeleteAutoScalingGroup"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteAutoScalingGroup
 func (c *AutoScaling) DeleteAutoScalingGroupRequest(input *DeleteAutoScalingGroupInput) (req *request.Request, output *DeleteAutoScalingGroupOutput) {
 	op := &request.Operation{
 		Name:       opDeleteAutoScalingGroup,
@@ -613,11 +621,10 @@ func (c *AutoScaling) DeleteAutoScalingGroupRequest(input *DeleteAutoScalingGrou
 		input = &DeleteAutoScalingGroupInput{}
 	}
 
+	output = &DeleteAutoScalingGroupOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteAutoScalingGroupOutput{}
-	req.Data = output
 	return
 }
 
@@ -658,6 +665,7 @@ func (c *AutoScaling) DeleteAutoScalingGroupRequest(input *DeleteAutoScalingGrou
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteAutoScalingGroup
 func (c *AutoScaling) DeleteAutoScalingGroup(input *DeleteAutoScalingGroupInput) (*DeleteAutoScalingGroupOutput, error) {
 	req, out := c.DeleteAutoScalingGroupRequest(input)
 	err := req.Send()
@@ -690,6 +698,7 @@ const opDeleteLaunchConfiguration = "DeleteLaunchConfiguration"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteLaunchConfiguration
 func (c *AutoScaling) DeleteLaunchConfigurationRequest(input *DeleteLaunchConfigurationInput) (req *request.Request, output *DeleteLaunchConfigurationOutput) {
 	op := &request.Operation{
 		Name:       opDeleteLaunchConfiguration,
@@ -701,11 +710,10 @@ func (c *AutoScaling) DeleteLaunchConfigurationRequest(input *DeleteLaunchConfig
 		input = &DeleteLaunchConfigurationInput{}
 	}
 
+	output = &DeleteLaunchConfigurationOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteLaunchConfigurationOutput{}
-	req.Data = output
 	return
 }
 
@@ -732,6 +740,7 @@ func (c *AutoScaling) DeleteLaunchConfigurationRequest(input *DeleteLaunchConfig
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteLaunchConfiguration
 func (c *AutoScaling) DeleteLaunchConfiguration(input *DeleteLaunchConfigurationInput) (*DeleteLaunchConfigurationOutput, error) {
 	req, out := c.DeleteLaunchConfigurationRequest(input)
 	err := req.Send()
@@ -764,6 +773,7 @@ const opDeleteLifecycleHook = "DeleteLifecycleHook"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteLifecycleHook
 func (c *AutoScaling) DeleteLifecycleHookRequest(input *DeleteLifecycleHookInput) (req *request.Request, output *DeleteLifecycleHookOutput) {
 	op := &request.Operation{
 		Name:       opDeleteLifecycleHook,
@@ -775,9 +785,8 @@ func (c *AutoScaling) DeleteLifecycleHookRequest(input *DeleteLifecycleHookInput
 		input = &DeleteLifecycleHookInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteLifecycleHookOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -800,6 +809,7 @@ func (c *AutoScaling) DeleteLifecycleHookRequest(input *DeleteLifecycleHookInput
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteLifecycleHook
 func (c *AutoScaling) DeleteLifecycleHook(input *DeleteLifecycleHookInput) (*DeleteLifecycleHookOutput, error) {
 	req, out := c.DeleteLifecycleHookRequest(input)
 	err := req.Send()
@@ -832,6 +842,7 @@ const opDeleteNotificationConfiguration = "DeleteNotificationConfiguration"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteNotificationConfiguration
 func (c *AutoScaling) DeleteNotificationConfigurationRequest(input *DeleteNotificationConfigurationInput) (req *request.Request, output *DeleteNotificationConfigurationOutput) {
 	op := &request.Operation{
 		Name:       opDeleteNotificationConfiguration,
@@ -843,11 +854,10 @@ func (c *AutoScaling) DeleteNotificationConfigurationRequest(input *DeleteNotifi
 		input = &DeleteNotificationConfigurationInput{}
 	}
 
+	output = &DeleteNotificationConfigurationOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteNotificationConfigurationOutput{}
-	req.Data = output
 	return
 }
 
@@ -867,6 +877,7 @@ func (c *AutoScaling) DeleteNotificationConfigurationRequest(input *DeleteNotifi
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteNotificationConfiguration
 func (c *AutoScaling) DeleteNotificationConfiguration(input *DeleteNotificationConfigurationInput) (*DeleteNotificationConfigurationOutput, error) {
 	req, out := c.DeleteNotificationConfigurationRequest(input)
 	err := req.Send()
@@ -899,6 +910,7 @@ const opDeletePolicy = "DeletePolicy"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeletePolicy
 func (c *AutoScaling) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Request, output *DeletePolicyOutput) {
 	op := &request.Operation{
 		Name:       opDeletePolicy,
@@ -910,11 +922,10 @@ func (c *AutoScaling) DeletePolicyRequest(input *DeletePolicyInput) (req *reques
 		input = &DeletePolicyInput{}
 	}
 
+	output = &DeletePolicyOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeletePolicyOutput{}
-	req.Data = output
 	return
 }
 
@@ -937,6 +948,7 @@ func (c *AutoScaling) DeletePolicyRequest(input *DeletePolicyInput) (req *reques
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeletePolicy
 func (c *AutoScaling) DeletePolicy(input *DeletePolicyInput) (*DeletePolicyOutput, error) {
 	req, out := c.DeletePolicyRequest(input)
 	err := req.Send()
@@ -969,6 +981,7 @@ const opDeleteScheduledAction = "DeleteScheduledAction"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteScheduledAction
 func (c *AutoScaling) DeleteScheduledActionRequest(input *DeleteScheduledActionInput) (req *request.Request, output *DeleteScheduledActionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteScheduledAction,
@@ -980,11 +993,10 @@ func (c *AutoScaling) DeleteScheduledActionRequest(input *DeleteScheduledActionI
 		input = &DeleteScheduledActionInput{}
 	}
 
+	output = &DeleteScheduledActionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteScheduledActionOutput{}
-	req.Data = output
 	return
 }
 
@@ -1004,6 +1016,7 @@ func (c *AutoScaling) DeleteScheduledActionRequest(input *DeleteScheduledActionI
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteScheduledAction
 func (c *AutoScaling) DeleteScheduledAction(input *DeleteScheduledActionInput) (*DeleteScheduledActionOutput, error) {
 	req, out := c.DeleteScheduledActionRequest(input)
 	err := req.Send()
@@ -1036,6 +1049,7 @@ const opDeleteTags = "DeleteTags"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteTags
 func (c *AutoScaling) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, output *DeleteTagsOutput) {
 	op := &request.Operation{
 		Name:       opDeleteTags,
@@ -1047,11 +1061,10 @@ func (c *AutoScaling) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Re
 		input = &DeleteTagsInput{}
 	}
 
+	output = &DeleteTagsOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteTagsOutput{}
-	req.Data = output
 	return
 }
 
@@ -1071,6 +1084,7 @@ func (c *AutoScaling) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Re
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteTags
 func (c *AutoScaling) DeleteTags(input *DeleteTagsInput) (*DeleteTagsOutput, error) {
 	req, out := c.DeleteTagsRequest(input)
 	err := req.Send()
@@ -1103,6 +1117,7 @@ const opDescribeAccountLimits = "DescribeAccountLimits"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAccountLimits
 func (c *AutoScaling) DescribeAccountLimitsRequest(input *DescribeAccountLimitsInput) (req *request.Request, output *DescribeAccountLimitsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeAccountLimits,
@@ -1114,9 +1129,8 @@ func (c *AutoScaling) DescribeAccountLimitsRequest(input *DescribeAccountLimitsI
 		input = &DescribeAccountLimitsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAccountLimitsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1140,6 +1154,7 @@ func (c *AutoScaling) DescribeAccountLimitsRequest(input *DescribeAccountLimitsI
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAccountLimits
 func (c *AutoScaling) DescribeAccountLimits(input *DescribeAccountLimitsInput) (*DescribeAccountLimitsOutput, error) {
 	req, out := c.DescribeAccountLimitsRequest(input)
 	err := req.Send()
@@ -1172,6 +1187,7 @@ const opDescribeAdjustmentTypes = "DescribeAdjustmentTypes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAdjustmentTypes
 func (c *AutoScaling) DescribeAdjustmentTypesRequest(input *DescribeAdjustmentTypesInput) (req *request.Request, output *DescribeAdjustmentTypesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeAdjustmentTypes,
@@ -1183,9 +1199,8 @@ func (c *AutoScaling) DescribeAdjustmentTypesRequest(input *DescribeAdjustmentTy
 		input = &DescribeAdjustmentTypesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAdjustmentTypesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1205,6 +1220,7 @@ func (c *AutoScaling) DescribeAdjustmentTypesRequest(input *DescribeAdjustmentTy
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAdjustmentTypes
 func (c *AutoScaling) DescribeAdjustmentTypes(input *DescribeAdjustmentTypesInput) (*DescribeAdjustmentTypesOutput, error) {
 	req, out := c.DescribeAdjustmentTypesRequest(input)
 	err := req.Send()
@@ -1237,6 +1253,7 @@ const opDescribeAutoScalingGroups = "DescribeAutoScalingGroups"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAutoScalingGroups
 func (c *AutoScaling) DescribeAutoScalingGroupsRequest(input *DescribeAutoScalingGroupsInput) (req *request.Request, output *DescribeAutoScalingGroupsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeAutoScalingGroups,
@@ -1254,9 +1271,8 @@ func (c *AutoScaling) DescribeAutoScalingGroupsRequest(input *DescribeAutoScalin
 		input = &DescribeAutoScalingGroupsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAutoScalingGroupsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1279,6 +1295,7 @@ func (c *AutoScaling) DescribeAutoScalingGroupsRequest(input *DescribeAutoScalin
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAutoScalingGroups
 func (c *AutoScaling) DescribeAutoScalingGroups(input *DescribeAutoScalingGroupsInput) (*DescribeAutoScalingGroupsOutput, error) {
 	req, out := c.DescribeAutoScalingGroupsRequest(input)
 	err := req.Send()
@@ -1336,6 +1353,7 @@ const opDescribeAutoScalingInstances = "DescribeAutoScalingInstances"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAutoScalingInstances
 func (c *AutoScaling) DescribeAutoScalingInstancesRequest(input *DescribeAutoScalingInstancesInput) (req *request.Request, output *DescribeAutoScalingInstancesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeAutoScalingInstances,
@@ -1353,9 +1371,8 @@ func (c *AutoScaling) DescribeAutoScalingInstancesRequest(input *DescribeAutoSca
 		input = &DescribeAutoScalingInstancesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAutoScalingInstancesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1378,6 +1395,7 @@ func (c *AutoScaling) DescribeAutoScalingInstancesRequest(input *DescribeAutoSca
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAutoScalingInstances
 func (c *AutoScaling) DescribeAutoScalingInstances(input *DescribeAutoScalingInstancesInput) (*DescribeAutoScalingInstancesOutput, error) {
 	req, out := c.DescribeAutoScalingInstancesRequest(input)
 	err := req.Send()
@@ -1435,6 +1453,7 @@ const opDescribeAutoScalingNotificationTypes = "DescribeAutoScalingNotificationT
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAutoScalingNotificationTypes
 func (c *AutoScaling) DescribeAutoScalingNotificationTypesRequest(input *DescribeAutoScalingNotificationTypesInput) (req *request.Request, output *DescribeAutoScalingNotificationTypesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeAutoScalingNotificationTypes,
@@ -1446,9 +1465,8 @@ func (c *AutoScaling) DescribeAutoScalingNotificationTypesRequest(input *Describ
 		input = &DescribeAutoScalingNotificationTypesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAutoScalingNotificationTypesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1468,6 +1486,7 @@ func (c *AutoScaling) DescribeAutoScalingNotificationTypesRequest(input *Describ
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAutoScalingNotificationTypes
 func (c *AutoScaling) DescribeAutoScalingNotificationTypes(input *DescribeAutoScalingNotificationTypesInput) (*DescribeAutoScalingNotificationTypesOutput, error) {
 	req, out := c.DescribeAutoScalingNotificationTypesRequest(input)
 	err := req.Send()
@@ -1500,6 +1519,7 @@ const opDescribeLaunchConfigurations = "DescribeLaunchConfigurations"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLaunchConfigurations
 func (c *AutoScaling) DescribeLaunchConfigurationsRequest(input *DescribeLaunchConfigurationsInput) (req *request.Request, output *DescribeLaunchConfigurationsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeLaunchConfigurations,
@@ -1517,9 +1537,8 @@ func (c *AutoScaling) DescribeLaunchConfigurationsRequest(input *DescribeLaunchC
 		input = &DescribeLaunchConfigurationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeLaunchConfigurationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1542,6 +1561,7 @@ func (c *AutoScaling) DescribeLaunchConfigurationsRequest(input *DescribeLaunchC
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLaunchConfigurations
 func (c *AutoScaling) DescribeLaunchConfigurations(input *DescribeLaunchConfigurationsInput) (*DescribeLaunchConfigurationsOutput, error) {
 	req, out := c.DescribeLaunchConfigurationsRequest(input)
 	err := req.Send()
@@ -1599,6 +1619,7 @@ const opDescribeLifecycleHookTypes = "DescribeLifecycleHookTypes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLifecycleHookTypes
 func (c *AutoScaling) DescribeLifecycleHookTypesRequest(input *DescribeLifecycleHookTypesInput) (req *request.Request, output *DescribeLifecycleHookTypesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeLifecycleHookTypes,
@@ -1610,9 +1631,8 @@ func (c *AutoScaling) DescribeLifecycleHookTypesRequest(input *DescribeLifecycle
 		input = &DescribeLifecycleHookTypesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeLifecycleHookTypesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1632,6 +1652,7 @@ func (c *AutoScaling) DescribeLifecycleHookTypesRequest(input *DescribeLifecycle
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLifecycleHookTypes
 func (c *AutoScaling) DescribeLifecycleHookTypes(input *DescribeLifecycleHookTypesInput) (*DescribeLifecycleHookTypesOutput, error) {
 	req, out := c.DescribeLifecycleHookTypesRequest(input)
 	err := req.Send()
@@ -1664,6 +1685,7 @@ const opDescribeLifecycleHooks = "DescribeLifecycleHooks"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLifecycleHooks
 func (c *AutoScaling) DescribeLifecycleHooksRequest(input *DescribeLifecycleHooksInput) (req *request.Request, output *DescribeLifecycleHooksOutput) {
 	op := &request.Operation{
 		Name:       opDescribeLifecycleHooks,
@@ -1675,9 +1697,8 @@ func (c *AutoScaling) DescribeLifecycleHooksRequest(input *DescribeLifecycleHook
 		input = &DescribeLifecycleHooksInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeLifecycleHooksOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1697,6 +1718,7 @@ func (c *AutoScaling) DescribeLifecycleHooksRequest(input *DescribeLifecycleHook
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLifecycleHooks
 func (c *AutoScaling) DescribeLifecycleHooks(input *DescribeLifecycleHooksInput) (*DescribeLifecycleHooksOutput, error) {
 	req, out := c.DescribeLifecycleHooksRequest(input)
 	err := req.Send()
@@ -1729,6 +1751,7 @@ const opDescribeLoadBalancerTargetGroups = "DescribeLoadBalancerTargetGroups"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLoadBalancerTargetGroups
 func (c *AutoScaling) DescribeLoadBalancerTargetGroupsRequest(input *DescribeLoadBalancerTargetGroupsInput) (req *request.Request, output *DescribeLoadBalancerTargetGroupsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeLoadBalancerTargetGroups,
@@ -1740,9 +1763,8 @@ func (c *AutoScaling) DescribeLoadBalancerTargetGroupsRequest(input *DescribeLoa
 		input = &DescribeLoadBalancerTargetGroupsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeLoadBalancerTargetGroupsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1762,6 +1784,7 @@ func (c *AutoScaling) DescribeLoadBalancerTargetGroupsRequest(input *DescribeLoa
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLoadBalancerTargetGroups
 func (c *AutoScaling) DescribeLoadBalancerTargetGroups(input *DescribeLoadBalancerTargetGroupsInput) (*DescribeLoadBalancerTargetGroupsOutput, error) {
 	req, out := c.DescribeLoadBalancerTargetGroupsRequest(input)
 	err := req.Send()
@@ -1794,6 +1817,7 @@ const opDescribeLoadBalancers = "DescribeLoadBalancers"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLoadBalancers
 func (c *AutoScaling) DescribeLoadBalancersRequest(input *DescribeLoadBalancersInput) (req *request.Request, output *DescribeLoadBalancersOutput) {
 	op := &request.Operation{
 		Name:       opDescribeLoadBalancers,
@@ -1805,9 +1829,8 @@ func (c *AutoScaling) DescribeLoadBalancersRequest(input *DescribeLoadBalancersI
 		input = &DescribeLoadBalancersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeLoadBalancersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1830,6 +1853,7 @@ func (c *AutoScaling) DescribeLoadBalancersRequest(input *DescribeLoadBalancersI
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLoadBalancers
 func (c *AutoScaling) DescribeLoadBalancers(input *DescribeLoadBalancersInput) (*DescribeLoadBalancersOutput, error) {
 	req, out := c.DescribeLoadBalancersRequest(input)
 	err := req.Send()
@@ -1862,6 +1886,7 @@ const opDescribeMetricCollectionTypes = "DescribeMetricCollectionTypes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeMetricCollectionTypes
 func (c *AutoScaling) DescribeMetricCollectionTypesRequest(input *DescribeMetricCollectionTypesInput) (req *request.Request, output *DescribeMetricCollectionTypesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeMetricCollectionTypes,
@@ -1873,9 +1898,8 @@ func (c *AutoScaling) DescribeMetricCollectionTypesRequest(input *DescribeMetric
 		input = &DescribeMetricCollectionTypesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeMetricCollectionTypesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1898,6 +1922,7 @@ func (c *AutoScaling) DescribeMetricCollectionTypesRequest(input *DescribeMetric
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeMetricCollectionTypes
 func (c *AutoScaling) DescribeMetricCollectionTypes(input *DescribeMetricCollectionTypesInput) (*DescribeMetricCollectionTypesOutput, error) {
 	req, out := c.DescribeMetricCollectionTypesRequest(input)
 	err := req.Send()
@@ -1930,6 +1955,7 @@ const opDescribeNotificationConfigurations = "DescribeNotificationConfigurations
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeNotificationConfigurations
 func (c *AutoScaling) DescribeNotificationConfigurationsRequest(input *DescribeNotificationConfigurationsInput) (req *request.Request, output *DescribeNotificationConfigurationsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeNotificationConfigurations,
@@ -1947,9 +1973,8 @@ func (c *AutoScaling) DescribeNotificationConfigurationsRequest(input *DescribeN
 		input = &DescribeNotificationConfigurationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeNotificationConfigurationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1973,6 +1998,7 @@ func (c *AutoScaling) DescribeNotificationConfigurationsRequest(input *DescribeN
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeNotificationConfigurations
 func (c *AutoScaling) DescribeNotificationConfigurations(input *DescribeNotificationConfigurationsInput) (*DescribeNotificationConfigurationsOutput, error) {
 	req, out := c.DescribeNotificationConfigurationsRequest(input)
 	err := req.Send()
@@ -2030,6 +2056,7 @@ const opDescribePolicies = "DescribePolicies"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribePolicies
 func (c *AutoScaling) DescribePoliciesRequest(input *DescribePoliciesInput) (req *request.Request, output *DescribePoliciesOutput) {
 	op := &request.Operation{
 		Name:       opDescribePolicies,
@@ -2047,9 +2074,8 @@ func (c *AutoScaling) DescribePoliciesRequest(input *DescribePoliciesInput) (req
 		input = &DescribePoliciesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribePoliciesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2072,6 +2098,7 @@ func (c *AutoScaling) DescribePoliciesRequest(input *DescribePoliciesInput) (req
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribePolicies
 func (c *AutoScaling) DescribePolicies(input *DescribePoliciesInput) (*DescribePoliciesOutput, error) {
 	req, out := c.DescribePoliciesRequest(input)
 	err := req.Send()
@@ -2129,6 +2156,7 @@ const opDescribeScalingActivities = "DescribeScalingActivities"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeScalingActivities
 func (c *AutoScaling) DescribeScalingActivitiesRequest(input *DescribeScalingActivitiesInput) (req *request.Request, output *DescribeScalingActivitiesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeScalingActivities,
@@ -2146,9 +2174,8 @@ func (c *AutoScaling) DescribeScalingActivitiesRequest(input *DescribeScalingAct
 		input = &DescribeScalingActivitiesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeScalingActivitiesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2171,6 +2198,7 @@ func (c *AutoScaling) DescribeScalingActivitiesRequest(input *DescribeScalingAct
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeScalingActivities
 func (c *AutoScaling) DescribeScalingActivities(input *DescribeScalingActivitiesInput) (*DescribeScalingActivitiesOutput, error) {
 	req, out := c.DescribeScalingActivitiesRequest(input)
 	err := req.Send()
@@ -2228,6 +2256,7 @@ const opDescribeScalingProcessTypes = "DescribeScalingProcessTypes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeScalingProcessTypes
 func (c *AutoScaling) DescribeScalingProcessTypesRequest(input *DescribeScalingProcessTypesInput) (req *request.Request, output *DescribeScalingProcessTypesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeScalingProcessTypes,
@@ -2239,9 +2268,8 @@ func (c *AutoScaling) DescribeScalingProcessTypesRequest(input *DescribeScalingP
 		input = &DescribeScalingProcessTypesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeScalingProcessTypesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2261,6 +2289,7 @@ func (c *AutoScaling) DescribeScalingProcessTypesRequest(input *DescribeScalingP
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeScalingProcessTypes
 func (c *AutoScaling) DescribeScalingProcessTypes(input *DescribeScalingProcessTypesInput) (*DescribeScalingProcessTypesOutput, error) {
 	req, out := c.DescribeScalingProcessTypesRequest(input)
 	err := req.Send()
@@ -2293,6 +2322,7 @@ const opDescribeScheduledActions = "DescribeScheduledActions"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeScheduledActions
 func (c *AutoScaling) DescribeScheduledActionsRequest(input *DescribeScheduledActionsInput) (req *request.Request, output *DescribeScheduledActionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeScheduledActions,
@@ -2310,9 +2340,8 @@ func (c *AutoScaling) DescribeScheduledActionsRequest(input *DescribeScheduledAc
 		input = &DescribeScheduledActionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeScheduledActionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2336,6 +2365,7 @@ func (c *AutoScaling) DescribeScheduledActionsRequest(input *DescribeScheduledAc
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeScheduledActions
 func (c *AutoScaling) DescribeScheduledActions(input *DescribeScheduledActionsInput) (*DescribeScheduledActionsOutput, error) {
 	req, out := c.DescribeScheduledActionsRequest(input)
 	err := req.Send()
@@ -2393,6 +2423,7 @@ const opDescribeTags = "DescribeTags"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeTags
 func (c *AutoScaling) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeTags,
@@ -2410,9 +2441,8 @@ func (c *AutoScaling) DescribeTagsRequest(input *DescribeTagsInput) (req *reques
 		input = &DescribeTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2444,6 +2474,7 @@ func (c *AutoScaling) DescribeTagsRequest(input *DescribeTagsInput) (req *reques
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeTags
 func (c *AutoScaling) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
 	req, out := c.DescribeTagsRequest(input)
 	err := req.Send()
@@ -2501,6 +2532,7 @@ const opDescribeTerminationPolicyTypes = "DescribeTerminationPolicyTypes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeTerminationPolicyTypes
 func (c *AutoScaling) DescribeTerminationPolicyTypesRequest(input *DescribeTerminationPolicyTypesInput) (req *request.Request, output *DescribeTerminationPolicyTypesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeTerminationPolicyTypes,
@@ -2512,9 +2544,8 @@ func (c *AutoScaling) DescribeTerminationPolicyTypesRequest(input *DescribeTermi
 		input = &DescribeTerminationPolicyTypesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTerminationPolicyTypesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2534,6 +2565,7 @@ func (c *AutoScaling) DescribeTerminationPolicyTypesRequest(input *DescribeTermi
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeTerminationPolicyTypes
 func (c *AutoScaling) DescribeTerminationPolicyTypes(input *DescribeTerminationPolicyTypesInput) (*DescribeTerminationPolicyTypesOutput, error) {
 	req, out := c.DescribeTerminationPolicyTypesRequest(input)
 	err := req.Send()
@@ -2566,6 +2598,7 @@ const opDetachInstances = "DetachInstances"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachInstances
 func (c *AutoScaling) DetachInstancesRequest(input *DetachInstancesInput) (req *request.Request, output *DetachInstancesOutput) {
 	op := &request.Operation{
 		Name:       opDetachInstances,
@@ -2577,9 +2610,8 @@ func (c *AutoScaling) DetachInstancesRequest(input *DetachInstancesInput) (req *
 		input = &DetachInstancesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DetachInstancesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2614,6 +2646,7 @@ func (c *AutoScaling) DetachInstancesRequest(input *DetachInstancesInput) (req *
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachInstances
 func (c *AutoScaling) DetachInstances(input *DetachInstancesInput) (*DetachInstancesOutput, error) {
 	req, out := c.DetachInstancesRequest(input)
 	err := req.Send()
@@ -2646,6 +2679,7 @@ const opDetachLoadBalancerTargetGroups = "DetachLoadBalancerTargetGroups"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachLoadBalancerTargetGroups
 func (c *AutoScaling) DetachLoadBalancerTargetGroupsRequest(input *DetachLoadBalancerTargetGroupsInput) (req *request.Request, output *DetachLoadBalancerTargetGroupsOutput) {
 	op := &request.Operation{
 		Name:       opDetachLoadBalancerTargetGroups,
@@ -2657,9 +2691,8 @@ func (c *AutoScaling) DetachLoadBalancerTargetGroupsRequest(input *DetachLoadBal
 		input = &DetachLoadBalancerTargetGroupsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DetachLoadBalancerTargetGroupsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2679,6 +2712,7 @@ func (c *AutoScaling) DetachLoadBalancerTargetGroupsRequest(input *DetachLoadBal
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachLoadBalancerTargetGroups
 func (c *AutoScaling) DetachLoadBalancerTargetGroups(input *DetachLoadBalancerTargetGroupsInput) (*DetachLoadBalancerTargetGroupsOutput, error) {
 	req, out := c.DetachLoadBalancerTargetGroupsRequest(input)
 	err := req.Send()
@@ -2711,6 +2745,7 @@ const opDetachLoadBalancers = "DetachLoadBalancers"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachLoadBalancers
 func (c *AutoScaling) DetachLoadBalancersRequest(input *DetachLoadBalancersInput) (req *request.Request, output *DetachLoadBalancersOutput) {
 	op := &request.Operation{
 		Name:       opDetachLoadBalancers,
@@ -2722,9 +2757,8 @@ func (c *AutoScaling) DetachLoadBalancersRequest(input *DetachLoadBalancersInput
 		input = &DetachLoadBalancersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DetachLoadBalancersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2753,6 +2787,7 @@ func (c *AutoScaling) DetachLoadBalancersRequest(input *DetachLoadBalancersInput
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachLoadBalancers
 func (c *AutoScaling) DetachLoadBalancers(input *DetachLoadBalancersInput) (*DetachLoadBalancersOutput, error) {
 	req, out := c.DetachLoadBalancersRequest(input)
 	err := req.Send()
@@ -2785,6 +2820,7 @@ const opDisableMetricsCollection = "DisableMetricsCollection"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DisableMetricsCollection
 func (c *AutoScaling) DisableMetricsCollectionRequest(input *DisableMetricsCollectionInput) (req *request.Request, output *DisableMetricsCollectionOutput) {
 	op := &request.Operation{
 		Name:       opDisableMetricsCollection,
@@ -2796,11 +2832,10 @@ func (c *AutoScaling) DisableMetricsCollectionRequest(input *DisableMetricsColle
 		input = &DisableMetricsCollectionInput{}
 	}
 
+	output = &DisableMetricsCollectionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DisableMetricsCollectionOutput{}
-	req.Data = output
 	return
 }
 
@@ -2820,6 +2855,7 @@ func (c *AutoScaling) DisableMetricsCollectionRequest(input *DisableMetricsColle
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DisableMetricsCollection
 func (c *AutoScaling) DisableMetricsCollection(input *DisableMetricsCollectionInput) (*DisableMetricsCollectionOutput, error) {
 	req, out := c.DisableMetricsCollectionRequest(input)
 	err := req.Send()
@@ -2852,6 +2888,7 @@ const opEnableMetricsCollection = "EnableMetricsCollection"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/EnableMetricsCollection
 func (c *AutoScaling) EnableMetricsCollectionRequest(input *EnableMetricsCollectionInput) (req *request.Request, output *EnableMetricsCollectionOutput) {
 	op := &request.Operation{
 		Name:       opEnableMetricsCollection,
@@ -2863,11 +2900,10 @@ func (c *AutoScaling) EnableMetricsCollectionRequest(input *EnableMetricsCollect
 		input = &EnableMetricsCollectionInput{}
 	}
 
+	output = &EnableMetricsCollectionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &EnableMetricsCollectionOutput{}
-	req.Data = output
 	return
 }
 
@@ -2889,6 +2925,7 @@ func (c *AutoScaling) EnableMetricsCollectionRequest(input *EnableMetricsCollect
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/EnableMetricsCollection
 func (c *AutoScaling) EnableMetricsCollection(input *EnableMetricsCollectionInput) (*EnableMetricsCollectionOutput, error) {
 	req, out := c.EnableMetricsCollectionRequest(input)
 	err := req.Send()
@@ -2921,6 +2958,7 @@ const opEnterStandby = "EnterStandby"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/EnterStandby
 func (c *AutoScaling) EnterStandbyRequest(input *EnterStandbyInput) (req *request.Request, output *EnterStandbyOutput) {
 	op := &request.Operation{
 		Name:       opEnterStandby,
@@ -2932,9 +2970,8 @@ func (c *AutoScaling) EnterStandbyRequest(input *EnterStandbyInput) (req *reques
 		input = &EnterStandbyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &EnterStandbyOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2957,6 +2994,7 @@ func (c *AutoScaling) EnterStandbyRequest(input *EnterStandbyInput) (req *reques
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/EnterStandby
 func (c *AutoScaling) EnterStandby(input *EnterStandbyInput) (*EnterStandbyOutput, error) {
 	req, out := c.EnterStandbyRequest(input)
 	err := req.Send()
@@ -2989,6 +3027,7 @@ const opExecutePolicy = "ExecutePolicy"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ExecutePolicy
 func (c *AutoScaling) ExecutePolicyRequest(input *ExecutePolicyInput) (req *request.Request, output *ExecutePolicyOutput) {
 	op := &request.Operation{
 		Name:       opExecutePolicy,
@@ -3000,11 +3039,10 @@ func (c *AutoScaling) ExecutePolicyRequest(input *ExecutePolicyInput) (req *requ
 		input = &ExecutePolicyInput{}
 	}
 
+	output = &ExecutePolicyOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &ExecutePolicyOutput{}
-	req.Data = output
 	return
 }
 
@@ -3028,6 +3066,7 @@ func (c *AutoScaling) ExecutePolicyRequest(input *ExecutePolicyInput) (req *requ
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ExecutePolicy
 func (c *AutoScaling) ExecutePolicy(input *ExecutePolicyInput) (*ExecutePolicyOutput, error) {
 	req, out := c.ExecutePolicyRequest(input)
 	err := req.Send()
@@ -3060,6 +3099,7 @@ const opExitStandby = "ExitStandby"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ExitStandby
 func (c *AutoScaling) ExitStandbyRequest(input *ExitStandbyInput) (req *request.Request, output *ExitStandbyOutput) {
 	op := &request.Operation{
 		Name:       opExitStandby,
@@ -3071,9 +3111,8 @@ func (c *AutoScaling) ExitStandbyRequest(input *ExitStandbyInput) (req *request.
 		input = &ExitStandbyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ExitStandbyOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3096,6 +3135,7 @@ func (c *AutoScaling) ExitStandbyRequest(input *ExitStandbyInput) (req *request.
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ExitStandby
 func (c *AutoScaling) ExitStandby(input *ExitStandbyInput) (*ExitStandbyOutput, error) {
 	req, out := c.ExitStandbyRequest(input)
 	err := req.Send()
@@ -3128,6 +3168,7 @@ const opPutLifecycleHook = "PutLifecycleHook"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutLifecycleHook
 func (c *AutoScaling) PutLifecycleHookRequest(input *PutLifecycleHookInput) (req *request.Request, output *PutLifecycleHookOutput) {
 	op := &request.Operation{
 		Name:       opPutLifecycleHook,
@@ -3139,9 +3180,8 @@ func (c *AutoScaling) PutLifecycleHookRequest(input *PutLifecycleHookInput) (req
 		input = &PutLifecycleHookInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutLifecycleHookOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3196,6 +3236,7 @@ func (c *AutoScaling) PutLifecycleHookRequest(input *PutLifecycleHookInput) (req
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutLifecycleHook
 func (c *AutoScaling) PutLifecycleHook(input *PutLifecycleHookInput) (*PutLifecycleHookOutput, error) {
 	req, out := c.PutLifecycleHookRequest(input)
 	err := req.Send()
@@ -3228,6 +3269,7 @@ const opPutNotificationConfiguration = "PutNotificationConfiguration"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutNotificationConfiguration
 func (c *AutoScaling) PutNotificationConfigurationRequest(input *PutNotificationConfigurationInput) (req *request.Request, output *PutNotificationConfigurationOutput) {
 	op := &request.Operation{
 		Name:       opPutNotificationConfiguration,
@@ -3239,11 +3281,10 @@ func (c *AutoScaling) PutNotificationConfigurationRequest(input *PutNotification
 		input = &PutNotificationConfigurationInput{}
 	}
 
+	output = &PutNotificationConfigurationOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutNotificationConfigurationOutput{}
-	req.Data = output
 	return
 }
 
@@ -3276,6 +3317,7 @@ func (c *AutoScaling) PutNotificationConfigurationRequest(input *PutNotification
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutNotificationConfiguration
 func (c *AutoScaling) PutNotificationConfiguration(input *PutNotificationConfigurationInput) (*PutNotificationConfigurationOutput, error) {
 	req, out := c.PutNotificationConfigurationRequest(input)
 	err := req.Send()
@@ -3308,6 +3350,7 @@ const opPutScalingPolicy = "PutScalingPolicy"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutScalingPolicy
 func (c *AutoScaling) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req *request.Request, output *PutScalingPolicyOutput) {
 	op := &request.Operation{
 		Name:       opPutScalingPolicy,
@@ -3319,9 +3362,8 @@ func (c *AutoScaling) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req
 		input = &PutScalingPolicyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutScalingPolicyOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3354,6 +3396,7 @@ func (c *AutoScaling) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutScalingPolicy
 func (c *AutoScaling) PutScalingPolicy(input *PutScalingPolicyInput) (*PutScalingPolicyOutput, error) {
 	req, out := c.PutScalingPolicyRequest(input)
 	err := req.Send()
@@ -3386,6 +3429,7 @@ const opPutScheduledUpdateGroupAction = "PutScheduledUpdateGroupAction"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutScheduledUpdateGroupAction
 func (c *AutoScaling) PutScheduledUpdateGroupActionRequest(input *PutScheduledUpdateGroupActionInput) (req *request.Request, output *PutScheduledUpdateGroupActionOutput) {
 	op := &request.Operation{
 		Name:       opPutScheduledUpdateGroupAction,
@@ -3397,11 +3441,10 @@ func (c *AutoScaling) PutScheduledUpdateGroupActionRequest(input *PutScheduledUp
 		input = &PutScheduledUpdateGroupActionInput{}
 	}
 
+	output = &PutScheduledUpdateGroupActionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutScheduledUpdateGroupActionOutput{}
-	req.Data = output
 	return
 }
 
@@ -3435,6 +3478,7 @@ func (c *AutoScaling) PutScheduledUpdateGroupActionRequest(input *PutScheduledUp
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutScheduledUpdateGroupAction
 func (c *AutoScaling) PutScheduledUpdateGroupAction(input *PutScheduledUpdateGroupActionInput) (*PutScheduledUpdateGroupActionOutput, error) {
 	req, out := c.PutScheduledUpdateGroupActionRequest(input)
 	err := req.Send()
@@ -3467,6 +3511,7 @@ const opRecordLifecycleActionHeartbeat = "RecordLifecycleActionHeartbeat"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/RecordLifecycleActionHeartbeat
 func (c *AutoScaling) RecordLifecycleActionHeartbeatRequest(input *RecordLifecycleActionHeartbeatInput) (req *request.Request, output *RecordLifecycleActionHeartbeatOutput) {
 	op := &request.Operation{
 		Name:       opRecordLifecycleActionHeartbeat,
@@ -3478,9 +3523,8 @@ func (c *AutoScaling) RecordLifecycleActionHeartbeatRequest(input *RecordLifecyc
 		input = &RecordLifecycleActionHeartbeatInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RecordLifecycleActionHeartbeatOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3523,6 +3567,7 @@ func (c *AutoScaling) RecordLifecycleActionHeartbeatRequest(input *RecordLifecyc
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/RecordLifecycleActionHeartbeat
 func (c *AutoScaling) RecordLifecycleActionHeartbeat(input *RecordLifecycleActionHeartbeatInput) (*RecordLifecycleActionHeartbeatOutput, error) {
 	req, out := c.RecordLifecycleActionHeartbeatRequest(input)
 	err := req.Send()
@@ -3555,6 +3600,7 @@ const opResumeProcesses = "ResumeProcesses"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ResumeProcesses
 func (c *AutoScaling) ResumeProcessesRequest(input *ScalingProcessQuery) (req *request.Request, output *ResumeProcessesOutput) {
 	op := &request.Operation{
 		Name:       opResumeProcesses,
@@ -3566,11 +3612,10 @@ func (c *AutoScaling) ResumeProcessesRequest(input *ScalingProcessQuery) (req *r
 		input = &ScalingProcessQuery{}
 	}
 
+	output = &ResumeProcessesOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &ResumeProcessesOutput{}
-	req.Data = output
 	return
 }
 
@@ -3598,6 +3643,7 @@ func (c *AutoScaling) ResumeProcessesRequest(input *ScalingProcessQuery) (req *r
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ResumeProcesses
 func (c *AutoScaling) ResumeProcesses(input *ScalingProcessQuery) (*ResumeProcessesOutput, error) {
 	req, out := c.ResumeProcessesRequest(input)
 	err := req.Send()
@@ -3630,6 +3676,7 @@ const opSetDesiredCapacity = "SetDesiredCapacity"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SetDesiredCapacity
 func (c *AutoScaling) SetDesiredCapacityRequest(input *SetDesiredCapacityInput) (req *request.Request, output *SetDesiredCapacityOutput) {
 	op := &request.Operation{
 		Name:       opSetDesiredCapacity,
@@ -3641,11 +3688,10 @@ func (c *AutoScaling) SetDesiredCapacityRequest(input *SetDesiredCapacityInput) 
 		input = &SetDesiredCapacityInput{}
 	}
 
+	output = &SetDesiredCapacityOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetDesiredCapacityOutput{}
-	req.Data = output
 	return
 }
 
@@ -3672,6 +3718,7 @@ func (c *AutoScaling) SetDesiredCapacityRequest(input *SetDesiredCapacityInput) 
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SetDesiredCapacity
 func (c *AutoScaling) SetDesiredCapacity(input *SetDesiredCapacityInput) (*SetDesiredCapacityOutput, error) {
 	req, out := c.SetDesiredCapacityRequest(input)
 	err := req.Send()
@@ -3704,6 +3751,7 @@ const opSetInstanceHealth = "SetInstanceHealth"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SetInstanceHealth
 func (c *AutoScaling) SetInstanceHealthRequest(input *SetInstanceHealthInput) (req *request.Request, output *SetInstanceHealthOutput) {
 	op := &request.Operation{
 		Name:       opSetInstanceHealth,
@@ -3715,11 +3763,10 @@ func (c *AutoScaling) SetInstanceHealthRequest(input *SetInstanceHealthInput) (r
 		input = &SetInstanceHealthInput{}
 	}
 
+	output = &SetInstanceHealthOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetInstanceHealthOutput{}
-	req.Data = output
 	return
 }
 
@@ -3742,6 +3789,7 @@ func (c *AutoScaling) SetInstanceHealthRequest(input *SetInstanceHealthInput) (r
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SetInstanceHealth
 func (c *AutoScaling) SetInstanceHealth(input *SetInstanceHealthInput) (*SetInstanceHealthOutput, error) {
 	req, out := c.SetInstanceHealthRequest(input)
 	err := req.Send()
@@ -3774,6 +3822,7 @@ const opSetInstanceProtection = "SetInstanceProtection"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SetInstanceProtection
 func (c *AutoScaling) SetInstanceProtectionRequest(input *SetInstanceProtectionInput) (req *request.Request, output *SetInstanceProtectionOutput) {
 	op := &request.Operation{
 		Name:       opSetInstanceProtection,
@@ -3785,9 +3834,8 @@ func (c *AutoScaling) SetInstanceProtectionRequest(input *SetInstanceProtectionI
 		input = &SetInstanceProtectionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SetInstanceProtectionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3815,6 +3863,7 @@ func (c *AutoScaling) SetInstanceProtectionRequest(input *SetInstanceProtectionI
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SetInstanceProtection
 func (c *AutoScaling) SetInstanceProtection(input *SetInstanceProtectionInput) (*SetInstanceProtectionOutput, error) {
 	req, out := c.SetInstanceProtectionRequest(input)
 	err := req.Send()
@@ -3847,6 +3896,7 @@ const opSuspendProcesses = "SuspendProcesses"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SuspendProcesses
 func (c *AutoScaling) SuspendProcessesRequest(input *ScalingProcessQuery) (req *request.Request, output *SuspendProcessesOutput) {
 	op := &request.Operation{
 		Name:       opSuspendProcesses,
@@ -3858,11 +3908,10 @@ func (c *AutoScaling) SuspendProcessesRequest(input *ScalingProcessQuery) (req *
 		input = &ScalingProcessQuery{}
 	}
 
+	output = &SuspendProcessesOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SuspendProcessesOutput{}
-	req.Data = output
 	return
 }
 
@@ -3895,6 +3944,7 @@ func (c *AutoScaling) SuspendProcessesRequest(input *ScalingProcessQuery) (req *
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SuspendProcesses
 func (c *AutoScaling) SuspendProcesses(input *ScalingProcessQuery) (*SuspendProcessesOutput, error) {
 	req, out := c.SuspendProcessesRequest(input)
 	err := req.Send()
@@ -3927,6 +3977,7 @@ const opTerminateInstanceInAutoScalingGroup = "TerminateInstanceInAutoScalingGro
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/TerminateInstanceInAutoScalingGroup
 func (c *AutoScaling) TerminateInstanceInAutoScalingGroupRequest(input *TerminateInstanceInAutoScalingGroupInput) (req *request.Request, output *TerminateInstanceInAutoScalingGroupOutput) {
 	op := &request.Operation{
 		Name:       opTerminateInstanceInAutoScalingGroup,
@@ -3938,9 +3989,8 @@ func (c *AutoScaling) TerminateInstanceInAutoScalingGroupRequest(input *Terminat
 		input = &TerminateInstanceInAutoScalingGroupInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &TerminateInstanceInAutoScalingGroupOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3968,6 +4018,7 @@ func (c *AutoScaling) TerminateInstanceInAutoScalingGroupRequest(input *Terminat
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/TerminateInstanceInAutoScalingGroup
 func (c *AutoScaling) TerminateInstanceInAutoScalingGroup(input *TerminateInstanceInAutoScalingGroupInput) (*TerminateInstanceInAutoScalingGroupOutput, error) {
 	req, out := c.TerminateInstanceInAutoScalingGroupRequest(input)
 	err := req.Send()
@@ -4000,6 +4051,7 @@ const opUpdateAutoScalingGroup = "UpdateAutoScalingGroup"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/UpdateAutoScalingGroup
 func (c *AutoScaling) UpdateAutoScalingGroupRequest(input *UpdateAutoScalingGroupInput) (req *request.Request, output *UpdateAutoScalingGroupOutput) {
 	op := &request.Operation{
 		Name:       opUpdateAutoScalingGroup,
@@ -4011,11 +4063,10 @@ func (c *AutoScaling) UpdateAutoScalingGroupRequest(input *UpdateAutoScalingGrou
 		input = &UpdateAutoScalingGroupInput{}
 	}
 
+	output = &UpdateAutoScalingGroupOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(query.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateAutoScalingGroupOutput{}
-	req.Data = output
 	return
 }
 
@@ -4062,6 +4113,7 @@ func (c *AutoScaling) UpdateAutoScalingGroupRequest(input *UpdateAutoScalingGrou
 //   You already have a pending update to an Auto Scaling resource (for example,
 //   a group, instance, or load balancer).
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/UpdateAutoScalingGroup
 func (c *AutoScaling) UpdateAutoScalingGroup(input *UpdateAutoScalingGroupInput) (*UpdateAutoScalingGroupOutput, error) {
 	req, out := c.UpdateAutoScalingGroupRequest(input)
 	err := req.Send()
@@ -4071,6 +4123,7 @@ func (c *AutoScaling) UpdateAutoScalingGroup(input *UpdateAutoScalingGroupInput)
 // Describes scaling activity, which is a long-running process that represents
 // a change to your Auto Scaling group, such as changing its size or replacing
 // an instance.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/Activity
 type Activity struct {
 	_ struct{} `type:"structure"`
 
@@ -4125,10 +4178,71 @@ func (s Activity) GoString() string {
 	return s.String()
 }
 
+// SetActivityId sets the ActivityId field's value.
+func (s *Activity) SetActivityId(v string) *Activity {
+	s.ActivityId = &v
+	return s
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *Activity) SetAutoScalingGroupName(v string) *Activity {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetCause sets the Cause field's value.
+func (s *Activity) SetCause(v string) *Activity {
+	s.Cause = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Activity) SetDescription(v string) *Activity {
+	s.Description = &v
+	return s
+}
+
+// SetDetails sets the Details field's value.
+func (s *Activity) SetDetails(v string) *Activity {
+	s.Details = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *Activity) SetEndTime(v time.Time) *Activity {
+	s.EndTime = &v
+	return s
+}
+
+// SetProgress sets the Progress field's value.
+func (s *Activity) SetProgress(v int64) *Activity {
+	s.Progress = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *Activity) SetStartTime(v time.Time) *Activity {
+	s.StartTime = &v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *Activity) SetStatusCode(v string) *Activity {
+	s.StatusCode = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *Activity) SetStatusMessage(v string) *Activity {
+	s.StatusMessage = &v
+	return s
+}
+
 // Describes a policy adjustment type.
 //
 // For more information, see Dynamic Scaling (http://docs.aws.amazon.com/AutoScaling/latest/DeveloperGuide/as-scale-based-on-demand.html)
 // in the Auto Scaling User Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AdjustmentType
 type AdjustmentType struct {
 	_ struct{} `type:"structure"`
 
@@ -4147,7 +4261,14 @@ func (s AdjustmentType) GoString() string {
 	return s.String()
 }
 
+// SetAdjustmentType sets the AdjustmentType field's value.
+func (s *AdjustmentType) SetAdjustmentType(v string) *AdjustmentType {
+	s.AdjustmentType = &v
+	return s
+}
+
 // Describes an alarm.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/Alarm
 type Alarm struct {
 	_ struct{} `type:"structure"`
 
@@ -4168,7 +4289,20 @@ func (s Alarm) GoString() string {
 	return s.String()
 }
 
+// SetAlarmARN sets the AlarmARN field's value.
+func (s *Alarm) SetAlarmARN(v string) *Alarm {
+	s.AlarmARN = &v
+	return s
+}
+
+// SetAlarmName sets the AlarmName field's value.
+func (s *Alarm) SetAlarmName(v string) *Alarm {
+	s.AlarmName = &v
+	return s
+}
+
 // Contains the parameters for AttachInstances.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachInstancesQuery
 type AttachInstancesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4207,6 +4341,19 @@ func (s *AttachInstancesInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *AttachInstancesInput) SetAutoScalingGroupName(v string) *AttachInstancesInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *AttachInstancesInput) SetInstanceIds(v []*string) *AttachInstancesInput {
+	s.InstanceIds = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachInstancesOutput
 type AttachInstancesOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4222,6 +4369,7 @@ func (s AttachInstancesOutput) GoString() string {
 }
 
 // Contains the parameters for AttachLoadBalancerTargetGroups.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachLoadBalancerTargetGroupsType
 type AttachLoadBalancerTargetGroupsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4265,6 +4413,19 @@ func (s *AttachLoadBalancerTargetGroupsInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *AttachLoadBalancerTargetGroupsInput) SetAutoScalingGroupName(v string) *AttachLoadBalancerTargetGroupsInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetTargetGroupARNs sets the TargetGroupARNs field's value.
+func (s *AttachLoadBalancerTargetGroupsInput) SetTargetGroupARNs(v []*string) *AttachLoadBalancerTargetGroupsInput {
+	s.TargetGroupARNs = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachLoadBalancerTargetGroupsResultType
 type AttachLoadBalancerTargetGroupsOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4280,6 +4441,7 @@ func (s AttachLoadBalancerTargetGroupsOutput) GoString() string {
 }
 
 // Contains the parameters for AttachLoadBalancers.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachLoadBalancersType
 type AttachLoadBalancersInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4323,7 +4485,20 @@ func (s *AttachLoadBalancersInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *AttachLoadBalancersInput) SetAutoScalingGroupName(v string) *AttachLoadBalancersInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetLoadBalancerNames sets the LoadBalancerNames field's value.
+func (s *AttachLoadBalancersInput) SetLoadBalancerNames(v []*string) *AttachLoadBalancersInput {
+	s.LoadBalancerNames = v
+	return s
+}
+
 // Contains the output of AttachLoadBalancers.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachLoadBalancersResultType
 type AttachLoadBalancersOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4339,6 +4514,7 @@ func (s AttachLoadBalancersOutput) GoString() string {
 }
 
 // Describes a block device mapping.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/BlockDeviceMapping
 type BlockDeviceMapping struct {
 	_ struct{} `type:"structure"`
 
@@ -4395,7 +4571,32 @@ func (s *BlockDeviceMapping) Validate() error {
 	return nil
 }
 
+// SetDeviceName sets the DeviceName field's value.
+func (s *BlockDeviceMapping) SetDeviceName(v string) *BlockDeviceMapping {
+	s.DeviceName = &v
+	return s
+}
+
+// SetEbs sets the Ebs field's value.
+func (s *BlockDeviceMapping) SetEbs(v *Ebs) *BlockDeviceMapping {
+	s.Ebs = v
+	return s
+}
+
+// SetNoDevice sets the NoDevice field's value.
+func (s *BlockDeviceMapping) SetNoDevice(v bool) *BlockDeviceMapping {
+	s.NoDevice = &v
+	return s
+}
+
+// SetVirtualName sets the VirtualName field's value.
+func (s *BlockDeviceMapping) SetVirtualName(v string) *BlockDeviceMapping {
+	s.VirtualName = &v
+	return s
+}
+
 // Contains the parameters for CompleteLifecycleAction.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CompleteLifecycleActionType
 type CompleteLifecycleActionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4465,7 +4666,38 @@ func (s *CompleteLifecycleActionInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *CompleteLifecycleActionInput) SetAutoScalingGroupName(v string) *CompleteLifecycleActionInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *CompleteLifecycleActionInput) SetInstanceId(v string) *CompleteLifecycleActionInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetLifecycleActionResult sets the LifecycleActionResult field's value.
+func (s *CompleteLifecycleActionInput) SetLifecycleActionResult(v string) *CompleteLifecycleActionInput {
+	s.LifecycleActionResult = &v
+	return s
+}
+
+// SetLifecycleActionToken sets the LifecycleActionToken field's value.
+func (s *CompleteLifecycleActionInput) SetLifecycleActionToken(v string) *CompleteLifecycleActionInput {
+	s.LifecycleActionToken = &v
+	return s
+}
+
+// SetLifecycleHookName sets the LifecycleHookName field's value.
+func (s *CompleteLifecycleActionInput) SetLifecycleHookName(v string) *CompleteLifecycleActionInput {
+	s.LifecycleHookName = &v
+	return s
+}
+
 // Contains the output of CompleteLifecycleAction.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CompleteLifecycleActionAnswer
 type CompleteLifecycleActionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4481,6 +4713,7 @@ func (s CompleteLifecycleActionOutput) GoString() string {
 }
 
 // Contains the parameters for CreateAutoScalingGroup.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CreateAutoScalingGroupType
 type CreateAutoScalingGroupInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4656,6 +4889,109 @@ func (s *CreateAutoScalingGroupInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *CreateAutoScalingGroupInput) SetAutoScalingGroupName(v string) *CreateAutoScalingGroupInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetAvailabilityZones sets the AvailabilityZones field's value.
+func (s *CreateAutoScalingGroupInput) SetAvailabilityZones(v []*string) *CreateAutoScalingGroupInput {
+	s.AvailabilityZones = v
+	return s
+}
+
+// SetDefaultCooldown sets the DefaultCooldown field's value.
+func (s *CreateAutoScalingGroupInput) SetDefaultCooldown(v int64) *CreateAutoScalingGroupInput {
+	s.DefaultCooldown = &v
+	return s
+}
+
+// SetDesiredCapacity sets the DesiredCapacity field's value.
+func (s *CreateAutoScalingGroupInput) SetDesiredCapacity(v int64) *CreateAutoScalingGroupInput {
+	s.DesiredCapacity = &v
+	return s
+}
+
+// SetHealthCheckGracePeriod sets the HealthCheckGracePeriod field's value.
+func (s *CreateAutoScalingGroupInput) SetHealthCheckGracePeriod(v int64) *CreateAutoScalingGroupInput {
+	s.HealthCheckGracePeriod = &v
+	return s
+}
+
+// SetHealthCheckType sets the HealthCheckType field's value.
+func (s *CreateAutoScalingGroupInput) SetHealthCheckType(v string) *CreateAutoScalingGroupInput {
+	s.HealthCheckType = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *CreateAutoScalingGroupInput) SetInstanceId(v string) *CreateAutoScalingGroupInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetLaunchConfigurationName sets the LaunchConfigurationName field's value.
+func (s *CreateAutoScalingGroupInput) SetLaunchConfigurationName(v string) *CreateAutoScalingGroupInput {
+	s.LaunchConfigurationName = &v
+	return s
+}
+
+// SetLoadBalancerNames sets the LoadBalancerNames field's value.
+func (s *CreateAutoScalingGroupInput) SetLoadBalancerNames(v []*string) *CreateAutoScalingGroupInput {
+	s.LoadBalancerNames = v
+	return s
+}
+
+// SetMaxSize sets the MaxSize field's value.
+func (s *CreateAutoScalingGroupInput) SetMaxSize(v int64) *CreateAutoScalingGroupInput {
+	s.MaxSize = &v
+	return s
+}
+
+// SetMinSize sets the MinSize field's value.
+func (s *CreateAutoScalingGroupInput) SetMinSize(v int64) *CreateAutoScalingGroupInput {
+	s.MinSize = &v
+	return s
+}
+
+// SetNewInstancesProtectedFromScaleIn sets the NewInstancesProtectedFromScaleIn field's value.
+func (s *CreateAutoScalingGroupInput) SetNewInstancesProtectedFromScaleIn(v bool) *CreateAutoScalingGroupInput {
+	s.NewInstancesProtectedFromScaleIn = &v
+	return s
+}
+
+// SetPlacementGroup sets the PlacementGroup field's value.
+func (s *CreateAutoScalingGroupInput) SetPlacementGroup(v string) *CreateAutoScalingGroupInput {
+	s.PlacementGroup = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateAutoScalingGroupInput) SetTags(v []*Tag) *CreateAutoScalingGroupInput {
+	s.Tags = v
+	return s
+}
+
+// SetTargetGroupARNs sets the TargetGroupARNs field's value.
+func (s *CreateAutoScalingGroupInput) SetTargetGroupARNs(v []*string) *CreateAutoScalingGroupInput {
+	s.TargetGroupARNs = v
+	return s
+}
+
+// SetTerminationPolicies sets the TerminationPolicies field's value.
+func (s *CreateAutoScalingGroupInput) SetTerminationPolicies(v []*string) *CreateAutoScalingGroupInput {
+	s.TerminationPolicies = v
+	return s
+}
+
+// SetVPCZoneIdentifier sets the VPCZoneIdentifier field's value.
+func (s *CreateAutoScalingGroupInput) SetVPCZoneIdentifier(v string) *CreateAutoScalingGroupInput {
+	s.VPCZoneIdentifier = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CreateAutoScalingGroupOutput
 type CreateAutoScalingGroupOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4671,6 +5007,7 @@ func (s CreateAutoScalingGroupOutput) GoString() string {
 }
 
 // Contains the parameters for CreateLaunchConfiguration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CreateLaunchConfigurationType
 type CreateLaunchConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4876,6 +5213,115 @@ func (s *CreateLaunchConfigurationInput) Validate() error {
 	return nil
 }
 
+// SetAssociatePublicIpAddress sets the AssociatePublicIpAddress field's value.
+func (s *CreateLaunchConfigurationInput) SetAssociatePublicIpAddress(v bool) *CreateLaunchConfigurationInput {
+	s.AssociatePublicIpAddress = &v
+	return s
+}
+
+// SetBlockDeviceMappings sets the BlockDeviceMappings field's value.
+func (s *CreateLaunchConfigurationInput) SetBlockDeviceMappings(v []*BlockDeviceMapping) *CreateLaunchConfigurationInput {
+	s.BlockDeviceMappings = v
+	return s
+}
+
+// SetClassicLinkVPCId sets the ClassicLinkVPCId field's value.
+func (s *CreateLaunchConfigurationInput) SetClassicLinkVPCId(v string) *CreateLaunchConfigurationInput {
+	s.ClassicLinkVPCId = &v
+	return s
+}
+
+// SetClassicLinkVPCSecurityGroups sets the ClassicLinkVPCSecurityGroups field's value.
+func (s *CreateLaunchConfigurationInput) SetClassicLinkVPCSecurityGroups(v []*string) *CreateLaunchConfigurationInput {
+	s.ClassicLinkVPCSecurityGroups = v
+	return s
+}
+
+// SetEbsOptimized sets the EbsOptimized field's value.
+func (s *CreateLaunchConfigurationInput) SetEbsOptimized(v bool) *CreateLaunchConfigurationInput {
+	s.EbsOptimized = &v
+	return s
+}
+
+// SetIamInstanceProfile sets the IamInstanceProfile field's value.
+func (s *CreateLaunchConfigurationInput) SetIamInstanceProfile(v string) *CreateLaunchConfigurationInput {
+	s.IamInstanceProfile = &v
+	return s
+}
+
+// SetImageId sets the ImageId field's value.
+func (s *CreateLaunchConfigurationInput) SetImageId(v string) *CreateLaunchConfigurationInput {
+	s.ImageId = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *CreateLaunchConfigurationInput) SetInstanceId(v string) *CreateLaunchConfigurationInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceMonitoring sets the InstanceMonitoring field's value.
+func (s *CreateLaunchConfigurationInput) SetInstanceMonitoring(v *InstanceMonitoring) *CreateLaunchConfigurationInput {
+	s.InstanceMonitoring = v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *CreateLaunchConfigurationInput) SetInstanceType(v string) *CreateLaunchConfigurationInput {
+	s.InstanceType = &v
+	return s
+}
+
+// SetKernelId sets the KernelId field's value.
+func (s *CreateLaunchConfigurationInput) SetKernelId(v string) *CreateLaunchConfigurationInput {
+	s.KernelId = &v
+	return s
+}
+
+// SetKeyName sets the KeyName field's value.
+func (s *CreateLaunchConfigurationInput) SetKeyName(v string) *CreateLaunchConfigurationInput {
+	s.KeyName = &v
+	return s
+}
+
+// SetLaunchConfigurationName sets the LaunchConfigurationName field's value.
+func (s *CreateLaunchConfigurationInput) SetLaunchConfigurationName(v string) *CreateLaunchConfigurationInput {
+	s.LaunchConfigurationName = &v
+	return s
+}
+
+// SetPlacementTenancy sets the PlacementTenancy field's value.
+func (s *CreateLaunchConfigurationInput) SetPlacementTenancy(v string) *CreateLaunchConfigurationInput {
+	s.PlacementTenancy = &v
+	return s
+}
+
+// SetRamdiskId sets the RamdiskId field's value.
+func (s *CreateLaunchConfigurationInput) SetRamdiskId(v string) *CreateLaunchConfigurationInput {
+	s.RamdiskId = &v
+	return s
+}
+
+// SetSecurityGroups sets the SecurityGroups field's value.
+func (s *CreateLaunchConfigurationInput) SetSecurityGroups(v []*string) *CreateLaunchConfigurationInput {
+	s.SecurityGroups = v
+	return s
+}
+
+// SetSpotPrice sets the SpotPrice field's value.
+func (s *CreateLaunchConfigurationInput) SetSpotPrice(v string) *CreateLaunchConfigurationInput {
+	s.SpotPrice = &v
+	return s
+}
+
+// SetUserData sets the UserData field's value.
+func (s *CreateLaunchConfigurationInput) SetUserData(v string) *CreateLaunchConfigurationInput {
+	s.UserData = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CreateLaunchConfigurationOutput
 type CreateLaunchConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4891,6 +5337,7 @@ func (s CreateLaunchConfigurationOutput) GoString() string {
 }
 
 // Contains the parameters for CreateOrUpdateTags.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CreateOrUpdateTagsType
 type CreateOrUpdateTagsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4933,6 +5380,13 @@ func (s *CreateOrUpdateTagsInput) Validate() error {
 	return nil
 }
 
+// SetTags sets the Tags field's value.
+func (s *CreateOrUpdateTagsInput) SetTags(v []*Tag) *CreateOrUpdateTagsInput {
+	s.Tags = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CreateOrUpdateTagsOutput
 type CreateOrUpdateTagsOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4948,6 +5402,7 @@ func (s CreateOrUpdateTagsOutput) GoString() string {
 }
 
 // Contains the parameters for DeleteAutoScalingGroup.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteAutoScalingGroupType
 type DeleteAutoScalingGroupInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4988,6 +5443,19 @@ func (s *DeleteAutoScalingGroupInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DeleteAutoScalingGroupInput) SetAutoScalingGroupName(v string) *DeleteAutoScalingGroupInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetForceDelete sets the ForceDelete field's value.
+func (s *DeleteAutoScalingGroupInput) SetForceDelete(v bool) *DeleteAutoScalingGroupInput {
+	s.ForceDelete = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteAutoScalingGroupOutput
 type DeleteAutoScalingGroupOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5003,6 +5471,7 @@ func (s DeleteAutoScalingGroupOutput) GoString() string {
 }
 
 // Contains the parameters for DeleteLaunchConfiguration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/LaunchConfigurationNameType
 type DeleteLaunchConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5038,6 +5507,13 @@ func (s *DeleteLaunchConfigurationInput) Validate() error {
 	return nil
 }
 
+// SetLaunchConfigurationName sets the LaunchConfigurationName field's value.
+func (s *DeleteLaunchConfigurationInput) SetLaunchConfigurationName(v string) *DeleteLaunchConfigurationInput {
+	s.LaunchConfigurationName = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteLaunchConfigurationOutput
 type DeleteLaunchConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5053,6 +5529,7 @@ func (s DeleteLaunchConfigurationOutput) GoString() string {
 }
 
 // Contains the parameters for DeleteLifecycleHook.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteLifecycleHookType
 type DeleteLifecycleHookInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5099,7 +5576,20 @@ func (s *DeleteLifecycleHookInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DeleteLifecycleHookInput) SetAutoScalingGroupName(v string) *DeleteLifecycleHookInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetLifecycleHookName sets the LifecycleHookName field's value.
+func (s *DeleteLifecycleHookInput) SetLifecycleHookName(v string) *DeleteLifecycleHookInput {
+	s.LifecycleHookName = &v
+	return s
+}
+
 // Contains the output of DeleteLifecycleHook.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteLifecycleHookAnswer
 type DeleteLifecycleHookOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5115,6 +5605,7 @@ func (s DeleteLifecycleHookOutput) GoString() string {
 }
 
 // Contains the parameters for DeleteNotificationConfiguration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteNotificationConfigurationType
 type DeleteNotificationConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5162,6 +5653,19 @@ func (s *DeleteNotificationConfigurationInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DeleteNotificationConfigurationInput) SetAutoScalingGroupName(v string) *DeleteNotificationConfigurationInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetTopicARN sets the TopicARN field's value.
+func (s *DeleteNotificationConfigurationInput) SetTopicARN(v string) *DeleteNotificationConfigurationInput {
+	s.TopicARN = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteNotificationConfigurationOutput
 type DeleteNotificationConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5177,6 +5681,7 @@ func (s DeleteNotificationConfigurationOutput) GoString() string {
 }
 
 // Contains the parameters for DeletePolicy.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeletePolicyType
 type DeletePolicyInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5218,6 +5723,19 @@ func (s *DeletePolicyInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DeletePolicyInput) SetAutoScalingGroupName(v string) *DeletePolicyInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *DeletePolicyInput) SetPolicyName(v string) *DeletePolicyInput {
+	s.PolicyName = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeletePolicyOutput
 type DeletePolicyOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5233,6 +5751,7 @@ func (s DeletePolicyOutput) GoString() string {
 }
 
 // Contains the parameters for DeleteScheduledAction.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteScheduledActionType
 type DeleteScheduledActionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5279,6 +5798,19 @@ func (s *DeleteScheduledActionInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DeleteScheduledActionInput) SetAutoScalingGroupName(v string) *DeleteScheduledActionInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetScheduledActionName sets the ScheduledActionName field's value.
+func (s *DeleteScheduledActionInput) SetScheduledActionName(v string) *DeleteScheduledActionInput {
+	s.ScheduledActionName = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteScheduledActionOutput
 type DeleteScheduledActionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5294,6 +5826,7 @@ func (s DeleteScheduledActionOutput) GoString() string {
 }
 
 // Contains the parameters for DeleteTags.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteTagsType
 type DeleteTagsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5336,6 +5869,13 @@ func (s *DeleteTagsInput) Validate() error {
 	return nil
 }
 
+// SetTags sets the Tags field's value.
+func (s *DeleteTagsInput) SetTags(v []*Tag) *DeleteTagsInput {
+	s.Tags = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DeleteTagsOutput
 type DeleteTagsOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5350,6 +5890,7 @@ func (s DeleteTagsOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAccountLimitsInput
 type DescribeAccountLimitsInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5365,6 +5906,7 @@ func (s DescribeAccountLimitsInput) GoString() string {
 }
 
 // Contains the parameters for DescribeAccountLimits.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAccountLimitsAnswer
 type DescribeAccountLimitsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5393,6 +5935,31 @@ func (s DescribeAccountLimitsOutput) GoString() string {
 	return s.String()
 }
 
+// SetMaxNumberOfAutoScalingGroups sets the MaxNumberOfAutoScalingGroups field's value.
+func (s *DescribeAccountLimitsOutput) SetMaxNumberOfAutoScalingGroups(v int64) *DescribeAccountLimitsOutput {
+	s.MaxNumberOfAutoScalingGroups = &v
+	return s
+}
+
+// SetMaxNumberOfLaunchConfigurations sets the MaxNumberOfLaunchConfigurations field's value.
+func (s *DescribeAccountLimitsOutput) SetMaxNumberOfLaunchConfigurations(v int64) *DescribeAccountLimitsOutput {
+	s.MaxNumberOfLaunchConfigurations = &v
+	return s
+}
+
+// SetNumberOfAutoScalingGroups sets the NumberOfAutoScalingGroups field's value.
+func (s *DescribeAccountLimitsOutput) SetNumberOfAutoScalingGroups(v int64) *DescribeAccountLimitsOutput {
+	s.NumberOfAutoScalingGroups = &v
+	return s
+}
+
+// SetNumberOfLaunchConfigurations sets the NumberOfLaunchConfigurations field's value.
+func (s *DescribeAccountLimitsOutput) SetNumberOfLaunchConfigurations(v int64) *DescribeAccountLimitsOutput {
+	s.NumberOfLaunchConfigurations = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAdjustmentTypesInput
 type DescribeAdjustmentTypesInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5408,6 +5975,7 @@ func (s DescribeAdjustmentTypesInput) GoString() string {
 }
 
 // Contains the parameters for DescribeAdjustmentTypes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAdjustmentTypesAnswer
 type DescribeAdjustmentTypesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5425,7 +5993,14 @@ func (s DescribeAdjustmentTypesOutput) GoString() string {
 	return s.String()
 }
 
+// SetAdjustmentTypes sets the AdjustmentTypes field's value.
+func (s *DescribeAdjustmentTypesOutput) SetAdjustmentTypes(v []*AdjustmentType) *DescribeAdjustmentTypesOutput {
+	s.AdjustmentTypes = v
+	return s
+}
+
 // Contains the parameters for DescribeAutoScalingGroups.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/GroupNamesType
 type DescribeAutoScalingGroupsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5451,7 +6026,26 @@ func (s DescribeAutoScalingGroupsInput) GoString() string {
 	return s.String()
 }
 
+// SetAutoScalingGroupNames sets the AutoScalingGroupNames field's value.
+func (s *DescribeAutoScalingGroupsInput) SetAutoScalingGroupNames(v []*string) *DescribeAutoScalingGroupsInput {
+	s.AutoScalingGroupNames = v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeAutoScalingGroupsInput) SetMaxRecords(v int64) *DescribeAutoScalingGroupsInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAutoScalingGroupsInput) SetNextToken(v string) *DescribeAutoScalingGroupsInput {
+	s.NextToken = &v
+	return s
+}
+
 // Contains the output for DescribeAutoScalingGroups.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/GroupsType
 type DescribeAutoScalingGroupsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5475,7 +6069,20 @@ func (s DescribeAutoScalingGroupsOutput) GoString() string {
 	return s.String()
 }
 
+// SetAutoScalingGroups sets the AutoScalingGroups field's value.
+func (s *DescribeAutoScalingGroupsOutput) SetAutoScalingGroups(v []*Group) *DescribeAutoScalingGroupsOutput {
+	s.AutoScalingGroups = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAutoScalingGroupsOutput) SetNextToken(v string) *DescribeAutoScalingGroupsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Contains the parameters for DescribeAutoScalingInstances.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAutoScalingInstancesType
 type DescribeAutoScalingInstancesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5502,7 +6109,26 @@ func (s DescribeAutoScalingInstancesInput) GoString() string {
 	return s.String()
 }
 
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *DescribeAutoScalingInstancesInput) SetInstanceIds(v []*string) *DescribeAutoScalingInstancesInput {
+	s.InstanceIds = v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeAutoScalingInstancesInput) SetMaxRecords(v int64) *DescribeAutoScalingInstancesInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAutoScalingInstancesInput) SetNextToken(v string) *DescribeAutoScalingInstancesInput {
+	s.NextToken = &v
+	return s
+}
+
 // Contains the output of DescribeAutoScalingInstances.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/InstancesType
 type DescribeAutoScalingInstancesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5524,6 +6150,19 @@ func (s DescribeAutoScalingInstancesOutput) GoString() string {
 	return s.String()
 }
 
+// SetAutoScalingInstances sets the AutoScalingInstances field's value.
+func (s *DescribeAutoScalingInstancesOutput) SetAutoScalingInstances(v []*InstanceDetails) *DescribeAutoScalingInstancesOutput {
+	s.AutoScalingInstances = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAutoScalingInstancesOutput) SetNextToken(v string) *DescribeAutoScalingInstancesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAutoScalingNotificationTypesInput
 type DescribeAutoScalingNotificationTypesInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5539,6 +6178,7 @@ func (s DescribeAutoScalingNotificationTypesInput) GoString() string {
 }
 
 // Contains the output of DescribeAutoScalingNotificationTypes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeAutoScalingNotificationTypesAnswer
 type DescribeAutoScalingNotificationTypesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5556,7 +6196,14 @@ func (s DescribeAutoScalingNotificationTypesOutput) GoString() string {
 	return s.String()
 }
 
+// SetAutoScalingNotificationTypes sets the AutoScalingNotificationTypes field's value.
+func (s *DescribeAutoScalingNotificationTypesOutput) SetAutoScalingNotificationTypes(v []*string) *DescribeAutoScalingNotificationTypesOutput {
+	s.AutoScalingNotificationTypes = v
+	return s
+}
+
 // Contains the parameters for DescribeLaunchConfigurations.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/LaunchConfigurationNamesType
 type DescribeLaunchConfigurationsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5582,7 +6229,26 @@ func (s DescribeLaunchConfigurationsInput) GoString() string {
 	return s.String()
 }
 
+// SetLaunchConfigurationNames sets the LaunchConfigurationNames field's value.
+func (s *DescribeLaunchConfigurationsInput) SetLaunchConfigurationNames(v []*string) *DescribeLaunchConfigurationsInput {
+	s.LaunchConfigurationNames = v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeLaunchConfigurationsInput) SetMaxRecords(v int64) *DescribeLaunchConfigurationsInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeLaunchConfigurationsInput) SetNextToken(v string) *DescribeLaunchConfigurationsInput {
+	s.NextToken = &v
+	return s
+}
+
 // Contains the output of DescribeLaunchConfigurations.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/LaunchConfigurationsType
 type DescribeLaunchConfigurationsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5606,6 +6272,19 @@ func (s DescribeLaunchConfigurationsOutput) GoString() string {
 	return s.String()
 }
 
+// SetLaunchConfigurations sets the LaunchConfigurations field's value.
+func (s *DescribeLaunchConfigurationsOutput) SetLaunchConfigurations(v []*LaunchConfiguration) *DescribeLaunchConfigurationsOutput {
+	s.LaunchConfigurations = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeLaunchConfigurationsOutput) SetNextToken(v string) *DescribeLaunchConfigurationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLifecycleHookTypesInput
 type DescribeLifecycleHookTypesInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5621,6 +6300,7 @@ func (s DescribeLifecycleHookTypesInput) GoString() string {
 }
 
 // Contains the output of DescribeLifecycleHookTypes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLifecycleHookTypesAnswer
 type DescribeLifecycleHookTypesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5638,7 +6318,14 @@ func (s DescribeLifecycleHookTypesOutput) GoString() string {
 	return s.String()
 }
 
+// SetLifecycleHookTypes sets the LifecycleHookTypes field's value.
+func (s *DescribeLifecycleHookTypesOutput) SetLifecycleHookTypes(v []*string) *DescribeLifecycleHookTypesOutput {
+	s.LifecycleHookTypes = v
+	return s
+}
+
 // Contains the parameters for DescribeLifecycleHooks.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLifecycleHooksType
 type DescribeLifecycleHooksInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5678,7 +6365,20 @@ func (s *DescribeLifecycleHooksInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DescribeLifecycleHooksInput) SetAutoScalingGroupName(v string) *DescribeLifecycleHooksInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetLifecycleHookNames sets the LifecycleHookNames field's value.
+func (s *DescribeLifecycleHooksInput) SetLifecycleHookNames(v []*string) *DescribeLifecycleHooksInput {
+	s.LifecycleHookNames = v
+	return s
+}
+
 // Contains the output of DescribeLifecycleHooks.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLifecycleHooksAnswer
 type DescribeLifecycleHooksOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5696,7 +6396,14 @@ func (s DescribeLifecycleHooksOutput) GoString() string {
 	return s.String()
 }
 
+// SetLifecycleHooks sets the LifecycleHooks field's value.
+func (s *DescribeLifecycleHooksOutput) SetLifecycleHooks(v []*LifecycleHook) *DescribeLifecycleHooksOutput {
+	s.LifecycleHooks = v
+	return s
+}
+
 // Contains the parameters for DescribeLoadBalancerTargetGroups.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLoadBalancerTargetGroupsRequest
 type DescribeLoadBalancerTargetGroupsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5739,7 +6446,26 @@ func (s *DescribeLoadBalancerTargetGroupsInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DescribeLoadBalancerTargetGroupsInput) SetAutoScalingGroupName(v string) *DescribeLoadBalancerTargetGroupsInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeLoadBalancerTargetGroupsInput) SetMaxRecords(v int64) *DescribeLoadBalancerTargetGroupsInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeLoadBalancerTargetGroupsInput) SetNextToken(v string) *DescribeLoadBalancerTargetGroupsInput {
+	s.NextToken = &v
+	return s
+}
+
 // Contains the output of DescribeLoadBalancerTargetGroups.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLoadBalancerTargetGroupsResponse
 type DescribeLoadBalancerTargetGroupsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5761,7 +6487,20 @@ func (s DescribeLoadBalancerTargetGroupsOutput) GoString() string {
 	return s.String()
 }
 
+// SetLoadBalancerTargetGroups sets the LoadBalancerTargetGroups field's value.
+func (s *DescribeLoadBalancerTargetGroupsOutput) SetLoadBalancerTargetGroups(v []*LoadBalancerTargetGroupState) *DescribeLoadBalancerTargetGroupsOutput {
+	s.LoadBalancerTargetGroups = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeLoadBalancerTargetGroupsOutput) SetNextToken(v string) *DescribeLoadBalancerTargetGroupsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Contains the parameters for DescribeLoadBalancers.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLoadBalancersRequest
 type DescribeLoadBalancersInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5804,7 +6543,26 @@ func (s *DescribeLoadBalancersInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DescribeLoadBalancersInput) SetAutoScalingGroupName(v string) *DescribeLoadBalancersInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeLoadBalancersInput) SetMaxRecords(v int64) *DescribeLoadBalancersInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeLoadBalancersInput) SetNextToken(v string) *DescribeLoadBalancersInput {
+	s.NextToken = &v
+	return s
+}
+
 // Contains the output of DescribeLoadBalancers.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeLoadBalancersResponse
 type DescribeLoadBalancersOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5826,6 +6584,19 @@ func (s DescribeLoadBalancersOutput) GoString() string {
 	return s.String()
 }
 
+// SetLoadBalancers sets the LoadBalancers field's value.
+func (s *DescribeLoadBalancersOutput) SetLoadBalancers(v []*LoadBalancerState) *DescribeLoadBalancersOutput {
+	s.LoadBalancers = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeLoadBalancersOutput) SetNextToken(v string) *DescribeLoadBalancersOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeMetricCollectionTypesInput
 type DescribeMetricCollectionTypesInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5841,6 +6612,7 @@ func (s DescribeMetricCollectionTypesInput) GoString() string {
 }
 
 // Contains the output of DescribeMetricsCollectionTypes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeMetricCollectionTypesAnswer
 type DescribeMetricCollectionTypesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5861,7 +6633,20 @@ func (s DescribeMetricCollectionTypesOutput) GoString() string {
 	return s.String()
 }
 
+// SetGranularities sets the Granularities field's value.
+func (s *DescribeMetricCollectionTypesOutput) SetGranularities(v []*MetricGranularityType) *DescribeMetricCollectionTypesOutput {
+	s.Granularities = v
+	return s
+}
+
+// SetMetrics sets the Metrics field's value.
+func (s *DescribeMetricCollectionTypesOutput) SetMetrics(v []*MetricCollectionType) *DescribeMetricCollectionTypesOutput {
+	s.Metrics = v
+	return s
+}
+
 // Contains the parameters for DescribeNotificationConfigurations.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeNotificationConfigurationsType
 type DescribeNotificationConfigurationsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5886,7 +6671,26 @@ func (s DescribeNotificationConfigurationsInput) GoString() string {
 	return s.String()
 }
 
+// SetAutoScalingGroupNames sets the AutoScalingGroupNames field's value.
+func (s *DescribeNotificationConfigurationsInput) SetAutoScalingGroupNames(v []*string) *DescribeNotificationConfigurationsInput {
+	s.AutoScalingGroupNames = v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeNotificationConfigurationsInput) SetMaxRecords(v int64) *DescribeNotificationConfigurationsInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeNotificationConfigurationsInput) SetNextToken(v string) *DescribeNotificationConfigurationsInput {
+	s.NextToken = &v
+	return s
+}
+
 // Contains the output from DescribeNotificationConfigurations.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeNotificationConfigurationsAnswer
 type DescribeNotificationConfigurationsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5910,7 +6714,20 @@ func (s DescribeNotificationConfigurationsOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeNotificationConfigurationsOutput) SetNextToken(v string) *DescribeNotificationConfigurationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetNotificationConfigurations sets the NotificationConfigurations field's value.
+func (s *DescribeNotificationConfigurationsOutput) SetNotificationConfigurations(v []*NotificationConfiguration) *DescribeNotificationConfigurationsOutput {
+	s.NotificationConfigurations = v
+	return s
+}
+
 // Contains the parameters for DescribePolicies.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribePoliciesType
 type DescribePoliciesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5957,7 +6774,38 @@ func (s *DescribePoliciesInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DescribePoliciesInput) SetAutoScalingGroupName(v string) *DescribePoliciesInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribePoliciesInput) SetMaxRecords(v int64) *DescribePoliciesInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribePoliciesInput) SetNextToken(v string) *DescribePoliciesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPolicyNames sets the PolicyNames field's value.
+func (s *DescribePoliciesInput) SetPolicyNames(v []*string) *DescribePoliciesInput {
+	s.PolicyNames = v
+	return s
+}
+
+// SetPolicyTypes sets the PolicyTypes field's value.
+func (s *DescribePoliciesInput) SetPolicyTypes(v []*string) *DescribePoliciesInput {
+	s.PolicyTypes = v
+	return s
+}
+
 // Contains the output of DescribePolicies.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PoliciesType
 type DescribePoliciesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5979,7 +6827,20 @@ func (s DescribePoliciesOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *DescribePoliciesOutput) SetNextToken(v string) *DescribePoliciesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetScalingPolicies sets the ScalingPolicies field's value.
+func (s *DescribePoliciesOutput) SetScalingPolicies(v []*ScalingPolicy) *DescribePoliciesOutput {
+	s.ScalingPolicies = v
+	return s
+}
+
 // Contains the parameters for DescribeScalingActivities.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeScalingActivitiesType
 type DescribeScalingActivitiesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6024,7 +6885,32 @@ func (s *DescribeScalingActivitiesInput) Validate() error {
 	return nil
 }
 
+// SetActivityIds sets the ActivityIds field's value.
+func (s *DescribeScalingActivitiesInput) SetActivityIds(v []*string) *DescribeScalingActivitiesInput {
+	s.ActivityIds = v
+	return s
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DescribeScalingActivitiesInput) SetAutoScalingGroupName(v string) *DescribeScalingActivitiesInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeScalingActivitiesInput) SetMaxRecords(v int64) *DescribeScalingActivitiesInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeScalingActivitiesInput) SetNextToken(v string) *DescribeScalingActivitiesInput {
+	s.NextToken = &v
+	return s
+}
+
 // Contains the output of DescribeScalingActivities.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ActivitiesType
 type DescribeScalingActivitiesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6049,6 +6935,19 @@ func (s DescribeScalingActivitiesOutput) GoString() string {
 	return s.String()
 }
 
+// SetActivities sets the Activities field's value.
+func (s *DescribeScalingActivitiesOutput) SetActivities(v []*Activity) *DescribeScalingActivitiesOutput {
+	s.Activities = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeScalingActivitiesOutput) SetNextToken(v string) *DescribeScalingActivitiesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeScalingProcessTypesInput
 type DescribeScalingProcessTypesInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6064,6 +6963,7 @@ func (s DescribeScalingProcessTypesInput) GoString() string {
 }
 
 // Contains the output of DescribeScalingProcessTypes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ProcessesType
 type DescribeScalingProcessTypesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6081,7 +6981,14 @@ func (s DescribeScalingProcessTypesOutput) GoString() string {
 	return s.String()
 }
 
+// SetProcesses sets the Processes field's value.
+func (s *DescribeScalingProcessTypesOutput) SetProcesses(v []*ProcessType) *DescribeScalingProcessTypesOutput {
+	s.Processes = v
+	return s
+}
+
 // Contains the parameters for DescribeScheduledActions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeScheduledActionsType
 type DescribeScheduledActionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6136,7 +7043,44 @@ func (s *DescribeScheduledActionsInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DescribeScheduledActionsInput) SetAutoScalingGroupName(v string) *DescribeScheduledActionsInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *DescribeScheduledActionsInput) SetEndTime(v time.Time) *DescribeScheduledActionsInput {
+	s.EndTime = &v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeScheduledActionsInput) SetMaxRecords(v int64) *DescribeScheduledActionsInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeScheduledActionsInput) SetNextToken(v string) *DescribeScheduledActionsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetScheduledActionNames sets the ScheduledActionNames field's value.
+func (s *DescribeScheduledActionsInput) SetScheduledActionNames(v []*string) *DescribeScheduledActionsInput {
+	s.ScheduledActionNames = v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *DescribeScheduledActionsInput) SetStartTime(v time.Time) *DescribeScheduledActionsInput {
+	s.StartTime = &v
+	return s
+}
+
 // Contains the output of DescribeScheduledActions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ScheduledActionsType
 type DescribeScheduledActionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6158,7 +7102,20 @@ func (s DescribeScheduledActionsOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeScheduledActionsOutput) SetNextToken(v string) *DescribeScheduledActionsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetScheduledUpdateGroupActions sets the ScheduledUpdateGroupActions field's value.
+func (s *DescribeScheduledActionsOutput) SetScheduledUpdateGroupActions(v []*ScheduledUpdateGroupAction) *DescribeScheduledActionsOutput {
+	s.ScheduledUpdateGroupActions = v
+	return s
+}
+
 // Contains the parameters for DescribeTags.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeTagsType
 type DescribeTagsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6183,7 +7140,26 @@ func (s DescribeTagsInput) GoString() string {
 	return s.String()
 }
 
+// SetFilters sets the Filters field's value.
+func (s *DescribeTagsInput) SetFilters(v []*Filter) *DescribeTagsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeTagsInput) SetMaxRecords(v int64) *DescribeTagsInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeTagsInput) SetNextToken(v string) *DescribeTagsInput {
+	s.NextToken = &v
+	return s
+}
+
 // Contains the output of DescribeTags.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/TagsType
 type DescribeTagsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6205,6 +7181,19 @@ func (s DescribeTagsOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeTagsOutput) SetNextToken(v string) *DescribeTagsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DescribeTagsOutput) SetTags(v []*TagDescription) *DescribeTagsOutput {
+	s.Tags = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeTerminationPolicyTypesInput
 type DescribeTerminationPolicyTypesInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6220,6 +7209,7 @@ func (s DescribeTerminationPolicyTypesInput) GoString() string {
 }
 
 // Contains the output of DescribeTerminationPolicyTypes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeTerminationPolicyTypesAnswer
 type DescribeTerminationPolicyTypesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6238,7 +7228,14 @@ func (s DescribeTerminationPolicyTypesOutput) GoString() string {
 	return s.String()
 }
 
+// SetTerminationPolicyTypes sets the TerminationPolicyTypes field's value.
+func (s *DescribeTerminationPolicyTypesOutput) SetTerminationPolicyTypes(v []*string) *DescribeTerminationPolicyTypesOutput {
+	s.TerminationPolicyTypes = v
+	return s
+}
+
 // Contains the parameters for DetachInstances.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachInstancesQuery
 type DetachInstancesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6286,7 +7283,26 @@ func (s *DetachInstancesInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DetachInstancesInput) SetAutoScalingGroupName(v string) *DetachInstancesInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *DetachInstancesInput) SetInstanceIds(v []*string) *DetachInstancesInput {
+	s.InstanceIds = v
+	return s
+}
+
+// SetShouldDecrementDesiredCapacity sets the ShouldDecrementDesiredCapacity field's value.
+func (s *DetachInstancesInput) SetShouldDecrementDesiredCapacity(v bool) *DetachInstancesInput {
+	s.ShouldDecrementDesiredCapacity = &v
+	return s
+}
+
 // Contains the output of DetachInstances.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachInstancesAnswer
 type DetachInstancesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6304,6 +7320,13 @@ func (s DetachInstancesOutput) GoString() string {
 	return s.String()
 }
 
+// SetActivities sets the Activities field's value.
+func (s *DetachInstancesOutput) SetActivities(v []*Activity) *DetachInstancesOutput {
+	s.Activities = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachLoadBalancerTargetGroupsType
 type DetachLoadBalancerTargetGroupsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6347,6 +7370,19 @@ func (s *DetachLoadBalancerTargetGroupsInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DetachLoadBalancerTargetGroupsInput) SetAutoScalingGroupName(v string) *DetachLoadBalancerTargetGroupsInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetTargetGroupARNs sets the TargetGroupARNs field's value.
+func (s *DetachLoadBalancerTargetGroupsInput) SetTargetGroupARNs(v []*string) *DetachLoadBalancerTargetGroupsInput {
+	s.TargetGroupARNs = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachLoadBalancerTargetGroupsResultType
 type DetachLoadBalancerTargetGroupsOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6362,6 +7398,7 @@ func (s DetachLoadBalancerTargetGroupsOutput) GoString() string {
 }
 
 // Contains the parameters for DetachLoadBalancers.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachLoadBalancersType
 type DetachLoadBalancersInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6405,7 +7442,20 @@ func (s *DetachLoadBalancersInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DetachLoadBalancersInput) SetAutoScalingGroupName(v string) *DetachLoadBalancersInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetLoadBalancerNames sets the LoadBalancerNames field's value.
+func (s *DetachLoadBalancersInput) SetLoadBalancerNames(v []*string) *DetachLoadBalancersInput {
+	s.LoadBalancerNames = v
+	return s
+}
+
 // Contains the output for DetachLoadBalancers.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachLoadBalancersResultType
 type DetachLoadBalancersOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6421,6 +7471,7 @@ func (s DetachLoadBalancersOutput) GoString() string {
 }
 
 // Contains the parameters for DisableMetricsCollection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DisableMetricsCollectionQuery
 type DisableMetricsCollectionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6476,6 +7527,19 @@ func (s *DisableMetricsCollectionInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DisableMetricsCollectionInput) SetAutoScalingGroupName(v string) *DisableMetricsCollectionInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetMetrics sets the Metrics field's value.
+func (s *DisableMetricsCollectionInput) SetMetrics(v []*string) *DisableMetricsCollectionInput {
+	s.Metrics = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DisableMetricsCollectionOutput
 type DisableMetricsCollectionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6491,6 +7555,7 @@ func (s DisableMetricsCollectionOutput) GoString() string {
 }
 
 // Describes an Amazon EBS volume.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/Ebs
 type Ebs struct {
 	_ struct{} `type:"structure"`
 
@@ -6566,7 +7631,44 @@ func (s *Ebs) Validate() error {
 	return nil
 }
 
+// SetDeleteOnTermination sets the DeleteOnTermination field's value.
+func (s *Ebs) SetDeleteOnTermination(v bool) *Ebs {
+	s.DeleteOnTermination = &v
+	return s
+}
+
+// SetEncrypted sets the Encrypted field's value.
+func (s *Ebs) SetEncrypted(v bool) *Ebs {
+	s.Encrypted = &v
+	return s
+}
+
+// SetIops sets the Iops field's value.
+func (s *Ebs) SetIops(v int64) *Ebs {
+	s.Iops = &v
+	return s
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *Ebs) SetSnapshotId(v string) *Ebs {
+	s.SnapshotId = &v
+	return s
+}
+
+// SetVolumeSize sets the VolumeSize field's value.
+func (s *Ebs) SetVolumeSize(v int64) *Ebs {
+	s.VolumeSize = &v
+	return s
+}
+
+// SetVolumeType sets the VolumeType field's value.
+func (s *Ebs) SetVolumeType(v string) *Ebs {
+	s.VolumeType = &v
+	return s
+}
+
 // Contains the parameters for EnableMetricsCollection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/EnableMetricsCollectionQuery
 type EnableMetricsCollectionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6634,6 +7736,25 @@ func (s *EnableMetricsCollectionInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *EnableMetricsCollectionInput) SetAutoScalingGroupName(v string) *EnableMetricsCollectionInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetGranularity sets the Granularity field's value.
+func (s *EnableMetricsCollectionInput) SetGranularity(v string) *EnableMetricsCollectionInput {
+	s.Granularity = &v
+	return s
+}
+
+// SetMetrics sets the Metrics field's value.
+func (s *EnableMetricsCollectionInput) SetMetrics(v []*string) *EnableMetricsCollectionInput {
+	s.Metrics = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/EnableMetricsCollectionOutput
 type EnableMetricsCollectionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6649,6 +7770,7 @@ func (s EnableMetricsCollectionOutput) GoString() string {
 }
 
 // Describes an enabled metric.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/EnabledMetric
 type EnabledMetric struct {
 	_ struct{} `type:"structure"`
 
@@ -6685,7 +7807,20 @@ func (s EnabledMetric) GoString() string {
 	return s.String()
 }
 
+// SetGranularity sets the Granularity field's value.
+func (s *EnabledMetric) SetGranularity(v string) *EnabledMetric {
+	s.Granularity = &v
+	return s
+}
+
+// SetMetric sets the Metric field's value.
+func (s *EnabledMetric) SetMetric(v string) *EnabledMetric {
+	s.Metric = &v
+	return s
+}
+
 // Contains the parameters for EnteStandby.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/EnterStandbyQuery
 type EnterStandbyInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6736,7 +7871,26 @@ func (s *EnterStandbyInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *EnterStandbyInput) SetAutoScalingGroupName(v string) *EnterStandbyInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *EnterStandbyInput) SetInstanceIds(v []*string) *EnterStandbyInput {
+	s.InstanceIds = v
+	return s
+}
+
+// SetShouldDecrementDesiredCapacity sets the ShouldDecrementDesiredCapacity field's value.
+func (s *EnterStandbyInput) SetShouldDecrementDesiredCapacity(v bool) *EnterStandbyInput {
+	s.ShouldDecrementDesiredCapacity = &v
+	return s
+}
+
 // Contains the output of EnterStandby.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/EnterStandbyAnswer
 type EnterStandbyOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6754,7 +7908,14 @@ func (s EnterStandbyOutput) GoString() string {
 	return s.String()
 }
 
+// SetActivities sets the Activities field's value.
+func (s *EnterStandbyOutput) SetActivities(v []*Activity) *EnterStandbyOutput {
+	s.Activities = v
+	return s
+}
+
 // Contains the parameters for ExecutePolicy.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ExecutePolicyType
 type ExecutePolicyInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6825,6 +7986,37 @@ func (s *ExecutePolicyInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *ExecutePolicyInput) SetAutoScalingGroupName(v string) *ExecutePolicyInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetBreachThreshold sets the BreachThreshold field's value.
+func (s *ExecutePolicyInput) SetBreachThreshold(v float64) *ExecutePolicyInput {
+	s.BreachThreshold = &v
+	return s
+}
+
+// SetHonorCooldown sets the HonorCooldown field's value.
+func (s *ExecutePolicyInput) SetHonorCooldown(v bool) *ExecutePolicyInput {
+	s.HonorCooldown = &v
+	return s
+}
+
+// SetMetricValue sets the MetricValue field's value.
+func (s *ExecutePolicyInput) SetMetricValue(v float64) *ExecutePolicyInput {
+	s.MetricValue = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *ExecutePolicyInput) SetPolicyName(v string) *ExecutePolicyInput {
+	s.PolicyName = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ExecutePolicyOutput
 type ExecutePolicyOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6840,6 +8032,7 @@ func (s ExecutePolicyOutput) GoString() string {
 }
 
 // Contains the parameters for ExitStandby.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ExitStandbyQuery
 type ExitStandbyInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6878,7 +8071,20 @@ func (s *ExitStandbyInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *ExitStandbyInput) SetAutoScalingGroupName(v string) *ExitStandbyInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *ExitStandbyInput) SetInstanceIds(v []*string) *ExitStandbyInput {
+	s.InstanceIds = v
+	return s
+}
+
 // Contains the parameters for ExitStandby.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ExitStandbyAnswer
 type ExitStandbyOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6896,7 +8102,14 @@ func (s ExitStandbyOutput) GoString() string {
 	return s.String()
 }
 
+// SetActivities sets the Activities field's value.
+func (s *ExitStandbyOutput) SetActivities(v []*Activity) *ExitStandbyOutput {
+	s.Activities = v
+	return s
+}
+
 // Describes a filter.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/Filter
 type Filter struct {
 	_ struct{} `type:"structure"`
 
@@ -6918,7 +8131,20 @@ func (s Filter) GoString() string {
 	return s.String()
 }
 
+// SetName sets the Name field's value.
+func (s *Filter) SetName(v string) *Filter {
+	s.Name = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *Filter) SetValues(v []*string) *Filter {
+	s.Values = v
+	return s
+}
+
 // Describes an Auto Scaling group.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AutoScalingGroup
 type Group struct {
 	_ struct{} `type:"structure"`
 
@@ -7023,7 +8249,140 @@ func (s Group) GoString() string {
 	return s.String()
 }
 
+// SetAutoScalingGroupARN sets the AutoScalingGroupARN field's value.
+func (s *Group) SetAutoScalingGroupARN(v string) *Group {
+	s.AutoScalingGroupARN = &v
+	return s
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *Group) SetAutoScalingGroupName(v string) *Group {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetAvailabilityZones sets the AvailabilityZones field's value.
+func (s *Group) SetAvailabilityZones(v []*string) *Group {
+	s.AvailabilityZones = v
+	return s
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *Group) SetCreatedTime(v time.Time) *Group {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetDefaultCooldown sets the DefaultCooldown field's value.
+func (s *Group) SetDefaultCooldown(v int64) *Group {
+	s.DefaultCooldown = &v
+	return s
+}
+
+// SetDesiredCapacity sets the DesiredCapacity field's value.
+func (s *Group) SetDesiredCapacity(v int64) *Group {
+	s.DesiredCapacity = &v
+	return s
+}
+
+// SetEnabledMetrics sets the EnabledMetrics field's value.
+func (s *Group) SetEnabledMetrics(v []*EnabledMetric) *Group {
+	s.EnabledMetrics = v
+	return s
+}
+
+// SetHealthCheckGracePeriod sets the HealthCheckGracePeriod field's value.
+func (s *Group) SetHealthCheckGracePeriod(v int64) *Group {
+	s.HealthCheckGracePeriod = &v
+	return s
+}
+
+// SetHealthCheckType sets the HealthCheckType field's value.
+func (s *Group) SetHealthCheckType(v string) *Group {
+	s.HealthCheckType = &v
+	return s
+}
+
+// SetInstances sets the Instances field's value.
+func (s *Group) SetInstances(v []*Instance) *Group {
+	s.Instances = v
+	return s
+}
+
+// SetLaunchConfigurationName sets the LaunchConfigurationName field's value.
+func (s *Group) SetLaunchConfigurationName(v string) *Group {
+	s.LaunchConfigurationName = &v
+	return s
+}
+
+// SetLoadBalancerNames sets the LoadBalancerNames field's value.
+func (s *Group) SetLoadBalancerNames(v []*string) *Group {
+	s.LoadBalancerNames = v
+	return s
+}
+
+// SetMaxSize sets the MaxSize field's value.
+func (s *Group) SetMaxSize(v int64) *Group {
+	s.MaxSize = &v
+	return s
+}
+
+// SetMinSize sets the MinSize field's value.
+func (s *Group) SetMinSize(v int64) *Group {
+	s.MinSize = &v
+	return s
+}
+
+// SetNewInstancesProtectedFromScaleIn sets the NewInstancesProtectedFromScaleIn field's value.
+func (s *Group) SetNewInstancesProtectedFromScaleIn(v bool) *Group {
+	s.NewInstancesProtectedFromScaleIn = &v
+	return s
+}
+
+// SetPlacementGroup sets the PlacementGroup field's value.
+func (s *Group) SetPlacementGroup(v string) *Group {
+	s.PlacementGroup = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Group) SetStatus(v string) *Group {
+	s.Status = &v
+	return s
+}
+
+// SetSuspendedProcesses sets the SuspendedProcesses field's value.
+func (s *Group) SetSuspendedProcesses(v []*SuspendedProcess) *Group {
+	s.SuspendedProcesses = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *Group) SetTags(v []*TagDescription) *Group {
+	s.Tags = v
+	return s
+}
+
+// SetTargetGroupARNs sets the TargetGroupARNs field's value.
+func (s *Group) SetTargetGroupARNs(v []*string) *Group {
+	s.TargetGroupARNs = v
+	return s
+}
+
+// SetTerminationPolicies sets the TerminationPolicies field's value.
+func (s *Group) SetTerminationPolicies(v []*string) *Group {
+	s.TerminationPolicies = v
+	return s
+}
+
+// SetVPCZoneIdentifier sets the VPCZoneIdentifier field's value.
+func (s *Group) SetVPCZoneIdentifier(v string) *Group {
+	s.VPCZoneIdentifier = &v
+	return s
+}
+
 // Describes an EC2 instance.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/Instance
 type Instance struct {
 	_ struct{} `type:"structure"`
 
@@ -7072,7 +8431,44 @@ func (s Instance) GoString() string {
 	return s.String()
 }
 
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *Instance) SetAvailabilityZone(v string) *Instance {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetHealthStatus sets the HealthStatus field's value.
+func (s *Instance) SetHealthStatus(v string) *Instance {
+	s.HealthStatus = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *Instance) SetInstanceId(v string) *Instance {
+	s.InstanceId = &v
+	return s
+}
+
+// SetLaunchConfigurationName sets the LaunchConfigurationName field's value.
+func (s *Instance) SetLaunchConfigurationName(v string) *Instance {
+	s.LaunchConfigurationName = &v
+	return s
+}
+
+// SetLifecycleState sets the LifecycleState field's value.
+func (s *Instance) SetLifecycleState(v string) *Instance {
+	s.LifecycleState = &v
+	return s
+}
+
+// SetProtectedFromScaleIn sets the ProtectedFromScaleIn field's value.
+func (s *Instance) SetProtectedFromScaleIn(v bool) *Instance {
+	s.ProtectedFromScaleIn = &v
+	return s
+}
+
 // Describes an EC2 instance associated with an Auto Scaling group.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AutoScalingInstanceDetails
 type InstanceDetails struct {
 	_ struct{} `type:"structure"`
 
@@ -7127,7 +8523,50 @@ func (s InstanceDetails) GoString() string {
 	return s.String()
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *InstanceDetails) SetAutoScalingGroupName(v string) *InstanceDetails {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *InstanceDetails) SetAvailabilityZone(v string) *InstanceDetails {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetHealthStatus sets the HealthStatus field's value.
+func (s *InstanceDetails) SetHealthStatus(v string) *InstanceDetails {
+	s.HealthStatus = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *InstanceDetails) SetInstanceId(v string) *InstanceDetails {
+	s.InstanceId = &v
+	return s
+}
+
+// SetLaunchConfigurationName sets the LaunchConfigurationName field's value.
+func (s *InstanceDetails) SetLaunchConfigurationName(v string) *InstanceDetails {
+	s.LaunchConfigurationName = &v
+	return s
+}
+
+// SetLifecycleState sets the LifecycleState field's value.
+func (s *InstanceDetails) SetLifecycleState(v string) *InstanceDetails {
+	s.LifecycleState = &v
+	return s
+}
+
+// SetProtectedFromScaleIn sets the ProtectedFromScaleIn field's value.
+func (s *InstanceDetails) SetProtectedFromScaleIn(v bool) *InstanceDetails {
+	s.ProtectedFromScaleIn = &v
+	return s
+}
+
 // Describes whether instance monitoring is enabled.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/InstanceMonitoring
 type InstanceMonitoring struct {
 	_ struct{} `type:"structure"`
 
@@ -7145,7 +8584,14 @@ func (s InstanceMonitoring) GoString() string {
 	return s.String()
 }
 
+// SetEnabled sets the Enabled field's value.
+func (s *InstanceMonitoring) SetEnabled(v bool) *InstanceMonitoring {
+	s.Enabled = &v
+	return s
+}
+
 // Describes a launch configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/LaunchConfiguration
 type LaunchConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -7235,6 +8681,120 @@ func (s LaunchConfiguration) GoString() string {
 	return s.String()
 }
 
+// SetAssociatePublicIpAddress sets the AssociatePublicIpAddress field's value.
+func (s *LaunchConfiguration) SetAssociatePublicIpAddress(v bool) *LaunchConfiguration {
+	s.AssociatePublicIpAddress = &v
+	return s
+}
+
+// SetBlockDeviceMappings sets the BlockDeviceMappings field's value.
+func (s *LaunchConfiguration) SetBlockDeviceMappings(v []*BlockDeviceMapping) *LaunchConfiguration {
+	s.BlockDeviceMappings = v
+	return s
+}
+
+// SetClassicLinkVPCId sets the ClassicLinkVPCId field's value.
+func (s *LaunchConfiguration) SetClassicLinkVPCId(v string) *LaunchConfiguration {
+	s.ClassicLinkVPCId = &v
+	return s
+}
+
+// SetClassicLinkVPCSecurityGroups sets the ClassicLinkVPCSecurityGroups field's value.
+func (s *LaunchConfiguration) SetClassicLinkVPCSecurityGroups(v []*string) *LaunchConfiguration {
+	s.ClassicLinkVPCSecurityGroups = v
+	return s
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *LaunchConfiguration) SetCreatedTime(v time.Time) *LaunchConfiguration {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetEbsOptimized sets the EbsOptimized field's value.
+func (s *LaunchConfiguration) SetEbsOptimized(v bool) *LaunchConfiguration {
+	s.EbsOptimized = &v
+	return s
+}
+
+// SetIamInstanceProfile sets the IamInstanceProfile field's value.
+func (s *LaunchConfiguration) SetIamInstanceProfile(v string) *LaunchConfiguration {
+	s.IamInstanceProfile = &v
+	return s
+}
+
+// SetImageId sets the ImageId field's value.
+func (s *LaunchConfiguration) SetImageId(v string) *LaunchConfiguration {
+	s.ImageId = &v
+	return s
+}
+
+// SetInstanceMonitoring sets the InstanceMonitoring field's value.
+func (s *LaunchConfiguration) SetInstanceMonitoring(v *InstanceMonitoring) *LaunchConfiguration {
+	s.InstanceMonitoring = v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *LaunchConfiguration) SetInstanceType(v string) *LaunchConfiguration {
+	s.InstanceType = &v
+	return s
+}
+
+// SetKernelId sets the KernelId field's value.
+func (s *LaunchConfiguration) SetKernelId(v string) *LaunchConfiguration {
+	s.KernelId = &v
+	return s
+}
+
+// SetKeyName sets the KeyName field's value.
+func (s *LaunchConfiguration) SetKeyName(v string) *LaunchConfiguration {
+	s.KeyName = &v
+	return s
+}
+
+// SetLaunchConfigurationARN sets the LaunchConfigurationARN field's value.
+func (s *LaunchConfiguration) SetLaunchConfigurationARN(v string) *LaunchConfiguration {
+	s.LaunchConfigurationARN = &v
+	return s
+}
+
+// SetLaunchConfigurationName sets the LaunchConfigurationName field's value.
+func (s *LaunchConfiguration) SetLaunchConfigurationName(v string) *LaunchConfiguration {
+	s.LaunchConfigurationName = &v
+	return s
+}
+
+// SetPlacementTenancy sets the PlacementTenancy field's value.
+func (s *LaunchConfiguration) SetPlacementTenancy(v string) *LaunchConfiguration {
+	s.PlacementTenancy = &v
+	return s
+}
+
+// SetRamdiskId sets the RamdiskId field's value.
+func (s *LaunchConfiguration) SetRamdiskId(v string) *LaunchConfiguration {
+	s.RamdiskId = &v
+	return s
+}
+
+// SetSecurityGroups sets the SecurityGroups field's value.
+func (s *LaunchConfiguration) SetSecurityGroups(v []*string) *LaunchConfiguration {
+	s.SecurityGroups = v
+	return s
+}
+
+// SetSpotPrice sets the SpotPrice field's value.
+func (s *LaunchConfiguration) SetSpotPrice(v string) *LaunchConfiguration {
+	s.SpotPrice = &v
+	return s
+}
+
+// SetUserData sets the UserData field's value.
+func (s *LaunchConfiguration) SetUserData(v string) *LaunchConfiguration {
+	s.UserData = &v
+	return s
+}
+
 // Describes a lifecycle hook, which tells Auto Scaling that you want to perform
 // an action when an instance launches or terminates. When you have a lifecycle
 // hook in place, the Auto Scaling group will either:
@@ -7245,6 +8805,7 @@ func (s LaunchConfiguration) GoString() string {
 //
 // For more information, see Auto Scaling Lifecycle (http://docs.aws.amazon.com/autoscaling/latest/userguide/AutoScalingGroupLifecycle.html)
 // in the Auto Scaling User Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/LifecycleHook
 type LifecycleHook struct {
 	_ struct{} `type:"structure"`
 
@@ -7313,6 +8874,60 @@ func (s LifecycleHook) GoString() string {
 	return s.String()
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *LifecycleHook) SetAutoScalingGroupName(v string) *LifecycleHook {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetDefaultResult sets the DefaultResult field's value.
+func (s *LifecycleHook) SetDefaultResult(v string) *LifecycleHook {
+	s.DefaultResult = &v
+	return s
+}
+
+// SetGlobalTimeout sets the GlobalTimeout field's value.
+func (s *LifecycleHook) SetGlobalTimeout(v int64) *LifecycleHook {
+	s.GlobalTimeout = &v
+	return s
+}
+
+// SetHeartbeatTimeout sets the HeartbeatTimeout field's value.
+func (s *LifecycleHook) SetHeartbeatTimeout(v int64) *LifecycleHook {
+	s.HeartbeatTimeout = &v
+	return s
+}
+
+// SetLifecycleHookName sets the LifecycleHookName field's value.
+func (s *LifecycleHook) SetLifecycleHookName(v string) *LifecycleHook {
+	s.LifecycleHookName = &v
+	return s
+}
+
+// SetLifecycleTransition sets the LifecycleTransition field's value.
+func (s *LifecycleHook) SetLifecycleTransition(v string) *LifecycleHook {
+	s.LifecycleTransition = &v
+	return s
+}
+
+// SetNotificationMetadata sets the NotificationMetadata field's value.
+func (s *LifecycleHook) SetNotificationMetadata(v string) *LifecycleHook {
+	s.NotificationMetadata = &v
+	return s
+}
+
+// SetNotificationTargetARN sets the NotificationTargetARN field's value.
+func (s *LifecycleHook) SetNotificationTargetARN(v string) *LifecycleHook {
+	s.NotificationTargetARN = &v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *LifecycleHook) SetRoleARN(v string) *LifecycleHook {
+	s.RoleARN = &v
+	return s
+}
+
 // Describes the state of a Classic load balancer.
 //
 // If you specify a load balancer when creating the Auto Scaling group, the
@@ -7324,6 +8939,7 @@ func (s LifecycleHook) GoString() string {
 // for the load balancer, the state transitions to InService after at least
 // one instance in the group passes the health check. If EC2 health checks are
 // enabled instead, the load balancer remains in the Added state.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/LoadBalancerState
 type LoadBalancerState struct {
 	_ struct{} `type:"structure"`
 
@@ -7359,6 +8975,18 @@ func (s LoadBalancerState) GoString() string {
 	return s.String()
 }
 
+// SetLoadBalancerName sets the LoadBalancerName field's value.
+func (s *LoadBalancerState) SetLoadBalancerName(v string) *LoadBalancerState {
+	s.LoadBalancerName = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *LoadBalancerState) SetState(v string) *LoadBalancerState {
+	s.State = &v
+	return s
+}
+
 // Describes the state of a target group.
 //
 // If you attach a target group to an existing Auto Scaling group, the initial
@@ -7367,6 +8995,7 @@ func (s LoadBalancerState) GoString() string {
 // state transitions to InService after at least one Auto Scaling instance passes
 // the health check. If EC2 health checks are enabled instead, the target group
 // remains in the Added state.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/LoadBalancerTargetGroupState
 type LoadBalancerTargetGroupState struct {
 	_ struct{} `type:"structure"`
 
@@ -7402,7 +9031,20 @@ func (s LoadBalancerTargetGroupState) GoString() string {
 	return s.String()
 }
 
+// SetLoadBalancerTargetGroupARN sets the LoadBalancerTargetGroupARN field's value.
+func (s *LoadBalancerTargetGroupState) SetLoadBalancerTargetGroupARN(v string) *LoadBalancerTargetGroupState {
+	s.LoadBalancerTargetGroupARN = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *LoadBalancerTargetGroupState) SetState(v string) *LoadBalancerTargetGroupState {
+	s.State = &v
+	return s
+}
+
 // Describes a metric.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/MetricCollectionType
 type MetricCollectionType struct {
 	_ struct{} `type:"structure"`
 
@@ -7436,7 +9078,14 @@ func (s MetricCollectionType) GoString() string {
 	return s.String()
 }
 
+// SetMetric sets the Metric field's value.
+func (s *MetricCollectionType) SetMetric(v string) *MetricCollectionType {
+	s.Metric = &v
+	return s
+}
+
 // Describes a granularity of a metric.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/MetricGranularityType
 type MetricGranularityType struct {
 	_ struct{} `type:"structure"`
 
@@ -7454,7 +9103,14 @@ func (s MetricGranularityType) GoString() string {
 	return s.String()
 }
 
+// SetGranularity sets the Granularity field's value.
+func (s *MetricGranularityType) SetGranularity(v string) *MetricGranularityType {
+	s.Granularity = &v
+	return s
+}
+
 // Describes a notification.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/NotificationConfiguration
 type NotificationConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -7489,10 +9145,29 @@ func (s NotificationConfiguration) GoString() string {
 	return s.String()
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *NotificationConfiguration) SetAutoScalingGroupName(v string) *NotificationConfiguration {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetNotificationType sets the NotificationType field's value.
+func (s *NotificationConfiguration) SetNotificationType(v string) *NotificationConfiguration {
+	s.NotificationType = &v
+	return s
+}
+
+// SetTopicARN sets the TopicARN field's value.
+func (s *NotificationConfiguration) SetTopicARN(v string) *NotificationConfiguration {
+	s.TopicARN = &v
+	return s
+}
+
 // Describes a process type.
 //
 // For more information, see Auto Scaling Processes (http://docs.aws.amazon.com/autoscaling/latest/userguide/as-suspend-resume-processes.html#process-types)
 // in the Auto Scaling User Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ProcessType
 type ProcessType struct {
 	_ struct{} `type:"structure"`
 
@@ -7528,7 +9203,14 @@ func (s ProcessType) GoString() string {
 	return s.String()
 }
 
+// SetProcessName sets the ProcessName field's value.
+func (s *ProcessType) SetProcessName(v string) *ProcessType {
+	s.ProcessName = &v
+	return s
+}
+
 // Contains the parameters for PutLifecycleHook.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutLifecycleHookType
 type PutLifecycleHookInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7625,7 +9307,56 @@ func (s *PutLifecycleHookInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *PutLifecycleHookInput) SetAutoScalingGroupName(v string) *PutLifecycleHookInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetDefaultResult sets the DefaultResult field's value.
+func (s *PutLifecycleHookInput) SetDefaultResult(v string) *PutLifecycleHookInput {
+	s.DefaultResult = &v
+	return s
+}
+
+// SetHeartbeatTimeout sets the HeartbeatTimeout field's value.
+func (s *PutLifecycleHookInput) SetHeartbeatTimeout(v int64) *PutLifecycleHookInput {
+	s.HeartbeatTimeout = &v
+	return s
+}
+
+// SetLifecycleHookName sets the LifecycleHookName field's value.
+func (s *PutLifecycleHookInput) SetLifecycleHookName(v string) *PutLifecycleHookInput {
+	s.LifecycleHookName = &v
+	return s
+}
+
+// SetLifecycleTransition sets the LifecycleTransition field's value.
+func (s *PutLifecycleHookInput) SetLifecycleTransition(v string) *PutLifecycleHookInput {
+	s.LifecycleTransition = &v
+	return s
+}
+
+// SetNotificationMetadata sets the NotificationMetadata field's value.
+func (s *PutLifecycleHookInput) SetNotificationMetadata(v string) *PutLifecycleHookInput {
+	s.NotificationMetadata = &v
+	return s
+}
+
+// SetNotificationTargetARN sets the NotificationTargetARN field's value.
+func (s *PutLifecycleHookInput) SetNotificationTargetARN(v string) *PutLifecycleHookInput {
+	s.NotificationTargetARN = &v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *PutLifecycleHookInput) SetRoleARN(v string) *PutLifecycleHookInput {
+	s.RoleARN = &v
+	return s
+}
+
 // Contains the output of PutLifecycleHook.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutLifecycleHookAnswer
 type PutLifecycleHookOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7641,6 +9372,7 @@ func (s PutLifecycleHookOutput) GoString() string {
 }
 
 // Contains the parameters for PutNotificationConfiguration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutNotificationConfigurationType
 type PutNotificationConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7697,6 +9429,25 @@ func (s *PutNotificationConfigurationInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *PutNotificationConfigurationInput) SetAutoScalingGroupName(v string) *PutNotificationConfigurationInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetNotificationTypes sets the NotificationTypes field's value.
+func (s *PutNotificationConfigurationInput) SetNotificationTypes(v []*string) *PutNotificationConfigurationInput {
+	s.NotificationTypes = v
+	return s
+}
+
+// SetTopicARN sets the TopicARN field's value.
+func (s *PutNotificationConfigurationInput) SetTopicARN(v string) *PutNotificationConfigurationInput {
+	s.TopicARN = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutNotificationConfigurationOutput
 type PutNotificationConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7712,6 +9463,7 @@ func (s PutNotificationConfigurationOutput) GoString() string {
 }
 
 // Contains the parameters for PutScalingPolicy.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutScalingPolicyType
 type PutScalingPolicyInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7841,7 +9593,74 @@ func (s *PutScalingPolicyInput) Validate() error {
 	return nil
 }
 
+// SetAdjustmentType sets the AdjustmentType field's value.
+func (s *PutScalingPolicyInput) SetAdjustmentType(v string) *PutScalingPolicyInput {
+	s.AdjustmentType = &v
+	return s
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *PutScalingPolicyInput) SetAutoScalingGroupName(v string) *PutScalingPolicyInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetCooldown sets the Cooldown field's value.
+func (s *PutScalingPolicyInput) SetCooldown(v int64) *PutScalingPolicyInput {
+	s.Cooldown = &v
+	return s
+}
+
+// SetEstimatedInstanceWarmup sets the EstimatedInstanceWarmup field's value.
+func (s *PutScalingPolicyInput) SetEstimatedInstanceWarmup(v int64) *PutScalingPolicyInput {
+	s.EstimatedInstanceWarmup = &v
+	return s
+}
+
+// SetMetricAggregationType sets the MetricAggregationType field's value.
+func (s *PutScalingPolicyInput) SetMetricAggregationType(v string) *PutScalingPolicyInput {
+	s.MetricAggregationType = &v
+	return s
+}
+
+// SetMinAdjustmentMagnitude sets the MinAdjustmentMagnitude field's value.
+func (s *PutScalingPolicyInput) SetMinAdjustmentMagnitude(v int64) *PutScalingPolicyInput {
+	s.MinAdjustmentMagnitude = &v
+	return s
+}
+
+// SetMinAdjustmentStep sets the MinAdjustmentStep field's value.
+func (s *PutScalingPolicyInput) SetMinAdjustmentStep(v int64) *PutScalingPolicyInput {
+	s.MinAdjustmentStep = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *PutScalingPolicyInput) SetPolicyName(v string) *PutScalingPolicyInput {
+	s.PolicyName = &v
+	return s
+}
+
+// SetPolicyType sets the PolicyType field's value.
+func (s *PutScalingPolicyInput) SetPolicyType(v string) *PutScalingPolicyInput {
+	s.PolicyType = &v
+	return s
+}
+
+// SetScalingAdjustment sets the ScalingAdjustment field's value.
+func (s *PutScalingPolicyInput) SetScalingAdjustment(v int64) *PutScalingPolicyInput {
+	s.ScalingAdjustment = &v
+	return s
+}
+
+// SetStepAdjustments sets the StepAdjustments field's value.
+func (s *PutScalingPolicyInput) SetStepAdjustments(v []*StepAdjustment) *PutScalingPolicyInput {
+	s.StepAdjustments = v
+	return s
+}
+
 // Contains the output of PutScalingPolicy.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PolicyARNType
 type PutScalingPolicyOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7859,7 +9678,14 @@ func (s PutScalingPolicyOutput) GoString() string {
 	return s.String()
 }
 
+// SetPolicyARN sets the PolicyARN field's value.
+func (s *PutScalingPolicyOutput) SetPolicyARN(v string) *PutScalingPolicyOutput {
+	s.PolicyARN = &v
+	return s
+}
+
 // Contains the parameters for PutScheduledUpdateGroupAction.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutScheduledUpdateGroupActionType
 type PutScheduledUpdateGroupActionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7939,6 +9765,61 @@ func (s *PutScheduledUpdateGroupActionInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *PutScheduledUpdateGroupActionInput) SetAutoScalingGroupName(v string) *PutScheduledUpdateGroupActionInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetDesiredCapacity sets the DesiredCapacity field's value.
+func (s *PutScheduledUpdateGroupActionInput) SetDesiredCapacity(v int64) *PutScheduledUpdateGroupActionInput {
+	s.DesiredCapacity = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *PutScheduledUpdateGroupActionInput) SetEndTime(v time.Time) *PutScheduledUpdateGroupActionInput {
+	s.EndTime = &v
+	return s
+}
+
+// SetMaxSize sets the MaxSize field's value.
+func (s *PutScheduledUpdateGroupActionInput) SetMaxSize(v int64) *PutScheduledUpdateGroupActionInput {
+	s.MaxSize = &v
+	return s
+}
+
+// SetMinSize sets the MinSize field's value.
+func (s *PutScheduledUpdateGroupActionInput) SetMinSize(v int64) *PutScheduledUpdateGroupActionInput {
+	s.MinSize = &v
+	return s
+}
+
+// SetRecurrence sets the Recurrence field's value.
+func (s *PutScheduledUpdateGroupActionInput) SetRecurrence(v string) *PutScheduledUpdateGroupActionInput {
+	s.Recurrence = &v
+	return s
+}
+
+// SetScheduledActionName sets the ScheduledActionName field's value.
+func (s *PutScheduledUpdateGroupActionInput) SetScheduledActionName(v string) *PutScheduledUpdateGroupActionInput {
+	s.ScheduledActionName = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *PutScheduledUpdateGroupActionInput) SetStartTime(v time.Time) *PutScheduledUpdateGroupActionInput {
+	s.StartTime = &v
+	return s
+}
+
+// SetTime sets the Time field's value.
+func (s *PutScheduledUpdateGroupActionInput) SetTime(v time.Time) *PutScheduledUpdateGroupActionInput {
+	s.Time = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/PutScheduledUpdateGroupActionOutput
 type PutScheduledUpdateGroupActionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7954,6 +9835,7 @@ func (s PutScheduledUpdateGroupActionOutput) GoString() string {
 }
 
 // Contains the parameters for RecordLifecycleActionHeartbeat.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/RecordLifecycleActionHeartbeatType
 type RecordLifecycleActionHeartbeatInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8014,7 +9896,32 @@ func (s *RecordLifecycleActionHeartbeatInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *RecordLifecycleActionHeartbeatInput) SetAutoScalingGroupName(v string) *RecordLifecycleActionHeartbeatInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *RecordLifecycleActionHeartbeatInput) SetInstanceId(v string) *RecordLifecycleActionHeartbeatInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetLifecycleActionToken sets the LifecycleActionToken field's value.
+func (s *RecordLifecycleActionHeartbeatInput) SetLifecycleActionToken(v string) *RecordLifecycleActionHeartbeatInput {
+	s.LifecycleActionToken = &v
+	return s
+}
+
+// SetLifecycleHookName sets the LifecycleHookName field's value.
+func (s *RecordLifecycleActionHeartbeatInput) SetLifecycleHookName(v string) *RecordLifecycleActionHeartbeatInput {
+	s.LifecycleHookName = &v
+	return s
+}
+
 // Contains the output of RecordLifecycleActionHeartBeat.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/RecordLifecycleActionHeartbeatAnswer
 type RecordLifecycleActionHeartbeatOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8029,6 +9936,7 @@ func (s RecordLifecycleActionHeartbeatOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ResumeProcessesOutput
 type ResumeProcessesOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8044,6 +9952,7 @@ func (s ResumeProcessesOutput) GoString() string {
 }
 
 // Describes a scaling policy.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ScalingPolicy
 type ScalingPolicy struct {
 	_ struct{} `type:"structure"`
 
@@ -8107,7 +10016,86 @@ func (s ScalingPolicy) GoString() string {
 	return s.String()
 }
 
+// SetAdjustmentType sets the AdjustmentType field's value.
+func (s *ScalingPolicy) SetAdjustmentType(v string) *ScalingPolicy {
+	s.AdjustmentType = &v
+	return s
+}
+
+// SetAlarms sets the Alarms field's value.
+func (s *ScalingPolicy) SetAlarms(v []*Alarm) *ScalingPolicy {
+	s.Alarms = v
+	return s
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *ScalingPolicy) SetAutoScalingGroupName(v string) *ScalingPolicy {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetCooldown sets the Cooldown field's value.
+func (s *ScalingPolicy) SetCooldown(v int64) *ScalingPolicy {
+	s.Cooldown = &v
+	return s
+}
+
+// SetEstimatedInstanceWarmup sets the EstimatedInstanceWarmup field's value.
+func (s *ScalingPolicy) SetEstimatedInstanceWarmup(v int64) *ScalingPolicy {
+	s.EstimatedInstanceWarmup = &v
+	return s
+}
+
+// SetMetricAggregationType sets the MetricAggregationType field's value.
+func (s *ScalingPolicy) SetMetricAggregationType(v string) *ScalingPolicy {
+	s.MetricAggregationType = &v
+	return s
+}
+
+// SetMinAdjustmentMagnitude sets the MinAdjustmentMagnitude field's value.
+func (s *ScalingPolicy) SetMinAdjustmentMagnitude(v int64) *ScalingPolicy {
+	s.MinAdjustmentMagnitude = &v
+	return s
+}
+
+// SetMinAdjustmentStep sets the MinAdjustmentStep field's value.
+func (s *ScalingPolicy) SetMinAdjustmentStep(v int64) *ScalingPolicy {
+	s.MinAdjustmentStep = &v
+	return s
+}
+
+// SetPolicyARN sets the PolicyARN field's value.
+func (s *ScalingPolicy) SetPolicyARN(v string) *ScalingPolicy {
+	s.PolicyARN = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *ScalingPolicy) SetPolicyName(v string) *ScalingPolicy {
+	s.PolicyName = &v
+	return s
+}
+
+// SetPolicyType sets the PolicyType field's value.
+func (s *ScalingPolicy) SetPolicyType(v string) *ScalingPolicy {
+	s.PolicyType = &v
+	return s
+}
+
+// SetScalingAdjustment sets the ScalingAdjustment field's value.
+func (s *ScalingPolicy) SetScalingAdjustment(v int64) *ScalingPolicy {
+	s.ScalingAdjustment = &v
+	return s
+}
+
+// SetStepAdjustments sets the StepAdjustments field's value.
+func (s *ScalingPolicy) SetStepAdjustments(v []*StepAdjustment) *ScalingPolicy {
+	s.StepAdjustments = v
+	return s
+}
+
 // Contains the parameters for SuspendProcesses and ResumeProcesses.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ScalingProcessQuery
 type ScalingProcessQuery struct {
 	_ struct{} `type:"structure"`
 
@@ -8163,7 +10151,20 @@ func (s *ScalingProcessQuery) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *ScalingProcessQuery) SetAutoScalingGroupName(v string) *ScalingProcessQuery {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetScalingProcesses sets the ScalingProcesses field's value.
+func (s *ScalingProcessQuery) SetScalingProcesses(v []*string) *ScalingProcessQuery {
+	s.ScalingProcesses = v
+	return s
+}
+
 // Describes a scheduled update to an Auto Scaling group.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ScheduledUpdateGroupAction
 type ScheduledUpdateGroupAction struct {
 	_ struct{} `type:"structure"`
 
@@ -8213,7 +10214,68 @@ func (s ScheduledUpdateGroupAction) GoString() string {
 	return s.String()
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *ScheduledUpdateGroupAction) SetAutoScalingGroupName(v string) *ScheduledUpdateGroupAction {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetDesiredCapacity sets the DesiredCapacity field's value.
+func (s *ScheduledUpdateGroupAction) SetDesiredCapacity(v int64) *ScheduledUpdateGroupAction {
+	s.DesiredCapacity = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *ScheduledUpdateGroupAction) SetEndTime(v time.Time) *ScheduledUpdateGroupAction {
+	s.EndTime = &v
+	return s
+}
+
+// SetMaxSize sets the MaxSize field's value.
+func (s *ScheduledUpdateGroupAction) SetMaxSize(v int64) *ScheduledUpdateGroupAction {
+	s.MaxSize = &v
+	return s
+}
+
+// SetMinSize sets the MinSize field's value.
+func (s *ScheduledUpdateGroupAction) SetMinSize(v int64) *ScheduledUpdateGroupAction {
+	s.MinSize = &v
+	return s
+}
+
+// SetRecurrence sets the Recurrence field's value.
+func (s *ScheduledUpdateGroupAction) SetRecurrence(v string) *ScheduledUpdateGroupAction {
+	s.Recurrence = &v
+	return s
+}
+
+// SetScheduledActionARN sets the ScheduledActionARN field's value.
+func (s *ScheduledUpdateGroupAction) SetScheduledActionARN(v string) *ScheduledUpdateGroupAction {
+	s.ScheduledActionARN = &v
+	return s
+}
+
+// SetScheduledActionName sets the ScheduledActionName field's value.
+func (s *ScheduledUpdateGroupAction) SetScheduledActionName(v string) *ScheduledUpdateGroupAction {
+	s.ScheduledActionName = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *ScheduledUpdateGroupAction) SetStartTime(v time.Time) *ScheduledUpdateGroupAction {
+	s.StartTime = &v
+	return s
+}
+
+// SetTime sets the Time field's value.
+func (s *ScheduledUpdateGroupAction) SetTime(v time.Time) *ScheduledUpdateGroupAction {
+	s.Time = &v
+	return s
+}
+
 // Contains the parameters for SetDesiredCapacity.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SetDesiredCapacityType
 type SetDesiredCapacityInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8263,6 +10325,25 @@ func (s *SetDesiredCapacityInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *SetDesiredCapacityInput) SetAutoScalingGroupName(v string) *SetDesiredCapacityInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetDesiredCapacity sets the DesiredCapacity field's value.
+func (s *SetDesiredCapacityInput) SetDesiredCapacity(v int64) *SetDesiredCapacityInput {
+	s.DesiredCapacity = &v
+	return s
+}
+
+// SetHonorCooldown sets the HonorCooldown field's value.
+func (s *SetDesiredCapacityInput) SetHonorCooldown(v bool) *SetDesiredCapacityInput {
+	s.HonorCooldown = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SetDesiredCapacityOutput
 type SetDesiredCapacityOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8278,6 +10359,7 @@ func (s SetDesiredCapacityOutput) GoString() string {
 }
 
 // Contains the parameters for SetInstanceHealth.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SetInstanceHealthQuery
 type SetInstanceHealthInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8335,6 +10417,25 @@ func (s *SetInstanceHealthInput) Validate() error {
 	return nil
 }
 
+// SetHealthStatus sets the HealthStatus field's value.
+func (s *SetInstanceHealthInput) SetHealthStatus(v string) *SetInstanceHealthInput {
+	s.HealthStatus = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *SetInstanceHealthInput) SetInstanceId(v string) *SetInstanceHealthInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetShouldRespectGracePeriod sets the ShouldRespectGracePeriod field's value.
+func (s *SetInstanceHealthInput) SetShouldRespectGracePeriod(v bool) *SetInstanceHealthInput {
+	s.ShouldRespectGracePeriod = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SetInstanceHealthOutput
 type SetInstanceHealthOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8350,6 +10451,7 @@ func (s SetInstanceHealthOutput) GoString() string {
 }
 
 // Contains the parameters for SetInstanceProtection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SetInstanceProtectionQuery
 type SetInstanceProtectionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8402,7 +10504,26 @@ func (s *SetInstanceProtectionInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *SetInstanceProtectionInput) SetAutoScalingGroupName(v string) *SetInstanceProtectionInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *SetInstanceProtectionInput) SetInstanceIds(v []*string) *SetInstanceProtectionInput {
+	s.InstanceIds = v
+	return s
+}
+
+// SetProtectedFromScaleIn sets the ProtectedFromScaleIn field's value.
+func (s *SetInstanceProtectionInput) SetProtectedFromScaleIn(v bool) *SetInstanceProtectionInput {
+	s.ProtectedFromScaleIn = &v
+	return s
+}
+
 // Contains the output of SetInstanceProtection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SetInstanceProtectionAnswer
 type SetInstanceProtectionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8445,6 +10566,7 @@ func (s SetInstanceProtectionOutput) GoString() string {
 //    with a null upper bound.
 //
 //    * The upper and lower bound can't be null in the same step adjustment.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/StepAdjustment
 type StepAdjustment struct {
 	_ struct{} `type:"structure"`
 
@@ -8496,6 +10618,25 @@ func (s *StepAdjustment) Validate() error {
 	return nil
 }
 
+// SetMetricIntervalLowerBound sets the MetricIntervalLowerBound field's value.
+func (s *StepAdjustment) SetMetricIntervalLowerBound(v float64) *StepAdjustment {
+	s.MetricIntervalLowerBound = &v
+	return s
+}
+
+// SetMetricIntervalUpperBound sets the MetricIntervalUpperBound field's value.
+func (s *StepAdjustment) SetMetricIntervalUpperBound(v float64) *StepAdjustment {
+	s.MetricIntervalUpperBound = &v
+	return s
+}
+
+// SetScalingAdjustment sets the ScalingAdjustment field's value.
+func (s *StepAdjustment) SetScalingAdjustment(v int64) *StepAdjustment {
+	s.ScalingAdjustment = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SuspendProcessesOutput
 type SuspendProcessesOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8512,6 +10653,7 @@ func (s SuspendProcessesOutput) GoString() string {
 
 // Describes an Auto Scaling process that has been suspended. For more information,
 // see ProcessType.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/SuspendedProcess
 type SuspendedProcess struct {
 	_ struct{} `type:"structure"`
 
@@ -8532,7 +10674,20 @@ func (s SuspendedProcess) GoString() string {
 	return s.String()
 }
 
+// SetProcessName sets the ProcessName field's value.
+func (s *SuspendedProcess) SetProcessName(v string) *SuspendedProcess {
+	s.ProcessName = &v
+	return s
+}
+
+// SetSuspensionReason sets the SuspensionReason field's value.
+func (s *SuspendedProcess) SetSuspensionReason(v string) *SuspendedProcess {
+	s.SuspensionReason = &v
+	return s
+}
+
 // Describes a tag for an Auto Scaling group.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/Tag
 type Tag struct {
 	_ struct{} `type:"structure"`
 
@@ -8581,7 +10736,38 @@ func (s *Tag) Validate() error {
 	return nil
 }
 
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetPropagateAtLaunch sets the PropagateAtLaunch field's value.
+func (s *Tag) SetPropagateAtLaunch(v bool) *Tag {
+	s.PropagateAtLaunch = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *Tag) SetResourceId(v string) *Tag {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *Tag) SetResourceType(v string) *Tag {
+	s.ResourceType = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
+}
+
 // Describes a tag for an Auto Scaling group.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/TagDescription
 type TagDescription struct {
 	_ struct{} `type:"structure"`
 
@@ -8612,7 +10798,38 @@ func (s TagDescription) GoString() string {
 	return s.String()
 }
 
+// SetKey sets the Key field's value.
+func (s *TagDescription) SetKey(v string) *TagDescription {
+	s.Key = &v
+	return s
+}
+
+// SetPropagateAtLaunch sets the PropagateAtLaunch field's value.
+func (s *TagDescription) SetPropagateAtLaunch(v bool) *TagDescription {
+	s.PropagateAtLaunch = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *TagDescription) SetResourceId(v string) *TagDescription {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *TagDescription) SetResourceType(v string) *TagDescription {
+	s.ResourceType = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *TagDescription) SetValue(v string) *TagDescription {
+	s.Value = &v
+	return s
+}
+
 // Contains the parameters for TerminateInstanceInAutoScalingGroup.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/TerminateInstanceInAutoScalingGroupType
 type TerminateInstanceInAutoScalingGroupInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8657,7 +10874,20 @@ func (s *TerminateInstanceInAutoScalingGroupInput) Validate() error {
 	return nil
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *TerminateInstanceInAutoScalingGroupInput) SetInstanceId(v string) *TerminateInstanceInAutoScalingGroupInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetShouldDecrementDesiredCapacity sets the ShouldDecrementDesiredCapacity field's value.
+func (s *TerminateInstanceInAutoScalingGroupInput) SetShouldDecrementDesiredCapacity(v bool) *TerminateInstanceInAutoScalingGroupInput {
+	s.ShouldDecrementDesiredCapacity = &v
+	return s
+}
+
 // Contains the output of TerminateInstancesInAutoScalingGroup.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/ActivityType
 type TerminateInstanceInAutoScalingGroupOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8675,7 +10905,14 @@ func (s TerminateInstanceInAutoScalingGroupOutput) GoString() string {
 	return s.String()
 }
 
+// SetActivity sets the Activity field's value.
+func (s *TerminateInstanceInAutoScalingGroupOutput) SetActivity(v *Activity) *TerminateInstanceInAutoScalingGroupOutput {
+	s.Activity = v
+	return s
+}
+
 // Contains the parameters for UpdateAutoScalingGroup.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/UpdateAutoScalingGroupType
 type UpdateAutoScalingGroupInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8789,6 +11026,85 @@ func (s *UpdateAutoScalingGroupInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *UpdateAutoScalingGroupInput) SetAutoScalingGroupName(v string) *UpdateAutoScalingGroupInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetAvailabilityZones sets the AvailabilityZones field's value.
+func (s *UpdateAutoScalingGroupInput) SetAvailabilityZones(v []*string) *UpdateAutoScalingGroupInput {
+	s.AvailabilityZones = v
+	return s
+}
+
+// SetDefaultCooldown sets the DefaultCooldown field's value.
+func (s *UpdateAutoScalingGroupInput) SetDefaultCooldown(v int64) *UpdateAutoScalingGroupInput {
+	s.DefaultCooldown = &v
+	return s
+}
+
+// SetDesiredCapacity sets the DesiredCapacity field's value.
+func (s *UpdateAutoScalingGroupInput) SetDesiredCapacity(v int64) *UpdateAutoScalingGroupInput {
+	s.DesiredCapacity = &v
+	return s
+}
+
+// SetHealthCheckGracePeriod sets the HealthCheckGracePeriod field's value.
+func (s *UpdateAutoScalingGroupInput) SetHealthCheckGracePeriod(v int64) *UpdateAutoScalingGroupInput {
+	s.HealthCheckGracePeriod = &v
+	return s
+}
+
+// SetHealthCheckType sets the HealthCheckType field's value.
+func (s *UpdateAutoScalingGroupInput) SetHealthCheckType(v string) *UpdateAutoScalingGroupInput {
+	s.HealthCheckType = &v
+	return s
+}
+
+// SetLaunchConfigurationName sets the LaunchConfigurationName field's value.
+func (s *UpdateAutoScalingGroupInput) SetLaunchConfigurationName(v string) *UpdateAutoScalingGroupInput {
+	s.LaunchConfigurationName = &v
+	return s
+}
+
+// SetMaxSize sets the MaxSize field's value.
+func (s *UpdateAutoScalingGroupInput) SetMaxSize(v int64) *UpdateAutoScalingGroupInput {
+	s.MaxSize = &v
+	return s
+}
+
+// SetMinSize sets the MinSize field's value.
+func (s *UpdateAutoScalingGroupInput) SetMinSize(v int64) *UpdateAutoScalingGroupInput {
+	s.MinSize = &v
+	return s
+}
+
+// SetNewInstancesProtectedFromScaleIn sets the NewInstancesProtectedFromScaleIn field's value.
+func (s *UpdateAutoScalingGroupInput) SetNewInstancesProtectedFromScaleIn(v bool) *UpdateAutoScalingGroupInput {
+	s.NewInstancesProtectedFromScaleIn = &v
+	return s
+}
+
+// SetPlacementGroup sets the PlacementGroup field's value.
+func (s *UpdateAutoScalingGroupInput) SetPlacementGroup(v string) *UpdateAutoScalingGroupInput {
+	s.PlacementGroup = &v
+	return s
+}
+
+// SetTerminationPolicies sets the TerminationPolicies field's value.
+func (s *UpdateAutoScalingGroupInput) SetTerminationPolicies(v []*string) *UpdateAutoScalingGroupInput {
+	s.TerminationPolicies = v
+	return s
+}
+
+// SetVPCZoneIdentifier sets the VPCZoneIdentifier field's value.
+func (s *UpdateAutoScalingGroupInput) SetVPCZoneIdentifier(v string) *UpdateAutoScalingGroupInput {
+	s.VPCZoneIdentifier = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/UpdateAutoScalingGroupOutput
 type UpdateAutoScalingGroupOutput struct {
 	_ struct{} `type:"structure"`
 }

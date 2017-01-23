@@ -2,7 +2,6 @@ package scheduler
 
 import (
 	"encoding/json"
-	"sync"
 	"testing"
 	"time"
 
@@ -39,7 +38,6 @@ func TestSchedule(t *testing.T) {
 		ref3.String(): true,
 	}
 
-	var mu sync.Mutex
 	s := New(context.Background(), inmemory.New(), "/ttl")
 	deleteFunc := func(repoName reference.Reference) error {
 		if len(remainingRepos) == 0 {
@@ -50,9 +48,7 @@ func TestSchedule(t *testing.T) {
 			t.Fatalf("Trying to remove nonexistent repo: %s", repoName)
 		}
 		t.Log("removing", repoName)
-		mu.Lock()
 		delete(remainingRepos, repoName.String())
-		mu.Unlock()
 
 		return nil
 	}
@@ -66,17 +62,12 @@ func TestSchedule(t *testing.T) {
 	s.add(ref2, 1*timeUnit, entryTypeBlob)
 
 	func() {
-		s.Lock()
 		s.add(ref3, 1*timeUnit, entryTypeBlob)
-		s.Unlock()
 
 	}()
 
 	// Ensure all repos are deleted
 	<-time.After(50 * timeUnit)
-
-	mu.Lock()
-	defer mu.Unlock()
 	if len(remainingRepos) != 0 {
 		t.Fatalf("Repositories remaining: %#v", remainingRepos)
 	}
@@ -89,28 +80,22 @@ func TestRestoreOld(t *testing.T) {
 		ref2.String(): true,
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(remainingRepos))
-	var mu sync.Mutex
 	deleteFunc := func(r reference.Reference) error {
-		mu.Lock()
-		defer mu.Unlock()
 		if r.String() == ref1.String() && len(remainingRepos) == 2 {
-			t.Errorf("ref1 should not be removed first")
+			t.Errorf("ref1 should be removed first")
 		}
 		_, ok := remainingRepos[r.String()]
 		if !ok {
 			t.Fatalf("Trying to remove nonexistent repo: %s", r)
 		}
 		delete(remainingRepos, r.String())
-		wg.Done()
 		return nil
 	}
 
 	timeUnit := time.Millisecond
 	serialized, err := json.Marshal(&map[string]schedulerEntry{
 		ref1.String(): {
-			Expiry:    time.Now().Add(10 * timeUnit),
+			Expiry:    time.Now().Add(1 * timeUnit),
 			Key:       ref1.String(),
 			EntryType: 0,
 		},
@@ -132,16 +117,13 @@ func TestRestoreOld(t *testing.T) {
 		t.Fatal("Unable to write serialized data to fs")
 	}
 	s := New(context.Background(), fs, "/ttl")
-	s.OnBlobExpire(deleteFunc)
+	s.onBlobExpire = deleteFunc
 	err = s.Start()
 	if err != nil {
 		t.Fatalf("Error starting ttlExpirationScheduler: %s", err)
 	}
-	defer s.Stop()
 
-	wg.Wait()
-	mu.Lock()
-	defer mu.Unlock()
+	<-time.After(50 * timeUnit)
 	if len(remainingRepos) != 0 {
 		t.Fatalf("Repositories remaining: %#v", remainingRepos)
 	}
@@ -156,11 +138,8 @@ func TestStopRestore(t *testing.T) {
 		ref2.String(): true,
 	}
 
-	var mu sync.Mutex
 	deleteFunc := func(r reference.Reference) error {
-		mu.Lock()
 		delete(remainingRepos, r.String())
-		mu.Unlock()
 		return nil
 	}
 
@@ -190,8 +169,6 @@ func TestStopRestore(t *testing.T) {
 	}
 
 	<-time.After(500 * timeUnit)
-	mu.Lock()
-	defer mu.Unlock()
 	if len(remainingRepos) != 0 {
 		t.Fatalf("Repositories remaining: %#v", remainingRepos)
 	}

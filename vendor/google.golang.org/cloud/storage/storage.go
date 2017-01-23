@@ -27,8 +27,12 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
+	"reflect"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -190,16 +194,6 @@ func (c *BucketHandle) DefaultObjectACL() *ACLHandle {
 	return c.defaultObjectACL
 }
 
-// ObjectHandle provides operations on an object in a Google Cloud Storage bucket.
-// Use BucketHandle.Object to get a handle.
-type ObjectHandle struct {
-	c      *Client
-	bucket string
-	object string
-
-	acl *ACLHandle
-}
-
 // Object returns an ObjectHandle, which provides operations on the named object.
 // This call does not perform any network operations.
 //
@@ -347,13 +341,16 @@ func SignedURL(bucket, name string, opts *SignedURLOptions) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	u := &url.URL{
+		Path: fmt.Sprintf("/%s/%s", bucket, name),
+	}
 	h := sha256.New()
 	fmt.Fprintf(h, "%s\n", opts.Method)
 	fmt.Fprintf(h, "%s\n", opts.MD5)
 	fmt.Fprintf(h, "%s\n", opts.ContentType)
 	fmt.Fprintf(h, "%d\n", opts.Expires.Unix())
 	fmt.Fprintf(h, "%s", strings.Join(opts.Headers, "\n"))
-	fmt.Fprintf(h, "/%s/%s", bucket, name)
+	fmt.Fprintf(h, "%s", u.String())
 	b, err := rsa.SignPKCS1v15(
 		rand.Reader,
 		key,
@@ -364,17 +361,25 @@ func SignedURL(bucket, name string, opts *SignedURLOptions) (string, error) {
 		return "", err
 	}
 	encoded := base64.StdEncoding.EncodeToString(b)
-	u := &url.URL{
-		Scheme: "https",
-		Host:   "storage.googleapis.com",
-		Path:   fmt.Sprintf("/%s/%s", bucket, name),
-	}
+	u.Scheme = "https"
+	u.Host = "storage.googleapis.com"
 	q := u.Query()
 	q.Set("GoogleAccessId", opts.GoogleAccessID)
 	q.Set("Expires", fmt.Sprintf("%d", opts.Expires.Unix()))
 	q.Set("Signature", string(encoded))
 	u.RawQuery = q.Encode()
 	return u.String(), nil
+}
+
+// ObjectHandle provides operations on an object in a Google Cloud Storage bucket.
+// Use BucketHandle.Object to get a handle.
+type ObjectHandle struct {
+	c      *Client
+	bucket string
+	object string
+
+	acl   *ACLHandle
+	conds []Condition
 }
 
 // ACL provides access to the object's access control list.
@@ -384,13 +389,24 @@ func (o *ObjectHandle) ACL() *ACLHandle {
 	return o.acl
 }
 
+// WithConditions returns a copy of o using the provided conditions.
+func (o *ObjectHandle) WithConditions(conds ...Condition) *ObjectHandle {
+	o2 := *o
+	o2.conds = conds
+	return &o2
+}
+
 // Attrs returns meta information about the object.
 // ErrObjectNotExist will be returned if the object is not found.
 func (o *ObjectHandle) Attrs(ctx context.Context) (*ObjectAttrs, error) {
 	if !utf8.ValidString(o.object) {
 		return nil, fmt.Errorf("storage: object name %q is not valid UTF-8", o.object)
 	}
-	obj, err := o.c.raw.Objects.Get(o.bucket, o.object).Projection("full").Context(ctx).Do()
+	call := o.c.raw.Objects.Get(o.bucket, o.object).Projection("full").Context(ctx)
+	if err := applyConds("Attrs", o.conds, call); err != nil {
+		return nil, err
+	}
+	obj, err := call.Do()
 	if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
 		return nil, ErrObjectNotExist
 	}
@@ -407,7 +423,11 @@ func (o *ObjectHandle) Update(ctx context.Context, attrs ObjectAttrs) (*ObjectAt
 	if !utf8.ValidString(o.object) {
 		return nil, fmt.Errorf("storage: object name %q is not valid UTF-8", o.object)
 	}
-	obj, err := o.c.raw.Objects.Patch(o.bucket, o.object, attrs.toRawObject(o.bucket)).Projection("full").Context(ctx).Do()
+	call := o.c.raw.Objects.Patch(o.bucket, o.object, attrs.toRawObject(o.bucket)).Projection("full").Context(ctx)
+	if err := applyConds("Update", o.conds, call); err != nil {
+		return nil, err
+	}
+	obj, err := call.Do()
 	if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
 		return nil, ErrObjectNotExist
 	}
@@ -422,53 +442,90 @@ func (o *ObjectHandle) Delete(ctx context.Context) error {
 	if !utf8.ValidString(o.object) {
 		return fmt.Errorf("storage: object name %q is not valid UTF-8", o.object)
 	}
-	return o.c.raw.Objects.Delete(o.bucket, o.object).Context(ctx).Do()
+	call := o.c.raw.Objects.Delete(o.bucket, o.object).Context(ctx)
+	if err := applyConds("Delete", o.conds, call); err != nil {
+		return err
+	}
+	return call.Do()
 }
 
-// CopyObject copies the source object to the destination.
+// CopyTo copies the object to the given dst.
 // The copied object's attributes are overwritten by attrs if non-nil.
-func (c *Client) CopyObject(ctx context.Context, srcBucket, srcName string, destBucket, destName string, attrs *ObjectAttrs) (*ObjectAttrs, error) {
-	if srcBucket == "" || destBucket == "" {
-		return nil, errors.New("storage: srcBucket and destBucket must both be non-empty")
+func (o *ObjectHandle) CopyTo(ctx context.Context, dst *ObjectHandle, attrs *ObjectAttrs) (*ObjectAttrs, error) {
+	// TODO(djd): move bucket/object name validation to a single helper func.
+	if o.bucket == "" || dst.bucket == "" {
+		return nil, errors.New("storage: the source and destination bucket names must both be non-empty")
 	}
-	if srcName == "" || destName == "" {
-		return nil, errors.New("storage: srcName and destName must be non-empty")
+	if o.object == "" || dst.object == "" {
+		return nil, errors.New("storage: the source and destination object names must both be non-empty")
 	}
-	if !utf8.ValidString(srcName) {
-		return nil, fmt.Errorf("storage: srcName %q is not valid UTF-8", srcName)
+	if !utf8.ValidString(o.object) {
+		return nil, fmt.Errorf("storage: object name %q is not valid UTF-8", o.object)
 	}
-	if !utf8.ValidString(destName) {
-		return nil, fmt.Errorf("storage: destName %q is not valid UTF-8", destName)
+	if !utf8.ValidString(dst.object) {
+		return nil, fmt.Errorf("storage: dst name %q is not valid UTF-8", dst.object)
 	}
 	var rawObject *raw.Object
 	if attrs != nil {
-		attrs.Name = destName
+		attrs.Name = dst.object
 		if attrs.ContentType == "" {
 			return nil, errors.New("storage: attrs.ContentType must be non-empty")
 		}
-		rawObject = attrs.toRawObject(destBucket)
+		rawObject = attrs.toRawObject(dst.bucket)
 	}
-	o, err := c.raw.Objects.Copy(
-		srcBucket, srcName, destBucket, destName, rawObject).Projection("full").Context(ctx).Do()
+	call := o.c.raw.Objects.Copy(o.bucket, o.object, dst.bucket, dst.object, rawObject).Projection("full").Context(ctx)
+	if err := applyConds("CopyTo destination", dst.conds, call); err != nil {
+		return nil, err
+	}
+	if err := applyConds("CopyTo source", toSourceConds(o.conds), call); err != nil {
+		return nil, err
+	}
+	obj, err := call.Do()
 	if err != nil {
 		return nil, err
 	}
-	return newObject(o), nil
+	return newObject(obj), nil
 }
 
 // NewReader creates a new Reader to read the contents of the
 // object.
 // ErrObjectNotExist will be returned if the object is not found.
 func (o *ObjectHandle) NewReader(ctx context.Context) (*Reader, error) {
+	return o.NewRangeReader(ctx, 0, -1)
+}
+
+// NewRangeReader reads part of an object, reading at most length bytes
+// starting at the given offset.  If length is negative, the object is read
+// until the end.
+func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) (*Reader, error) {
 	if !utf8.ValidString(o.object) {
 		return nil, fmt.Errorf("storage: object name %q is not valid UTF-8", o.object)
+	}
+	if offset < 0 {
+		return nil, fmt.Errorf("storage: invalid offset %d < 0", offset)
 	}
 	u := &url.URL{
 		Scheme: "https",
 		Host:   "storage.googleapis.com",
 		Path:   fmt.Sprintf("/%s/%s", o.bucket, o.object),
 	}
-	res, err := o.c.hc.Get(u.String())
+	verb := "GET"
+	if length == 0 {
+		verb = "HEAD"
+	}
+	req, err := http.NewRequest(verb, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	if err := applyConds("NewReader", o.conds, objectsGetCall{req}); err != nil {
+		return nil, err
+	}
+	if length < 0 {
+		req.Header.Set("Range", fmt.Sprintf("bytes=%d-", offset))
+	} else if length > 0 {
+		req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", offset, offset+length-1))
+	}
+	res, err := o.c.hc.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -480,29 +537,53 @@ func (o *ObjectHandle) NewReader(ctx context.Context) (*Reader, error) {
 		res.Body.Close()
 		return nil, fmt.Errorf("storage: can't read object %v/%v, status code: %v", o.bucket, o.object, res.Status)
 	}
+	if offset > 0 && length != 0 && res.StatusCode != http.StatusPartialContent {
+		res.Body.Close()
+		return nil, errors.New("storage: partial request not satisfied")
+	}
+	clHeader := res.Header.Get("X-Goog-Stored-Content-Length")
+	cl, err := strconv.ParseInt(clHeader, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("storage: can't parse content length %q: %v", clHeader, err)
+	}
+	remain := res.ContentLength
+	if remain < 0 {
+		return nil, errors.New("storage: unknown content length")
+	}
+	body := res.Body
+	if length == 0 {
+		remain = 0
+		body.Close()
+		body = emptyBody
+	}
 	return &Reader{
-		body:        res.Body,
-		size:        res.ContentLength,
+		body:        body,
+		size:        cl,
+		remain:      remain,
 		contentType: res.Header.Get("Content-Type"),
 	}, nil
 }
 
+var emptyBody = ioutil.NopCloser(strings.NewReader(""))
+
 // NewWriter returns a storage Writer that writes to the GCS object
 // associated with this ObjectHandle.
-// If such an object doesn't exist, it creates one.
+//
+// A new object will be created if an object with this name already exists.
+// Otherwise any previous object with the same name will be replaced.
+// The object will not be available (and any previous object will remain)
+// until Close has been called.
+//
 // Attributes can be set on the object by modifying the returned Writer's
-// ObjectAttrs field before the first call to Write.
+// ObjectAttrs field before the first call to Write. If no ContentType
+// attribute is specified, the content type will be automatically sniffed
+// using net/http.DetectContentType.
 //
 // It is the caller's responsibility to call Close when writing is done.
-//
-// The object is not available and any previous object with the same
-// name is not replaced on Cloud Storage until Close is called.
 func (o *ObjectHandle) NewWriter(ctx context.Context) *Writer {
 	return &Writer{
 		ctx:         ctx,
-		client:      o.c,
-		bucket:      o.bucket,
-		name:        o.object,
+		o:           o,
 		donec:       make(chan struct{}),
 		ObjectAttrs: ObjectAttrs{Name: o.object},
 	}
@@ -529,4 +610,411 @@ func parseKey(key []byte) (*rsa.PrivateKey, error) {
 		return nil, errors.New("oauth2: private key is invalid")
 	}
 	return parsed, nil
+}
+
+// BucketAttrs represents the metadata for a Google Cloud Storage bucket.
+type BucketAttrs struct {
+	// Name is the name of the bucket.
+	Name string
+
+	// ACL is the list of access control rules on the bucket.
+	ACL []ACLRule
+
+	// DefaultObjectACL is the list of access controls to
+	// apply to new objects when no object ACL is provided.
+	DefaultObjectACL []ACLRule
+
+	// Location is the location of the bucket. It defaults to "US".
+	Location string
+
+	// MetaGeneration is the metadata generation of the bucket.
+	MetaGeneration int64
+
+	// StorageClass is the storage class of the bucket. This defines
+	// how objects in the bucket are stored and determines the SLA
+	// and the cost of storage. Typical values are "STANDARD" and
+	// "DURABLE_REDUCED_AVAILABILITY". Defaults to "STANDARD".
+	StorageClass string
+
+	// Created is the creation time of the bucket.
+	Created time.Time
+}
+
+func newBucket(b *raw.Bucket) *BucketAttrs {
+	if b == nil {
+		return nil
+	}
+	bucket := &BucketAttrs{
+		Name:           b.Name,
+		Location:       b.Location,
+		MetaGeneration: b.Metageneration,
+		StorageClass:   b.StorageClass,
+		Created:        convertTime(b.TimeCreated),
+	}
+	acl := make([]ACLRule, len(b.Acl))
+	for i, rule := range b.Acl {
+		acl[i] = ACLRule{
+			Entity: ACLEntity(rule.Entity),
+			Role:   ACLRole(rule.Role),
+		}
+	}
+	bucket.ACL = acl
+	objACL := make([]ACLRule, len(b.DefaultObjectAcl))
+	for i, rule := range b.DefaultObjectAcl {
+		objACL[i] = ACLRule{
+			Entity: ACLEntity(rule.Entity),
+			Role:   ACLRole(rule.Role),
+		}
+	}
+	bucket.DefaultObjectACL = objACL
+	return bucket
+}
+
+func toRawObjectACL(oldACL []ACLRule) []*raw.ObjectAccessControl {
+	var acl []*raw.ObjectAccessControl
+	if len(oldACL) > 0 {
+		acl = make([]*raw.ObjectAccessControl, len(oldACL))
+		for i, rule := range oldACL {
+			acl[i] = &raw.ObjectAccessControl{
+				Entity: string(rule.Entity),
+				Role:   string(rule.Role),
+			}
+		}
+	}
+	return acl
+}
+
+// toRawBucket copies the editable attribute from b to the raw library's Bucket type.
+func (b *BucketAttrs) toRawBucket() *raw.Bucket {
+	var acl []*raw.BucketAccessControl
+	if len(b.ACL) > 0 {
+		acl = make([]*raw.BucketAccessControl, len(b.ACL))
+		for i, rule := range b.ACL {
+			acl[i] = &raw.BucketAccessControl{
+				Entity: string(rule.Entity),
+				Role:   string(rule.Role),
+			}
+		}
+	}
+	dACL := toRawObjectACL(b.DefaultObjectACL)
+	return &raw.Bucket{
+		Name:             b.Name,
+		DefaultObjectAcl: dACL,
+		Location:         b.Location,
+		StorageClass:     b.StorageClass,
+		Acl:              acl,
+	}
+}
+
+// toRawObject copies the editable attributes from o to the raw library's Object type.
+func (o ObjectAttrs) toRawObject(bucket string) *raw.Object {
+	acl := toRawObjectACL(o.ACL)
+	return &raw.Object{
+		Bucket:             bucket,
+		Name:               o.Name,
+		ContentType:        o.ContentType,
+		ContentEncoding:    o.ContentEncoding,
+		ContentLanguage:    o.ContentLanguage,
+		CacheControl:       o.CacheControl,
+		ContentDisposition: o.ContentDisposition,
+		Acl:                acl,
+		Metadata:           o.Metadata,
+	}
+}
+
+// ObjectAttrs represents the metadata for a Google Cloud Storage (GCS) object.
+type ObjectAttrs struct {
+	// Bucket is the name of the bucket containing this GCS object.
+	// This field is read-only.
+	Bucket string
+
+	// Name is the name of the object within the bucket.
+	// This field is read-only.
+	Name string
+
+	// ContentType is the MIME type of the object's content.
+	ContentType string
+
+	// ContentLanguage is the content language of the object's content.
+	ContentLanguage string
+
+	// CacheControl is the Cache-Control header to be sent in the response
+	// headers when serving the object data.
+	CacheControl string
+
+	// ACL is the list of access control rules for the object.
+	ACL []ACLRule
+
+	// Owner is the owner of the object. This field is read-only.
+	//
+	// If non-zero, it is in the form of "user-<userId>".
+	Owner string
+
+	// Size is the length of the object's content. This field is read-only.
+	Size int64
+
+	// ContentEncoding is the encoding of the object's content.
+	ContentEncoding string
+
+	// ContentDisposition is the optional Content-Disposition header of the object
+	// sent in the response headers.
+	ContentDisposition string
+
+	// MD5 is the MD5 hash of the object's content. This field is read-only.
+	MD5 []byte
+
+	// CRC32C is the CRC32 checksum of the object's content using
+	// the Castagnoli93 polynomial. This field is read-only.
+	CRC32C uint32
+
+	// MediaLink is an URL to the object's content. This field is read-only.
+	MediaLink string
+
+	// Metadata represents user-provided metadata, in key/value pairs.
+	// It can be nil if no metadata is provided.
+	Metadata map[string]string
+
+	// Generation is the generation number of the object's content.
+	// This field is read-only.
+	Generation int64
+
+	// MetaGeneration is the version of the metadata for this
+	// object at this generation. This field is used for preconditions
+	// and for detecting changes in metadata. A metageneration number
+	// is only meaningful in the context of a particular generation
+	// of a particular object. This field is read-only.
+	MetaGeneration int64
+
+	// StorageClass is the storage class of the bucket.
+	// This value defines how objects in the bucket are stored and
+	// determines the SLA and the cost of storage. Typical values are
+	// "STANDARD" and "DURABLE_REDUCED_AVAILABILITY".
+	// It defaults to "STANDARD". This field is read-only.
+	StorageClass string
+
+	// Created is the time the object was created. This field is read-only.
+	Created time.Time
+
+	// Deleted is the time the object was deleted.
+	// If not deleted, it is the zero value. This field is read-only.
+	Deleted time.Time
+
+	// Updated is the creation or modification time of the object.
+	// For buckets with versioning enabled, changing an object's
+	// metadata does not change this property. This field is read-only.
+	Updated time.Time
+}
+
+// convertTime converts a time in RFC3339 format to time.Time.
+// If any error occurs in parsing, the zero-value time.Time is silently returned.
+func convertTime(t string) time.Time {
+	var r time.Time
+	if t != "" {
+		r, _ = time.Parse(time.RFC3339, t)
+	}
+	return r
+}
+
+func newObject(o *raw.Object) *ObjectAttrs {
+	if o == nil {
+		return nil
+	}
+	acl := make([]ACLRule, len(o.Acl))
+	for i, rule := range o.Acl {
+		acl[i] = ACLRule{
+			Entity: ACLEntity(rule.Entity),
+			Role:   ACLRole(rule.Role),
+		}
+	}
+	owner := ""
+	if o.Owner != nil {
+		owner = o.Owner.Entity
+	}
+	md5, _ := base64.StdEncoding.DecodeString(o.Md5Hash)
+	var crc32c uint32
+	d, err := base64.StdEncoding.DecodeString(o.Crc32c)
+	if err == nil && len(d) == 4 {
+		crc32c = uint32(d[0])<<24 + uint32(d[1])<<16 + uint32(d[2])<<8 + uint32(d[3])
+	}
+	return &ObjectAttrs{
+		Bucket:          o.Bucket,
+		Name:            o.Name,
+		ContentType:     o.ContentType,
+		ContentLanguage: o.ContentLanguage,
+		CacheControl:    o.CacheControl,
+		ACL:             acl,
+		Owner:           owner,
+		ContentEncoding: o.ContentEncoding,
+		Size:            int64(o.Size),
+		MD5:             md5,
+		CRC32C:          crc32c,
+		MediaLink:       o.MediaLink,
+		Metadata:        o.Metadata,
+		Generation:      o.Generation,
+		MetaGeneration:  o.Metageneration,
+		StorageClass:    o.StorageClass,
+		Created:         convertTime(o.TimeCreated),
+		Deleted:         convertTime(o.TimeDeleted),
+		Updated:         convertTime(o.Updated),
+	}
+}
+
+// Query represents a query to filter objects from a bucket.
+type Query struct {
+	// Delimiter returns results in a directory-like fashion.
+	// Results will contain only objects whose names, aside from the
+	// prefix, do not contain delimiter. Objects whose names,
+	// aside from the prefix, contain delimiter will have their name,
+	// truncated after the delimiter, returned in prefixes.
+	// Duplicate prefixes are omitted.
+	// Optional.
+	Delimiter string
+
+	// Prefix is the prefix filter to query objects
+	// whose names begin with this prefix.
+	// Optional.
+	Prefix string
+
+	// Versions indicates whether multiple versions of the same
+	// object will be included in the results.
+	Versions bool
+
+	// Cursor is a previously-returned page token
+	// representing part of the larger set of results to view.
+	// Optional.
+	Cursor string
+
+	// MaxResults is the maximum number of items plus prefixes
+	// to return. As duplicate prefixes are omitted,
+	// fewer total results may be returned than requested.
+	// The default page limit is used if it is negative or zero.
+	MaxResults int
+}
+
+// ObjectList represents a list of objects returned from a bucket List call.
+type ObjectList struct {
+	// Results represent a list of object results.
+	Results []*ObjectAttrs
+
+	// Next is the continuation query to retrieve more
+	// results with the same filtering criteria. If there
+	// are no more results to retrieve, it is nil.
+	Next *Query
+
+	// Prefixes represents prefixes of objects
+	// matching-but-not-listed up to and including
+	// the requested delimiter.
+	Prefixes []string
+}
+
+// contentTyper implements ContentTyper to enable an
+// io.ReadCloser to specify its MIME type.
+type contentTyper struct {
+	io.Reader
+	t string
+}
+
+func (c *contentTyper) ContentType() string {
+	return c.t
+}
+
+// A Condition constrains methods to act on specific generations of
+// resources.
+//
+// Not all conditions or combinations of conditions are applicable to
+// all methods.
+type Condition interface {
+	// method is the high-level ObjectHandle method name, for
+	// error messages.  call is the call object to modify.
+	modifyCall(method string, call interface{}) error
+}
+
+// applyConds modifies the provided call using the conditions in conds.
+// call is something that quacks like a *raw.WhateverCall.
+func applyConds(method string, conds []Condition, call interface{}) error {
+	for _, cond := range conds {
+		if err := cond.modifyCall(method, call); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// toSourceConds returns a slice of Conditions derived from Conds that instead
+// function on the equivalent Source methods of a call.
+func toSourceConds(conds []Condition) []Condition {
+	out := make([]Condition, 0, len(conds))
+	for _, c := range conds {
+		switch c := c.(type) {
+		case genCond:
+			var m string
+			if strings.HasPrefix(c.method, "If") {
+				m = "IfSource" + c.method[2:]
+			} else {
+				m = "Source" + c.method
+			}
+			out = append(out, genCond{method: m, val: c.val})
+		default:
+			// NOTE(djd): If the message from unsupportedCond becomes
+			// confusing, we'll need to find a way for Conditions to
+			// identify themselves.
+			out = append(out, unsupportedCond{})
+		}
+	}
+	return out
+}
+
+func Generation(gen int64) Condition               { return genCond{"Generation", gen} }
+func IfGenerationMatch(gen int64) Condition        { return genCond{"IfGenerationMatch", gen} }
+func IfGenerationNotMatch(gen int64) Condition     { return genCond{"IfGenerationNotMatch", gen} }
+func IfMetaGenerationMatch(gen int64) Condition    { return genCond{"IfMetagenerationMatch", gen} }
+func IfMetaGenerationNotMatch(gen int64) Condition { return genCond{"IfMetagenerationNotMatch", gen} }
+
+type genCond struct {
+	method string
+	val    int64
+}
+
+func (g genCond) modifyCall(srcMethod string, call interface{}) error {
+	rv := reflect.ValueOf(call)
+	meth := rv.MethodByName(g.method)
+	if !meth.IsValid() {
+		return fmt.Errorf("%s: condition %s not supported", srcMethod, g.method)
+	}
+	meth.Call([]reflect.Value{reflect.ValueOf(g.val)})
+	return nil
+}
+
+type unsupportedCond struct{}
+
+func (unsupportedCond) modifyCall(srcMethod string, call interface{}) error {
+	return fmt.Errorf("%s: condition not supported", srcMethod)
+}
+
+func appendParam(req *http.Request, k, v string) {
+	sep := ""
+	if req.URL.RawQuery != "" {
+		sep = "&"
+	}
+	req.URL.RawQuery += sep + url.QueryEscape(k) + "=" + url.QueryEscape(v)
+}
+
+// objectsGetCall wraps an *http.Request for an object fetch call, but adds the methods
+// that modifyCall searches for by name. (the same names as the raw, auto-generated API)
+type objectsGetCall struct{ req *http.Request }
+
+func (c objectsGetCall) Generation(gen int64) {
+	appendParam(c.req, "generation", fmt.Sprint(gen))
+}
+func (c objectsGetCall) IfGenerationMatch(gen int64) {
+	appendParam(c.req, "ifGenerationMatch", fmt.Sprint(gen))
+}
+func (c objectsGetCall) IfGenerationNotMatch(gen int64) {
+	appendParam(c.req, "ifGenerationNotMatch", fmt.Sprint(gen))
+}
+func (c objectsGetCall) IfMetagenerationMatch(gen int64) {
+	appendParam(c.req, "ifMetagenerationMatch", fmt.Sprint(gen))
+}
+func (c objectsGetCall) IfMetagenerationNotMatch(gen int64) {
+	appendParam(c.req, "ifMetagenerationNotMatch", fmt.Sprint(gen))
 }

@@ -1,4 +1,4 @@
-// Copyright 2016 CoreOS, Inc.
+// Copyright 2016 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package integration
 
 import (
 	"math/rand"
+	"sync"
 	"testing"
 	"time"
 
@@ -28,21 +29,31 @@ import (
 func TestMutexSingleNode(t *testing.T) {
 	clus := NewClusterV3(t, &ClusterConfig{Size: 3})
 	defer clus.Terminate(t)
-	testMutex(t, 5, func() *clientv3.Client { return clus.clients[0] })
+
+	var clients []*clientv3.Client
+	testMutex(t, 5, makeSingleNodeClients(t, clus.cluster, &clients))
+	closeClients(t, clients)
 }
 
 func TestMutexMultiNode(t *testing.T) {
 	clus := NewClusterV3(t, &ClusterConfig{Size: 3})
 	defer clus.Terminate(t)
-	testMutex(t, 5, func() *clientv3.Client { return clus.RandClient() })
+
+	var clients []*clientv3.Client
+	testMutex(t, 5, makeMultiNodeClients(t, clus.cluster, &clients))
+	closeClients(t, clients)
 }
 
 func testMutex(t *testing.T, waiters int, chooseClient func() *clientv3.Client) {
 	// stream lock acquisitions
-	lockedC := make(chan *concurrency.Mutex, 1)
+	lockedC := make(chan *concurrency.Mutex)
 	for i := 0; i < waiters; i++ {
 		go func() {
-			m := concurrency.NewMutex(chooseClient(), "test-mutex")
+			session, err := concurrency.NewSession(chooseClient())
+			if err != nil {
+				t.Error(err)
+			}
+			m := concurrency.NewMutex(session, "test-mutex")
 			if err := m.Lock(context.TODO()); err != nil {
 				t.Fatalf("could not wait on lock (%v)", err)
 			}
@@ -62,10 +73,31 @@ func testMutex(t *testing.T, waiters int, chooseClient func() *clientv3.Client) 
 				t.Fatalf("lock %d followers did not wait", i)
 			default:
 			}
-			if err := m.Unlock(); err != nil {
+			if err := m.Unlock(context.TODO()); err != nil {
 				t.Fatalf("could not release lock (%v)", err)
 			}
 		}
+	}
+}
+
+// TestMutexSessionRelock ensures that acquiring the same lock with the same
+// session will not result in deadlock.
+func TestMutexSessionRelock(t *testing.T) {
+	clus := NewClusterV3(t, &ClusterConfig{Size: 3})
+	defer clus.Terminate(t)
+	session, err := concurrency.NewSession(clus.RandClient())
+	if err != nil {
+		t.Error(err)
+	}
+
+	m := concurrency.NewMutex(session, "test-mutex")
+	if err := m.Lock(context.TODO()); err != nil {
+		t.Fatal(err)
+	}
+
+	m2 := concurrency.NewMutex(session, "test-mutex")
+	if err := m2.Lock(context.TODO()); err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -96,8 +128,12 @@ func testRWMutex(t *testing.T, waiters int, chooseClient func() *clientv3.Client
 	wlockedC := make(chan *recipe.RWMutex, 1)
 	for i := 0; i < waiters; i++ {
 		go func() {
-			rwm := recipe.NewRWMutex(chooseClient(), "test-rwmutex")
-			if rand.Intn(1) == 0 {
+			session, err := concurrency.NewSession(chooseClient())
+			if err != nil {
+				t.Error(err)
+			}
+			rwm := recipe.NewRWMutex(session, "test-rwmutex")
+			if rand.Intn(2) == 0 {
 				if err := rwm.RLock(); err != nil {
 					t.Fatalf("could not rlock (%v)", err)
 				}
@@ -134,6 +170,41 @@ func testRWMutex(t *testing.T, waiters int, chooseClient func() *clientv3.Client
 			if err := rl.RUnlock(); err != nil {
 				t.Fatalf("could not release rlock (%v)", err)
 			}
+		}
+	}
+}
+
+func makeClients(t *testing.T, clients *[]*clientv3.Client, choose func() *member) func() *clientv3.Client {
+	var mu sync.Mutex
+	*clients = nil
+	return func() *clientv3.Client {
+		cli, err := NewClientV3(choose())
+		if err != nil {
+			t.Fatalf("cannot create client: %v", err)
+		}
+		mu.Lock()
+		*clients = append(*clients, cli)
+		mu.Unlock()
+		return cli
+	}
+}
+
+func makeSingleNodeClients(t *testing.T, clus *cluster, clients *[]*clientv3.Client) func() *clientv3.Client {
+	return makeClients(t, clients, func() *member {
+		return clus.Members[0]
+	})
+}
+
+func makeMultiNodeClients(t *testing.T, clus *cluster, clients *[]*clientv3.Client) func() *clientv3.Client {
+	return makeClients(t, clients, func() *member {
+		return clus.Members[rand.Intn(len(clus.Members))]
+	})
+}
+
+func closeClients(t *testing.T, clients []*clientv3.Client) {
+	for _, cli := range clients {
+		if err := cli.Close(); err != nil {
+			t.Fatal(err)
 		}
 	}
 }

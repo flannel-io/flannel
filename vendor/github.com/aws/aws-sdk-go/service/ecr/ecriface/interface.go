@@ -91,9 +91,13 @@ type ECRAPI interface {
 
 	DescribeImages(*ecr.DescribeImagesInput) (*ecr.DescribeImagesOutput, error)
 
+	DescribeImagesPages(*ecr.DescribeImagesInput, func(*ecr.DescribeImagesOutput, bool) bool) error
+
 	DescribeRepositoriesRequest(*ecr.DescribeRepositoriesInput) (*request.Request, *ecr.DescribeRepositoriesOutput)
 
 	DescribeRepositories(*ecr.DescribeRepositoriesInput) (*ecr.DescribeRepositoriesOutput, error)
+
+	DescribeRepositoriesPages(*ecr.DescribeRepositoriesInput, func(*ecr.DescribeRepositoriesOutput, bool) bool) error
 
 	GetAuthorizationTokenRequest(*ecr.GetAuthorizationTokenInput) (*request.Request, *ecr.GetAuthorizationTokenOutput)
 
@@ -114,6 +118,8 @@ type ECRAPI interface {
 	ListImagesRequest(*ecr.ListImagesInput) (*request.Request, *ecr.ListImagesOutput)
 
 	ListImages(*ecr.ListImagesInput) (*ecr.ListImagesOutput, error)
+
+	ListImagesPages(*ecr.ListImagesInput, func(*ecr.ListImagesOutput, bool) bool) error
 
 	PutImageRequest(*ecr.PutImageInput) (*request.Request, *ecr.PutImageOutput)
 

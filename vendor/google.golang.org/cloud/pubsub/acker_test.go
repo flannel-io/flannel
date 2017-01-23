@@ -15,6 +15,7 @@
 package pubsub
 
 import (
+	"errors"
 	"reflect"
 	"sort"
 	"testing"
@@ -119,5 +120,103 @@ func TestAckerStop(t *testing.T) {
 	case <-stopped:
 	case <-time.After(time.Millisecond):
 		t.Errorf("acker.Stop never returned")
+	}
+}
+
+type ackCallResult struct {
+	ackIDs []string
+	err    error
+}
+
+type ackService struct {
+	service
+
+	calls []ackCallResult
+
+	t *testing.T // used for error logging.
+}
+
+func (as *ackService) acknowledge(ctx context.Context, subName string, ackIDs []string) error {
+	if len(as.calls) == 0 {
+		as.t.Fatalf("unexpected call to acknowledge: ackIDs: %v", ackIDs)
+	}
+	call := as.calls[0]
+	as.calls = as.calls[1:]
+
+	if got, want := ackIDs, call.ackIDs; !reflect.DeepEqual(got, want) {
+		as.t.Errorf("unexpected arguments to acknowledge: got: %v ; want: %v", got, want)
+	}
+	return call.err
+}
+
+// Test implementation returns the first 2 elements as head, and the rest as tail.
+func (as *ackService) splitAckIDs(ids []string) ([]string, []string) {
+	if len(ids) < 2 {
+		return ids, nil
+	}
+	return ids[:2], ids[2:]
+}
+
+func TestAckerSplitsBatches(t *testing.T) {
+	type testCase struct {
+		calls []ackCallResult
+	}
+	for _, tc := range []testCase{
+		{
+			calls: []ackCallResult{
+				{
+					ackIDs: []string{"a", "b"},
+				},
+				{
+					ackIDs: []string{"c", "d"},
+				},
+				{
+					ackIDs: []string{"e", "f"},
+				},
+			},
+		},
+		{
+			calls: []ackCallResult{
+				{
+					ackIDs: []string{"a", "b"},
+					err:    errors.New("bang"),
+				},
+				// On error we retry once.
+				{
+					ackIDs: []string{"a", "b"},
+					err:    errors.New("bang"),
+				},
+				// We give up after failing twice, so we move on to the next set, "c" and "d"
+				{
+					ackIDs: []string{"c", "d"},
+					err:    errors.New("bang"),
+				},
+				// Again, we retry once.
+				{
+					ackIDs: []string{"c", "d"},
+				},
+				{
+					ackIDs: []string{"e", "f"},
+				},
+			},
+		},
+	} {
+		s := &ackService{
+			t:     t,
+			calls: tc.calls,
+		}
+
+		c := &Client{projectID: "projid", s: s}
+		acker := &acker{
+			Client: c,
+			Ctx:    context.Background(),
+			Sub:    "subname",
+		}
+
+		acker.ack([]string{"a", "b", "c", "d", "e", "f"})
+
+		if len(s.calls) != 0 {
+			t.Errorf("expected ack calls did not occur: %v", s.calls)
+		}
 	}
 }

@@ -65,8 +65,6 @@ func TestKeepAlive(t *testing.T) {
 	checkModDeadlineCall([]string{"a", "c"})
 	ka.Remove("a")
 	ka.Remove("c")
-	// modifyAckDeadline should not be called now because there are no ackIDs left.
-	tick <- time.Time{}
 	ka.Add("d")
 	tick <- time.Time{}
 	checkModDeadlineCall([]string{"d"})
@@ -77,7 +75,8 @@ func TestKeepAlive(t *testing.T) {
 
 // TestKeepAliveStop checks that Stop blocks until all ackIDs have been removed.
 func TestKeepAliveStop(t *testing.T) {
-	ticker := time.NewTicker(100 * time.Microsecond)
+	tick := 100 * time.Microsecond
+	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
 
 	s := &testService{modDeadlineCalled: make(chan modDeadlineCall, 100)}
@@ -85,6 +84,7 @@ func TestKeepAliveStop(t *testing.T) {
 
 	ka := &keepAlive{
 		Client:        c,
+		Ctx:           context.Background(),
 		ExtensionTick: ticker.C,
 		MaxExtension:  time.Hour,
 	}
@@ -99,10 +99,10 @@ func TestKeepAliveStop(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		time.Sleep(time.Nanosecond * 1000)
+		time.Sleep(tick * 10)
 		events <- "pre-remove"
 		ka.Remove("a")
-		time.Sleep(time.Nanosecond * 1000)
+		time.Sleep(tick * 10)
 		events <- "post-second-sleep"
 	}()
 
@@ -139,6 +139,7 @@ func TestMaxExtensionDeadline(t *testing.T) {
 	maxExtension := time.Millisecond
 	ka := &keepAlive{
 		Client:        c,
+		Ctx:           context.Background(),
 		ExtensionTick: ticker.C,
 		MaxExtension:  maxExtension,
 	}
@@ -156,5 +157,36 @@ func TestMaxExtensionDeadline(t *testing.T) {
 	case <-stopped:
 	case <-time.After(maxExtension + 2*time.Second):
 		t.Fatalf("keepalive failed to stop after maxExtension deadline")
+	}
+}
+
+func TestKeepAliveStopsImmediatelyForNoAckIDs(t *testing.T) {
+	ticker := time.NewTicker(100 * time.Microsecond)
+	defer ticker.Stop()
+
+	s := &testService{modDeadlineCalled: make(chan modDeadlineCall, 100)}
+	c := &Client{projectID: "projid", s: s}
+
+	maxExtension := time.Millisecond
+	ka := &keepAlive{
+		Client:        c,
+		Ctx:           context.Background(),
+		ExtensionTick: ticker.C,
+		MaxExtension:  maxExtension,
+	}
+	ka.Start()
+
+	stopped := make(chan struct{})
+
+	go func() {
+		// There are no items in ka, so this should return immediately.
+		ka.Stop()
+		stopped <- struct{}{}
+	}()
+
+	select {
+	case <-stopped:
+	case <-time.After(maxExtension / 2):
+		t.Fatalf("keepalive failed to stop before maxExtension deadline")
 	}
 }

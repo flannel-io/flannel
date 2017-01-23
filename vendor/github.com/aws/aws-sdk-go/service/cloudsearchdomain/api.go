@@ -35,7 +35,6 @@ const opSearch = "Search"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *CloudSearchDomain) SearchRequest(input *SearchInput) (req *request.Request, output *SearchOutput) {
 	op := &request.Operation{
 		Name:       opSearch,
@@ -47,9 +46,8 @@ func (c *CloudSearchDomain) SearchRequest(input *SearchInput) (req *request.Requ
 		input = &SearchInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SearchOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -119,7 +117,6 @@ const opSuggest = "Suggest"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *CloudSearchDomain) SuggestRequest(input *SuggestInput) (req *request.Request, output *SuggestOutput) {
 	op := &request.Operation{
 		Name:       opSuggest,
@@ -131,9 +128,8 @@ func (c *CloudSearchDomain) SuggestRequest(input *SuggestInput) (req *request.Re
 		input = &SuggestInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SuggestOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -199,7 +195,6 @@ const opUploadDocuments = "UploadDocuments"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *CloudSearchDomain) UploadDocumentsRequest(input *UploadDocumentsInput) (req *request.Request, output *UploadDocumentsOutput) {
 	op := &request.Operation{
 		Name:       opUploadDocuments,
@@ -211,9 +206,8 @@ func (c *CloudSearchDomain) UploadDocumentsRequest(input *UploadDocumentsInput) 
 		input = &UploadDocumentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UploadDocumentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -280,6 +274,18 @@ func (s Bucket) GoString() string {
 	return s.String()
 }
 
+// SetCount sets the Count field's value.
+func (s *Bucket) SetCount(v int64) *Bucket {
+	s.Count = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Bucket) SetValue(v string) *Bucket {
+	s.Value = &v
+	return s
+}
+
 // A container for the calculated facet values and counts.
 type BucketInfo struct {
 	_ struct{} `type:"structure"`
@@ -296,6 +302,12 @@ func (s BucketInfo) String() string {
 // GoString returns the string representation
 func (s BucketInfo) GoString() string {
 	return s.String()
+}
+
+// SetBuckets sets the Buckets field's value.
+func (s *BucketInfo) SetBuckets(v []*Bucket) *BucketInfo {
+	s.Buckets = v
+	return s
 }
 
 // A warning returned by the document service when an issue is discovered while
@@ -315,6 +327,12 @@ func (s DocumentServiceWarning) String() string {
 // GoString returns the string representation
 func (s DocumentServiceWarning) GoString() string {
 	return s.String()
+}
+
+// SetMessage sets the Message field's value.
+func (s *DocumentServiceWarning) SetMessage(v string) *DocumentServiceWarning {
+	s.Message = &v
+	return s
 }
 
 // The statistics for a field calculated in the request.
@@ -378,6 +396,54 @@ func (s FieldStats) GoString() string {
 	return s.String()
 }
 
+// SetCount sets the Count field's value.
+func (s *FieldStats) SetCount(v int64) *FieldStats {
+	s.Count = &v
+	return s
+}
+
+// SetMax sets the Max field's value.
+func (s *FieldStats) SetMax(v string) *FieldStats {
+	s.Max = &v
+	return s
+}
+
+// SetMean sets the Mean field's value.
+func (s *FieldStats) SetMean(v string) *FieldStats {
+	s.Mean = &v
+	return s
+}
+
+// SetMin sets the Min field's value.
+func (s *FieldStats) SetMin(v string) *FieldStats {
+	s.Min = &v
+	return s
+}
+
+// SetMissing sets the Missing field's value.
+func (s *FieldStats) SetMissing(v int64) *FieldStats {
+	s.Missing = &v
+	return s
+}
+
+// SetStddev sets the Stddev field's value.
+func (s *FieldStats) SetStddev(v float64) *FieldStats {
+	s.Stddev = &v
+	return s
+}
+
+// SetSum sets the Sum field's value.
+func (s *FieldStats) SetSum(v float64) *FieldStats {
+	s.Sum = &v
+	return s
+}
+
+// SetSumOfSquares sets the SumOfSquares field's value.
+func (s *FieldStats) SetSumOfSquares(v float64) *FieldStats {
+	s.SumOfSquares = &v
+	return s
+}
+
 // Information about a document that matches the search request.
 type Hit struct {
 	_ struct{} `type:"structure"`
@@ -403,6 +469,30 @@ func (s Hit) String() string {
 // GoString returns the string representation
 func (s Hit) GoString() string {
 	return s.String()
+}
+
+// SetExprs sets the Exprs field's value.
+func (s *Hit) SetExprs(v map[string]*string) *Hit {
+	s.Exprs = v
+	return s
+}
+
+// SetFields sets the Fields field's value.
+func (s *Hit) SetFields(v map[string][]*string) *Hit {
+	s.Fields = v
+	return s
+}
+
+// SetHighlights sets the Highlights field's value.
+func (s *Hit) SetHighlights(v map[string]*string) *Hit {
+	s.Highlights = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Hit) SetId(v string) *Hit {
+	s.Id = &v
+	return s
 }
 
 // The collection of documents that match the search request.
@@ -431,6 +521,30 @@ func (s Hits) String() string {
 // GoString returns the string representation
 func (s Hits) GoString() string {
 	return s.String()
+}
+
+// SetCursor sets the Cursor field's value.
+func (s *Hits) SetCursor(v string) *Hits {
+	s.Cursor = &v
+	return s
+}
+
+// SetFound sets the Found field's value.
+func (s *Hits) SetFound(v int64) *Hits {
+	s.Found = &v
+	return s
+}
+
+// SetHit sets the Hit field's value.
+func (s *Hits) SetHit(v []*Hit) *Hits {
+	s.Hit = v
+	return s
+}
+
+// SetStart sets the Start field's value.
+func (s *Hits) SetStart(v int64) *Hits {
+	s.Start = &v
+	return s
 }
 
 // Container for the parameters to the Search request.
@@ -761,6 +875,90 @@ func (s *SearchInput) Validate() error {
 	return nil
 }
 
+// SetCursor sets the Cursor field's value.
+func (s *SearchInput) SetCursor(v string) *SearchInput {
+	s.Cursor = &v
+	return s
+}
+
+// SetExpr sets the Expr field's value.
+func (s *SearchInput) SetExpr(v string) *SearchInput {
+	s.Expr = &v
+	return s
+}
+
+// SetFacet sets the Facet field's value.
+func (s *SearchInput) SetFacet(v string) *SearchInput {
+	s.Facet = &v
+	return s
+}
+
+// SetFilterQuery sets the FilterQuery field's value.
+func (s *SearchInput) SetFilterQuery(v string) *SearchInput {
+	s.FilterQuery = &v
+	return s
+}
+
+// SetHighlight sets the Highlight field's value.
+func (s *SearchInput) SetHighlight(v string) *SearchInput {
+	s.Highlight = &v
+	return s
+}
+
+// SetPartial sets the Partial field's value.
+func (s *SearchInput) SetPartial(v bool) *SearchInput {
+	s.Partial = &v
+	return s
+}
+
+// SetQuery sets the Query field's value.
+func (s *SearchInput) SetQuery(v string) *SearchInput {
+	s.Query = &v
+	return s
+}
+
+// SetQueryOptions sets the QueryOptions field's value.
+func (s *SearchInput) SetQueryOptions(v string) *SearchInput {
+	s.QueryOptions = &v
+	return s
+}
+
+// SetQueryParser sets the QueryParser field's value.
+func (s *SearchInput) SetQueryParser(v string) *SearchInput {
+	s.QueryParser = &v
+	return s
+}
+
+// SetReturn sets the Return field's value.
+func (s *SearchInput) SetReturn(v string) *SearchInput {
+	s.Return = &v
+	return s
+}
+
+// SetSize sets the Size field's value.
+func (s *SearchInput) SetSize(v int64) *SearchInput {
+	s.Size = &v
+	return s
+}
+
+// SetSort sets the Sort field's value.
+func (s *SearchInput) SetSort(v string) *SearchInput {
+	s.Sort = &v
+	return s
+}
+
+// SetStart sets the Start field's value.
+func (s *SearchInput) SetStart(v int64) *SearchInput {
+	s.Start = &v
+	return s
+}
+
+// SetStats sets the Stats field's value.
+func (s *SearchInput) SetStats(v string) *SearchInput {
+	s.Stats = &v
+	return s
+}
+
 // The result of a Search request. Contains the documents that match the specified
 // search criteria and any requested fields, highlights, and facet information.
 type SearchOutput struct {
@@ -789,6 +987,30 @@ func (s SearchOutput) GoString() string {
 	return s.String()
 }
 
+// SetFacets sets the Facets field's value.
+func (s *SearchOutput) SetFacets(v map[string]*BucketInfo) *SearchOutput {
+	s.Facets = v
+	return s
+}
+
+// SetHits sets the Hits field's value.
+func (s *SearchOutput) SetHits(v *Hits) *SearchOutput {
+	s.Hits = v
+	return s
+}
+
+// SetStats sets the Stats field's value.
+func (s *SearchOutput) SetStats(v map[string]*FieldStats) *SearchOutput {
+	s.Stats = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *SearchOutput) SetStatus(v *SearchStatus) *SearchOutput {
+	s.Status = v
+	return s
+}
+
 // Contains the resource id (rid) and the time it took to process the request
 // (timems).
 type SearchStatus struct {
@@ -809,6 +1031,18 @@ func (s SearchStatus) String() string {
 // GoString returns the string representation
 func (s SearchStatus) GoString() string {
 	return s.String()
+}
+
+// SetRid sets the Rid field's value.
+func (s *SearchStatus) SetRid(v string) *SearchStatus {
+	s.Rid = &v
+	return s
+}
+
+// SetTimems sets the Timems field's value.
+func (s *SearchStatus) SetTimems(v int64) *SearchStatus {
+	s.Timems = &v
+	return s
 }
 
 // Container for the parameters to the Suggest request.
@@ -855,6 +1089,24 @@ func (s *SuggestInput) Validate() error {
 	return nil
 }
 
+// SetQuery sets the Query field's value.
+func (s *SuggestInput) SetQuery(v string) *SuggestInput {
+	s.Query = &v
+	return s
+}
+
+// SetSize sets the Size field's value.
+func (s *SuggestInput) SetSize(v int64) *SuggestInput {
+	s.Size = &v
+	return s
+}
+
+// SetSuggester sets the Suggester field's value.
+func (s *SuggestInput) SetSuggester(v string) *SuggestInput {
+	s.Suggester = &v
+	return s
+}
+
 // Container for the suggestion information returned in a SuggestResponse.
 type SuggestModel struct {
 	_ struct{} `type:"structure"`
@@ -879,6 +1131,24 @@ func (s SuggestModel) GoString() string {
 	return s.String()
 }
 
+// SetFound sets the Found field's value.
+func (s *SuggestModel) SetFound(v int64) *SuggestModel {
+	s.Found = &v
+	return s
+}
+
+// SetQuery sets the Query field's value.
+func (s *SuggestModel) SetQuery(v string) *SuggestModel {
+	s.Query = &v
+	return s
+}
+
+// SetSuggestions sets the Suggestions field's value.
+func (s *SuggestModel) SetSuggestions(v []*SuggestionMatch) *SuggestModel {
+	s.Suggestions = v
+	return s
+}
+
 // Contains the response to a Suggest request.
 type SuggestOutput struct {
 	_ struct{} `type:"structure"`
@@ -899,6 +1169,18 @@ func (s SuggestOutput) String() string {
 // GoString returns the string representation
 func (s SuggestOutput) GoString() string {
 	return s.String()
+}
+
+// SetStatus sets the Status field's value.
+func (s *SuggestOutput) SetStatus(v *SuggestStatus) *SuggestOutput {
+	s.Status = v
+	return s
+}
+
+// SetSuggest sets the Suggest field's value.
+func (s *SuggestOutput) SetSuggest(v *SuggestModel) *SuggestOutput {
+	s.Suggest = v
+	return s
 }
 
 // Contains the resource id (rid) and the time it took to process the request
@@ -923,6 +1205,18 @@ func (s SuggestStatus) GoString() string {
 	return s.String()
 }
 
+// SetRid sets the Rid field's value.
+func (s *SuggestStatus) SetRid(v string) *SuggestStatus {
+	s.Rid = &v
+	return s
+}
+
+// SetTimems sets the Timems field's value.
+func (s *SuggestStatus) SetTimems(v int64) *SuggestStatus {
+	s.Timems = &v
+	return s
+}
+
 // An autocomplete suggestion that matches the query string specified in a SuggestRequest.
 type SuggestionMatch struct {
 	_ struct{} `type:"structure"`
@@ -945,6 +1239,24 @@ func (s SuggestionMatch) String() string {
 // GoString returns the string representation
 func (s SuggestionMatch) GoString() string {
 	return s.String()
+}
+
+// SetId sets the Id field's value.
+func (s *SuggestionMatch) SetId(v string) *SuggestionMatch {
+	s.Id = &v
+	return s
+}
+
+// SetScore sets the Score field's value.
+func (s *SuggestionMatch) SetScore(v int64) *SuggestionMatch {
+	s.Score = &v
+	return s
+}
+
+// SetSuggestion sets the Suggestion field's value.
+func (s *SuggestionMatch) SetSuggestion(v string) *SuggestionMatch {
+	s.Suggestion = &v
+	return s
 }
 
 // Container for the parameters to the UploadDocuments request.
@@ -992,6 +1304,18 @@ func (s *UploadDocumentsInput) Validate() error {
 	return nil
 }
 
+// SetContentType sets the ContentType field's value.
+func (s *UploadDocumentsInput) SetContentType(v string) *UploadDocumentsInput {
+	s.ContentType = &v
+	return s
+}
+
+// SetDocuments sets the Documents field's value.
+func (s *UploadDocumentsInput) SetDocuments(v io.ReadSeeker) *UploadDocumentsInput {
+	s.Documents = v
+	return s
+}
+
 // Contains the response to an UploadDocuments request.
 type UploadDocumentsOutput struct {
 	_ struct{} `type:"structure"`
@@ -1017,6 +1341,30 @@ func (s UploadDocumentsOutput) String() string {
 // GoString returns the string representation
 func (s UploadDocumentsOutput) GoString() string {
 	return s.String()
+}
+
+// SetAdds sets the Adds field's value.
+func (s *UploadDocumentsOutput) SetAdds(v int64) *UploadDocumentsOutput {
+	s.Adds = &v
+	return s
+}
+
+// SetDeletes sets the Deletes field's value.
+func (s *UploadDocumentsOutput) SetDeletes(v int64) *UploadDocumentsOutput {
+	s.Deletes = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *UploadDocumentsOutput) SetStatus(v string) *UploadDocumentsOutput {
+	s.Status = &v
+	return s
+}
+
+// SetWarnings sets the Warnings field's value.
+func (s *UploadDocumentsOutput) SetWarnings(v []*DocumentServiceWarning) *UploadDocumentsOutput {
+	s.Warnings = v
+	return s
 }
 
 const (

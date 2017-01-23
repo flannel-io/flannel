@@ -36,6 +36,7 @@ const opCreateReplicationJob = "CreateReplicationJob"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/CreateReplicationJob
 func (c *SMS) CreateReplicationJobRequest(input *CreateReplicationJobInput) (req *request.Request, output *CreateReplicationJobOutput) {
 	op := &request.Operation{
 		Name:       opCreateReplicationJob,
@@ -47,9 +48,8 @@ func (c *SMS) CreateReplicationJobRequest(input *CreateReplicationJobInput) (req
 		input = &CreateReplicationJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateReplicationJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -97,6 +97,7 @@ func (c *SMS) CreateReplicationJobRequest(input *CreateReplicationJobInput) (req
 //   * InternalError
 //   An internal error has occured.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/CreateReplicationJob
 func (c *SMS) CreateReplicationJob(input *CreateReplicationJobInput) (*CreateReplicationJobOutput, error) {
 	req, out := c.CreateReplicationJobRequest(input)
 	err := req.Send()
@@ -129,6 +130,7 @@ const opDeleteReplicationJob = "DeleteReplicationJob"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteReplicationJob
 func (c *SMS) DeleteReplicationJobRequest(input *DeleteReplicationJobInput) (req *request.Request, output *DeleteReplicationJobOutput) {
 	op := &request.Operation{
 		Name:       opDeleteReplicationJob,
@@ -140,9 +142,8 @@ func (c *SMS) DeleteReplicationJobRequest(input *DeleteReplicationJobInput) (req
 		input = &DeleteReplicationJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteReplicationJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -180,6 +181,7 @@ func (c *SMS) DeleteReplicationJobRequest(input *DeleteReplicationJobInput) (req
 //   * ReplicationJobNotFoundException
 //   The specified Replication Job cannot be found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteReplicationJob
 func (c *SMS) DeleteReplicationJob(input *DeleteReplicationJobInput) (*DeleteReplicationJobOutput, error) {
 	req, out := c.DeleteReplicationJobRequest(input)
 	err := req.Send()
@@ -212,6 +214,7 @@ const opDeleteServerCatalog = "DeleteServerCatalog"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteServerCatalog
 func (c *SMS) DeleteServerCatalogRequest(input *DeleteServerCatalogInput) (req *request.Request, output *DeleteServerCatalogOutput) {
 	op := &request.Operation{
 		Name:       opDeleteServerCatalog,
@@ -223,9 +226,8 @@ func (c *SMS) DeleteServerCatalogRequest(input *DeleteServerCatalogInput) (req *
 		input = &DeleteServerCatalogInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteServerCatalogOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -259,6 +261,7 @@ func (c *SMS) DeleteServerCatalogRequest(input *DeleteServerCatalogInput) (req *
 //   The request is missing a required parameter. Ensure that you have supplied
 //   all the required parameters for the request.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteServerCatalog
 func (c *SMS) DeleteServerCatalog(input *DeleteServerCatalogInput) (*DeleteServerCatalogOutput, error) {
 	req, out := c.DeleteServerCatalogRequest(input)
 	err := req.Send()
@@ -291,6 +294,7 @@ const opDisassociateConnector = "DisassociateConnector"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DisassociateConnector
 func (c *SMS) DisassociateConnectorRequest(input *DisassociateConnectorInput) (req *request.Request, output *DisassociateConnectorOutput) {
 	op := &request.Operation{
 		Name:       opDisassociateConnector,
@@ -302,9 +306,8 @@ func (c *SMS) DisassociateConnectorRequest(input *DisassociateConnectorInput) (r
 		input = &DisassociateConnectorInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DisassociateConnectorOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -337,6 +340,7 @@ func (c *SMS) DisassociateConnectorRequest(input *DisassociateConnectorInput) (r
 //   A parameter specified in the request is not valid, is unsupported, or cannot
 //   be used.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DisassociateConnector
 func (c *SMS) DisassociateConnector(input *DisassociateConnectorInput) (*DisassociateConnectorOutput, error) {
 	req, out := c.DisassociateConnectorRequest(input)
 	err := req.Send()
@@ -369,6 +373,7 @@ const opGetConnectors = "GetConnectors"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetConnectors
 func (c *SMS) GetConnectorsRequest(input *GetConnectorsInput) (req *request.Request, output *GetConnectorsOutput) {
 	op := &request.Operation{
 		Name:       opGetConnectors,
@@ -386,9 +391,8 @@ func (c *SMS) GetConnectorsRequest(input *GetConnectorsInput) (req *request.Requ
 		input = &GetConnectorsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetConnectorsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -408,6 +412,7 @@ func (c *SMS) GetConnectorsRequest(input *GetConnectorsInput) (req *request.Requ
 //   * UnauthorizedOperationException
 //   This user does not have permissions to perform this operation.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetConnectors
 func (c *SMS) GetConnectors(input *GetConnectorsInput) (*GetConnectorsOutput, error) {
 	req, out := c.GetConnectorsRequest(input)
 	err := req.Send()
@@ -465,6 +470,7 @@ const opGetReplicationJobs = "GetReplicationJobs"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetReplicationJobs
 func (c *SMS) GetReplicationJobsRequest(input *GetReplicationJobsInput) (req *request.Request, output *GetReplicationJobsOutput) {
 	op := &request.Operation{
 		Name:       opGetReplicationJobs,
@@ -482,9 +488,8 @@ func (c *SMS) GetReplicationJobsRequest(input *GetReplicationJobsInput) (req *re
 		input = &GetReplicationJobsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetReplicationJobsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -513,6 +518,7 @@ func (c *SMS) GetReplicationJobsRequest(input *GetReplicationJobsInput) (req *re
 //   * UnauthorizedOperationException
 //   This user does not have permissions to perform this operation.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetReplicationJobs
 func (c *SMS) GetReplicationJobs(input *GetReplicationJobsInput) (*GetReplicationJobsOutput, error) {
 	req, out := c.GetReplicationJobsRequest(input)
 	err := req.Send()
@@ -570,6 +576,7 @@ const opGetReplicationRuns = "GetReplicationRuns"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetReplicationRuns
 func (c *SMS) GetReplicationRunsRequest(input *GetReplicationRunsInput) (req *request.Request, output *GetReplicationRunsOutput) {
 	op := &request.Operation{
 		Name:       opGetReplicationRuns,
@@ -587,9 +594,8 @@ func (c *SMS) GetReplicationRunsRequest(input *GetReplicationRunsInput) (req *re
 		input = &GetReplicationRunsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetReplicationRunsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -618,6 +624,7 @@ func (c *SMS) GetReplicationRunsRequest(input *GetReplicationRunsInput) (req *re
 //   * UnauthorizedOperationException
 //   This user does not have permissions to perform this operation.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetReplicationRuns
 func (c *SMS) GetReplicationRuns(input *GetReplicationRunsInput) (*GetReplicationRunsOutput, error) {
 	req, out := c.GetReplicationRunsRequest(input)
 	err := req.Send()
@@ -675,6 +682,7 @@ const opGetServers = "GetServers"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetServers
 func (c *SMS) GetServersRequest(input *GetServersInput) (req *request.Request, output *GetServersOutput) {
 	op := &request.Operation{
 		Name:       opGetServers,
@@ -692,9 +700,8 @@ func (c *SMS) GetServersRequest(input *GetServersInput) (req *request.Request, o
 		input = &GetServersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetServersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -714,6 +721,7 @@ func (c *SMS) GetServersRequest(input *GetServersInput) (req *request.Request, o
 //   * UnauthorizedOperationException
 //   This user does not have permissions to perform this operation.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetServers
 func (c *SMS) GetServers(input *GetServersInput) (*GetServersOutput, error) {
 	req, out := c.GetServersRequest(input)
 	err := req.Send()
@@ -771,6 +779,7 @@ const opImportServerCatalog = "ImportServerCatalog"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/ImportServerCatalog
 func (c *SMS) ImportServerCatalogRequest(input *ImportServerCatalogInput) (req *request.Request, output *ImportServerCatalogOutput) {
 	op := &request.Operation{
 		Name:       opImportServerCatalog,
@@ -782,9 +791,8 @@ func (c *SMS) ImportServerCatalogRequest(input *ImportServerCatalogInput) (req *
 		input = &ImportServerCatalogInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ImportServerCatalogOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -823,6 +831,7 @@ func (c *SMS) ImportServerCatalogRequest(input *ImportServerCatalogInput) (req *
 //   No connectors are available to handle this request. Please associate connector(s)
 //   and verify any existing connectors are healthy and can respond to requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/ImportServerCatalog
 func (c *SMS) ImportServerCatalog(input *ImportServerCatalogInput) (*ImportServerCatalogOutput, error) {
 	req, out := c.ImportServerCatalogRequest(input)
 	err := req.Send()
@@ -855,6 +864,7 @@ const opStartOnDemandReplicationRun = "StartOnDemandReplicationRun"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/StartOnDemandReplicationRun
 func (c *SMS) StartOnDemandReplicationRunRequest(input *StartOnDemandReplicationRunInput) (req *request.Request, output *StartOnDemandReplicationRunOutput) {
 	op := &request.Operation{
 		Name:       opStartOnDemandReplicationRun,
@@ -866,9 +876,8 @@ func (c *SMS) StartOnDemandReplicationRunRequest(input *StartOnDemandReplication
 		input = &StartOnDemandReplicationRunInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartOnDemandReplicationRunOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -907,6 +916,7 @@ func (c *SMS) StartOnDemandReplicationRunRequest(input *StartOnDemandReplication
 //   * ReplicationRunLimitExceededException
 //   This user has exceeded the maximum allowed Replication Run limit.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/StartOnDemandReplicationRun
 func (c *SMS) StartOnDemandReplicationRun(input *StartOnDemandReplicationRunInput) (*StartOnDemandReplicationRunOutput, error) {
 	req, out := c.StartOnDemandReplicationRunRequest(input)
 	err := req.Send()
@@ -939,6 +949,7 @@ const opUpdateReplicationJob = "UpdateReplicationJob"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/UpdateReplicationJob
 func (c *SMS) UpdateReplicationJobRequest(input *UpdateReplicationJobInput) (req *request.Request, output *UpdateReplicationJobOutput) {
 	op := &request.Operation{
 		Name:       opUpdateReplicationJob,
@@ -950,9 +961,8 @@ func (c *SMS) UpdateReplicationJobRequest(input *UpdateReplicationJobInput) (req
 		input = &UpdateReplicationJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateReplicationJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -995,6 +1005,7 @@ func (c *SMS) UpdateReplicationJobRequest(input *UpdateReplicationJobInput) (req
 //   * InternalError
 //   An internal error has occured.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/UpdateReplicationJob
 func (c *SMS) UpdateReplicationJob(input *UpdateReplicationJobInput) (*UpdateReplicationJobOutput, error) {
 	req, out := c.UpdateReplicationJobRequest(input)
 	err := req.Send()
@@ -1002,6 +1013,7 @@ func (c *SMS) UpdateReplicationJob(input *UpdateReplicationJobInput) (*UpdateRep
 }
 
 // Object representing a Connector
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/Connector
 type Connector struct {
 	_ struct{} `type:"structure"`
 
@@ -1046,6 +1058,67 @@ func (s Connector) GoString() string {
 	return s.String()
 }
 
+// SetAssociatedOn sets the AssociatedOn field's value.
+func (s *Connector) SetAssociatedOn(v time.Time) *Connector {
+	s.AssociatedOn = &v
+	return s
+}
+
+// SetCapabilityList sets the CapabilityList field's value.
+func (s *Connector) SetCapabilityList(v []*string) *Connector {
+	s.CapabilityList = v
+	return s
+}
+
+// SetConnectorId sets the ConnectorId field's value.
+func (s *Connector) SetConnectorId(v string) *Connector {
+	s.ConnectorId = &v
+	return s
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *Connector) SetIpAddress(v string) *Connector {
+	s.IpAddress = &v
+	return s
+}
+
+// SetMacAddress sets the MacAddress field's value.
+func (s *Connector) SetMacAddress(v string) *Connector {
+	s.MacAddress = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Connector) SetStatus(v string) *Connector {
+	s.Status = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *Connector) SetVersion(v string) *Connector {
+	s.Version = &v
+	return s
+}
+
+// SetVmManagerId sets the VmManagerId field's value.
+func (s *Connector) SetVmManagerId(v string) *Connector {
+	s.VmManagerId = &v
+	return s
+}
+
+// SetVmManagerName sets the VmManagerName field's value.
+func (s *Connector) SetVmManagerName(v string) *Connector {
+	s.VmManagerName = &v
+	return s
+}
+
+// SetVmManagerType sets the VmManagerType field's value.
+func (s *Connector) SetVmManagerType(v string) *Connector {
+	s.VmManagerType = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/CreateReplicationJobRequest
 type CreateReplicationJobInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1105,6 +1178,43 @@ func (s *CreateReplicationJobInput) Validate() error {
 	return nil
 }
 
+// SetDescription sets the Description field's value.
+func (s *CreateReplicationJobInput) SetDescription(v string) *CreateReplicationJobInput {
+	s.Description = &v
+	return s
+}
+
+// SetFrequency sets the Frequency field's value.
+func (s *CreateReplicationJobInput) SetFrequency(v int64) *CreateReplicationJobInput {
+	s.Frequency = &v
+	return s
+}
+
+// SetLicenseType sets the LicenseType field's value.
+func (s *CreateReplicationJobInput) SetLicenseType(v string) *CreateReplicationJobInput {
+	s.LicenseType = &v
+	return s
+}
+
+// SetRoleName sets the RoleName field's value.
+func (s *CreateReplicationJobInput) SetRoleName(v string) *CreateReplicationJobInput {
+	s.RoleName = &v
+	return s
+}
+
+// SetSeedReplicationTime sets the SeedReplicationTime field's value.
+func (s *CreateReplicationJobInput) SetSeedReplicationTime(v time.Time) *CreateReplicationJobInput {
+	s.SeedReplicationTime = &v
+	return s
+}
+
+// SetServerId sets the ServerId field's value.
+func (s *CreateReplicationJobInput) SetServerId(v string) *CreateReplicationJobInput {
+	s.ServerId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/CreateReplicationJobResponse
 type CreateReplicationJobOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1122,6 +1232,13 @@ func (s CreateReplicationJobOutput) GoString() string {
 	return s.String()
 }
 
+// SetReplicationJobId sets the ReplicationJobId field's value.
+func (s *CreateReplicationJobOutput) SetReplicationJobId(v string) *CreateReplicationJobOutput {
+	s.ReplicationJobId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteReplicationJobRequest
 type DeleteReplicationJobInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1154,6 +1271,13 @@ func (s *DeleteReplicationJobInput) Validate() error {
 	return nil
 }
 
+// SetReplicationJobId sets the ReplicationJobId field's value.
+func (s *DeleteReplicationJobInput) SetReplicationJobId(v string) *DeleteReplicationJobInput {
+	s.ReplicationJobId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteReplicationJobResponse
 type DeleteReplicationJobOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1168,6 +1292,7 @@ func (s DeleteReplicationJobOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteServerCatalogRequest
 type DeleteServerCatalogInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1182,6 +1307,7 @@ func (s DeleteServerCatalogInput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteServerCatalogResponse
 type DeleteServerCatalogOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1196,6 +1322,7 @@ func (s DeleteServerCatalogOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DisassociateConnectorRequest
 type DisassociateConnectorInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1228,6 +1355,13 @@ func (s *DisassociateConnectorInput) Validate() error {
 	return nil
 }
 
+// SetConnectorId sets the ConnectorId field's value.
+func (s *DisassociateConnectorInput) SetConnectorId(v string) *DisassociateConnectorInput {
+	s.ConnectorId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DisassociateConnectorResponse
 type DisassociateConnectorOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1242,6 +1376,7 @@ func (s DisassociateConnectorOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetConnectorsRequest
 type GetConnectorsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1263,6 +1398,19 @@ func (s GetConnectorsInput) GoString() string {
 	return s.String()
 }
 
+// SetMaxResults sets the MaxResults field's value.
+func (s *GetConnectorsInput) SetMaxResults(v int64) *GetConnectorsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetConnectorsInput) SetNextToken(v string) *GetConnectorsInput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetConnectorsResponse
 type GetConnectorsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1283,6 +1431,19 @@ func (s GetConnectorsOutput) GoString() string {
 	return s.String()
 }
 
+// SetConnectorList sets the ConnectorList field's value.
+func (s *GetConnectorsOutput) SetConnectorList(v []*Connector) *GetConnectorsOutput {
+	s.ConnectorList = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetConnectorsOutput) SetNextToken(v string) *GetConnectorsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetReplicationJobsRequest
 type GetReplicationJobsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1307,6 +1468,25 @@ func (s GetReplicationJobsInput) GoString() string {
 	return s.String()
 }
 
+// SetMaxResults sets the MaxResults field's value.
+func (s *GetReplicationJobsInput) SetMaxResults(v int64) *GetReplicationJobsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetReplicationJobsInput) SetNextToken(v string) *GetReplicationJobsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetReplicationJobId sets the ReplicationJobId field's value.
+func (s *GetReplicationJobsInput) SetReplicationJobId(v string) *GetReplicationJobsInput {
+	s.ReplicationJobId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetReplicationJobsResponse
 type GetReplicationJobsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1327,6 +1507,19 @@ func (s GetReplicationJobsOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *GetReplicationJobsOutput) SetNextToken(v string) *GetReplicationJobsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetReplicationJobList sets the ReplicationJobList field's value.
+func (s *GetReplicationJobsOutput) SetReplicationJobList(v []*ReplicationJob) *GetReplicationJobsOutput {
+	s.ReplicationJobList = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetReplicationRunsRequest
 type GetReplicationRunsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1366,6 +1559,25 @@ func (s *GetReplicationRunsInput) Validate() error {
 	return nil
 }
 
+// SetMaxResults sets the MaxResults field's value.
+func (s *GetReplicationRunsInput) SetMaxResults(v int64) *GetReplicationRunsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetReplicationRunsInput) SetNextToken(v string) *GetReplicationRunsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetReplicationJobId sets the ReplicationJobId field's value.
+func (s *GetReplicationRunsInput) SetReplicationJobId(v string) *GetReplicationRunsInput {
+	s.ReplicationJobId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetReplicationRunsResponse
 type GetReplicationRunsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1389,6 +1601,25 @@ func (s GetReplicationRunsOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *GetReplicationRunsOutput) SetNextToken(v string) *GetReplicationRunsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetReplicationJob sets the ReplicationJob field's value.
+func (s *GetReplicationRunsOutput) SetReplicationJob(v *ReplicationJob) *GetReplicationRunsOutput {
+	s.ReplicationJob = v
+	return s
+}
+
+// SetReplicationRunList sets the ReplicationRunList field's value.
+func (s *GetReplicationRunsOutput) SetReplicationRunList(v []*ReplicationRun) *GetReplicationRunsOutput {
+	s.ReplicationRunList = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetServersRequest
 type GetServersInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1410,6 +1641,19 @@ func (s GetServersInput) GoString() string {
 	return s.String()
 }
 
+// SetMaxResults sets the MaxResults field's value.
+func (s *GetServersInput) SetMaxResults(v int64) *GetServersInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetServersInput) SetNextToken(v string) *GetServersInput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetServersResponse
 type GetServersOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1436,6 +1680,31 @@ func (s GetServersOutput) GoString() string {
 	return s.String()
 }
 
+// SetLastModifiedOn sets the LastModifiedOn field's value.
+func (s *GetServersOutput) SetLastModifiedOn(v time.Time) *GetServersOutput {
+	s.LastModifiedOn = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetServersOutput) SetNextToken(v string) *GetServersOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetServerCatalogStatus sets the ServerCatalogStatus field's value.
+func (s *GetServersOutput) SetServerCatalogStatus(v string) *GetServersOutput {
+	s.ServerCatalogStatus = &v
+	return s
+}
+
+// SetServerList sets the ServerList field's value.
+func (s *GetServersOutput) SetServerList(v []*Server) *GetServersOutput {
+	s.ServerList = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/ImportServerCatalogRequest
 type ImportServerCatalogInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1450,6 +1719,7 @@ func (s ImportServerCatalogInput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/ImportServerCatalogResponse
 type ImportServerCatalogOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1465,6 +1735,7 @@ func (s ImportServerCatalogOutput) GoString() string {
 }
 
 // Object representing a Replication Job
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/ReplicationJob
 type ReplicationJob struct {
 	_ struct{} `type:"structure"`
 
@@ -1523,7 +1794,92 @@ func (s ReplicationJob) GoString() string {
 	return s.String()
 }
 
+// SetDescription sets the Description field's value.
+func (s *ReplicationJob) SetDescription(v string) *ReplicationJob {
+	s.Description = &v
+	return s
+}
+
+// SetFrequency sets the Frequency field's value.
+func (s *ReplicationJob) SetFrequency(v int64) *ReplicationJob {
+	s.Frequency = &v
+	return s
+}
+
+// SetLatestAmiId sets the LatestAmiId field's value.
+func (s *ReplicationJob) SetLatestAmiId(v string) *ReplicationJob {
+	s.LatestAmiId = &v
+	return s
+}
+
+// SetLicenseType sets the LicenseType field's value.
+func (s *ReplicationJob) SetLicenseType(v string) *ReplicationJob {
+	s.LicenseType = &v
+	return s
+}
+
+// SetNextReplicationRunStartTime sets the NextReplicationRunStartTime field's value.
+func (s *ReplicationJob) SetNextReplicationRunStartTime(v time.Time) *ReplicationJob {
+	s.NextReplicationRunStartTime = &v
+	return s
+}
+
+// SetReplicationJobId sets the ReplicationJobId field's value.
+func (s *ReplicationJob) SetReplicationJobId(v string) *ReplicationJob {
+	s.ReplicationJobId = &v
+	return s
+}
+
+// SetReplicationRunList sets the ReplicationRunList field's value.
+func (s *ReplicationJob) SetReplicationRunList(v []*ReplicationRun) *ReplicationJob {
+	s.ReplicationRunList = v
+	return s
+}
+
+// SetRoleName sets the RoleName field's value.
+func (s *ReplicationJob) SetRoleName(v string) *ReplicationJob {
+	s.RoleName = &v
+	return s
+}
+
+// SetSeedReplicationTime sets the SeedReplicationTime field's value.
+func (s *ReplicationJob) SetSeedReplicationTime(v time.Time) *ReplicationJob {
+	s.SeedReplicationTime = &v
+	return s
+}
+
+// SetServerId sets the ServerId field's value.
+func (s *ReplicationJob) SetServerId(v string) *ReplicationJob {
+	s.ServerId = &v
+	return s
+}
+
+// SetServerType sets the ServerType field's value.
+func (s *ReplicationJob) SetServerType(v string) *ReplicationJob {
+	s.ServerType = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *ReplicationJob) SetState(v string) *ReplicationJob {
+	s.State = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *ReplicationJob) SetStatusMessage(v string) *ReplicationJob {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetVmServer sets the VmServer field's value.
+func (s *ReplicationJob) SetVmServer(v *VmServer) *ReplicationJob {
+	s.VmServer = v
+	return s
+}
+
 // Object representing a Replication Run
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/ReplicationRun
 type ReplicationRun struct {
 	_ struct{} `type:"structure"`
 
@@ -1562,7 +1918,56 @@ func (s ReplicationRun) GoString() string {
 	return s.String()
 }
 
+// SetAmiId sets the AmiId field's value.
+func (s *ReplicationRun) SetAmiId(v string) *ReplicationRun {
+	s.AmiId = &v
+	return s
+}
+
+// SetCompletedTime sets the CompletedTime field's value.
+func (s *ReplicationRun) SetCompletedTime(v time.Time) *ReplicationRun {
+	s.CompletedTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ReplicationRun) SetDescription(v string) *ReplicationRun {
+	s.Description = &v
+	return s
+}
+
+// SetReplicationRunId sets the ReplicationRunId field's value.
+func (s *ReplicationRun) SetReplicationRunId(v string) *ReplicationRun {
+	s.ReplicationRunId = &v
+	return s
+}
+
+// SetScheduledStartTime sets the ScheduledStartTime field's value.
+func (s *ReplicationRun) SetScheduledStartTime(v time.Time) *ReplicationRun {
+	s.ScheduledStartTime = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *ReplicationRun) SetState(v string) *ReplicationRun {
+	s.State = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *ReplicationRun) SetStatusMessage(v string) *ReplicationRun {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ReplicationRun) SetType(v string) *ReplicationRun {
+	s.Type = &v
+	return s
+}
+
 // Object representing a server
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/Server
 type Server struct {
 	_ struct{} `type:"structure"`
 
@@ -1592,6 +1997,37 @@ func (s Server) GoString() string {
 	return s.String()
 }
 
+// SetReplicationJobId sets the ReplicationJobId field's value.
+func (s *Server) SetReplicationJobId(v string) *Server {
+	s.ReplicationJobId = &v
+	return s
+}
+
+// SetReplicationJobTerminated sets the ReplicationJobTerminated field's value.
+func (s *Server) SetReplicationJobTerminated(v bool) *Server {
+	s.ReplicationJobTerminated = &v
+	return s
+}
+
+// SetServerId sets the ServerId field's value.
+func (s *Server) SetServerId(v string) *Server {
+	s.ServerId = &v
+	return s
+}
+
+// SetServerType sets the ServerType field's value.
+func (s *Server) SetServerType(v string) *Server {
+	s.ServerType = &v
+	return s
+}
+
+// SetVmServer sets the VmServer field's value.
+func (s *Server) SetVmServer(v *VmServer) *Server {
+	s.VmServer = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/StartOnDemandReplicationRunRequest
 type StartOnDemandReplicationRunInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1627,6 +2063,19 @@ func (s *StartOnDemandReplicationRunInput) Validate() error {
 	return nil
 }
 
+// SetDescription sets the Description field's value.
+func (s *StartOnDemandReplicationRunInput) SetDescription(v string) *StartOnDemandReplicationRunInput {
+	s.Description = &v
+	return s
+}
+
+// SetReplicationJobId sets the ReplicationJobId field's value.
+func (s *StartOnDemandReplicationRunInput) SetReplicationJobId(v string) *StartOnDemandReplicationRunInput {
+	s.ReplicationJobId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/StartOnDemandReplicationRunResponse
 type StartOnDemandReplicationRunOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1644,6 +2093,13 @@ func (s StartOnDemandReplicationRunOutput) GoString() string {
 	return s.String()
 }
 
+// SetReplicationRunId sets the ReplicationRunId field's value.
+func (s *StartOnDemandReplicationRunOutput) SetReplicationRunId(v string) *StartOnDemandReplicationRunOutput {
+	s.ReplicationRunId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/UpdateReplicationJobRequest
 type UpdateReplicationJobInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1693,6 +2149,43 @@ func (s *UpdateReplicationJobInput) Validate() error {
 	return nil
 }
 
+// SetDescription sets the Description field's value.
+func (s *UpdateReplicationJobInput) SetDescription(v string) *UpdateReplicationJobInput {
+	s.Description = &v
+	return s
+}
+
+// SetFrequency sets the Frequency field's value.
+func (s *UpdateReplicationJobInput) SetFrequency(v int64) *UpdateReplicationJobInput {
+	s.Frequency = &v
+	return s
+}
+
+// SetLicenseType sets the LicenseType field's value.
+func (s *UpdateReplicationJobInput) SetLicenseType(v string) *UpdateReplicationJobInput {
+	s.LicenseType = &v
+	return s
+}
+
+// SetNextReplicationRunStartTime sets the NextReplicationRunStartTime field's value.
+func (s *UpdateReplicationJobInput) SetNextReplicationRunStartTime(v time.Time) *UpdateReplicationJobInput {
+	s.NextReplicationRunStartTime = &v
+	return s
+}
+
+// SetReplicationJobId sets the ReplicationJobId field's value.
+func (s *UpdateReplicationJobInput) SetReplicationJobId(v string) *UpdateReplicationJobInput {
+	s.ReplicationJobId = &v
+	return s
+}
+
+// SetRoleName sets the RoleName field's value.
+func (s *UpdateReplicationJobInput) SetRoleName(v string) *UpdateReplicationJobInput {
+	s.RoleName = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/UpdateReplicationJobResponse
 type UpdateReplicationJobOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1708,6 +2201,7 @@ func (s UpdateReplicationJobOutput) GoString() string {
 }
 
 // Object representing a VM server
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/VmServer
 type VmServer struct {
 	_ struct{} `type:"structure"`
 
@@ -1737,7 +2231,38 @@ func (s VmServer) GoString() string {
 	return s.String()
 }
 
+// SetVmManagerName sets the VmManagerName field's value.
+func (s *VmServer) SetVmManagerName(v string) *VmServer {
+	s.VmManagerName = &v
+	return s
+}
+
+// SetVmManagerType sets the VmManagerType field's value.
+func (s *VmServer) SetVmManagerType(v string) *VmServer {
+	s.VmManagerType = &v
+	return s
+}
+
+// SetVmName sets the VmName field's value.
+func (s *VmServer) SetVmName(v string) *VmServer {
+	s.VmName = &v
+	return s
+}
+
+// SetVmPath sets the VmPath field's value.
+func (s *VmServer) SetVmPath(v string) *VmServer {
+	s.VmPath = &v
+	return s
+}
+
+// SetVmServerAddress sets the VmServerAddress field's value.
+func (s *VmServer) SetVmServerAddress(v *VmServerAddress) *VmServer {
+	s.VmServerAddress = v
+	return s
+}
+
 // Object representing a server's location
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/VmServerAddress
 type VmServerAddress struct {
 	_ struct{} `type:"structure"`
 
@@ -1756,6 +2281,18 @@ func (s VmServerAddress) String() string {
 // GoString returns the string representation
 func (s VmServerAddress) GoString() string {
 	return s.String()
+}
+
+// SetVmId sets the VmId field's value.
+func (s *VmServerAddress) SetVmId(v string) *VmServerAddress {
+	s.VmId = &v
+	return s
+}
+
+// SetVmManagerId sets the VmManagerId field's value.
+func (s *VmServerAddress) SetVmManagerId(v string) *VmServerAddress {
+	s.VmManagerId = &v
+	return s
 }
 
 // Capabilities for a Connector

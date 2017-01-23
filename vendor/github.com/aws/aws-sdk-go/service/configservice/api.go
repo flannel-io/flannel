@@ -39,6 +39,7 @@ const opDeleteConfigRule = "DeleteConfigRule"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteConfigRule
 func (c *ConfigService) DeleteConfigRuleRequest(input *DeleteConfigRuleInput) (req *request.Request, output *DeleteConfigRuleOutput) {
 	op := &request.Operation{
 		Name:       opDeleteConfigRule,
@@ -50,11 +51,10 @@ func (c *ConfigService) DeleteConfigRuleRequest(input *DeleteConfigRuleInput) (r
 		input = &DeleteConfigRuleInput{}
 	}
 
+	output = &DeleteConfigRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteConfigRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -84,6 +84,7 @@ func (c *ConfigService) DeleteConfigRuleRequest(input *DeleteConfigRuleInput) (r
 //   The rule is currently being deleted or the rule is deleting your evaluation
 //   results. Try your request again later.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteConfigRule
 func (c *ConfigService) DeleteConfigRule(input *DeleteConfigRuleInput) (*DeleteConfigRuleOutput, error) {
 	req, out := c.DeleteConfigRuleRequest(input)
 	err := req.Send()
@@ -116,6 +117,7 @@ const opDeleteConfigurationRecorder = "DeleteConfigurationRecorder"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteConfigurationRecorder
 func (c *ConfigService) DeleteConfigurationRecorderRequest(input *DeleteConfigurationRecorderInput) (req *request.Request, output *DeleteConfigurationRecorderOutput) {
 	op := &request.Operation{
 		Name:       opDeleteConfigurationRecorder,
@@ -127,11 +129,10 @@ func (c *ConfigService) DeleteConfigurationRecorderRequest(input *DeleteConfigur
 		input = &DeleteConfigurationRecorderInput{}
 	}
 
+	output = &DeleteConfigurationRecorderOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteConfigurationRecorderOutput{}
-	req.Data = output
 	return
 }
 
@@ -159,6 +160,7 @@ func (c *ConfigService) DeleteConfigurationRecorderRequest(input *DeleteConfigur
 //   * NoSuchConfigurationRecorderException
 //   You have specified a configuration recorder that does not exist.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteConfigurationRecorder
 func (c *ConfigService) DeleteConfigurationRecorder(input *DeleteConfigurationRecorderInput) (*DeleteConfigurationRecorderOutput, error) {
 	req, out := c.DeleteConfigurationRecorderRequest(input)
 	err := req.Send()
@@ -191,6 +193,7 @@ const opDeleteDeliveryChannel = "DeleteDeliveryChannel"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteDeliveryChannel
 func (c *ConfigService) DeleteDeliveryChannelRequest(input *DeleteDeliveryChannelInput) (req *request.Request, output *DeleteDeliveryChannelOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDeliveryChannel,
@@ -202,11 +205,10 @@ func (c *ConfigService) DeleteDeliveryChannelRequest(input *DeleteDeliveryChanne
 		input = &DeleteDeliveryChannelInput{}
 	}
 
+	output = &DeleteDeliveryChannelOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteDeliveryChannelOutput{}
-	req.Data = output
 	return
 }
 
@@ -232,6 +234,7 @@ func (c *ConfigService) DeleteDeliveryChannelRequest(input *DeleteDeliveryChanne
 //   You cannot delete the delivery channel you specified because the configuration
 //   recorder is running.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteDeliveryChannel
 func (c *ConfigService) DeleteDeliveryChannel(input *DeleteDeliveryChannelInput) (*DeleteDeliveryChannelOutput, error) {
 	req, out := c.DeleteDeliveryChannelRequest(input)
 	err := req.Send()
@@ -264,6 +267,7 @@ const opDeleteEvaluationResults = "DeleteEvaluationResults"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteEvaluationResults
 func (c *ConfigService) DeleteEvaluationResultsRequest(input *DeleteEvaluationResultsInput) (req *request.Request, output *DeleteEvaluationResultsOutput) {
 	op := &request.Operation{
 		Name:       opDeleteEvaluationResults,
@@ -275,9 +279,8 @@ func (c *ConfigService) DeleteEvaluationResultsRequest(input *DeleteEvaluationRe
 		input = &DeleteEvaluationResultsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteEvaluationResultsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -304,6 +307,7 @@ func (c *ConfigService) DeleteEvaluationResultsRequest(input *DeleteEvaluationRe
 //   The rule is currently being deleted or the rule is deleting your evaluation
 //   results. Try your request again later.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteEvaluationResults
 func (c *ConfigService) DeleteEvaluationResults(input *DeleteEvaluationResultsInput) (*DeleteEvaluationResultsOutput, error) {
 	req, out := c.DeleteEvaluationResultsRequest(input)
 	err := req.Send()
@@ -336,6 +340,7 @@ const opDeliverConfigSnapshot = "DeliverConfigSnapshot"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeliverConfigSnapshot
 func (c *ConfigService) DeliverConfigSnapshotRequest(input *DeliverConfigSnapshotInput) (req *request.Request, output *DeliverConfigSnapshotOutput) {
 	op := &request.Operation{
 		Name:       opDeliverConfigSnapshot,
@@ -347,9 +352,8 @@ func (c *ConfigService) DeliverConfigSnapshotRequest(input *DeliverConfigSnapsho
 		input = &DeliverConfigSnapshotInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeliverConfigSnapshotOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -384,6 +388,7 @@ func (c *ConfigService) DeliverConfigSnapshotRequest(input *DeliverConfigSnapsho
 //   * NoRunningConfigurationRecorderException
 //   There is no configuration recorder running.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeliverConfigSnapshot
 func (c *ConfigService) DeliverConfigSnapshot(input *DeliverConfigSnapshotInput) (*DeliverConfigSnapshotOutput, error) {
 	req, out := c.DeliverConfigSnapshotRequest(input)
 	err := req.Send()
@@ -416,6 +421,7 @@ const opDescribeComplianceByConfigRule = "DescribeComplianceByConfigRule"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeComplianceByConfigRule
 func (c *ConfigService) DescribeComplianceByConfigRuleRequest(input *DescribeComplianceByConfigRuleInput) (req *request.Request, output *DescribeComplianceByConfigRuleOutput) {
 	op := &request.Operation{
 		Name:       opDescribeComplianceByConfigRule,
@@ -427,9 +433,8 @@ func (c *ConfigService) DescribeComplianceByConfigRuleRequest(input *DescribeCom
 		input = &DescribeComplianceByConfigRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeComplianceByConfigRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -475,6 +480,11 @@ func (c *ConfigService) DescribeComplianceByConfigRuleRequest(input *DescribeCom
 //   One or more AWS Config rules in the request are invalid. Verify that the
 //   rule names are correct and try again.
 //
+//   * InvalidNextTokenException
+//   The specified next token is invalid. Specify the NextToken string that was
+//   returned in the previous response to get the next page of results.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeComplianceByConfigRule
 func (c *ConfigService) DescribeComplianceByConfigRule(input *DescribeComplianceByConfigRuleInput) (*DescribeComplianceByConfigRuleOutput, error) {
 	req, out := c.DescribeComplianceByConfigRuleRequest(input)
 	err := req.Send()
@@ -507,6 +517,7 @@ const opDescribeComplianceByResource = "DescribeComplianceByResource"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeComplianceByResource
 func (c *ConfigService) DescribeComplianceByResourceRequest(input *DescribeComplianceByResourceInput) (req *request.Request, output *DescribeComplianceByResourceOutput) {
 	op := &request.Operation{
 		Name:       opDescribeComplianceByResource,
@@ -518,9 +529,8 @@ func (c *ConfigService) DescribeComplianceByResourceRequest(input *DescribeCompl
 		input = &DescribeComplianceByResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeComplianceByResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -565,9 +575,10 @@ func (c *ConfigService) DescribeComplianceByResourceRequest(input *DescribeCompl
 //   are valid and try again.
 //
 //   * InvalidNextTokenException
-//   The specified next token is invalid. Specify the nextToken string that was
+//   The specified next token is invalid. Specify the NextToken string that was
 //   returned in the previous response to get the next page of results.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeComplianceByResource
 func (c *ConfigService) DescribeComplianceByResource(input *DescribeComplianceByResourceInput) (*DescribeComplianceByResourceOutput, error) {
 	req, out := c.DescribeComplianceByResourceRequest(input)
 	err := req.Send()
@@ -600,6 +611,7 @@ const opDescribeConfigRuleEvaluationStatus = "DescribeConfigRuleEvaluationStatus
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigRuleEvaluationStatus
 func (c *ConfigService) DescribeConfigRuleEvaluationStatusRequest(input *DescribeConfigRuleEvaluationStatusInput) (req *request.Request, output *DescribeConfigRuleEvaluationStatusOutput) {
 	op := &request.Operation{
 		Name:       opDescribeConfigRuleEvaluationStatus,
@@ -611,9 +623,8 @@ func (c *ConfigService) DescribeConfigRuleEvaluationStatusRequest(input *Describ
 		input = &DescribeConfigRuleEvaluationStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeConfigRuleEvaluationStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -636,6 +647,15 @@ func (c *ConfigService) DescribeConfigRuleEvaluationStatusRequest(input *Describ
 //   One or more AWS Config rules in the request are invalid. Verify that the
 //   rule names are correct and try again.
 //
+//   * InvalidParameterValueException
+//   One or more of the specified parameters are invalid. Verify that your parameters
+//   are valid and try again.
+//
+//   * InvalidNextTokenException
+//   The specified next token is invalid. Specify the NextToken string that was
+//   returned in the previous response to get the next page of results.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigRuleEvaluationStatus
 func (c *ConfigService) DescribeConfigRuleEvaluationStatus(input *DescribeConfigRuleEvaluationStatusInput) (*DescribeConfigRuleEvaluationStatusOutput, error) {
 	req, out := c.DescribeConfigRuleEvaluationStatusRequest(input)
 	err := req.Send()
@@ -668,6 +688,7 @@ const opDescribeConfigRules = "DescribeConfigRules"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigRules
 func (c *ConfigService) DescribeConfigRulesRequest(input *DescribeConfigRulesInput) (req *request.Request, output *DescribeConfigRulesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeConfigRules,
@@ -679,9 +700,8 @@ func (c *ConfigService) DescribeConfigRulesRequest(input *DescribeConfigRulesInp
 		input = &DescribeConfigRulesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeConfigRulesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -701,6 +721,11 @@ func (c *ConfigService) DescribeConfigRulesRequest(input *DescribeConfigRulesInp
 //   One or more AWS Config rules in the request are invalid. Verify that the
 //   rule names are correct and try again.
 //
+//   * InvalidNextTokenException
+//   The specified next token is invalid. Specify the NextToken string that was
+//   returned in the previous response to get the next page of results.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigRules
 func (c *ConfigService) DescribeConfigRules(input *DescribeConfigRulesInput) (*DescribeConfigRulesOutput, error) {
 	req, out := c.DescribeConfigRulesRequest(input)
 	err := req.Send()
@@ -733,6 +758,7 @@ const opDescribeConfigurationRecorderStatus = "DescribeConfigurationRecorderStat
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigurationRecorderStatus
 func (c *ConfigService) DescribeConfigurationRecorderStatusRequest(input *DescribeConfigurationRecorderStatusInput) (req *request.Request, output *DescribeConfigurationRecorderStatusOutput) {
 	op := &request.Operation{
 		Name:       opDescribeConfigurationRecorderStatus,
@@ -744,9 +770,8 @@ func (c *ConfigService) DescribeConfigurationRecorderStatusRequest(input *Descri
 		input = &DescribeConfigurationRecorderStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeConfigurationRecorderStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -770,6 +795,7 @@ func (c *ConfigService) DescribeConfigurationRecorderStatusRequest(input *Descri
 //   * NoSuchConfigurationRecorderException
 //   You have specified a configuration recorder that does not exist.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigurationRecorderStatus
 func (c *ConfigService) DescribeConfigurationRecorderStatus(input *DescribeConfigurationRecorderStatusInput) (*DescribeConfigurationRecorderStatusOutput, error) {
 	req, out := c.DescribeConfigurationRecorderStatusRequest(input)
 	err := req.Send()
@@ -802,6 +828,7 @@ const opDescribeConfigurationRecorders = "DescribeConfigurationRecorders"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigurationRecorders
 func (c *ConfigService) DescribeConfigurationRecordersRequest(input *DescribeConfigurationRecordersInput) (req *request.Request, output *DescribeConfigurationRecordersOutput) {
 	op := &request.Operation{
 		Name:       opDescribeConfigurationRecorders,
@@ -813,9 +840,8 @@ func (c *ConfigService) DescribeConfigurationRecordersRequest(input *DescribeCon
 		input = &DescribeConfigurationRecordersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeConfigurationRecordersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -839,6 +865,7 @@ func (c *ConfigService) DescribeConfigurationRecordersRequest(input *DescribeCon
 //   * NoSuchConfigurationRecorderException
 //   You have specified a configuration recorder that does not exist.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigurationRecorders
 func (c *ConfigService) DescribeConfigurationRecorders(input *DescribeConfigurationRecordersInput) (*DescribeConfigurationRecordersOutput, error) {
 	req, out := c.DescribeConfigurationRecordersRequest(input)
 	err := req.Send()
@@ -871,6 +898,7 @@ const opDescribeDeliveryChannelStatus = "DescribeDeliveryChannelStatus"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeDeliveryChannelStatus
 func (c *ConfigService) DescribeDeliveryChannelStatusRequest(input *DescribeDeliveryChannelStatusInput) (req *request.Request, output *DescribeDeliveryChannelStatusOutput) {
 	op := &request.Operation{
 		Name:       opDescribeDeliveryChannelStatus,
@@ -882,9 +910,8 @@ func (c *ConfigService) DescribeDeliveryChannelStatusRequest(input *DescribeDeli
 		input = &DescribeDeliveryChannelStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeDeliveryChannelStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -907,6 +934,7 @@ func (c *ConfigService) DescribeDeliveryChannelStatusRequest(input *DescribeDeli
 //   * NoSuchDeliveryChannelException
 //   You have specified a delivery channel that does not exist.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeDeliveryChannelStatus
 func (c *ConfigService) DescribeDeliveryChannelStatus(input *DescribeDeliveryChannelStatusInput) (*DescribeDeliveryChannelStatusOutput, error) {
 	req, out := c.DescribeDeliveryChannelStatusRequest(input)
 	err := req.Send()
@@ -939,6 +967,7 @@ const opDescribeDeliveryChannels = "DescribeDeliveryChannels"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeDeliveryChannels
 func (c *ConfigService) DescribeDeliveryChannelsRequest(input *DescribeDeliveryChannelsInput) (req *request.Request, output *DescribeDeliveryChannelsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeDeliveryChannels,
@@ -950,9 +979,8 @@ func (c *ConfigService) DescribeDeliveryChannelsRequest(input *DescribeDeliveryC
 		input = &DescribeDeliveryChannelsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeDeliveryChannelsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -975,6 +1003,7 @@ func (c *ConfigService) DescribeDeliveryChannelsRequest(input *DescribeDeliveryC
 //   * NoSuchDeliveryChannelException
 //   You have specified a delivery channel that does not exist.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeDeliveryChannels
 func (c *ConfigService) DescribeDeliveryChannels(input *DescribeDeliveryChannelsInput) (*DescribeDeliveryChannelsOutput, error) {
 	req, out := c.DescribeDeliveryChannelsRequest(input)
 	err := req.Send()
@@ -1007,6 +1036,7 @@ const opGetComplianceDetailsByConfigRule = "GetComplianceDetailsByConfigRule"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceDetailsByConfigRule
 func (c *ConfigService) GetComplianceDetailsByConfigRuleRequest(input *GetComplianceDetailsByConfigRuleInput) (req *request.Request, output *GetComplianceDetailsByConfigRuleOutput) {
 	op := &request.Operation{
 		Name:       opGetComplianceDetailsByConfigRule,
@@ -1018,9 +1048,8 @@ func (c *ConfigService) GetComplianceDetailsByConfigRuleRequest(input *GetCompli
 		input = &GetComplianceDetailsByConfigRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetComplianceDetailsByConfigRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1043,13 +1072,14 @@ func (c *ConfigService) GetComplianceDetailsByConfigRuleRequest(input *GetCompli
 //   are valid and try again.
 //
 //   * InvalidNextTokenException
-//   The specified next token is invalid. Specify the nextToken string that was
+//   The specified next token is invalid. Specify the NextToken string that was
 //   returned in the previous response to get the next page of results.
 //
 //   * NoSuchConfigRuleException
 //   One or more AWS Config rules in the request are invalid. Verify that the
 //   rule names are correct and try again.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceDetailsByConfigRule
 func (c *ConfigService) GetComplianceDetailsByConfigRule(input *GetComplianceDetailsByConfigRuleInput) (*GetComplianceDetailsByConfigRuleOutput, error) {
 	req, out := c.GetComplianceDetailsByConfigRuleRequest(input)
 	err := req.Send()
@@ -1082,6 +1112,7 @@ const opGetComplianceDetailsByResource = "GetComplianceDetailsByResource"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceDetailsByResource
 func (c *ConfigService) GetComplianceDetailsByResourceRequest(input *GetComplianceDetailsByResourceInput) (req *request.Request, output *GetComplianceDetailsByResourceOutput) {
 	op := &request.Operation{
 		Name:       opGetComplianceDetailsByResource,
@@ -1093,9 +1124,8 @@ func (c *ConfigService) GetComplianceDetailsByResourceRequest(input *GetComplian
 		input = &GetComplianceDetailsByResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetComplianceDetailsByResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1117,6 +1147,7 @@ func (c *ConfigService) GetComplianceDetailsByResourceRequest(input *GetComplian
 //   One or more of the specified parameters are invalid. Verify that your parameters
 //   are valid and try again.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceDetailsByResource
 func (c *ConfigService) GetComplianceDetailsByResource(input *GetComplianceDetailsByResourceInput) (*GetComplianceDetailsByResourceOutput, error) {
 	req, out := c.GetComplianceDetailsByResourceRequest(input)
 	err := req.Send()
@@ -1149,6 +1180,7 @@ const opGetComplianceSummaryByConfigRule = "GetComplianceSummaryByConfigRule"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceSummaryByConfigRule
 func (c *ConfigService) GetComplianceSummaryByConfigRuleRequest(input *GetComplianceSummaryByConfigRuleInput) (req *request.Request, output *GetComplianceSummaryByConfigRuleOutput) {
 	op := &request.Operation{
 		Name:       opGetComplianceSummaryByConfigRule,
@@ -1160,9 +1192,8 @@ func (c *ConfigService) GetComplianceSummaryByConfigRuleRequest(input *GetCompli
 		input = &GetComplianceSummaryByConfigRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetComplianceSummaryByConfigRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1177,6 +1208,7 @@ func (c *ConfigService) GetComplianceSummaryByConfigRuleRequest(input *GetCompli
 //
 // See the AWS API reference guide for AWS Config's
 // API operation GetComplianceSummaryByConfigRule for usage and error information.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceSummaryByConfigRule
 func (c *ConfigService) GetComplianceSummaryByConfigRule(input *GetComplianceSummaryByConfigRuleInput) (*GetComplianceSummaryByConfigRuleOutput, error) {
 	req, out := c.GetComplianceSummaryByConfigRuleRequest(input)
 	err := req.Send()
@@ -1209,6 +1241,7 @@ const opGetComplianceSummaryByResourceType = "GetComplianceSummaryByResourceType
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceSummaryByResourceType
 func (c *ConfigService) GetComplianceSummaryByResourceTypeRequest(input *GetComplianceSummaryByResourceTypeInput) (req *request.Request, output *GetComplianceSummaryByResourceTypeOutput) {
 	op := &request.Operation{
 		Name:       opGetComplianceSummaryByResourceType,
@@ -1220,9 +1253,8 @@ func (c *ConfigService) GetComplianceSummaryByResourceTypeRequest(input *GetComp
 		input = &GetComplianceSummaryByResourceTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetComplianceSummaryByResourceTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1244,6 +1276,7 @@ func (c *ConfigService) GetComplianceSummaryByResourceTypeRequest(input *GetComp
 //   One or more of the specified parameters are invalid. Verify that your parameters
 //   are valid and try again.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceSummaryByResourceType
 func (c *ConfigService) GetComplianceSummaryByResourceType(input *GetComplianceSummaryByResourceTypeInput) (*GetComplianceSummaryByResourceTypeOutput, error) {
 	req, out := c.GetComplianceSummaryByResourceTypeRequest(input)
 	err := req.Send()
@@ -1276,6 +1309,7 @@ const opGetResourceConfigHistory = "GetResourceConfigHistory"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetResourceConfigHistory
 func (c *ConfigService) GetResourceConfigHistoryRequest(input *GetResourceConfigHistoryInput) (req *request.Request, output *GetResourceConfigHistoryOutput) {
 	op := &request.Operation{
 		Name:       opGetResourceConfigHistory,
@@ -1293,9 +1327,8 @@ func (c *ConfigService) GetResourceConfigHistoryRequest(input *GetResourceConfig
 		input = &GetResourceConfigHistoryInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetResourceConfigHistoryOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1334,7 +1367,7 @@ func (c *ConfigService) GetResourceConfigHistoryRequest(input *GetResourceConfig
 //   The specified limit is outside the allowable range.
 //
 //   * InvalidNextTokenException
-//   The specified next token is invalid. Specify the nextToken string that was
+//   The specified next token is invalid. Specify the NextToken string that was
 //   returned in the previous response to get the next page of results.
 //
 //   * NoAvailableConfigurationRecorderException
@@ -1344,6 +1377,7 @@ func (c *ConfigService) GetResourceConfigHistoryRequest(input *GetResourceConfig
 //   * ResourceNotDiscoveredException
 //   You have specified a resource that is either unknown or has not been discovered.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetResourceConfigHistory
 func (c *ConfigService) GetResourceConfigHistory(input *GetResourceConfigHistoryInput) (*GetResourceConfigHistoryOutput, error) {
 	req, out := c.GetResourceConfigHistoryRequest(input)
 	err := req.Send()
@@ -1401,6 +1435,7 @@ const opListDiscoveredResources = "ListDiscoveredResources"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ListDiscoveredResources
 func (c *ConfigService) ListDiscoveredResourcesRequest(input *ListDiscoveredResourcesInput) (req *request.Request, output *ListDiscoveredResourcesOutput) {
 	op := &request.Operation{
 		Name:       opListDiscoveredResources,
@@ -1412,9 +1447,8 @@ func (c *ConfigService) ListDiscoveredResourcesRequest(input *ListDiscoveredReso
 		input = &ListDiscoveredResourcesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDiscoveredResourcesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1450,13 +1484,14 @@ func (c *ConfigService) ListDiscoveredResourcesRequest(input *ListDiscoveredReso
 //   The specified limit is outside the allowable range.
 //
 //   * InvalidNextTokenException
-//   The specified next token is invalid. Specify the nextToken string that was
+//   The specified next token is invalid. Specify the NextToken string that was
 //   returned in the previous response to get the next page of results.
 //
 //   * NoAvailableConfigurationRecorderException
 //   There are no configuration recorders available to provide the role needed
 //   to describe your resources. Create a configuration recorder.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ListDiscoveredResources
 func (c *ConfigService) ListDiscoveredResources(input *ListDiscoveredResourcesInput) (*ListDiscoveredResourcesOutput, error) {
 	req, out := c.ListDiscoveredResourcesRequest(input)
 	err := req.Send()
@@ -1489,6 +1524,7 @@ const opPutConfigRule = "PutConfigRule"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutConfigRule
 func (c *ConfigService) PutConfigRuleRequest(input *PutConfigRuleInput) (req *request.Request, output *PutConfigRuleOutput) {
 	op := &request.Operation{
 		Name:       opPutConfigRule,
@@ -1500,11 +1536,10 @@ func (c *ConfigService) PutConfigRuleRequest(input *PutConfigRuleInput) (req *re
 		input = &PutConfigRuleInput{}
 	}
 
+	output = &PutConfigRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutConfigRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -1536,7 +1571,11 @@ func (c *ConfigService) PutConfigRuleRequest(input *PutConfigRuleInput) (req *re
 // rule by ConfigRuleName, ConfigRuleId, or ConfigRuleArn in the ConfigRule
 // data type that you use in this request.
 //
-// The maximum number of rules that AWS Config supports is 25.
+// The maximum number of rules that AWS Config supports is 50.
+//
+// For more information about requesting a rule limit increase, see AWS Config
+// Limits (http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_config)
+// in the AWS General Reference Guide.
 //
 // For more information about developing and using AWS Config rules, see Evaluating
 // AWS Resource Configurations with AWS Config (http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config.html)
@@ -1556,7 +1595,7 @@ func (c *ConfigService) PutConfigRuleRequest(input *PutConfigRuleInput) (req *re
 //
 //   * MaxNumberOfConfigRulesExceededException
 //   Failed to add the AWS Config rule because the account already contains the
-//   maximum number of 25 rules. Consider deleting any deactivated rules before
+//   maximum number of 50 rules. Consider deleting any deactivated rules before
 //   adding new rules.
 //
 //   * ResourceInUseException
@@ -1576,6 +1615,7 @@ func (c *ConfigService) PutConfigRuleRequest(input *PutConfigRuleInput) (req *re
 //   There are no configuration recorders available to provide the role needed
 //   to describe your resources. Create a configuration recorder.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutConfigRule
 func (c *ConfigService) PutConfigRule(input *PutConfigRuleInput) (*PutConfigRuleOutput, error) {
 	req, out := c.PutConfigRuleRequest(input)
 	err := req.Send()
@@ -1608,6 +1648,7 @@ const opPutConfigurationRecorder = "PutConfigurationRecorder"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutConfigurationRecorder
 func (c *ConfigService) PutConfigurationRecorderRequest(input *PutConfigurationRecorderInput) (req *request.Request, output *PutConfigurationRecorderOutput) {
 	op := &request.Operation{
 		Name:       opPutConfigurationRecorder,
@@ -1619,11 +1660,10 @@ func (c *ConfigService) PutConfigurationRecorderRequest(input *PutConfigurationR
 		input = &PutConfigurationRecorderInput{}
 	}
 
+	output = &PutConfigurationRecorderOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutConfigurationRecorderOutput{}
-	req.Data = output
 	return
 }
 
@@ -1662,6 +1702,7 @@ func (c *ConfigService) PutConfigurationRecorderRequest(input *PutConfigurationR
 //   AWS Config throws an exception if the recording group does not contain a
 //   valid list of resource types. Invalid values could also be incorrectly formatted.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutConfigurationRecorder
 func (c *ConfigService) PutConfigurationRecorder(input *PutConfigurationRecorderInput) (*PutConfigurationRecorderOutput, error) {
 	req, out := c.PutConfigurationRecorderRequest(input)
 	err := req.Send()
@@ -1694,6 +1735,7 @@ const opPutDeliveryChannel = "PutDeliveryChannel"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutDeliveryChannel
 func (c *ConfigService) PutDeliveryChannelRequest(input *PutDeliveryChannelInput) (req *request.Request, output *PutDeliveryChannelOutput) {
 	op := &request.Operation{
 		Name:       opPutDeliveryChannel,
@@ -1705,11 +1747,10 @@ func (c *ConfigService) PutDeliveryChannelRequest(input *PutDeliveryChannelInput
 		input = &PutDeliveryChannelInput{}
 	}
 
+	output = &PutDeliveryChannelOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutDeliveryChannelOutput{}
-	req.Data = output
 	return
 }
 
@@ -1760,6 +1801,7 @@ func (c *ConfigService) PutDeliveryChannelRequest(input *PutDeliveryChannelInput
 //   * InsufficientDeliveryPolicyException
 //   Your Amazon S3 bucket policy does not permit AWS Config to write to it.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutDeliveryChannel
 func (c *ConfigService) PutDeliveryChannel(input *PutDeliveryChannelInput) (*PutDeliveryChannelOutput, error) {
 	req, out := c.PutDeliveryChannelRequest(input)
 	err := req.Send()
@@ -1792,6 +1834,7 @@ const opPutEvaluations = "PutEvaluations"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutEvaluations
 func (c *ConfigService) PutEvaluationsRequest(input *PutEvaluationsInput) (req *request.Request, output *PutEvaluationsOutput) {
 	op := &request.Operation{
 		Name:       opPutEvaluations,
@@ -1803,9 +1846,8 @@ func (c *ConfigService) PutEvaluationsRequest(input *PutEvaluationsInput) (req *
 		input = &PutEvaluationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutEvaluationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1828,12 +1870,13 @@ func (c *ConfigService) PutEvaluationsRequest(input *PutEvaluationsInput) (req *
 //   are valid and try again.
 //
 //   * InvalidResultTokenException
-//   The result token is invalid.
+//   The speNexcified token is invalid.
 //
 //   * NoSuchConfigRuleException
 //   One or more AWS Config rules in the request are invalid. Verify that the
 //   rule names are correct and try again.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutEvaluations
 func (c *ConfigService) PutEvaluations(input *PutEvaluationsInput) (*PutEvaluationsOutput, error) {
 	req, out := c.PutEvaluationsRequest(input)
 	err := req.Send()
@@ -1866,6 +1909,7 @@ const opStartConfigRulesEvaluation = "StartConfigRulesEvaluation"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/StartConfigRulesEvaluation
 func (c *ConfigService) StartConfigRulesEvaluationRequest(input *StartConfigRulesEvaluationInput) (req *request.Request, output *StartConfigRulesEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opStartConfigRulesEvaluation,
@@ -1877,16 +1921,20 @@ func (c *ConfigService) StartConfigRulesEvaluationRequest(input *StartConfigRule
 		input = &StartConfigRulesEvaluationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartConfigRulesEvaluationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
 // StartConfigRulesEvaluation API operation for AWS Config.
 //
-// Evaluates your resources against the specified Config rules. You can specify
-// up to 25 Config rules per request.
+// Runs an on-demand evaluation for the specified Config rules against the last
+// known configuration state of the resources. Use StartConfigRulesEvaluation
+// when you want to test a rule that you updated is working as expected. StartConfigRulesEvaluation
+// does not re-record the latest configuration state for your resources; it
+// re-runs an evaluation against the last known state of your resources.
+//
+// You can specify up to 25 Config rules per request.
 //
 // An existing StartConfigRulesEvaluation call must complete for the specified
 // rules before you can call the API again. If you chose to have AWS Config
@@ -1935,6 +1983,7 @@ func (c *ConfigService) StartConfigRulesEvaluationRequest(input *StartConfigRule
 //   One or more of the specified parameters are invalid. Verify that your parameters
 //   are valid and try again.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/StartConfigRulesEvaluation
 func (c *ConfigService) StartConfigRulesEvaluation(input *StartConfigRulesEvaluationInput) (*StartConfigRulesEvaluationOutput, error) {
 	req, out := c.StartConfigRulesEvaluationRequest(input)
 	err := req.Send()
@@ -1967,6 +2016,7 @@ const opStartConfigurationRecorder = "StartConfigurationRecorder"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/StartConfigurationRecorder
 func (c *ConfigService) StartConfigurationRecorderRequest(input *StartConfigurationRecorderInput) (req *request.Request, output *StartConfigurationRecorderOutput) {
 	op := &request.Operation{
 		Name:       opStartConfigurationRecorder,
@@ -1978,11 +2028,10 @@ func (c *ConfigService) StartConfigurationRecorderRequest(input *StartConfigurat
 		input = &StartConfigurationRecorderInput{}
 	}
 
+	output = &StartConfigurationRecorderOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &StartConfigurationRecorderOutput{}
-	req.Data = output
 	return
 }
 
@@ -2008,6 +2057,7 @@ func (c *ConfigService) StartConfigurationRecorderRequest(input *StartConfigurat
 //   * NoAvailableDeliveryChannelException
 //   There is no delivery channel available to record configurations.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/StartConfigurationRecorder
 func (c *ConfigService) StartConfigurationRecorder(input *StartConfigurationRecorderInput) (*StartConfigurationRecorderOutput, error) {
 	req, out := c.StartConfigurationRecorderRequest(input)
 	err := req.Send()
@@ -2040,6 +2090,7 @@ const opStopConfigurationRecorder = "StopConfigurationRecorder"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/StopConfigurationRecorder
 func (c *ConfigService) StopConfigurationRecorderRequest(input *StopConfigurationRecorderInput) (req *request.Request, output *StopConfigurationRecorderOutput) {
 	op := &request.Operation{
 		Name:       opStopConfigurationRecorder,
@@ -2051,11 +2102,10 @@ func (c *ConfigService) StopConfigurationRecorderRequest(input *StopConfiguratio
 		input = &StopConfigurationRecorderInput{}
 	}
 
+	output = &StopConfigurationRecorderOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &StopConfigurationRecorderOutput{}
-	req.Data = output
 	return
 }
 
@@ -2075,6 +2125,7 @@ func (c *ConfigService) StopConfigurationRecorderRequest(input *StopConfiguratio
 //   * NoSuchConfigurationRecorderException
 //   You have specified a configuration recorder that does not exist.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/StopConfigurationRecorder
 func (c *ConfigService) StopConfigurationRecorder(input *StopConfigurationRecorderInput) (*StopConfigurationRecorderOutput, error) {
 	req, out := c.StopConfigurationRecorderRequest(input)
 	err := req.Send()
@@ -2083,6 +2134,7 @@ func (c *ConfigService) StopConfigurationRecorder(input *StopConfigurationRecord
 
 // Indicates whether an AWS resource or AWS Config rule is compliant and provides
 // the number of contributors that affect the compliance.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/Compliance
 type Compliance struct {
 	_ struct{} `type:"structure"`
 
@@ -2118,9 +2170,22 @@ func (s Compliance) GoString() string {
 	return s.String()
 }
 
+// SetComplianceContributorCount sets the ComplianceContributorCount field's value.
+func (s *Compliance) SetComplianceContributorCount(v *ComplianceContributorCount) *Compliance {
+	s.ComplianceContributorCount = v
+	return s
+}
+
+// SetComplianceType sets the ComplianceType field's value.
+func (s *Compliance) SetComplianceType(v string) *Compliance {
+	s.ComplianceType = &v
+	return s
+}
+
 // Indicates whether an AWS Config rule is compliant. A rule is compliant if
 // all of the resources that the rule evaluated comply with it, and it is noncompliant
 // if any of these resources do not comply.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ComplianceByConfigRule
 type ComplianceByConfigRule struct {
 	_ struct{} `type:"structure"`
 
@@ -2141,10 +2206,23 @@ func (s ComplianceByConfigRule) GoString() string {
 	return s.String()
 }
 
+// SetCompliance sets the Compliance field's value.
+func (s *ComplianceByConfigRule) SetCompliance(v *Compliance) *ComplianceByConfigRule {
+	s.Compliance = v
+	return s
+}
+
+// SetConfigRuleName sets the ConfigRuleName field's value.
+func (s *ComplianceByConfigRule) SetConfigRuleName(v string) *ComplianceByConfigRule {
+	s.ConfigRuleName = &v
+	return s
+}
+
 // Indicates whether an AWS resource that is evaluated according to one or more
 // AWS Config rules is compliant. A resource is compliant if it complies with
 // all of the rules that evaluate it, and it is noncompliant if it does not
 // comply with one or more of these rules.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ComplianceByResource
 type ComplianceByResource struct {
 	_ struct{} `type:"structure"`
 
@@ -2169,8 +2247,27 @@ func (s ComplianceByResource) GoString() string {
 	return s.String()
 }
 
+// SetCompliance sets the Compliance field's value.
+func (s *ComplianceByResource) SetCompliance(v *Compliance) *ComplianceByResource {
+	s.Compliance = v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *ComplianceByResource) SetResourceId(v string) *ComplianceByResource {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *ComplianceByResource) SetResourceType(v string) *ComplianceByResource {
+	s.ResourceType = &v
+	return s
+}
+
 // The number of AWS resources or AWS Config rules responsible for the current
 // compliance of the item, up to a maximum number.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ComplianceContributorCount
 type ComplianceContributorCount struct {
 	_ struct{} `type:"structure"`
 
@@ -2192,8 +2289,20 @@ func (s ComplianceContributorCount) GoString() string {
 	return s.String()
 }
 
-// The number of AWS Config rules or AWS resources that are compliant and noncompliant,
-// up to a maximum.
+// SetCapExceeded sets the CapExceeded field's value.
+func (s *ComplianceContributorCount) SetCapExceeded(v bool) *ComplianceContributorCount {
+	s.CapExceeded = &v
+	return s
+}
+
+// SetCappedCount sets the CappedCount field's value.
+func (s *ComplianceContributorCount) SetCappedCount(v int64) *ComplianceContributorCount {
+	s.CappedCount = &v
+	return s
+}
+
+// The number of AWS Config rules or AWS resources that are compliant and noncompliant.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ComplianceSummary
 type ComplianceSummary struct {
 	_ struct{} `type:"structure"`
 
@@ -2219,8 +2328,27 @@ func (s ComplianceSummary) GoString() string {
 	return s.String()
 }
 
+// SetComplianceSummaryTimestamp sets the ComplianceSummaryTimestamp field's value.
+func (s *ComplianceSummary) SetComplianceSummaryTimestamp(v time.Time) *ComplianceSummary {
+	s.ComplianceSummaryTimestamp = &v
+	return s
+}
+
+// SetCompliantResourceCount sets the CompliantResourceCount field's value.
+func (s *ComplianceSummary) SetCompliantResourceCount(v *ComplianceContributorCount) *ComplianceSummary {
+	s.CompliantResourceCount = v
+	return s
+}
+
+// SetNonCompliantResourceCount sets the NonCompliantResourceCount field's value.
+func (s *ComplianceSummary) SetNonCompliantResourceCount(v *ComplianceContributorCount) *ComplianceSummary {
+	s.NonCompliantResourceCount = v
+	return s
+}
+
 // The number of AWS resources of a specific type that are compliant or noncompliant,
 // up to a maximum of 100 for each compliance.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ComplianceSummaryByResourceType
 type ComplianceSummaryByResourceType struct {
 	_ struct{} `type:"structure"`
 
@@ -2242,8 +2370,21 @@ func (s ComplianceSummaryByResourceType) GoString() string {
 	return s.String()
 }
 
+// SetComplianceSummary sets the ComplianceSummary field's value.
+func (s *ComplianceSummaryByResourceType) SetComplianceSummary(v *ComplianceSummary) *ComplianceSummaryByResourceType {
+	s.ComplianceSummary = v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *ComplianceSummaryByResourceType) SetResourceType(v string) *ComplianceSummaryByResourceType {
+	s.ResourceType = &v
+	return s
+}
+
 // A list that contains the status of the delivery of either the snapshot or
 // the configuration history to the specified Amazon S3 bucket.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ConfigExportDeliveryInfo
 type ConfigExportDeliveryInfo struct {
 	_ struct{} `type:"structure"`
 
@@ -2276,6 +2417,42 @@ func (s ConfigExportDeliveryInfo) GoString() string {
 	return s.String()
 }
 
+// SetLastAttemptTime sets the LastAttemptTime field's value.
+func (s *ConfigExportDeliveryInfo) SetLastAttemptTime(v time.Time) *ConfigExportDeliveryInfo {
+	s.LastAttemptTime = &v
+	return s
+}
+
+// SetLastErrorCode sets the LastErrorCode field's value.
+func (s *ConfigExportDeliveryInfo) SetLastErrorCode(v string) *ConfigExportDeliveryInfo {
+	s.LastErrorCode = &v
+	return s
+}
+
+// SetLastErrorMessage sets the LastErrorMessage field's value.
+func (s *ConfigExportDeliveryInfo) SetLastErrorMessage(v string) *ConfigExportDeliveryInfo {
+	s.LastErrorMessage = &v
+	return s
+}
+
+// SetLastStatus sets the LastStatus field's value.
+func (s *ConfigExportDeliveryInfo) SetLastStatus(v string) *ConfigExportDeliveryInfo {
+	s.LastStatus = &v
+	return s
+}
+
+// SetLastSuccessfulTime sets the LastSuccessfulTime field's value.
+func (s *ConfigExportDeliveryInfo) SetLastSuccessfulTime(v time.Time) *ConfigExportDeliveryInfo {
+	s.LastSuccessfulTime = &v
+	return s
+}
+
+// SetNextDeliveryTime sets the NextDeliveryTime field's value.
+func (s *ConfigExportDeliveryInfo) SetNextDeliveryTime(v time.Time) *ConfigExportDeliveryInfo {
+	s.NextDeliveryTime = &v
+	return s
+}
+
 // An AWS Config rule represents an AWS Lambda function that you create for
 // a custom rule or a predefined function for an AWS managed rule. The function
 // evaluates configuration items to assess whether your AWS resources comply
@@ -2290,6 +2467,7 @@ func (s ConfigExportDeliveryInfo) GoString() string {
 // For more information about developing and using AWS Config rules, see Evaluating
 // AWS Resource Configurations with AWS Config (http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config.html)
 // in the AWS Config Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ConfigRule
 type ConfigRule struct {
 	_ struct{} `type:"structure"`
 
@@ -2392,11 +2570,66 @@ func (s *ConfigRule) Validate() error {
 	return nil
 }
 
+// SetConfigRuleArn sets the ConfigRuleArn field's value.
+func (s *ConfigRule) SetConfigRuleArn(v string) *ConfigRule {
+	s.ConfigRuleArn = &v
+	return s
+}
+
+// SetConfigRuleId sets the ConfigRuleId field's value.
+func (s *ConfigRule) SetConfigRuleId(v string) *ConfigRule {
+	s.ConfigRuleId = &v
+	return s
+}
+
+// SetConfigRuleName sets the ConfigRuleName field's value.
+func (s *ConfigRule) SetConfigRuleName(v string) *ConfigRule {
+	s.ConfigRuleName = &v
+	return s
+}
+
+// SetConfigRuleState sets the ConfigRuleState field's value.
+func (s *ConfigRule) SetConfigRuleState(v string) *ConfigRule {
+	s.ConfigRuleState = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ConfigRule) SetDescription(v string) *ConfigRule {
+	s.Description = &v
+	return s
+}
+
+// SetInputParameters sets the InputParameters field's value.
+func (s *ConfigRule) SetInputParameters(v string) *ConfigRule {
+	s.InputParameters = &v
+	return s
+}
+
+// SetMaximumExecutionFrequency sets the MaximumExecutionFrequency field's value.
+func (s *ConfigRule) SetMaximumExecutionFrequency(v string) *ConfigRule {
+	s.MaximumExecutionFrequency = &v
+	return s
+}
+
+// SetScope sets the Scope field's value.
+func (s *ConfigRule) SetScope(v *Scope) *ConfigRule {
+	s.Scope = v
+	return s
+}
+
+// SetSource sets the Source field's value.
+func (s *ConfigRule) SetSource(v *Source) *ConfigRule {
+	s.Source = v
+	return s
+}
+
 // Status information for your AWS managed Config rules. The status includes
 // information such as the last time the rule ran, the last time it failed,
 // and the related error for the last failure.
 //
 // This action does not return status information about custom Config rules.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ConfigRuleEvaluationStatus
 type ConfigRuleEvaluationStatus struct {
 	_ struct{} `type:"structure"`
 
@@ -2455,6 +2688,72 @@ func (s ConfigRuleEvaluationStatus) GoString() string {
 	return s.String()
 }
 
+// SetConfigRuleArn sets the ConfigRuleArn field's value.
+func (s *ConfigRuleEvaluationStatus) SetConfigRuleArn(v string) *ConfigRuleEvaluationStatus {
+	s.ConfigRuleArn = &v
+	return s
+}
+
+// SetConfigRuleId sets the ConfigRuleId field's value.
+func (s *ConfigRuleEvaluationStatus) SetConfigRuleId(v string) *ConfigRuleEvaluationStatus {
+	s.ConfigRuleId = &v
+	return s
+}
+
+// SetConfigRuleName sets the ConfigRuleName field's value.
+func (s *ConfigRuleEvaluationStatus) SetConfigRuleName(v string) *ConfigRuleEvaluationStatus {
+	s.ConfigRuleName = &v
+	return s
+}
+
+// SetFirstActivatedTime sets the FirstActivatedTime field's value.
+func (s *ConfigRuleEvaluationStatus) SetFirstActivatedTime(v time.Time) *ConfigRuleEvaluationStatus {
+	s.FirstActivatedTime = &v
+	return s
+}
+
+// SetFirstEvaluationStarted sets the FirstEvaluationStarted field's value.
+func (s *ConfigRuleEvaluationStatus) SetFirstEvaluationStarted(v bool) *ConfigRuleEvaluationStatus {
+	s.FirstEvaluationStarted = &v
+	return s
+}
+
+// SetLastErrorCode sets the LastErrorCode field's value.
+func (s *ConfigRuleEvaluationStatus) SetLastErrorCode(v string) *ConfigRuleEvaluationStatus {
+	s.LastErrorCode = &v
+	return s
+}
+
+// SetLastErrorMessage sets the LastErrorMessage field's value.
+func (s *ConfigRuleEvaluationStatus) SetLastErrorMessage(v string) *ConfigRuleEvaluationStatus {
+	s.LastErrorMessage = &v
+	return s
+}
+
+// SetLastFailedEvaluationTime sets the LastFailedEvaluationTime field's value.
+func (s *ConfigRuleEvaluationStatus) SetLastFailedEvaluationTime(v time.Time) *ConfigRuleEvaluationStatus {
+	s.LastFailedEvaluationTime = &v
+	return s
+}
+
+// SetLastFailedInvocationTime sets the LastFailedInvocationTime field's value.
+func (s *ConfigRuleEvaluationStatus) SetLastFailedInvocationTime(v time.Time) *ConfigRuleEvaluationStatus {
+	s.LastFailedInvocationTime = &v
+	return s
+}
+
+// SetLastSuccessfulEvaluationTime sets the LastSuccessfulEvaluationTime field's value.
+func (s *ConfigRuleEvaluationStatus) SetLastSuccessfulEvaluationTime(v time.Time) *ConfigRuleEvaluationStatus {
+	s.LastSuccessfulEvaluationTime = &v
+	return s
+}
+
+// SetLastSuccessfulInvocationTime sets the LastSuccessfulInvocationTime field's value.
+func (s *ConfigRuleEvaluationStatus) SetLastSuccessfulInvocationTime(v time.Time) *ConfigRuleEvaluationStatus {
+	s.LastSuccessfulInvocationTime = &v
+	return s
+}
+
 // Provides options for how often AWS Config delivers configuration snapshots
 // to the Amazon S3 bucket in your delivery channel.
 //
@@ -2494,6 +2793,7 @@ func (s ConfigRuleEvaluationStatus) GoString() string {
 //
 // To update the deliveryFrequency with which AWS Config delivers your configuration
 // snapshots, use the PutDeliveryChannel action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ConfigSnapshotDeliveryProperties
 type ConfigSnapshotDeliveryProperties struct {
 	_ struct{} `type:"structure"`
 
@@ -2511,8 +2811,15 @@ func (s ConfigSnapshotDeliveryProperties) GoString() string {
 	return s.String()
 }
 
+// SetDeliveryFrequency sets the DeliveryFrequency field's value.
+func (s *ConfigSnapshotDeliveryProperties) SetDeliveryFrequency(v string) *ConfigSnapshotDeliveryProperties {
+	s.DeliveryFrequency = &v
+	return s
+}
+
 // A list that contains the status of the delivery of the configuration stream
 // notification to the Amazon SNS topic.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ConfigStreamDeliveryInfo
 type ConfigStreamDeliveryInfo struct {
 	_ struct{} `type:"structure"`
 
@@ -2543,10 +2850,32 @@ func (s ConfigStreamDeliveryInfo) GoString() string {
 	return s.String()
 }
 
+// SetLastErrorCode sets the LastErrorCode field's value.
+func (s *ConfigStreamDeliveryInfo) SetLastErrorCode(v string) *ConfigStreamDeliveryInfo {
+	s.LastErrorCode = &v
+	return s
+}
+
+// SetLastErrorMessage sets the LastErrorMessage field's value.
+func (s *ConfigStreamDeliveryInfo) SetLastErrorMessage(v string) *ConfigStreamDeliveryInfo {
+	s.LastErrorMessage = &v
+	return s
+}
+
+// SetLastStatus sets the LastStatus field's value.
+func (s *ConfigStreamDeliveryInfo) SetLastStatus(v string) *ConfigStreamDeliveryInfo {
+	s.LastStatus = &v
+	return s
+}
+
+// SetLastStatusChangeTime sets the LastStatusChangeTime field's value.
+func (s *ConfigStreamDeliveryInfo) SetLastStatusChangeTime(v time.Time) *ConfigStreamDeliveryInfo {
+	s.LastStatusChangeTime = &v
+	return s
+}
+
 // A list that contains detailed configurations of a specified resource.
-//
-// Currently, the list does not contain information about non-AWS components
-// (for example, applications on your Amazon EC2 instances).
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ConfigurationItem
 type ConfigurationItem struct {
 	_ struct{} `type:"structure"`
 
@@ -2627,8 +2956,117 @@ func (s ConfigurationItem) GoString() string {
 	return s.String()
 }
 
+// SetAccountId sets the AccountId field's value.
+func (s *ConfigurationItem) SetAccountId(v string) *ConfigurationItem {
+	s.AccountId = &v
+	return s
+}
+
+// SetArn sets the Arn field's value.
+func (s *ConfigurationItem) SetArn(v string) *ConfigurationItem {
+	s.Arn = &v
+	return s
+}
+
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *ConfigurationItem) SetAvailabilityZone(v string) *ConfigurationItem {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetAwsRegion sets the AwsRegion field's value.
+func (s *ConfigurationItem) SetAwsRegion(v string) *ConfigurationItem {
+	s.AwsRegion = &v
+	return s
+}
+
+// SetConfiguration sets the Configuration field's value.
+func (s *ConfigurationItem) SetConfiguration(v string) *ConfigurationItem {
+	s.Configuration = &v
+	return s
+}
+
+// SetConfigurationItemCaptureTime sets the ConfigurationItemCaptureTime field's value.
+func (s *ConfigurationItem) SetConfigurationItemCaptureTime(v time.Time) *ConfigurationItem {
+	s.ConfigurationItemCaptureTime = &v
+	return s
+}
+
+// SetConfigurationItemMD5Hash sets the ConfigurationItemMD5Hash field's value.
+func (s *ConfigurationItem) SetConfigurationItemMD5Hash(v string) *ConfigurationItem {
+	s.ConfigurationItemMD5Hash = &v
+	return s
+}
+
+// SetConfigurationItemStatus sets the ConfigurationItemStatus field's value.
+func (s *ConfigurationItem) SetConfigurationItemStatus(v string) *ConfigurationItem {
+	s.ConfigurationItemStatus = &v
+	return s
+}
+
+// SetConfigurationStateId sets the ConfigurationStateId field's value.
+func (s *ConfigurationItem) SetConfigurationStateId(v string) *ConfigurationItem {
+	s.ConfigurationStateId = &v
+	return s
+}
+
+// SetRelatedEvents sets the RelatedEvents field's value.
+func (s *ConfigurationItem) SetRelatedEvents(v []*string) *ConfigurationItem {
+	s.RelatedEvents = v
+	return s
+}
+
+// SetRelationships sets the Relationships field's value.
+func (s *ConfigurationItem) SetRelationships(v []*Relationship) *ConfigurationItem {
+	s.Relationships = v
+	return s
+}
+
+// SetResourceCreationTime sets the ResourceCreationTime field's value.
+func (s *ConfigurationItem) SetResourceCreationTime(v time.Time) *ConfigurationItem {
+	s.ResourceCreationTime = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *ConfigurationItem) SetResourceId(v string) *ConfigurationItem {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceName sets the ResourceName field's value.
+func (s *ConfigurationItem) SetResourceName(v string) *ConfigurationItem {
+	s.ResourceName = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *ConfigurationItem) SetResourceType(v string) *ConfigurationItem {
+	s.ResourceType = &v
+	return s
+}
+
+// SetSupplementaryConfiguration sets the SupplementaryConfiguration field's value.
+func (s *ConfigurationItem) SetSupplementaryConfiguration(v map[string]*string) *ConfigurationItem {
+	s.SupplementaryConfiguration = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *ConfigurationItem) SetTags(v map[string]*string) *ConfigurationItem {
+	s.Tags = v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *ConfigurationItem) SetVersion(v string) *ConfigurationItem {
+	s.Version = &v
+	return s
+}
+
 // An object that represents the recording of configuration changes of an AWS
 // resource.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ConfigurationRecorder
 type ConfigurationRecorder struct {
 	_ struct{} `type:"structure"`
 
@@ -2669,7 +3107,26 @@ func (s *ConfigurationRecorder) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *ConfigurationRecorder) SetName(v string) *ConfigurationRecorder {
+	s.Name = &v
+	return s
+}
+
+// SetRecordingGroup sets the RecordingGroup field's value.
+func (s *ConfigurationRecorder) SetRecordingGroup(v *RecordingGroup) *ConfigurationRecorder {
+	s.RecordingGroup = v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *ConfigurationRecorder) SetRoleARN(v string) *ConfigurationRecorder {
+	s.RoleARN = &v
+	return s
+}
+
 // The current status of the configuration recorder.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ConfigurationRecorderStatus
 type ConfigurationRecorderStatus struct {
 	_ struct{} `type:"structure"`
 
@@ -2708,6 +3165,55 @@ func (s ConfigurationRecorderStatus) GoString() string {
 	return s.String()
 }
 
+// SetLastErrorCode sets the LastErrorCode field's value.
+func (s *ConfigurationRecorderStatus) SetLastErrorCode(v string) *ConfigurationRecorderStatus {
+	s.LastErrorCode = &v
+	return s
+}
+
+// SetLastErrorMessage sets the LastErrorMessage field's value.
+func (s *ConfigurationRecorderStatus) SetLastErrorMessage(v string) *ConfigurationRecorderStatus {
+	s.LastErrorMessage = &v
+	return s
+}
+
+// SetLastStartTime sets the LastStartTime field's value.
+func (s *ConfigurationRecorderStatus) SetLastStartTime(v time.Time) *ConfigurationRecorderStatus {
+	s.LastStartTime = &v
+	return s
+}
+
+// SetLastStatus sets the LastStatus field's value.
+func (s *ConfigurationRecorderStatus) SetLastStatus(v string) *ConfigurationRecorderStatus {
+	s.LastStatus = &v
+	return s
+}
+
+// SetLastStatusChangeTime sets the LastStatusChangeTime field's value.
+func (s *ConfigurationRecorderStatus) SetLastStatusChangeTime(v time.Time) *ConfigurationRecorderStatus {
+	s.LastStatusChangeTime = &v
+	return s
+}
+
+// SetLastStopTime sets the LastStopTime field's value.
+func (s *ConfigurationRecorderStatus) SetLastStopTime(v time.Time) *ConfigurationRecorderStatus {
+	s.LastStopTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ConfigurationRecorderStatus) SetName(v string) *ConfigurationRecorderStatus {
+	s.Name = &v
+	return s
+}
+
+// SetRecording sets the Recording field's value.
+func (s *ConfigurationRecorderStatus) SetRecording(v bool) *ConfigurationRecorderStatus {
+	s.Recording = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteConfigRuleRequest
 type DeleteConfigRuleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2743,6 +3249,13 @@ func (s *DeleteConfigRuleInput) Validate() error {
 	return nil
 }
 
+// SetConfigRuleName sets the ConfigRuleName field's value.
+func (s *DeleteConfigRuleInput) SetConfigRuleName(v string) *DeleteConfigRuleInput {
+	s.ConfigRuleName = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteConfigRuleOutput
 type DeleteConfigRuleOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2758,6 +3271,7 @@ func (s DeleteConfigRuleOutput) GoString() string {
 }
 
 // The request object for the DeleteConfigurationRecorder action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteConfigurationRecorderRequest
 type DeleteConfigurationRecorderInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2795,6 +3309,13 @@ func (s *DeleteConfigurationRecorderInput) Validate() error {
 	return nil
 }
 
+// SetConfigurationRecorderName sets the ConfigurationRecorderName field's value.
+func (s *DeleteConfigurationRecorderInput) SetConfigurationRecorderName(v string) *DeleteConfigurationRecorderInput {
+	s.ConfigurationRecorderName = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteConfigurationRecorderOutput
 type DeleteConfigurationRecorderOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2811,6 +3332,7 @@ func (s DeleteConfigurationRecorderOutput) GoString() string {
 
 // The input for the DeleteDeliveryChannel action. The action accepts the following
 // data in JSON format.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteDeliveryChannelRequest
 type DeleteDeliveryChannelInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2846,6 +3368,13 @@ func (s *DeleteDeliveryChannelInput) Validate() error {
 	return nil
 }
 
+// SetDeliveryChannelName sets the DeliveryChannelName field's value.
+func (s *DeleteDeliveryChannelInput) SetDeliveryChannelName(v string) *DeleteDeliveryChannelInput {
+	s.DeliveryChannelName = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteDeliveryChannelOutput
 type DeleteDeliveryChannelOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2860,6 +3389,7 @@ func (s DeleteDeliveryChannelOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteEvaluationResultsRequest
 type DeleteEvaluationResultsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2895,8 +3425,15 @@ func (s *DeleteEvaluationResultsInput) Validate() error {
 	return nil
 }
 
+// SetConfigRuleName sets the ConfigRuleName field's value.
+func (s *DeleteEvaluationResultsInput) SetConfigRuleName(v string) *DeleteEvaluationResultsInput {
+	s.ConfigRuleName = &v
+	return s
+}
+
 // The output when you delete the evaluation results for the specified Config
 // rule.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeleteEvaluationResultsResponse
 type DeleteEvaluationResultsOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2912,6 +3449,7 @@ func (s DeleteEvaluationResultsOutput) GoString() string {
 }
 
 // The input for the DeliverConfigSnapshot action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeliverConfigSnapshotRequest
 type DeliverConfigSnapshotInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2947,7 +3485,14 @@ func (s *DeliverConfigSnapshotInput) Validate() error {
 	return nil
 }
 
+// SetDeliveryChannelName sets the DeliveryChannelName field's value.
+func (s *DeliverConfigSnapshotInput) SetDeliveryChannelName(v string) *DeliverConfigSnapshotInput {
+	s.DeliveryChannelName = &v
+	return s
+}
+
 // The output for the DeliverConfigSnapshot action in JSON format.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeliverConfigSnapshotResponse
 type DeliverConfigSnapshotOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2965,8 +3510,15 @@ func (s DeliverConfigSnapshotOutput) GoString() string {
 	return s.String()
 }
 
+// SetConfigSnapshotId sets the ConfigSnapshotId field's value.
+func (s *DeliverConfigSnapshotOutput) SetConfigSnapshotId(v string) *DeliverConfigSnapshotOutput {
+	s.ConfigSnapshotId = &v
+	return s
+}
+
 // The channel through which AWS Config delivers notifications and updated configuration
 // states.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeliveryChannel
 type DeliveryChannel struct {
 	_ struct{} `type:"structure"`
 
@@ -3063,9 +3615,40 @@ func (s *DeliveryChannel) Validate() error {
 	return nil
 }
 
+// SetConfigSnapshotDeliveryProperties sets the ConfigSnapshotDeliveryProperties field's value.
+func (s *DeliveryChannel) SetConfigSnapshotDeliveryProperties(v *ConfigSnapshotDeliveryProperties) *DeliveryChannel {
+	s.ConfigSnapshotDeliveryProperties = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DeliveryChannel) SetName(v string) *DeliveryChannel {
+	s.Name = &v
+	return s
+}
+
+// SetS3BucketName sets the S3BucketName field's value.
+func (s *DeliveryChannel) SetS3BucketName(v string) *DeliveryChannel {
+	s.S3BucketName = &v
+	return s
+}
+
+// SetS3KeyPrefix sets the S3KeyPrefix field's value.
+func (s *DeliveryChannel) SetS3KeyPrefix(v string) *DeliveryChannel {
+	s.S3KeyPrefix = &v
+	return s
+}
+
+// SetSnsTopicARN sets the SnsTopicARN field's value.
+func (s *DeliveryChannel) SetSnsTopicARN(v string) *DeliveryChannel {
+	s.SnsTopicARN = &v
+	return s
+}
+
 // The status of a specified delivery channel.
 //
 // Valid values: Success | Failure
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DeliveryChannelStatus
 type DeliveryChannelStatus struct {
 	_ struct{} `type:"structure"`
 
@@ -3095,6 +3678,31 @@ func (s DeliveryChannelStatus) GoString() string {
 	return s.String()
 }
 
+// SetConfigHistoryDeliveryInfo sets the ConfigHistoryDeliveryInfo field's value.
+func (s *DeliveryChannelStatus) SetConfigHistoryDeliveryInfo(v *ConfigExportDeliveryInfo) *DeliveryChannelStatus {
+	s.ConfigHistoryDeliveryInfo = v
+	return s
+}
+
+// SetConfigSnapshotDeliveryInfo sets the ConfigSnapshotDeliveryInfo field's value.
+func (s *DeliveryChannelStatus) SetConfigSnapshotDeliveryInfo(v *ConfigExportDeliveryInfo) *DeliveryChannelStatus {
+	s.ConfigSnapshotDeliveryInfo = v
+	return s
+}
+
+// SetConfigStreamDeliveryInfo sets the ConfigStreamDeliveryInfo field's value.
+func (s *DeliveryChannelStatus) SetConfigStreamDeliveryInfo(v *ConfigStreamDeliveryInfo) *DeliveryChannelStatus {
+	s.ConfigStreamDeliveryInfo = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DeliveryChannelStatus) SetName(v string) *DeliveryChannelStatus {
+	s.Name = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeComplianceByConfigRuleRequest
 type DescribeComplianceByConfigRuleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3106,7 +3714,7 @@ type DescribeComplianceByConfigRuleInput struct {
 	// Specify one or more AWS Config rule names to filter the results by rule.
 	ConfigRuleNames []*string `type:"list"`
 
-	// The nextToken string returned on a previous page that you use to get the
+	// The NextToken string returned on a previous page that you use to get the
 	// next page of results in a paginated response.
 	NextToken *string `type:"string"`
 }
@@ -3121,6 +3729,25 @@ func (s DescribeComplianceByConfigRuleInput) GoString() string {
 	return s.String()
 }
 
+// SetComplianceTypes sets the ComplianceTypes field's value.
+func (s *DescribeComplianceByConfigRuleInput) SetComplianceTypes(v []*string) *DescribeComplianceByConfigRuleInput {
+	s.ComplianceTypes = v
+	return s
+}
+
+// SetConfigRuleNames sets the ConfigRuleNames field's value.
+func (s *DescribeComplianceByConfigRuleInput) SetConfigRuleNames(v []*string) *DescribeComplianceByConfigRuleInput {
+	s.ConfigRuleNames = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeComplianceByConfigRuleInput) SetNextToken(v string) *DescribeComplianceByConfigRuleInput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeComplianceByConfigRuleResponse
 type DescribeComplianceByConfigRuleOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3142,6 +3769,19 @@ func (s DescribeComplianceByConfigRuleOutput) GoString() string {
 	return s.String()
 }
 
+// SetComplianceByConfigRules sets the ComplianceByConfigRules field's value.
+func (s *DescribeComplianceByConfigRuleOutput) SetComplianceByConfigRules(v []*ComplianceByConfigRule) *DescribeComplianceByConfigRuleOutput {
+	s.ComplianceByConfigRules = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeComplianceByConfigRuleOutput) SetNextToken(v string) *DescribeComplianceByConfigRuleOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeComplianceByResourceRequest
 type DescribeComplianceByResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3155,7 +3795,7 @@ type DescribeComplianceByResourceInput struct {
 	// Config uses the default.
 	Limit *int64 `type:"integer"`
 
-	// The nextToken string returned on a previous page that you use to get the
+	// The NextToken string returned on a previous page that you use to get the
 	// next page of results in a paginated response.
 	NextToken *string `type:"string"`
 
@@ -3196,6 +3836,37 @@ func (s *DescribeComplianceByResourceInput) Validate() error {
 	return nil
 }
 
+// SetComplianceTypes sets the ComplianceTypes field's value.
+func (s *DescribeComplianceByResourceInput) SetComplianceTypes(v []*string) *DescribeComplianceByResourceInput {
+	s.ComplianceTypes = v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeComplianceByResourceInput) SetLimit(v int64) *DescribeComplianceByResourceInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeComplianceByResourceInput) SetNextToken(v string) *DescribeComplianceByResourceInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *DescribeComplianceByResourceInput) SetResourceId(v string) *DescribeComplianceByResourceInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *DescribeComplianceByResourceInput) SetResourceType(v string) *DescribeComplianceByResourceInput {
+	s.ResourceType = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeComplianceByResourceResponse
 type DescribeComplianceByResourceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3218,6 +3889,19 @@ func (s DescribeComplianceByResourceOutput) GoString() string {
 	return s.String()
 }
 
+// SetComplianceByResources sets the ComplianceByResources field's value.
+func (s *DescribeComplianceByResourceOutput) SetComplianceByResources(v []*ComplianceByResource) *DescribeComplianceByResourceOutput {
+	s.ComplianceByResources = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeComplianceByResourceOutput) SetNextToken(v string) *DescribeComplianceByResourceOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigRuleEvaluationStatusRequest
 type DescribeConfigRuleEvaluationStatusInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3225,6 +3909,20 @@ type DescribeConfigRuleEvaluationStatusInput struct {
 	// If you do not specify any names, AWS Config returns status information for
 	// all AWS managed Config rules that you use.
 	ConfigRuleNames []*string `type:"list"`
+
+	// The number of rule evaluation results that you want returned.
+	//
+	// This parameter is required if the rule limit for your account is more than
+	// the default of 50 rules.
+	//
+	// For more information about requesting a rule limit increase, see AWS Config
+	// Limits (http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_config)
+	// in the AWS General Reference Guide.
+	Limit *int64 `type:"integer"`
+
+	// The NextToken string returned on a previous page that you use to get the
+	// next page of results in a paginated response.
+	NextToken *string `type:"string"`
 }
 
 // String returns the string representation
@@ -3237,11 +3935,34 @@ func (s DescribeConfigRuleEvaluationStatusInput) GoString() string {
 	return s.String()
 }
 
+// SetConfigRuleNames sets the ConfigRuleNames field's value.
+func (s *DescribeConfigRuleEvaluationStatusInput) SetConfigRuleNames(v []*string) *DescribeConfigRuleEvaluationStatusInput {
+	s.ConfigRuleNames = v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeConfigRuleEvaluationStatusInput) SetLimit(v int64) *DescribeConfigRuleEvaluationStatusInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeConfigRuleEvaluationStatusInput) SetNextToken(v string) *DescribeConfigRuleEvaluationStatusInput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigRuleEvaluationStatusResponse
 type DescribeConfigRuleEvaluationStatusOutput struct {
 	_ struct{} `type:"structure"`
 
 	// Status information about your AWS managed Config rules.
 	ConfigRulesEvaluationStatus []*ConfigRuleEvaluationStatus `type:"list"`
+
+	// The string that you use in a subsequent request to get the next page of results
+	// in a paginated response.
+	NextToken *string `type:"string"`
 }
 
 // String returns the string representation
@@ -3254,6 +3975,19 @@ func (s DescribeConfigRuleEvaluationStatusOutput) GoString() string {
 	return s.String()
 }
 
+// SetConfigRulesEvaluationStatus sets the ConfigRulesEvaluationStatus field's value.
+func (s *DescribeConfigRuleEvaluationStatusOutput) SetConfigRulesEvaluationStatus(v []*ConfigRuleEvaluationStatus) *DescribeConfigRuleEvaluationStatusOutput {
+	s.ConfigRulesEvaluationStatus = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeConfigRuleEvaluationStatusOutput) SetNextToken(v string) *DescribeConfigRuleEvaluationStatusOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigRulesRequest
 type DescribeConfigRulesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3261,7 +3995,7 @@ type DescribeConfigRulesInput struct {
 	// specify any names, AWS Config returns details for all your rules.
 	ConfigRuleNames []*string `type:"list"`
 
-	// The nextToken string returned on a previous page that you use to get the
+	// The NextToken string returned on a previous page that you use to get the
 	// next page of results in a paginated response.
 	NextToken *string `type:"string"`
 }
@@ -3276,6 +4010,19 @@ func (s DescribeConfigRulesInput) GoString() string {
 	return s.String()
 }
 
+// SetConfigRuleNames sets the ConfigRuleNames field's value.
+func (s *DescribeConfigRulesInput) SetConfigRuleNames(v []*string) *DescribeConfigRulesInput {
+	s.ConfigRuleNames = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeConfigRulesInput) SetNextToken(v string) *DescribeConfigRulesInput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigRulesResponse
 type DescribeConfigRulesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3297,7 +4044,20 @@ func (s DescribeConfigRulesOutput) GoString() string {
 	return s.String()
 }
 
+// SetConfigRules sets the ConfigRules field's value.
+func (s *DescribeConfigRulesOutput) SetConfigRules(v []*ConfigRule) *DescribeConfigRulesOutput {
+	s.ConfigRules = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeConfigRulesOutput) SetNextToken(v string) *DescribeConfigRulesOutput {
+	s.NextToken = &v
+	return s
+}
+
 // The input for the DescribeConfigurationRecorderStatus action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigurationRecorderStatusRequest
 type DescribeConfigurationRecorderStatusInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3317,7 +4077,14 @@ func (s DescribeConfigurationRecorderStatusInput) GoString() string {
 	return s.String()
 }
 
+// SetConfigurationRecorderNames sets the ConfigurationRecorderNames field's value.
+func (s *DescribeConfigurationRecorderStatusInput) SetConfigurationRecorderNames(v []*string) *DescribeConfigurationRecorderStatusInput {
+	s.ConfigurationRecorderNames = v
+	return s
+}
+
 // The output for the DescribeConfigurationRecorderStatus action in JSON format.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigurationRecorderStatusResponse
 type DescribeConfigurationRecorderStatusOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3335,7 +4102,14 @@ func (s DescribeConfigurationRecorderStatusOutput) GoString() string {
 	return s.String()
 }
 
+// SetConfigurationRecordersStatus sets the ConfigurationRecordersStatus field's value.
+func (s *DescribeConfigurationRecorderStatusOutput) SetConfigurationRecordersStatus(v []*ConfigurationRecorderStatus) *DescribeConfigurationRecorderStatusOutput {
+	s.ConfigurationRecordersStatus = v
+	return s
+}
+
 // The input for the DescribeConfigurationRecorders action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigurationRecordersRequest
 type DescribeConfigurationRecordersInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3353,7 +4127,14 @@ func (s DescribeConfigurationRecordersInput) GoString() string {
 	return s.String()
 }
 
+// SetConfigurationRecorderNames sets the ConfigurationRecorderNames field's value.
+func (s *DescribeConfigurationRecordersInput) SetConfigurationRecorderNames(v []*string) *DescribeConfigurationRecordersInput {
+	s.ConfigurationRecorderNames = v
+	return s
+}
+
 // The output for the DescribeConfigurationRecorders action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeConfigurationRecordersResponse
 type DescribeConfigurationRecordersOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3371,7 +4152,14 @@ func (s DescribeConfigurationRecordersOutput) GoString() string {
 	return s.String()
 }
 
+// SetConfigurationRecorders sets the ConfigurationRecorders field's value.
+func (s *DescribeConfigurationRecordersOutput) SetConfigurationRecorders(v []*ConfigurationRecorder) *DescribeConfigurationRecordersOutput {
+	s.ConfigurationRecorders = v
+	return s
+}
+
 // The input for the DeliveryChannelStatus action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeDeliveryChannelStatusRequest
 type DescribeDeliveryChannelStatusInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3389,7 +4177,14 @@ func (s DescribeDeliveryChannelStatusInput) GoString() string {
 	return s.String()
 }
 
+// SetDeliveryChannelNames sets the DeliveryChannelNames field's value.
+func (s *DescribeDeliveryChannelStatusInput) SetDeliveryChannelNames(v []*string) *DescribeDeliveryChannelStatusInput {
+	s.DeliveryChannelNames = v
+	return s
+}
+
 // The output for the DescribeDeliveryChannelStatus action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeDeliveryChannelStatusResponse
 type DescribeDeliveryChannelStatusOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3407,7 +4202,14 @@ func (s DescribeDeliveryChannelStatusOutput) GoString() string {
 	return s.String()
 }
 
+// SetDeliveryChannelsStatus sets the DeliveryChannelsStatus field's value.
+func (s *DescribeDeliveryChannelStatusOutput) SetDeliveryChannelsStatus(v []*DeliveryChannelStatus) *DescribeDeliveryChannelStatusOutput {
+	s.DeliveryChannelsStatus = v
+	return s
+}
+
 // The input for the DescribeDeliveryChannels action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeDeliveryChannelsRequest
 type DescribeDeliveryChannelsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3425,7 +4227,14 @@ func (s DescribeDeliveryChannelsInput) GoString() string {
 	return s.String()
 }
 
+// SetDeliveryChannelNames sets the DeliveryChannelNames field's value.
+func (s *DescribeDeliveryChannelsInput) SetDeliveryChannelNames(v []*string) *DescribeDeliveryChannelsInput {
+	s.DeliveryChannelNames = v
+	return s
+}
+
 // The output for the DescribeDeliveryChannels action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/DescribeDeliveryChannelsResponse
 type DescribeDeliveryChannelsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3443,8 +4252,15 @@ func (s DescribeDeliveryChannelsOutput) GoString() string {
 	return s.String()
 }
 
+// SetDeliveryChannels sets the DeliveryChannels field's value.
+func (s *DescribeDeliveryChannelsOutput) SetDeliveryChannels(v []*DeliveryChannel) *DescribeDeliveryChannelsOutput {
+	s.DeliveryChannels = v
+	return s
+}
+
 // Identifies an AWS resource and indicates whether it complies with the AWS
 // Config rule that it was evaluated against.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/Evaluation
 type Evaluation struct {
 	_ struct{} `type:"structure"`
 
@@ -3479,7 +4295,8 @@ type Evaluation struct {
 	// The time of the event in AWS Config that triggered the evaluation. For event-based
 	// evaluations, the time indicates when AWS Config created the configuration
 	// item that triggered the evaluation. For periodic evaluations, the time indicates
-	// when AWS Config delivered the configuration snapshot that triggered the evaluation.
+	// when AWS Config triggered the evaluation at the frequency that you specified
+	// (for example, every 24 hours).
 	//
 	// OrderingTimestamp is a required field
 	OrderingTimestamp *time.Time `type:"timestamp" timestampFormat:"unix" required:"true"`
@@ -3526,9 +4343,40 @@ func (s *Evaluation) Validate() error {
 	return nil
 }
 
+// SetAnnotation sets the Annotation field's value.
+func (s *Evaluation) SetAnnotation(v string) *Evaluation {
+	s.Annotation = &v
+	return s
+}
+
+// SetComplianceResourceId sets the ComplianceResourceId field's value.
+func (s *Evaluation) SetComplianceResourceId(v string) *Evaluation {
+	s.ComplianceResourceId = &v
+	return s
+}
+
+// SetComplianceResourceType sets the ComplianceResourceType field's value.
+func (s *Evaluation) SetComplianceResourceType(v string) *Evaluation {
+	s.ComplianceResourceType = &v
+	return s
+}
+
+// SetComplianceType sets the ComplianceType field's value.
+func (s *Evaluation) SetComplianceType(v string) *Evaluation {
+	s.ComplianceType = &v
+	return s
+}
+
+// SetOrderingTimestamp sets the OrderingTimestamp field's value.
+func (s *Evaluation) SetOrderingTimestamp(v time.Time) *Evaluation {
+	s.OrderingTimestamp = &v
+	return s
+}
+
 // The details of an AWS Config evaluation. Provides the AWS resource that was
 // evaluated, the compliance of the resource, related timestamps, and supplementary
 // information.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/EvaluationResult
 type EvaluationResult struct {
 	_ struct{} `type:"structure"`
 
@@ -3568,7 +4416,44 @@ func (s EvaluationResult) GoString() string {
 	return s.String()
 }
 
+// SetAnnotation sets the Annotation field's value.
+func (s *EvaluationResult) SetAnnotation(v string) *EvaluationResult {
+	s.Annotation = &v
+	return s
+}
+
+// SetComplianceType sets the ComplianceType field's value.
+func (s *EvaluationResult) SetComplianceType(v string) *EvaluationResult {
+	s.ComplianceType = &v
+	return s
+}
+
+// SetConfigRuleInvokedTime sets the ConfigRuleInvokedTime field's value.
+func (s *EvaluationResult) SetConfigRuleInvokedTime(v time.Time) *EvaluationResult {
+	s.ConfigRuleInvokedTime = &v
+	return s
+}
+
+// SetEvaluationResultIdentifier sets the EvaluationResultIdentifier field's value.
+func (s *EvaluationResult) SetEvaluationResultIdentifier(v *EvaluationResultIdentifier) *EvaluationResult {
+	s.EvaluationResultIdentifier = v
+	return s
+}
+
+// SetResultRecordedTime sets the ResultRecordedTime field's value.
+func (s *EvaluationResult) SetResultRecordedTime(v time.Time) *EvaluationResult {
+	s.ResultRecordedTime = &v
+	return s
+}
+
+// SetResultToken sets the ResultToken field's value.
+func (s *EvaluationResult) SetResultToken(v string) *EvaluationResult {
+	s.ResultToken = &v
+	return s
+}
+
 // Uniquely identifies an evaluation result.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/EvaluationResultIdentifier
 type EvaluationResultIdentifier struct {
 	_ struct{} `type:"structure"`
 
@@ -3593,8 +4478,21 @@ func (s EvaluationResultIdentifier) GoString() string {
 	return s.String()
 }
 
+// SetEvaluationResultQualifier sets the EvaluationResultQualifier field's value.
+func (s *EvaluationResultIdentifier) SetEvaluationResultQualifier(v *EvaluationResultQualifier) *EvaluationResultIdentifier {
+	s.EvaluationResultQualifier = v
+	return s
+}
+
+// SetOrderingTimestamp sets the OrderingTimestamp field's value.
+func (s *EvaluationResultIdentifier) SetOrderingTimestamp(v time.Time) *EvaluationResultIdentifier {
+	s.OrderingTimestamp = &v
+	return s
+}
+
 // Identifies an AWS Config rule that evaluated an AWS resource, and provides
 // the type and ID of the resource that the rule evaluated.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/EvaluationResultQualifier
 type EvaluationResultQualifier struct {
 	_ struct{} `type:"structure"`
 
@@ -3618,6 +4516,25 @@ func (s EvaluationResultQualifier) GoString() string {
 	return s.String()
 }
 
+// SetConfigRuleName sets the ConfigRuleName field's value.
+func (s *EvaluationResultQualifier) SetConfigRuleName(v string) *EvaluationResultQualifier {
+	s.ConfigRuleName = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *EvaluationResultQualifier) SetResourceId(v string) *EvaluationResultQualifier {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *EvaluationResultQualifier) SetResourceType(v string) *EvaluationResultQualifier {
+	s.ResourceType = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceDetailsByConfigRuleRequest
 type GetComplianceDetailsByConfigRuleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3636,7 +4553,7 @@ type GetComplianceDetailsByConfigRuleInput struct {
 	// Config uses the default.
 	Limit *int64 `type:"integer"`
 
-	// The nextToken string returned on a previous page that you use to get the
+	// The NextToken string returned on a previous page that you use to get the
 	// next page of results in a paginated response.
 	NextToken *string `type:"string"`
 }
@@ -3667,6 +4584,31 @@ func (s *GetComplianceDetailsByConfigRuleInput) Validate() error {
 	return nil
 }
 
+// SetComplianceTypes sets the ComplianceTypes field's value.
+func (s *GetComplianceDetailsByConfigRuleInput) SetComplianceTypes(v []*string) *GetComplianceDetailsByConfigRuleInput {
+	s.ComplianceTypes = v
+	return s
+}
+
+// SetConfigRuleName sets the ConfigRuleName field's value.
+func (s *GetComplianceDetailsByConfigRuleInput) SetConfigRuleName(v string) *GetComplianceDetailsByConfigRuleInput {
+	s.ConfigRuleName = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *GetComplianceDetailsByConfigRuleInput) SetLimit(v int64) *GetComplianceDetailsByConfigRuleInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetComplianceDetailsByConfigRuleInput) SetNextToken(v string) *GetComplianceDetailsByConfigRuleInput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceDetailsByConfigRuleResponse
 type GetComplianceDetailsByConfigRuleOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3689,6 +4631,19 @@ func (s GetComplianceDetailsByConfigRuleOutput) GoString() string {
 	return s.String()
 }
 
+// SetEvaluationResults sets the EvaluationResults field's value.
+func (s *GetComplianceDetailsByConfigRuleOutput) SetEvaluationResults(v []*EvaluationResult) *GetComplianceDetailsByConfigRuleOutput {
+	s.EvaluationResults = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetComplianceDetailsByConfigRuleOutput) SetNextToken(v string) *GetComplianceDetailsByConfigRuleOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceDetailsByResourceRequest
 type GetComplianceDetailsByResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3697,7 +4652,7 @@ type GetComplianceDetailsByResourceInput struct {
 	// The allowed values are COMPLIANT, NON_COMPLIANT, and NOT_APPLICABLE.
 	ComplianceTypes []*string `type:"list"`
 
-	// The nextToken string returned on a previous page that you use to get the
+	// The NextToken string returned on a previous page that you use to get the
 	// next page of results in a paginated response.
 	NextToken *string `type:"string"`
 
@@ -3744,6 +4699,31 @@ func (s *GetComplianceDetailsByResourceInput) Validate() error {
 	return nil
 }
 
+// SetComplianceTypes sets the ComplianceTypes field's value.
+func (s *GetComplianceDetailsByResourceInput) SetComplianceTypes(v []*string) *GetComplianceDetailsByResourceInput {
+	s.ComplianceTypes = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetComplianceDetailsByResourceInput) SetNextToken(v string) *GetComplianceDetailsByResourceInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *GetComplianceDetailsByResourceInput) SetResourceId(v string) *GetComplianceDetailsByResourceInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *GetComplianceDetailsByResourceInput) SetResourceType(v string) *GetComplianceDetailsByResourceInput {
+	s.ResourceType = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceDetailsByResourceResponse
 type GetComplianceDetailsByResourceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3765,6 +4745,19 @@ func (s GetComplianceDetailsByResourceOutput) GoString() string {
 	return s.String()
 }
 
+// SetEvaluationResults sets the EvaluationResults field's value.
+func (s *GetComplianceDetailsByResourceOutput) SetEvaluationResults(v []*EvaluationResult) *GetComplianceDetailsByResourceOutput {
+	s.EvaluationResults = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetComplianceDetailsByResourceOutput) SetNextToken(v string) *GetComplianceDetailsByResourceOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceSummaryByConfigRuleInput
 type GetComplianceSummaryByConfigRuleInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3779,6 +4772,7 @@ func (s GetComplianceSummaryByConfigRuleInput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceSummaryByConfigRuleResponse
 type GetComplianceSummaryByConfigRuleOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3797,6 +4791,13 @@ func (s GetComplianceSummaryByConfigRuleOutput) GoString() string {
 	return s.String()
 }
 
+// SetComplianceSummary sets the ComplianceSummary field's value.
+func (s *GetComplianceSummaryByConfigRuleOutput) SetComplianceSummary(v *ComplianceSummary) *GetComplianceSummaryByConfigRuleOutput {
+	s.ComplianceSummary = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceSummaryByResourceTypeRequest
 type GetComplianceSummaryByResourceTypeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3819,6 +4820,13 @@ func (s GetComplianceSummaryByResourceTypeInput) GoString() string {
 	return s.String()
 }
 
+// SetResourceTypes sets the ResourceTypes field's value.
+func (s *GetComplianceSummaryByResourceTypeInput) SetResourceTypes(v []*string) *GetComplianceSummaryByResourceTypeInput {
+	s.ResourceTypes = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetComplianceSummaryByResourceTypeResponse
 type GetComplianceSummaryByResourceTypeOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3838,7 +4846,14 @@ func (s GetComplianceSummaryByResourceTypeOutput) GoString() string {
 	return s.String()
 }
 
+// SetComplianceSummariesByResourceType sets the ComplianceSummariesByResourceType field's value.
+func (s *GetComplianceSummaryByResourceTypeOutput) SetComplianceSummariesByResourceType(v []*ComplianceSummaryByResourceType) *GetComplianceSummaryByResourceTypeOutput {
+	s.ComplianceSummariesByResourceType = v
+	return s
+}
+
 // The input for the GetResourceConfigHistory action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetResourceConfigHistoryRequest
 type GetResourceConfigHistoryInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3901,7 +4916,50 @@ func (s *GetResourceConfigHistoryInput) Validate() error {
 	return nil
 }
 
+// SetChronologicalOrder sets the ChronologicalOrder field's value.
+func (s *GetResourceConfigHistoryInput) SetChronologicalOrder(v string) *GetResourceConfigHistoryInput {
+	s.ChronologicalOrder = &v
+	return s
+}
+
+// SetEarlierTime sets the EarlierTime field's value.
+func (s *GetResourceConfigHistoryInput) SetEarlierTime(v time.Time) *GetResourceConfigHistoryInput {
+	s.EarlierTime = &v
+	return s
+}
+
+// SetLaterTime sets the LaterTime field's value.
+func (s *GetResourceConfigHistoryInput) SetLaterTime(v time.Time) *GetResourceConfigHistoryInput {
+	s.LaterTime = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *GetResourceConfigHistoryInput) SetLimit(v int64) *GetResourceConfigHistoryInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetResourceConfigHistoryInput) SetNextToken(v string) *GetResourceConfigHistoryInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *GetResourceConfigHistoryInput) SetResourceId(v string) *GetResourceConfigHistoryInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *GetResourceConfigHistoryInput) SetResourceType(v string) *GetResourceConfigHistoryInput {
+	s.ResourceType = &v
+	return s
+}
+
 // The output for the GetResourceConfigHistory action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/GetResourceConfigHistoryResponse
 type GetResourceConfigHistoryOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3923,6 +4981,19 @@ func (s GetResourceConfigHistoryOutput) GoString() string {
 	return s.String()
 }
 
+// SetConfigurationItems sets the ConfigurationItems field's value.
+func (s *GetResourceConfigHistoryOutput) SetConfigurationItems(v []*ConfigurationItem) *GetResourceConfigHistoryOutput {
+	s.ConfigurationItems = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetResourceConfigHistoryOutput) SetNextToken(v string) *GetResourceConfigHistoryOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ListDiscoveredResourcesRequest
 type ListDiscoveredResourcesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3978,6 +5049,43 @@ func (s *ListDiscoveredResourcesInput) Validate() error {
 	return nil
 }
 
+// SetIncludeDeletedResources sets the IncludeDeletedResources field's value.
+func (s *ListDiscoveredResourcesInput) SetIncludeDeletedResources(v bool) *ListDiscoveredResourcesInput {
+	s.IncludeDeletedResources = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *ListDiscoveredResourcesInput) SetLimit(v int64) *ListDiscoveredResourcesInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListDiscoveredResourcesInput) SetNextToken(v string) *ListDiscoveredResourcesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResourceIds sets the ResourceIds field's value.
+func (s *ListDiscoveredResourcesInput) SetResourceIds(v []*string) *ListDiscoveredResourcesInput {
+	s.ResourceIds = v
+	return s
+}
+
+// SetResourceName sets the ResourceName field's value.
+func (s *ListDiscoveredResourcesInput) SetResourceName(v string) *ListDiscoveredResourcesInput {
+	s.ResourceName = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *ListDiscoveredResourcesInput) SetResourceType(v string) *ListDiscoveredResourcesInput {
+	s.ResourceType = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ListDiscoveredResourcesResponse
 type ListDiscoveredResourcesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4000,6 +5108,19 @@ func (s ListDiscoveredResourcesOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *ListDiscoveredResourcesOutput) SetNextToken(v string) *ListDiscoveredResourcesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResourceIdentifiers sets the ResourceIdentifiers field's value.
+func (s *ListDiscoveredResourcesOutput) SetResourceIdentifiers(v []*ResourceIdentifier) *ListDiscoveredResourcesOutput {
+	s.ResourceIdentifiers = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutConfigRuleRequest
 type PutConfigRuleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4050,6 +5171,13 @@ func (s *PutConfigRuleInput) Validate() error {
 	return nil
 }
 
+// SetConfigRule sets the ConfigRule field's value.
+func (s *PutConfigRuleInput) SetConfigRule(v *ConfigRule) *PutConfigRuleInput {
+	s.ConfigRule = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutConfigRuleOutput
 type PutConfigRuleOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4065,6 +5193,7 @@ func (s PutConfigRuleOutput) GoString() string {
 }
 
 // The input for the PutConfigurationRecorder action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutConfigurationRecorderRequest
 type PutConfigurationRecorderInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4103,6 +5232,13 @@ func (s *PutConfigurationRecorderInput) Validate() error {
 	return nil
 }
 
+// SetConfigurationRecorder sets the ConfigurationRecorder field's value.
+func (s *PutConfigurationRecorderInput) SetConfigurationRecorder(v *ConfigurationRecorder) *PutConfigurationRecorderInput {
+	s.ConfigurationRecorder = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutConfigurationRecorderOutput
 type PutConfigurationRecorderOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4118,6 +5254,7 @@ func (s PutConfigurationRecorderOutput) GoString() string {
 }
 
 // The input for the PutDeliveryChannel action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutDeliveryChannelRequest
 type PutDeliveryChannelInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4156,6 +5293,13 @@ func (s *PutDeliveryChannelInput) Validate() error {
 	return nil
 }
 
+// SetDeliveryChannel sets the DeliveryChannel field's value.
+func (s *PutDeliveryChannelInput) SetDeliveryChannel(v *DeliveryChannel) *PutDeliveryChannelInput {
+	s.DeliveryChannel = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutDeliveryChannelOutput
 type PutDeliveryChannelOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4170,6 +5314,7 @@ func (s PutDeliveryChannelOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutEvaluationsRequest
 type PutEvaluationsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4218,6 +5363,19 @@ func (s *PutEvaluationsInput) Validate() error {
 	return nil
 }
 
+// SetEvaluations sets the Evaluations field's value.
+func (s *PutEvaluationsInput) SetEvaluations(v []*Evaluation) *PutEvaluationsInput {
+	s.Evaluations = v
+	return s
+}
+
+// SetResultToken sets the ResultToken field's value.
+func (s *PutEvaluationsInput) SetResultToken(v string) *PutEvaluationsInput {
+	s.ResultToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/PutEvaluationsResponse
 type PutEvaluationsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4233,6 +5391,12 @@ func (s PutEvaluationsOutput) String() string {
 // GoString returns the string representation
 func (s PutEvaluationsOutput) GoString() string {
 	return s.String()
+}
+
+// SetFailedEvaluations sets the FailedEvaluations field's value.
+func (s *PutEvaluationsOutput) SetFailedEvaluations(v []*Evaluation) *PutEvaluationsOutput {
+	s.FailedEvaluations = v
+	return s
 }
 
 // Specifies the types of AWS resource for which AWS Config records configuration
@@ -4265,6 +5429,7 @@ func (s PutEvaluationsOutput) GoString() string {
 // For a list of supported resource types, see Supported resource types (http://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html#supported-resources).
 //
 // For more information, see Selecting Which Resources AWS Config Records (http://docs.aws.amazon.com/config/latest/developerguide/select-resources.html).
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/RecordingGroup
 type RecordingGroup struct {
 	_ struct{} `type:"structure"`
 
@@ -4318,7 +5483,26 @@ func (s RecordingGroup) GoString() string {
 	return s.String()
 }
 
+// SetAllSupported sets the AllSupported field's value.
+func (s *RecordingGroup) SetAllSupported(v bool) *RecordingGroup {
+	s.AllSupported = &v
+	return s
+}
+
+// SetIncludeGlobalResourceTypes sets the IncludeGlobalResourceTypes field's value.
+func (s *RecordingGroup) SetIncludeGlobalResourceTypes(v bool) *RecordingGroup {
+	s.IncludeGlobalResourceTypes = &v
+	return s
+}
+
+// SetResourceTypes sets the ResourceTypes field's value.
+func (s *RecordingGroup) SetResourceTypes(v []*string) *RecordingGroup {
+	s.ResourceTypes = v
+	return s
+}
+
 // The relationship of the related resource to the main resource.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/Relationship
 type Relationship struct {
 	_ struct{} `type:"structure"`
 
@@ -4345,8 +5529,33 @@ func (s Relationship) GoString() string {
 	return s.String()
 }
 
+// SetRelationshipName sets the RelationshipName field's value.
+func (s *Relationship) SetRelationshipName(v string) *Relationship {
+	s.RelationshipName = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *Relationship) SetResourceId(v string) *Relationship {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceName sets the ResourceName field's value.
+func (s *Relationship) SetResourceName(v string) *Relationship {
+	s.ResourceName = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *Relationship) SetResourceType(v string) *Relationship {
+	s.ResourceType = &v
+	return s
+}
+
 // The details that identify a resource that is discovered by AWS Config, including
 // the resource type, ID, and (if available) the custom resource name.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ResourceIdentifier
 type ResourceIdentifier struct {
 	_ struct{} `type:"structure"`
 
@@ -4373,12 +5582,37 @@ func (s ResourceIdentifier) GoString() string {
 	return s.String()
 }
 
+// SetResourceDeletionTime sets the ResourceDeletionTime field's value.
+func (s *ResourceIdentifier) SetResourceDeletionTime(v time.Time) *ResourceIdentifier {
+	s.ResourceDeletionTime = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *ResourceIdentifier) SetResourceId(v string) *ResourceIdentifier {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceName sets the ResourceName field's value.
+func (s *ResourceIdentifier) SetResourceName(v string) *ResourceIdentifier {
+	s.ResourceName = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *ResourceIdentifier) SetResourceType(v string) *ResourceIdentifier {
+	s.ResourceType = &v
+	return s
+}
+
 // Defines which resources trigger an evaluation for an AWS Config rule. The
 // scope can include one or more resource types, a combination of a tag key
 // and value, or a combination of one resource type and one resource ID. Specify
 // a scope to constrain which resources trigger an evaluation for a rule. Otherwise,
 // evaluations for the rule are triggered when any resource in your recording
 // group changes in configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/Scope
 type Scope struct {
 	_ struct{} `type:"structure"`
 
@@ -4431,13 +5665,40 @@ func (s *Scope) Validate() error {
 	return nil
 }
 
+// SetComplianceResourceId sets the ComplianceResourceId field's value.
+func (s *Scope) SetComplianceResourceId(v string) *Scope {
+	s.ComplianceResourceId = &v
+	return s
+}
+
+// SetComplianceResourceTypes sets the ComplianceResourceTypes field's value.
+func (s *Scope) SetComplianceResourceTypes(v []*string) *Scope {
+	s.ComplianceResourceTypes = v
+	return s
+}
+
+// SetTagKey sets the TagKey field's value.
+func (s *Scope) SetTagKey(v string) *Scope {
+	s.TagKey = &v
+	return s
+}
+
+// SetTagValue sets the TagValue field's value.
+func (s *Scope) SetTagValue(v string) *Scope {
+	s.TagValue = &v
+	return s
+}
+
 // Provides the AWS Config rule owner (AWS or customer), the rule identifier,
 // and the events that trigger the evaluation of your AWS resources.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/Source
 type Source struct {
 	_ struct{} `type:"structure"`
 
 	// Indicates whether AWS or the customer owns and manages the AWS Config rule.
-	Owner *string `type:"string" enum:"Owner"`
+	//
+	// Owner is a required field
+	Owner *string `type:"string" required:"true" enum:"Owner"`
 
 	// Provides the source and type of the event that causes AWS Config to evaluate
 	// your AWS resources.
@@ -4449,7 +5710,9 @@ type Source struct {
 	//
 	// For custom rules, the identifier is the Amazon Resource Name (ARN) of the
 	// rule's AWS Lambda function, such as arn:aws:lambda:us-east-1:123456789012:function:custom_rule_name.
-	SourceIdentifier *string `min:"1" type:"string"`
+	//
+	// SourceIdentifier is a required field
+	SourceIdentifier *string `min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -4465,6 +5728,12 @@ func (s Source) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *Source) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "Source"}
+	if s.Owner == nil {
+		invalidParams.Add(request.NewErrParamRequired("Owner"))
+	}
+	if s.SourceIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("SourceIdentifier"))
+	}
 	if s.SourceIdentifier != nil && len(*s.SourceIdentifier) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("SourceIdentifier", 1))
 	}
@@ -4475,11 +5744,30 @@ func (s *Source) Validate() error {
 	return nil
 }
 
+// SetOwner sets the Owner field's value.
+func (s *Source) SetOwner(v string) *Source {
+	s.Owner = &v
+	return s
+}
+
+// SetSourceDetails sets the SourceDetails field's value.
+func (s *Source) SetSourceDetails(v []*SourceDetail) *Source {
+	s.SourceDetails = v
+	return s
+}
+
+// SetSourceIdentifier sets the SourceIdentifier field's value.
+func (s *Source) SetSourceIdentifier(v string) *Source {
+	s.SourceIdentifier = &v
+	return s
+}
+
 // Provides the source and the message types that trigger AWS Config to evaluate
 // your AWS resources against a rule. It also provides the frequency with which
 // you want AWS Config to run evaluations for the rule if the trigger type is
 // periodic. You can specify the parameter values for SourceDetail only for
 // custom rules.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/SourceDetail
 type SourceDetail struct {
 	_ struct{} `type:"structure"`
 
@@ -4492,17 +5780,25 @@ type SourceDetail struct {
 	// then MessageType must use the ScheduledNotification value.
 	MaximumExecutionFrequency *string `type:"string" enum:"MaximumExecutionFrequency"`
 
-	// The type of notification that triggers AWS Config to run an evaluation. You
-	// can specify the following notification types:
+	// The type of notification that triggers AWS Config to run an evaluation for
+	// a rule. You can specify the following notification types:
 	//
-	// ConfigurationItemChangeNotification - Triggers an evaluation when AWS Config
-	// delivers a configuration item change notification.
+	//    * ConfigurationItemChangeNotification - Triggers an evaluation when AWS
+	//    Config delivers a configuration item as a result of a resource change.
 	//
-	// ScheduledNotification - Triggers a periodic evaluation at the frequency specified
-	// for MaximumExecutionFrequency.
+	//    * OversizedConfigurationItemChangeNotification - Triggers an evaluation
+	//    when AWS Config delivers an oversized configuration item. AWS Config may
+	//    generate this notification type when a resource changes and the notification
+	//    exceeds the maximum size allowed by Amazon SNS.
 	//
-	// ConfigurationSnapshotDeliveryCompleted - Triggers a periodic evaluation when
-	// AWS Config delivers a configuration snapshot.
+	//    * ScheduledNotification - Triggers a periodic evaluation at the frequency
+	//    specified for MaximumExecutionFrequency.
+	//
+	//    * ConfigurationSnapshotDeliveryCompleted - Triggers a periodic evaluation
+	//    when AWS Config delivers a configuration snapshot.
+	//
+	// If you want your custom rule to be triggered by configuration changes, specify
+	// both ConfigurationItemChangeNotification and OversizedConfigurationItemChangeNotification.
 	MessageType *string `type:"string" enum:"MessageType"`
 }
 
@@ -4516,6 +5812,25 @@ func (s SourceDetail) GoString() string {
 	return s.String()
 }
 
+// SetEventSource sets the EventSource field's value.
+func (s *SourceDetail) SetEventSource(v string) *SourceDetail {
+	s.EventSource = &v
+	return s
+}
+
+// SetMaximumExecutionFrequency sets the MaximumExecutionFrequency field's value.
+func (s *SourceDetail) SetMaximumExecutionFrequency(v string) *SourceDetail {
+	s.MaximumExecutionFrequency = &v
+	return s
+}
+
+// SetMessageType sets the MessageType field's value.
+func (s *SourceDetail) SetMessageType(v string) *SourceDetail {
+	s.MessageType = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/StartConfigRulesEvaluationRequest
 type StartConfigRulesEvaluationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4546,7 +5861,14 @@ func (s *StartConfigRulesEvaluationInput) Validate() error {
 	return nil
 }
 
+// SetConfigRuleNames sets the ConfigRuleNames field's value.
+func (s *StartConfigRulesEvaluationInput) SetConfigRuleNames(v []*string) *StartConfigRulesEvaluationInput {
+	s.ConfigRuleNames = v
+	return s
+}
+
 // The output when you start the evaluation for the specified Config rule.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/StartConfigRulesEvaluationResponse
 type StartConfigRulesEvaluationOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4562,6 +5884,7 @@ func (s StartConfigRulesEvaluationOutput) GoString() string {
 }
 
 // The input for the StartConfigurationRecorder action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/StartConfigurationRecorderRequest
 type StartConfigurationRecorderInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4598,6 +5921,13 @@ func (s *StartConfigurationRecorderInput) Validate() error {
 	return nil
 }
 
+// SetConfigurationRecorderName sets the ConfigurationRecorderName field's value.
+func (s *StartConfigurationRecorderInput) SetConfigurationRecorderName(v string) *StartConfigurationRecorderInput {
+	s.ConfigurationRecorderName = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/StartConfigurationRecorderOutput
 type StartConfigurationRecorderOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4613,6 +5943,7 @@ func (s StartConfigurationRecorderOutput) GoString() string {
 }
 
 // The input for the StopConfigurationRecorder action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/StopConfigurationRecorderRequest
 type StopConfigurationRecorderInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4649,6 +5980,13 @@ func (s *StopConfigurationRecorderInput) Validate() error {
 	return nil
 }
 
+// SetConfigurationRecorderName sets the ConfigurationRecorderName field's value.
+func (s *StopConfigurationRecorderInput) SetConfigurationRecorderName(v string) *StopConfigurationRecorderInput {
+	s.ConfigurationRecorderName = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/StopConfigurationRecorderOutput
 type StopConfigurationRecorderOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4755,6 +6093,9 @@ const (
 
 	// MessageTypeScheduledNotification is a MessageType enum value
 	MessageTypeScheduledNotification = "ScheduledNotification"
+
+	// MessageTypeOversizedConfigurationItemChangeNotification is a MessageType enum value
+	MessageTypeOversizedConfigurationItemChangeNotification = "OversizedConfigurationItemChangeNotification"
 )
 
 const (
@@ -4857,4 +6198,25 @@ const (
 
 	// ResourceTypeAwsS3Bucket is a ResourceType enum value
 	ResourceTypeAwsS3Bucket = "AWS::S3::Bucket"
+
+	// ResourceTypeAwsSsmManagedInstanceInventory is a ResourceType enum value
+	ResourceTypeAwsSsmManagedInstanceInventory = "AWS::SSM::ManagedInstanceInventory"
+
+	// ResourceTypeAwsRedshiftCluster is a ResourceType enum value
+	ResourceTypeAwsRedshiftCluster = "AWS::Redshift::Cluster"
+
+	// ResourceTypeAwsRedshiftClusterSnapshot is a ResourceType enum value
+	ResourceTypeAwsRedshiftClusterSnapshot = "AWS::Redshift::ClusterSnapshot"
+
+	// ResourceTypeAwsRedshiftClusterParameterGroup is a ResourceType enum value
+	ResourceTypeAwsRedshiftClusterParameterGroup = "AWS::Redshift::ClusterParameterGroup"
+
+	// ResourceTypeAwsRedshiftClusterSecurityGroup is a ResourceType enum value
+	ResourceTypeAwsRedshiftClusterSecurityGroup = "AWS::Redshift::ClusterSecurityGroup"
+
+	// ResourceTypeAwsRedshiftClusterSubnetGroup is a ResourceType enum value
+	ResourceTypeAwsRedshiftClusterSubnetGroup = "AWS::Redshift::ClusterSubnetGroup"
+
+	// ResourceTypeAwsRedshiftEventSubscription is a ResourceType enum value
+	ResourceTypeAwsRedshiftEventSubscription = "AWS::Redshift::EventSubscription"
 )

@@ -1,4 +1,4 @@
-// Copyright 2016 CoreOS, Inc.
+// Copyright 2016 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package expect
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -32,12 +33,14 @@ type ExpectProcess struct {
 	wg   sync.WaitGroup
 
 	ptyMu sync.Mutex // protects accessing fpty
-	cond  *sync.Cond // for broadcasting updates are avaiable
+	cond  *sync.Cond // for broadcasting updates are available
 	mu    sync.Mutex // protects lines and err
 	lines []string
 	count int // increment whenever new line gets added
 	err   error
 }
+
+var printDebugLines = os.Getenv("EXPECT_DEBUG") != ""
 
 // NewExpect creates a new process for expect testing.
 func NewExpect(name string, arg ...string) (ep *ExpectProcess, err error) {
@@ -65,6 +68,9 @@ func (ep *ExpectProcess) read() {
 		ep.mu.Lock()
 		ep.err = rerr
 		if l != "" {
+			if printDebugLines {
+				fmt.Printf("%s-%d: %s", ep.cmd.Path, ep.cmd.Process.Pid, l)
+			}
 			ep.lines = append(ep.lines, l)
 			ep.count++
 			if len(ep.lines) == 1 {
@@ -112,6 +118,11 @@ func (ep *ExpectProcess) LineCount() int {
 
 // Stop kills the expect process and waits for it to exit.
 func (ep *ExpectProcess) Stop() error { return ep.close(true) }
+
+// Signal sends a signal to the expect process
+func (ep *ExpectProcess) Signal(sig os.Signal) error {
+	return ep.cmd.Process.Signal(sig)
+}
 
 // Close waits for the expect process to exit.
 func (ep *ExpectProcess) Close() error { return ep.close(false) }

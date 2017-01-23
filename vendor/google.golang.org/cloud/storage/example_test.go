@@ -112,11 +112,14 @@ func ExampleNewWriter() {
 	log.Println("updated object:", wc.Attrs())
 }
 
-func ExampleCopyObject() {
+func ExampleObjectHandle_CopyTo() {
 	ctx := context.Background()
 	var client *storage.Client // See Example (Auth)
 
-	o, err := client.CopyObject(ctx, "bucketname", "file1", "another-bucketname", "file2", nil)
+	src := client.Bucket("bucketname").Object("file1")
+	dst := client.Bucket("another-bucketname").Object("file2")
+
+	o, err := src.CopyTo(ctx, dst, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

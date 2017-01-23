@@ -1,30 +1,31 @@
 # go-systemd
 
-Go bindings to systemd. The project has three packages:
+[![Build Status](https://travis-ci.org/coreos/go-systemd.png?branch=master)](https://travis-ci.org/coreos/go-systemd)
+[![godoc](https://godoc.org/github.com/coreos/go-systemd?status.svg)](http://godoc.org/github.com/coreos/go-systemd)
 
-- activation - for writing and using socket activation from Go
-- dbus - for starting/stopping/inspecting running services and units
-- journal - for writing to systemd's logging service, journal
-- unit - for (de)serialization and comparison of unit files
+Go bindings to systemd. The project has several packages:
 
-Go docs for the entire project are here:
-
-http://godoc.org/github.com/coreos/go-systemd
+- `activation` - for writing and using socket activation from Go
+- `dbus` - for starting/stopping/inspecting running services and units
+- `journal` - for writing to systemd's logging service, journald
+- `sdjournal` - for reading from journald by wrapping its C API
+- `machine1` - for registering machines/containers with systemd
+- `unit` - for (de)serialization and comparison of unit files
 
 ## Socket Activation
 
-An example HTTP server using socket activation can be quickly setup by
-following this README on a Linux machine running systemd:
+An example HTTP server using socket activation can be quickly set up by following this README on a Linux machine running systemd:
 
 https://github.com/coreos/go-systemd/tree/master/examples/activation/httpserver
 
 ## Journal
 
-Using this package you can submit journal entries directly to systemd's journal taking advantage of features like indexed key/value pairs for each log entry.
+Using the pure-Go `journal` package you can submit journal entries directly to systemd's journal, taking advantage of features like indexed key/value pairs for each log entry.
+The `sdjournal` package provides read access to the journal by wrapping around journald's native C API; consequently it requires cgo and the journal headers to be available.
 
 ## D-Bus
 
-The D-Bus API lets you start, stop and introspect systemd units. The API docs are here:
+The `dbus` package connects to the [systemd D-Bus API](http://www.freedesktop.org/wiki/Software/systemd/dbus/) and lets you start, stop and introspect systemd units. The API docs are here:
 
 http://godoc.org/github.com/coreos/go-systemd/dbus
 
@@ -43,3 +44,11 @@ Create `/etc/dbus-1/system-local.conf` that looks like this:
     </policy>
 </busconfig>
 ```
+
+## machined
+
+The `machine1` package allows interaction with the [systemd machined D-Bus API](http://www.freedesktop.org/wiki/Software/systemd/machined/).
+
+## Units
+
+The `unit` package provides various functions for working with [systemd unit files](http://www.freedesktop.org/software/systemd/man/systemd.unit.html).

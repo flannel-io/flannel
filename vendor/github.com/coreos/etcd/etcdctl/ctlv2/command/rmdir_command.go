@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package command
 import (
 	"errors"
 
-	"github.com/codegangsta/cli"
 	"github.com/coreos/etcd/client"
+	"github.com/urfave/cli"
 )
 
 // NewRemoveDirCommand returns the CLI command for "rmdir".
@@ -27,8 +27,9 @@ func NewRemoveDirCommand() cli.Command {
 		Name:      "rmdir",
 		Usage:     "removes the key if it is an empty directory or a key-value pair",
 		ArgsUsage: "<key>",
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			rmdirCommandFunc(c, mustNewKeyAPI(c))
+			return nil
 		},
 	}
 }
@@ -36,7 +37,7 @@ func NewRemoveDirCommand() cli.Command {
 // rmdirCommandFunc executes the "rmdir" command.
 func rmdirCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	if len(c.Args()) == 0 {
-		handleError(ExitBadArgs, errors.New("key required"))
+		handleError(c, ExitBadArgs, errors.New("key required"))
 	}
 	key := c.Args()[0]
 
@@ -44,10 +45,10 @@ func rmdirCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	resp, err := ki.Delete(ctx, key, &client.DeleteOptions{Dir: true})
 	cancel()
 	if err != nil {
-		handleError(ExitServerError, err)
+		handleError(c, ExitServerError, err)
 	}
 
-	if !resp.Node.Dir {
+	if !resp.Node.Dir || c.GlobalString("output") != "simple" {
 		printResponseKey(resp, c.GlobalString("output"))
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,9 +15,16 @@
 package etcdmain
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/url"
+	"os"
 	"reflect"
+	"strings"
 	"testing"
+
+	"github.com/coreos/etcd/embed"
+	"github.com/ghodss/yaml"
 )
 
 func TestConfigParsingMemberFlags(t *testing.T) {
@@ -32,42 +39,55 @@ func TestConfigParsingMemberFlags(t *testing.T) {
 		// it should be set if -listen-client-urls is set
 		"-advertise-client-urls=http://localhost:7000,https://localhost:7001",
 	}
-	wcfg := &config{
-		dir:          "testdir",
-		lpurls:       []url.URL{{Scheme: "http", Host: "localhost:8000"}, {Scheme: "https", Host: "localhost:8001"}},
-		lcurls:       []url.URL{{Scheme: "http", Host: "localhost:7000"}, {Scheme: "https", Host: "localhost:7001"}},
-		maxSnapFiles: 10,
-		maxWalFiles:  10,
-		name:         "testname",
-		snapCount:    10,
-	}
 
-	cfg := NewConfig()
-	err := cfg.Parse(args)
+	cfg := newConfig()
+	err := cfg.parse(args)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.dir != wcfg.dir {
-		t.Errorf("dir = %v, want %v", cfg.dir, wcfg.dir)
+
+	validateMemberFlags(t, cfg)
+}
+
+func TestConfigFileMemberFields(t *testing.T) {
+	yc := struct {
+		Dir           string `json:"data-dir"`
+		MaxSnapFiles  uint   `json:"max-snapshots"`
+		MaxWalFiles   uint   `json:"max-wals"`
+		Name          string `json:"name"`
+		SnapCount     uint64 `json:"snapshot-count"`
+		LPUrls        string `json:"listen-peer-urls"`
+		LCUrls        string `json:"listen-client-urls"`
+		AcurlsCfgFile string `json:"advertise-client-urls"`
+	}{
+		"testdir",
+		10,
+		10,
+		"testname",
+		10,
+		"http://localhost:8000,https://localhost:8001",
+		"http://localhost:7000,https://localhost:7001",
+		"http://localhost:7000,https://localhost:7001",
 	}
-	if cfg.maxSnapFiles != wcfg.maxSnapFiles {
-		t.Errorf("maxsnap = %v, want %v", cfg.maxSnapFiles, wcfg.maxSnapFiles)
+
+	b, err := yaml.Marshal(&yc)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if cfg.maxWalFiles != wcfg.maxWalFiles {
-		t.Errorf("maxwal = %v, want %v", cfg.maxWalFiles, wcfg.maxWalFiles)
+
+	tmpfile := mustCreateCfgFile(t, b)
+	defer os.Remove(tmpfile.Name())
+
+	args := []string{
+		fmt.Sprintf("--config-file=%s", tmpfile.Name()),
 	}
-	if cfg.name != wcfg.name {
-		t.Errorf("name = %v, want %v", cfg.name, wcfg.name)
+
+	cfg := newConfig()
+	if err = cfg.parse(args); err != nil {
+		t.Fatal(err)
 	}
-	if cfg.snapCount != wcfg.snapCount {
-		t.Errorf("snapcount = %v, want %v", cfg.snapCount, wcfg.snapCount)
-	}
-	if !reflect.DeepEqual(cfg.lpurls, wcfg.lpurls) {
-		t.Errorf("listen-peer-urls = %v, want %v", cfg.lpurls, wcfg.lpurls)
-	}
-	if !reflect.DeepEqual(cfg.lcurls, wcfg.lcurls) {
-		t.Errorf("listen-client-urls = %v, want %v", cfg.lcurls, wcfg.lcurls)
-	}
+
+	validateMemberFlags(t, cfg)
 }
 
 func TestConfigParsingClusteringFlags(t *testing.T) {
@@ -79,107 +99,90 @@ func TestConfigParsingClusteringFlags(t *testing.T) {
 		"-advertise-client-urls=http://localhost:7000,https://localhost:7001",
 		"-discovery-fallback=exit",
 	}
-	wcfg := NewConfig()
-	wcfg.apurls = []url.URL{{Scheme: "http", Host: "localhost:8000"}, {Scheme: "https", Host: "localhost:8001"}}
-	wcfg.acurls = []url.URL{{Scheme: "http", Host: "localhost:7000"}, {Scheme: "https", Host: "localhost:7001"}}
-	wcfg.clusterState.Set(clusterStateFlagExisting)
-	wcfg.fallback.Set(fallbackFlagExit)
-	wcfg.initialCluster = "0=http://localhost:8000"
-	wcfg.initialClusterToken = "etcdtest"
 
-	cfg := NewConfig()
-	err := cfg.Parse(args)
+	cfg := newConfig()
+	if err := cfg.parse(args); err != nil {
+		t.Fatal(err)
+	}
+
+	validateClusteringFlags(t, cfg)
+}
+
+func TestConfigFileClusteringFields(t *testing.T) {
+	yc := struct {
+		InitialCluster      string `json:"initial-cluster"`
+		ClusterState        string `json:"initial-cluster-state"`
+		InitialClusterToken string `json:"initial-cluster-token"`
+		Apurls              string `json:"initial-advertise-peer-urls"`
+		Acurls              string `json:"advertise-client-urls"`
+		Fallback            string `json:"discovery-fallback"`
+	}{
+		"0=http://localhost:8000",
+		"existing",
+		"etcdtest",
+		"http://localhost:8000,https://localhost:8001",
+		"http://localhost:7000,https://localhost:7001",
+		"exit",
+	}
+
+	b, err := yaml.Marshal(&yc)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.clusterState.String() != wcfg.clusterState.String() {
-		t.Errorf("clusterState = %v, want %v", cfg.clusterState, wcfg.clusterState)
+
+	tmpfile := mustCreateCfgFile(t, b)
+	defer os.Remove(tmpfile.Name())
+
+	args := []string{
+		fmt.Sprintf("--config-file=%s", tmpfile.Name()),
 	}
-	if cfg.fallback.String() != wcfg.fallback.String() {
-		t.Errorf("fallback = %v, want %v", cfg.fallback, wcfg.fallback)
+	cfg := newConfig()
+	err = cfg.parse(args)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if cfg.initialCluster != wcfg.initialCluster {
-		t.Errorf("initialCluster = %v, want %v", cfg.initialCluster, wcfg.initialCluster)
-	}
-	if cfg.initialClusterToken != wcfg.initialClusterToken {
-		t.Errorf("initialClusterToken = %v, want %v", cfg.initialClusterToken, wcfg.initialClusterToken)
-	}
-	if !reflect.DeepEqual(cfg.apurls, wcfg.apurls) {
-		t.Errorf("initial-advertise-peer-urls = %v, want %v", cfg.lpurls, wcfg.lpurls)
-	}
-	if !reflect.DeepEqual(cfg.acurls, wcfg.acurls) {
-		t.Errorf("advertise-client-urls = %v, want %v", cfg.lcurls, wcfg.lcurls)
-	}
+
+	validateClusteringFlags(t, cfg)
 }
 
 func TestConfigParsingOtherFlags(t *testing.T) {
-	args := []string{
-		"-proxy=readonly",
-		"-ca-file=cafile",
-		"-cert-file=certfile",
-		"-key-file=keyfile",
-		"-peer-ca-file=peercafile",
-		"-peer-cert-file=peercertfile",
-		"-peer-key-file=peerkeyfile",
-		"-force-new-cluster=true",
-	}
+	args := []string{"-proxy=readonly"}
 
-	wcfg := NewConfig()
-	wcfg.proxy.Set(proxyFlagReadonly)
-	wcfg.clientTLSInfo.CAFile = "cafile"
-	wcfg.clientTLSInfo.CertFile = "certfile"
-	wcfg.clientTLSInfo.KeyFile = "keyfile"
-	wcfg.peerTLSInfo.CAFile = "peercafile"
-	wcfg.peerTLSInfo.CertFile = "peercertfile"
-	wcfg.peerTLSInfo.KeyFile = "peerkeyfile"
-	wcfg.forceNewCluster = true
-
-	cfg := NewConfig()
-	err := cfg.Parse(args)
+	cfg := newConfig()
+	err := cfg.parse(args)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.proxy.String() != wcfg.proxy.String() {
-		t.Errorf("proxy = %v, want %v", cfg.proxy, wcfg.proxy)
-	}
-	if cfg.clientTLSInfo.String() != wcfg.clientTLSInfo.String() {
-		t.Errorf("clientTLS = %v, want %v", cfg.clientTLSInfo, wcfg.clientTLSInfo)
-	}
-	if cfg.peerTLSInfo.String() != wcfg.peerTLSInfo.String() {
-		t.Errorf("peerTLS = %v, want %v", cfg.peerTLSInfo, wcfg.peerTLSInfo)
-	}
-	if cfg.forceNewCluster != wcfg.forceNewCluster {
-		t.Errorf("forceNewCluster = %t, want %t", cfg.forceNewCluster, wcfg.forceNewCluster)
-	}
+
+	validateOtherFlags(t, cfg)
 }
 
-func TestConfigParsingV1Flags(t *testing.T) {
-	args := []string{
-		"-peer-addr=127.0.0.1:2380",
-		"-addr=127.0.0.1:2379",
+func TestConfigFileOtherFields(t *testing.T) {
+	yc := struct {
+		ProxyCfgFile string `json:"proxy"`
+	}{
+		"readonly",
 	}
-	wcfg := NewConfig()
-	wcfg.lpurls = []url.URL{{Scheme: "http", Host: "[::]:2380"}}
-	wcfg.apurls = []url.URL{{Scheme: "http", Host: "127.0.0.1:2380"}}
-	wcfg.lcurls = []url.URL{{Scheme: "http", Host: "[::]:2379"}}
-	wcfg.acurls = []url.URL{{Scheme: "http", Host: "127.0.0.1:2379"}}
 
-	cfg := NewConfig()
-	if err := cfg.Parse(args); err != nil {
+	b, err := yaml.Marshal(&yc)
+	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(cfg.lpurls, wcfg.lpurls) {
-		t.Errorf("listen peer urls = %+v, want %+v", cfg.lpurls, wcfg.lpurls)
+
+	tmpfile := mustCreateCfgFile(t, b)
+	defer os.Remove(tmpfile.Name())
+
+	args := []string{
+		fmt.Sprintf("--config-file=%s", tmpfile.Name()),
 	}
-	if !reflect.DeepEqual(cfg.apurls, wcfg.apurls) {
-		t.Errorf("advertise peer urls = %+v, want %+v", cfg.apurls, wcfg.apurls)
+
+	cfg := newConfig()
+	err = cfg.parse(args)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(cfg.lcurls, wcfg.lcurls) {
-		t.Errorf("listen client urls = %+v, want %+v", cfg.lcurls, wcfg.lcurls)
-	}
-	if !reflect.DeepEqual(cfg.acurls, wcfg.acurls) {
-		t.Errorf("advertise client urls = %+v, want %+v", cfg.acurls, wcfg.acurls)
-	}
+
+	validateOtherFlags(t, cfg)
 }
 
 func TestConfigParsingConflictClusteringFlags(t *testing.T) {
@@ -204,10 +207,54 @@ func TestConfigParsingConflictClusteringFlags(t *testing.T) {
 	}
 
 	for i, tt := range conflictArgs {
-		cfg := NewConfig()
-		err := cfg.Parse(tt)
-		if err != ErrConflictBootstrapFlags {
-			t.Errorf("%d: err = %v, want %v", i, err, ErrConflictBootstrapFlags)
+		cfg := newConfig()
+		if err := cfg.parse(tt); err != embed.ErrConflictBootstrapFlags {
+			t.Errorf("%d: err = %v, want %v", i, err, embed.ErrConflictBootstrapFlags)
+		}
+	}
+}
+
+func TestConfigFileConflictClusteringFlags(t *testing.T) {
+	tests := []struct {
+		InitialCluster string `json:"initial-cluster"`
+		DNSCluster     string `json:"discovery-srv"`
+		Durl           string `json:"discovery"`
+	}{
+		{
+			InitialCluster: "0=localhost:8000",
+			Durl:           "http://example.com/abc",
+		},
+		{
+			DNSCluster: "example.com",
+			Durl:       "http://example.com/abc",
+		},
+		{
+			InitialCluster: "0=localhost:8000",
+			DNSCluster:     "example.com",
+		},
+		{
+			InitialCluster: "0=localhost:8000",
+			Durl:           "http://example.com/abc",
+			DNSCluster:     "example.com",
+		},
+	}
+
+	for i, tt := range tests {
+		b, err := yaml.Marshal(&tt)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		tmpfile := mustCreateCfgFile(t, b)
+		defer os.Remove(tmpfile.Name())
+
+		args := []string{
+			fmt.Sprintf("--config-file=%s", tmpfile.Name()),
+		}
+
+		cfg := newConfig()
+		if err := cfg.parse(args); err != embed.ErrConflictBootstrapFlags {
+			t.Errorf("%d: err = %v, want %v", i, err, embed.ErrConflictBootstrapFlags)
 		}
 	}
 }
@@ -222,14 +269,14 @@ func TestConfigParsingMissedAdvertiseClientURLsFlag(t *testing.T) {
 				"-initial-cluster=infra1=http://127.0.0.1:2380",
 				"-listen-client-urls=http://127.0.0.1:2379",
 			},
-			errUnsetAdvertiseClientURLsFlag,
+			embed.ErrUnsetAdvertiseClientURLsFlag,
 		},
 		{
 			[]string{
 				"-discovery-srv=example.com",
 				"-listen-client-urls=http://127.0.0.1:2379",
 			},
-			errUnsetAdvertiseClientURLsFlag,
+			embed.ErrUnsetAdvertiseClientURLsFlag,
 		},
 		{
 			[]string{
@@ -237,13 +284,13 @@ func TestConfigParsingMissedAdvertiseClientURLsFlag(t *testing.T) {
 				"-discovery-fallback=exit",
 				"-listen-client-urls=http://127.0.0.1:2379",
 			},
-			errUnsetAdvertiseClientURLsFlag,
+			embed.ErrUnsetAdvertiseClientURLsFlag,
 		},
 		{
 			[]string{
 				"-listen-client-urls=http://127.0.0.1:2379",
 			},
-			errUnsetAdvertiseClientURLsFlag,
+			embed.ErrUnsetAdvertiseClientURLsFlag,
 		},
 		{
 			[]string{
@@ -269,9 +316,8 @@ func TestConfigParsingMissedAdvertiseClientURLsFlag(t *testing.T) {
 	}
 
 	for i, tt := range tests {
-		cfg := NewConfig()
-		err := cfg.Parse(tt.args)
-		if err != tt.werr {
+		cfg := newConfig()
+		if err := cfg.parse(tt.args); err != tt.werr {
 			t.Errorf("%d: err = %v, want %v", i, err, tt.werr)
 		}
 	}
@@ -282,15 +328,16 @@ func TestConfigIsNewCluster(t *testing.T) {
 		state  string
 		wIsNew bool
 	}{
-		{clusterStateFlagExisting, false},
-		{clusterStateFlagNew, true},
+		{embed.ClusterStateFlagExisting, false},
+		{embed.ClusterStateFlagNew, true},
 	}
 	for i, tt := range tests {
-		cfg := NewConfig()
-		if err := cfg.clusterState.Set(tt.state); err != nil {
+		cfg := newConfig()
+		args := []string{"--initial-cluster-state", tests[i].state}
+		if err := cfg.parse(args); err != nil {
 			t.Fatalf("#%d: unexpected clusterState.Set error: %v", i, err)
 		}
-		if g := cfg.isNewCluster(); g != tt.wIsNew {
+		if g := cfg.IsNewCluster(); g != tt.wIsNew {
 			t.Errorf("#%d: isNewCluster = %v, want %v", i, g, tt.wIsNew)
 		}
 	}
@@ -306,7 +353,7 @@ func TestConfigIsProxy(t *testing.T) {
 		{proxyFlagOn, true},
 	}
 	for i, tt := range tests {
-		cfg := NewConfig()
+		cfg := newConfig()
 		if err := cfg.proxy.Set(tt.proxy); err != nil {
 			t.Fatalf("#%d: unexpected proxy.Set error: %v", i, err)
 		}
@@ -326,7 +373,7 @@ func TestConfigIsReadonlyProxy(t *testing.T) {
 		{proxyFlagOn, false},
 	}
 	for i, tt := range tests {
-		cfg := NewConfig()
+		cfg := newConfig()
 		if err := cfg.proxy.Set(tt.proxy); err != nil {
 			t.Fatalf("#%d: unexpected proxy.Set error: %v", i, err)
 		}
@@ -345,12 +392,138 @@ func TestConfigShouldFallbackToProxy(t *testing.T) {
 		{fallbackFlagExit, false},
 	}
 	for i, tt := range tests {
-		cfg := NewConfig()
+		cfg := newConfig()
 		if err := cfg.fallback.Set(tt.fallback); err != nil {
 			t.Fatalf("#%d: unexpected fallback.Set error: %v", i, err)
 		}
 		if g := cfg.shouldFallbackToProxy(); g != tt.wFallback {
 			t.Errorf("#%d: shouldFallbackToProxy = %v, want %v", i, g, tt.wFallback)
 		}
+	}
+}
+
+func TestConfigFileElectionTimeout(t *testing.T) {
+	tests := []struct {
+		TickMs     uint `json:"heartbeat-interval"`
+		ElectionMs uint `json:"election-timeout"`
+		errStr     string
+	}{
+		{
+			ElectionMs: 1000,
+			TickMs:     800,
+			errStr:     "should be at least as 5 times as",
+		},
+		{
+			ElectionMs: 60000,
+			errStr:     "is too long, and should be set less than",
+		},
+	}
+
+	for i, tt := range tests {
+		b, err := yaml.Marshal(&tt)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		tmpfile := mustCreateCfgFile(t, b)
+		defer os.Remove(tmpfile.Name())
+
+		args := []string{
+			fmt.Sprintf("--config-file=%s", tmpfile.Name()),
+		}
+
+		cfg := newConfig()
+		if err := cfg.parse(args); err == nil || !strings.Contains(err.Error(), tt.errStr) {
+			t.Errorf("%d: Wrong err = %v", i, err)
+		}
+	}
+}
+
+func mustCreateCfgFile(t *testing.T, b []byte) *os.File {
+	tmpfile, err := ioutil.TempFile("", "servercfg")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = tmpfile.Write(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = tmpfile.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return tmpfile
+}
+
+func validateMemberFlags(t *testing.T, cfg *config) {
+	wcfg := &embed.Config{
+		Dir:          "testdir",
+		LPUrls:       []url.URL{{Scheme: "http", Host: "localhost:8000"}, {Scheme: "https", Host: "localhost:8001"}},
+		LCUrls:       []url.URL{{Scheme: "http", Host: "localhost:7000"}, {Scheme: "https", Host: "localhost:7001"}},
+		MaxSnapFiles: 10,
+		MaxWalFiles:  10,
+		Name:         "testname",
+		SnapCount:    10,
+	}
+
+	if cfg.Dir != wcfg.Dir {
+		t.Errorf("dir = %v, want %v", cfg.Dir, wcfg.Dir)
+	}
+	if cfg.MaxSnapFiles != wcfg.MaxSnapFiles {
+		t.Errorf("maxsnap = %v, want %v", cfg.MaxSnapFiles, wcfg.MaxSnapFiles)
+	}
+	if cfg.MaxWalFiles != wcfg.MaxWalFiles {
+		t.Errorf("maxwal = %v, want %v", cfg.MaxWalFiles, wcfg.MaxWalFiles)
+	}
+	if cfg.Name != wcfg.Name {
+		t.Errorf("name = %v, want %v", cfg.Name, wcfg.Name)
+	}
+	if cfg.SnapCount != wcfg.SnapCount {
+		t.Errorf("snapcount = %v, want %v", cfg.SnapCount, wcfg.SnapCount)
+	}
+	if !reflect.DeepEqual(cfg.LPUrls, wcfg.LPUrls) {
+		t.Errorf("listen-peer-urls = %v, want %v", cfg.LPUrls, wcfg.LPUrls)
+	}
+	if !reflect.DeepEqual(cfg.LCUrls, wcfg.LCUrls) {
+		t.Errorf("listen-client-urls = %v, want %v", cfg.LCUrls, wcfg.LCUrls)
+	}
+}
+
+func validateClusteringFlags(t *testing.T, cfg *config) {
+	wcfg := newConfig()
+	wcfg.APUrls = []url.URL{{Scheme: "http", Host: "localhost:8000"}, {Scheme: "https", Host: "localhost:8001"}}
+	wcfg.ACUrls = []url.URL{{Scheme: "http", Host: "localhost:7000"}, {Scheme: "https", Host: "localhost:7001"}}
+	wcfg.ClusterState = embed.ClusterStateFlagExisting
+	wcfg.fallback.Set(fallbackFlagExit)
+	wcfg.InitialCluster = "0=http://localhost:8000"
+	wcfg.InitialClusterToken = "etcdtest"
+
+	if cfg.ClusterState != wcfg.ClusterState {
+		t.Errorf("clusterState = %v, want %v", cfg.ClusterState, wcfg.ClusterState)
+	}
+	if cfg.fallback.String() != wcfg.fallback.String() {
+		t.Errorf("fallback = %v, want %v", cfg.fallback, wcfg.fallback)
+	}
+	if cfg.InitialCluster != wcfg.InitialCluster {
+		t.Errorf("initialCluster = %v, want %v", cfg.InitialCluster, wcfg.InitialCluster)
+	}
+	if cfg.InitialClusterToken != wcfg.InitialClusterToken {
+		t.Errorf("initialClusterToken = %v, want %v", cfg.InitialClusterToken, wcfg.InitialClusterToken)
+	}
+	if !reflect.DeepEqual(cfg.APUrls, wcfg.APUrls) {
+		t.Errorf("initial-advertise-peer-urls = %v, want %v", cfg.LPUrls, wcfg.LPUrls)
+	}
+	if !reflect.DeepEqual(cfg.ACUrls, wcfg.ACUrls) {
+		t.Errorf("advertise-client-urls = %v, want %v", cfg.LCUrls, wcfg.LCUrls)
+	}
+}
+
+func validateOtherFlags(t *testing.T, cfg *config) {
+	wcfg := newConfig()
+	wcfg.proxy.Set(proxyFlagReadonly)
+	if cfg.proxy.String() != wcfg.proxy.String() {
+		t.Errorf("proxy = %v, want %v", cfg.proxy, wcfg.proxy)
 	}
 }

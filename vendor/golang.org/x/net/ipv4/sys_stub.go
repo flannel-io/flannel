@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build nacl plan9 solaris
+// +build nacl plan9
 
 package ipv4
-
-type sysSockoptLen int32
 
 var (
 	ctlOpts = [ctlMax]ctlOpt{}

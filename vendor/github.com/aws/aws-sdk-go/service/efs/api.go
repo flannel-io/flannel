@@ -39,6 +39,7 @@ const opCreateFileSystem = "CreateFileSystem"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/CreateFileSystem
 func (c *EFS) CreateFileSystemRequest(input *CreateFileSystemInput) (req *request.Request, output *FileSystemDescription) {
 	op := &request.Operation{
 		Name:       opCreateFileSystem,
@@ -50,9 +51,8 @@ func (c *EFS) CreateFileSystemRequest(input *CreateFileSystemInput) (req *reques
 		input = &CreateFileSystemInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &FileSystemDescription{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -128,6 +128,7 @@ func (c *EFS) CreateFileSystemRequest(input *CreateFileSystemInput) (req *reques
 //   Returned if the AWS account has already created maximum number of file systems
 //   allowed per account.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/CreateFileSystem
 func (c *EFS) CreateFileSystem(input *CreateFileSystemInput) (*FileSystemDescription, error) {
 	req, out := c.CreateFileSystemRequest(input)
 	err := req.Send()
@@ -160,6 +161,7 @@ const opCreateMountTarget = "CreateMountTarget"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/CreateMountTarget
 func (c *EFS) CreateMountTargetRequest(input *CreateMountTargetInput) (req *request.Request, output *MountTargetDescription) {
 	op := &request.Operation{
 		Name:       opCreateMountTarget,
@@ -171,9 +173,8 @@ func (c *EFS) CreateMountTargetRequest(input *CreateMountTargetInput) (req *requ
 		input = &CreateMountTargetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &MountTargetDescription{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -242,15 +243,15 @@ func (c *EFS) CreateMountTargetRequest(input *CreateMountTargetInput) (req *requ
 // Sets the requesterManaged property of the network interface to true, and
 //    the requesterId value to EFS.
 //
-// Each Amazon EFS mount target has one corresponding requestor-managed EC2
+// Each Amazon EFS mount target has one corresponding requester-managed EC2
 //    network interface. After the network interface is created, Amazon EFS
 //    sets the NetworkInterfaceId field in the mount target's description to
 //    the network interface ID, and the IpAddress field to its address. If network
 //    interface creation fails, the entire CreateMountTarget operation fails.
 //
 // The CreateMountTarget call returns only after creating the network interface,
-// but while the mount target state is still creating. You can check the mount
-// target creation status by calling the DescribeFileSystems operation, which
+// but while the mount target state is still creating, you can check the mount
+// target creation status by calling the DescribeMountTargets operation, which
 // among other things returns the mount target state.
 //
 // We recommend you create a mount target in each of the Availability Zones.
@@ -330,6 +331,7 @@ func (c *EFS) CreateMountTargetRequest(input *CreateMountTargetInput) (req *requ
 //   * UnsupportedAvailabilityZone
 
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/CreateMountTarget
 func (c *EFS) CreateMountTarget(input *CreateMountTargetInput) (*MountTargetDescription, error) {
 	req, out := c.CreateMountTargetRequest(input)
 	err := req.Send()
@@ -362,6 +364,7 @@ const opCreateTags = "CreateTags"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/CreateTags
 func (c *EFS) CreateTagsRequest(input *CreateTagsInput) (req *request.Request, output *CreateTagsOutput) {
 	op := &request.Operation{
 		Name:       opCreateTags,
@@ -373,11 +376,10 @@ func (c *EFS) CreateTagsRequest(input *CreateTagsInput) (req *request.Request, o
 		input = &CreateTagsInput{}
 	}
 
+	output = &CreateTagsOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &CreateTagsOutput{}
-	req.Data = output
 	return
 }
 
@@ -410,6 +412,7 @@ func (c *EFS) CreateTagsRequest(input *CreateTagsInput) (req *request.Request, o
 //   Returned if the specified FileSystemId does not exist in the requester's
 //   AWS account.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/CreateTags
 func (c *EFS) CreateTags(input *CreateTagsInput) (*CreateTagsOutput, error) {
 	req, out := c.CreateTagsRequest(input)
 	err := req.Send()
@@ -442,6 +445,7 @@ const opDeleteFileSystem = "DeleteFileSystem"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DeleteFileSystem
 func (c *EFS) DeleteFileSystemRequest(input *DeleteFileSystemInput) (req *request.Request, output *DeleteFileSystemOutput) {
 	op := &request.Operation{
 		Name:       opDeleteFileSystem,
@@ -453,11 +457,10 @@ func (c *EFS) DeleteFileSystemRequest(input *DeleteFileSystemInput) (req *reques
 		input = &DeleteFileSystemInput{}
 	}
 
+	output = &DeleteFileSystemOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteFileSystemOutput{}
-	req.Data = output
 	return
 }
 
@@ -502,6 +505,7 @@ func (c *EFS) DeleteFileSystemRequest(input *DeleteFileSystemInput) (req *reques
 //   * FileSystemInUse
 //   Returned if a file system has mount targets.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DeleteFileSystem
 func (c *EFS) DeleteFileSystem(input *DeleteFileSystemInput) (*DeleteFileSystemOutput, error) {
 	req, out := c.DeleteFileSystemRequest(input)
 	err := req.Send()
@@ -534,6 +538,7 @@ const opDeleteMountTarget = "DeleteMountTarget"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DeleteMountTarget
 func (c *EFS) DeleteMountTargetRequest(input *DeleteMountTargetInput) (req *request.Request, output *DeleteMountTargetOutput) {
 	op := &request.Operation{
 		Name:       opDeleteMountTarget,
@@ -545,11 +550,10 @@ func (c *EFS) DeleteMountTargetRequest(input *DeleteMountTargetInput) (req *requ
 		input = &DeleteMountTargetInput{}
 	}
 
+	output = &DeleteMountTargetOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteMountTargetOutput{}
-	req.Data = output
 	return
 }
 
@@ -604,6 +608,7 @@ func (c *EFS) DeleteMountTargetRequest(input *DeleteMountTargetInput) (req *requ
 //   Returned if there is no mount target with the specified ID found in the caller's
 //   account.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DeleteMountTarget
 func (c *EFS) DeleteMountTarget(input *DeleteMountTargetInput) (*DeleteMountTargetOutput, error) {
 	req, out := c.DeleteMountTargetRequest(input)
 	err := req.Send()
@@ -636,6 +641,7 @@ const opDeleteTags = "DeleteTags"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DeleteTags
 func (c *EFS) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, output *DeleteTagsOutput) {
 	op := &request.Operation{
 		Name:       opDeleteTags,
@@ -647,11 +653,10 @@ func (c *EFS) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, o
 		input = &DeleteTagsInput{}
 	}
 
+	output = &DeleteTagsOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteTagsOutput{}
-	req.Data = output
 	return
 }
 
@@ -685,6 +690,7 @@ func (c *EFS) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, o
 //   Returned if the specified FileSystemId does not exist in the requester's
 //   AWS account.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DeleteTags
 func (c *EFS) DeleteTags(input *DeleteTagsInput) (*DeleteTagsOutput, error) {
 	req, out := c.DeleteTagsRequest(input)
 	err := req.Send()
@@ -717,6 +723,7 @@ const opDescribeFileSystems = "DescribeFileSystems"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeFileSystems
 func (c *EFS) DescribeFileSystemsRequest(input *DescribeFileSystemsInput) (req *request.Request, output *DescribeFileSystemsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeFileSystems,
@@ -728,9 +735,8 @@ func (c *EFS) DescribeFileSystemsRequest(input *DescribeFileSystemsInput) (req *
 		input = &DescribeFileSystemsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeFileSystemsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -782,6 +788,7 @@ func (c *EFS) DescribeFileSystemsRequest(input *DescribeFileSystemsInput) (req *
 //   Returned if the specified FileSystemId does not exist in the requester's
 //   AWS account.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeFileSystems
 func (c *EFS) DescribeFileSystems(input *DescribeFileSystemsInput) (*DescribeFileSystemsOutput, error) {
 	req, out := c.DescribeFileSystemsRequest(input)
 	err := req.Send()
@@ -814,6 +821,7 @@ const opDescribeMountTargetSecurityGroups = "DescribeMountTargetSecurityGroups"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeMountTargetSecurityGroups
 func (c *EFS) DescribeMountTargetSecurityGroupsRequest(input *DescribeMountTargetSecurityGroupsInput) (req *request.Request, output *DescribeMountTargetSecurityGroupsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeMountTargetSecurityGroups,
@@ -825,9 +833,8 @@ func (c *EFS) DescribeMountTargetSecurityGroupsRequest(input *DescribeMountTarge
 		input = &DescribeMountTargetSecurityGroupsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeMountTargetSecurityGroupsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -867,6 +874,7 @@ func (c *EFS) DescribeMountTargetSecurityGroupsRequest(input *DescribeMountTarge
 //   * IncorrectMountTargetState
 //   Returned if the mount target is not in the correct state for the operation.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeMountTargetSecurityGroups
 func (c *EFS) DescribeMountTargetSecurityGroups(input *DescribeMountTargetSecurityGroupsInput) (*DescribeMountTargetSecurityGroupsOutput, error) {
 	req, out := c.DescribeMountTargetSecurityGroupsRequest(input)
 	err := req.Send()
@@ -899,6 +907,7 @@ const opDescribeMountTargets = "DescribeMountTargets"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeMountTargets
 func (c *EFS) DescribeMountTargetsRequest(input *DescribeMountTargetsInput) (req *request.Request, output *DescribeMountTargetsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeMountTargets,
@@ -910,9 +919,8 @@ func (c *EFS) DescribeMountTargetsRequest(input *DescribeMountTargetsInput) (req
 		input = &DescribeMountTargetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeMountTargetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -949,6 +957,7 @@ func (c *EFS) DescribeMountTargetsRequest(input *DescribeMountTargetsInput) (req
 //   Returned if there is no mount target with the specified ID found in the caller's
 //   account.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeMountTargets
 func (c *EFS) DescribeMountTargets(input *DescribeMountTargetsInput) (*DescribeMountTargetsOutput, error) {
 	req, out := c.DescribeMountTargetsRequest(input)
 	err := req.Send()
@@ -981,6 +990,7 @@ const opDescribeTags = "DescribeTags"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeTags
 func (c *EFS) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeTags,
@@ -992,9 +1002,8 @@ func (c *EFS) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Reques
 		input = &DescribeTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1026,6 +1035,7 @@ func (c *EFS) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Reques
 //   Returned if the specified FileSystemId does not exist in the requester's
 //   AWS account.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeTags
 func (c *EFS) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
 	req, out := c.DescribeTagsRequest(input)
 	err := req.Send()
@@ -1058,6 +1068,7 @@ const opModifyMountTargetSecurityGroups = "ModifyMountTargetSecurityGroups"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/ModifyMountTargetSecurityGroups
 func (c *EFS) ModifyMountTargetSecurityGroupsRequest(input *ModifyMountTargetSecurityGroupsInput) (req *request.Request, output *ModifyMountTargetSecurityGroupsOutput) {
 	op := &request.Operation{
 		Name:       opModifyMountTargetSecurityGroups,
@@ -1069,11 +1080,10 @@ func (c *EFS) ModifyMountTargetSecurityGroupsRequest(input *ModifyMountTargetSec
 		input = &ModifyMountTargetSecurityGroupsInput{}
 	}
 
+	output = &ModifyMountTargetSecurityGroupsOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &ModifyMountTargetSecurityGroupsOutput{}
-	req.Data = output
 	return
 }
 
@@ -1126,12 +1136,14 @@ func (c *EFS) ModifyMountTargetSecurityGroupsRequest(input *ModifyMountTargetSec
 //   Returned if one of the specified security groups does not exist in the subnet's
 //   VPC.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/ModifyMountTargetSecurityGroups
 func (c *EFS) ModifyMountTargetSecurityGroups(input *ModifyMountTargetSecurityGroupsInput) (*ModifyMountTargetSecurityGroupsOutput, error) {
 	req, out := c.ModifyMountTargetSecurityGroupsRequest(input)
 	err := req.Send()
 	return out, err
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/CreateFileSystemRequest
 type CreateFileSystemInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1175,6 +1187,19 @@ func (s *CreateFileSystemInput) Validate() error {
 	return nil
 }
 
+// SetCreationToken sets the CreationToken field's value.
+func (s *CreateFileSystemInput) SetCreationToken(v string) *CreateFileSystemInput {
+	s.CreationToken = &v
+	return s
+}
+
+// SetPerformanceMode sets the PerformanceMode field's value.
+func (s *CreateFileSystemInput) SetPerformanceMode(v string) *CreateFileSystemInput {
+	s.PerformanceMode = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/CreateMountTargetRequest
 type CreateMountTargetInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1222,6 +1247,31 @@ func (s *CreateMountTargetInput) Validate() error {
 	return nil
 }
 
+// SetFileSystemId sets the FileSystemId field's value.
+func (s *CreateMountTargetInput) SetFileSystemId(v string) *CreateMountTargetInput {
+	s.FileSystemId = &v
+	return s
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *CreateMountTargetInput) SetIpAddress(v string) *CreateMountTargetInput {
+	s.IpAddress = &v
+	return s
+}
+
+// SetSecurityGroups sets the SecurityGroups field's value.
+func (s *CreateMountTargetInput) SetSecurityGroups(v []*string) *CreateMountTargetInput {
+	s.SecurityGroups = v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *CreateMountTargetInput) SetSubnetId(v string) *CreateMountTargetInput {
+	s.SubnetId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/CreateTagsRequest
 type CreateTagsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1273,6 +1323,19 @@ func (s *CreateTagsInput) Validate() error {
 	return nil
 }
 
+// SetFileSystemId sets the FileSystemId field's value.
+func (s *CreateTagsInput) SetFileSystemId(v string) *CreateTagsInput {
+	s.FileSystemId = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateTagsInput) SetTags(v []*Tag) *CreateTagsInput {
+	s.Tags = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/CreateTagsOutput
 type CreateTagsOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1287,6 +1350,7 @@ func (s CreateTagsOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DeleteFileSystemRequest
 type DeleteFileSystemInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1319,6 +1383,13 @@ func (s *DeleteFileSystemInput) Validate() error {
 	return nil
 }
 
+// SetFileSystemId sets the FileSystemId field's value.
+func (s *DeleteFileSystemInput) SetFileSystemId(v string) *DeleteFileSystemInput {
+	s.FileSystemId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DeleteFileSystemOutput
 type DeleteFileSystemOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1333,6 +1404,7 @@ func (s DeleteFileSystemOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DeleteMountTargetRequest
 type DeleteMountTargetInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1365,6 +1437,13 @@ func (s *DeleteMountTargetInput) Validate() error {
 	return nil
 }
 
+// SetMountTargetId sets the MountTargetId field's value.
+func (s *DeleteMountTargetInput) SetMountTargetId(v string) *DeleteMountTargetInput {
+	s.MountTargetId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DeleteMountTargetOutput
 type DeleteMountTargetOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1379,6 +1458,7 @@ func (s DeleteMountTargetOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DeleteTagsRequest
 type DeleteTagsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1419,6 +1499,19 @@ func (s *DeleteTagsInput) Validate() error {
 	return nil
 }
 
+// SetFileSystemId sets the FileSystemId field's value.
+func (s *DeleteTagsInput) SetFileSystemId(v string) *DeleteTagsInput {
+	s.FileSystemId = &v
+	return s
+}
+
+// SetTagKeys sets the TagKeys field's value.
+func (s *DeleteTagsInput) SetTagKeys(v []*string) *DeleteTagsInput {
+	s.TagKeys = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DeleteTagsOutput
 type DeleteTagsOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1433,6 +1526,7 @@ func (s DeleteTagsOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeFileSystemsRequest
 type DescribeFileSystemsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1483,6 +1577,31 @@ func (s *DescribeFileSystemsInput) Validate() error {
 	return nil
 }
 
+// SetCreationToken sets the CreationToken field's value.
+func (s *DescribeFileSystemsInput) SetCreationToken(v string) *DescribeFileSystemsInput {
+	s.CreationToken = &v
+	return s
+}
+
+// SetFileSystemId sets the FileSystemId field's value.
+func (s *DescribeFileSystemsInput) SetFileSystemId(v string) *DescribeFileSystemsInput {
+	s.FileSystemId = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeFileSystemsInput) SetMarker(v string) *DescribeFileSystemsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *DescribeFileSystemsInput) SetMaxItems(v int64) *DescribeFileSystemsInput {
+	s.MaxItems = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeFileSystemsResponse
 type DescribeFileSystemsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1507,6 +1626,25 @@ func (s DescribeFileSystemsOutput) GoString() string {
 	return s.String()
 }
 
+// SetFileSystems sets the FileSystems field's value.
+func (s *DescribeFileSystemsOutput) SetFileSystems(v []*FileSystemDescription) *DescribeFileSystemsOutput {
+	s.FileSystems = v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeFileSystemsOutput) SetMarker(v string) *DescribeFileSystemsOutput {
+	s.Marker = &v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *DescribeFileSystemsOutput) SetNextMarker(v string) *DescribeFileSystemsOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeMountTargetSecurityGroupsRequest
 type DescribeMountTargetSecurityGroupsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1539,6 +1677,13 @@ func (s *DescribeMountTargetSecurityGroupsInput) Validate() error {
 	return nil
 }
 
+// SetMountTargetId sets the MountTargetId field's value.
+func (s *DescribeMountTargetSecurityGroupsInput) SetMountTargetId(v string) *DescribeMountTargetSecurityGroupsInput {
+	s.MountTargetId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeMountTargetSecurityGroupsResponse
 type DescribeMountTargetSecurityGroupsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1558,6 +1703,13 @@ func (s DescribeMountTargetSecurityGroupsOutput) GoString() string {
 	return s.String()
 }
 
+// SetSecurityGroups sets the SecurityGroups field's value.
+func (s *DescribeMountTargetSecurityGroupsOutput) SetSecurityGroups(v []*string) *DescribeMountTargetSecurityGroupsOutput {
+	s.SecurityGroups = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeMountTargetsRequest
 type DescribeMountTargetsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1602,6 +1754,31 @@ func (s *DescribeMountTargetsInput) Validate() error {
 	return nil
 }
 
+// SetFileSystemId sets the FileSystemId field's value.
+func (s *DescribeMountTargetsInput) SetFileSystemId(v string) *DescribeMountTargetsInput {
+	s.FileSystemId = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeMountTargetsInput) SetMarker(v string) *DescribeMountTargetsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *DescribeMountTargetsInput) SetMaxItems(v int64) *DescribeMountTargetsInput {
+	s.MaxItems = &v
+	return s
+}
+
+// SetMountTargetId sets the MountTargetId field's value.
+func (s *DescribeMountTargetsInput) SetMountTargetId(v string) *DescribeMountTargetsInput {
+	s.MountTargetId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeMountTargetsResponse
 type DescribeMountTargetsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1629,6 +1806,25 @@ func (s DescribeMountTargetsOutput) GoString() string {
 	return s.String()
 }
 
+// SetMarker sets the Marker field's value.
+func (s *DescribeMountTargetsOutput) SetMarker(v string) *DescribeMountTargetsOutput {
+	s.Marker = &v
+	return s
+}
+
+// SetMountTargets sets the MountTargets field's value.
+func (s *DescribeMountTargetsOutput) SetMountTargets(v []*MountTargetDescription) *DescribeMountTargetsOutput {
+	s.MountTargets = v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *DescribeMountTargetsOutput) SetNextMarker(v string) *DescribeMountTargetsOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeTagsRequest
 type DescribeTagsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1673,6 +1869,25 @@ func (s *DescribeTagsInput) Validate() error {
 	return nil
 }
 
+// SetFileSystemId sets the FileSystemId field's value.
+func (s *DescribeTagsInput) SetFileSystemId(v string) *DescribeTagsInput {
+	s.FileSystemId = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeTagsInput) SetMarker(v string) *DescribeTagsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *DescribeTagsInput) SetMaxItems(v int64) *DescribeTagsInput {
+	s.MaxItems = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/DescribeTagsResponse
 type DescribeTagsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1701,7 +1916,26 @@ func (s DescribeTagsOutput) GoString() string {
 	return s.String()
 }
 
+// SetMarker sets the Marker field's value.
+func (s *DescribeTagsOutput) SetMarker(v string) *DescribeTagsOutput {
+	s.Marker = &v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *DescribeTagsOutput) SetNextMarker(v string) *DescribeTagsOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DescribeTagsOutput) SetTags(v []*Tag) *DescribeTagsOutput {
+	s.Tags = v
+	return s
+}
+
 // Description of the file system.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/FileSystemDescription
 type FileSystemDescription struct {
 	_ struct{} `type:"structure"`
 
@@ -1771,6 +2005,60 @@ func (s FileSystemDescription) GoString() string {
 	return s.String()
 }
 
+// SetCreationTime sets the CreationTime field's value.
+func (s *FileSystemDescription) SetCreationTime(v time.Time) *FileSystemDescription {
+	s.CreationTime = &v
+	return s
+}
+
+// SetCreationToken sets the CreationToken field's value.
+func (s *FileSystemDescription) SetCreationToken(v string) *FileSystemDescription {
+	s.CreationToken = &v
+	return s
+}
+
+// SetFileSystemId sets the FileSystemId field's value.
+func (s *FileSystemDescription) SetFileSystemId(v string) *FileSystemDescription {
+	s.FileSystemId = &v
+	return s
+}
+
+// SetLifeCycleState sets the LifeCycleState field's value.
+func (s *FileSystemDescription) SetLifeCycleState(v string) *FileSystemDescription {
+	s.LifeCycleState = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *FileSystemDescription) SetName(v string) *FileSystemDescription {
+	s.Name = &v
+	return s
+}
+
+// SetNumberOfMountTargets sets the NumberOfMountTargets field's value.
+func (s *FileSystemDescription) SetNumberOfMountTargets(v int64) *FileSystemDescription {
+	s.NumberOfMountTargets = &v
+	return s
+}
+
+// SetOwnerId sets the OwnerId field's value.
+func (s *FileSystemDescription) SetOwnerId(v string) *FileSystemDescription {
+	s.OwnerId = &v
+	return s
+}
+
+// SetPerformanceMode sets the PerformanceMode field's value.
+func (s *FileSystemDescription) SetPerformanceMode(v string) *FileSystemDescription {
+	s.PerformanceMode = &v
+	return s
+}
+
+// SetSizeInBytes sets the SizeInBytes field's value.
+func (s *FileSystemDescription) SetSizeInBytes(v *FileSystemSize) *FileSystemDescription {
+	s.SizeInBytes = v
+	return s
+}
+
 // Latest known metered size (in bytes) of data stored in the file system, in
 // its Value field, and the time at which that size was determined in its Timestamp
 // field. Note that the value does not represent the size of a consistent snapshot
@@ -1779,6 +2067,7 @@ func (s FileSystemDescription) GoString() string {
 // if the file system is not modified for a period longer than a couple of hours.
 // Otherwise, the value is not necessarily the exact size the file system was
 // at any instant in time.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/FileSystemSize
 type FileSystemSize struct {
 	_ struct{} `type:"structure"`
 
@@ -1802,6 +2091,19 @@ func (s FileSystemSize) GoString() string {
 	return s.String()
 }
 
+// SetTimestamp sets the Timestamp field's value.
+func (s *FileSystemSize) SetTimestamp(v time.Time) *FileSystemSize {
+	s.Timestamp = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *FileSystemSize) SetValue(v int64) *FileSystemSize {
+	s.Value = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/ModifyMountTargetSecurityGroupsRequest
 type ModifyMountTargetSecurityGroupsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1837,6 +2139,19 @@ func (s *ModifyMountTargetSecurityGroupsInput) Validate() error {
 	return nil
 }
 
+// SetMountTargetId sets the MountTargetId field's value.
+func (s *ModifyMountTargetSecurityGroupsInput) SetMountTargetId(v string) *ModifyMountTargetSecurityGroupsInput {
+	s.MountTargetId = &v
+	return s
+}
+
+// SetSecurityGroups sets the SecurityGroups field's value.
+func (s *ModifyMountTargetSecurityGroupsInput) SetSecurityGroups(v []*string) *ModifyMountTargetSecurityGroupsInput {
+	s.SecurityGroups = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/ModifyMountTargetSecurityGroupsOutput
 type ModifyMountTargetSecurityGroupsOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1852,6 +2167,7 @@ func (s ModifyMountTargetSecurityGroupsOutput) GoString() string {
 }
 
 // Provides a description of a mount target.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/MountTargetDescription
 type MountTargetDescription struct {
 	_ struct{} `type:"structure"`
 
@@ -1896,8 +2212,51 @@ func (s MountTargetDescription) GoString() string {
 	return s.String()
 }
 
+// SetFileSystemId sets the FileSystemId field's value.
+func (s *MountTargetDescription) SetFileSystemId(v string) *MountTargetDescription {
+	s.FileSystemId = &v
+	return s
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *MountTargetDescription) SetIpAddress(v string) *MountTargetDescription {
+	s.IpAddress = &v
+	return s
+}
+
+// SetLifeCycleState sets the LifeCycleState field's value.
+func (s *MountTargetDescription) SetLifeCycleState(v string) *MountTargetDescription {
+	s.LifeCycleState = &v
+	return s
+}
+
+// SetMountTargetId sets the MountTargetId field's value.
+func (s *MountTargetDescription) SetMountTargetId(v string) *MountTargetDescription {
+	s.MountTargetId = &v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *MountTargetDescription) SetNetworkInterfaceId(v string) *MountTargetDescription {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetOwnerId sets the OwnerId field's value.
+func (s *MountTargetDescription) SetOwnerId(v string) *MountTargetDescription {
+	s.OwnerId = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *MountTargetDescription) SetSubnetId(v string) *MountTargetDescription {
+	s.SubnetId = &v
+	return s
+}
+
 // A tag is a key-value pair. Allowed characters: letters, whitespace, and numbers,
 // representable in UTF-8, and the following characters: + - = . _ : /
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticfilesystem-2015-02-01/Tag
 type Tag struct {
 	_ struct{} `type:"structure"`
 
@@ -1939,6 +2298,18 @@ func (s *Tag) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
 }
 
 const (

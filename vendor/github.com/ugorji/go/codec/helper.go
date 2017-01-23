@@ -38,10 +38,6 @@ package codec
 // a length prefix, or if it used explicit breaks. If length-prefixed, we assume that
 // it has to be binary, and we do not even try to read separators.
 //
-// The only codec that may suffer (slightly) is cbor, and only when decoding indefinite-length.
-// It may suffer because we treat it like a text-based codec, and read separators.
-// However, this read is a no-op and the cost is insignificant.
-//
 // Philosophy
 // ------------
 // On decode, this codec will update containers appropriately:
@@ -266,6 +262,7 @@ var (
 	stringTyp     = reflect.TypeOf("")
 	timeTyp       = reflect.TypeOf(time.Time{})
 	rawExtTyp     = reflect.TypeOf(RawExt{})
+	rawTyp        = reflect.TypeOf(Raw{})
 	uint8SliceTyp = reflect.TypeOf([]uint8(nil))
 
 	mapBySliceTyp = reflect.TypeOf((*MapBySlice)(nil)).Elem()
@@ -283,6 +280,7 @@ var (
 
 	uint8SliceTypId = reflect.ValueOf(uint8SliceTyp).Pointer()
 	rawExtTypId     = reflect.ValueOf(rawExtTyp).Pointer()
+	rawTypId        = reflect.ValueOf(rawTyp).Pointer()
 	intfTypId       = reflect.ValueOf(intfTyp).Pointer()
 	timeTypId       = reflect.ValueOf(timeTyp).Pointer()
 	stringTypId     = reflect.ValueOf(stringTyp).Pointer()
@@ -363,6 +361,11 @@ type Handle interface {
 	isBinary() bool
 }
 
+// Raw represents raw formatted bytes.
+// We "blindly" store it during encode and store the raw bytes during decode.
+// Note: it is dangerous during encode, so we may gate the behaviour behind an Encode flag which must be explicitly set.
+type Raw []byte
+
 // RawExt represents raw unprocessed extension data.
 // Some codecs will decode extension data as a *RawExt if there is no registered extension for the tag.
 //
@@ -373,7 +376,7 @@ type RawExt struct {
 	// Data is used by codecs (e.g. binc, msgpack, simple) which do custom serialization of the types
 	Data []byte
 	// Value represents the extension, if Data is nil.
-	// Value is used by codecs (e.g. cbor) which use the format to do custom serialization of the types.
+	// Value is used by codecs (e.g. cbor, json) which use the format to do custom serialization of the types.
 	Value interface{}
 }
 

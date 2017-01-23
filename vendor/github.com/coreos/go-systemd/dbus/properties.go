@@ -1,18 +1,16 @@
-/*
-Copyright 2013 CoreOS Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+// Copyright 2015 CoreOS, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package dbus
 
@@ -77,6 +75,15 @@ func PropRemainAfterExit(b bool) Property {
 	return Property{
 		Name:  "RemainAfterExit",
 		Value: dbus.MakeVariant(b),
+	}
+}
+
+// PropType sets the Type service property. See
+// http://www.freedesktop.org/software/systemd/man/systemd.service.html#Type=
+func PropType(t string) Property {
+	return Property{
+		Name:  "Type",
+		Value: dbus.MakeVariant(t),
 	}
 }
 
@@ -216,5 +223,15 @@ func PropSlice(slice string) Property {
 	return Property{
 		Name:  "Slice",
 		Value: dbus.MakeVariant(slice),
+	}
+}
+
+// PropPids sets the PIDs field of scope units used in the initial construction
+// of the scope only and specifies the initial PIDs to add to the scope object.
+// See https://www.freedesktop.org/wiki/Software/systemd/ControlGroupInterface/#properties
+func PropPids(pids ...uint32) Property {
+	return Property{
+		Name:  "PIDs",
+		Value: dbus.MakeVariant(pids),
 	}
 }

@@ -22,6 +22,10 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/golang/protobuf/proto"
+	"golang.org/x/net/context"
+	pb "google.golang.org/cloud/internal/datastore"
 )
 
 type (
@@ -1363,6 +1367,143 @@ func TestQueryConstruction(t *testing.T) {
 		}
 		if !reflect.DeepEqual(test.q, test.exp) {
 			t.Errorf("%d: mismatch: got %v want %v", i, test.q, test.exp)
+		}
+	}
+}
+
+func TestPutMultiTypes(t *testing.T) {
+	ctx := context.Background()
+	type S struct {
+		A int
+		B string
+	}
+
+	testCases := []struct {
+		desc    string
+		src     interface{}
+		wantErr bool
+	}{
+		// Test cases to check each of the valid input types for src.
+		// Each case has the same elements.
+		{
+			desc: "type []struct",
+			src: []S{
+				{1, "one"}, {2, "two"},
+			},
+		},
+		{
+			desc: "type []*struct",
+			src: []*S{
+				{1, "one"}, {2, "two"},
+			},
+		},
+		{
+			desc: "type []interface{} with PLS elems",
+			src: []interface{}{
+				&PropertyList{Property{Name: "A", Value: 1}, Property{Name: "B", Value: "one"}},
+				&PropertyList{Property{Name: "A", Value: 2}, Property{Name: "B", Value: "two"}},
+			},
+		},
+		{
+			desc: "type []interface{} with struct ptr elems",
+			src: []interface{}{
+				&S{1, "one"}, &S{2, "two"},
+			},
+		},
+		{
+			desc: "type []PropertyLoadSaver{}",
+			src: []PropertyLoadSaver{
+				&PropertyList{Property{Name: "A", Value: 1}, Property{Name: "B", Value: "one"}},
+				&PropertyList{Property{Name: "A", Value: 2}, Property{Name: "B", Value: "two"}},
+			},
+		},
+		{
+			desc: "type []P (non-pointer, *P implements PropertyLoadSaver)",
+			src: []PropertyList{
+				PropertyList{Property{Name: "A", Value: 1}, Property{Name: "B", Value: "one"}},
+				PropertyList{Property{Name: "A", Value: 2}, Property{Name: "B", Value: "two"}},
+			},
+		},
+		// Test some invalid cases.
+		{
+			desc: "type []interface{} with struct elems",
+			src: []interface{}{
+				S{1, "one"}, S{2, "two"},
+			},
+			wantErr: true,
+		},
+		{
+			desc: "PropertyList",
+			src: PropertyList{
+				Property{Name: "A", Value: 1},
+				Property{Name: "B", Value: "one"},
+			},
+			wantErr: true,
+		},
+		{
+			desc:    "type []int",
+			src:     []int{1, 2},
+			wantErr: true,
+		},
+		{
+			desc:    "not a slice",
+			src:     S{1, "one"},
+			wantErr: true,
+		},
+	}
+
+	// Use the same keys and expected entities for all tests.
+	keys := []*Key{
+		NewKey(ctx, "testKind", "first", 0, nil),
+		NewKey(ctx, "testKind", "second", 0, nil),
+	}
+	want := []*pb.Entity{
+		{
+			Key: keyToProto(keys[0]),
+			Property: []*pb.Property{
+				{Name: proto.String("A"), Value: &pb.Value{IntegerValue: proto.Int64(1), Indexed: proto.Bool(true)}},
+				{Name: proto.String("B"), Value: &pb.Value{StringValue: proto.String("one"), Indexed: proto.Bool(true)}},
+			},
+		},
+		{
+			Key: keyToProto(keys[1]),
+			Property: []*pb.Property{
+				{Name: proto.String("A"), Value: &pb.Value{IntegerValue: proto.Int64(2), Indexed: proto.Bool(true)}},
+				{Name: proto.String("B"), Value: &pb.Value{StringValue: proto.String("two"), Indexed: proto.Bool(true)}},
+			},
+		},
+	}
+
+	for _, tt := range testCases {
+		// Set up a fake client which captures upserts.
+		var got []*pb.Entity
+		client := &Client{
+			client: fakeClient(func(req, resp proto.Message) error {
+				got = req.(*pb.CommitRequest).Mutation.Upsert
+				resp.(*pb.CommitResponse).MutationResult = &pb.MutationResult{}
+				return nil
+			}),
+		}
+
+		_, err := client.PutMulti(ctx, keys, tt.src)
+		if err != nil {
+			if !tt.wantErr {
+				t.Errorf("%s: error %v", tt.desc, err)
+			}
+			continue
+		}
+		if tt.wantErr {
+			t.Errorf("%s: wanted error, but none returned", tt.desc)
+			continue
+		}
+		if len(got) != len(want) {
+			t.Errorf("%s: got %d entities, want %d", len(got), len(want))
+			continue
+		}
+		for i, e := range got {
+			if !proto.Equal(e, want[i]) {
+				t.Logf("%s: entity %d doesn't match\ngot:  %v\nwant: %v", tt.desc, i, e, want[i])
+			}
 		}
 	}
 }

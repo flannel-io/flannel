@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,19 +19,18 @@ package etcdmain
 import (
 	"flag"
 	"fmt"
-	"net/url"
+	"io/ioutil"
 	"os"
 	"runtime"
 	"strings"
 
-	"github.com/coreos/etcd/etcdserver"
-	"github.com/coreos/etcd/pkg/cors"
+	"github.com/coreos/etcd/embed"
 	"github.com/coreos/etcd/pkg/flags"
-	"github.com/coreos/etcd/pkg/transport"
 	"github.com/coreos/etcd/version"
+	"github.com/ghodss/yaml"
 )
 
-const (
+var (
 	proxyFlagOff      = "off"
 	proxyFlagReadonly = "readonly"
 	proxyFlagOn       = "on"
@@ -39,18 +38,6 @@ const (
 	fallbackFlagExit  = "exit"
 	fallbackFlagProxy = "proxy"
 
-	clusterStateFlagNew      = "new"
-	clusterStateFlagExisting = "existing"
-
-	defaultName                     = "default"
-	defaultInitialAdvertisePeerURLs = "http://localhost:2380,http://localhost:7001"
-
-	// maxElectionMs specifies the maximum value of election timeout.
-	// More details are listed in ../Documentation/tuning.md#time-parameters.
-	maxElectionMs = 50000
-)
-
-var (
 	ignored = []string{
 		"cluster-active-size",
 		"cluster-remove-delay",
@@ -66,82 +53,61 @@ var (
 		"v",
 		"vv",
 	}
-
-	ErrConflictBootstrapFlags = fmt.Errorf("multiple discovery or bootstrap flags are set. " +
-		"Choose one of \"initial-cluster\", \"discovery\" or \"discovery-srv\"")
-	errUnsetAdvertiseClientURLsFlag = fmt.Errorf("-advertise-client-urls is required when --listen-client-urls is set explicitly")
 )
 
-type config struct {
-	*flag.FlagSet
-
-	// member
-	corsInfo       *cors.CORSInfo
-	dir            string
-	walDir         string
-	lpurls, lcurls []url.URL
-	maxSnapFiles   uint
-	maxWalFiles    uint
-	name           string
-	snapCount      uint64
-	// TickMs is the number of milliseconds between heartbeat ticks.
-	// TODO: decouple tickMs and heartbeat tick (current heartbeat tick = 1).
-	// make ticks a cluster wide configuration.
-	TickMs     uint
-	ElectionMs uint
-
-	// clustering
-	apurls, acurls      []url.URL
-	clusterState        *flags.StringsFlag
-	dnsCluster          string
-	dproxy              string
-	durl                string
-	fallback            *flags.StringsFlag
-	initialCluster      string
-	initialClusterToken string
-	strictReconfigCheck bool
-
-	// proxy
-	proxy                  *flags.StringsFlag
-	proxyFailureWaitMs     uint
-	proxyRefreshIntervalMs uint
-	proxyDialTimeoutMs     uint
-	proxyWriteTimeoutMs    uint
-	proxyReadTimeoutMs     uint
-
-	// security
-	clientTLSInfo, peerTLSInfo transport.TLSInfo
-	peerAutoTLS                bool
-
-	// logging
-	debug        bool
-	logPkgLevels string
-
-	// unsafe
-	forceNewCluster bool
-
-	printVersion bool
-
-	autoCompactionRetention int
-	quotaBackendBytes       int64
-
-	enablePprof bool
-
-	ignored []string
+type configProxy struct {
+	ProxyFailureWaitMs     uint `json:"proxy-failure-wait"`
+	ProxyRefreshIntervalMs uint `json:"proxy-refresh-interval"`
+	ProxyDialTimeoutMs     uint `json:"proxy-dial-timeout"`
+	ProxyWriteTimeoutMs    uint `json:"proxy-write-timeout"`
+	ProxyReadTimeoutMs     uint `json:"proxy-read-timeout"`
+	Fallback               string
+	Proxy                  string
+	ProxyJSON              string `json:"proxy"`
+	FallbackJSON           string `json:"discovery-fallback"`
 }
 
-func NewConfig() *config {
+// config holds the config for a command line invocation of etcd
+type config struct {
+	embed.Config
+	configProxy
+	configFlags
+	configFile   string
+	printVersion bool
+	ignored      []string
+	logOutput    string
+}
+
+// configFlags has the set of flags used for command line parsing a Config
+type configFlags struct {
+	*flag.FlagSet
+	clusterState *flags.StringsFlag
+	fallback     *flags.StringsFlag
+	proxy        *flags.StringsFlag
+}
+
+func newConfig() *config {
 	cfg := &config{
-		corsInfo: &cors.CORSInfo{},
+		Config: *embed.NewConfig(),
+		configProxy: configProxy{
+			Proxy:                  proxyFlagOff,
+			ProxyFailureWaitMs:     5000,
+			ProxyRefreshIntervalMs: 30000,
+			ProxyDialTimeoutMs:     1000,
+			ProxyWriteTimeoutMs:    5000,
+		},
+		ignored: ignored,
+	}
+	cfg.configFlags = configFlags{
+		FlagSet: flag.NewFlagSet("etcd", flag.ContinueOnError),
 		clusterState: flags.NewStringsFlag(
-			clusterStateFlagNew,
-			clusterStateFlagExisting,
+			embed.ClusterStateFlagNew,
+			embed.ClusterStateFlagExisting,
 		),
 		fallback: flags.NewStringsFlag(
 			fallbackFlagExit,
 			fallbackFlagProxy,
 		),
-		ignored: ignored,
 		proxy: flags.NewStringsFlag(
 			proxyFlagOff,
 			proxyFlagReadonly,
@@ -149,44 +115,46 @@ func NewConfig() *config {
 		),
 	}
 
-	cfg.FlagSet = flag.NewFlagSet("etcd", flag.ContinueOnError)
 	fs := cfg.FlagSet
 	fs.Usage = func() {
-		fmt.Println(usageline)
+		fmt.Fprintln(os.Stderr, usageline)
 	}
 
+	fs.StringVar(&cfg.configFile, "config-file", "", "Path to the server configuration file")
+
 	// member
-	fs.Var(cfg.corsInfo, "cors", "Comma-separated white list of origins for CORS (cross-origin resource sharing).")
-	fs.StringVar(&cfg.dir, "data-dir", "", "Path to the data directory.")
-	fs.StringVar(&cfg.walDir, "wal-dir", "", "Path to the dedicated wal directory.")
-	fs.Var(flags.NewURLsValue("http://localhost:2380,http://localhost:7001"), "listen-peer-urls", "List of URLs to listen on for peer traffic.")
-	fs.Var(flags.NewURLsValue("http://localhost:2379,http://localhost:4001"), "listen-client-urls", "List of URLs to listen on for client traffic.")
-	fs.UintVar(&cfg.maxSnapFiles, "max-snapshots", defaultMaxSnapshots, "Maximum number of snapshot files to retain (0 is unlimited).")
-	fs.UintVar(&cfg.maxWalFiles, "max-wals", defaultMaxWALs, "Maximum number of wal files to retain (0 is unlimited).")
-	fs.StringVar(&cfg.name, "name", defaultName, "Human-readable name for this member.")
-	fs.Uint64Var(&cfg.snapCount, "snapshot-count", etcdserver.DefaultSnapCount, "Number of committed transactions to trigger a snapshot to disk.")
-	fs.UintVar(&cfg.TickMs, "heartbeat-interval", 100, "Time (in milliseconds) of a heartbeat interval.")
-	fs.UintVar(&cfg.ElectionMs, "election-timeout", 1000, "Time (in milliseconds) for an election to timeout.")
+	fs.Var(cfg.CorsInfo, "cors", "Comma-separated white list of origins for CORS (cross-origin resource sharing).")
+	fs.StringVar(&cfg.Dir, "data-dir", cfg.Dir, "Path to the data directory.")
+	fs.StringVar(&cfg.WalDir, "wal-dir", cfg.WalDir, "Path to the dedicated wal directory.")
+	fs.Var(flags.NewURLsValue(embed.DefaultListenPeerURLs), "listen-peer-urls", "List of URLs to listen on for peer traffic.")
+	fs.Var(flags.NewURLsValue(embed.DefaultListenClientURLs), "listen-client-urls", "List of URLs to listen on for client traffic.")
+	fs.UintVar(&cfg.MaxSnapFiles, "max-snapshots", cfg.MaxSnapFiles, "Maximum number of snapshot files to retain (0 is unlimited).")
+	fs.UintVar(&cfg.MaxWalFiles, "max-wals", cfg.MaxWalFiles, "Maximum number of wal files to retain (0 is unlimited).")
+	fs.StringVar(&cfg.Name, "name", cfg.Name, "Human-readable name for this member.")
+	fs.Uint64Var(&cfg.SnapCount, "snapshot-count", cfg.SnapCount, "Number of committed transactions to trigger a snapshot to disk.")
+	fs.UintVar(&cfg.TickMs, "heartbeat-interval", cfg.TickMs, "Time (in milliseconds) of a heartbeat interval.")
+	fs.UintVar(&cfg.ElectionMs, "election-timeout", cfg.ElectionMs, "Time (in milliseconds) for an election to timeout.")
+	fs.Int64Var(&cfg.QuotaBackendBytes, "quota-backend-bytes", cfg.QuotaBackendBytes, "Raise alarms when backend size exceeds the given quota. 0 means use the default quota.")
 
 	// clustering
-	fs.Var(flags.NewURLsValue(defaultInitialAdvertisePeerURLs), "initial-advertise-peer-urls", "List of this member's peer URLs to advertise to the rest of the cluster.")
-	fs.Var(flags.NewURLsValue("http://localhost:2379,http://localhost:4001"), "advertise-client-urls", "List of this member's client URLs to advertise to the public.")
-	fs.StringVar(&cfg.durl, "discovery", "", "Discovery URL used to bootstrap the cluster.")
+	fs.Var(flags.NewURLsValue(embed.DefaultInitialAdvertisePeerURLs), "initial-advertise-peer-urls", "List of this member's peer URLs to advertise to the rest of the cluster.")
+	fs.Var(flags.NewURLsValue(embed.DefaultAdvertiseClientURLs), "advertise-client-urls", "List of this member's client URLs to advertise to the public.")
+	fs.StringVar(&cfg.Durl, "discovery", cfg.Durl, "Discovery URL used to bootstrap the cluster.")
 	fs.Var(cfg.fallback, "discovery-fallback", fmt.Sprintf("Valid values include %s", strings.Join(cfg.fallback.Values, ", ")))
 	if err := cfg.fallback.Set(fallbackFlagProxy); err != nil {
 		// Should never happen.
 		plog.Panicf("unexpected error setting up discovery-fallback flag: %v", err)
 	}
-	fs.StringVar(&cfg.dproxy, "discovery-proxy", "", "HTTP proxy to use for traffic to discovery service.")
-	fs.StringVar(&cfg.dnsCluster, "discovery-srv", "", "DNS domain used to bootstrap initial cluster.")
-	fs.StringVar(&cfg.initialCluster, "initial-cluster", initialClusterFromName(defaultName), "Initial cluster configuration for bootstrapping.")
-	fs.StringVar(&cfg.initialClusterToken, "initial-cluster-token", "etcd-cluster", "Initial cluster token for the etcd cluster during bootstrap.")
+	fs.StringVar(&cfg.Dproxy, "discovery-proxy", cfg.Dproxy, "HTTP proxy to use for traffic to discovery service.")
+	fs.StringVar(&cfg.DNSCluster, "discovery-srv", cfg.DNSCluster, "DNS domain used to bootstrap initial cluster.")
+	fs.StringVar(&cfg.InitialCluster, "initial-cluster", cfg.InitialCluster, "Initial cluster configuration for bootstrapping.")
+	fs.StringVar(&cfg.InitialClusterToken, "initial-cluster-token", cfg.InitialClusterToken, "Initial cluster token for the etcd cluster during bootstrap.")
 	fs.Var(cfg.clusterState, "initial-cluster-state", "Initial cluster state ('new' or 'existing').")
-	if err := cfg.clusterState.Set(clusterStateFlagNew); err != nil {
+	if err := cfg.clusterState.Set(embed.ClusterStateFlagNew); err != nil {
 		// Should never happen.
 		plog.Panicf("unexpected error setting up clusterStateFlag: %v", err)
 	}
-	fs.BoolVar(&cfg.strictReconfigCheck, "strict-reconfig-check", false, "Reject reconfiguration requests that would cause quorum loss.")
+	fs.BoolVar(&cfg.StrictReconfigCheck, "strict-reconfig-check", cfg.StrictReconfigCheck, "Reject reconfiguration requests that would cause quorum loss.")
 
 	// proxy
 	fs.Var(cfg.proxy, "proxy", fmt.Sprintf("Valid values include %s", strings.Join(cfg.proxy.Values, ", ")))
@@ -194,49 +162,44 @@ func NewConfig() *config {
 		// Should never happen.
 		plog.Panicf("unexpected error setting up proxyFlag: %v", err)
 	}
-	fs.UintVar(&cfg.proxyFailureWaitMs, "proxy-failure-wait", 5000, "Time (in milliseconds) an endpoint will be held in a failed state.")
-	fs.UintVar(&cfg.proxyRefreshIntervalMs, "proxy-refresh-interval", 30000, "Time (in milliseconds) of the endpoints refresh interval.")
-	fs.UintVar(&cfg.proxyDialTimeoutMs, "proxy-dial-timeout", 1000, "Time (in milliseconds) for a dial to timeout.")
-	fs.UintVar(&cfg.proxyWriteTimeoutMs, "proxy-write-timeout", 5000, "Time (in milliseconds) for a write to timeout.")
-	fs.UintVar(&cfg.proxyReadTimeoutMs, "proxy-read-timeout", 0, "Time (in milliseconds) for a read to timeout.")
+	fs.UintVar(&cfg.ProxyFailureWaitMs, "proxy-failure-wait", cfg.ProxyFailureWaitMs, "Time (in milliseconds) an endpoint will be held in a failed state.")
+	fs.UintVar(&cfg.ProxyRefreshIntervalMs, "proxy-refresh-interval", cfg.ProxyRefreshIntervalMs, "Time (in milliseconds) of the endpoints refresh interval.")
+	fs.UintVar(&cfg.ProxyDialTimeoutMs, "proxy-dial-timeout", cfg.ProxyDialTimeoutMs, "Time (in milliseconds) for a dial to timeout.")
+	fs.UintVar(&cfg.ProxyWriteTimeoutMs, "proxy-write-timeout", cfg.ProxyWriteTimeoutMs, "Time (in milliseconds) for a write to timeout.")
+	fs.UintVar(&cfg.ProxyReadTimeoutMs, "proxy-read-timeout", cfg.ProxyReadTimeoutMs, "Time (in milliseconds) for a read to timeout.")
 
 	// security
-	fs.StringVar(&cfg.clientTLSInfo.CAFile, "ca-file", "", "DEPRECATED: Path to the client server TLS CA file.")
-	fs.StringVar(&cfg.clientTLSInfo.CertFile, "cert-file", "", "Path to the client server TLS cert file.")
-	fs.StringVar(&cfg.clientTLSInfo.KeyFile, "key-file", "", "Path to the client server TLS key file.")
-	fs.BoolVar(&cfg.clientTLSInfo.ClientCertAuth, "client-cert-auth", false, "Enable client cert authentication.")
-	fs.StringVar(&cfg.clientTLSInfo.TrustedCAFile, "trusted-ca-file", "", "Path to the client server TLS trusted CA key file.")
-	fs.StringVar(&cfg.peerTLSInfo.CAFile, "peer-ca-file", "", "DEPRECATED: Path to the peer server TLS CA file.")
-	fs.StringVar(&cfg.peerTLSInfo.CertFile, "peer-cert-file", "", "Path to the peer server TLS cert file.")
-	fs.StringVar(&cfg.peerTLSInfo.KeyFile, "peer-key-file", "", "Path to the peer server TLS key file.")
-	fs.BoolVar(&cfg.peerTLSInfo.ClientCertAuth, "peer-client-cert-auth", false, "Enable peer client cert authentication.")
-	fs.StringVar(&cfg.peerTLSInfo.TrustedCAFile, "peer-trusted-ca-file", "", "Path to the peer server TLS trusted CA file.")
-	fs.BoolVar(&cfg.peerAutoTLS, "peer-auto-tls", false, "Peer TLS using generated certificates")
+	fs.StringVar(&cfg.ClientTLSInfo.CAFile, "ca-file", "", "DEPRECATED: Path to the client server TLS CA file.")
+	fs.StringVar(&cfg.ClientTLSInfo.CertFile, "cert-file", "", "Path to the client server TLS cert file.")
+	fs.StringVar(&cfg.ClientTLSInfo.KeyFile, "key-file", "", "Path to the client server TLS key file.")
+	fs.BoolVar(&cfg.ClientTLSInfo.ClientCertAuth, "client-cert-auth", false, "Enable client cert authentication.")
+	fs.StringVar(&cfg.ClientTLSInfo.TrustedCAFile, "trusted-ca-file", "", "Path to the client server TLS trusted CA key file.")
+	fs.BoolVar(&cfg.ClientAutoTLS, "auto-tls", false, "Client TLS using generated certificates")
+	fs.StringVar(&cfg.PeerTLSInfo.CAFile, "peer-ca-file", "", "DEPRECATED: Path to the peer server TLS CA file.")
+	fs.StringVar(&cfg.PeerTLSInfo.CertFile, "peer-cert-file", "", "Path to the peer server TLS cert file.")
+	fs.StringVar(&cfg.PeerTLSInfo.KeyFile, "peer-key-file", "", "Path to the peer server TLS key file.")
+	fs.BoolVar(&cfg.PeerTLSInfo.ClientCertAuth, "peer-client-cert-auth", false, "Enable peer client cert authentication.")
+	fs.StringVar(&cfg.PeerTLSInfo.TrustedCAFile, "peer-trusted-ca-file", "", "Path to the peer server TLS trusted CA file.")
+	fs.BoolVar(&cfg.PeerAutoTLS, "peer-auto-tls", false, "Peer TLS using generated certificates")
 
 	// logging
-	fs.BoolVar(&cfg.debug, "debug", false, "Enable debug-level logging for etcd.")
-	fs.StringVar(&cfg.logPkgLevels, "log-package-levels", "", "Specify a particular log level for each etcd package (eg: 'etcdmain=CRITICAL,etcdserver=DEBUG').")
+	fs.BoolVar(&cfg.Debug, "debug", false, "Enable debug-level logging for etcd.")
+	fs.StringVar(&cfg.LogPkgLevels, "log-package-levels", "", "Specify a particular log level for each etcd package (eg: 'etcdmain=CRITICAL,etcdserver=DEBUG').")
+	fs.StringVar(&cfg.logOutput, "log-output", "default", "Specify 'stdout' or 'stderr' to skip journald logging even when running under systemd.")
 
 	// unsafe
-	fs.BoolVar(&cfg.forceNewCluster, "force-new-cluster", false, "Force to create a new one member cluster.")
+	fs.BoolVar(&cfg.ForceNewCluster, "force-new-cluster", false, "Force to create a new one member cluster.")
 
 	// version
 	fs.BoolVar(&cfg.printVersion, "version", false, "Print the version and exit.")
 
-	// demo flag
-	fs.IntVar(&cfg.autoCompactionRetention, "experimental-auto-compaction-retention", 0, "Auto compaction retention in hour. 0 means disable auto compaction.")
-	fs.Int64Var(&cfg.quotaBackendBytes, "quota-backend-bytes", 0, "Raise alarms when backend size exceeds the given quota. 0 means use the default quota.")
-
-	// backwards-compatibility with v0.4.6
-	fs.Var(&flags.IPAddressPort{}, "addr", "DEPRECATED: Use --advertise-client-urls instead.")
-	fs.Var(&flags.IPAddressPort{}, "bind-addr", "DEPRECATED: Use --listen-client-urls instead.")
-	fs.Var(&flags.IPAddressPort{}, "peer-addr", "DEPRECATED: Use --initial-advertise-peer-urls instead.")
-	fs.Var(&flags.IPAddressPort{}, "peer-bind-addr", "DEPRECATED: Use --listen-peer-urls instead.")
-	fs.Var(&flags.DeprecatedFlag{Name: "peers"}, "peers", "DEPRECATED: Use --initial-cluster instead.")
-	fs.Var(&flags.DeprecatedFlag{Name: "peers-file"}, "peers-file", "DEPRECATED: Use --initial-cluster instead.")
+	fs.IntVar(&cfg.AutoCompactionRetention, "auto-compaction-retention", 0, "Auto compaction retention for mvcc key value store in hour. 0 means disable auto compaction.")
 
 	// pprof profiler via HTTP
-	fs.BoolVar(&cfg.enablePprof, "enable-pprof", false, "Enable runtime profiling data via HTTP server. Address is at client URL + \"/debug/pprof\"")
+	fs.BoolVar(&cfg.EnablePprof, "enable-pprof", false, "Enable runtime profiling data via HTTP server. Address is at client URL + \"/debug/pprof/\"")
+
+	// additional metrics
+	fs.StringVar(&cfg.Metrics, "metrics", cfg.Metrics, "Set level of detail for exported metrics, specify 'extensive' to include histogram metrics")
 
 	// ignored
 	for _, f := range cfg.ignored {
@@ -245,7 +208,7 @@ func NewConfig() *config {
 	return cfg
 }
 
-func (cfg *config) Parse(arguments []string) error {
+func (cfg *config) parse(arguments []string) error {
 	perr := cfg.FlagSet.Parse(arguments)
 	switch perr {
 	case nil:
@@ -267,76 +230,88 @@ func (cfg *config) Parse(arguments []string) error {
 		os.Exit(0)
 	}
 
+	var err error
+	if cfg.configFile != "" {
+		plog.Infof("Loading server configuration from %q", cfg.configFile)
+		err = cfg.configFromFile(cfg.configFile)
+	} else {
+		err = cfg.configFromCmdLine()
+	}
+	return err
+}
+
+func (cfg *config) configFromCmdLine() error {
 	err := flags.SetFlagsFromEnv("ETCD", cfg.FlagSet)
 	if err != nil {
 		plog.Fatalf("%v", err)
 	}
 
-	set := make(map[string]bool)
-	cfg.FlagSet.Visit(func(f *flag.Flag) {
-		set[f.Name] = true
-	})
-	nSet := 0
-	for _, v := range []bool{set["discovery"], set["initial-cluster"], set["discovery-srv"]} {
-		if v {
-			nSet += 1
+	cfg.LPUrls = flags.URLsFromFlag(cfg.FlagSet, "listen-peer-urls")
+	cfg.APUrls = flags.URLsFromFlag(cfg.FlagSet, "initial-advertise-peer-urls")
+	cfg.LCUrls = flags.URLsFromFlag(cfg.FlagSet, "listen-client-urls")
+	cfg.ACUrls = flags.URLsFromFlag(cfg.FlagSet, "advertise-client-urls")
+	cfg.ClusterState = cfg.clusterState.String()
+	cfg.Fallback = cfg.fallback.String()
+	cfg.Proxy = cfg.proxy.String()
+
+	// disable default advertise-client-urls if lcurls is set
+	missingAC := flags.IsSet(cfg.FlagSet, "listen-client-urls") && !flags.IsSet(cfg.FlagSet, "advertise-client-urls")
+	if !cfg.mayBeProxy() && missingAC {
+		cfg.ACUrls = nil
+	}
+
+	// disable default initial-cluster if discovery is set
+	if (cfg.Durl != "" || cfg.DNSCluster != "") && !flags.IsSet(cfg.FlagSet, "initial-cluster") {
+		cfg.InitialCluster = ""
+	}
+
+	return cfg.validate()
+}
+
+func (cfg *config) configFromFile(path string) error {
+	eCfg, err := embed.ConfigFromFile(path)
+	if err != nil {
+		return err
+	}
+	cfg.Config = *eCfg
+
+	// load extra config information
+	b, rerr := ioutil.ReadFile(path)
+	if rerr != nil {
+		return rerr
+	}
+	if yerr := yaml.Unmarshal(b, &cfg.configProxy); yerr != nil {
+		return yerr
+	}
+	if cfg.FallbackJSON != "" {
+		if err := cfg.fallback.Set(cfg.FallbackJSON); err != nil {
+			plog.Panicf("unexpected error setting up discovery-fallback flag: %v", err)
 		}
+		cfg.Fallback = cfg.fallback.String()
 	}
-	if nSet > 1 {
-		return ErrConflictBootstrapFlags
-	}
-
-	flags.SetBindAddrFromAddr(cfg.FlagSet, "peer-bind-addr", "peer-addr")
-	flags.SetBindAddrFromAddr(cfg.FlagSet, "bind-addr", "addr")
-
-	cfg.lpurls, err = flags.URLsFromFlags(cfg.FlagSet, "listen-peer-urls", "peer-bind-addr", cfg.peerTLSInfo)
-	if err != nil {
-		return err
-	}
-	cfg.apurls, err = flags.URLsFromFlags(cfg.FlagSet, "initial-advertise-peer-urls", "peer-addr", cfg.peerTLSInfo)
-	if err != nil {
-		return err
-	}
-	cfg.lcurls, err = flags.URLsFromFlags(cfg.FlagSet, "listen-client-urls", "bind-addr", cfg.clientTLSInfo)
-	if err != nil {
-		return err
-	}
-	cfg.acurls, err = flags.URLsFromFlags(cfg.FlagSet, "advertise-client-urls", "addr", cfg.clientTLSInfo)
-	if err != nil {
-		return err
-	}
-
-	// when etcd runs in member mode user needs to set --advertise-client-urls if --listen-client-urls is set.
-	// TODO(yichengq): check this for joining through discovery service case
-	mayFallbackToProxy := flags.IsSet(cfg.FlagSet, "discovery") && cfg.fallback.String() == fallbackFlagProxy
-	mayBeProxy := cfg.proxy.String() != proxyFlagOff || mayFallbackToProxy
-	if !mayBeProxy {
-		if flags.IsSet(cfg.FlagSet, "listen-client-urls") && !flags.IsSet(cfg.FlagSet, "advertise-client-urls") {
-			return errUnsetAdvertiseClientURLsFlag
+	if cfg.ProxyJSON != "" {
+		if err := cfg.proxy.Set(cfg.ProxyJSON); err != nil {
+			plog.Panicf("unexpected error setting up proxyFlag: %v", err)
 		}
+		cfg.Proxy = cfg.proxy.String()
 	}
-
-	if 5*cfg.TickMs > cfg.ElectionMs {
-		return fmt.Errorf("--election-timeout[%vms] should be at least as 5 times as --heartbeat-interval[%vms]", cfg.ElectionMs, cfg.TickMs)
-	}
-	if cfg.ElectionMs > maxElectionMs {
-		return fmt.Errorf("--election-timeout[%vms] is too long, and should be set less than %vms", cfg.ElectionMs, maxElectionMs)
-	}
-
 	return nil
 }
 
-func initialClusterFromName(name string) string {
-	n := name
-	if name == "" {
-		n = defaultName
-	}
-	return fmt.Sprintf("%s=http://localhost:2380,%s=http://localhost:7001", n, n)
+func (cfg *config) mayBeProxy() bool {
+	mayFallbackToProxy := cfg.Durl != "" && cfg.Fallback == fallbackFlagProxy
+	return cfg.Proxy != proxyFlagOff || mayFallbackToProxy
 }
 
-func (cfg config) isNewCluster() bool          { return cfg.clusterState.String() == clusterStateFlagNew }
+func (cfg *config) validate() error {
+	err := cfg.Config.Validate()
+	// TODO(yichengq): check this for joining through discovery service case
+	if err == embed.ErrUnsetAdvertiseClientURLsFlag && cfg.mayBeProxy() {
+		return nil
+	}
+	return err
+}
+
 func (cfg config) isProxy() bool               { return cfg.proxy.String() != proxyFlagOff }
 func (cfg config) isReadonlyProxy() bool       { return cfg.proxy.String() == proxyFlagReadonly }
 func (cfg config) shouldFallbackToProxy() bool { return cfg.fallback.String() == fallbackFlagProxy }
-
-func (cfg config) electionTicks() int { return int(cfg.ElectionMs / cfg.TickMs) }

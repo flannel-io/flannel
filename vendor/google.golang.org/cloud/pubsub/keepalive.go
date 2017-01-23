@@ -32,30 +32,27 @@ type keepAlive struct {
 	Deadline      time.Duration    // How long to extend messages for each time they are extended. Should be greater than ExtensionTick frequency.
 	MaxExtension  time.Duration    // How long to keep extending each message's ack deadline before automatically removing it.
 
+	mu sync.Mutex
 	// key: ackID; value: time at which ack deadline extension should cease.
 	items map[string]time.Time
-	done  chan struct{}
-	wg    sync.WaitGroup
 
-	add, remove chan string
+	wg   sync.WaitGroup
+	done chan struct{}
 }
 
 // Start initiates the deadline extension loop.  Stop must be called once keepAlive is no longer needed.
 func (ka *keepAlive) Start() {
 	ka.items = make(map[string]time.Time)
 	ka.done = make(chan struct{})
-	ka.add = make(chan string)
-	ka.remove = make(chan string)
 	ka.wg.Add(1)
 	go func() {
 		defer ka.wg.Done()
 		done := false
 		for {
 			select {
-			case ackID := <-ka.add:
-				ka.addItem(ackID)
-			case ackID := <-ka.remove:
-				ka.removeItem(ackID)
+			case <-ka.Ctx.Done():
+				// Don't bother waiting for items to be removed: we can't extend them any more.
+				return
 			case <-ka.done:
 				done = true
 			case <-ka.ExtensionTick:
@@ -67,10 +64,11 @@ func (ka *keepAlive) Start() {
 				}()
 
 				for _, id := range expired {
-					ka.removeItem(id)
+					ka.Remove(id)
 				}
 			}
-			if done && len(ka.items) == 0 {
+			live, _ := ka.getAckIDs()
+			if done && len(live) == 0 {
 				return
 			}
 		}
@@ -79,21 +77,15 @@ func (ka *keepAlive) Start() {
 
 // Add adds an ack id to be kept alive.
 func (ka *keepAlive) Add(ackID string) {
-	ka.add <- ackID
-}
-
-// add adds ackID to the items map.
-func (ka *keepAlive) addItem(ackID string) {
+	ka.mu.Lock()
+	defer ka.mu.Unlock()
 	ka.items[ackID] = time.Now().Add(ka.MaxExtension)
 }
 
 // Remove removes ackID from the list to be kept alive.
 func (ka *keepAlive) Remove(ackID string) {
-	ka.remove <- ackID
-}
-
-// remove removes ackID from the items map.
-func (ka *keepAlive) removeItem(ackID string) {
+	ka.mu.Lock()
+	defer ka.mu.Unlock()
 	delete(ka.items, ackID)
 }
 
@@ -107,6 +99,9 @@ func (ka *keepAlive) Stop() {
 // The set is divided into two lists: one with IDs that should continue to be kept alive,
 // and the other with IDs that should be dropped.
 func (ka *keepAlive) getAckIDs() (live, expired []string) {
+	ka.mu.Lock()
+	defer ka.mu.Unlock()
+
 	now := time.Now()
 	for id, expiry := range ka.items {
 		if expiry.Before(now) {

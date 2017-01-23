@@ -1,4 +1,4 @@
-// Copyright 2016 CoreOS, Inc.
+// Copyright 2016 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,17 +14,22 @@
 
 package main
 
-func getSameValue(vals map[string]int64) (int64, bool) {
+import (
+	"fmt"
+	"strings"
+)
+
+func getSameValue(vals map[string]int64) bool {
 	var rv int64
 	for _, v := range vals {
 		if rv == 0 {
 			rv = v
 		}
 		if rv != v {
-			return -1, false
+			return false
 		}
 	}
-	return rv, true
+	return true
 }
 
 func max(n1, n2 int64) int64 {
@@ -32,4 +37,15 @@ func max(n1, n2 int64) int64 {
 		return n1
 	}
 	return n2
+}
+
+func errsToError(errs []error) error {
+	if len(errs) == 0 {
+		return nil
+	}
+	stringArr := make([]string, len(errs))
+	for i, err := range errs {
+		stringArr[i] = err.Error()
+	}
+	return fmt.Errorf(strings.Join(stringArr, ", "))
 }

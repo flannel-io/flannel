@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/codegangsta/cli"
 	"github.com/coreos/etcd/client"
+	"github.com/urfave/cli"
 )
 
 // NewSetCommand returns the CLI command for "set".
@@ -36,12 +36,13 @@ func NewSetCommand() cli.Command {
 
    $ set -- <key> <value>`,
 		Flags: []cli.Flag{
-			cli.IntFlag{Name: "ttl", Value: 0, Usage: "key time-to-live"},
+			cli.IntFlag{Name: "ttl", Value: 0, Usage: "key time-to-live in seconds"},
 			cli.StringFlag{Name: "swap-with-value", Value: "", Usage: "previous value"},
 			cli.IntFlag{Name: "swap-with-index", Value: 0, Usage: "previous index"},
 		},
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			setCommandFunc(c, mustNewKeyAPI(c))
+			return nil
 		},
 	}
 }
@@ -49,12 +50,12 @@ func NewSetCommand() cli.Command {
 // setCommandFunc executes the "set" command.
 func setCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	if len(c.Args()) == 0 {
-		handleError(ExitBadArgs, errors.New("key required"))
+		handleError(c, ExitBadArgs, errors.New("key required"))
 	}
 	key := c.Args()[0]
 	value, err := argOrStdin(c.Args(), os.Stdin, 1)
 	if err != nil {
-		handleError(ExitBadArgs, errors.New("value required"))
+		handleError(c, ExitBadArgs, errors.New("value required"))
 	}
 
 	ttl := c.Int("ttl")
@@ -65,7 +66,7 @@ func setCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	resp, err := ki.Set(ctx, key, value, &client.SetOptions{TTL: time.Duration(ttl) * time.Second, PrevIndex: uint64(prevIndex), PrevValue: prevValue})
 	cancel()
 	if err != nil {
-		handleError(ExitServerError, err)
+		handleError(c, ExitServerError, err)
 	}
 
 	printResponseKey(resp, c.GlobalString("output"))

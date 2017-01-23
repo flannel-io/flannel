@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/codegangsta/cli"
 	"github.com/coreos/etcd/client"
+	"github.com/urfave/cli"
 )
 
 // NewMakeCommand returns the CLI command for "mk".
@@ -31,10 +31,11 @@ func NewMakeCommand() cli.Command {
 		ArgsUsage: "<key> <value>",
 		Flags: []cli.Flag{
 			cli.BoolFlag{Name: "in-order", Usage: "create in-order key under directory <key>"},
-			cli.IntFlag{Name: "ttl", Value: 0, Usage: "key time-to-live"},
+			cli.IntFlag{Name: "ttl", Value: 0, Usage: "key time-to-live in seconds"},
 		},
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			mkCommandFunc(c, mustNewKeyAPI(c))
+			return nil
 		},
 	}
 }
@@ -42,12 +43,12 @@ func NewMakeCommand() cli.Command {
 // mkCommandFunc executes the "mk" command.
 func mkCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	if len(c.Args()) == 0 {
-		handleError(ExitBadArgs, errors.New("key required"))
+		handleError(c, ExitBadArgs, errors.New("key required"))
 	}
 	key := c.Args()[0]
 	value, err := argOrStdin(c.Args(), os.Stdin, 1)
 	if err != nil {
-		handleError(ExitBadArgs, errors.New("value required"))
+		handleError(c, ExitBadArgs, errors.New("value required"))
 	}
 
 	ttl := c.Int("ttl")
@@ -68,7 +69,7 @@ func mkCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	}
 	cancel()
 	if err != nil {
-		handleError(ExitServerError, err)
+		handleError(c, ExitServerError, err)
 	}
 
 	printResponseKey(resp, c.GlobalString("output"))

@@ -36,7 +36,6 @@ const opAddTags = "AddTags"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) AddTagsRequest(input *AddTagsInput) (req *request.Request, output *AddTagsOutput) {
 	op := &request.Operation{
 		Name:       opAddTags,
@@ -48,9 +47,8 @@ func (c *MachineLearning) AddTagsRequest(input *AddTagsInput) (req *request.Requ
 		input = &AddTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -115,7 +113,6 @@ const opCreateBatchPrediction = "CreateBatchPrediction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateBatchPredictionRequest(input *CreateBatchPredictionInput) (req *request.Request, output *CreateBatchPredictionOutput) {
 	op := &request.Operation{
 		Name:       opCreateBatchPrediction,
@@ -127,9 +124,8 @@ func (c *MachineLearning) CreateBatchPredictionRequest(input *CreateBatchPredict
 		input = &CreateBatchPredictionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateBatchPredictionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -201,7 +197,6 @@ const opCreateDataSourceFromRDS = "CreateDataSourceFromRDS"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateDataSourceFromRDSRequest(input *CreateDataSourceFromRDSInput) (req *request.Request, output *CreateDataSourceFromRDSOutput) {
 	op := &request.Operation{
 		Name:       opCreateDataSourceFromRDS,
@@ -213,9 +208,8 @@ func (c *MachineLearning) CreateDataSourceFromRDSRequest(input *CreateDataSource
 		input = &CreateDataSourceFromRDSInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDataSourceFromRDSOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -287,7 +281,6 @@ const opCreateDataSourceFromRedshift = "CreateDataSourceFromRedshift"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateDataSourceFromRedshiftRequest(input *CreateDataSourceFromRedshiftInput) (req *request.Request, output *CreateDataSourceFromRedshiftOutput) {
 	op := &request.Operation{
 		Name:       opCreateDataSourceFromRedshift,
@@ -299,9 +292,8 @@ func (c *MachineLearning) CreateDataSourceFromRedshiftRequest(input *CreateDataS
 		input = &CreateDataSourceFromRedshiftInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDataSourceFromRedshiftOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -392,7 +384,6 @@ const opCreateDataSourceFromS3 = "CreateDataSourceFromS3"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateDataSourceFromS3Request(input *CreateDataSourceFromS3Input) (req *request.Request, output *CreateDataSourceFromS3Output) {
 	op := &request.Operation{
 		Name:       opCreateDataSourceFromS3,
@@ -404,9 +395,8 @@ func (c *MachineLearning) CreateDataSourceFromS3Request(input *CreateDataSourceF
 		input = &CreateDataSourceFromS3Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDataSourceFromS3Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -492,7 +482,6 @@ const opCreateEvaluation = "CreateEvaluation"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateEvaluationRequest(input *CreateEvaluationInput) (req *request.Request, output *CreateEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opCreateEvaluation,
@@ -504,9 +493,8 @@ func (c *MachineLearning) CreateEvaluationRequest(input *CreateEvaluationInput) 
 		input = &CreateEvaluationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateEvaluationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -580,7 +568,6 @@ const opCreateMLModel = "CreateMLModel"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateMLModelRequest(input *CreateMLModelInput) (req *request.Request, output *CreateMLModelOutput) {
 	op := &request.Operation{
 		Name:       opCreateMLModel,
@@ -592,9 +579,8 @@ func (c *MachineLearning) CreateMLModelRequest(input *CreateMLModelInput) (req *
 		input = &CreateMLModelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateMLModelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -669,7 +655,6 @@ const opCreateRealtimeEndpoint = "CreateRealtimeEndpoint"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateRealtimeEndpointRequest(input *CreateRealtimeEndpointInput) (req *request.Request, output *CreateRealtimeEndpointOutput) {
 	op := &request.Operation{
 		Name:       opCreateRealtimeEndpoint,
@@ -681,9 +666,8 @@ func (c *MachineLearning) CreateRealtimeEndpointRequest(input *CreateRealtimeEnd
 		input = &CreateRealtimeEndpointInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateRealtimeEndpointOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -742,7 +726,6 @@ const opDeleteBatchPrediction = "DeleteBatchPrediction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DeleteBatchPredictionRequest(input *DeleteBatchPredictionInput) (req *request.Request, output *DeleteBatchPredictionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBatchPrediction,
@@ -754,9 +737,8 @@ func (c *MachineLearning) DeleteBatchPredictionRequest(input *DeleteBatchPredict
 		input = &DeleteBatchPredictionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteBatchPredictionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -818,7 +800,6 @@ const opDeleteDataSource = "DeleteDataSource"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DeleteDataSourceRequest(input *DeleteDataSourceInput) (req *request.Request, output *DeleteDataSourceOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDataSource,
@@ -830,9 +811,8 @@ func (c *MachineLearning) DeleteDataSourceRequest(input *DeleteDataSourceInput) 
 		input = &DeleteDataSourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteDataSourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -894,7 +874,6 @@ const opDeleteEvaluation = "DeleteEvaluation"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DeleteEvaluationRequest(input *DeleteEvaluationInput) (req *request.Request, output *DeleteEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opDeleteEvaluation,
@@ -906,9 +885,8 @@ func (c *MachineLearning) DeleteEvaluationRequest(input *DeleteEvaluationInput) 
 		input = &DeleteEvaluationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteEvaluationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -970,7 +948,6 @@ const opDeleteMLModel = "DeleteMLModel"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DeleteMLModelRequest(input *DeleteMLModelInput) (req *request.Request, output *DeleteMLModelOutput) {
 	op := &request.Operation{
 		Name:       opDeleteMLModel,
@@ -982,9 +959,8 @@ func (c *MachineLearning) DeleteMLModelRequest(input *DeleteMLModelInput) (req *
 		input = &DeleteMLModelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteMLModelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1046,7 +1022,6 @@ const opDeleteRealtimeEndpoint = "DeleteRealtimeEndpoint"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DeleteRealtimeEndpointRequest(input *DeleteRealtimeEndpointInput) (req *request.Request, output *DeleteRealtimeEndpointOutput) {
 	op := &request.Operation{
 		Name:       opDeleteRealtimeEndpoint,
@@ -1058,9 +1033,8 @@ func (c *MachineLearning) DeleteRealtimeEndpointRequest(input *DeleteRealtimeEnd
 		input = &DeleteRealtimeEndpointInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteRealtimeEndpointOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1117,7 +1091,6 @@ const opDeleteTags = "DeleteTags"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, output *DeleteTagsOutput) {
 	op := &request.Operation{
 		Name:       opDeleteTags,
@@ -1129,9 +1102,8 @@ func (c *MachineLearning) DeleteTagsRequest(input *DeleteTagsInput) (req *reques
 		input = &DeleteTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1194,7 +1166,6 @@ const opDescribeBatchPredictions = "DescribeBatchPredictions"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DescribeBatchPredictionsRequest(input *DescribeBatchPredictionsInput) (req *request.Request, output *DescribeBatchPredictionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBatchPredictions,
@@ -1212,9 +1183,8 @@ func (c *MachineLearning) DescribeBatchPredictionsRequest(input *DescribeBatchPr
 		input = &DescribeBatchPredictionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeBatchPredictionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1294,7 +1264,6 @@ const opDescribeDataSources = "DescribeDataSources"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DescribeDataSourcesRequest(input *DescribeDataSourcesInput) (req *request.Request, output *DescribeDataSourcesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeDataSources,
@@ -1312,9 +1281,8 @@ func (c *MachineLearning) DescribeDataSourcesRequest(input *DescribeDataSourcesI
 		input = &DescribeDataSourcesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeDataSourcesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1393,7 +1361,6 @@ const opDescribeEvaluations = "DescribeEvaluations"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DescribeEvaluationsRequest(input *DescribeEvaluationsInput) (req *request.Request, output *DescribeEvaluationsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeEvaluations,
@@ -1411,9 +1378,8 @@ func (c *MachineLearning) DescribeEvaluationsRequest(input *DescribeEvaluationsI
 		input = &DescribeEvaluationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeEvaluationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1493,7 +1459,6 @@ const opDescribeMLModels = "DescribeMLModels"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DescribeMLModelsRequest(input *DescribeMLModelsInput) (req *request.Request, output *DescribeMLModelsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeMLModels,
@@ -1511,9 +1476,8 @@ func (c *MachineLearning) DescribeMLModelsRequest(input *DescribeMLModelsInput) 
 		input = &DescribeMLModelsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeMLModelsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1592,7 +1556,6 @@ const opDescribeTags = "DescribeTags"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeTags,
@@ -1604,9 +1567,8 @@ func (c *MachineLearning) DescribeTagsRequest(input *DescribeTagsInput) (req *re
 		input = &DescribeTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1663,7 +1625,6 @@ const opGetBatchPrediction = "GetBatchPrediction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) GetBatchPredictionRequest(input *GetBatchPredictionInput) (req *request.Request, output *GetBatchPredictionOutput) {
 	op := &request.Operation{
 		Name:       opGetBatchPrediction,
@@ -1675,9 +1636,8 @@ func (c *MachineLearning) GetBatchPredictionRequest(input *GetBatchPredictionInp
 		input = &GetBatchPredictionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetBatchPredictionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1735,7 +1695,6 @@ const opGetDataSource = "GetDataSource"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) GetDataSourceRequest(input *GetDataSourceInput) (req *request.Request, output *GetDataSourceOutput) {
 	op := &request.Operation{
 		Name:       opGetDataSource,
@@ -1747,9 +1706,8 @@ func (c *MachineLearning) GetDataSourceRequest(input *GetDataSourceInput) (req *
 		input = &GetDataSourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDataSourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1811,7 +1769,6 @@ const opGetEvaluation = "GetEvaluation"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) GetEvaluationRequest(input *GetEvaluationInput) (req *request.Request, output *GetEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opGetEvaluation,
@@ -1823,9 +1780,8 @@ func (c *MachineLearning) GetEvaluationRequest(input *GetEvaluationInput) (req *
 		input = &GetEvaluationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetEvaluationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1883,7 +1839,6 @@ const opGetMLModel = "GetMLModel"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) GetMLModelRequest(input *GetMLModelInput) (req *request.Request, output *GetMLModelOutput) {
 	op := &request.Operation{
 		Name:       opGetMLModel,
@@ -1895,9 +1850,8 @@ func (c *MachineLearning) GetMLModelRequest(input *GetMLModelInput) (req *reques
 		input = &GetMLModelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetMLModelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1957,7 +1911,6 @@ const opPredict = "Predict"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) PredictRequest(input *PredictInput) (req *request.Request, output *PredictOutput) {
 	op := &request.Operation{
 		Name:       opPredict,
@@ -1969,9 +1922,8 @@ func (c *MachineLearning) PredictRequest(input *PredictInput) (req *request.Requ
 		input = &PredictInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PredictOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2038,7 +1990,6 @@ const opUpdateBatchPrediction = "UpdateBatchPrediction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) UpdateBatchPredictionRequest(input *UpdateBatchPredictionInput) (req *request.Request, output *UpdateBatchPredictionOutput) {
 	op := &request.Operation{
 		Name:       opUpdateBatchPrediction,
@@ -2050,9 +2001,8 @@ func (c *MachineLearning) UpdateBatchPredictionRequest(input *UpdateBatchPredict
 		input = &UpdateBatchPredictionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateBatchPredictionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2112,7 +2062,6 @@ const opUpdateDataSource = "UpdateDataSource"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) UpdateDataSourceRequest(input *UpdateDataSourceInput) (req *request.Request, output *UpdateDataSourceOutput) {
 	op := &request.Operation{
 		Name:       opUpdateDataSource,
@@ -2124,9 +2073,8 @@ func (c *MachineLearning) UpdateDataSourceRequest(input *UpdateDataSourceInput) 
 		input = &UpdateDataSourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateDataSourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2186,7 +2134,6 @@ const opUpdateEvaluation = "UpdateEvaluation"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) UpdateEvaluationRequest(input *UpdateEvaluationInput) (req *request.Request, output *UpdateEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opUpdateEvaluation,
@@ -2198,9 +2145,8 @@ func (c *MachineLearning) UpdateEvaluationRequest(input *UpdateEvaluationInput) 
 		input = &UpdateEvaluationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateEvaluationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2260,7 +2206,6 @@ const opUpdateMLModel = "UpdateMLModel"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) UpdateMLModelRequest(input *UpdateMLModelInput) (req *request.Request, output *UpdateMLModelOutput) {
 	op := &request.Operation{
 		Name:       opUpdateMLModel,
@@ -2272,9 +2217,8 @@ func (c *MachineLearning) UpdateMLModelRequest(input *UpdateMLModelInput) (req *
 		input = &UpdateMLModelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateMLModelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2371,6 +2315,24 @@ func (s *AddTagsInput) Validate() error {
 	return nil
 }
 
+// SetResourceId sets the ResourceId field's value.
+func (s *AddTagsInput) SetResourceId(v string) *AddTagsInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *AddTagsInput) SetResourceType(v string) *AddTagsInput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *AddTagsInput) SetTags(v []*Tag) *AddTagsInput {
+	s.Tags = v
+	return s
+}
+
 // Amazon ML returns the following elements.
 type AddTagsOutput struct {
 	_ struct{} `type:"structure"`
@@ -2390,6 +2352,18 @@ func (s AddTagsOutput) String() string {
 // GoString returns the string representation
 func (s AddTagsOutput) GoString() string {
 	return s.String()
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *AddTagsOutput) SetResourceId(v string) *AddTagsOutput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *AddTagsOutput) SetResourceType(v string) *AddTagsOutput {
+	s.ResourceType = &v
+	return s
 }
 
 // Represents the output of a GetBatchPrediction operation.
@@ -2477,6 +2451,102 @@ func (s BatchPrediction) GoString() string {
 	return s.String()
 }
 
+// SetBatchPredictionDataSourceId sets the BatchPredictionDataSourceId field's value.
+func (s *BatchPrediction) SetBatchPredictionDataSourceId(v string) *BatchPrediction {
+	s.BatchPredictionDataSourceId = &v
+	return s
+}
+
+// SetBatchPredictionId sets the BatchPredictionId field's value.
+func (s *BatchPrediction) SetBatchPredictionId(v string) *BatchPrediction {
+	s.BatchPredictionId = &v
+	return s
+}
+
+// SetComputeTime sets the ComputeTime field's value.
+func (s *BatchPrediction) SetComputeTime(v int64) *BatchPrediction {
+	s.ComputeTime = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *BatchPrediction) SetCreatedAt(v time.Time) *BatchPrediction {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetCreatedByIamUser sets the CreatedByIamUser field's value.
+func (s *BatchPrediction) SetCreatedByIamUser(v string) *BatchPrediction {
+	s.CreatedByIamUser = &v
+	return s
+}
+
+// SetFinishedAt sets the FinishedAt field's value.
+func (s *BatchPrediction) SetFinishedAt(v time.Time) *BatchPrediction {
+	s.FinishedAt = &v
+	return s
+}
+
+// SetInputDataLocationS3 sets the InputDataLocationS3 field's value.
+func (s *BatchPrediction) SetInputDataLocationS3(v string) *BatchPrediction {
+	s.InputDataLocationS3 = &v
+	return s
+}
+
+// SetInvalidRecordCount sets the InvalidRecordCount field's value.
+func (s *BatchPrediction) SetInvalidRecordCount(v int64) *BatchPrediction {
+	s.InvalidRecordCount = &v
+	return s
+}
+
+// SetLastUpdatedAt sets the LastUpdatedAt field's value.
+func (s *BatchPrediction) SetLastUpdatedAt(v time.Time) *BatchPrediction {
+	s.LastUpdatedAt = &v
+	return s
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *BatchPrediction) SetMLModelId(v string) *BatchPrediction {
+	s.MLModelId = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *BatchPrediction) SetMessage(v string) *BatchPrediction {
+	s.Message = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *BatchPrediction) SetName(v string) *BatchPrediction {
+	s.Name = &v
+	return s
+}
+
+// SetOutputUri sets the OutputUri field's value.
+func (s *BatchPrediction) SetOutputUri(v string) *BatchPrediction {
+	s.OutputUri = &v
+	return s
+}
+
+// SetStartedAt sets the StartedAt field's value.
+func (s *BatchPrediction) SetStartedAt(v time.Time) *BatchPrediction {
+	s.StartedAt = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *BatchPrediction) SetStatus(v string) *BatchPrediction {
+	s.Status = &v
+	return s
+}
+
+// SetTotalRecordCount sets the TotalRecordCount field's value.
+func (s *BatchPrediction) SetTotalRecordCount(v int64) *BatchPrediction {
+	s.TotalRecordCount = &v
+	return s
+}
+
 type CreateBatchPredictionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2552,6 +2622,36 @@ func (s *CreateBatchPredictionInput) Validate() error {
 	return nil
 }
 
+// SetBatchPredictionDataSourceId sets the BatchPredictionDataSourceId field's value.
+func (s *CreateBatchPredictionInput) SetBatchPredictionDataSourceId(v string) *CreateBatchPredictionInput {
+	s.BatchPredictionDataSourceId = &v
+	return s
+}
+
+// SetBatchPredictionId sets the BatchPredictionId field's value.
+func (s *CreateBatchPredictionInput) SetBatchPredictionId(v string) *CreateBatchPredictionInput {
+	s.BatchPredictionId = &v
+	return s
+}
+
+// SetBatchPredictionName sets the BatchPredictionName field's value.
+func (s *CreateBatchPredictionInput) SetBatchPredictionName(v string) *CreateBatchPredictionInput {
+	s.BatchPredictionName = &v
+	return s
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *CreateBatchPredictionInput) SetMLModelId(v string) *CreateBatchPredictionInput {
+	s.MLModelId = &v
+	return s
+}
+
+// SetOutputUri sets the OutputUri field's value.
+func (s *CreateBatchPredictionInput) SetOutputUri(v string) *CreateBatchPredictionInput {
+	s.OutputUri = &v
+	return s
+}
+
 // Represents the output of a CreateBatchPrediction operation, and is an acknowledgement
 // that Amazon ML received the request.
 //
@@ -2574,6 +2674,12 @@ func (s CreateBatchPredictionOutput) String() string {
 // GoString returns the string representation
 func (s CreateBatchPredictionOutput) GoString() string {
 	return s.String()
+}
+
+// SetBatchPredictionId sets the BatchPredictionId field's value.
+func (s *CreateBatchPredictionOutput) SetBatchPredictionId(v string) *CreateBatchPredictionOutput {
+	s.BatchPredictionId = &v
+	return s
 }
 
 type CreateDataSourceFromRDSInput struct {
@@ -2647,6 +2753,36 @@ func (s *CreateDataSourceFromRDSInput) Validate() error {
 	return nil
 }
 
+// SetComputeStatistics sets the ComputeStatistics field's value.
+func (s *CreateDataSourceFromRDSInput) SetComputeStatistics(v bool) *CreateDataSourceFromRDSInput {
+	s.ComputeStatistics = &v
+	return s
+}
+
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *CreateDataSourceFromRDSInput) SetDataSourceId(v string) *CreateDataSourceFromRDSInput {
+	s.DataSourceId = &v
+	return s
+}
+
+// SetDataSourceName sets the DataSourceName field's value.
+func (s *CreateDataSourceFromRDSInput) SetDataSourceName(v string) *CreateDataSourceFromRDSInput {
+	s.DataSourceName = &v
+	return s
+}
+
+// SetRDSData sets the RDSData field's value.
+func (s *CreateDataSourceFromRDSInput) SetRDSData(v *RDSDataSpec) *CreateDataSourceFromRDSInput {
+	s.RDSData = v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *CreateDataSourceFromRDSInput) SetRoleARN(v string) *CreateDataSourceFromRDSInput {
+	s.RoleARN = &v
+	return s
+}
+
 // Represents the output of a CreateDataSourceFromRDS operation, and is an acknowledgement
 // that Amazon ML received the request.
 //
@@ -2672,6 +2808,12 @@ func (s CreateDataSourceFromRDSOutput) String() string {
 // GoString returns the string representation
 func (s CreateDataSourceFromRDSOutput) GoString() string {
 	return s.String()
+}
+
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *CreateDataSourceFromRDSOutput) SetDataSourceId(v string) *CreateDataSourceFromRDSOutput {
+	s.DataSourceId = &v
+	return s
 }
 
 type CreateDataSourceFromRedshiftInput struct {
@@ -2773,6 +2915,36 @@ func (s *CreateDataSourceFromRedshiftInput) Validate() error {
 	return nil
 }
 
+// SetComputeStatistics sets the ComputeStatistics field's value.
+func (s *CreateDataSourceFromRedshiftInput) SetComputeStatistics(v bool) *CreateDataSourceFromRedshiftInput {
+	s.ComputeStatistics = &v
+	return s
+}
+
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *CreateDataSourceFromRedshiftInput) SetDataSourceId(v string) *CreateDataSourceFromRedshiftInput {
+	s.DataSourceId = &v
+	return s
+}
+
+// SetDataSourceName sets the DataSourceName field's value.
+func (s *CreateDataSourceFromRedshiftInput) SetDataSourceName(v string) *CreateDataSourceFromRedshiftInput {
+	s.DataSourceName = &v
+	return s
+}
+
+// SetDataSpec sets the DataSpec field's value.
+func (s *CreateDataSourceFromRedshiftInput) SetDataSpec(v *RedshiftDataSpec) *CreateDataSourceFromRedshiftInput {
+	s.DataSpec = v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *CreateDataSourceFromRedshiftInput) SetRoleARN(v string) *CreateDataSourceFromRedshiftInput {
+	s.RoleARN = &v
+	return s
+}
+
 // Represents the output of a CreateDataSourceFromRedshift operation, and is
 // an acknowledgement that Amazon ML received the request.
 //
@@ -2795,6 +2967,12 @@ func (s CreateDataSourceFromRedshiftOutput) String() string {
 // GoString returns the string representation
 func (s CreateDataSourceFromRedshiftOutput) GoString() string {
 	return s.String()
+}
+
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *CreateDataSourceFromRedshiftOutput) SetDataSourceId(v string) *CreateDataSourceFromRedshiftOutput {
+	s.DataSourceId = &v
+	return s
 }
 
 type CreateDataSourceFromS3Input struct {
@@ -2866,6 +3044,30 @@ func (s *CreateDataSourceFromS3Input) Validate() error {
 	return nil
 }
 
+// SetComputeStatistics sets the ComputeStatistics field's value.
+func (s *CreateDataSourceFromS3Input) SetComputeStatistics(v bool) *CreateDataSourceFromS3Input {
+	s.ComputeStatistics = &v
+	return s
+}
+
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *CreateDataSourceFromS3Input) SetDataSourceId(v string) *CreateDataSourceFromS3Input {
+	s.DataSourceId = &v
+	return s
+}
+
+// SetDataSourceName sets the DataSourceName field's value.
+func (s *CreateDataSourceFromS3Input) SetDataSourceName(v string) *CreateDataSourceFromS3Input {
+	s.DataSourceName = &v
+	return s
+}
+
+// SetDataSpec sets the DataSpec field's value.
+func (s *CreateDataSourceFromS3Input) SetDataSpec(v *S3DataSpec) *CreateDataSourceFromS3Input {
+	s.DataSpec = v
+	return s
+}
+
 // Represents the output of a CreateDataSourceFromS3 operation, and is an acknowledgement
 // that Amazon ML received the request.
 //
@@ -2887,6 +3089,12 @@ func (s CreateDataSourceFromS3Output) String() string {
 // GoString returns the string representation
 func (s CreateDataSourceFromS3Output) GoString() string {
 	return s.String()
+}
+
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *CreateDataSourceFromS3Output) SetDataSourceId(v string) *CreateDataSourceFromS3Output {
+	s.DataSourceId = &v
+	return s
 }
 
 type CreateEvaluationInput struct {
@@ -2953,6 +3161,30 @@ func (s *CreateEvaluationInput) Validate() error {
 	return nil
 }
 
+// SetEvaluationDataSourceId sets the EvaluationDataSourceId field's value.
+func (s *CreateEvaluationInput) SetEvaluationDataSourceId(v string) *CreateEvaluationInput {
+	s.EvaluationDataSourceId = &v
+	return s
+}
+
+// SetEvaluationId sets the EvaluationId field's value.
+func (s *CreateEvaluationInput) SetEvaluationId(v string) *CreateEvaluationInput {
+	s.EvaluationId = &v
+	return s
+}
+
+// SetEvaluationName sets the EvaluationName field's value.
+func (s *CreateEvaluationInput) SetEvaluationName(v string) *CreateEvaluationInput {
+	s.EvaluationName = &v
+	return s
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *CreateEvaluationInput) SetMLModelId(v string) *CreateEvaluationInput {
+	s.MLModelId = &v
+	return s
+}
+
 // Represents the output of a CreateEvaluation operation, and is an acknowledgement
 // that Amazon ML received the request.
 //
@@ -2974,6 +3206,12 @@ func (s CreateEvaluationOutput) String() string {
 // GoString returns the string representation
 func (s CreateEvaluationOutput) GoString() string {
 	return s.String()
+}
+
+// SetEvaluationId sets the EvaluationId field's value.
+func (s *CreateEvaluationOutput) SetEvaluationId(v string) *CreateEvaluationOutput {
+	s.EvaluationId = &v
+	return s
 }
 
 type CreateMLModelInput struct {
@@ -3091,6 +3329,48 @@ func (s *CreateMLModelInput) Validate() error {
 	return nil
 }
 
+// SetMLModelId sets the MLModelId field's value.
+func (s *CreateMLModelInput) SetMLModelId(v string) *CreateMLModelInput {
+	s.MLModelId = &v
+	return s
+}
+
+// SetMLModelName sets the MLModelName field's value.
+func (s *CreateMLModelInput) SetMLModelName(v string) *CreateMLModelInput {
+	s.MLModelName = &v
+	return s
+}
+
+// SetMLModelType sets the MLModelType field's value.
+func (s *CreateMLModelInput) SetMLModelType(v string) *CreateMLModelInput {
+	s.MLModelType = &v
+	return s
+}
+
+// SetParameters sets the Parameters field's value.
+func (s *CreateMLModelInput) SetParameters(v map[string]*string) *CreateMLModelInput {
+	s.Parameters = v
+	return s
+}
+
+// SetRecipe sets the Recipe field's value.
+func (s *CreateMLModelInput) SetRecipe(v string) *CreateMLModelInput {
+	s.Recipe = &v
+	return s
+}
+
+// SetRecipeUri sets the RecipeUri field's value.
+func (s *CreateMLModelInput) SetRecipeUri(v string) *CreateMLModelInput {
+	s.RecipeUri = &v
+	return s
+}
+
+// SetTrainingDataSourceId sets the TrainingDataSourceId field's value.
+func (s *CreateMLModelInput) SetTrainingDataSourceId(v string) *CreateMLModelInput {
+	s.TrainingDataSourceId = &v
+	return s
+}
+
 // Represents the output of a CreateMLModel operation, and is an acknowledgement
 // that Amazon ML received the request.
 //
@@ -3112,6 +3392,12 @@ func (s CreateMLModelOutput) String() string {
 // GoString returns the string representation
 func (s CreateMLModelOutput) GoString() string {
 	return s.String()
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *CreateMLModelOutput) SetMLModelId(v string) *CreateMLModelOutput {
+	s.MLModelId = &v
+	return s
 }
 
 type CreateRealtimeEndpointInput struct {
@@ -3149,6 +3435,12 @@ func (s *CreateRealtimeEndpointInput) Validate() error {
 	return nil
 }
 
+// SetMLModelId sets the MLModelId field's value.
+func (s *CreateRealtimeEndpointInput) SetMLModelId(v string) *CreateRealtimeEndpointInput {
+	s.MLModelId = &v
+	return s
+}
+
 // Represents the output of an CreateRealtimeEndpoint operation.
 //
 // The result contains the MLModelId and the endpoint information for the MLModel.
@@ -3174,6 +3466,18 @@ func (s CreateRealtimeEndpointOutput) String() string {
 // GoString returns the string representation
 func (s CreateRealtimeEndpointOutput) GoString() string {
 	return s.String()
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *CreateRealtimeEndpointOutput) SetMLModelId(v string) *CreateRealtimeEndpointOutput {
+	s.MLModelId = &v
+	return s
+}
+
+// SetRealtimeEndpointInfo sets the RealtimeEndpointInfo field's value.
+func (s *CreateRealtimeEndpointOutput) SetRealtimeEndpointInfo(v *RealtimeEndpointInfo) *CreateRealtimeEndpointOutput {
+	s.RealtimeEndpointInfo = v
+	return s
 }
 
 // Represents the output of the GetDataSource operation.
@@ -3266,6 +3570,114 @@ func (s DataSource) GoString() string {
 	return s.String()
 }
 
+// SetComputeStatistics sets the ComputeStatistics field's value.
+func (s *DataSource) SetComputeStatistics(v bool) *DataSource {
+	s.ComputeStatistics = &v
+	return s
+}
+
+// SetComputeTime sets the ComputeTime field's value.
+func (s *DataSource) SetComputeTime(v int64) *DataSource {
+	s.ComputeTime = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *DataSource) SetCreatedAt(v time.Time) *DataSource {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetCreatedByIamUser sets the CreatedByIamUser field's value.
+func (s *DataSource) SetCreatedByIamUser(v string) *DataSource {
+	s.CreatedByIamUser = &v
+	return s
+}
+
+// SetDataLocationS3 sets the DataLocationS3 field's value.
+func (s *DataSource) SetDataLocationS3(v string) *DataSource {
+	s.DataLocationS3 = &v
+	return s
+}
+
+// SetDataRearrangement sets the DataRearrangement field's value.
+func (s *DataSource) SetDataRearrangement(v string) *DataSource {
+	s.DataRearrangement = &v
+	return s
+}
+
+// SetDataSizeInBytes sets the DataSizeInBytes field's value.
+func (s *DataSource) SetDataSizeInBytes(v int64) *DataSource {
+	s.DataSizeInBytes = &v
+	return s
+}
+
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *DataSource) SetDataSourceId(v string) *DataSource {
+	s.DataSourceId = &v
+	return s
+}
+
+// SetFinishedAt sets the FinishedAt field's value.
+func (s *DataSource) SetFinishedAt(v time.Time) *DataSource {
+	s.FinishedAt = &v
+	return s
+}
+
+// SetLastUpdatedAt sets the LastUpdatedAt field's value.
+func (s *DataSource) SetLastUpdatedAt(v time.Time) *DataSource {
+	s.LastUpdatedAt = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *DataSource) SetMessage(v string) *DataSource {
+	s.Message = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DataSource) SetName(v string) *DataSource {
+	s.Name = &v
+	return s
+}
+
+// SetNumberOfFiles sets the NumberOfFiles field's value.
+func (s *DataSource) SetNumberOfFiles(v int64) *DataSource {
+	s.NumberOfFiles = &v
+	return s
+}
+
+// SetRDSMetadata sets the RDSMetadata field's value.
+func (s *DataSource) SetRDSMetadata(v *RDSMetadata) *DataSource {
+	s.RDSMetadata = v
+	return s
+}
+
+// SetRedshiftMetadata sets the RedshiftMetadata field's value.
+func (s *DataSource) SetRedshiftMetadata(v *RedshiftMetadata) *DataSource {
+	s.RedshiftMetadata = v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *DataSource) SetRoleARN(v string) *DataSource {
+	s.RoleARN = &v
+	return s
+}
+
+// SetStartedAt sets the StartedAt field's value.
+func (s *DataSource) SetStartedAt(v time.Time) *DataSource {
+	s.StartedAt = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *DataSource) SetStatus(v string) *DataSource {
+	s.Status = &v
+	return s
+}
+
 type DeleteBatchPredictionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3301,6 +3713,12 @@ func (s *DeleteBatchPredictionInput) Validate() error {
 	return nil
 }
 
+// SetBatchPredictionId sets the BatchPredictionId field's value.
+func (s *DeleteBatchPredictionInput) SetBatchPredictionId(v string) *DeleteBatchPredictionInput {
+	s.BatchPredictionId = &v
+	return s
+}
+
 // Represents the output of a DeleteBatchPrediction operation.
 //
 // You can use the GetBatchPrediction operation and check the value of the Status
@@ -3321,6 +3739,12 @@ func (s DeleteBatchPredictionOutput) String() string {
 // GoString returns the string representation
 func (s DeleteBatchPredictionOutput) GoString() string {
 	return s.String()
+}
+
+// SetBatchPredictionId sets the BatchPredictionId field's value.
+func (s *DeleteBatchPredictionOutput) SetBatchPredictionId(v string) *DeleteBatchPredictionOutput {
+	s.BatchPredictionId = &v
+	return s
 }
 
 type DeleteDataSourceInput struct {
@@ -3358,6 +3782,12 @@ func (s *DeleteDataSourceInput) Validate() error {
 	return nil
 }
 
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *DeleteDataSourceInput) SetDataSourceId(v string) *DeleteDataSourceInput {
+	s.DataSourceId = &v
+	return s
+}
+
 // Represents the output of a DeleteDataSource operation.
 type DeleteDataSourceOutput struct {
 	_ struct{} `type:"structure"`
@@ -3375,6 +3805,12 @@ func (s DeleteDataSourceOutput) String() string {
 // GoString returns the string representation
 func (s DeleteDataSourceOutput) GoString() string {
 	return s.String()
+}
+
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *DeleteDataSourceOutput) SetDataSourceId(v string) *DeleteDataSourceOutput {
+	s.DataSourceId = &v
+	return s
 }
 
 type DeleteEvaluationInput struct {
@@ -3412,6 +3848,12 @@ func (s *DeleteEvaluationInput) Validate() error {
 	return nil
 }
 
+// SetEvaluationId sets the EvaluationId field's value.
+func (s *DeleteEvaluationInput) SetEvaluationId(v string) *DeleteEvaluationInput {
+	s.EvaluationId = &v
+	return s
+}
+
 // Represents the output of a DeleteEvaluation operation. The output indicates
 // that Amazon Machine Learning (Amazon ML) received the request.
 //
@@ -3433,6 +3875,12 @@ func (s DeleteEvaluationOutput) String() string {
 // GoString returns the string representation
 func (s DeleteEvaluationOutput) GoString() string {
 	return s.String()
+}
+
+// SetEvaluationId sets the EvaluationId field's value.
+func (s *DeleteEvaluationOutput) SetEvaluationId(v string) *DeleteEvaluationOutput {
+	s.EvaluationId = &v
+	return s
 }
 
 type DeleteMLModelInput struct {
@@ -3470,6 +3918,12 @@ func (s *DeleteMLModelInput) Validate() error {
 	return nil
 }
 
+// SetMLModelId sets the MLModelId field's value.
+func (s *DeleteMLModelInput) SetMLModelId(v string) *DeleteMLModelInput {
+	s.MLModelId = &v
+	return s
+}
+
 // Represents the output of a DeleteMLModel operation.
 //
 // You can use the GetMLModel operation and check the value of the Status parameter
@@ -3490,6 +3944,12 @@ func (s DeleteMLModelOutput) String() string {
 // GoString returns the string representation
 func (s DeleteMLModelOutput) GoString() string {
 	return s.String()
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *DeleteMLModelOutput) SetMLModelId(v string) *DeleteMLModelOutput {
+	s.MLModelId = &v
+	return s
 }
 
 type DeleteRealtimeEndpointInput struct {
@@ -3527,6 +3987,12 @@ func (s *DeleteRealtimeEndpointInput) Validate() error {
 	return nil
 }
 
+// SetMLModelId sets the MLModelId field's value.
+func (s *DeleteRealtimeEndpointInput) SetMLModelId(v string) *DeleteRealtimeEndpointInput {
+	s.MLModelId = &v
+	return s
+}
+
 // Represents the output of an DeleteRealtimeEndpoint operation.
 //
 // The result contains the MLModelId and the endpoint information for the MLModel.
@@ -3549,6 +4015,18 @@ func (s DeleteRealtimeEndpointOutput) String() string {
 // GoString returns the string representation
 func (s DeleteRealtimeEndpointOutput) GoString() string {
 	return s.String()
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *DeleteRealtimeEndpointOutput) SetMLModelId(v string) *DeleteRealtimeEndpointOutput {
+	s.MLModelId = &v
+	return s
+}
+
+// SetRealtimeEndpointInfo sets the RealtimeEndpointInfo field's value.
+func (s *DeleteRealtimeEndpointOutput) SetRealtimeEndpointInfo(v *RealtimeEndpointInfo) *DeleteRealtimeEndpointOutput {
+	s.RealtimeEndpointInfo = v
+	return s
 }
 
 type DeleteTagsInput struct {
@@ -3602,6 +4080,24 @@ func (s *DeleteTagsInput) Validate() error {
 	return nil
 }
 
+// SetResourceId sets the ResourceId field's value.
+func (s *DeleteTagsInput) SetResourceId(v string) *DeleteTagsInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *DeleteTagsInput) SetResourceType(v string) *DeleteTagsInput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetTagKeys sets the TagKeys field's value.
+func (s *DeleteTagsInput) SetTagKeys(v []*string) *DeleteTagsInput {
+	s.TagKeys = v
+	return s
+}
+
 // Amazon ML returns the following elements.
 type DeleteTagsOutput struct {
 	_ struct{} `type:"structure"`
@@ -3621,6 +4117,18 @@ func (s DeleteTagsOutput) String() string {
 // GoString returns the string representation
 func (s DeleteTagsOutput) GoString() string {
 	return s.String()
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *DeleteTagsOutput) SetResourceId(v string) *DeleteTagsOutput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *DeleteTagsOutput) SetResourceType(v string) *DeleteTagsOutput {
+	s.ResourceType = &v
+	return s
 }
 
 type DescribeBatchPredictionsInput struct {
@@ -3722,6 +4230,72 @@ func (s *DescribeBatchPredictionsInput) Validate() error {
 	return nil
 }
 
+// SetEQ sets the EQ field's value.
+func (s *DescribeBatchPredictionsInput) SetEQ(v string) *DescribeBatchPredictionsInput {
+	s.EQ = &v
+	return s
+}
+
+// SetFilterVariable sets the FilterVariable field's value.
+func (s *DescribeBatchPredictionsInput) SetFilterVariable(v string) *DescribeBatchPredictionsInput {
+	s.FilterVariable = &v
+	return s
+}
+
+// SetGE sets the GE field's value.
+func (s *DescribeBatchPredictionsInput) SetGE(v string) *DescribeBatchPredictionsInput {
+	s.GE = &v
+	return s
+}
+
+// SetGT sets the GT field's value.
+func (s *DescribeBatchPredictionsInput) SetGT(v string) *DescribeBatchPredictionsInput {
+	s.GT = &v
+	return s
+}
+
+// SetLE sets the LE field's value.
+func (s *DescribeBatchPredictionsInput) SetLE(v string) *DescribeBatchPredictionsInput {
+	s.LE = &v
+	return s
+}
+
+// SetLT sets the LT field's value.
+func (s *DescribeBatchPredictionsInput) SetLT(v string) *DescribeBatchPredictionsInput {
+	s.LT = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeBatchPredictionsInput) SetLimit(v int64) *DescribeBatchPredictionsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNE sets the NE field's value.
+func (s *DescribeBatchPredictionsInput) SetNE(v string) *DescribeBatchPredictionsInput {
+	s.NE = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeBatchPredictionsInput) SetNextToken(v string) *DescribeBatchPredictionsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPrefix sets the Prefix field's value.
+func (s *DescribeBatchPredictionsInput) SetPrefix(v string) *DescribeBatchPredictionsInput {
+	s.Prefix = &v
+	return s
+}
+
+// SetSortOrder sets the SortOrder field's value.
+func (s *DescribeBatchPredictionsInput) SetSortOrder(v string) *DescribeBatchPredictionsInput {
+	s.SortOrder = &v
+	return s
+}
+
 // Represents the output of a DescribeBatchPredictions operation. The content
 // is essentially a list of BatchPredictions.
 type DescribeBatchPredictionsOutput struct {
@@ -3743,6 +4317,18 @@ func (s DescribeBatchPredictionsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeBatchPredictionsOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeBatchPredictionsOutput) SetNextToken(v string) *DescribeBatchPredictionsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResults sets the Results field's value.
+func (s *DescribeBatchPredictionsOutput) SetResults(v []*BatchPrediction) *DescribeBatchPredictionsOutput {
+	s.Results = v
+	return s
 }
 
 type DescribeDataSourcesInput struct {
@@ -3835,6 +4421,72 @@ func (s *DescribeDataSourcesInput) Validate() error {
 	return nil
 }
 
+// SetEQ sets the EQ field's value.
+func (s *DescribeDataSourcesInput) SetEQ(v string) *DescribeDataSourcesInput {
+	s.EQ = &v
+	return s
+}
+
+// SetFilterVariable sets the FilterVariable field's value.
+func (s *DescribeDataSourcesInput) SetFilterVariable(v string) *DescribeDataSourcesInput {
+	s.FilterVariable = &v
+	return s
+}
+
+// SetGE sets the GE field's value.
+func (s *DescribeDataSourcesInput) SetGE(v string) *DescribeDataSourcesInput {
+	s.GE = &v
+	return s
+}
+
+// SetGT sets the GT field's value.
+func (s *DescribeDataSourcesInput) SetGT(v string) *DescribeDataSourcesInput {
+	s.GT = &v
+	return s
+}
+
+// SetLE sets the LE field's value.
+func (s *DescribeDataSourcesInput) SetLE(v string) *DescribeDataSourcesInput {
+	s.LE = &v
+	return s
+}
+
+// SetLT sets the LT field's value.
+func (s *DescribeDataSourcesInput) SetLT(v string) *DescribeDataSourcesInput {
+	s.LT = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeDataSourcesInput) SetLimit(v int64) *DescribeDataSourcesInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNE sets the NE field's value.
+func (s *DescribeDataSourcesInput) SetNE(v string) *DescribeDataSourcesInput {
+	s.NE = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeDataSourcesInput) SetNextToken(v string) *DescribeDataSourcesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPrefix sets the Prefix field's value.
+func (s *DescribeDataSourcesInput) SetPrefix(v string) *DescribeDataSourcesInput {
+	s.Prefix = &v
+	return s
+}
+
+// SetSortOrder sets the SortOrder field's value.
+func (s *DescribeDataSourcesInput) SetSortOrder(v string) *DescribeDataSourcesInput {
+	s.SortOrder = &v
+	return s
+}
+
 // Represents the query results from a DescribeDataSources operation. The content
 // is essentially a list of DataSource.
 type DescribeDataSourcesOutput struct {
@@ -3856,6 +4508,18 @@ func (s DescribeDataSourcesOutput) String() string {
 // GoString returns the string representation
 func (s DescribeDataSourcesOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeDataSourcesOutput) SetNextToken(v string) *DescribeDataSourcesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResults sets the Results field's value.
+func (s *DescribeDataSourcesOutput) SetResults(v []*DataSource) *DescribeDataSourcesOutput {
+	s.Results = v
+	return s
 }
 
 type DescribeEvaluationsInput struct {
@@ -3953,6 +4617,72 @@ func (s *DescribeEvaluationsInput) Validate() error {
 	return nil
 }
 
+// SetEQ sets the EQ field's value.
+func (s *DescribeEvaluationsInput) SetEQ(v string) *DescribeEvaluationsInput {
+	s.EQ = &v
+	return s
+}
+
+// SetFilterVariable sets the FilterVariable field's value.
+func (s *DescribeEvaluationsInput) SetFilterVariable(v string) *DescribeEvaluationsInput {
+	s.FilterVariable = &v
+	return s
+}
+
+// SetGE sets the GE field's value.
+func (s *DescribeEvaluationsInput) SetGE(v string) *DescribeEvaluationsInput {
+	s.GE = &v
+	return s
+}
+
+// SetGT sets the GT field's value.
+func (s *DescribeEvaluationsInput) SetGT(v string) *DescribeEvaluationsInput {
+	s.GT = &v
+	return s
+}
+
+// SetLE sets the LE field's value.
+func (s *DescribeEvaluationsInput) SetLE(v string) *DescribeEvaluationsInput {
+	s.LE = &v
+	return s
+}
+
+// SetLT sets the LT field's value.
+func (s *DescribeEvaluationsInput) SetLT(v string) *DescribeEvaluationsInput {
+	s.LT = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeEvaluationsInput) SetLimit(v int64) *DescribeEvaluationsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNE sets the NE field's value.
+func (s *DescribeEvaluationsInput) SetNE(v string) *DescribeEvaluationsInput {
+	s.NE = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeEvaluationsInput) SetNextToken(v string) *DescribeEvaluationsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPrefix sets the Prefix field's value.
+func (s *DescribeEvaluationsInput) SetPrefix(v string) *DescribeEvaluationsInput {
+	s.Prefix = &v
+	return s
+}
+
+// SetSortOrder sets the SortOrder field's value.
+func (s *DescribeEvaluationsInput) SetSortOrder(v string) *DescribeEvaluationsInput {
+	s.SortOrder = &v
+	return s
+}
+
 // Represents the query results from a DescribeEvaluations operation. The content
 // is essentially a list of Evaluation.
 type DescribeEvaluationsOutput struct {
@@ -3974,6 +4704,18 @@ func (s DescribeEvaluationsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeEvaluationsOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeEvaluationsOutput) SetNextToken(v string) *DescribeEvaluationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResults sets the Results field's value.
+func (s *DescribeEvaluationsOutput) SetResults(v []*Evaluation) *DescribeEvaluationsOutput {
+	s.Results = v
+	return s
 }
 
 type DescribeMLModelsInput struct {
@@ -4075,6 +4817,72 @@ func (s *DescribeMLModelsInput) Validate() error {
 	return nil
 }
 
+// SetEQ sets the EQ field's value.
+func (s *DescribeMLModelsInput) SetEQ(v string) *DescribeMLModelsInput {
+	s.EQ = &v
+	return s
+}
+
+// SetFilterVariable sets the FilterVariable field's value.
+func (s *DescribeMLModelsInput) SetFilterVariable(v string) *DescribeMLModelsInput {
+	s.FilterVariable = &v
+	return s
+}
+
+// SetGE sets the GE field's value.
+func (s *DescribeMLModelsInput) SetGE(v string) *DescribeMLModelsInput {
+	s.GE = &v
+	return s
+}
+
+// SetGT sets the GT field's value.
+func (s *DescribeMLModelsInput) SetGT(v string) *DescribeMLModelsInput {
+	s.GT = &v
+	return s
+}
+
+// SetLE sets the LE field's value.
+func (s *DescribeMLModelsInput) SetLE(v string) *DescribeMLModelsInput {
+	s.LE = &v
+	return s
+}
+
+// SetLT sets the LT field's value.
+func (s *DescribeMLModelsInput) SetLT(v string) *DescribeMLModelsInput {
+	s.LT = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeMLModelsInput) SetLimit(v int64) *DescribeMLModelsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNE sets the NE field's value.
+func (s *DescribeMLModelsInput) SetNE(v string) *DescribeMLModelsInput {
+	s.NE = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeMLModelsInput) SetNextToken(v string) *DescribeMLModelsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPrefix sets the Prefix field's value.
+func (s *DescribeMLModelsInput) SetPrefix(v string) *DescribeMLModelsInput {
+	s.Prefix = &v
+	return s
+}
+
+// SetSortOrder sets the SortOrder field's value.
+func (s *DescribeMLModelsInput) SetSortOrder(v string) *DescribeMLModelsInput {
+	s.SortOrder = &v
+	return s
+}
+
 // Represents the output of a DescribeMLModels operation. The content is essentially
 // a list of MLModel.
 type DescribeMLModelsOutput struct {
@@ -4096,6 +4904,18 @@ func (s DescribeMLModelsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeMLModelsOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeMLModelsOutput) SetNextToken(v string) *DescribeMLModelsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResults sets the Results field's value.
+func (s *DescribeMLModelsOutput) SetResults(v []*MLModel) *DescribeMLModelsOutput {
+	s.Results = v
+	return s
 }
 
 type DescribeTagsInput struct {
@@ -4141,6 +4961,18 @@ func (s *DescribeTagsInput) Validate() error {
 	return nil
 }
 
+// SetResourceId sets the ResourceId field's value.
+func (s *DescribeTagsInput) SetResourceId(v string) *DescribeTagsInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *DescribeTagsInput) SetResourceType(v string) *DescribeTagsInput {
+	s.ResourceType = &v
+	return s
+}
+
 // Amazon ML returns the following elements.
 type DescribeTagsOutput struct {
 	_ struct{} `type:"structure"`
@@ -4163,6 +4995,24 @@ func (s DescribeTagsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeTagsOutput) GoString() string {
 	return s.String()
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *DescribeTagsOutput) SetResourceId(v string) *DescribeTagsOutput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *DescribeTagsOutput) SetResourceType(v string) *DescribeTagsOutput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DescribeTagsOutput) SetTags(v []*Tag) *DescribeTagsOutput {
+	s.Tags = v
+	return s
 }
 
 // Represents the output of GetEvaluation operation.
@@ -4254,6 +5104,90 @@ func (s Evaluation) GoString() string {
 	return s.String()
 }
 
+// SetComputeTime sets the ComputeTime field's value.
+func (s *Evaluation) SetComputeTime(v int64) *Evaluation {
+	s.ComputeTime = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *Evaluation) SetCreatedAt(v time.Time) *Evaluation {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetCreatedByIamUser sets the CreatedByIamUser field's value.
+func (s *Evaluation) SetCreatedByIamUser(v string) *Evaluation {
+	s.CreatedByIamUser = &v
+	return s
+}
+
+// SetEvaluationDataSourceId sets the EvaluationDataSourceId field's value.
+func (s *Evaluation) SetEvaluationDataSourceId(v string) *Evaluation {
+	s.EvaluationDataSourceId = &v
+	return s
+}
+
+// SetEvaluationId sets the EvaluationId field's value.
+func (s *Evaluation) SetEvaluationId(v string) *Evaluation {
+	s.EvaluationId = &v
+	return s
+}
+
+// SetFinishedAt sets the FinishedAt field's value.
+func (s *Evaluation) SetFinishedAt(v time.Time) *Evaluation {
+	s.FinishedAt = &v
+	return s
+}
+
+// SetInputDataLocationS3 sets the InputDataLocationS3 field's value.
+func (s *Evaluation) SetInputDataLocationS3(v string) *Evaluation {
+	s.InputDataLocationS3 = &v
+	return s
+}
+
+// SetLastUpdatedAt sets the LastUpdatedAt field's value.
+func (s *Evaluation) SetLastUpdatedAt(v time.Time) *Evaluation {
+	s.LastUpdatedAt = &v
+	return s
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *Evaluation) SetMLModelId(v string) *Evaluation {
+	s.MLModelId = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *Evaluation) SetMessage(v string) *Evaluation {
+	s.Message = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Evaluation) SetName(v string) *Evaluation {
+	s.Name = &v
+	return s
+}
+
+// SetPerformanceMetrics sets the PerformanceMetrics field's value.
+func (s *Evaluation) SetPerformanceMetrics(v *PerformanceMetrics) *Evaluation {
+	s.PerformanceMetrics = v
+	return s
+}
+
+// SetStartedAt sets the StartedAt field's value.
+func (s *Evaluation) SetStartedAt(v time.Time) *Evaluation {
+	s.StartedAt = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Evaluation) SetStatus(v string) *Evaluation {
+	s.Status = &v
+	return s
+}
+
 type GetBatchPredictionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4287,6 +5221,12 @@ func (s *GetBatchPredictionInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetBatchPredictionId sets the BatchPredictionId field's value.
+func (s *GetBatchPredictionInput) SetBatchPredictionId(v string) *GetBatchPredictionInput {
+	s.BatchPredictionId = &v
+	return s
 }
 
 // Represents the output of a GetBatchPrediction operation and describes a BatchPrediction.
@@ -4381,6 +5321,108 @@ func (s GetBatchPredictionOutput) GoString() string {
 	return s.String()
 }
 
+// SetBatchPredictionDataSourceId sets the BatchPredictionDataSourceId field's value.
+func (s *GetBatchPredictionOutput) SetBatchPredictionDataSourceId(v string) *GetBatchPredictionOutput {
+	s.BatchPredictionDataSourceId = &v
+	return s
+}
+
+// SetBatchPredictionId sets the BatchPredictionId field's value.
+func (s *GetBatchPredictionOutput) SetBatchPredictionId(v string) *GetBatchPredictionOutput {
+	s.BatchPredictionId = &v
+	return s
+}
+
+// SetComputeTime sets the ComputeTime field's value.
+func (s *GetBatchPredictionOutput) SetComputeTime(v int64) *GetBatchPredictionOutput {
+	s.ComputeTime = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *GetBatchPredictionOutput) SetCreatedAt(v time.Time) *GetBatchPredictionOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetCreatedByIamUser sets the CreatedByIamUser field's value.
+func (s *GetBatchPredictionOutput) SetCreatedByIamUser(v string) *GetBatchPredictionOutput {
+	s.CreatedByIamUser = &v
+	return s
+}
+
+// SetFinishedAt sets the FinishedAt field's value.
+func (s *GetBatchPredictionOutput) SetFinishedAt(v time.Time) *GetBatchPredictionOutput {
+	s.FinishedAt = &v
+	return s
+}
+
+// SetInputDataLocationS3 sets the InputDataLocationS3 field's value.
+func (s *GetBatchPredictionOutput) SetInputDataLocationS3(v string) *GetBatchPredictionOutput {
+	s.InputDataLocationS3 = &v
+	return s
+}
+
+// SetInvalidRecordCount sets the InvalidRecordCount field's value.
+func (s *GetBatchPredictionOutput) SetInvalidRecordCount(v int64) *GetBatchPredictionOutput {
+	s.InvalidRecordCount = &v
+	return s
+}
+
+// SetLastUpdatedAt sets the LastUpdatedAt field's value.
+func (s *GetBatchPredictionOutput) SetLastUpdatedAt(v time.Time) *GetBatchPredictionOutput {
+	s.LastUpdatedAt = &v
+	return s
+}
+
+// SetLogUri sets the LogUri field's value.
+func (s *GetBatchPredictionOutput) SetLogUri(v string) *GetBatchPredictionOutput {
+	s.LogUri = &v
+	return s
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *GetBatchPredictionOutput) SetMLModelId(v string) *GetBatchPredictionOutput {
+	s.MLModelId = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *GetBatchPredictionOutput) SetMessage(v string) *GetBatchPredictionOutput {
+	s.Message = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetBatchPredictionOutput) SetName(v string) *GetBatchPredictionOutput {
+	s.Name = &v
+	return s
+}
+
+// SetOutputUri sets the OutputUri field's value.
+func (s *GetBatchPredictionOutput) SetOutputUri(v string) *GetBatchPredictionOutput {
+	s.OutputUri = &v
+	return s
+}
+
+// SetStartedAt sets the StartedAt field's value.
+func (s *GetBatchPredictionOutput) SetStartedAt(v time.Time) *GetBatchPredictionOutput {
+	s.StartedAt = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetBatchPredictionOutput) SetStatus(v string) *GetBatchPredictionOutput {
+	s.Status = &v
+	return s
+}
+
+// SetTotalRecordCount sets the TotalRecordCount field's value.
+func (s *GetBatchPredictionOutput) SetTotalRecordCount(v int64) *GetBatchPredictionOutput {
+	s.TotalRecordCount = &v
+	return s
+}
+
 type GetDataSourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4421,6 +5463,18 @@ func (s *GetDataSourceInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *GetDataSourceInput) SetDataSourceId(v string) *GetDataSourceInput {
+	s.DataSourceId = &v
+	return s
+}
+
+// SetVerbose sets the Verbose field's value.
+func (s *GetDataSourceInput) SetVerbose(v bool) *GetDataSourceInput {
+	s.Verbose = &v
+	return s
 }
 
 // Represents the output of a GetDataSource operation and describes a DataSource.
@@ -4524,6 +5578,126 @@ func (s GetDataSourceOutput) GoString() string {
 	return s.String()
 }
 
+// SetComputeStatistics sets the ComputeStatistics field's value.
+func (s *GetDataSourceOutput) SetComputeStatistics(v bool) *GetDataSourceOutput {
+	s.ComputeStatistics = &v
+	return s
+}
+
+// SetComputeTime sets the ComputeTime field's value.
+func (s *GetDataSourceOutput) SetComputeTime(v int64) *GetDataSourceOutput {
+	s.ComputeTime = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *GetDataSourceOutput) SetCreatedAt(v time.Time) *GetDataSourceOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetCreatedByIamUser sets the CreatedByIamUser field's value.
+func (s *GetDataSourceOutput) SetCreatedByIamUser(v string) *GetDataSourceOutput {
+	s.CreatedByIamUser = &v
+	return s
+}
+
+// SetDataLocationS3 sets the DataLocationS3 field's value.
+func (s *GetDataSourceOutput) SetDataLocationS3(v string) *GetDataSourceOutput {
+	s.DataLocationS3 = &v
+	return s
+}
+
+// SetDataRearrangement sets the DataRearrangement field's value.
+func (s *GetDataSourceOutput) SetDataRearrangement(v string) *GetDataSourceOutput {
+	s.DataRearrangement = &v
+	return s
+}
+
+// SetDataSizeInBytes sets the DataSizeInBytes field's value.
+func (s *GetDataSourceOutput) SetDataSizeInBytes(v int64) *GetDataSourceOutput {
+	s.DataSizeInBytes = &v
+	return s
+}
+
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *GetDataSourceOutput) SetDataSourceId(v string) *GetDataSourceOutput {
+	s.DataSourceId = &v
+	return s
+}
+
+// SetDataSourceSchema sets the DataSourceSchema field's value.
+func (s *GetDataSourceOutput) SetDataSourceSchema(v string) *GetDataSourceOutput {
+	s.DataSourceSchema = &v
+	return s
+}
+
+// SetFinishedAt sets the FinishedAt field's value.
+func (s *GetDataSourceOutput) SetFinishedAt(v time.Time) *GetDataSourceOutput {
+	s.FinishedAt = &v
+	return s
+}
+
+// SetLastUpdatedAt sets the LastUpdatedAt field's value.
+func (s *GetDataSourceOutput) SetLastUpdatedAt(v time.Time) *GetDataSourceOutput {
+	s.LastUpdatedAt = &v
+	return s
+}
+
+// SetLogUri sets the LogUri field's value.
+func (s *GetDataSourceOutput) SetLogUri(v string) *GetDataSourceOutput {
+	s.LogUri = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *GetDataSourceOutput) SetMessage(v string) *GetDataSourceOutput {
+	s.Message = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetDataSourceOutput) SetName(v string) *GetDataSourceOutput {
+	s.Name = &v
+	return s
+}
+
+// SetNumberOfFiles sets the NumberOfFiles field's value.
+func (s *GetDataSourceOutput) SetNumberOfFiles(v int64) *GetDataSourceOutput {
+	s.NumberOfFiles = &v
+	return s
+}
+
+// SetRDSMetadata sets the RDSMetadata field's value.
+func (s *GetDataSourceOutput) SetRDSMetadata(v *RDSMetadata) *GetDataSourceOutput {
+	s.RDSMetadata = v
+	return s
+}
+
+// SetRedshiftMetadata sets the RedshiftMetadata field's value.
+func (s *GetDataSourceOutput) SetRedshiftMetadata(v *RedshiftMetadata) *GetDataSourceOutput {
+	s.RedshiftMetadata = v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *GetDataSourceOutput) SetRoleARN(v string) *GetDataSourceOutput {
+	s.RoleARN = &v
+	return s
+}
+
+// SetStartedAt sets the StartedAt field's value.
+func (s *GetDataSourceOutput) SetStartedAt(v time.Time) *GetDataSourceOutput {
+	s.StartedAt = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetDataSourceOutput) SetStatus(v string) *GetDataSourceOutput {
+	s.Status = &v
+	return s
+}
+
 type GetEvaluationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4558,6 +5732,12 @@ func (s *GetEvaluationInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetEvaluationId sets the EvaluationId field's value.
+func (s *GetEvaluationInput) SetEvaluationId(v string) *GetEvaluationInput {
+	s.EvaluationId = &v
+	return s
 }
 
 // Represents the output of a GetEvaluation operation and describes an Evaluation.
@@ -4654,6 +5834,96 @@ func (s GetEvaluationOutput) GoString() string {
 	return s.String()
 }
 
+// SetComputeTime sets the ComputeTime field's value.
+func (s *GetEvaluationOutput) SetComputeTime(v int64) *GetEvaluationOutput {
+	s.ComputeTime = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *GetEvaluationOutput) SetCreatedAt(v time.Time) *GetEvaluationOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetCreatedByIamUser sets the CreatedByIamUser field's value.
+func (s *GetEvaluationOutput) SetCreatedByIamUser(v string) *GetEvaluationOutput {
+	s.CreatedByIamUser = &v
+	return s
+}
+
+// SetEvaluationDataSourceId sets the EvaluationDataSourceId field's value.
+func (s *GetEvaluationOutput) SetEvaluationDataSourceId(v string) *GetEvaluationOutput {
+	s.EvaluationDataSourceId = &v
+	return s
+}
+
+// SetEvaluationId sets the EvaluationId field's value.
+func (s *GetEvaluationOutput) SetEvaluationId(v string) *GetEvaluationOutput {
+	s.EvaluationId = &v
+	return s
+}
+
+// SetFinishedAt sets the FinishedAt field's value.
+func (s *GetEvaluationOutput) SetFinishedAt(v time.Time) *GetEvaluationOutput {
+	s.FinishedAt = &v
+	return s
+}
+
+// SetInputDataLocationS3 sets the InputDataLocationS3 field's value.
+func (s *GetEvaluationOutput) SetInputDataLocationS3(v string) *GetEvaluationOutput {
+	s.InputDataLocationS3 = &v
+	return s
+}
+
+// SetLastUpdatedAt sets the LastUpdatedAt field's value.
+func (s *GetEvaluationOutput) SetLastUpdatedAt(v time.Time) *GetEvaluationOutput {
+	s.LastUpdatedAt = &v
+	return s
+}
+
+// SetLogUri sets the LogUri field's value.
+func (s *GetEvaluationOutput) SetLogUri(v string) *GetEvaluationOutput {
+	s.LogUri = &v
+	return s
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *GetEvaluationOutput) SetMLModelId(v string) *GetEvaluationOutput {
+	s.MLModelId = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *GetEvaluationOutput) SetMessage(v string) *GetEvaluationOutput {
+	s.Message = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetEvaluationOutput) SetName(v string) *GetEvaluationOutput {
+	s.Name = &v
+	return s
+}
+
+// SetPerformanceMetrics sets the PerformanceMetrics field's value.
+func (s *GetEvaluationOutput) SetPerformanceMetrics(v *PerformanceMetrics) *GetEvaluationOutput {
+	s.PerformanceMetrics = v
+	return s
+}
+
+// SetStartedAt sets the StartedAt field's value.
+func (s *GetEvaluationOutput) SetStartedAt(v time.Time) *GetEvaluationOutput {
+	s.StartedAt = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetEvaluationOutput) SetStatus(v string) *GetEvaluationOutput {
+	s.Status = &v
+	return s
+}
+
 type GetMLModelInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4694,6 +5964,18 @@ func (s *GetMLModelInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *GetMLModelInput) SetMLModelId(v string) *GetMLModelInput {
+	s.MLModelId = &v
+	return s
+}
+
+// SetVerbose sets the Verbose field's value.
+func (s *GetMLModelInput) SetVerbose(v bool) *GetMLModelInput {
+	s.Verbose = &v
+	return s
 }
 
 // Represents the output of a GetMLModel operation, and provides detailed information
@@ -4849,6 +6131,132 @@ func (s GetMLModelOutput) GoString() string {
 	return s.String()
 }
 
+// SetComputeTime sets the ComputeTime field's value.
+func (s *GetMLModelOutput) SetComputeTime(v int64) *GetMLModelOutput {
+	s.ComputeTime = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *GetMLModelOutput) SetCreatedAt(v time.Time) *GetMLModelOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetCreatedByIamUser sets the CreatedByIamUser field's value.
+func (s *GetMLModelOutput) SetCreatedByIamUser(v string) *GetMLModelOutput {
+	s.CreatedByIamUser = &v
+	return s
+}
+
+// SetEndpointInfo sets the EndpointInfo field's value.
+func (s *GetMLModelOutput) SetEndpointInfo(v *RealtimeEndpointInfo) *GetMLModelOutput {
+	s.EndpointInfo = v
+	return s
+}
+
+// SetFinishedAt sets the FinishedAt field's value.
+func (s *GetMLModelOutput) SetFinishedAt(v time.Time) *GetMLModelOutput {
+	s.FinishedAt = &v
+	return s
+}
+
+// SetInputDataLocationS3 sets the InputDataLocationS3 field's value.
+func (s *GetMLModelOutput) SetInputDataLocationS3(v string) *GetMLModelOutput {
+	s.InputDataLocationS3 = &v
+	return s
+}
+
+// SetLastUpdatedAt sets the LastUpdatedAt field's value.
+func (s *GetMLModelOutput) SetLastUpdatedAt(v time.Time) *GetMLModelOutput {
+	s.LastUpdatedAt = &v
+	return s
+}
+
+// SetLogUri sets the LogUri field's value.
+func (s *GetMLModelOutput) SetLogUri(v string) *GetMLModelOutput {
+	s.LogUri = &v
+	return s
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *GetMLModelOutput) SetMLModelId(v string) *GetMLModelOutput {
+	s.MLModelId = &v
+	return s
+}
+
+// SetMLModelType sets the MLModelType field's value.
+func (s *GetMLModelOutput) SetMLModelType(v string) *GetMLModelOutput {
+	s.MLModelType = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *GetMLModelOutput) SetMessage(v string) *GetMLModelOutput {
+	s.Message = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetMLModelOutput) SetName(v string) *GetMLModelOutput {
+	s.Name = &v
+	return s
+}
+
+// SetRecipe sets the Recipe field's value.
+func (s *GetMLModelOutput) SetRecipe(v string) *GetMLModelOutput {
+	s.Recipe = &v
+	return s
+}
+
+// SetSchema sets the Schema field's value.
+func (s *GetMLModelOutput) SetSchema(v string) *GetMLModelOutput {
+	s.Schema = &v
+	return s
+}
+
+// SetScoreThreshold sets the ScoreThreshold field's value.
+func (s *GetMLModelOutput) SetScoreThreshold(v float64) *GetMLModelOutput {
+	s.ScoreThreshold = &v
+	return s
+}
+
+// SetScoreThresholdLastUpdatedAt sets the ScoreThresholdLastUpdatedAt field's value.
+func (s *GetMLModelOutput) SetScoreThresholdLastUpdatedAt(v time.Time) *GetMLModelOutput {
+	s.ScoreThresholdLastUpdatedAt = &v
+	return s
+}
+
+// SetSizeInBytes sets the SizeInBytes field's value.
+func (s *GetMLModelOutput) SetSizeInBytes(v int64) *GetMLModelOutput {
+	s.SizeInBytes = &v
+	return s
+}
+
+// SetStartedAt sets the StartedAt field's value.
+func (s *GetMLModelOutput) SetStartedAt(v time.Time) *GetMLModelOutput {
+	s.StartedAt = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetMLModelOutput) SetStatus(v string) *GetMLModelOutput {
+	s.Status = &v
+	return s
+}
+
+// SetTrainingDataSourceId sets the TrainingDataSourceId field's value.
+func (s *GetMLModelOutput) SetTrainingDataSourceId(v string) *GetMLModelOutput {
+	s.TrainingDataSourceId = &v
+	return s
+}
+
+// SetTrainingParameters sets the TrainingParameters field's value.
+func (s *GetMLModelOutput) SetTrainingParameters(v map[string]*string) *GetMLModelOutput {
+	s.TrainingParameters = v
+	return s
+}
+
 // Represents the output of a GetMLModel operation.
 //
 // The content consists of the detailed metadata and the current status of the
@@ -4984,6 +6392,120 @@ func (s MLModel) GoString() string {
 	return s.String()
 }
 
+// SetAlgorithm sets the Algorithm field's value.
+func (s *MLModel) SetAlgorithm(v string) *MLModel {
+	s.Algorithm = &v
+	return s
+}
+
+// SetComputeTime sets the ComputeTime field's value.
+func (s *MLModel) SetComputeTime(v int64) *MLModel {
+	s.ComputeTime = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *MLModel) SetCreatedAt(v time.Time) *MLModel {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetCreatedByIamUser sets the CreatedByIamUser field's value.
+func (s *MLModel) SetCreatedByIamUser(v string) *MLModel {
+	s.CreatedByIamUser = &v
+	return s
+}
+
+// SetEndpointInfo sets the EndpointInfo field's value.
+func (s *MLModel) SetEndpointInfo(v *RealtimeEndpointInfo) *MLModel {
+	s.EndpointInfo = v
+	return s
+}
+
+// SetFinishedAt sets the FinishedAt field's value.
+func (s *MLModel) SetFinishedAt(v time.Time) *MLModel {
+	s.FinishedAt = &v
+	return s
+}
+
+// SetInputDataLocationS3 sets the InputDataLocationS3 field's value.
+func (s *MLModel) SetInputDataLocationS3(v string) *MLModel {
+	s.InputDataLocationS3 = &v
+	return s
+}
+
+// SetLastUpdatedAt sets the LastUpdatedAt field's value.
+func (s *MLModel) SetLastUpdatedAt(v time.Time) *MLModel {
+	s.LastUpdatedAt = &v
+	return s
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *MLModel) SetMLModelId(v string) *MLModel {
+	s.MLModelId = &v
+	return s
+}
+
+// SetMLModelType sets the MLModelType field's value.
+func (s *MLModel) SetMLModelType(v string) *MLModel {
+	s.MLModelType = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *MLModel) SetMessage(v string) *MLModel {
+	s.Message = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *MLModel) SetName(v string) *MLModel {
+	s.Name = &v
+	return s
+}
+
+// SetScoreThreshold sets the ScoreThreshold field's value.
+func (s *MLModel) SetScoreThreshold(v float64) *MLModel {
+	s.ScoreThreshold = &v
+	return s
+}
+
+// SetScoreThresholdLastUpdatedAt sets the ScoreThresholdLastUpdatedAt field's value.
+func (s *MLModel) SetScoreThresholdLastUpdatedAt(v time.Time) *MLModel {
+	s.ScoreThresholdLastUpdatedAt = &v
+	return s
+}
+
+// SetSizeInBytes sets the SizeInBytes field's value.
+func (s *MLModel) SetSizeInBytes(v int64) *MLModel {
+	s.SizeInBytes = &v
+	return s
+}
+
+// SetStartedAt sets the StartedAt field's value.
+func (s *MLModel) SetStartedAt(v time.Time) *MLModel {
+	s.StartedAt = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *MLModel) SetStatus(v string) *MLModel {
+	s.Status = &v
+	return s
+}
+
+// SetTrainingDataSourceId sets the TrainingDataSourceId field's value.
+func (s *MLModel) SetTrainingDataSourceId(v string) *MLModel {
+	s.TrainingDataSourceId = &v
+	return s
+}
+
+// SetTrainingParameters sets the TrainingParameters field's value.
+func (s *MLModel) SetTrainingParameters(v map[string]*string) *MLModel {
+	s.TrainingParameters = v
+	return s
+}
+
 // Measurements of how well the MLModel performed on known observations. One
 // of the following metrics is returned, based on the type of the MLModel:
 //
@@ -5013,6 +6535,12 @@ func (s PerformanceMetrics) String() string {
 // GoString returns the string representation
 func (s PerformanceMetrics) GoString() string {
 	return s.String()
+}
+
+// SetProperties sets the Properties field's value.
+func (s *PerformanceMetrics) SetProperties(v map[string]*string) *PerformanceMetrics {
+	s.Properties = v
+	return s
 }
 
 type PredictInput struct {
@@ -5064,6 +6592,24 @@ func (s *PredictInput) Validate() error {
 	return nil
 }
 
+// SetMLModelId sets the MLModelId field's value.
+func (s *PredictInput) SetMLModelId(v string) *PredictInput {
+	s.MLModelId = &v
+	return s
+}
+
+// SetPredictEndpoint sets the PredictEndpoint field's value.
+func (s *PredictInput) SetPredictEndpoint(v string) *PredictInput {
+	s.PredictEndpoint = &v
+	return s
+}
+
+// SetRecord sets the Record field's value.
+func (s *PredictInput) SetRecord(v map[string]*string) *PredictInput {
+	s.Record = v
+	return s
+}
+
 type PredictOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5090,6 +6636,12 @@ func (s PredictOutput) String() string {
 // GoString returns the string representation
 func (s PredictOutput) GoString() string {
 	return s.String()
+}
+
+// SetPrediction sets the Prediction field's value.
+func (s *PredictOutput) SetPrediction(v *Prediction) *PredictOutput {
+	s.Prediction = v
+	return s
 }
 
 // The output from a Predict operation:
@@ -5128,6 +6680,30 @@ func (s Prediction) String() string {
 // GoString returns the string representation
 func (s Prediction) GoString() string {
 	return s.String()
+}
+
+// SetDetails sets the Details field's value.
+func (s *Prediction) SetDetails(v map[string]*string) *Prediction {
+	s.Details = v
+	return s
+}
+
+// SetPredictedLabel sets the PredictedLabel field's value.
+func (s *Prediction) SetPredictedLabel(v string) *Prediction {
+	s.PredictedLabel = &v
+	return s
+}
+
+// SetPredictedScores sets the PredictedScores field's value.
+func (s *Prediction) SetPredictedScores(v map[string]*float64) *Prediction {
+	s.PredictedScores = v
+	return s
+}
+
+// SetPredictedValue sets the PredictedValue field's value.
+func (s *Prediction) SetPredictedValue(v float64) *Prediction {
+	s.PredictedValue = &v
+	return s
 }
 
 // The data specification of an Amazon Relational Database Service (Amazon RDS)
@@ -5373,6 +6949,72 @@ func (s *RDSDataSpec) Validate() error {
 	return nil
 }
 
+// SetDataRearrangement sets the DataRearrangement field's value.
+func (s *RDSDataSpec) SetDataRearrangement(v string) *RDSDataSpec {
+	s.DataRearrangement = &v
+	return s
+}
+
+// SetDataSchema sets the DataSchema field's value.
+func (s *RDSDataSpec) SetDataSchema(v string) *RDSDataSpec {
+	s.DataSchema = &v
+	return s
+}
+
+// SetDataSchemaUri sets the DataSchemaUri field's value.
+func (s *RDSDataSpec) SetDataSchemaUri(v string) *RDSDataSpec {
+	s.DataSchemaUri = &v
+	return s
+}
+
+// SetDatabaseCredentials sets the DatabaseCredentials field's value.
+func (s *RDSDataSpec) SetDatabaseCredentials(v *RDSDatabaseCredentials) *RDSDataSpec {
+	s.DatabaseCredentials = v
+	return s
+}
+
+// SetDatabaseInformation sets the DatabaseInformation field's value.
+func (s *RDSDataSpec) SetDatabaseInformation(v *RDSDatabase) *RDSDataSpec {
+	s.DatabaseInformation = v
+	return s
+}
+
+// SetResourceRole sets the ResourceRole field's value.
+func (s *RDSDataSpec) SetResourceRole(v string) *RDSDataSpec {
+	s.ResourceRole = &v
+	return s
+}
+
+// SetS3StagingLocation sets the S3StagingLocation field's value.
+func (s *RDSDataSpec) SetS3StagingLocation(v string) *RDSDataSpec {
+	s.S3StagingLocation = &v
+	return s
+}
+
+// SetSecurityGroupIds sets the SecurityGroupIds field's value.
+func (s *RDSDataSpec) SetSecurityGroupIds(v []*string) *RDSDataSpec {
+	s.SecurityGroupIds = v
+	return s
+}
+
+// SetSelectSqlQuery sets the SelectSqlQuery field's value.
+func (s *RDSDataSpec) SetSelectSqlQuery(v string) *RDSDataSpec {
+	s.SelectSqlQuery = &v
+	return s
+}
+
+// SetServiceRole sets the ServiceRole field's value.
+func (s *RDSDataSpec) SetServiceRole(v string) *RDSDataSpec {
+	s.ServiceRole = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *RDSDataSpec) SetSubnetId(v string) *RDSDataSpec {
+	s.SubnetId = &v
+	return s
+}
+
 // The database details of an Amazon RDS database.
 type RDSDatabase struct {
 	_ struct{} `type:"structure"`
@@ -5418,6 +7060,18 @@ func (s *RDSDatabase) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDatabaseName sets the DatabaseName field's value.
+func (s *RDSDatabase) SetDatabaseName(v string) *RDSDatabase {
+	s.DatabaseName = &v
+	return s
+}
+
+// SetInstanceIdentifier sets the InstanceIdentifier field's value.
+func (s *RDSDatabase) SetInstanceIdentifier(v string) *RDSDatabase {
+	s.InstanceIdentifier = &v
+	return s
 }
 
 // The database credentials to connect to a database on an RDS DB instance.
@@ -5471,6 +7125,18 @@ func (s *RDSDatabaseCredentials) Validate() error {
 	return nil
 }
 
+// SetPassword sets the Password field's value.
+func (s *RDSDatabaseCredentials) SetPassword(v string) *RDSDatabaseCredentials {
+	s.Password = &v
+	return s
+}
+
+// SetUsername sets the Username field's value.
+func (s *RDSDatabaseCredentials) SetUsername(v string) *RDSDatabaseCredentials {
+	s.Username = &v
+	return s
+}
+
 // The datasource details that are specific to Amazon RDS.
 type RDSMetadata struct {
 	_ struct{} `type:"structure"`
@@ -5515,6 +7181,42 @@ func (s RDSMetadata) GoString() string {
 	return s.String()
 }
 
+// SetDataPipelineId sets the DataPipelineId field's value.
+func (s *RDSMetadata) SetDataPipelineId(v string) *RDSMetadata {
+	s.DataPipelineId = &v
+	return s
+}
+
+// SetDatabase sets the Database field's value.
+func (s *RDSMetadata) SetDatabase(v *RDSDatabase) *RDSMetadata {
+	s.Database = v
+	return s
+}
+
+// SetDatabaseUserName sets the DatabaseUserName field's value.
+func (s *RDSMetadata) SetDatabaseUserName(v string) *RDSMetadata {
+	s.DatabaseUserName = &v
+	return s
+}
+
+// SetResourceRole sets the ResourceRole field's value.
+func (s *RDSMetadata) SetResourceRole(v string) *RDSMetadata {
+	s.ResourceRole = &v
+	return s
+}
+
+// SetSelectSqlQuery sets the SelectSqlQuery field's value.
+func (s *RDSMetadata) SetSelectSqlQuery(v string) *RDSMetadata {
+	s.SelectSqlQuery = &v
+	return s
+}
+
+// SetServiceRole sets the ServiceRole field's value.
+func (s *RDSMetadata) SetServiceRole(v string) *RDSMetadata {
+	s.ServiceRole = &v
+	return s
+}
+
 // Describes the real-time endpoint information for an MLModel.
 type RealtimeEndpointInfo struct {
 	_ struct{} `type:"structure"`
@@ -5551,6 +7253,30 @@ func (s RealtimeEndpointInfo) String() string {
 // GoString returns the string representation
 func (s RealtimeEndpointInfo) GoString() string {
 	return s.String()
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *RealtimeEndpointInfo) SetCreatedAt(v time.Time) *RealtimeEndpointInfo {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetEndpointStatus sets the EndpointStatus field's value.
+func (s *RealtimeEndpointInfo) SetEndpointStatus(v string) *RealtimeEndpointInfo {
+	s.EndpointStatus = &v
+	return s
+}
+
+// SetEndpointUrl sets the EndpointUrl field's value.
+func (s *RealtimeEndpointInfo) SetEndpointUrl(v string) *RealtimeEndpointInfo {
+	s.EndpointUrl = &v
+	return s
+}
+
+// SetPeakRequestsPerSecond sets the PeakRequestsPerSecond field's value.
+func (s *RealtimeEndpointInfo) SetPeakRequestsPerSecond(v int64) *RealtimeEndpointInfo {
+	s.PeakRequestsPerSecond = &v
+	return s
 }
 
 // Describes the data specification of an Amazon Redshift DataSource.
@@ -5744,6 +7470,48 @@ func (s *RedshiftDataSpec) Validate() error {
 	return nil
 }
 
+// SetDataRearrangement sets the DataRearrangement field's value.
+func (s *RedshiftDataSpec) SetDataRearrangement(v string) *RedshiftDataSpec {
+	s.DataRearrangement = &v
+	return s
+}
+
+// SetDataSchema sets the DataSchema field's value.
+func (s *RedshiftDataSpec) SetDataSchema(v string) *RedshiftDataSpec {
+	s.DataSchema = &v
+	return s
+}
+
+// SetDataSchemaUri sets the DataSchemaUri field's value.
+func (s *RedshiftDataSpec) SetDataSchemaUri(v string) *RedshiftDataSpec {
+	s.DataSchemaUri = &v
+	return s
+}
+
+// SetDatabaseCredentials sets the DatabaseCredentials field's value.
+func (s *RedshiftDataSpec) SetDatabaseCredentials(v *RedshiftDatabaseCredentials) *RedshiftDataSpec {
+	s.DatabaseCredentials = v
+	return s
+}
+
+// SetDatabaseInformation sets the DatabaseInformation field's value.
+func (s *RedshiftDataSpec) SetDatabaseInformation(v *RedshiftDatabase) *RedshiftDataSpec {
+	s.DatabaseInformation = v
+	return s
+}
+
+// SetS3StagingLocation sets the S3StagingLocation field's value.
+func (s *RedshiftDataSpec) SetS3StagingLocation(v string) *RedshiftDataSpec {
+	s.S3StagingLocation = &v
+	return s
+}
+
+// SetSelectSqlQuery sets the SelectSqlQuery field's value.
+func (s *RedshiftDataSpec) SetSelectSqlQuery(v string) *RedshiftDataSpec {
+	s.SelectSqlQuery = &v
+	return s
+}
+
 // Describes the database details required to connect to an Amazon Redshift
 // database.
 type RedshiftDatabase struct {
@@ -5790,6 +7558,18 @@ func (s *RedshiftDatabase) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetClusterIdentifier sets the ClusterIdentifier field's value.
+func (s *RedshiftDatabase) SetClusterIdentifier(v string) *RedshiftDatabase {
+	s.ClusterIdentifier = &v
+	return s
+}
+
+// SetDatabaseName sets the DatabaseName field's value.
+func (s *RedshiftDatabase) SetDatabaseName(v string) *RedshiftDatabase {
+	s.DatabaseName = &v
+	return s
 }
 
 // Describes the database credentials for connecting to a database on an Amazon
@@ -5846,6 +7626,18 @@ func (s *RedshiftDatabaseCredentials) Validate() error {
 	return nil
 }
 
+// SetPassword sets the Password field's value.
+func (s *RedshiftDatabaseCredentials) SetPassword(v string) *RedshiftDatabaseCredentials {
+	s.Password = &v
+	return s
+}
+
+// SetUsername sets the Username field's value.
+func (s *RedshiftDatabaseCredentials) SetUsername(v string) *RedshiftDatabaseCredentials {
+	s.Username = &v
+	return s
+}
+
 // Describes the DataSource details specific to Amazon Redshift.
 type RedshiftMetadata struct {
 	_ struct{} `type:"structure"`
@@ -5873,6 +7665,24 @@ func (s RedshiftMetadata) String() string {
 // GoString returns the string representation
 func (s RedshiftMetadata) GoString() string {
 	return s.String()
+}
+
+// SetDatabaseUserName sets the DatabaseUserName field's value.
+func (s *RedshiftMetadata) SetDatabaseUserName(v string) *RedshiftMetadata {
+	s.DatabaseUserName = &v
+	return s
+}
+
+// SetRedshiftDatabase sets the RedshiftDatabase field's value.
+func (s *RedshiftMetadata) SetRedshiftDatabase(v *RedshiftDatabase) *RedshiftMetadata {
+	s.RedshiftDatabase = v
+	return s
+}
+
+// SetSelectSqlQuery sets the SelectSqlQuery field's value.
+func (s *RedshiftMetadata) SetSelectSqlQuery(v string) *RedshiftMetadata {
+	s.SelectSqlQuery = &v
+	return s
 }
 
 // Describes the data specification of a DataSource.
@@ -6029,6 +7839,30 @@ func (s *S3DataSpec) Validate() error {
 	return nil
 }
 
+// SetDataLocationS3 sets the DataLocationS3 field's value.
+func (s *S3DataSpec) SetDataLocationS3(v string) *S3DataSpec {
+	s.DataLocationS3 = &v
+	return s
+}
+
+// SetDataRearrangement sets the DataRearrangement field's value.
+func (s *S3DataSpec) SetDataRearrangement(v string) *S3DataSpec {
+	s.DataRearrangement = &v
+	return s
+}
+
+// SetDataSchema sets the DataSchema field's value.
+func (s *S3DataSpec) SetDataSchema(v string) *S3DataSpec {
+	s.DataSchema = &v
+	return s
+}
+
+// SetDataSchemaLocationS3 sets the DataSchemaLocationS3 field's value.
+func (s *S3DataSpec) SetDataSchemaLocationS3(v string) *S3DataSpec {
+	s.DataSchemaLocationS3 = &v
+	return s
+}
+
 // A custom key-value pair associated with an ML object, such as an ML model.
 type Tag struct {
 	_ struct{} `type:"structure"`
@@ -6063,6 +7897,18 @@ func (s *Tag) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
 }
 
 type UpdateBatchPredictionInput struct {
@@ -6108,6 +7954,18 @@ func (s *UpdateBatchPredictionInput) Validate() error {
 	return nil
 }
 
+// SetBatchPredictionId sets the BatchPredictionId field's value.
+func (s *UpdateBatchPredictionInput) SetBatchPredictionId(v string) *UpdateBatchPredictionInput {
+	s.BatchPredictionId = &v
+	return s
+}
+
+// SetBatchPredictionName sets the BatchPredictionName field's value.
+func (s *UpdateBatchPredictionInput) SetBatchPredictionName(v string) *UpdateBatchPredictionInput {
+	s.BatchPredictionName = &v
+	return s
+}
+
 // Represents the output of an UpdateBatchPrediction operation.
 //
 // You can see the updated content by using the GetBatchPrediction operation.
@@ -6127,6 +7985,12 @@ func (s UpdateBatchPredictionOutput) String() string {
 // GoString returns the string representation
 func (s UpdateBatchPredictionOutput) GoString() string {
 	return s.String()
+}
+
+// SetBatchPredictionId sets the BatchPredictionId field's value.
+func (s *UpdateBatchPredictionOutput) SetBatchPredictionId(v string) *UpdateBatchPredictionOutput {
+	s.BatchPredictionId = &v
+	return s
 }
 
 type UpdateDataSourceInput struct {
@@ -6173,6 +8037,18 @@ func (s *UpdateDataSourceInput) Validate() error {
 	return nil
 }
 
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *UpdateDataSourceInput) SetDataSourceId(v string) *UpdateDataSourceInput {
+	s.DataSourceId = &v
+	return s
+}
+
+// SetDataSourceName sets the DataSourceName field's value.
+func (s *UpdateDataSourceInput) SetDataSourceName(v string) *UpdateDataSourceInput {
+	s.DataSourceName = &v
+	return s
+}
+
 // Represents the output of an UpdateDataSource operation.
 //
 // You can see the updated content by using the GetBatchPrediction operation.
@@ -6192,6 +8068,12 @@ func (s UpdateDataSourceOutput) String() string {
 // GoString returns the string representation
 func (s UpdateDataSourceOutput) GoString() string {
 	return s.String()
+}
+
+// SetDataSourceId sets the DataSourceId field's value.
+func (s *UpdateDataSourceOutput) SetDataSourceId(v string) *UpdateDataSourceOutput {
+	s.DataSourceId = &v
+	return s
 }
 
 type UpdateEvaluationInput struct {
@@ -6238,6 +8120,18 @@ func (s *UpdateEvaluationInput) Validate() error {
 	return nil
 }
 
+// SetEvaluationId sets the EvaluationId field's value.
+func (s *UpdateEvaluationInput) SetEvaluationId(v string) *UpdateEvaluationInput {
+	s.EvaluationId = &v
+	return s
+}
+
+// SetEvaluationName sets the EvaluationName field's value.
+func (s *UpdateEvaluationInput) SetEvaluationName(v string) *UpdateEvaluationInput {
+	s.EvaluationName = &v
+	return s
+}
+
 // Represents the output of an UpdateEvaluation operation.
 //
 // You can see the updated content by using the GetEvaluation operation.
@@ -6257,6 +8151,12 @@ func (s UpdateEvaluationOutput) String() string {
 // GoString returns the string representation
 func (s UpdateEvaluationOutput) GoString() string {
 	return s.String()
+}
+
+// SetEvaluationId sets the EvaluationId field's value.
+func (s *UpdateEvaluationOutput) SetEvaluationId(v string) *UpdateEvaluationOutput {
+	s.EvaluationId = &v
+	return s
 }
 
 type UpdateMLModelInput struct {
@@ -6305,6 +8205,24 @@ func (s *UpdateMLModelInput) Validate() error {
 	return nil
 }
 
+// SetMLModelId sets the MLModelId field's value.
+func (s *UpdateMLModelInput) SetMLModelId(v string) *UpdateMLModelInput {
+	s.MLModelId = &v
+	return s
+}
+
+// SetMLModelName sets the MLModelName field's value.
+func (s *UpdateMLModelInput) SetMLModelName(v string) *UpdateMLModelInput {
+	s.MLModelName = &v
+	return s
+}
+
+// SetScoreThreshold sets the ScoreThreshold field's value.
+func (s *UpdateMLModelInput) SetScoreThreshold(v float64) *UpdateMLModelInput {
+	s.ScoreThreshold = &v
+	return s
+}
+
 // Represents the output of an UpdateMLModel operation.
 //
 // You can see the updated content by using the GetMLModel operation.
@@ -6324,6 +8242,12 @@ func (s UpdateMLModelOutput) String() string {
 // GoString returns the string representation
 func (s UpdateMLModelOutput) GoString() string {
 	return s.String()
+}
+
+// SetMLModelId sets the MLModelId field's value.
+func (s *UpdateMLModelOutput) SetMLModelId(v string) *UpdateMLModelOutput {
+	s.MLModelId = &v
+	return s
 }
 
 // The function used to train an MLModel. Training choices supported by Amazon
