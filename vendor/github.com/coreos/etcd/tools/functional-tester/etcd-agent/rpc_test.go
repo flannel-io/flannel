@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	defaultAgent, err := newAgent(etcdPath, "etcd.log")
+	defaultAgent, err := newAgent(AgentConfig{EtcdPath: etcdPath, LogDir: "etcd.log"})
 	if err != nil {
 		log.Panic(err)
 	}

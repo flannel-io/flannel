@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/codegangsta/cli"
 	"github.com/coreos/etcd/client"
+	"github.com/urfave/cli"
 )
 
 // NewGetCommand returns the CLI command for "get".
@@ -33,8 +33,9 @@ func NewGetCommand() cli.Command {
 			cli.BoolFlag{Name: "sort", Usage: "returns result in sorted order"},
 			cli.BoolFlag{Name: "quorum, q", Usage: "require quorum for get request"},
 		},
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			getCommandFunc(c, mustNewKeyAPI(c))
+			return nil
 		},
 	}
 }
@@ -42,7 +43,7 @@ func NewGetCommand() cli.Command {
 // getCommandFunc executes the "get" command.
 func getCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	if len(c.Args()) == 0 {
-		handleError(ExitBadArgs, errors.New("key required"))
+		handleError(c, ExitBadArgs, errors.New("key required"))
 	}
 
 	key := c.Args()[0]
@@ -53,7 +54,7 @@ func getCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	resp, err := ki.Get(ctx, key, &client.GetOptions{Sort: sorted, Quorum: quorum})
 	cancel()
 	if err != nil {
-		handleError(ExitServerError, err)
+		handleError(c, ExitServerError, err)
 	}
 
 	if resp.Node.Dir {

@@ -1,4 +1,4 @@
-// Copyright 2016 CoreOS, Inc.
+// Copyright 2016 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,16 +22,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	memberID       uint64
-	memberPeerURLs string
-)
+var memberPeerURLs string
 
 // NewMemberCommand returns the cobra command for "member".
 func NewMemberCommand() *cobra.Command {
 	mc := &cobra.Command{
-		Use:   "member",
-		Short: "member is used to manage membership in an etcd cluster.",
+		Use:   "member <subcommand>",
+		Short: "Membership related commands",
 	}
 
 	mc.AddCommand(NewMemberAddCommand())
@@ -45,13 +42,13 @@ func NewMemberCommand() *cobra.Command {
 // NewMemberAddCommand returns the cobra command for "member add".
 func NewMemberAddCommand() *cobra.Command {
 	cc := &cobra.Command{
-		Use:   "add",
-		Short: "add is used to add a member into the cluster",
+		Use:   "add <memberName> [options]",
+		Short: "Adds a member into the cluster",
 
 		Run: memberAddCommandFunc,
 	}
 
-	cc.Flags().StringVar(&memberPeerURLs, "peerURLs", "", "comma separated peer URLs for the new member.")
+	cc.Flags().StringVar(&memberPeerURLs, "peer-urls", "", "comma separated peer URLs for the new member.")
 
 	return cc
 }
@@ -59,8 +56,8 @@ func NewMemberAddCommand() *cobra.Command {
 // NewMemberRemoveCommand returns the cobra command for "member remove".
 func NewMemberRemoveCommand() *cobra.Command {
 	cc := &cobra.Command{
-		Use:   "remove",
-		Short: "remove is used to remove a member from the cluster",
+		Use:   "remove <memberID>",
+		Short: "Removes a member from the cluster",
 
 		Run: memberRemoveCommandFunc,
 	}
@@ -71,13 +68,13 @@ func NewMemberRemoveCommand() *cobra.Command {
 // NewMemberUpdateCommand returns the cobra command for "member update".
 func NewMemberUpdateCommand() *cobra.Command {
 	cc := &cobra.Command{
-		Use:   "update",
-		Short: "update is used to update a member in the cluster",
+		Use:   "update <memberID> [options]",
+		Short: "Updates a member in the cluster",
 
 		Run: memberUpdateCommandFunc,
 	}
 
-	cc.Flags().StringVar(&memberPeerURLs, "peerURLs", "", "comma separated peer URLs for the updated member.")
+	cc.Flags().StringVar(&memberPeerURLs, "peer-urls", "", "comma separated peer URLs for the updated member.")
 
 	return cc
 }
@@ -86,7 +83,10 @@ func NewMemberUpdateCommand() *cobra.Command {
 func NewMemberListCommand() *cobra.Command {
 	cc := &cobra.Command{
 		Use:   "list",
-		Short: "list is used to list all members in the cluster",
+		Short: "Lists all members in the cluster",
+		Long: `When --write-out is set to simple, this command prints out comma-separated member lists for each endpoint.
+The items in the lists are ID, Status, Name, Peer Addrs, Client Addrs.
+`,
 
 		Run: memberListCommandFunc,
 	}
@@ -99,6 +99,7 @@ func memberAddCommandFunc(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		ExitWithError(ExitBadArgs, fmt.Errorf("member name not provided."))
 	}
+	newMemberName := args[0]
 
 	if len(memberPeerURLs) == 0 {
 		ExitWithError(ExitBadArgs, fmt.Errorf("member peer urls not provided."))
@@ -111,8 +112,35 @@ func memberAddCommandFunc(cmd *cobra.Command, args []string) {
 	if err != nil {
 		ExitWithError(ExitError, err)
 	}
+	newID := resp.Member.ID
 
-	fmt.Printf("Member %16x added to cluster %16x\n", resp.Member.ID, resp.Header.ClusterId)
+	display.MemberAdd(*resp)
+
+	if _, ok := (display).(*simplePrinter); ok {
+		ctx, cancel = commandCtx(cmd)
+		listResp, err := mustClientFromCmd(cmd).MemberList(ctx)
+		cancel()
+
+		if err != nil {
+			ExitWithError(ExitError, err)
+		}
+
+		conf := []string{}
+		for _, memb := range listResp.Members {
+			for _, u := range memb.PeerURLs {
+				n := memb.Name
+				if memb.ID == newID {
+					n = newMemberName
+				}
+				conf = append(conf, fmt.Sprintf("%s=%s", n, u))
+			}
+		}
+
+		fmt.Print("\n")
+		fmt.Printf("ETCD_NAME=%q\n", newMemberName)
+		fmt.Printf("ETCD_INITIAL_CLUSTER=%q\n", strings.Join(conf, ","))
+		fmt.Printf("ETCD_INITIAL_CLUSTER_STATE=\"existing\"\n")
+	}
 }
 
 // memberRemoveCommandFunc executes the "member remove" command.
@@ -132,8 +160,7 @@ func memberRemoveCommandFunc(cmd *cobra.Command, args []string) {
 	if err != nil {
 		ExitWithError(ExitError, err)
 	}
-
-	fmt.Printf("Member %16x removed from cluster %16x\n", id, resp.Header.ClusterId)
+	display.MemberRemove(id, *resp)
 }
 
 // memberUpdateCommandFunc executes the "member update" command.
@@ -160,7 +187,7 @@ func memberUpdateCommandFunc(cmd *cobra.Command, args []string) {
 		ExitWithError(ExitError, err)
 	}
 
-	fmt.Printf("Member %16x updated in cluster %16x\n", id, resp.Header.ClusterId)
+	display.MemberUpdate(id, *resp)
 }
 
 // memberListCommandFunc executes the "member list" command.

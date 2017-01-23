@@ -271,7 +271,7 @@ type ModifyDiskAttributeResponse struct {
 // You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/disk&modifydiskattribute
 func (client *Client) ModifyDiskAttribute(args *ModifyDiskAttributeArgs) error {
 	response := ModifyDiskAttributeResponse{}
-	err := client.Invoke("ModifyDiskAttribute", &args, &response)
+	err := client.Invoke("ModifyDiskAttribute", args, &response)
 	return err
 }
 

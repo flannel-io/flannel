@@ -29,6 +29,7 @@ import (
 	"golang.org/x/oauth2"
 
 	"google.golang.org/cloud"
+	"google.golang.org/cloud/internal/testutil"
 )
 
 func TestLogPayload(t *testing.T) {
@@ -217,6 +218,47 @@ func TestOverflow(t *testing.T) {
 	}
 	if want := 0; inFlight != want {
 		t.Errorf("inFlight = %d; want %d", inFlight, want)
+	}
+}
+
+func TestIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Integration tests skipped in short mode")
+	}
+
+	ctx := context.Background()
+	ts := testutil.TokenSource(ctx, Scope)
+	if ts == nil {
+		t.Skip("Integration tests skipped. See CONTRIBUTING.md for details")
+	}
+
+	projID := testutil.ProjID()
+
+	c, err := NewClient(ctx, projID, "logging-integration-test", cloud.WithTokenSource(ts))
+	if err != nil {
+		t.Fatalf("error creating client: %v", err)
+	}
+
+	if err := c.Ping(); err != nil {
+		t.Fatalf("error pinging logging api: %v", err)
+	}
+
+	if err := c.LogSync(Entry{Payload: customJSONObject{}}); err != nil {
+		t.Fatalf("error writing log: %v", err)
+	}
+
+	if err := c.Log(Entry{Payload: customJSONObject{}}); err != nil {
+		t.Fatalf("error writing log: %v", err)
+	}
+
+	if _, err := c.Writer(Default).Write([]byte("test log with io.Writer")); err != nil {
+		t.Fatalf("error writing log using io.Writer: %v", err)
+	}
+
+	c.Logger(Default).Println("test log with log.Logger")
+
+	if err := c.Flush(); err != nil {
+		t.Fatalf("error flushing logs: %v", err)
 	}
 }
 

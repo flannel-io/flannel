@@ -15,10 +15,14 @@
 package storage
 
 import (
+	"crypto/tls"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
@@ -80,6 +84,31 @@ func TestSignedURL_PEMPrivateKey(t *testing.T) {
 	}
 }
 
+func TestSignedURL_URLUnsafeObjectName(t *testing.T) {
+	expires, _ := time.Parse(time.RFC3339, "2002-10-02T10:00:00-05:00")
+	url, err := SignedURL("bucket-name", "object name界", &SignedURLOptions{
+		GoogleAccessID: "xxx@clientid",
+		PrivateKey:     dummyKey("pem"),
+		Method:         "GET",
+		MD5:            []byte("202cb962ac59075b964b07152d234b70"),
+		Expires:        expires,
+		ContentType:    "application/json",
+		Headers:        []string{"x-header1", "x-header2"},
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	want := "https://storage.googleapis.com/bucket-name/object%20nam" +
+		"e%E7%95%8C?Expires=1033570800&GoogleAccessId=xxx%40clientid" +
+		"&Signature=bxORkrAm73INEMHktrE7VoUZQzVPvL5NFZ7noAI5zK%2BGSm" +
+		"%2BWFvsK%2FVnRGtYK9BK89jz%2BX4ZQd87nkMEJw1OsqmGNiepyzB%2B3o" +
+		"sUYrHyV7UnKs9bkQpBkqPFlfgK1o7oX4NJjA1oKjuHP%2Fj5%2FC15OPa3c" +
+		"vHV619BEb7vf30nAwQM%3D"
+	if url != want {
+		t.Fatalf("Unexpected signed URL; found %v", url)
+	}
+}
+
 func TestSignedURL_MissingOptions(t *testing.T) {
 	pk := dummyKey("rsa")
 	var tests = []struct {
@@ -126,26 +155,26 @@ func dummyKey(kind string) []byte {
 	return slurp
 }
 
-func TestCopyObjectMissingFields(t *testing.T) {
+func TestCopyToMissingFields(t *testing.T) {
 	var tests = []struct {
 		srcBucket, srcName, destBucket, destName string
 		errMsg                                   string
 	}{
 		{
 			"mybucket", "", "mybucket", "destname",
-			"srcName and destName must be non-empty",
+			"the source and destination object names must both be non-empty",
 		},
 		{
 			"mybucket", "srcname", "mybucket", "",
-			"srcName and destName must be non-empty",
+			"the source and destination object names must both be non-empty",
 		},
 		{
 			"", "srcfile", "mybucket", "destname",
-			"srcBucket and destBucket must both be non-empty",
+			"the source and destination bucket names must both be non-empty",
 		},
 		{
 			"mybucket", "srcfile", "", "destname",
-			"srcBucket and destBucket must both be non-empty",
+			"the source and destination bucket names must both be non-empty",
 		},
 	}
 	ctx := context.Background()
@@ -154,9 +183,11 @@ func TestCopyObjectMissingFields(t *testing.T) {
 		panic(err)
 	}
 	for i, test := range tests {
-		_, err := client.CopyObject(ctx, test.srcBucket, test.srcName, test.destBucket, test.destName, nil)
+		src := client.Bucket(test.srcBucket).Object(test.srcName)
+		dst := client.Bucket(test.destBucket).Object(test.destName)
+		_, err := src.CopyTo(ctx, dst, nil)
 		if !strings.Contains(err.Error(), test.errMsg) {
-			t.Errorf("CopyObject test #%v: err = %v, want %v", i, err, test.errMsg)
+			t.Errorf("CopyTo test #%v:\ngot err  %q\nwant err %q", i, err, test.errMsg)
 		}
 	}
 }
@@ -241,5 +272,111 @@ func TestObjectNames(t *testing.T) {
 		if w := "/bucket-name/" + test.want; !strings.Contains(g, w) {
 			t.Errorf("SignedURL(%q)=%q, want substring %q", test.name, g, w)
 		}
+	}
+}
+
+func TestCondition(t *testing.T) {
+	gotReq := make(chan *http.Request, 1)
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		io.Copy(ioutil.Discard, r.Body)
+		gotReq <- r
+		if r.Method == "POST" {
+			w.WriteHeader(200)
+		} else {
+			w.WriteHeader(500)
+		}
+	}))
+	defer ts.Close()
+
+	tlsConf := &tls.Config{InsecureSkipVerify: true}
+	tr := &http.Transport{
+		TLSClientConfig: tlsConf,
+		DialTLS: func(netw, addr string) (net.Conn, error) {
+			return tls.Dial("tcp", ts.Listener.Addr().String(), tlsConf)
+		},
+	}
+	defer tr.CloseIdleConnections()
+	hc := &http.Client{Transport: tr}
+
+	ctx := context.Background()
+	c, err := NewClient(ctx, cloud.WithBaseHTTP(hc))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	obj := c.Bucket("buck").Object("obj")
+	dst := c.Bucket("dstbuck").Object("dst")
+	tests := []struct {
+		fn   func()
+		want string
+	}{
+		{
+			func() { obj.WithConditions(Generation(1234)).NewReader(ctx) },
+			"GET /buck/obj?generation=1234",
+		},
+		{
+			func() { obj.WithConditions(IfGenerationMatch(1234)).NewReader(ctx) },
+			"GET /buck/obj?ifGenerationMatch=1234",
+		},
+		{
+			func() { obj.WithConditions(IfGenerationNotMatch(1234)).NewReader(ctx) },
+			"GET /buck/obj?ifGenerationNotMatch=1234",
+		},
+		{
+			func() { obj.WithConditions(IfMetaGenerationMatch(1234)).NewReader(ctx) },
+			"GET /buck/obj?ifMetagenerationMatch=1234",
+		},
+		{
+			func() { obj.WithConditions(IfMetaGenerationNotMatch(1234)).NewReader(ctx) },
+			"GET /buck/obj?ifMetagenerationNotMatch=1234",
+		},
+		{
+			func() { obj.WithConditions(IfMetaGenerationNotMatch(1234)).Attrs(ctx) },
+			"GET https://www.googleapis.com/storage/v1/b/buck/o/obj?alt=json&ifMetagenerationNotMatch=1234&projection=full",
+		},
+		{
+			func() { obj.WithConditions(IfMetaGenerationMatch(1234)).Update(ctx, ObjectAttrs{}) },
+			"PATCH https://www.googleapis.com/storage/v1/b/buck/o/obj?alt=json&ifMetagenerationMatch=1234&projection=full",
+		},
+		{
+			func() { obj.WithConditions(Generation(1234)).Delete(ctx) },
+			"DELETE https://www.googleapis.com/storage/v1/b/buck/o/obj?alt=json&generation=1234",
+		},
+		{
+			func() {
+				w := obj.WithConditions(IfGenerationMatch(1234)).NewWriter(ctx)
+				w.ContentType = "text/plain"
+				w.Close()
+			},
+			"POST https://www.googleapis.com/upload/storage/v1/b/buck/o?alt=json&ifGenerationMatch=1234&projection=full&uploadType=multipart",
+		},
+		{
+			func() {
+				obj.WithConditions(IfGenerationMatch(1234)).CopyTo(ctx, dst.WithConditions(IfMetaGenerationMatch(5678)), nil)
+			},
+			"POST https://www.googleapis.com/storage/v1/b/buck/o/obj/copyTo/b/dstbuck/o/dst?alt=json&ifMetagenerationMatch=5678&ifSourceGenerationMatch=1234&projection=full",
+		},
+	}
+
+	for i, tt := range tests {
+		tt.fn()
+		select {
+		case r := <-gotReq:
+			got := r.Method + " " + r.RequestURI
+			if got != tt.want {
+				t.Errorf("%d. RequestURI = %q; want %q", i, got, tt.want)
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatalf("%d. timeout", i)
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// Test an error, too:
+	err = obj.WithConditions(Generation(1234)).NewWriter(ctx).Close()
+	if err == nil || !strings.Contains(err.Error(), "NewWriter: condition Generation not supported") {
+		t.Errorf("want error about unsupported condition; got %v", err)
 	}
 }

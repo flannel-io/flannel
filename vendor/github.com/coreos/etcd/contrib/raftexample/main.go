@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,8 +34,12 @@ func main() {
 	defer close(confChangeC)
 
 	// raft provides a commit stream for the proposals from the http api
-	commitC, errorC := newRaftNode(*id, strings.Split(*cluster, ","), *join, proposeC, confChangeC)
+	var kvs *kvstore
+	getSnapshot := func() ([]byte, error) { return kvs.getSnapshot() }
+	commitC, errorC, snapshotterReady := newRaftNode(*id, strings.Split(*cluster, ","), *join, getSnapshot, proposeC, confChangeC)
+
+	kvs = newKVStore(<-snapshotterReady, proposeC, commitC, errorC)
 
 	// the key-value http handler will propose updates to raft
-	serveHttpKVAPI(*kvport, proposeC, confChangeC, commitC, errorC)
+	serveHttpKVAPI(kvs, *kvport, confChangeC, errorC)
 }

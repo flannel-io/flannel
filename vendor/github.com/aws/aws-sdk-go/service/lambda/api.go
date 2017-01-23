@@ -38,7 +38,6 @@ const opAddPermission = "AddPermission"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) AddPermissionRequest(input *AddPermissionInput) (req *request.Request, output *AddPermissionOutput) {
 	op := &request.Operation{
 		Name:       opAddPermission,
@@ -50,9 +49,8 @@ func (c *Lambda) AddPermissionRequest(input *AddPermissionInput) (req *request.R
 		input = &AddPermissionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddPermissionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -134,7 +132,6 @@ const opCreateAlias = "CreateAlias"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) CreateAliasRequest(input *CreateAliasInput) (req *request.Request, output *AliasConfiguration) {
 	op := &request.Operation{
 		Name:       opCreateAlias,
@@ -146,9 +143,8 @@ func (c *Lambda) CreateAliasRequest(input *CreateAliasInput) (req *request.Reque
 		input = &CreateAliasInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AliasConfiguration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -217,7 +213,6 @@ const opCreateEventSourceMapping = "CreateEventSourceMapping"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) CreateEventSourceMappingRequest(input *CreateEventSourceMappingInput) (req *request.Request, output *EventSourceMappingConfiguration) {
 	op := &request.Operation{
 		Name:       opCreateEventSourceMapping,
@@ -229,9 +224,8 @@ func (c *Lambda) CreateEventSourceMappingRequest(input *CreateEventSourceMapping
 		input = &CreateEventSourceMappingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &EventSourceMappingConfiguration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -245,7 +239,7 @@ func (c *Lambda) CreateEventSourceMappingRequest(input *CreateEventSourceMapping
 // the event source mapping.
 //
 // This event source mapping is relevant only in the AWS Lambda pull model,
-// where AWS Lambda invokes the function. For more information, go to AWS Lambda:
+// where AWS Lambda invokes the function. For more information, see AWS Lambda:
 // How it Works (http://docs.aws.amazon.com/lambda/latest/dg/lambda-introduction.html)
 // in the AWS Lambda Developer Guide.
 //
@@ -320,7 +314,6 @@ const opCreateFunction = "CreateFunction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) CreateFunctionRequest(input *CreateFunctionInput) (req *request.Request, output *FunctionConfiguration) {
 	op := &request.Operation{
 		Name:       opCreateFunction,
@@ -332,9 +325,8 @@ func (c *Lambda) CreateFunctionRequest(input *CreateFunctionInput) (req *request
 		input = &CreateFunctionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &FunctionConfiguration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -411,7 +403,6 @@ const opDeleteAlias = "DeleteAlias"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Request, output *DeleteAliasOutput) {
 	op := &request.Operation{
 		Name:       opDeleteAlias,
@@ -423,11 +414,10 @@ func (c *Lambda) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Reque
 		input = &DeleteAliasInput{}
 	}
 
+	output = &DeleteAliasOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteAliasOutput{}
-	req.Data = output
 	return
 }
 
@@ -488,7 +478,6 @@ const opDeleteEventSourceMapping = "DeleteEventSourceMapping"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) DeleteEventSourceMappingRequest(input *DeleteEventSourceMappingInput) (req *request.Request, output *EventSourceMappingConfiguration) {
 	op := &request.Operation{
 		Name:       opDeleteEventSourceMapping,
@@ -500,9 +489,8 @@ func (c *Lambda) DeleteEventSourceMappingRequest(input *DeleteEventSourceMapping
 		input = &DeleteEventSourceMappingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &EventSourceMappingConfiguration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -568,7 +556,6 @@ const opDeleteFunction = "DeleteFunction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) DeleteFunctionRequest(input *DeleteFunctionInput) (req *request.Request, output *DeleteFunctionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteFunction,
@@ -580,11 +567,10 @@ func (c *Lambda) DeleteFunctionRequest(input *DeleteFunctionInput) (req *request
 		input = &DeleteFunctionInput{}
 	}
 
+	output = &DeleteFunctionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteFunctionOutput{}
-	req.Data = output
 	return
 }
 
@@ -636,6 +622,77 @@ func (c *Lambda) DeleteFunction(input *DeleteFunctionInput) (*DeleteFunctionOutp
 	return out, err
 }
 
+const opGetAccountSettings = "GetAccountSettings"
+
+// GetAccountSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the GetAccountSettings operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetAccountSettings for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetAccountSettings method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetAccountSettingsRequest method.
+//    req, resp := client.GetAccountSettingsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *Lambda) GetAccountSettingsRequest(input *GetAccountSettingsInput) (req *request.Request, output *GetAccountSettingsOutput) {
+	op := &request.Operation{
+		Name:       opGetAccountSettings,
+		HTTPMethod: "GET",
+		HTTPPath:   "/2016-08-19/account-settings/",
+	}
+
+	if input == nil {
+		input = &GetAccountSettingsInput{}
+	}
+
+	output = &GetAccountSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetAccountSettings API operation for AWS Lambda.
+//
+// Returns a customer's account settings.
+//
+// You can use this operation to retrieve Lambda limits information, such as
+// code size and concurrency limits. For more information about limits, see
+// AWS Lambda Limits (http://docs.aws.amazon.com/lambda/latest/dg/limits.html).
+// You can also retrieve resource usage statistics, such as code storage usage
+// and function count.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Lambda's
+// API operation GetAccountSettings for usage and error information.
+//
+// Returned Error Codes:
+//   * TooManyRequestsException
+
+//
+//   * ServiceException
+//   The AWS Lambda service encountered an internal error.
+//
+func (c *Lambda) GetAccountSettings(input *GetAccountSettingsInput) (*GetAccountSettingsOutput, error) {
+	req, out := c.GetAccountSettingsRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opGetAlias = "GetAlias"
 
 // GetAliasRequest generates a "aws/request.Request" representing the
@@ -661,7 +718,6 @@ const opGetAlias = "GetAlias"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) GetAliasRequest(input *GetAliasInput) (req *request.Request, output *AliasConfiguration) {
 	op := &request.Operation{
 		Name:       opGetAlias,
@@ -673,9 +729,8 @@ func (c *Lambda) GetAliasRequest(input *GetAliasInput) (req *request.Request, ou
 		input = &GetAliasInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AliasConfiguration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -741,7 +796,6 @@ const opGetEventSourceMapping = "GetEventSourceMapping"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) GetEventSourceMappingRequest(input *GetEventSourceMappingInput) (req *request.Request, output *EventSourceMappingConfiguration) {
 	op := &request.Operation{
 		Name:       opGetEventSourceMapping,
@@ -753,9 +807,8 @@ func (c *Lambda) GetEventSourceMappingRequest(input *GetEventSourceMappingInput)
 		input = &GetEventSourceMappingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &EventSourceMappingConfiguration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -820,7 +873,6 @@ const opGetFunction = "GetFunction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) GetFunctionRequest(input *GetFunctionInput) (req *request.Request, output *GetFunctionOutput) {
 	op := &request.Operation{
 		Name:       opGetFunction,
@@ -832,9 +884,8 @@ func (c *Lambda) GetFunctionRequest(input *GetFunctionInput) (req *request.Reque
 		input = &GetFunctionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetFunctionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -908,7 +959,6 @@ const opGetFunctionConfiguration = "GetFunctionConfiguration"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) GetFunctionConfigurationRequest(input *GetFunctionConfigurationInput) (req *request.Request, output *FunctionConfiguration) {
 	op := &request.Operation{
 		Name:       opGetFunctionConfiguration,
@@ -920,9 +970,8 @@ func (c *Lambda) GetFunctionConfigurationRequest(input *GetFunctionConfiguration
 		input = &GetFunctionConfigurationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &FunctionConfiguration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -996,7 +1045,6 @@ const opGetPolicy = "GetPolicy"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, output *GetPolicyOutput) {
 	op := &request.Operation{
 		Name:       opGetPolicy,
@@ -1008,9 +1056,8 @@ func (c *Lambda) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, 
 		input = &GetPolicyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetPolicyOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1081,7 +1128,6 @@ const opInvoke = "Invoke"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) InvokeRequest(input *InvokeInput) (req *request.Request, output *InvokeOutput) {
 	op := &request.Operation{
 		Name:       opInvoke,
@@ -1093,15 +1139,15 @@ func (c *Lambda) InvokeRequest(input *InvokeInput) (req *request.Request, output
 		input = &InvokeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &InvokeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
 // Invoke API operation for AWS Lambda.
 //
-// Invokes a specific Lambda function.
+// Invokes a specific Lambda function. For an example, see Create the Lambda
+// Function and Test It Manually (http://docs.aws.amazon.com/lambda/latest/dg/with-dynamodb-create-function.html#with-dbb-invoke-manually).
 //
 // If you are using the versioning feature, you can invoke the specific function
 // version by providing function version or alias name that is pointing to the
@@ -1176,6 +1222,22 @@ func (c *Lambda) InvokeRequest(input *InvokeInput) (req *request.Request, output
 //   * InvalidZipFileException
 //   AWS Lambda could not unzip the function zip file.
 //
+//   * KMSDisabledException
+//   Lambda was unable to decrypt the environment variables because the KMS key
+//   used is disabled. Check the Lambda function's KMS key settings.
+//
+//   * KMSInvalidStateException
+//   Lambda was unable to decrypt the environment variables because the KMS key
+//   used is in an invalid state for Decrypt. Check the function's KMS key settings.
+//
+//   * KMSAccessDeniedException
+//   Lambda was unable to decrypt the environment variables because KMS access
+//   was denied. Check the Lambda function's KMS permissions.
+//
+//   * KMSNotFoundException
+//   Lambda was unable to decrypt the environment variables because the KMS key
+//   was not found. Check the function's KMS key settings.
+//
 func (c *Lambda) Invoke(input *InvokeInput) (*InvokeOutput, error) {
 	req, out := c.InvokeRequest(input)
 	err := req.Send()
@@ -1207,7 +1269,6 @@ const opInvokeAsync = "InvokeAsync"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) InvokeAsyncRequest(input *InvokeAsyncInput) (req *request.Request, output *InvokeAsyncOutput) {
 	if c.Client.Config.Logger != nil {
 		c.Client.Config.Logger.Log("This operation, InvokeAsync, has been deprecated")
@@ -1222,9 +1283,8 @@ func (c *Lambda) InvokeAsyncRequest(input *InvokeAsyncInput) (req *request.Reque
 		input = &InvokeAsyncInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &InvokeAsyncOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1287,7 +1347,6 @@ const opListAliases = "ListAliases"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) ListAliasesRequest(input *ListAliasesInput) (req *request.Request, output *ListAliasesOutput) {
 	op := &request.Operation{
 		Name:       opListAliases,
@@ -1299,9 +1358,8 @@ func (c *Lambda) ListAliasesRequest(input *ListAliasesInput) (req *request.Reque
 		input = &ListAliasesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListAliasesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1368,7 +1426,6 @@ const opListEventSourceMappings = "ListEventSourceMappings"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) ListEventSourceMappingsRequest(input *ListEventSourceMappingsInput) (req *request.Request, output *ListEventSourceMappingsOutput) {
 	op := &request.Operation{
 		Name:       opListEventSourceMappings,
@@ -1386,9 +1443,8 @@ func (c *Lambda) ListEventSourceMappingsRequest(input *ListEventSourceMappingsIn
 		input = &ListEventSourceMappingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListEventSourceMappingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1487,7 +1543,6 @@ const opListFunctions = "ListFunctions"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) ListFunctionsRequest(input *ListFunctionsInput) (req *request.Request, output *ListFunctionsOutput) {
 	op := &request.Operation{
 		Name:       opListFunctions,
@@ -1505,9 +1560,8 @@ func (c *Lambda) ListFunctionsRequest(input *ListFunctionsInput) (req *request.R
 		input = &ListFunctionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListFunctionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1593,7 +1647,6 @@ const opListVersionsByFunction = "ListVersionsByFunction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) ListVersionsByFunctionRequest(input *ListVersionsByFunctionInput) (req *request.Request, output *ListVersionsByFunctionOutput) {
 	op := &request.Operation{
 		Name:       opListVersionsByFunction,
@@ -1605,9 +1658,8 @@ func (c *Lambda) ListVersionsByFunctionRequest(input *ListVersionsByFunctionInpu
 		input = &ListVersionsByFunctionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListVersionsByFunctionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1670,7 +1722,6 @@ const opPublishVersion = "PublishVersion"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) PublishVersionRequest(input *PublishVersionInput) (req *request.Request, output *FunctionConfiguration) {
 	op := &request.Operation{
 		Name:       opPublishVersion,
@@ -1682,9 +1733,8 @@ func (c *Lambda) PublishVersionRequest(input *PublishVersionInput) (req *request
 		input = &PublishVersionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &FunctionConfiguration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1753,7 +1803,6 @@ const opRemovePermission = "RemovePermission"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) RemovePermissionRequest(input *RemovePermissionInput) (req *request.Request, output *RemovePermissionOutput) {
 	op := &request.Operation{
 		Name:       opRemovePermission,
@@ -1765,11 +1814,10 @@ func (c *Lambda) RemovePermissionRequest(input *RemovePermissionInput) (req *req
 		input = &RemovePermissionInput{}
 	}
 
+	output = &RemovePermissionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RemovePermissionOutput{}
-	req.Data = output
 	return
 }
 
@@ -1843,7 +1891,6 @@ const opUpdateAlias = "UpdateAlias"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Request, output *AliasConfiguration) {
 	op := &request.Operation{
 		Name:       opUpdateAlias,
@@ -1855,9 +1902,8 @@ func (c *Lambda) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Reque
 		input = &UpdateAliasInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AliasConfiguration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1923,7 +1969,6 @@ const opUpdateEventSourceMapping = "UpdateEventSourceMapping"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) UpdateEventSourceMappingRequest(input *UpdateEventSourceMappingInput) (req *request.Request, output *EventSourceMappingConfiguration) {
 	op := &request.Operation{
 		Name:       opUpdateEventSourceMapping,
@@ -1935,9 +1980,8 @@ func (c *Lambda) UpdateEventSourceMappingRequest(input *UpdateEventSourceMapping
 		input = &UpdateEventSourceMappingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &EventSourceMappingConfiguration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2018,7 +2062,6 @@ const opUpdateFunctionCode = "UpdateFunctionCode"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) UpdateFunctionCodeRequest(input *UpdateFunctionCodeInput) (req *request.Request, output *FunctionConfiguration) {
 	op := &request.Operation{
 		Name:       opUpdateFunctionCode,
@@ -2030,9 +2073,8 @@ func (c *Lambda) UpdateFunctionCodeRequest(input *UpdateFunctionCodeInput) (req 
 		input = &UpdateFunctionCodeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &FunctionConfiguration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2105,7 +2147,6 @@ const opUpdateFunctionConfiguration = "UpdateFunctionConfiguration"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Lambda) UpdateFunctionConfigurationRequest(input *UpdateFunctionConfigurationInput) (req *request.Request, output *FunctionConfiguration) {
 	op := &request.Operation{
 		Name:       opUpdateFunctionConfiguration,
@@ -2117,9 +2158,8 @@ func (c *Lambda) UpdateFunctionConfigurationRequest(input *UpdateFunctionConfigu
 		input = &UpdateFunctionConfigurationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &FunctionConfiguration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2164,6 +2204,99 @@ func (c *Lambda) UpdateFunctionConfiguration(input *UpdateFunctionConfigurationI
 	req, out := c.UpdateFunctionConfigurationRequest(input)
 	err := req.Send()
 	return out, err
+}
+
+// Provides limits of code size and concurrency associated with the current
+// account and region.
+type AccountLimit struct {
+	_ struct{} `type:"structure"`
+
+	// Size, in bytes, of code/dependencies that you can zip into a deployment package
+	// (uncompressed zip/jar size) for uploading. The default limit is 250 MB.
+	CodeSizeUnzipped *int64 `type:"long"`
+
+	// Size, in bytes, of a single zipped code/dependencies package you can upload
+	// for your Lambda function(.zip/.jar file). Try using Amazon S3 for uploading
+	// larger files. Default limit is 50 MB.
+	CodeSizeZipped *int64 `type:"long"`
+
+	// Number of simultaneous executions of your function per region. For more information
+	// or to request a limit increase for concurrent executions, see Lambda Function
+	// Concurrent Executions (http://docs.aws.amazon.com/lambda/latest/dg/concurrent-executions.html).
+	// The default limit is 100.
+	ConcurrentExecutions *int64 `type:"integer"`
+
+	// Maximum size, in megabytes, of a code package you can upload per region.
+	// The default size is 75 GB.
+	TotalCodeSize *int64 `type:"long"`
+}
+
+// String returns the string representation
+func (s AccountLimit) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AccountLimit) GoString() string {
+	return s.String()
+}
+
+// SetCodeSizeUnzipped sets the CodeSizeUnzipped field's value.
+func (s *AccountLimit) SetCodeSizeUnzipped(v int64) *AccountLimit {
+	s.CodeSizeUnzipped = &v
+	return s
+}
+
+// SetCodeSizeZipped sets the CodeSizeZipped field's value.
+func (s *AccountLimit) SetCodeSizeZipped(v int64) *AccountLimit {
+	s.CodeSizeZipped = &v
+	return s
+}
+
+// SetConcurrentExecutions sets the ConcurrentExecutions field's value.
+func (s *AccountLimit) SetConcurrentExecutions(v int64) *AccountLimit {
+	s.ConcurrentExecutions = &v
+	return s
+}
+
+// SetTotalCodeSize sets the TotalCodeSize field's value.
+func (s *AccountLimit) SetTotalCodeSize(v int64) *AccountLimit {
+	s.TotalCodeSize = &v
+	return s
+}
+
+// Provides code size usage and function count associated with the current account
+// and region.
+type AccountUsage struct {
+	_ struct{} `type:"structure"`
+
+	// The number of your account's existing functions per region.
+	FunctionCount *int64 `type:"long"`
+
+	// Total size, in bytes, of the account's deployment packages per region.
+	TotalCodeSize *int64 `type:"long"`
+}
+
+// String returns the string representation
+func (s AccountUsage) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AccountUsage) GoString() string {
+	return s.String()
+}
+
+// SetFunctionCount sets the FunctionCount field's value.
+func (s *AccountUsage) SetFunctionCount(v int64) *AccountUsage {
+	s.FunctionCount = &v
+	return s
+}
+
+// SetTotalCodeSize sets the TotalCodeSize field's value.
+func (s *AccountUsage) SetTotalCodeSize(v int64) *AccountUsage {
+	s.TotalCodeSize = &v
+	return s
 }
 
 type AddPermissionInput struct {
@@ -2222,13 +2355,14 @@ type AddPermissionInput struct {
 	// arn:aws:lambda:aws-region:acct-id:function:function-name
 	Qualifier *string `location:"querystring" locationName:"Qualifier" min:"1" type:"string"`
 
-	// This parameter is used for S3 and SES only. The AWS account ID (without a
-	// hyphen) of the source owner. For example, if the SourceArn identifies a bucket,
-	// then this is the bucket owner's account ID. You can use this additional condition
-	// to ensure the bucket you specify is owned by a specific account (it is possible
-	// the bucket owner deleted the bucket and some other AWS account created the
-	// bucket). You can also use this condition to specify all sources (that is,
-	// you don't specify the SourceArn) owned by a specific account.
+	// This parameter is used for S3, SES, CloudWatch Logs and CloudWatch Rules
+	// only. The AWS account ID (without a hyphen) of the source owner. For example,
+	// if the SourceArn identifies a bucket, then this is the bucket owner's account
+	// ID. You can use this additional condition to ensure the bucket you specify
+	// is owned by a specific account (it is possible the bucket owner deleted the
+	// bucket and some other AWS account created the bucket). You can also use this
+	// condition to specify all sources (that is, you don't specify the SourceArn)
+	// owned by a specific account.
 	SourceAccount *string `type:"string"`
 
 	// This is optional; however, when granting Amazon S3 permission to invoke your
@@ -2288,6 +2422,54 @@ func (s *AddPermissionInput) Validate() error {
 	return nil
 }
 
+// SetAction sets the Action field's value.
+func (s *AddPermissionInput) SetAction(v string) *AddPermissionInput {
+	s.Action = &v
+	return s
+}
+
+// SetEventSourceToken sets the EventSourceToken field's value.
+func (s *AddPermissionInput) SetEventSourceToken(v string) *AddPermissionInput {
+	s.EventSourceToken = &v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *AddPermissionInput) SetFunctionName(v string) *AddPermissionInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetPrincipal sets the Principal field's value.
+func (s *AddPermissionInput) SetPrincipal(v string) *AddPermissionInput {
+	s.Principal = &v
+	return s
+}
+
+// SetQualifier sets the Qualifier field's value.
+func (s *AddPermissionInput) SetQualifier(v string) *AddPermissionInput {
+	s.Qualifier = &v
+	return s
+}
+
+// SetSourceAccount sets the SourceAccount field's value.
+func (s *AddPermissionInput) SetSourceAccount(v string) *AddPermissionInput {
+	s.SourceAccount = &v
+	return s
+}
+
+// SetSourceArn sets the SourceArn field's value.
+func (s *AddPermissionInput) SetSourceArn(v string) *AddPermissionInput {
+	s.SourceArn = &v
+	return s
+}
+
+// SetStatementId sets the StatementId field's value.
+func (s *AddPermissionInput) SetStatementId(v string) *AddPermissionInput {
+	s.StatementId = &v
+	return s
+}
+
 type AddPermissionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2305,6 +2487,12 @@ func (s AddPermissionOutput) String() string {
 // GoString returns the string representation
 func (s AddPermissionOutput) GoString() string {
 	return s.String()
+}
+
+// SetStatement sets the Statement field's value.
+func (s *AddPermissionOutput) SetStatement(v string) *AddPermissionOutput {
+	s.Statement = &v
+	return s
 }
 
 // Provides configuration information about a Lambda function version alias.
@@ -2334,6 +2522,30 @@ func (s AliasConfiguration) String() string {
 // GoString returns the string representation
 func (s AliasConfiguration) GoString() string {
 	return s.String()
+}
+
+// SetAliasArn sets the AliasArn field's value.
+func (s *AliasConfiguration) SetAliasArn(v string) *AliasConfiguration {
+	s.AliasArn = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *AliasConfiguration) SetDescription(v string) *AliasConfiguration {
+	s.Description = &v
+	return s
+}
+
+// SetFunctionVersion sets the FunctionVersion field's value.
+func (s *AliasConfiguration) SetFunctionVersion(v string) *AliasConfiguration {
+	s.FunctionVersion = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *AliasConfiguration) SetName(v string) *AliasConfiguration {
+	s.Name = &v
+	return s
 }
 
 type CreateAliasInput struct {
@@ -2396,6 +2608,30 @@ func (s *CreateAliasInput) Validate() error {
 	return nil
 }
 
+// SetDescription sets the Description field's value.
+func (s *CreateAliasInput) SetDescription(v string) *CreateAliasInput {
+	s.Description = &v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *CreateAliasInput) SetFunctionName(v string) *CreateAliasInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetFunctionVersion sets the FunctionVersion field's value.
+func (s *CreateAliasInput) SetFunctionVersion(v string) *CreateAliasInput {
+	s.FunctionVersion = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateAliasInput) SetName(v string) *CreateAliasInput {
+	s.Name = &v
+	return s
+}
+
 type CreateEventSourceMappingInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2436,12 +2672,20 @@ type CreateEventSourceMappingInput struct {
 	// FunctionName is a required field
 	FunctionName *string `min:"1" type:"string" required:"true"`
 
-	// The position in the stream where AWS Lambda should start reading. For more
-	// information, go to ShardIteratorType (http://docs.aws.amazon.com/kinesis/latest/APIReference/API_GetShardIterator.html#Kinesis-GetShardIterator-request-ShardIteratorType)
+	// The position in the stream where AWS Lambda should start reading. Valid only
+	// for Kinesis streams. For more information, see ShardIteratorType (http://docs.aws.amazon.com/kinesis/latest/APIReference/API_GetShardIterator.html#Kinesis-GetShardIterator-request-ShardIteratorType)
 	// in the Amazon Kinesis API Reference.
 	//
 	// StartingPosition is a required field
 	StartingPosition *string `type:"string" required:"true" enum:"EventSourcePosition"`
+
+	// The timestamp of the data record from which to start reading. Used with shard
+	// iterator type (http://docs.aws.amazon.com/kinesis/latest/APIReference/API_GetShardIterator.html#Kinesis-GetShardIterator-request-ShardIteratorType)
+	// AT_TIMESTAMP. If a record with this exact timestamp does not exist, the iterator
+	// returned is for the next (later) record. If the timestamp is older than the
+	// current trim horizon, the iterator returned is for the oldest untrimmed data
+	// record (TRIM_HORIZON). Valid only for Kinesis streams.
+	StartingPositionTimestamp *time.Time `type:"timestamp" timestampFormat:"unix"`
 }
 
 // String returns the string representation
@@ -2479,6 +2723,42 @@ func (s *CreateEventSourceMappingInput) Validate() error {
 	return nil
 }
 
+// SetBatchSize sets the BatchSize field's value.
+func (s *CreateEventSourceMappingInput) SetBatchSize(v int64) *CreateEventSourceMappingInput {
+	s.BatchSize = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *CreateEventSourceMappingInput) SetEnabled(v bool) *CreateEventSourceMappingInput {
+	s.Enabled = &v
+	return s
+}
+
+// SetEventSourceArn sets the EventSourceArn field's value.
+func (s *CreateEventSourceMappingInput) SetEventSourceArn(v string) *CreateEventSourceMappingInput {
+	s.EventSourceArn = &v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *CreateEventSourceMappingInput) SetFunctionName(v string) *CreateEventSourceMappingInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetStartingPosition sets the StartingPosition field's value.
+func (s *CreateEventSourceMappingInput) SetStartingPosition(v string) *CreateEventSourceMappingInput {
+	s.StartingPosition = &v
+	return s
+}
+
+// SetStartingPositionTimestamp sets the StartingPositionTimestamp field's value.
+func (s *CreateEventSourceMappingInput) SetStartingPositionTimestamp(v time.Time) *CreateEventSourceMappingInput {
+	s.StartingPositionTimestamp = &v
+	return s
+}
+
 type CreateFunctionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2487,13 +2767,21 @@ type CreateFunctionInput struct {
 	// Code is a required field
 	Code *FunctionCode `type:"structure" required:"true"`
 
+	// The parent object that contains the target Amazon Resource Name (ARN) of
+	// an Amazon SQS queue or Amazon SNS topic.
+	DeadLetterConfig *DeadLetterConfig `type:"structure"`
+
 	// A short, user-defined function description. Lambda does not use this value.
 	// Assign a meaningful description as you see fit.
 	Description *string `type:"string"`
 
+	// The parent object that contains your environment's configuration settings.
+	Environment *Environment `type:"structure"`
+
 	// The name you want to assign to the function you are uploading. The function
 	// names appear in the console and are returned in the ListFunctions API. Function
-	// names are used to specify functions to other AWS Lambda APIs, such as Invoke.
+	// names are used to specify functions to other AWS Lambda API operations, such
+	// as Invoke.
 	//
 	// FunctionName is a required field
 	FunctionName *string `min:"1" type:"string" required:"true"`
@@ -2505,6 +2793,11 @@ type CreateFunctionInput struct {
 	//
 	// Handler is a required field
 	Handler *string `type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the KMS key used to encrypt your function's
+	// environment variables. If not provided, AWS Lambda will use a default service
+	// key.
+	KMSKeyArn *string `type:"string"`
 
 	// The amount of memory, in MB, your Lambda function is given. Lambda uses this
 	// memory size to infer the amount of CPU and memory allocated to your function.
@@ -2529,6 +2822,11 @@ type CreateFunctionInput struct {
 	//
 	// To use the Node.js runtime v4.3, set the value to "nodejs4.3". To use earlier
 	// runtime (v0.10.42), set the value to "nodejs".
+	//
+	// You can no longer create functions using the v0.10.42 runtime version as
+	// of November, 2016. Existing functions will be supported until early 2017,
+	// but we recommend you migrate them to nodejs4.3 runtime version as soon as
+	// possible.
 	//
 	// Runtime is a required field
 	Runtime *string `type:"string" required:"true" enum:"Runtime"`
@@ -2594,6 +2892,110 @@ func (s *CreateFunctionInput) Validate() error {
 	return nil
 }
 
+// SetCode sets the Code field's value.
+func (s *CreateFunctionInput) SetCode(v *FunctionCode) *CreateFunctionInput {
+	s.Code = v
+	return s
+}
+
+// SetDeadLetterConfig sets the DeadLetterConfig field's value.
+func (s *CreateFunctionInput) SetDeadLetterConfig(v *DeadLetterConfig) *CreateFunctionInput {
+	s.DeadLetterConfig = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateFunctionInput) SetDescription(v string) *CreateFunctionInput {
+	s.Description = &v
+	return s
+}
+
+// SetEnvironment sets the Environment field's value.
+func (s *CreateFunctionInput) SetEnvironment(v *Environment) *CreateFunctionInput {
+	s.Environment = v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *CreateFunctionInput) SetFunctionName(v string) *CreateFunctionInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetHandler sets the Handler field's value.
+func (s *CreateFunctionInput) SetHandler(v string) *CreateFunctionInput {
+	s.Handler = &v
+	return s
+}
+
+// SetKMSKeyArn sets the KMSKeyArn field's value.
+func (s *CreateFunctionInput) SetKMSKeyArn(v string) *CreateFunctionInput {
+	s.KMSKeyArn = &v
+	return s
+}
+
+// SetMemorySize sets the MemorySize field's value.
+func (s *CreateFunctionInput) SetMemorySize(v int64) *CreateFunctionInput {
+	s.MemorySize = &v
+	return s
+}
+
+// SetPublish sets the Publish field's value.
+func (s *CreateFunctionInput) SetPublish(v bool) *CreateFunctionInput {
+	s.Publish = &v
+	return s
+}
+
+// SetRole sets the Role field's value.
+func (s *CreateFunctionInput) SetRole(v string) *CreateFunctionInput {
+	s.Role = &v
+	return s
+}
+
+// SetRuntime sets the Runtime field's value.
+func (s *CreateFunctionInput) SetRuntime(v string) *CreateFunctionInput {
+	s.Runtime = &v
+	return s
+}
+
+// SetTimeout sets the Timeout field's value.
+func (s *CreateFunctionInput) SetTimeout(v int64) *CreateFunctionInput {
+	s.Timeout = &v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *CreateFunctionInput) SetVpcConfig(v *VpcConfig) *CreateFunctionInput {
+	s.VpcConfig = v
+	return s
+}
+
+// The parent object that contains the target Amazon Resource Name (ARN) of
+// an Amazon SQS queue or Amazon SNS topic.
+type DeadLetterConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of an Amazon SQS queue or Amazon SNS topic
+	// you specify as your Dead Letter Queue (DLQ).
+	TargetArn *string `type:"string"`
+}
+
+// String returns the string representation
+func (s DeadLetterConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeadLetterConfig) GoString() string {
+	return s.String()
+}
+
+// SetTargetArn sets the TargetArn field's value.
+func (s *DeadLetterConfig) SetTargetArn(v string) *DeadLetterConfig {
+	s.TargetArn = &v
+	return s
+}
+
 type DeleteAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2641,6 +3043,18 @@ func (s *DeleteAliasInput) Validate() error {
 	return nil
 }
 
+// SetFunctionName sets the FunctionName field's value.
+func (s *DeleteAliasInput) SetFunctionName(v string) *DeleteAliasInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DeleteAliasInput) SetName(v string) *DeleteAliasInput {
+	s.Name = &v
+	return s
+}
+
 type DeleteAliasOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2685,6 +3099,12 @@ func (s *DeleteEventSourceMappingInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetUUID sets the UUID field's value.
+func (s *DeleteEventSourceMappingInput) SetUUID(v string) *DeleteEventSourceMappingInput {
+	s.UUID = &v
+	return s
 }
 
 type DeleteFunctionInput struct {
@@ -2749,6 +3169,18 @@ func (s *DeleteFunctionInput) Validate() error {
 	return nil
 }
 
+// SetFunctionName sets the FunctionName field's value.
+func (s *DeleteFunctionInput) SetFunctionName(v string) *DeleteFunctionInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetQualifier sets the Qualifier field's value.
+func (s *DeleteFunctionInput) SetQualifier(v string) *DeleteFunctionInput {
+	s.Qualifier = &v
+	return s
+}
+
 type DeleteFunctionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2761,6 +3193,101 @@ func (s DeleteFunctionOutput) String() string {
 // GoString returns the string representation
 func (s DeleteFunctionOutput) GoString() string {
 	return s.String()
+}
+
+// The parent object that contains your environment's configuration settings.
+type Environment struct {
+	_ struct{} `type:"structure"`
+
+	// The key-value pairs that represent your environment's configuration settings.
+	// The value you specify cannot contain a ",".
+	Variables map[string]*string `type:"map"`
+}
+
+// String returns the string representation
+func (s Environment) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Environment) GoString() string {
+	return s.String()
+}
+
+// SetVariables sets the Variables field's value.
+func (s *Environment) SetVariables(v map[string]*string) *Environment {
+	s.Variables = v
+	return s
+}
+
+// The parent object that contains error information associated with your configuration
+// settings.
+type EnvironmentError struct {
+	_ struct{} `type:"structure"`
+
+	// The error code returned by the environment error object.
+	ErrorCode *string `type:"string"`
+
+	// The message returned by the environment error object.
+	Message *string `type:"string"`
+}
+
+// String returns the string representation
+func (s EnvironmentError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s EnvironmentError) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *EnvironmentError) SetErrorCode(v string) *EnvironmentError {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *EnvironmentError) SetMessage(v string) *EnvironmentError {
+	s.Message = &v
+	return s
+}
+
+// The parent object returned that contains your environment's configuration
+// settings or any error information associated with your configuration settings.
+type EnvironmentResponse struct {
+	_ struct{} `type:"structure"`
+
+	// The parent object that contains error information associated with your configuration
+	// settings.
+	Error *EnvironmentError `type:"structure"`
+
+	// The key-value pairs returned that represent your environment's configuration
+	// settings or error information.
+	Variables map[string]*string `type:"map"`
+}
+
+// String returns the string representation
+func (s EnvironmentResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s EnvironmentResponse) GoString() string {
+	return s.String()
+}
+
+// SetError sets the Error field's value.
+func (s *EnvironmentResponse) SetError(v *EnvironmentError) *EnvironmentResponse {
+	s.Error = v
+	return s
+}
+
+// SetVariables sets the Variables field's value.
+func (s *EnvironmentResponse) SetVariables(v map[string]*string) *EnvironmentResponse {
+	s.Variables = v
+	return s
 }
 
 // Describes mapping between an Amazon Kinesis stream and a Lambda function.
@@ -2807,6 +3334,54 @@ func (s EventSourceMappingConfiguration) GoString() string {
 	return s.String()
 }
 
+// SetBatchSize sets the BatchSize field's value.
+func (s *EventSourceMappingConfiguration) SetBatchSize(v int64) *EventSourceMappingConfiguration {
+	s.BatchSize = &v
+	return s
+}
+
+// SetEventSourceArn sets the EventSourceArn field's value.
+func (s *EventSourceMappingConfiguration) SetEventSourceArn(v string) *EventSourceMappingConfiguration {
+	s.EventSourceArn = &v
+	return s
+}
+
+// SetFunctionArn sets the FunctionArn field's value.
+func (s *EventSourceMappingConfiguration) SetFunctionArn(v string) *EventSourceMappingConfiguration {
+	s.FunctionArn = &v
+	return s
+}
+
+// SetLastModified sets the LastModified field's value.
+func (s *EventSourceMappingConfiguration) SetLastModified(v time.Time) *EventSourceMappingConfiguration {
+	s.LastModified = &v
+	return s
+}
+
+// SetLastProcessingResult sets the LastProcessingResult field's value.
+func (s *EventSourceMappingConfiguration) SetLastProcessingResult(v string) *EventSourceMappingConfiguration {
+	s.LastProcessingResult = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *EventSourceMappingConfiguration) SetState(v string) *EventSourceMappingConfiguration {
+	s.State = &v
+	return s
+}
+
+// SetStateTransitionReason sets the StateTransitionReason field's value.
+func (s *EventSourceMappingConfiguration) SetStateTransitionReason(v string) *EventSourceMappingConfiguration {
+	s.StateTransitionReason = &v
+	return s
+}
+
+// SetUUID sets the UUID field's value.
+func (s *EventSourceMappingConfiguration) SetUUID(v string) *EventSourceMappingConfiguration {
+	s.UUID = &v
+	return s
+}
+
 // The code for the Lambda function.
 type FunctionCode struct {
 	_ struct{} `type:"structure"`
@@ -2825,8 +3400,8 @@ type FunctionCode struct {
 	// The contents of your zip file containing your deployment package. If you
 	// are using the web API directly, the contents of the zip file must be base64-encoded.
 	// If you are using the AWS SDKs or the AWS CLI, the SDKs or CLI will do the
-	// encoding for you. For more information about creating a .zip file, go to
-	// Execution Permissions (http://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html#lambda-intro-execution-role.html)
+	// encoding for you. For more information about creating a .zip file, see Execution
+	// Permissions (http://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html#lambda-intro-execution-role.html)
 	// in the AWS Lambda Developer Guide.
 	//
 	// ZipFile is automatically base64 encoded/decoded by the SDK.
@@ -2862,6 +3437,30 @@ func (s *FunctionCode) Validate() error {
 	return nil
 }
 
+// SetS3Bucket sets the S3Bucket field's value.
+func (s *FunctionCode) SetS3Bucket(v string) *FunctionCode {
+	s.S3Bucket = &v
+	return s
+}
+
+// SetS3Key sets the S3Key field's value.
+func (s *FunctionCode) SetS3Key(v string) *FunctionCode {
+	s.S3Key = &v
+	return s
+}
+
+// SetS3ObjectVersion sets the S3ObjectVersion field's value.
+func (s *FunctionCode) SetS3ObjectVersion(v string) *FunctionCode {
+	s.S3ObjectVersion = &v
+	return s
+}
+
+// SetZipFile sets the ZipFile field's value.
+func (s *FunctionCode) SetZipFile(v []byte) *FunctionCode {
+	s.ZipFile = v
+	return s
+}
+
 // The object for the Lambda function location.
 type FunctionCodeLocation struct {
 	_ struct{} `type:"structure"`
@@ -2884,6 +3483,18 @@ func (s FunctionCodeLocation) GoString() string {
 	return s.String()
 }
 
+// SetLocation sets the Location field's value.
+func (s *FunctionCodeLocation) SetLocation(v string) *FunctionCodeLocation {
+	s.Location = &v
+	return s
+}
+
+// SetRepositoryType sets the RepositoryType field's value.
+func (s *FunctionCodeLocation) SetRepositoryType(v string) *FunctionCodeLocation {
+	s.RepositoryType = &v
+	return s
+}
+
 // A complex type that describes function metadata.
 type FunctionConfiguration struct {
 	_ struct{} `type:"structure"`
@@ -2894,8 +3505,15 @@ type FunctionConfiguration struct {
 	// The size, in bytes, of the function .zip file you uploaded.
 	CodeSize *int64 `type:"long"`
 
+	// The parent object that contains the target Amazon Resource Name (ARN) of
+	// an Amazon SQS queue or Amazon SNS topic.
+	DeadLetterConfig *DeadLetterConfig `type:"structure"`
+
 	// The user-provided description.
 	Description *string `type:"string"`
+
+	// The parent object that contains your environment's configuration settings.
+	Environment *EnvironmentResponse `type:"structure"`
 
 	// The Amazon Resource Name (ARN) assigned to the function.
 	FunctionArn *string `type:"string"`
@@ -2905,6 +3523,11 @@ type FunctionConfiguration struct {
 
 	// The function Lambda calls to begin executing your function.
 	Handler *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) of the KMS key used to encrypt your function's
+	// environment variables. If empty, it means you are using the AWS Lambda default
+	// service key.
+	KMSKeyArn *string `type:"string"`
 
 	// The time stamp of the last time you updated the function.
 	LastModified *string `type:"string"`
@@ -2943,6 +3566,150 @@ func (s FunctionConfiguration) String() string {
 // GoString returns the string representation
 func (s FunctionConfiguration) GoString() string {
 	return s.String()
+}
+
+// SetCodeSha256 sets the CodeSha256 field's value.
+func (s *FunctionConfiguration) SetCodeSha256(v string) *FunctionConfiguration {
+	s.CodeSha256 = &v
+	return s
+}
+
+// SetCodeSize sets the CodeSize field's value.
+func (s *FunctionConfiguration) SetCodeSize(v int64) *FunctionConfiguration {
+	s.CodeSize = &v
+	return s
+}
+
+// SetDeadLetterConfig sets the DeadLetterConfig field's value.
+func (s *FunctionConfiguration) SetDeadLetterConfig(v *DeadLetterConfig) *FunctionConfiguration {
+	s.DeadLetterConfig = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *FunctionConfiguration) SetDescription(v string) *FunctionConfiguration {
+	s.Description = &v
+	return s
+}
+
+// SetEnvironment sets the Environment field's value.
+func (s *FunctionConfiguration) SetEnvironment(v *EnvironmentResponse) *FunctionConfiguration {
+	s.Environment = v
+	return s
+}
+
+// SetFunctionArn sets the FunctionArn field's value.
+func (s *FunctionConfiguration) SetFunctionArn(v string) *FunctionConfiguration {
+	s.FunctionArn = &v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *FunctionConfiguration) SetFunctionName(v string) *FunctionConfiguration {
+	s.FunctionName = &v
+	return s
+}
+
+// SetHandler sets the Handler field's value.
+func (s *FunctionConfiguration) SetHandler(v string) *FunctionConfiguration {
+	s.Handler = &v
+	return s
+}
+
+// SetKMSKeyArn sets the KMSKeyArn field's value.
+func (s *FunctionConfiguration) SetKMSKeyArn(v string) *FunctionConfiguration {
+	s.KMSKeyArn = &v
+	return s
+}
+
+// SetLastModified sets the LastModified field's value.
+func (s *FunctionConfiguration) SetLastModified(v string) *FunctionConfiguration {
+	s.LastModified = &v
+	return s
+}
+
+// SetMemorySize sets the MemorySize field's value.
+func (s *FunctionConfiguration) SetMemorySize(v int64) *FunctionConfiguration {
+	s.MemorySize = &v
+	return s
+}
+
+// SetRole sets the Role field's value.
+func (s *FunctionConfiguration) SetRole(v string) *FunctionConfiguration {
+	s.Role = &v
+	return s
+}
+
+// SetRuntime sets the Runtime field's value.
+func (s *FunctionConfiguration) SetRuntime(v string) *FunctionConfiguration {
+	s.Runtime = &v
+	return s
+}
+
+// SetTimeout sets the Timeout field's value.
+func (s *FunctionConfiguration) SetTimeout(v int64) *FunctionConfiguration {
+	s.Timeout = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *FunctionConfiguration) SetVersion(v string) *FunctionConfiguration {
+	s.Version = &v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *FunctionConfiguration) SetVpcConfig(v *VpcConfigResponse) *FunctionConfiguration {
+	s.VpcConfig = v
+	return s
+}
+
+type GetAccountSettingsInput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s GetAccountSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetAccountSettingsInput) GoString() string {
+	return s.String()
+}
+
+type GetAccountSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Provides limits of code size and concurrency associated with the current
+	// account and region.
+	AccountLimit *AccountLimit `type:"structure"`
+
+	// Provides code size usage and function count associated with the current account
+	// and region.
+	AccountUsage *AccountUsage `type:"structure"`
+}
+
+// String returns the string representation
+func (s GetAccountSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetAccountSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccountLimit sets the AccountLimit field's value.
+func (s *GetAccountSettingsOutput) SetAccountLimit(v *AccountLimit) *GetAccountSettingsOutput {
+	s.AccountLimit = v
+	return s
+}
+
+// SetAccountUsage sets the AccountUsage field's value.
+func (s *GetAccountSettingsOutput) SetAccountUsage(v *AccountUsage) *GetAccountSettingsOutput {
+	s.AccountUsage = v
+	return s
 }
 
 type GetAliasInput struct {
@@ -2993,6 +3760,18 @@ func (s *GetAliasInput) Validate() error {
 	return nil
 }
 
+// SetFunctionName sets the FunctionName field's value.
+func (s *GetAliasInput) SetFunctionName(v string) *GetAliasInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetAliasInput) SetName(v string) *GetAliasInput {
+	s.Name = &v
+	return s
+}
+
 type GetEventSourceMappingInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3023,6 +3802,12 @@ func (s *GetEventSourceMappingInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetUUID sets the UUID field's value.
+func (s *GetEventSourceMappingInput) SetUUID(v string) *GetEventSourceMappingInput {
+	s.UUID = &v
+	return s
 }
 
 type GetFunctionConfigurationInput struct {
@@ -3080,6 +3865,18 @@ func (s *GetFunctionConfigurationInput) Validate() error {
 	return nil
 }
 
+// SetFunctionName sets the FunctionName field's value.
+func (s *GetFunctionConfigurationInput) SetFunctionName(v string) *GetFunctionConfigurationInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetQualifier sets the Qualifier field's value.
+func (s *GetFunctionConfigurationInput) SetQualifier(v string) *GetFunctionConfigurationInput {
+	s.Qualifier = &v
+	return s
+}
+
 type GetFunctionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3133,7 +3930,19 @@ func (s *GetFunctionInput) Validate() error {
 	return nil
 }
 
-// This response contains the object for the Lambda function location (see .
+// SetFunctionName sets the FunctionName field's value.
+func (s *GetFunctionInput) SetFunctionName(v string) *GetFunctionInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetQualifier sets the Qualifier field's value.
+func (s *GetFunctionInput) SetQualifier(v string) *GetFunctionInput {
+	s.Qualifier = &v
+	return s
+}
+
+// This response contains the object for the Lambda function location (see FunctionCodeLocation.
 type GetFunctionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3152,6 +3961,18 @@ func (s GetFunctionOutput) String() string {
 // GoString returns the string representation
 func (s GetFunctionOutput) GoString() string {
 	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *GetFunctionOutput) SetCode(v *FunctionCodeLocation) *GetFunctionOutput {
+	s.Code = v
+	return s
+}
+
+// SetConfiguration sets the Configuration field's value.
+func (s *GetFunctionOutput) SetConfiguration(v *FunctionConfiguration) *GetFunctionOutput {
+	s.Configuration = v
+	return s
 }
 
 type GetPolicyInput struct {
@@ -3207,6 +4028,18 @@ func (s *GetPolicyInput) Validate() error {
 	return nil
 }
 
+// SetFunctionName sets the FunctionName field's value.
+func (s *GetPolicyInput) SetFunctionName(v string) *GetPolicyInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetQualifier sets the Qualifier field's value.
+func (s *GetPolicyInput) SetQualifier(v string) *GetPolicyInput {
+	s.Qualifier = &v
+	return s
+}
+
 type GetPolicyOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3224,6 +4057,12 @@ func (s GetPolicyOutput) String() string {
 // GoString returns the string representation
 func (s GetPolicyOutput) GoString() string {
 	return s.String()
+}
+
+// SetPolicy sets the Policy field's value.
+func (s *GetPolicyOutput) SetPolicy(v string) *GetPolicyOutput {
+	s.Policy = &v
+	return s
 }
 
 type InvokeAsyncInput struct {
@@ -3269,6 +4108,18 @@ func (s *InvokeAsyncInput) Validate() error {
 	return nil
 }
 
+// SetFunctionName sets the FunctionName field's value.
+func (s *InvokeAsyncInput) SetFunctionName(v string) *InvokeAsyncInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetInvokeArgs sets the InvokeArgs field's value.
+func (s *InvokeAsyncInput) SetInvokeArgs(v io.ReadSeeker) *InvokeAsyncInput {
+	s.InvokeArgs = v
+	return s
+}
+
 // Upon success, it returns empty response. Otherwise, throws an exception.
 type InvokeAsyncOutput struct {
 	_ struct{} `deprecated:"true" type:"structure"`
@@ -3285,6 +4136,12 @@ func (s InvokeAsyncOutput) String() string {
 // GoString returns the string representation
 func (s InvokeAsyncOutput) GoString() string {
 	return s.String()
+}
+
+// SetStatus sets the Status field's value.
+func (s *InvokeAsyncOutput) SetStatus(v int64) *InvokeAsyncOutput {
+	s.Status = &v
+	return s
 }
 
 type InvokeInput struct {
@@ -3368,6 +4225,42 @@ func (s *InvokeInput) Validate() error {
 	return nil
 }
 
+// SetClientContext sets the ClientContext field's value.
+func (s *InvokeInput) SetClientContext(v string) *InvokeInput {
+	s.ClientContext = &v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *InvokeInput) SetFunctionName(v string) *InvokeInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetInvocationType sets the InvocationType field's value.
+func (s *InvokeInput) SetInvocationType(v string) *InvokeInput {
+	s.InvocationType = &v
+	return s
+}
+
+// SetLogType sets the LogType field's value.
+func (s *InvokeInput) SetLogType(v string) *InvokeInput {
+	s.LogType = &v
+	return s
+}
+
+// SetPayload sets the Payload field's value.
+func (s *InvokeInput) SetPayload(v []byte) *InvokeInput {
+	s.Payload = v
+	return s
+}
+
+// SetQualifier sets the Qualifier field's value.
+func (s *InvokeInput) SetQualifier(v string) *InvokeInput {
+	s.Qualifier = &v
+	return s
+}
+
 // Upon success, returns an empty response. Otherwise, throws an exception.
 type InvokeOutput struct {
 	_ struct{} `type:"structure" payload:"Payload"`
@@ -3386,7 +4279,7 @@ type InvokeOutput struct {
 	LogResult *string `location:"header" locationName:"X-Amz-Log-Result" type:"string"`
 
 	// It is the JSON representation of the object returned by the Lambda function.
-	// In This is present only if the invocation type is RequestResponse.
+	// This is present only if the invocation type is RequestResponse.
 	//
 	// In the event of a function error this field contains a message describing
 	// the error. For the Handled errors the Lambda function will report this message.
@@ -3408,6 +4301,30 @@ func (s InvokeOutput) String() string {
 // GoString returns the string representation
 func (s InvokeOutput) GoString() string {
 	return s.String()
+}
+
+// SetFunctionError sets the FunctionError field's value.
+func (s *InvokeOutput) SetFunctionError(v string) *InvokeOutput {
+	s.FunctionError = &v
+	return s
+}
+
+// SetLogResult sets the LogResult field's value.
+func (s *InvokeOutput) SetLogResult(v string) *InvokeOutput {
+	s.LogResult = &v
+	return s
+}
+
+// SetPayload sets the Payload field's value.
+func (s *InvokeOutput) SetPayload(v []byte) *InvokeOutput {
+	s.Payload = v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *InvokeOutput) SetStatusCode(v int64) *InvokeOutput {
+	s.StatusCode = &v
+	return s
 }
 
 type ListAliasesInput struct {
@@ -3464,6 +4381,30 @@ func (s *ListAliasesInput) Validate() error {
 	return nil
 }
 
+// SetFunctionName sets the FunctionName field's value.
+func (s *ListAliasesInput) SetFunctionName(v string) *ListAliasesInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetFunctionVersion sets the FunctionVersion field's value.
+func (s *ListAliasesInput) SetFunctionVersion(v string) *ListAliasesInput {
+	s.FunctionVersion = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *ListAliasesInput) SetMarker(v string) *ListAliasesInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *ListAliasesInput) SetMaxItems(v int64) *ListAliasesInput {
+	s.MaxItems = &v
+	return s
+}
+
 type ListAliasesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3482,6 +4423,18 @@ func (s ListAliasesOutput) String() string {
 // GoString returns the string representation
 func (s ListAliasesOutput) GoString() string {
 	return s.String()
+}
+
+// SetAliases sets the Aliases field's value.
+func (s *ListAliasesOutput) SetAliases(v []*AliasConfiguration) *ListAliasesOutput {
+	s.Aliases = v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *ListAliasesOutput) SetNextMarker(v string) *ListAliasesOutput {
+	s.NextMarker = &v
+	return s
 }
 
 type ListEventSourceMappingsInput struct {
@@ -3539,7 +4492,31 @@ func (s *ListEventSourceMappingsInput) Validate() error {
 	return nil
 }
 
-// Contains a list of event sources (see )
+// SetEventSourceArn sets the EventSourceArn field's value.
+func (s *ListEventSourceMappingsInput) SetEventSourceArn(v string) *ListEventSourceMappingsInput {
+	s.EventSourceArn = &v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *ListEventSourceMappingsInput) SetFunctionName(v string) *ListEventSourceMappingsInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *ListEventSourceMappingsInput) SetMarker(v string) *ListEventSourceMappingsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *ListEventSourceMappingsInput) SetMaxItems(v int64) *ListEventSourceMappingsInput {
+	s.MaxItems = &v
+	return s
+}
+
+// Contains a list of event sources (see EventSourceMappingConfiguration)
 type ListEventSourceMappingsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3558,6 +4535,18 @@ func (s ListEventSourceMappingsOutput) String() string {
 // GoString returns the string representation
 func (s ListEventSourceMappingsOutput) GoString() string {
 	return s.String()
+}
+
+// SetEventSourceMappings sets the EventSourceMappings field's value.
+func (s *ListEventSourceMappingsOutput) SetEventSourceMappings(v []*EventSourceMappingConfiguration) *ListEventSourceMappingsOutput {
+	s.EventSourceMappings = v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *ListEventSourceMappingsOutput) SetNextMarker(v string) *ListEventSourceMappingsOutput {
+	s.NextMarker = &v
+	return s
 }
 
 type ListFunctionsInput struct {
@@ -3595,6 +4584,18 @@ func (s *ListFunctionsInput) Validate() error {
 	return nil
 }
 
+// SetMarker sets the Marker field's value.
+func (s *ListFunctionsInput) SetMarker(v string) *ListFunctionsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *ListFunctionsInput) SetMaxItems(v int64) *ListFunctionsInput {
+	s.MaxItems = &v
+	return s
+}
+
 // Contains a list of AWS Lambda function configurations (see FunctionConfiguration.
 type ListFunctionsOutput struct {
 	_ struct{} `type:"structure"`
@@ -3614,6 +4615,18 @@ func (s ListFunctionsOutput) String() string {
 // GoString returns the string representation
 func (s ListFunctionsOutput) GoString() string {
 	return s.String()
+}
+
+// SetFunctions sets the Functions field's value.
+func (s *ListFunctionsOutput) SetFunctions(v []*FunctionConfiguration) *ListFunctionsOutput {
+	s.Functions = v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *ListFunctionsOutput) SetNextMarker(v string) *ListFunctionsOutput {
+	s.NextMarker = &v
+	return s
 }
 
 type ListVersionsByFunctionInput struct {
@@ -3667,6 +4680,24 @@ func (s *ListVersionsByFunctionInput) Validate() error {
 	return nil
 }
 
+// SetFunctionName sets the FunctionName field's value.
+func (s *ListVersionsByFunctionInput) SetFunctionName(v string) *ListVersionsByFunctionInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *ListVersionsByFunctionInput) SetMarker(v string) *ListVersionsByFunctionInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *ListVersionsByFunctionInput) SetMaxItems(v int64) *ListVersionsByFunctionInput {
+	s.MaxItems = &v
+	return s
+}
+
 type ListVersionsByFunctionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3685,6 +4716,18 @@ func (s ListVersionsByFunctionOutput) String() string {
 // GoString returns the string representation
 func (s ListVersionsByFunctionOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *ListVersionsByFunctionOutput) SetNextMarker(v string) *ListVersionsByFunctionOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetVersions sets the Versions field's value.
+func (s *ListVersionsByFunctionOutput) SetVersions(v []*FunctionConfiguration) *ListVersionsByFunctionOutput {
+	s.Versions = v
+	return s
 }
 
 type PublishVersionInput struct {
@@ -3735,6 +4778,24 @@ func (s *PublishVersionInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCodeSha256 sets the CodeSha256 field's value.
+func (s *PublishVersionInput) SetCodeSha256(v string) *PublishVersionInput {
+	s.CodeSha256 = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *PublishVersionInput) SetDescription(v string) *PublishVersionInput {
+	s.Description = &v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *PublishVersionInput) SetFunctionName(v string) *PublishVersionInput {
+	s.FunctionName = &v
+	return s
 }
 
 type RemovePermissionInput struct {
@@ -3796,6 +4857,24 @@ func (s *RemovePermissionInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *RemovePermissionInput) SetFunctionName(v string) *RemovePermissionInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetQualifier sets the Qualifier field's value.
+func (s *RemovePermissionInput) SetQualifier(v string) *RemovePermissionInput {
+	s.Qualifier = &v
+	return s
+}
+
+// SetStatementId sets the StatementId field's value.
+func (s *RemovePermissionInput) SetStatementId(v string) *RemovePermissionInput {
+	s.StatementId = &v
+	return s
 }
 
 type RemovePermissionOutput struct {
@@ -3868,6 +4947,30 @@ func (s *UpdateAliasInput) Validate() error {
 	return nil
 }
 
+// SetDescription sets the Description field's value.
+func (s *UpdateAliasInput) SetDescription(v string) *UpdateAliasInput {
+	s.Description = &v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *UpdateAliasInput) SetFunctionName(v string) *UpdateAliasInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetFunctionVersion sets the FunctionVersion field's value.
+func (s *UpdateAliasInput) SetFunctionVersion(v string) *UpdateAliasInput {
+	s.FunctionVersion = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateAliasInput) SetName(v string) *UpdateAliasInput {
+	s.Name = &v
+	return s
+}
+
 type UpdateEventSourceMappingInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3929,6 +5032,30 @@ func (s *UpdateEventSourceMappingInput) Validate() error {
 	return nil
 }
 
+// SetBatchSize sets the BatchSize field's value.
+func (s *UpdateEventSourceMappingInput) SetBatchSize(v int64) *UpdateEventSourceMappingInput {
+	s.BatchSize = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *UpdateEventSourceMappingInput) SetEnabled(v bool) *UpdateEventSourceMappingInput {
+	s.Enabled = &v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *UpdateEventSourceMappingInput) SetFunctionName(v string) *UpdateEventSourceMappingInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetUUID sets the UUID field's value.
+func (s *UpdateEventSourceMappingInput) SetUUID(v string) *UpdateEventSourceMappingInput {
+	s.UUID = &v
+	return s
+}
+
 type UpdateFunctionCodeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3948,7 +5075,7 @@ type UpdateFunctionCodeInput struct {
 	Publish *bool `type:"boolean"`
 
 	// Amazon S3 bucket name where the .zip file containing your deployment package
-	// is stored. This bucket must reside in the same AWS region where you are creating
+	// is stored. This bucket must reside in the same AWS Region where you are creating
 	// the Lambda function.
 	S3Bucket *string `min:"3" type:"string"`
 
@@ -3961,8 +5088,8 @@ type UpdateFunctionCodeInput struct {
 	// The contents of your zip file containing your deployment package. If you
 	// are using the web API directly, the contents of the zip file must be base64-encoded.
 	// If you are using the AWS SDKs or the AWS CLI, the SDKs or CLI will do the
-	// encoding for you. For more information about creating a .zip file, go to
-	// Execution Permissions (http://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html#lambda-intro-execution-role.html)
+	// encoding for you. For more information about creating a .zip file, see Execution
+	// Permissions (http://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html#lambda-intro-execution-role.html)
 	// in the AWS Lambda Developer Guide.
 	//
 	// ZipFile is automatically base64 encoded/decoded by the SDK.
@@ -4004,12 +5131,55 @@ func (s *UpdateFunctionCodeInput) Validate() error {
 	return nil
 }
 
+// SetFunctionName sets the FunctionName field's value.
+func (s *UpdateFunctionCodeInput) SetFunctionName(v string) *UpdateFunctionCodeInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetPublish sets the Publish field's value.
+func (s *UpdateFunctionCodeInput) SetPublish(v bool) *UpdateFunctionCodeInput {
+	s.Publish = &v
+	return s
+}
+
+// SetS3Bucket sets the S3Bucket field's value.
+func (s *UpdateFunctionCodeInput) SetS3Bucket(v string) *UpdateFunctionCodeInput {
+	s.S3Bucket = &v
+	return s
+}
+
+// SetS3Key sets the S3Key field's value.
+func (s *UpdateFunctionCodeInput) SetS3Key(v string) *UpdateFunctionCodeInput {
+	s.S3Key = &v
+	return s
+}
+
+// SetS3ObjectVersion sets the S3ObjectVersion field's value.
+func (s *UpdateFunctionCodeInput) SetS3ObjectVersion(v string) *UpdateFunctionCodeInput {
+	s.S3ObjectVersion = &v
+	return s
+}
+
+// SetZipFile sets the ZipFile field's value.
+func (s *UpdateFunctionCodeInput) SetZipFile(v []byte) *UpdateFunctionCodeInput {
+	s.ZipFile = v
+	return s
+}
+
 type UpdateFunctionConfigurationInput struct {
 	_ struct{} `type:"structure"`
+
+	// The parent object that contains the target Amazon Resource Name (ARN) of
+	// an Amazon SQS queue or Amazon SNS topic.
+	DeadLetterConfig *DeadLetterConfig `type:"structure"`
 
 	// A short user-defined function description. AWS Lambda does not use this value.
 	// Assign a meaningful description as you see fit.
 	Description *string `type:"string"`
+
+	// The parent object that contains your environment's configuration settings.
+	Environment *Environment `type:"structure"`
 
 	// The name of the Lambda function.
 	//
@@ -4025,6 +5195,11 @@ type UpdateFunctionConfigurationInput struct {
 	// The function that Lambda calls to begin executing your function. For Node.js,
 	// it is the module-name.export value in your function.
 	Handler *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) of the KMS key used to encrypt your function's
+	// environment variables. If you elect to use the AWS Lambda default service
+	// key, pass in an empty string ("") for this parameter.
+	KMSKeyArn *string `type:"string"`
 
 	// The amount of memory, in MB, your Lambda function is given. AWS Lambda uses
 	// this memory size to infer the amount of CPU allocated to your function. Your
@@ -4042,6 +5217,9 @@ type UpdateFunctionConfigurationInput struct {
 	//
 	// To use the Node.js runtime v4.3, set the value to "nodejs4.3". To use earlier
 	// runtime (v0.10.42), set the value to "nodejs".
+	//
+	// You can no longer downgrade to the v0.10.42 runtime version. This version
+	// will no longer be supported as of early 2017.
 	Runtime *string `type:"string" enum:"Runtime"`
 
 	// The function execution time at which AWS Lambda should terminate the function.
@@ -4088,6 +5266,72 @@ func (s *UpdateFunctionConfigurationInput) Validate() error {
 	return nil
 }
 
+// SetDeadLetterConfig sets the DeadLetterConfig field's value.
+func (s *UpdateFunctionConfigurationInput) SetDeadLetterConfig(v *DeadLetterConfig) *UpdateFunctionConfigurationInput {
+	s.DeadLetterConfig = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateFunctionConfigurationInput) SetDescription(v string) *UpdateFunctionConfigurationInput {
+	s.Description = &v
+	return s
+}
+
+// SetEnvironment sets the Environment field's value.
+func (s *UpdateFunctionConfigurationInput) SetEnvironment(v *Environment) *UpdateFunctionConfigurationInput {
+	s.Environment = v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *UpdateFunctionConfigurationInput) SetFunctionName(v string) *UpdateFunctionConfigurationInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetHandler sets the Handler field's value.
+func (s *UpdateFunctionConfigurationInput) SetHandler(v string) *UpdateFunctionConfigurationInput {
+	s.Handler = &v
+	return s
+}
+
+// SetKMSKeyArn sets the KMSKeyArn field's value.
+func (s *UpdateFunctionConfigurationInput) SetKMSKeyArn(v string) *UpdateFunctionConfigurationInput {
+	s.KMSKeyArn = &v
+	return s
+}
+
+// SetMemorySize sets the MemorySize field's value.
+func (s *UpdateFunctionConfigurationInput) SetMemorySize(v int64) *UpdateFunctionConfigurationInput {
+	s.MemorySize = &v
+	return s
+}
+
+// SetRole sets the Role field's value.
+func (s *UpdateFunctionConfigurationInput) SetRole(v string) *UpdateFunctionConfigurationInput {
+	s.Role = &v
+	return s
+}
+
+// SetRuntime sets the Runtime field's value.
+func (s *UpdateFunctionConfigurationInput) SetRuntime(v string) *UpdateFunctionConfigurationInput {
+	s.Runtime = &v
+	return s
+}
+
+// SetTimeout sets the Timeout field's value.
+func (s *UpdateFunctionConfigurationInput) SetTimeout(v int64) *UpdateFunctionConfigurationInput {
+	s.Timeout = &v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *UpdateFunctionConfigurationInput) SetVpcConfig(v *VpcConfig) *UpdateFunctionConfigurationInput {
+	s.VpcConfig = v
+	return s
+}
+
 // If your Lambda function accesses resources in a VPC, you provide this parameter
 // identifying the list of security group IDs and subnet IDs. These must belong
 // to the same VPC. You must provide at least one security group and one subnet
@@ -4110,6 +5354,18 @@ func (s VpcConfig) String() string {
 // GoString returns the string representation
 func (s VpcConfig) GoString() string {
 	return s.String()
+}
+
+// SetSecurityGroupIds sets the SecurityGroupIds field's value.
+func (s *VpcConfig) SetSecurityGroupIds(v []*string) *VpcConfig {
+	s.SecurityGroupIds = v
+	return s
+}
+
+// SetSubnetIds sets the SubnetIds field's value.
+func (s *VpcConfig) SetSubnetIds(v []*string) *VpcConfig {
+	s.SubnetIds = v
+	return s
 }
 
 // VPC configuration associated with your Lambda function.
@@ -4136,12 +5392,33 @@ func (s VpcConfigResponse) GoString() string {
 	return s.String()
 }
 
+// SetSecurityGroupIds sets the SecurityGroupIds field's value.
+func (s *VpcConfigResponse) SetSecurityGroupIds(v []*string) *VpcConfigResponse {
+	s.SecurityGroupIds = v
+	return s
+}
+
+// SetSubnetIds sets the SubnetIds field's value.
+func (s *VpcConfigResponse) SetSubnetIds(v []*string) *VpcConfigResponse {
+	s.SubnetIds = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *VpcConfigResponse) SetVpcId(v string) *VpcConfigResponse {
+	s.VpcId = &v
+	return s
+}
+
 const (
 	// EventSourcePositionTrimHorizon is a EventSourcePosition enum value
 	EventSourcePositionTrimHorizon = "TRIM_HORIZON"
 
 	// EventSourcePositionLatest is a EventSourcePosition enum value
 	EventSourcePositionLatest = "LATEST"
+
+	// EventSourcePositionAtTimestamp is a EventSourcePosition enum value
+	EventSourcePositionAtTimestamp = "AT_TIMESTAMP"
 )
 
 const (
@@ -4175,6 +5452,12 @@ const (
 
 	// RuntimePython27 is a Runtime enum value
 	RuntimePython27 = "python2.7"
+
+	// RuntimeDotnetcore10 is a Runtime enum value
+	RuntimeDotnetcore10 = "dotnetcore1.0"
+
+	// RuntimeNodejs43Edge is a Runtime enum value
+	RuntimeNodejs43Edge = "nodejs4.3-edge"
 )
 
 const (

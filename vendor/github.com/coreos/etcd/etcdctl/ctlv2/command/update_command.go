@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/codegangsta/cli"
 	"github.com/coreos/etcd/client"
+	"github.com/urfave/cli"
 )
 
 // NewUpdateCommand returns the CLI command for "update".
@@ -30,10 +30,11 @@ func NewUpdateCommand() cli.Command {
 		Usage:     "update an existing key with a given value",
 		ArgsUsage: "<key> <value>",
 		Flags: []cli.Flag{
-			cli.IntFlag{Name: "ttl", Value: 0, Usage: "key time-to-live"},
+			cli.IntFlag{Name: "ttl", Value: 0, Usage: "key time-to-live in seconds"},
 		},
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			updateCommandFunc(c, mustNewKeyAPI(c))
+			return nil
 		},
 	}
 }
@@ -41,12 +42,12 @@ func NewUpdateCommand() cli.Command {
 // updateCommandFunc executes the "update" command.
 func updateCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	if len(c.Args()) == 0 {
-		handleError(ExitBadArgs, errors.New("key required"))
+		handleError(c, ExitBadArgs, errors.New("key required"))
 	}
 	key := c.Args()[0]
 	value, err := argOrStdin(c.Args(), os.Stdin, 1)
 	if err != nil {
-		handleError(ExitBadArgs, errors.New("value required"))
+		handleError(c, ExitBadArgs, errors.New("value required"))
 	}
 
 	ttl := c.Int("ttl")
@@ -55,7 +56,7 @@ func updateCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	resp, err := ki.Set(ctx, key, value, &client.SetOptions{TTL: time.Duration(ttl) * time.Second, PrevExist: client.PrevExist})
 	cancel()
 	if err != nil {
-		handleError(ExitServerError, err)
+		handleError(c, ExitServerError, err)
 	}
 
 	printResponseKey(resp, c.GlobalString("output"))

@@ -106,3 +106,16 @@ func _testECSSecurityGroupCreationAndDeletion(t *testing.T, client *Client, regi
 	}
 	t.Logf("Security group %s is deleted successfully.", sgId)
 }
+
+func TestDescribeSecurityGroupAttribute(t *testing.T) {
+	client := NewTestClientForDebug()
+	args := DescribeSecurityGroupAttributeArgs{
+		RegionId:        common.Beijing,
+		SecurityGroupId: TestSecurityGroupId,
+	}
+	attr, err := client.DescribeSecurityGroupAttribute(&args)
+	if err != nil {
+		t.Fatalf("Failed to describe securitygroup attribute %++v", err)
+	}
+	t.Logf("Security group attribute is %++v", attr)
+}

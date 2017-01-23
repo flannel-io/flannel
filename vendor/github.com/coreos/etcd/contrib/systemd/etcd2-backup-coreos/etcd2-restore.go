@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -81,9 +81,11 @@ func restoreEtcd() error {
 	return runCommands(10, 2*time.Second)
 }
 
-var clusterHealthRegex = regexp.MustCompile(".*cluster is healthy.*")
-var lineSplit = regexp.MustCompile("\n+")
-var colonSplit = regexp.MustCompile("\\:")
+var (
+	clusterHealthRegex = regexp.MustCompile(".*cluster is healthy.*")
+	lineSplit          = regexp.MustCompile("\n+")
+	colonSplit         = regexp.MustCompile(`\:`)
+)
 
 func runCommands(maxRetry int, interval time.Duration) error {
 	var retryCnt int

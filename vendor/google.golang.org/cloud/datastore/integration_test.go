@@ -32,6 +32,11 @@ import (
 // TODO(djd): Make test entity clean up more robust: some test entities may
 // be left behind if tests are aborted, the transport fails, etc.
 
+// suffix is a timestamp-based suffix which is appended to key names,
+// particularly for the root keys of entity groups. This reduces flakiness
+// when the tests are run in parallel.
+var suffix = fmt.Sprintf("-t%d", time.Now().UnixNano())
+
 func newClient(ctx context.Context, t *testing.T) *Client {
 	ts := testutil.TokenSource(ctx, ScopeDatastore, ScopeUserEmail)
 	if ts == nil {
@@ -113,7 +118,7 @@ func TestGetMulti(t *testing.T) {
 	type X struct {
 		I int
 	}
-	p := NewKey(ctx, "X", "", time.Now().Unix(), nil)
+	p := NewKey(ctx, "X", "x"+suffix, 0, nil)
 
 	cases := []struct {
 		key *Key
@@ -144,7 +149,7 @@ func TestGetMulti(t *testing.T) {
 	}
 	e, ok := err.(MultiError)
 	if !ok {
-		t.Errorf("client.GetMulti got %t, expected MultiError", err)
+		t.Errorf("client.GetMulti got %T, expected MultiError", err)
 	}
 	for i, err := range e {
 		got, want := err, (error)(nil)
@@ -274,7 +279,7 @@ func TestFilters(t *testing.T) {
 	ctx := context.Background()
 	client := newClient(ctx, t)
 
-	parent := NewKey(ctx, "SQParent", "TestFilters", 0, nil)
+	parent := NewKey(ctx, "SQParent", "TestFilters"+suffix, 0, nil)
 	now := time.Now().Truncate(time.Millisecond).Unix()
 	children := []*SQChild{
 		{I: 0, T: now, U: now},
@@ -360,7 +365,7 @@ func TestEventualConsistency(t *testing.T) {
 	ctx := context.Background()
 	client := newClient(ctx, t)
 
-	parent := NewKey(ctx, "SQParent", "TestEventualConsistency", 0, nil)
+	parent := NewKey(ctx, "SQParent", "TestEventualConsistency"+suffix, 0, nil)
 	now := time.Now().Truncate(time.Millisecond).Unix()
 	children := []*SQChild{
 		{I: 0, T: now, U: now},
@@ -386,7 +391,7 @@ func TestProjection(t *testing.T) {
 	ctx := context.Background()
 	client := newClient(ctx, t)
 
-	parent := NewKey(ctx, "SQParent", "TestProjection", 0, nil)
+	parent := NewKey(ctx, "SQParent", "TestProjection"+suffix, 0, nil)
 	now := time.Now().Truncate(time.Millisecond).Unix()
 	children := []*SQChild{
 		{I: 1 << 0, J: 100, T: now, U: now},
@@ -461,7 +466,7 @@ func TestGetAllWithFieldMismatch(t *testing.T) {
 	// by default, which prevents a test from being flaky.
 	// See https://cloud.google.com/appengine/docs/go/datastore/queries#Go_Data_consistency
 	// for more information.
-	parent := NewKey(ctx, "SQParent", "TestGetAllWithFieldMismatch", 0, nil)
+	parent := NewKey(ctx, "SQParent", "TestGetAllWithFieldMismatch"+suffix, 0, nil)
 	putKeys := make([]*Key, 3)
 	for i := range putKeys {
 		putKeys[i] = NewKey(ctx, "GetAllThing", "", int64(10+i), parent)
@@ -505,7 +510,7 @@ func TestKindlessQueries(t *testing.T) {
 		Pling string
 	}
 
-	parent := NewKey(ctx, "Tweedle", "tweedle", 0, nil)
+	parent := NewKey(ctx, "Tweedle", "tweedle"+suffix, 0, nil)
 
 	keys := []*Key{
 		NewKey(ctx, "Dee", "dee0", 0, parent),
@@ -708,11 +713,11 @@ func TestTransaction(t *testing.T) {
 
 		// Check the final value of the counter.
 		if err := client.Get(ctx, key, c); err != nil {
-			t.Errorf("%s: client.Get: %v", err)
+			t.Errorf("%s: client.Get: %v", tt.desc, err)
 			continue
 		}
 		if c.N != tt.want {
-			t.Errorf("%s: counter N=%d, want N=%d", c.N, tt.want)
+			t.Errorf("%s: counter N=%d, want N=%d", tt.desc, c.N, tt.want)
 		}
 	}
 }

@@ -28,12 +28,26 @@ const (
 	RouteEntryStatusModifying = RouteEntryStatus("Modifying")
 )
 
+type NextHopListType struct {
+	NextHopList struct {
+		NextHopItem []NextHopItemType
+	}
+}
+
+type NextHopItemType struct {
+	NextHopType string
+	NextHopId   string
+}
+
 //
 // You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&routeentrysettype
 type RouteEntrySetType struct {
 	RouteTableId         string
 	DestinationCidrBlock string
 	Type                 RouteTableType
+	NextHopType          string
+	NextHopId            string
+	NextHopList          NextHopListType
 	InstanceId           string
 	Status               RouteEntryStatus // enum Pending | Available | Modifying
 }

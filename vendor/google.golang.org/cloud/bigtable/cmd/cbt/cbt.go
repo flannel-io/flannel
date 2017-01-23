@@ -229,10 +229,11 @@ var commands = []struct {
 		Name: "read",
 		Desc: "Read rows",
 		do:   doRead,
-		Usage: "cbt read <table> [start=<row>] [limit=<row>] [prefix=<prefix>]\n" +
+		Usage: "cbt read <table> [start=<row>] [end=<row>] [prefix=<prefix>] [count=<n>]\n" +
 			"  start=<row>		Start reading at this row\n" +
-			"  limit=<row>		Stop reading before this row\n" +
-			"  prefix=<prefix>	Read rows with this prefix\n",
+			"  end=<row>		Stop reading before this row\n" +
+			"  prefix=<prefix>	Read rows with this prefix\n" +
+			"  count=<n>		Read only this many rows\n",
 	},
 	{
 		Name: "set",
@@ -253,6 +254,15 @@ var commands = []struct {
 		Usage: "cbt setclustersize <num_nodes>",
 	},
 	*/
+	{
+		Name: "setgcpolicy",
+		Desc: "Set the GC policy for a column family",
+		do:   doSetGCPolicy,
+		Usage: "cbt setgcpolicy <table> <family> ( maxage=<d> | maxversions=<n> )\n" +
+			"\n" +
+			`  maxage=<d>		Maximum timestamp age to preserve (e.g. "1h", "4d")` + "\n" +
+			"  maxversions=<n>	Maximum number of versions to preserve",
+	},
 }
 
 func doCount(ctx context.Context, args ...string) {
@@ -505,17 +515,20 @@ func doRead(ctx context.Context, args ...string) {
 		switch key {
 		default:
 			log.Fatalf("Unknown arg key %q", key)
-		case "start", "limit", "prefix":
+		case "limit":
+			// Be nicer; we used to support this, but renamed it to "end".
+			log.Fatalf("Unknown arg key %q; did you mean %q?", key, "end")
+		case "start", "end", "prefix", "count":
 			parsed[key] = val
 		}
 	}
-	if (parsed["start"] != "" || parsed["limit"] != "") && parsed["prefix"] != "" {
-		log.Fatal(`"start"/"limit" may not be mixed with "prefix"`)
+	if (parsed["start"] != "" || parsed["end"] != "") && parsed["prefix"] != "" {
+		log.Fatal(`"start"/"end" may not be mixed with "prefix"`)
 	}
 
 	var rr bigtable.RowRange
-	if start, limit := parsed["start"], parsed["limit"]; limit != "" {
-		rr = bigtable.NewRange(start, limit)
+	if start, end := parsed["start"], parsed["end"]; end != "" {
+		rr = bigtable.NewRange(start, end)
 	} else if start != "" {
 		rr = bigtable.InfiniteRange(start)
 	}
@@ -523,11 +536,20 @@ func doRead(ctx context.Context, args ...string) {
 		rr = bigtable.PrefixRange(prefix)
 	}
 
+	var opts []bigtable.ReadOption
+	if count := parsed["count"]; count != "" {
+		n, err := strconv.ParseInt(count, 0, 64)
+		if err != nil {
+			log.Fatalf("Bad count %q: %v", count, err)
+		}
+		opts = append(opts, bigtable.LimitRows(n))
+	}
+
 	// TODO(dsymonds): Support filters.
 	err := tbl.ReadRows(ctx, rr, func(r bigtable.Row) bool {
 		printRow(r)
 		return true
-	})
+	}, opts...)
 	if err != nil {
 		log.Fatalf("Reading rows: %v", err)
 	}
@@ -578,3 +600,74 @@ func doSetClusterSize(ctx context.Context, args ...string) {
 	}
 }
 */
+
+func doSetGCPolicy(ctx context.Context, args ...string) {
+	if len(args) < 3 {
+		log.Fatalf("usage: cbt setgcpolicy <table> <family> ( maxage=<d> | maxversions=<n> )")
+	}
+	table := args[0]
+	fam := args[1]
+
+	var pol bigtable.GCPolicy
+	switch p := args[2]; {
+	case strings.HasPrefix(p, "maxage="):
+		d, err := parseDuration(p[7:])
+		if err != nil {
+			log.Fatal(err)
+		}
+		pol = bigtable.MaxAgePolicy(d)
+	case strings.HasPrefix(p, "maxversions="):
+		n, err := strconv.ParseUint(p[12:], 10, 16)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pol = bigtable.MaxVersionsPolicy(int(n))
+	default:
+		log.Fatalf("Bad GC policy %q", p)
+	}
+	if err := getAdminClient().SetGCPolicy(ctx, table, fam, pol); err != nil {
+		log.Fatalf("Setting GC policy: %v", err)
+	}
+}
+
+// parseDuration parses a duration string.
+// It is similar to Go's time.ParseDuration, except with a different set of supported units,
+// and only simple formats supported.
+func parseDuration(s string) (time.Duration, error) {
+	// [0-9]+[a-z]+
+
+	// Split [0-9]+ from [a-z]+.
+	i := 0
+	for ; i < len(s); i++ {
+		c := s[i]
+		if c < '0' || c > '9' {
+			break
+		}
+	}
+	ds, u := s[:i], s[i:]
+	if ds == "" || u == "" {
+		return 0, fmt.Errorf("invalid duration %q", s)
+	}
+	// Parse them.
+	d, err := strconv.ParseUint(ds, 10, 32)
+	if err != nil {
+		return 0, fmt.Errorf("invalid duration %q: %v", s, err)
+	}
+	unit, ok := unitMap[u]
+	if !ok {
+		return 0, fmt.Errorf("unknown unit %q in duration %q", u, s)
+	}
+	if d > uint64((1<<63-1)/unit) {
+		// overflow
+		return 0, fmt.Errorf("invalid duration %q overflows", s)
+	}
+	return time.Duration(d) * unit, nil
+}
+
+var unitMap = map[string]time.Duration{
+	"ms": time.Millisecond,
+	"s":  time.Second,
+	"m":  time.Minute,
+	"h":  time.Hour,
+	"d":  24 * time.Hour,
+}

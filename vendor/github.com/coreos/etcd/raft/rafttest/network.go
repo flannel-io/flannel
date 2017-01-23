@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -100,8 +100,20 @@ func (rn *raftNetwork) send(m raftpb.Message) {
 		time.Sleep(time.Duration(rd))
 	}
 
+	// use marshal/unmarshal to copy message to avoid data race.
+	b, err := m.Marshal()
+	if err != nil {
+		panic(err)
+	}
+
+	var cm raftpb.Message
+	err = cm.Unmarshal(b)
+	if err != nil {
+		panic(err)
+	}
+
 	select {
-	case to <- m:
+	case to <- cm:
 	default:
 		// drop messages when the receiver queue is full.
 	}

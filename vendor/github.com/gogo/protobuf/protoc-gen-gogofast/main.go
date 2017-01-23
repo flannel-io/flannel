@@ -36,7 +36,7 @@ import (
 func main() {
 	req := command.Read()
 	files := req.GetProtoFile()
-	files = vanity.FilterFiles(files, vanity.NotGoogleProtobufDescriptorProto)
+	files = vanity.FilterFiles(files, vanity.NotInPackageGoogleProtobuf)
 
 	vanity.ForEachFile(files, vanity.TurnOnMarshalerAll)
 	vanity.ForEachFile(files, vanity.TurnOnSizerAll)

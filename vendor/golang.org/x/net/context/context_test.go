@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build !go1.7
+
 package context
 
 import (
@@ -241,45 +243,51 @@ func testDeadline(c Context, wait time.Duration, t *testing.T) {
 }
 
 func TestDeadline(t *testing.T) {
-	c, _ := WithDeadline(Background(), time.Now().Add(100*time.Millisecond))
+	t.Parallel()
+	const timeUnit = 500 * time.Millisecond
+	c, _ := WithDeadline(Background(), time.Now().Add(1*timeUnit))
 	if got, prefix := fmt.Sprint(c), "context.Background.WithDeadline("; !strings.HasPrefix(got, prefix) {
 		t.Errorf("c.String() = %q want prefix %q", got, prefix)
 	}
-	testDeadline(c, 200*time.Millisecond, t)
+	testDeadline(c, 2*timeUnit, t)
 
-	c, _ = WithDeadline(Background(), time.Now().Add(100*time.Millisecond))
+	c, _ = WithDeadline(Background(), time.Now().Add(1*timeUnit))
 	o := otherContext{c}
-	testDeadline(o, 200*time.Millisecond, t)
+	testDeadline(o, 2*timeUnit, t)
 
-	c, _ = WithDeadline(Background(), time.Now().Add(100*time.Millisecond))
+	c, _ = WithDeadline(Background(), time.Now().Add(1*timeUnit))
 	o = otherContext{c}
-	c, _ = WithDeadline(o, time.Now().Add(300*time.Millisecond))
-	testDeadline(c, 200*time.Millisecond, t)
+	c, _ = WithDeadline(o, time.Now().Add(3*timeUnit))
+	testDeadline(c, 2*timeUnit, t)
 }
 
 func TestTimeout(t *testing.T) {
-	c, _ := WithTimeout(Background(), 100*time.Millisecond)
+	t.Parallel()
+	const timeUnit = 500 * time.Millisecond
+	c, _ := WithTimeout(Background(), 1*timeUnit)
 	if got, prefix := fmt.Sprint(c), "context.Background.WithDeadline("; !strings.HasPrefix(got, prefix) {
 		t.Errorf("c.String() = %q want prefix %q", got, prefix)
 	}
-	testDeadline(c, 200*time.Millisecond, t)
+	testDeadline(c, 2*timeUnit, t)
 
-	c, _ = WithTimeout(Background(), 100*time.Millisecond)
+	c, _ = WithTimeout(Background(), 1*timeUnit)
 	o := otherContext{c}
-	testDeadline(o, 200*time.Millisecond, t)
+	testDeadline(o, 2*timeUnit, t)
 
-	c, _ = WithTimeout(Background(), 100*time.Millisecond)
+	c, _ = WithTimeout(Background(), 1*timeUnit)
 	o = otherContext{c}
-	c, _ = WithTimeout(o, 300*time.Millisecond)
-	testDeadline(c, 200*time.Millisecond, t)
+	c, _ = WithTimeout(o, 3*timeUnit)
+	testDeadline(c, 2*timeUnit, t)
 }
 
 func TestCanceledTimeout(t *testing.T) {
-	c, _ := WithTimeout(Background(), 200*time.Millisecond)
+	t.Parallel()
+	const timeUnit = 500 * time.Millisecond
+	c, _ := WithTimeout(Background(), 2*timeUnit)
 	o := otherContext{c}
-	c, cancel := WithTimeout(o, 400*time.Millisecond)
+	c, cancel := WithTimeout(o, 4*timeUnit)
 	cancel()
-	time.Sleep(100 * time.Millisecond) // let cancelation propagate
+	time.Sleep(1 * timeUnit) // let cancelation propagate
 	select {
 	case <-c.Done():
 	default:
@@ -375,7 +383,7 @@ func TestAllocs(t *testing.T) {
 				<-c.Done()
 			},
 			limit:      8,
-			gccgoLimit: 15,
+			gccgoLimit: 16,
 		},
 		{
 			desc: "WithCancel(bg)",
@@ -401,7 +409,7 @@ func TestAllocs(t *testing.T) {
 		limit := test.limit
 		if runtime.Compiler == "gccgo" {
 			// gccgo does not yet do escape analysis.
-			// TOOD(iant): Remove this when gccgo does do escape analysis.
+			// TODO(iant): Remove this when gccgo does do escape analysis.
 			limit = test.gccgoLimit
 		}
 		if n := testing.AllocsPerRun(100, test.f); n > limit {

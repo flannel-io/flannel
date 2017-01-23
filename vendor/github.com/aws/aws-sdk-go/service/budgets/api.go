@@ -36,7 +36,6 @@ const opCreateBudget = "CreateBudget"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) CreateBudgetRequest(input *CreateBudgetInput) (req *request.Request, output *CreateBudgetOutput) {
 	op := &request.Operation{
 		Name:       opCreateBudget,
@@ -48,9 +47,8 @@ func (c *Budgets) CreateBudgetRequest(input *CreateBudgetInput) (req *request.Re
 		input = &CreateBudgetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateBudgetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -112,7 +110,6 @@ const opCreateNotification = "CreateNotification"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) CreateNotificationRequest(input *CreateNotificationInput) (req *request.Request, output *CreateNotificationOutput) {
 	op := &request.Operation{
 		Name:       opCreateNotification,
@@ -124,9 +121,8 @@ func (c *Budgets) CreateNotificationRequest(input *CreateNotificationInput) (req
 		input = &CreateNotificationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateNotificationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -192,7 +188,6 @@ const opCreateSubscriber = "CreateSubscriber"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) CreateSubscriberRequest(input *CreateSubscriberInput) (req *request.Request, output *CreateSubscriberOutput) {
 	op := &request.Operation{
 		Name:       opCreateSubscriber,
@@ -204,9 +199,8 @@ func (c *Budgets) CreateSubscriberRequest(input *CreateSubscriberInput) (req *re
 		input = &CreateSubscriberInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateSubscriberOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -268,7 +262,6 @@ const opDeleteBudget = "DeleteBudget"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) DeleteBudgetRequest(input *DeleteBudgetInput) (req *request.Request, output *DeleteBudgetOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBudget,
@@ -280,9 +273,8 @@ func (c *Budgets) DeleteBudgetRequest(input *DeleteBudgetInput) (req *request.Re
 		input = &DeleteBudgetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteBudgetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -340,7 +332,6 @@ const opDeleteNotification = "DeleteNotification"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) DeleteNotificationRequest(input *DeleteNotificationInput) (req *request.Request, output *DeleteNotificationOutput) {
 	op := &request.Operation{
 		Name:       opDeleteNotification,
@@ -352,9 +343,8 @@ func (c *Budgets) DeleteNotificationRequest(input *DeleteNotificationInput) (req
 		input = &DeleteNotificationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteNotificationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -412,7 +402,6 @@ const opDeleteSubscriber = "DeleteSubscriber"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) DeleteSubscriberRequest(input *DeleteSubscriberInput) (req *request.Request, output *DeleteSubscriberOutput) {
 	op := &request.Operation{
 		Name:       opDeleteSubscriber,
@@ -424,9 +413,8 @@ func (c *Budgets) DeleteSubscriberRequest(input *DeleteSubscriberInput) (req *re
 		input = &DeleteSubscriberInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteSubscriberOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -484,7 +472,6 @@ const opDescribeBudget = "DescribeBudget"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) DescribeBudgetRequest(input *DescribeBudgetInput) (req *request.Request, output *DescribeBudgetOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBudget,
@@ -496,9 +483,8 @@ func (c *Budgets) DescribeBudgetRequest(input *DescribeBudgetInput) (req *reques
 		input = &DescribeBudgetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeBudgetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -556,7 +542,6 @@ const opDescribeBudgets = "DescribeBudgets"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) DescribeBudgetsRequest(input *DescribeBudgetsInput) (req *request.Request, output *DescribeBudgetsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBudgets,
@@ -568,9 +553,8 @@ func (c *Budgets) DescribeBudgetsRequest(input *DescribeBudgetsInput) (req *requ
 		input = &DescribeBudgetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeBudgetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -635,7 +619,6 @@ const opDescribeNotificationsForBudget = "DescribeNotificationsForBudget"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) DescribeNotificationsForBudgetRequest(input *DescribeNotificationsForBudgetInput) (req *request.Request, output *DescribeNotificationsForBudgetOutput) {
 	op := &request.Operation{
 		Name:       opDescribeNotificationsForBudget,
@@ -647,9 +630,8 @@ func (c *Budgets) DescribeNotificationsForBudgetRequest(input *DescribeNotificat
 		input = &DescribeNotificationsForBudgetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeNotificationsForBudgetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -714,7 +696,6 @@ const opDescribeSubscribersForNotification = "DescribeSubscribersForNotification
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) DescribeSubscribersForNotificationRequest(input *DescribeSubscribersForNotificationInput) (req *request.Request, output *DescribeSubscribersForNotificationOutput) {
 	op := &request.Operation{
 		Name:       opDescribeSubscribersForNotification,
@@ -726,9 +707,8 @@ func (c *Budgets) DescribeSubscribersForNotificationRequest(input *DescribeSubsc
 		input = &DescribeSubscribersForNotificationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeSubscribersForNotificationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -793,7 +773,6 @@ const opUpdateBudget = "UpdateBudget"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) UpdateBudgetRequest(input *UpdateBudgetInput) (req *request.Request, output *UpdateBudgetOutput) {
 	op := &request.Operation{
 		Name:       opUpdateBudget,
@@ -805,9 +784,8 @@ func (c *Budgets) UpdateBudgetRequest(input *UpdateBudgetInput) (req *request.Re
 		input = &UpdateBudgetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateBudgetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -865,7 +843,6 @@ const opUpdateNotification = "UpdateNotification"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) UpdateNotificationRequest(input *UpdateNotificationInput) (req *request.Request, output *UpdateNotificationOutput) {
 	op := &request.Operation{
 		Name:       opUpdateNotification,
@@ -877,9 +854,8 @@ func (c *Budgets) UpdateNotificationRequest(input *UpdateNotificationInput) (req
 		input = &UpdateNotificationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateNotificationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -937,7 +913,6 @@ const opUpdateSubscriber = "UpdateSubscriber"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *Budgets) UpdateSubscriberRequest(input *UpdateSubscriberInput) (req *request.Request, output *UpdateSubscriberOutput) {
 	op := &request.Operation{
 		Name:       opUpdateSubscriber,
@@ -949,9 +924,8 @@ func (c *Budgets) UpdateSubscriberRequest(input *UpdateSubscriberInput) (req *re
 		input = &UpdateSubscriberInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateSubscriberOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1084,6 +1058,54 @@ func (s *Budget) Validate() error {
 	return nil
 }
 
+// SetBudgetLimit sets the BudgetLimit field's value.
+func (s *Budget) SetBudgetLimit(v *Spend) *Budget {
+	s.BudgetLimit = v
+	return s
+}
+
+// SetBudgetName sets the BudgetName field's value.
+func (s *Budget) SetBudgetName(v string) *Budget {
+	s.BudgetName = &v
+	return s
+}
+
+// SetBudgetType sets the BudgetType field's value.
+func (s *Budget) SetBudgetType(v string) *Budget {
+	s.BudgetType = &v
+	return s
+}
+
+// SetCalculatedSpend sets the CalculatedSpend field's value.
+func (s *Budget) SetCalculatedSpend(v *CalculatedSpend) *Budget {
+	s.CalculatedSpend = v
+	return s
+}
+
+// SetCostFilters sets the CostFilters field's value.
+func (s *Budget) SetCostFilters(v map[string][]*string) *Budget {
+	s.CostFilters = v
+	return s
+}
+
+// SetCostTypes sets the CostTypes field's value.
+func (s *Budget) SetCostTypes(v *CostTypes) *Budget {
+	s.CostTypes = v
+	return s
+}
+
+// SetTimePeriod sets the TimePeriod field's value.
+func (s *Budget) SetTimePeriod(v *TimePeriod) *Budget {
+	s.TimePeriod = v
+	return s
+}
+
+// SetTimeUnit sets the TimeUnit field's value.
+func (s *Budget) SetTimeUnit(v string) *Budget {
+	s.TimeUnit = &v
+	return s
+}
+
 // A structure holds the actual and forecasted spend for a budget.
 type CalculatedSpend struct {
 	_ struct{} `type:"structure"`
@@ -1130,6 +1152,18 @@ func (s *CalculatedSpend) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetActualSpend sets the ActualSpend field's value.
+func (s *CalculatedSpend) SetActualSpend(v *Spend) *CalculatedSpend {
+	s.ActualSpend = v
+	return s
+}
+
+// SetForecastedSpend sets the ForecastedSpend field's value.
+func (s *CalculatedSpend) SetForecastedSpend(v *Spend) *CalculatedSpend {
+	s.ForecastedSpend = v
+	return s
 }
 
 // This includes the options for getting the cost of a budget.
@@ -1179,6 +1213,24 @@ func (s *CostTypes) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetIncludeSubscription sets the IncludeSubscription field's value.
+func (s *CostTypes) SetIncludeSubscription(v bool) *CostTypes {
+	s.IncludeSubscription = &v
+	return s
+}
+
+// SetIncludeTax sets the IncludeTax field's value.
+func (s *CostTypes) SetIncludeTax(v bool) *CostTypes {
+	s.IncludeTax = &v
+	return s
+}
+
+// SetUseBlended sets the UseBlended field's value.
+func (s *CostTypes) SetUseBlended(v bool) *CostTypes {
+	s.UseBlended = &v
+	return s
 }
 
 // Request of CreateBudget
@@ -1241,6 +1293,24 @@ func (s *CreateBudgetInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *CreateBudgetInput) SetAccountId(v string) *CreateBudgetInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBudget sets the Budget field's value.
+func (s *CreateBudgetInput) SetBudget(v *Budget) *CreateBudgetInput {
+	s.Budget = v
+	return s
+}
+
+// SetNotificationsWithSubscribers sets the NotificationsWithSubscribers field's value.
+func (s *CreateBudgetInput) SetNotificationsWithSubscribers(v []*NotificationWithSubscribers) *CreateBudgetInput {
+	s.NotificationsWithSubscribers = v
+	return s
 }
 
 // Response of CreateBudget
@@ -1337,6 +1407,30 @@ func (s *CreateNotificationInput) Validate() error {
 	return nil
 }
 
+// SetAccountId sets the AccountId field's value.
+func (s *CreateNotificationInput) SetAccountId(v string) *CreateNotificationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBudgetName sets the BudgetName field's value.
+func (s *CreateNotificationInput) SetBudgetName(v string) *CreateNotificationInput {
+	s.BudgetName = &v
+	return s
+}
+
+// SetNotification sets the Notification field's value.
+func (s *CreateNotificationInput) SetNotification(v *Notification) *CreateNotificationInput {
+	s.Notification = v
+	return s
+}
+
+// SetSubscribers sets the Subscribers field's value.
+func (s *CreateNotificationInput) SetSubscribers(v []*Subscriber) *CreateNotificationInput {
+	s.Subscribers = v
+	return s
+}
+
 // Response of CreateNotification
 type CreateNotificationOutput struct {
 	_ struct{} `type:"structure"`
@@ -1424,6 +1518,30 @@ func (s *CreateSubscriberInput) Validate() error {
 	return nil
 }
 
+// SetAccountId sets the AccountId field's value.
+func (s *CreateSubscriberInput) SetAccountId(v string) *CreateSubscriberInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBudgetName sets the BudgetName field's value.
+func (s *CreateSubscriberInput) SetBudgetName(v string) *CreateSubscriberInput {
+	s.BudgetName = &v
+	return s
+}
+
+// SetNotification sets the Notification field's value.
+func (s *CreateSubscriberInput) SetNotification(v *Notification) *CreateSubscriberInput {
+	s.Notification = v
+	return s
+}
+
+// SetSubscriber sets the Subscriber field's value.
+func (s *CreateSubscriberInput) SetSubscriber(v *Subscriber) *CreateSubscriberInput {
+	s.Subscriber = v
+	return s
+}
+
 // Response of CreateSubscriber
 type CreateSubscriberOutput struct {
 	_ struct{} `type:"structure"`
@@ -1481,6 +1599,18 @@ func (s *DeleteBudgetInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *DeleteBudgetInput) SetAccountId(v string) *DeleteBudgetInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBudgetName sets the BudgetName field's value.
+func (s *DeleteBudgetInput) SetBudgetName(v string) *DeleteBudgetInput {
+	s.BudgetName = &v
+	return s
 }
 
 // Response of DeleteBudget
@@ -1554,6 +1684,24 @@ func (s *DeleteNotificationInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *DeleteNotificationInput) SetAccountId(v string) *DeleteNotificationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBudgetName sets the BudgetName field's value.
+func (s *DeleteNotificationInput) SetBudgetName(v string) *DeleteNotificationInput {
+	s.BudgetName = &v
+	return s
+}
+
+// SetNotification sets the Notification field's value.
+func (s *DeleteNotificationInput) SetNotification(v *Notification) *DeleteNotificationInput {
+	s.Notification = v
+	return s
 }
 
 // Response of DeleteNotification
@@ -1643,6 +1791,30 @@ func (s *DeleteSubscriberInput) Validate() error {
 	return nil
 }
 
+// SetAccountId sets the AccountId field's value.
+func (s *DeleteSubscriberInput) SetAccountId(v string) *DeleteSubscriberInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBudgetName sets the BudgetName field's value.
+func (s *DeleteSubscriberInput) SetBudgetName(v string) *DeleteSubscriberInput {
+	s.BudgetName = &v
+	return s
+}
+
+// SetNotification sets the Notification field's value.
+func (s *DeleteSubscriberInput) SetNotification(v *Notification) *DeleteSubscriberInput {
+	s.Notification = v
+	return s
+}
+
+// SetSubscriber sets the Subscriber field's value.
+func (s *DeleteSubscriberInput) SetSubscriber(v *Subscriber) *DeleteSubscriberInput {
+	s.Subscriber = v
+	return s
+}
+
 // Response of DeleteSubscriber
 type DeleteSubscriberOutput struct {
 	_ struct{} `type:"structure"`
@@ -1702,6 +1874,18 @@ func (s *DescribeBudgetInput) Validate() error {
 	return nil
 }
 
+// SetAccountId sets the AccountId field's value.
+func (s *DescribeBudgetInput) SetAccountId(v string) *DescribeBudgetInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBudgetName sets the BudgetName field's value.
+func (s *DescribeBudgetInput) SetBudgetName(v string) *DescribeBudgetInput {
+	s.BudgetName = &v
+	return s
+}
+
 // Response of DescribeBudget
 type DescribeBudgetOutput struct {
 	_ struct{} `type:"structure"`
@@ -1718,6 +1902,12 @@ func (s DescribeBudgetOutput) String() string {
 // GoString returns the string representation
 func (s DescribeBudgetOutput) GoString() string {
 	return s.String()
+}
+
+// SetBudget sets the Budget field's value.
+func (s *DescribeBudgetOutput) SetBudget(v *Budget) *DescribeBudgetOutput {
+	s.Budget = v
+	return s
 }
 
 // Request of DescribeBudgets
@@ -1766,6 +1956,24 @@ func (s *DescribeBudgetsInput) Validate() error {
 	return nil
 }
 
+// SetAccountId sets the AccountId field's value.
+func (s *DescribeBudgetsInput) SetAccountId(v string) *DescribeBudgetsInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeBudgetsInput) SetMaxResults(v int64) *DescribeBudgetsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeBudgetsInput) SetNextToken(v string) *DescribeBudgetsInput {
+	s.NextToken = &v
+	return s
+}
+
 // Response of DescribeBudgets
 type DescribeBudgetsOutput struct {
 	_ struct{} `type:"structure"`
@@ -1785,6 +1993,18 @@ func (s DescribeBudgetsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeBudgetsOutput) GoString() string {
 	return s.String()
+}
+
+// SetBudgets sets the Budgets field's value.
+func (s *DescribeBudgetsOutput) SetBudgets(v []*Budget) *DescribeBudgetsOutput {
+	s.Budgets = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeBudgetsOutput) SetNextToken(v string) *DescribeBudgetsOutput {
+	s.NextToken = &v
+	return s
 }
 
 // Request of DescribeNotificationsForBudget
@@ -1841,6 +2061,30 @@ func (s *DescribeNotificationsForBudgetInput) Validate() error {
 	return nil
 }
 
+// SetAccountId sets the AccountId field's value.
+func (s *DescribeNotificationsForBudgetInput) SetAccountId(v string) *DescribeNotificationsForBudgetInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBudgetName sets the BudgetName field's value.
+func (s *DescribeNotificationsForBudgetInput) SetBudgetName(v string) *DescribeNotificationsForBudgetInput {
+	s.BudgetName = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeNotificationsForBudgetInput) SetMaxResults(v int64) *DescribeNotificationsForBudgetInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeNotificationsForBudgetInput) SetNextToken(v string) *DescribeNotificationsForBudgetInput {
+	s.NextToken = &v
+	return s
+}
+
 // Response of GetNotificationsForBudget
 type DescribeNotificationsForBudgetOutput struct {
 	_ struct{} `type:"structure"`
@@ -1860,6 +2104,18 @@ func (s DescribeNotificationsForBudgetOutput) String() string {
 // GoString returns the string representation
 func (s DescribeNotificationsForBudgetOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeNotificationsForBudgetOutput) SetNextToken(v string) *DescribeNotificationsForBudgetOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetNotifications sets the Notifications field's value.
+func (s *DescribeNotificationsForBudgetOutput) SetNotifications(v []*Notification) *DescribeNotificationsForBudgetOutput {
+	s.Notifications = v
+	return s
 }
 
 // Request of DescribeSubscribersForNotification
@@ -1930,6 +2186,36 @@ func (s *DescribeSubscribersForNotificationInput) Validate() error {
 	return nil
 }
 
+// SetAccountId sets the AccountId field's value.
+func (s *DescribeSubscribersForNotificationInput) SetAccountId(v string) *DescribeSubscribersForNotificationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBudgetName sets the BudgetName field's value.
+func (s *DescribeSubscribersForNotificationInput) SetBudgetName(v string) *DescribeSubscribersForNotificationInput {
+	s.BudgetName = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeSubscribersForNotificationInput) SetMaxResults(v int64) *DescribeSubscribersForNotificationInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeSubscribersForNotificationInput) SetNextToken(v string) *DescribeSubscribersForNotificationInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetNotification sets the Notification field's value.
+func (s *DescribeSubscribersForNotificationInput) SetNotification(v *Notification) *DescribeSubscribersForNotificationInput {
+	s.Notification = v
+	return s
+}
+
 // Response of DescribeSubscribersForNotification
 type DescribeSubscribersForNotificationOutput struct {
 	_ struct{} `type:"structure"`
@@ -1949,6 +2235,18 @@ func (s DescribeSubscribersForNotificationOutput) String() string {
 // GoString returns the string representation
 func (s DescribeSubscribersForNotificationOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeSubscribersForNotificationOutput) SetNextToken(v string) *DescribeSubscribersForNotificationOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetSubscribers sets the Subscribers field's value.
+func (s *DescribeSubscribersForNotificationOutput) SetSubscribers(v []*Subscriber) *DescribeSubscribersForNotificationOutput {
+	s.Subscribers = v
+	return s
 }
 
 // Notification model. Each budget may contain multiple notifications with different
@@ -2004,6 +2302,24 @@ func (s *Notification) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetComparisonOperator sets the ComparisonOperator field's value.
+func (s *Notification) SetComparisonOperator(v string) *Notification {
+	s.ComparisonOperator = &v
+	return s
+}
+
+// SetNotificationType sets the NotificationType field's value.
+func (s *Notification) SetNotificationType(v string) *Notification {
+	s.NotificationType = &v
+	return s
+}
+
+// SetThreshold sets the Threshold field's value.
+func (s *Notification) SetThreshold(v float64) *Notification {
+	s.Threshold = &v
+	return s
 }
 
 // A structure to relate notification and a list of subscribers who belong to
@@ -2067,6 +2383,18 @@ func (s *NotificationWithSubscribers) Validate() error {
 	return nil
 }
 
+// SetNotification sets the Notification field's value.
+func (s *NotificationWithSubscribers) SetNotification(v *Notification) *NotificationWithSubscribers {
+	s.Notification = v
+	return s
+}
+
+// SetSubscribers sets the Subscribers field's value.
+func (s *NotificationWithSubscribers) SetSubscribers(v []*Subscriber) *NotificationWithSubscribers {
+	s.Subscribers = v
+	return s
+}
+
 // A structure represent either a cost spend or usage spend. Contains an amount
 // and a unit.
 type Spend struct {
@@ -2107,6 +2435,18 @@ func (s *Spend) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAmount sets the Amount field's value.
+func (s *Spend) SetAmount(v string) *Spend {
+	s.Amount = &v
+	return s
+}
+
+// SetUnit sets the Unit field's value.
+func (s *Spend) SetUnit(v string) *Spend {
+	s.Unit = &v
+	return s
 }
 
 // Subscriber model. Each notification may contain multiple subscribers with
@@ -2151,6 +2491,18 @@ func (s *Subscriber) Validate() error {
 	return nil
 }
 
+// SetAddress sets the Address field's value.
+func (s *Subscriber) SetAddress(v string) *Subscriber {
+	s.Address = &v
+	return s
+}
+
+// SetSubscriptionType sets the SubscriptionType field's value.
+func (s *Subscriber) SetSubscriptionType(v string) *Subscriber {
+	s.SubscriptionType = &v
+	return s
+}
+
 // A time period indicated the start date and end date of a budget.
 type TimePeriod struct {
 	_ struct{} `type:"structure"`
@@ -2190,6 +2542,18 @@ func (s *TimePeriod) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetEnd sets the End field's value.
+func (s *TimePeriod) SetEnd(v time.Time) *TimePeriod {
+	s.End = &v
+	return s
+}
+
+// SetStart sets the Start field's value.
+func (s *TimePeriod) SetStart(v time.Time) *TimePeriod {
+	s.Start = &v
+	return s
 }
 
 // Request of UpdateBudget
@@ -2239,6 +2603,18 @@ func (s *UpdateBudgetInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *UpdateBudgetInput) SetAccountId(v string) *UpdateBudgetInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetNewBudget sets the NewBudget field's value.
+func (s *UpdateBudgetInput) SetNewBudget(v *Budget) *UpdateBudgetInput {
+	s.NewBudget = v
+	return s
 }
 
 // Response of UpdateBudget
@@ -2326,6 +2702,30 @@ func (s *UpdateNotificationInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *UpdateNotificationInput) SetAccountId(v string) *UpdateNotificationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBudgetName sets the BudgetName field's value.
+func (s *UpdateNotificationInput) SetBudgetName(v string) *UpdateNotificationInput {
+	s.BudgetName = &v
+	return s
+}
+
+// SetNewNotification sets the NewNotification field's value.
+func (s *UpdateNotificationInput) SetNewNotification(v *Notification) *UpdateNotificationInput {
+	s.NewNotification = v
+	return s
+}
+
+// SetOldNotification sets the OldNotification field's value.
+func (s *UpdateNotificationInput) SetOldNotification(v *Notification) *UpdateNotificationInput {
+	s.OldNotification = v
+	return s
 }
 
 // Response of UpdateNotification
@@ -2427,6 +2827,36 @@ func (s *UpdateSubscriberInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *UpdateSubscriberInput) SetAccountId(v string) *UpdateSubscriberInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBudgetName sets the BudgetName field's value.
+func (s *UpdateSubscriberInput) SetBudgetName(v string) *UpdateSubscriberInput {
+	s.BudgetName = &v
+	return s
+}
+
+// SetNewSubscriber sets the NewSubscriber field's value.
+func (s *UpdateSubscriberInput) SetNewSubscriber(v *Subscriber) *UpdateSubscriberInput {
+	s.NewSubscriber = v
+	return s
+}
+
+// SetNotification sets the Notification field's value.
+func (s *UpdateSubscriberInput) SetNotification(v *Notification) *UpdateSubscriberInput {
+	s.Notification = v
+	return s
+}
+
+// SetOldSubscriber sets the OldSubscriber field's value.
+func (s *UpdateSubscriberInput) SetOldSubscriber(v *Subscriber) *UpdateSubscriberInput {
+	s.OldSubscriber = v
+	return s
 }
 
 // Response of UpdateSubscriber

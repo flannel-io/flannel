@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/private/protocol/restxml"
 )
 
-const opCreateCloudFrontOriginAccessIdentity = "CreateCloudFrontOriginAccessIdentity2016_09_29"
+const opCreateCloudFrontOriginAccessIdentity = "CreateCloudFrontOriginAccessIdentity2016_11_25"
 
 // CreateCloudFrontOriginAccessIdentityRequest generates a "aws/request.Request" representing the
 // client's request for the CreateCloudFrontOriginAccessIdentity operation. The "output" return
@@ -39,20 +39,20 @@ const opCreateCloudFrontOriginAccessIdentity = "CreateCloudFrontOriginAccessIden
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateCloudFrontOriginAccessIdentity
 func (c *CloudFront) CreateCloudFrontOriginAccessIdentityRequest(input *CreateCloudFrontOriginAccessIdentityInput) (req *request.Request, output *CreateCloudFrontOriginAccessIdentityOutput) {
 	op := &request.Operation{
 		Name:       opCreateCloudFrontOriginAccessIdentity,
 		HTTPMethod: "POST",
-		HTTPPath:   "/2016-09-29/origin-access-identity/cloudfront",
+		HTTPPath:   "/2016-11-25/origin-access-identity/cloudfront",
 	}
 
 	if input == nil {
 		input = &CreateCloudFrontOriginAccessIdentityInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateCloudFrontOriginAccessIdentityOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -93,13 +93,14 @@ func (c *CloudFront) CreateCloudFrontOriginAccessIdentityRequest(input *CreateCl
 //   * InconsistentQuantities
 //   The value of Quantity and the size of Items do not match.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateCloudFrontOriginAccessIdentity
 func (c *CloudFront) CreateCloudFrontOriginAccessIdentity(input *CreateCloudFrontOriginAccessIdentityInput) (*CreateCloudFrontOriginAccessIdentityOutput, error) {
 	req, out := c.CreateCloudFrontOriginAccessIdentityRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opCreateDistribution = "CreateDistribution2016_09_29"
+const opCreateDistribution = "CreateDistribution2016_11_25"
 
 // CreateDistributionRequest generates a "aws/request.Request" representing the
 // client's request for the CreateDistribution operation. The "output" return
@@ -125,20 +126,20 @@ const opCreateDistribution = "CreateDistribution2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateDistribution
 func (c *CloudFront) CreateDistributionRequest(input *CreateDistributionInput) (req *request.Request, output *CreateDistributionOutput) {
 	op := &request.Operation{
 		Name:       opCreateDistribution,
 		HTTPMethod: "POST",
-		HTTPPath:   "/2016-09-29/distribution",
+		HTTPPath:   "/2016-11-25/distribution",
 	}
 
 	if input == nil {
 		input = &CreateDistributionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDistributionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -272,13 +273,25 @@ func (c *CloudFront) CreateDistributionRequest(input *CreateDistributionInput) (
 //   * InvalidQueryStringParameters
 
 //
+//   * TooManyDistributionsWithLambdaAssociations
+//   Processing your request would cause the maximum number of distributions with
+//   Lambda function associations per owner to be exceeded.
+//
+//   * TooManyLambdaFunctionAssociations
+//   Your request contains more Lambda function associations than are allowed
+//   per distribution.
+//
+//   * InvalidLambdaFunctionAssociation
+//   The specified Lambda function association is invalid.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateDistribution
 func (c *CloudFront) CreateDistribution(input *CreateDistributionInput) (*CreateDistributionOutput, error) {
 	req, out := c.CreateDistributionRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opCreateDistributionWithTags = "CreateDistributionWithTags2016_09_29"
+const opCreateDistributionWithTags = "CreateDistributionWithTags2016_11_25"
 
 // CreateDistributionWithTagsRequest generates a "aws/request.Request" representing the
 // client's request for the CreateDistributionWithTags operation. The "output" return
@@ -304,20 +317,20 @@ const opCreateDistributionWithTags = "CreateDistributionWithTags2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateDistributionWithTags
 func (c *CloudFront) CreateDistributionWithTagsRequest(input *CreateDistributionWithTagsInput) (req *request.Request, output *CreateDistributionWithTagsOutput) {
 	op := &request.Operation{
 		Name:       opCreateDistributionWithTags,
 		HTTPMethod: "POST",
-		HTTPPath:   "/2016-09-29/distribution?WithTags",
+		HTTPPath:   "/2016-11-25/distribution?WithTags",
 	}
 
 	if input == nil {
 		input = &CreateDistributionWithTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDistributionWithTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -453,13 +466,25 @@ func (c *CloudFront) CreateDistributionWithTagsRequest(input *CreateDistribution
 //   * InvalidQueryStringParameters
 
 //
+//   * TooManyDistributionsWithLambdaAssociations
+//   Processing your request would cause the maximum number of distributions with
+//   Lambda function associations per owner to be exceeded.
+//
+//   * TooManyLambdaFunctionAssociations
+//   Your request contains more Lambda function associations than are allowed
+//   per distribution.
+//
+//   * InvalidLambdaFunctionAssociation
+//   The specified Lambda function association is invalid.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateDistributionWithTags
 func (c *CloudFront) CreateDistributionWithTags(input *CreateDistributionWithTagsInput) (*CreateDistributionWithTagsOutput, error) {
 	req, out := c.CreateDistributionWithTagsRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opCreateInvalidation = "CreateInvalidation2016_09_29"
+const opCreateInvalidation = "CreateInvalidation2016_11_25"
 
 // CreateInvalidationRequest generates a "aws/request.Request" representing the
 // client's request for the CreateInvalidation operation. The "output" return
@@ -485,20 +510,20 @@ const opCreateInvalidation = "CreateInvalidation2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateInvalidation
 func (c *CloudFront) CreateInvalidationRequest(input *CreateInvalidationInput) (req *request.Request, output *CreateInvalidationOutput) {
 	op := &request.Operation{
 		Name:       opCreateInvalidation,
 		HTTPMethod: "POST",
-		HTTPPath:   "/2016-09-29/distribution/{DistributionId}/invalidation",
+		HTTPPath:   "/2016-11-25/distribution/{DistributionId}/invalidation",
 	}
 
 	if input == nil {
 		input = &CreateInvalidationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateInvalidationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -537,13 +562,14 @@ func (c *CloudFront) CreateInvalidationRequest(input *CreateInvalidationInput) (
 //   * InconsistentQuantities
 //   The value of Quantity and the size of Items do not match.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateInvalidation
 func (c *CloudFront) CreateInvalidation(input *CreateInvalidationInput) (*CreateInvalidationOutput, error) {
 	req, out := c.CreateInvalidationRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opCreateStreamingDistribution = "CreateStreamingDistribution2016_09_29"
+const opCreateStreamingDistribution = "CreateStreamingDistribution2016_11_25"
 
 // CreateStreamingDistributionRequest generates a "aws/request.Request" representing the
 // client's request for the CreateStreamingDistribution operation. The "output" return
@@ -569,20 +595,20 @@ const opCreateStreamingDistribution = "CreateStreamingDistribution2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateStreamingDistribution
 func (c *CloudFront) CreateStreamingDistributionRequest(input *CreateStreamingDistributionInput) (req *request.Request, output *CreateStreamingDistributionOutput) {
 	op := &request.Operation{
 		Name:       opCreateStreamingDistribution,
 		HTTPMethod: "POST",
-		HTTPPath:   "/2016-09-29/streaming-distribution",
+		HTTPPath:   "/2016-11-25/streaming-distribution",
 	}
 
 	if input == nil {
 		input = &CreateStreamingDistributionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateStreamingDistributionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -664,13 +690,14 @@ func (c *CloudFront) CreateStreamingDistributionRequest(input *CreateStreamingDi
 //   * InconsistentQuantities
 //   The value of Quantity and the size of Items do not match.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateStreamingDistribution
 func (c *CloudFront) CreateStreamingDistribution(input *CreateStreamingDistributionInput) (*CreateStreamingDistributionOutput, error) {
 	req, out := c.CreateStreamingDistributionRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opCreateStreamingDistributionWithTags = "CreateStreamingDistributionWithTags2016_09_29"
+const opCreateStreamingDistributionWithTags = "CreateStreamingDistributionWithTags2016_11_25"
 
 // CreateStreamingDistributionWithTagsRequest generates a "aws/request.Request" representing the
 // client's request for the CreateStreamingDistributionWithTags operation. The "output" return
@@ -696,20 +723,20 @@ const opCreateStreamingDistributionWithTags = "CreateStreamingDistributionWithTa
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateStreamingDistributionWithTags
 func (c *CloudFront) CreateStreamingDistributionWithTagsRequest(input *CreateStreamingDistributionWithTagsInput) (req *request.Request, output *CreateStreamingDistributionWithTagsOutput) {
 	op := &request.Operation{
 		Name:       opCreateStreamingDistributionWithTags,
 		HTTPMethod: "POST",
-		HTTPPath:   "/2016-09-29/streaming-distribution?WithTags",
+		HTTPPath:   "/2016-11-25/streaming-distribution?WithTags",
 	}
 
 	if input == nil {
 		input = &CreateStreamingDistributionWithTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateStreamingDistributionWithTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -767,13 +794,14 @@ func (c *CloudFront) CreateStreamingDistributionWithTagsRequest(input *CreateStr
 //   * InvalidTagging
 
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateStreamingDistributionWithTags
 func (c *CloudFront) CreateStreamingDistributionWithTags(input *CreateStreamingDistributionWithTagsInput) (*CreateStreamingDistributionWithTagsOutput, error) {
 	req, out := c.CreateStreamingDistributionWithTagsRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opDeleteCloudFrontOriginAccessIdentity = "DeleteCloudFrontOriginAccessIdentity2016_09_29"
+const opDeleteCloudFrontOriginAccessIdentity = "DeleteCloudFrontOriginAccessIdentity2016_11_25"
 
 // DeleteCloudFrontOriginAccessIdentityRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteCloudFrontOriginAccessIdentity operation. The "output" return
@@ -799,22 +827,22 @@ const opDeleteCloudFrontOriginAccessIdentity = "DeleteCloudFrontOriginAccessIden
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DeleteCloudFrontOriginAccessIdentity
 func (c *CloudFront) DeleteCloudFrontOriginAccessIdentityRequest(input *DeleteCloudFrontOriginAccessIdentityInput) (req *request.Request, output *DeleteCloudFrontOriginAccessIdentityOutput) {
 	op := &request.Operation{
 		Name:       opDeleteCloudFrontOriginAccessIdentity,
 		HTTPMethod: "DELETE",
-		HTTPPath:   "/2016-09-29/origin-access-identity/cloudfront/{Id}",
+		HTTPPath:   "/2016-11-25/origin-access-identity/cloudfront/{Id}",
 	}
 
 	if input == nil {
 		input = &DeleteCloudFrontOriginAccessIdentityInput{}
 	}
 
+	output = &DeleteCloudFrontOriginAccessIdentityOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteCloudFrontOriginAccessIdentityOutput{}
-	req.Data = output
 	return
 }
 
@@ -846,13 +874,14 @@ func (c *CloudFront) DeleteCloudFrontOriginAccessIdentityRequest(input *DeleteCl
 //   * OriginAccessIdentityInUse
 
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DeleteCloudFrontOriginAccessIdentity
 func (c *CloudFront) DeleteCloudFrontOriginAccessIdentity(input *DeleteCloudFrontOriginAccessIdentityInput) (*DeleteCloudFrontOriginAccessIdentityOutput, error) {
 	req, out := c.DeleteCloudFrontOriginAccessIdentityRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opDeleteDistribution = "DeleteDistribution2016_09_29"
+const opDeleteDistribution = "DeleteDistribution2016_11_25"
 
 // DeleteDistributionRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteDistribution operation. The "output" return
@@ -878,22 +907,22 @@ const opDeleteDistribution = "DeleteDistribution2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DeleteDistribution
 func (c *CloudFront) DeleteDistributionRequest(input *DeleteDistributionInput) (req *request.Request, output *DeleteDistributionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDistribution,
 		HTTPMethod: "DELETE",
-		HTTPPath:   "/2016-09-29/distribution/{Id}",
+		HTTPPath:   "/2016-11-25/distribution/{Id}",
 	}
 
 	if input == nil {
 		input = &DeleteDistributionInput{}
 	}
 
+	output = &DeleteDistributionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteDistributionOutput{}
-	req.Data = output
 	return
 }
 
@@ -925,13 +954,14 @@ func (c *CloudFront) DeleteDistributionRequest(input *DeleteDistributionInput) (
 //   The precondition given in one or more of the request-header fields evaluated
 //   to false.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DeleteDistribution
 func (c *CloudFront) DeleteDistribution(input *DeleteDistributionInput) (*DeleteDistributionOutput, error) {
 	req, out := c.DeleteDistributionRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opDeleteStreamingDistribution = "DeleteStreamingDistribution2016_09_29"
+const opDeleteStreamingDistribution = "DeleteStreamingDistribution2016_11_25"
 
 // DeleteStreamingDistributionRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteStreamingDistribution operation. The "output" return
@@ -957,22 +987,22 @@ const opDeleteStreamingDistribution = "DeleteStreamingDistribution2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DeleteStreamingDistribution
 func (c *CloudFront) DeleteStreamingDistributionRequest(input *DeleteStreamingDistributionInput) (req *request.Request, output *DeleteStreamingDistributionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteStreamingDistribution,
 		HTTPMethod: "DELETE",
-		HTTPPath:   "/2016-09-29/streaming-distribution/{Id}",
+		HTTPPath:   "/2016-11-25/streaming-distribution/{Id}",
 	}
 
 	if input == nil {
 		input = &DeleteStreamingDistributionInput{}
 	}
 
+	output = &DeleteStreamingDistributionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteStreamingDistributionOutput{}
-	req.Data = output
 	return
 }
 
@@ -1039,13 +1069,14 @@ func (c *CloudFront) DeleteStreamingDistributionRequest(input *DeleteStreamingDi
 //   The precondition given in one or more of the request-header fields evaluated
 //   to false.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DeleteStreamingDistribution
 func (c *CloudFront) DeleteStreamingDistribution(input *DeleteStreamingDistributionInput) (*DeleteStreamingDistributionOutput, error) {
 	req, out := c.DeleteStreamingDistributionRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opGetCloudFrontOriginAccessIdentity = "GetCloudFrontOriginAccessIdentity2016_09_29"
+const opGetCloudFrontOriginAccessIdentity = "GetCloudFrontOriginAccessIdentity2016_11_25"
 
 // GetCloudFrontOriginAccessIdentityRequest generates a "aws/request.Request" representing the
 // client's request for the GetCloudFrontOriginAccessIdentity operation. The "output" return
@@ -1071,20 +1102,20 @@ const opGetCloudFrontOriginAccessIdentity = "GetCloudFrontOriginAccessIdentity20
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetCloudFrontOriginAccessIdentity
 func (c *CloudFront) GetCloudFrontOriginAccessIdentityRequest(input *GetCloudFrontOriginAccessIdentityInput) (req *request.Request, output *GetCloudFrontOriginAccessIdentityOutput) {
 	op := &request.Operation{
 		Name:       opGetCloudFrontOriginAccessIdentity,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/origin-access-identity/cloudfront/{Id}",
+		HTTPPath:   "/2016-11-25/origin-access-identity/cloudfront/{Id}",
 	}
 
 	if input == nil {
 		input = &GetCloudFrontOriginAccessIdentityInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetCloudFrontOriginAccessIdentityOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1106,13 +1137,14 @@ func (c *CloudFront) GetCloudFrontOriginAccessIdentityRequest(input *GetCloudFro
 //   * AccessDenied
 //   Access denied.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetCloudFrontOriginAccessIdentity
 func (c *CloudFront) GetCloudFrontOriginAccessIdentity(input *GetCloudFrontOriginAccessIdentityInput) (*GetCloudFrontOriginAccessIdentityOutput, error) {
 	req, out := c.GetCloudFrontOriginAccessIdentityRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opGetCloudFrontOriginAccessIdentityConfig = "GetCloudFrontOriginAccessIdentityConfig2016_09_29"
+const opGetCloudFrontOriginAccessIdentityConfig = "GetCloudFrontOriginAccessIdentityConfig2016_11_25"
 
 // GetCloudFrontOriginAccessIdentityConfigRequest generates a "aws/request.Request" representing the
 // client's request for the GetCloudFrontOriginAccessIdentityConfig operation. The "output" return
@@ -1138,20 +1170,20 @@ const opGetCloudFrontOriginAccessIdentityConfig = "GetCloudFrontOriginAccessIden
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetCloudFrontOriginAccessIdentityConfig
 func (c *CloudFront) GetCloudFrontOriginAccessIdentityConfigRequest(input *GetCloudFrontOriginAccessIdentityConfigInput) (req *request.Request, output *GetCloudFrontOriginAccessIdentityConfigOutput) {
 	op := &request.Operation{
 		Name:       opGetCloudFrontOriginAccessIdentityConfig,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/origin-access-identity/cloudfront/{Id}/config",
+		HTTPPath:   "/2016-11-25/origin-access-identity/cloudfront/{Id}/config",
 	}
 
 	if input == nil {
 		input = &GetCloudFrontOriginAccessIdentityConfigInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetCloudFrontOriginAccessIdentityConfigOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1173,13 +1205,14 @@ func (c *CloudFront) GetCloudFrontOriginAccessIdentityConfigRequest(input *GetCl
 //   * AccessDenied
 //   Access denied.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetCloudFrontOriginAccessIdentityConfig
 func (c *CloudFront) GetCloudFrontOriginAccessIdentityConfig(input *GetCloudFrontOriginAccessIdentityConfigInput) (*GetCloudFrontOriginAccessIdentityConfigOutput, error) {
 	req, out := c.GetCloudFrontOriginAccessIdentityConfigRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opGetDistribution = "GetDistribution2016_09_29"
+const opGetDistribution = "GetDistribution2016_11_25"
 
 // GetDistributionRequest generates a "aws/request.Request" representing the
 // client's request for the GetDistribution operation. The "output" return
@@ -1205,20 +1238,20 @@ const opGetDistribution = "GetDistribution2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetDistribution
 func (c *CloudFront) GetDistributionRequest(input *GetDistributionInput) (req *request.Request, output *GetDistributionOutput) {
 	op := &request.Operation{
 		Name:       opGetDistribution,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/distribution/{Id}",
+		HTTPPath:   "/2016-11-25/distribution/{Id}",
 	}
 
 	if input == nil {
 		input = &GetDistributionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDistributionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1240,13 +1273,14 @@ func (c *CloudFront) GetDistributionRequest(input *GetDistributionInput) (req *r
 //   * AccessDenied
 //   Access denied.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetDistribution
 func (c *CloudFront) GetDistribution(input *GetDistributionInput) (*GetDistributionOutput, error) {
 	req, out := c.GetDistributionRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opGetDistributionConfig = "GetDistributionConfig2016_09_29"
+const opGetDistributionConfig = "GetDistributionConfig2016_11_25"
 
 // GetDistributionConfigRequest generates a "aws/request.Request" representing the
 // client's request for the GetDistributionConfig operation. The "output" return
@@ -1272,20 +1306,20 @@ const opGetDistributionConfig = "GetDistributionConfig2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetDistributionConfig
 func (c *CloudFront) GetDistributionConfigRequest(input *GetDistributionConfigInput) (req *request.Request, output *GetDistributionConfigOutput) {
 	op := &request.Operation{
 		Name:       opGetDistributionConfig,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/distribution/{Id}/config",
+		HTTPPath:   "/2016-11-25/distribution/{Id}/config",
 	}
 
 	if input == nil {
 		input = &GetDistributionConfigInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDistributionConfigOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1307,13 +1341,14 @@ func (c *CloudFront) GetDistributionConfigRequest(input *GetDistributionConfigIn
 //   * AccessDenied
 //   Access denied.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetDistributionConfig
 func (c *CloudFront) GetDistributionConfig(input *GetDistributionConfigInput) (*GetDistributionConfigOutput, error) {
 	req, out := c.GetDistributionConfigRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opGetInvalidation = "GetInvalidation2016_09_29"
+const opGetInvalidation = "GetInvalidation2016_11_25"
 
 // GetInvalidationRequest generates a "aws/request.Request" representing the
 // client's request for the GetInvalidation operation. The "output" return
@@ -1339,20 +1374,20 @@ const opGetInvalidation = "GetInvalidation2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetInvalidation
 func (c *CloudFront) GetInvalidationRequest(input *GetInvalidationInput) (req *request.Request, output *GetInvalidationOutput) {
 	op := &request.Operation{
 		Name:       opGetInvalidation,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/distribution/{DistributionId}/invalidation/{Id}",
+		HTTPPath:   "/2016-11-25/distribution/{DistributionId}/invalidation/{Id}",
 	}
 
 	if input == nil {
 		input = &GetInvalidationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetInvalidationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1377,13 +1412,14 @@ func (c *CloudFront) GetInvalidationRequest(input *GetInvalidationInput) (req *r
 //   * AccessDenied
 //   Access denied.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetInvalidation
 func (c *CloudFront) GetInvalidation(input *GetInvalidationInput) (*GetInvalidationOutput, error) {
 	req, out := c.GetInvalidationRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opGetStreamingDistribution = "GetStreamingDistribution2016_09_29"
+const opGetStreamingDistribution = "GetStreamingDistribution2016_11_25"
 
 // GetStreamingDistributionRequest generates a "aws/request.Request" representing the
 // client's request for the GetStreamingDistribution operation. The "output" return
@@ -1409,20 +1445,20 @@ const opGetStreamingDistribution = "GetStreamingDistribution2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetStreamingDistribution
 func (c *CloudFront) GetStreamingDistributionRequest(input *GetStreamingDistributionInput) (req *request.Request, output *GetStreamingDistributionOutput) {
 	op := &request.Operation{
 		Name:       opGetStreamingDistribution,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/streaming-distribution/{Id}",
+		HTTPPath:   "/2016-11-25/streaming-distribution/{Id}",
 	}
 
 	if input == nil {
 		input = &GetStreamingDistributionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetStreamingDistributionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1445,13 +1481,14 @@ func (c *CloudFront) GetStreamingDistributionRequest(input *GetStreamingDistribu
 //   * AccessDenied
 //   Access denied.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetStreamingDistribution
 func (c *CloudFront) GetStreamingDistribution(input *GetStreamingDistributionInput) (*GetStreamingDistributionOutput, error) {
 	req, out := c.GetStreamingDistributionRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opGetStreamingDistributionConfig = "GetStreamingDistributionConfig2016_09_29"
+const opGetStreamingDistributionConfig = "GetStreamingDistributionConfig2016_11_25"
 
 // GetStreamingDistributionConfigRequest generates a "aws/request.Request" representing the
 // client's request for the GetStreamingDistributionConfig operation. The "output" return
@@ -1477,20 +1514,20 @@ const opGetStreamingDistributionConfig = "GetStreamingDistributionConfig2016_09_
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetStreamingDistributionConfig
 func (c *CloudFront) GetStreamingDistributionConfigRequest(input *GetStreamingDistributionConfigInput) (req *request.Request, output *GetStreamingDistributionConfigOutput) {
 	op := &request.Operation{
 		Name:       opGetStreamingDistributionConfig,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/streaming-distribution/{Id}/config",
+		HTTPPath:   "/2016-11-25/streaming-distribution/{Id}/config",
 	}
 
 	if input == nil {
 		input = &GetStreamingDistributionConfigInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetStreamingDistributionConfigOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1512,13 +1549,14 @@ func (c *CloudFront) GetStreamingDistributionConfigRequest(input *GetStreamingDi
 //   * AccessDenied
 //   Access denied.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetStreamingDistributionConfig
 func (c *CloudFront) GetStreamingDistributionConfig(input *GetStreamingDistributionConfigInput) (*GetStreamingDistributionConfigOutput, error) {
 	req, out := c.GetStreamingDistributionConfigRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opListCloudFrontOriginAccessIdentities = "ListCloudFrontOriginAccessIdentities2016_09_29"
+const opListCloudFrontOriginAccessIdentities = "ListCloudFrontOriginAccessIdentities2016_11_25"
 
 // ListCloudFrontOriginAccessIdentitiesRequest generates a "aws/request.Request" representing the
 // client's request for the ListCloudFrontOriginAccessIdentities operation. The "output" return
@@ -1544,11 +1582,12 @@ const opListCloudFrontOriginAccessIdentities = "ListCloudFrontOriginAccessIdenti
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListCloudFrontOriginAccessIdentities
 func (c *CloudFront) ListCloudFrontOriginAccessIdentitiesRequest(input *ListCloudFrontOriginAccessIdentitiesInput) (req *request.Request, output *ListCloudFrontOriginAccessIdentitiesOutput) {
 	op := &request.Operation{
 		Name:       opListCloudFrontOriginAccessIdentities,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/origin-access-identity/cloudfront",
+		HTTPPath:   "/2016-11-25/origin-access-identity/cloudfront",
 		Paginator: &request.Paginator{
 			InputTokens:     []string{"Marker"},
 			OutputTokens:    []string{"CloudFrontOriginAccessIdentityList.NextMarker"},
@@ -1561,9 +1600,8 @@ func (c *CloudFront) ListCloudFrontOriginAccessIdentitiesRequest(input *ListClou
 		input = &ListCloudFrontOriginAccessIdentitiesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListCloudFrontOriginAccessIdentitiesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1582,6 +1620,7 @@ func (c *CloudFront) ListCloudFrontOriginAccessIdentitiesRequest(input *ListClou
 //   * InvalidArgument
 //   The argument is invalid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListCloudFrontOriginAccessIdentities
 func (c *CloudFront) ListCloudFrontOriginAccessIdentities(input *ListCloudFrontOriginAccessIdentitiesInput) (*ListCloudFrontOriginAccessIdentitiesOutput, error) {
 	req, out := c.ListCloudFrontOriginAccessIdentitiesRequest(input)
 	err := req.Send()
@@ -1613,7 +1652,7 @@ func (c *CloudFront) ListCloudFrontOriginAccessIdentitiesPages(input *ListCloudF
 	})
 }
 
-const opListDistributions = "ListDistributions2016_09_29"
+const opListDistributions = "ListDistributions2016_11_25"
 
 // ListDistributionsRequest generates a "aws/request.Request" representing the
 // client's request for the ListDistributions operation. The "output" return
@@ -1639,11 +1678,12 @@ const opListDistributions = "ListDistributions2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListDistributions
 func (c *CloudFront) ListDistributionsRequest(input *ListDistributionsInput) (req *request.Request, output *ListDistributionsOutput) {
 	op := &request.Operation{
 		Name:       opListDistributions,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/distribution",
+		HTTPPath:   "/2016-11-25/distribution",
 		Paginator: &request.Paginator{
 			InputTokens:     []string{"Marker"},
 			OutputTokens:    []string{"DistributionList.NextMarker"},
@@ -1656,9 +1696,8 @@ func (c *CloudFront) ListDistributionsRequest(input *ListDistributionsInput) (re
 		input = &ListDistributionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDistributionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1677,6 +1716,7 @@ func (c *CloudFront) ListDistributionsRequest(input *ListDistributionsInput) (re
 //   * InvalidArgument
 //   The argument is invalid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListDistributions
 func (c *CloudFront) ListDistributions(input *ListDistributionsInput) (*ListDistributionsOutput, error) {
 	req, out := c.ListDistributionsRequest(input)
 	err := req.Send()
@@ -1708,7 +1748,7 @@ func (c *CloudFront) ListDistributionsPages(input *ListDistributionsInput, fn fu
 	})
 }
 
-const opListDistributionsByWebACLId = "ListDistributionsByWebACLId2016_09_29"
+const opListDistributionsByWebACLId = "ListDistributionsByWebACLId2016_11_25"
 
 // ListDistributionsByWebACLIdRequest generates a "aws/request.Request" representing the
 // client's request for the ListDistributionsByWebACLId operation. The "output" return
@@ -1734,20 +1774,20 @@ const opListDistributionsByWebACLId = "ListDistributionsByWebACLId2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListDistributionsByWebACLId
 func (c *CloudFront) ListDistributionsByWebACLIdRequest(input *ListDistributionsByWebACLIdInput) (req *request.Request, output *ListDistributionsByWebACLIdOutput) {
 	op := &request.Operation{
 		Name:       opListDistributionsByWebACLId,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/distributionsByWebACLId/{WebACLId}",
+		HTTPPath:   "/2016-11-25/distributionsByWebACLId/{WebACLId}",
 	}
 
 	if input == nil {
 		input = &ListDistributionsByWebACLIdInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDistributionsByWebACLIdOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1769,13 +1809,14 @@ func (c *CloudFront) ListDistributionsByWebACLIdRequest(input *ListDistributions
 //   * InvalidWebACLId
 
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListDistributionsByWebACLId
 func (c *CloudFront) ListDistributionsByWebACLId(input *ListDistributionsByWebACLIdInput) (*ListDistributionsByWebACLIdOutput, error) {
 	req, out := c.ListDistributionsByWebACLIdRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opListInvalidations = "ListInvalidations2016_09_29"
+const opListInvalidations = "ListInvalidations2016_11_25"
 
 // ListInvalidationsRequest generates a "aws/request.Request" representing the
 // client's request for the ListInvalidations operation. The "output" return
@@ -1801,11 +1842,12 @@ const opListInvalidations = "ListInvalidations2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListInvalidations
 func (c *CloudFront) ListInvalidationsRequest(input *ListInvalidationsInput) (req *request.Request, output *ListInvalidationsOutput) {
 	op := &request.Operation{
 		Name:       opListInvalidations,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/distribution/{DistributionId}/invalidation",
+		HTTPPath:   "/2016-11-25/distribution/{DistributionId}/invalidation",
 		Paginator: &request.Paginator{
 			InputTokens:     []string{"Marker"},
 			OutputTokens:    []string{"InvalidationList.NextMarker"},
@@ -1818,9 +1860,8 @@ func (c *CloudFront) ListInvalidationsRequest(input *ListInvalidationsInput) (re
 		input = &ListInvalidationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListInvalidationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1845,6 +1886,7 @@ func (c *CloudFront) ListInvalidationsRequest(input *ListInvalidationsInput) (re
 //   * AccessDenied
 //   Access denied.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListInvalidations
 func (c *CloudFront) ListInvalidations(input *ListInvalidationsInput) (*ListInvalidationsOutput, error) {
 	req, out := c.ListInvalidationsRequest(input)
 	err := req.Send()
@@ -1876,7 +1918,7 @@ func (c *CloudFront) ListInvalidationsPages(input *ListInvalidationsInput, fn fu
 	})
 }
 
-const opListStreamingDistributions = "ListStreamingDistributions2016_09_29"
+const opListStreamingDistributions = "ListStreamingDistributions2016_11_25"
 
 // ListStreamingDistributionsRequest generates a "aws/request.Request" representing the
 // client's request for the ListStreamingDistributions operation. The "output" return
@@ -1902,11 +1944,12 @@ const opListStreamingDistributions = "ListStreamingDistributions2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListStreamingDistributions
 func (c *CloudFront) ListStreamingDistributionsRequest(input *ListStreamingDistributionsInput) (req *request.Request, output *ListStreamingDistributionsOutput) {
 	op := &request.Operation{
 		Name:       opListStreamingDistributions,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/streaming-distribution",
+		HTTPPath:   "/2016-11-25/streaming-distribution",
 		Paginator: &request.Paginator{
 			InputTokens:     []string{"Marker"},
 			OutputTokens:    []string{"StreamingDistributionList.NextMarker"},
@@ -1919,9 +1962,8 @@ func (c *CloudFront) ListStreamingDistributionsRequest(input *ListStreamingDistr
 		input = &ListStreamingDistributionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListStreamingDistributionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1940,6 +1982,7 @@ func (c *CloudFront) ListStreamingDistributionsRequest(input *ListStreamingDistr
 //   * InvalidArgument
 //   The argument is invalid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListStreamingDistributions
 func (c *CloudFront) ListStreamingDistributions(input *ListStreamingDistributionsInput) (*ListStreamingDistributionsOutput, error) {
 	req, out := c.ListStreamingDistributionsRequest(input)
 	err := req.Send()
@@ -1971,7 +2014,7 @@ func (c *CloudFront) ListStreamingDistributionsPages(input *ListStreamingDistrib
 	})
 }
 
-const opListTagsForResource = "ListTagsForResource2016_09_29"
+const opListTagsForResource = "ListTagsForResource2016_11_25"
 
 // ListTagsForResourceRequest generates a "aws/request.Request" representing the
 // client's request for the ListTagsForResource operation. The "output" return
@@ -1997,20 +2040,20 @@ const opListTagsForResource = "ListTagsForResource2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListTagsForResource
 func (c *CloudFront) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
 	op := &request.Operation{
 		Name:       opListTagsForResource,
 		HTTPMethod: "GET",
-		HTTPPath:   "/2016-09-29/tagging",
+		HTTPPath:   "/2016-11-25/tagging",
 	}
 
 	if input == nil {
 		input = &ListTagsForResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTagsForResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2038,13 +2081,14 @@ func (c *CloudFront) ListTagsForResourceRequest(input *ListTagsForResourceInput)
 //   * NoSuchResource
 
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListTagsForResource
 func (c *CloudFront) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
 	req, out := c.ListTagsForResourceRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opTagResource = "TagResource2016_09_29"
+const opTagResource = "TagResource2016_11_25"
 
 // TagResourceRequest generates a "aws/request.Request" representing the
 // client's request for the TagResource operation. The "output" return
@@ -2070,22 +2114,22 @@ const opTagResource = "TagResource2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/TagResource
 func (c *CloudFront) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
 	op := &request.Operation{
 		Name:       opTagResource,
 		HTTPMethod: "POST",
-		HTTPPath:   "/2016-09-29/tagging?Operation=Tag",
+		HTTPPath:   "/2016-11-25/tagging?Operation=Tag",
 	}
 
 	if input == nil {
 		input = &TagResourceInput{}
 	}
 
+	output = &TagResourceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &TagResourceOutput{}
-	req.Data = output
 	return
 }
 
@@ -2113,13 +2157,14 @@ func (c *CloudFront) TagResourceRequest(input *TagResourceInput) (req *request.R
 //   * NoSuchResource
 
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/TagResource
 func (c *CloudFront) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
 	req, out := c.TagResourceRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opUntagResource = "UntagResource2016_09_29"
+const opUntagResource = "UntagResource2016_11_25"
 
 // UntagResourceRequest generates a "aws/request.Request" representing the
 // client's request for the UntagResource operation. The "output" return
@@ -2145,22 +2190,22 @@ const opUntagResource = "UntagResource2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UntagResource
 func (c *CloudFront) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
 	op := &request.Operation{
 		Name:       opUntagResource,
 		HTTPMethod: "POST",
-		HTTPPath:   "/2016-09-29/tagging?Operation=Untag",
+		HTTPPath:   "/2016-11-25/tagging?Operation=Untag",
 	}
 
 	if input == nil {
 		input = &UntagResourceInput{}
 	}
 
+	output = &UntagResourceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UntagResourceOutput{}
-	req.Data = output
 	return
 }
 
@@ -2188,13 +2233,14 @@ func (c *CloudFront) UntagResourceRequest(input *UntagResourceInput) (req *reque
 //   * NoSuchResource
 
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UntagResource
 func (c *CloudFront) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
 	req, out := c.UntagResourceRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opUpdateCloudFrontOriginAccessIdentity = "UpdateCloudFrontOriginAccessIdentity2016_09_29"
+const opUpdateCloudFrontOriginAccessIdentity = "UpdateCloudFrontOriginAccessIdentity2016_11_25"
 
 // UpdateCloudFrontOriginAccessIdentityRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateCloudFrontOriginAccessIdentity operation. The "output" return
@@ -2220,20 +2266,20 @@ const opUpdateCloudFrontOriginAccessIdentity = "UpdateCloudFrontOriginAccessIden
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UpdateCloudFrontOriginAccessIdentity
 func (c *CloudFront) UpdateCloudFrontOriginAccessIdentityRequest(input *UpdateCloudFrontOriginAccessIdentityInput) (req *request.Request, output *UpdateCloudFrontOriginAccessIdentityOutput) {
 	op := &request.Operation{
 		Name:       opUpdateCloudFrontOriginAccessIdentity,
 		HTTPMethod: "PUT",
-		HTTPPath:   "/2016-09-29/origin-access-identity/cloudfront/{Id}/config",
+		HTTPPath:   "/2016-11-25/origin-access-identity/cloudfront/{Id}/config",
 	}
 
 	if input == nil {
 		input = &UpdateCloudFrontOriginAccessIdentityInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateCloudFrontOriginAccessIdentityOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2275,13 +2321,14 @@ func (c *CloudFront) UpdateCloudFrontOriginAccessIdentityRequest(input *UpdateCl
 //   * InconsistentQuantities
 //   The value of Quantity and the size of Items do not match.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UpdateCloudFrontOriginAccessIdentity
 func (c *CloudFront) UpdateCloudFrontOriginAccessIdentity(input *UpdateCloudFrontOriginAccessIdentityInput) (*UpdateCloudFrontOriginAccessIdentityOutput, error) {
 	req, out := c.UpdateCloudFrontOriginAccessIdentityRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opUpdateDistribution = "UpdateDistribution2016_09_29"
+const opUpdateDistribution = "UpdateDistribution2016_11_25"
 
 // UpdateDistributionRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateDistribution operation. The "output" return
@@ -2307,20 +2354,20 @@ const opUpdateDistribution = "UpdateDistribution2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UpdateDistribution
 func (c *CloudFront) UpdateDistributionRequest(input *UpdateDistributionInput) (req *request.Request, output *UpdateDistributionOutput) {
 	op := &request.Operation{
 		Name:       opUpdateDistribution,
 		HTTPMethod: "PUT",
-		HTTPPath:   "/2016-09-29/distribution/{Id}/config",
+		HTTPPath:   "/2016-11-25/distribution/{Id}/config",
 	}
 
 	if input == nil {
 		input = &UpdateDistributionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateDistributionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2450,13 +2497,25 @@ func (c *CloudFront) UpdateDistributionRequest(input *UpdateDistributionInput) (
 //   * InvalidQueryStringParameters
 
 //
+//   * TooManyDistributionsWithLambdaAssociations
+//   Processing your request would cause the maximum number of distributions with
+//   Lambda function associations per owner to be exceeded.
+//
+//   * TooManyLambdaFunctionAssociations
+//   Your request contains more Lambda function associations than are allowed
+//   per distribution.
+//
+//   * InvalidLambdaFunctionAssociation
+//   The specified Lambda function association is invalid.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UpdateDistribution
 func (c *CloudFront) UpdateDistribution(input *UpdateDistributionInput) (*UpdateDistributionOutput, error) {
 	req, out := c.UpdateDistributionRequest(input)
 	err := req.Send()
 	return out, err
 }
 
-const opUpdateStreamingDistribution = "UpdateStreamingDistribution2016_09_29"
+const opUpdateStreamingDistribution = "UpdateStreamingDistribution2016_11_25"
 
 // UpdateStreamingDistributionRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateStreamingDistribution operation. The "output" return
@@ -2482,20 +2541,20 @@ const opUpdateStreamingDistribution = "UpdateStreamingDistribution2016_09_29"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UpdateStreamingDistribution
 func (c *CloudFront) UpdateStreamingDistributionRequest(input *UpdateStreamingDistributionInput) (req *request.Request, output *UpdateStreamingDistributionOutput) {
 	op := &request.Operation{
 		Name:       opUpdateStreamingDistribution,
 		HTTPMethod: "PUT",
-		HTTPPath:   "/2016-09-29/streaming-distribution/{Id}/config",
+		HTTPPath:   "/2016-11-25/streaming-distribution/{Id}/config",
 	}
 
 	if input == nil {
 		input = &UpdateStreamingDistributionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateStreamingDistributionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2552,6 +2611,7 @@ func (c *CloudFront) UpdateStreamingDistributionRequest(input *UpdateStreamingDi
 //   * InconsistentQuantities
 //   The value of Quantity and the size of Items do not match.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UpdateStreamingDistribution
 func (c *CloudFront) UpdateStreamingDistribution(input *UpdateStreamingDistributionInput) (*UpdateStreamingDistributionOutput, error) {
 	req, out := c.UpdateStreamingDistributionRequest(input)
 	err := req.Send()
@@ -2570,6 +2630,7 @@ func (c *CloudFront) UpdateStreamingDistribution(input *UpdateStreamingDistribut
 //
 // For more information, see Serving Private Content through CloudFront (http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html)
 // in the Amazon CloudFront Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ActiveTrustedSigners
 type ActiveTrustedSigners struct {
 	_ struct{} `type:"structure"`
 
@@ -2607,8 +2668,27 @@ func (s ActiveTrustedSigners) GoString() string {
 	return s.String()
 }
 
+// SetEnabled sets the Enabled field's value.
+func (s *ActiveTrustedSigners) SetEnabled(v bool) *ActiveTrustedSigners {
+	s.Enabled = &v
+	return s
+}
+
+// SetItems sets the Items field's value.
+func (s *ActiveTrustedSigners) SetItems(v []*Signer) *ActiveTrustedSigners {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *ActiveTrustedSigners) SetQuantity(v int64) *ActiveTrustedSigners {
+	s.Quantity = &v
+	return s
+}
+
 // A complex type that contains information about CNAMEs (alternate domain names),
 // if any, for this distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/Aliases
 type Aliases struct {
 	_ struct{} `type:"structure"`
 
@@ -2646,6 +2726,18 @@ func (s *Aliases) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *Aliases) SetItems(v []*string) *Aliases {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *Aliases) SetQuantity(v int64) *Aliases {
+	s.Quantity = &v
+	return s
+}
+
 // A complex type that controls which HTTP methods CloudFront processes and
 // forwards to your Amazon S3 bucket or your custom origin. There are three
 // choices:
@@ -2661,6 +2753,7 @@ func (s *Aliases) Validate() error {
 // S3 bucket or to your custom origin so users can't perform operations that
 // you don't want them to. For example, you might not want users to have permissions
 // to delete objects from your origin.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/AllowedMethods
 type AllowedMethods struct {
 	_ struct{} `type:"structure"`
 
@@ -2721,6 +2814,24 @@ func (s *AllowedMethods) Validate() error {
 	return nil
 }
 
+// SetCachedMethods sets the CachedMethods field's value.
+func (s *AllowedMethods) SetCachedMethods(v *CachedMethods) *AllowedMethods {
+	s.CachedMethods = v
+	return s
+}
+
+// SetItems sets the Items field's value.
+func (s *AllowedMethods) SetItems(v []*string) *AllowedMethods {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *AllowedMethods) SetQuantity(v int64) *AllowedMethods {
+	s.Quantity = &v
+	return s
+}
+
 // A complex type that describes how CloudFront processes requests.
 //
 // You must create at least as many cache behaviors (including the default cache
@@ -2747,6 +2858,7 @@ func (s *AllowedMethods) Validate() error {
 //
 // For more information about cache behaviors, see Cache Behaviors (http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-values-specify.html#DownloadDistValuesCacheBehavior)
 // in the Amazon CloudFront Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CacheBehavior
 type CacheBehavior struct {
 	_ struct{} `type:"structure"`
 
@@ -2786,6 +2898,10 @@ type CacheBehavior struct {
 	//
 	// ForwardedValues is a required field
 	ForwardedValues *ForwardedValues `type:"structure" required:"true"`
+
+	// A complex type that contains zero or more Lambda function associations for
+	// a cache behavior.
+	LambdaFunctionAssociations *LambdaFunctionAssociations `type:"structure"`
 
 	// The maximum amount of time that you want objects to stay in CloudFront caches
 	// before CloudFront forwards another request to your origin to determine whether
@@ -2934,6 +3050,11 @@ func (s *CacheBehavior) Validate() error {
 			invalidParams.AddNested("ForwardedValues", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.LambdaFunctionAssociations != nil {
+		if err := s.LambdaFunctionAssociations.Validate(); err != nil {
+			invalidParams.AddNested("LambdaFunctionAssociations", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.TrustedSigners != nil {
 		if err := s.TrustedSigners.Validate(); err != nil {
 			invalidParams.AddNested("TrustedSigners", err.(request.ErrInvalidParams))
@@ -2946,7 +3067,80 @@ func (s *CacheBehavior) Validate() error {
 	return nil
 }
 
+// SetAllowedMethods sets the AllowedMethods field's value.
+func (s *CacheBehavior) SetAllowedMethods(v *AllowedMethods) *CacheBehavior {
+	s.AllowedMethods = v
+	return s
+}
+
+// SetCompress sets the Compress field's value.
+func (s *CacheBehavior) SetCompress(v bool) *CacheBehavior {
+	s.Compress = &v
+	return s
+}
+
+// SetDefaultTTL sets the DefaultTTL field's value.
+func (s *CacheBehavior) SetDefaultTTL(v int64) *CacheBehavior {
+	s.DefaultTTL = &v
+	return s
+}
+
+// SetForwardedValues sets the ForwardedValues field's value.
+func (s *CacheBehavior) SetForwardedValues(v *ForwardedValues) *CacheBehavior {
+	s.ForwardedValues = v
+	return s
+}
+
+// SetLambdaFunctionAssociations sets the LambdaFunctionAssociations field's value.
+func (s *CacheBehavior) SetLambdaFunctionAssociations(v *LambdaFunctionAssociations) *CacheBehavior {
+	s.LambdaFunctionAssociations = v
+	return s
+}
+
+// SetMaxTTL sets the MaxTTL field's value.
+func (s *CacheBehavior) SetMaxTTL(v int64) *CacheBehavior {
+	s.MaxTTL = &v
+	return s
+}
+
+// SetMinTTL sets the MinTTL field's value.
+func (s *CacheBehavior) SetMinTTL(v int64) *CacheBehavior {
+	s.MinTTL = &v
+	return s
+}
+
+// SetPathPattern sets the PathPattern field's value.
+func (s *CacheBehavior) SetPathPattern(v string) *CacheBehavior {
+	s.PathPattern = &v
+	return s
+}
+
+// SetSmoothStreaming sets the SmoothStreaming field's value.
+func (s *CacheBehavior) SetSmoothStreaming(v bool) *CacheBehavior {
+	s.SmoothStreaming = &v
+	return s
+}
+
+// SetTargetOriginId sets the TargetOriginId field's value.
+func (s *CacheBehavior) SetTargetOriginId(v string) *CacheBehavior {
+	s.TargetOriginId = &v
+	return s
+}
+
+// SetTrustedSigners sets the TrustedSigners field's value.
+func (s *CacheBehavior) SetTrustedSigners(v *TrustedSigners) *CacheBehavior {
+	s.TrustedSigners = v
+	return s
+}
+
+// SetViewerProtocolPolicy sets the ViewerProtocolPolicy field's value.
+func (s *CacheBehavior) SetViewerProtocolPolicy(v string) *CacheBehavior {
+	s.ViewerProtocolPolicy = &v
+	return s
+}
+
 // A complex type that contains zero or more CacheBehavior elements.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CacheBehaviors
 type CacheBehaviors struct {
 	_ struct{} `type:"structure"`
 
@@ -2993,6 +3187,18 @@ func (s *CacheBehaviors) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *CacheBehaviors) SetItems(v []*CacheBehavior) *CacheBehaviors {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *CacheBehaviors) SetQuantity(v int64) *CacheBehaviors {
+	s.Quantity = &v
+	return s
+}
+
 // A complex type that controls whether CloudFront caches the response to requests
 // using the specified HTTP methods. There are two choices:
 //
@@ -3003,6 +3209,7 @@ func (s *CacheBehaviors) Validate() error {
 // If you pick the second choice for your Amazon S3 Origin, you may need to
 // forward Access-Control-Request-Method, Access-Control-Request-Headers, and
 // Origin headers for the responses to be cached correctly.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CachedMethods
 type CachedMethods struct {
 	_ struct{} `type:"structure"`
 
@@ -3046,11 +3253,24 @@ func (s *CachedMethods) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *CachedMethods) SetItems(v []*string) *CachedMethods {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *CachedMethods) SetQuantity(v int64) *CachedMethods {
+	s.Quantity = &v
+	return s
+}
+
 // A complex type that specifies whether you want CloudFront to forward cookies
 // to the origin and, if so, which ones. For more information about forwarding
 // cookies to the origin, see How CloudFront Forwards, Caches, and Logs Cookies
 // (http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Cookies.html)
 // in the Amazon CloudFront Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CookieNames
 type CookieNames struct {
 	_ struct{} `type:"structure"`
 
@@ -3088,11 +3308,24 @@ func (s *CookieNames) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *CookieNames) SetItems(v []*string) *CookieNames {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *CookieNames) SetQuantity(v int64) *CookieNames {
+	s.Quantity = &v
+	return s
+}
+
 // A complex type that specifies whether you want CloudFront to forward cookies
 // to the origin and, if so, which ones. For more information about forwarding
 // cookies to the origin, see How CloudFront Forwards, Caches, and Logs Cookies
 // (http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Cookies.html)
 // in the Amazon CloudFront Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CookiePreference
 type CookiePreference struct {
 	_ struct{} `type:"structure"`
 
@@ -3150,7 +3383,20 @@ func (s *CookiePreference) Validate() error {
 	return nil
 }
 
+// SetForward sets the Forward field's value.
+func (s *CookiePreference) SetForward(v string) *CookiePreference {
+	s.Forward = &v
+	return s
+}
+
+// SetWhitelistedNames sets the WhitelistedNames field's value.
+func (s *CookiePreference) SetWhitelistedNames(v *CookieNames) *CookiePreference {
+	s.WhitelistedNames = v
+	return s
+}
+
 // The request to create a new origin access identity.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateCloudFrontOriginAccessIdentityRequest
 type CreateCloudFrontOriginAccessIdentityInput struct {
 	_ struct{} `type:"structure" payload:"CloudFrontOriginAccessIdentityConfig"`
 
@@ -3188,7 +3434,14 @@ func (s *CreateCloudFrontOriginAccessIdentityInput) Validate() error {
 	return nil
 }
 
+// SetCloudFrontOriginAccessIdentityConfig sets the CloudFrontOriginAccessIdentityConfig field's value.
+func (s *CreateCloudFrontOriginAccessIdentityInput) SetCloudFrontOriginAccessIdentityConfig(v *OriginAccessIdentityConfig) *CreateCloudFrontOriginAccessIdentityInput {
+	s.CloudFrontOriginAccessIdentityConfig = v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateCloudFrontOriginAccessIdentityResult
 type CreateCloudFrontOriginAccessIdentityOutput struct {
 	_ struct{} `type:"structure" payload:"CloudFrontOriginAccessIdentity"`
 
@@ -3213,7 +3466,26 @@ func (s CreateCloudFrontOriginAccessIdentityOutput) GoString() string {
 	return s.String()
 }
 
+// SetCloudFrontOriginAccessIdentity sets the CloudFrontOriginAccessIdentity field's value.
+func (s *CreateCloudFrontOriginAccessIdentityOutput) SetCloudFrontOriginAccessIdentity(v *OriginAccessIdentity) *CreateCloudFrontOriginAccessIdentityOutput {
+	s.CloudFrontOriginAccessIdentity = v
+	return s
+}
+
+// SetETag sets the ETag field's value.
+func (s *CreateCloudFrontOriginAccessIdentityOutput) SetETag(v string) *CreateCloudFrontOriginAccessIdentityOutput {
+	s.ETag = &v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *CreateCloudFrontOriginAccessIdentityOutput) SetLocation(v string) *CreateCloudFrontOriginAccessIdentityOutput {
+	s.Location = &v
+	return s
+}
+
 // The request to create a new distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateDistributionRequest
 type CreateDistributionInput struct {
 	_ struct{} `type:"structure" payload:"DistributionConfig"`
 
@@ -3251,7 +3523,14 @@ func (s *CreateDistributionInput) Validate() error {
 	return nil
 }
 
+// SetDistributionConfig sets the DistributionConfig field's value.
+func (s *CreateDistributionInput) SetDistributionConfig(v *DistributionConfig) *CreateDistributionInput {
+	s.DistributionConfig = v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateDistributionResult
 type CreateDistributionOutput struct {
 	_ struct{} `type:"structure" payload:"Distribution"`
 
@@ -3276,7 +3555,26 @@ func (s CreateDistributionOutput) GoString() string {
 	return s.String()
 }
 
+// SetDistribution sets the Distribution field's value.
+func (s *CreateDistributionOutput) SetDistribution(v *Distribution) *CreateDistributionOutput {
+	s.Distribution = v
+	return s
+}
+
+// SetETag sets the ETag field's value.
+func (s *CreateDistributionOutput) SetETag(v string) *CreateDistributionOutput {
+	s.ETag = &v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *CreateDistributionOutput) SetLocation(v string) *CreateDistributionOutput {
+	s.Location = &v
+	return s
+}
+
 // The request to create a new distribution with tags.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateDistributionWithTagsRequest
 type CreateDistributionWithTagsInput struct {
 	_ struct{} `type:"structure" payload:"DistributionConfigWithTags"`
 
@@ -3314,7 +3612,14 @@ func (s *CreateDistributionWithTagsInput) Validate() error {
 	return nil
 }
 
+// SetDistributionConfigWithTags sets the DistributionConfigWithTags field's value.
+func (s *CreateDistributionWithTagsInput) SetDistributionConfigWithTags(v *DistributionConfigWithTags) *CreateDistributionWithTagsInput {
+	s.DistributionConfigWithTags = v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateDistributionWithTagsResult
 type CreateDistributionWithTagsOutput struct {
 	_ struct{} `type:"structure" payload:"Distribution"`
 
@@ -3339,7 +3644,26 @@ func (s CreateDistributionWithTagsOutput) GoString() string {
 	return s.String()
 }
 
+// SetDistribution sets the Distribution field's value.
+func (s *CreateDistributionWithTagsOutput) SetDistribution(v *Distribution) *CreateDistributionWithTagsOutput {
+	s.Distribution = v
+	return s
+}
+
+// SetETag sets the ETag field's value.
+func (s *CreateDistributionWithTagsOutput) SetETag(v string) *CreateDistributionWithTagsOutput {
+	s.ETag = &v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *CreateDistributionWithTagsOutput) SetLocation(v string) *CreateDistributionWithTagsOutput {
+	s.Location = &v
+	return s
+}
+
 // The request to create an invalidation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateInvalidationRequest
 type CreateInvalidationInput struct {
 	_ struct{} `type:"structure" payload:"InvalidationBatch"`
 
@@ -3385,7 +3709,20 @@ func (s *CreateInvalidationInput) Validate() error {
 	return nil
 }
 
+// SetDistributionId sets the DistributionId field's value.
+func (s *CreateInvalidationInput) SetDistributionId(v string) *CreateInvalidationInput {
+	s.DistributionId = &v
+	return s
+}
+
+// SetInvalidationBatch sets the InvalidationBatch field's value.
+func (s *CreateInvalidationInput) SetInvalidationBatch(v *InvalidationBatch) *CreateInvalidationInput {
+	s.InvalidationBatch = v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateInvalidationResult
 type CreateInvalidationOutput struct {
 	_ struct{} `type:"structure" payload:"Invalidation"`
 
@@ -3407,7 +3744,20 @@ func (s CreateInvalidationOutput) GoString() string {
 	return s.String()
 }
 
+// SetInvalidation sets the Invalidation field's value.
+func (s *CreateInvalidationOutput) SetInvalidation(v *Invalidation) *CreateInvalidationOutput {
+	s.Invalidation = v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *CreateInvalidationOutput) SetLocation(v string) *CreateInvalidationOutput {
+	s.Location = &v
+	return s
+}
+
 // The request to create a new streaming distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateStreamingDistributionRequest
 type CreateStreamingDistributionInput struct {
 	_ struct{} `type:"structure" payload:"StreamingDistributionConfig"`
 
@@ -3445,7 +3795,14 @@ func (s *CreateStreamingDistributionInput) Validate() error {
 	return nil
 }
 
+// SetStreamingDistributionConfig sets the StreamingDistributionConfig field's value.
+func (s *CreateStreamingDistributionInput) SetStreamingDistributionConfig(v *StreamingDistributionConfig) *CreateStreamingDistributionInput {
+	s.StreamingDistributionConfig = v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateStreamingDistributionResult
 type CreateStreamingDistributionOutput struct {
 	_ struct{} `type:"structure" payload:"StreamingDistribution"`
 
@@ -3470,7 +3827,26 @@ func (s CreateStreamingDistributionOutput) GoString() string {
 	return s.String()
 }
 
+// SetETag sets the ETag field's value.
+func (s *CreateStreamingDistributionOutput) SetETag(v string) *CreateStreamingDistributionOutput {
+	s.ETag = &v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *CreateStreamingDistributionOutput) SetLocation(v string) *CreateStreamingDistributionOutput {
+	s.Location = &v
+	return s
+}
+
+// SetStreamingDistribution sets the StreamingDistribution field's value.
+func (s *CreateStreamingDistributionOutput) SetStreamingDistribution(v *StreamingDistribution) *CreateStreamingDistributionOutput {
+	s.StreamingDistribution = v
+	return s
+}
+
 // The request to create a new streaming distribution with tags.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateStreamingDistributionWithTagsRequest
 type CreateStreamingDistributionWithTagsInput struct {
 	_ struct{} `type:"structure" payload:"StreamingDistributionConfigWithTags"`
 
@@ -3508,7 +3884,14 @@ func (s *CreateStreamingDistributionWithTagsInput) Validate() error {
 	return nil
 }
 
+// SetStreamingDistributionConfigWithTags sets the StreamingDistributionConfigWithTags field's value.
+func (s *CreateStreamingDistributionWithTagsInput) SetStreamingDistributionConfigWithTags(v *StreamingDistributionConfigWithTags) *CreateStreamingDistributionWithTagsInput {
+	s.StreamingDistributionConfigWithTags = v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CreateStreamingDistributionWithTagsResult
 type CreateStreamingDistributionWithTagsOutput struct {
 	_ struct{} `type:"structure" payload:"StreamingDistribution"`
 
@@ -3532,6 +3915,24 @@ func (s CreateStreamingDistributionWithTagsOutput) GoString() string {
 	return s.String()
 }
 
+// SetETag sets the ETag field's value.
+func (s *CreateStreamingDistributionWithTagsOutput) SetETag(v string) *CreateStreamingDistributionWithTagsOutput {
+	s.ETag = &v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *CreateStreamingDistributionWithTagsOutput) SetLocation(v string) *CreateStreamingDistributionWithTagsOutput {
+	s.Location = &v
+	return s
+}
+
+// SetStreamingDistribution sets the StreamingDistribution field's value.
+func (s *CreateStreamingDistributionWithTagsOutput) SetStreamingDistribution(v *StreamingDistribution) *CreateStreamingDistributionWithTagsOutput {
+	s.StreamingDistribution = v
+	return s
+}
+
 // A complex type that controls:
 //
 //    * Whether CloudFront replaces HTTP status codes in the 4xx and 5xx range
@@ -3543,6 +3944,7 @@ func (s CreateStreamingDistributionWithTagsOutput) GoString() string {
 // For more information about custom error pages, see Customizing Error Responses
 // (http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages.html)
 // in the Amazon CloudFront Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CustomErrorResponse
 type CustomErrorResponse struct {
 	_ struct{} `type:"structure"`
 
@@ -3636,6 +4038,30 @@ func (s *CustomErrorResponse) Validate() error {
 	return nil
 }
 
+// SetErrorCachingMinTTL sets the ErrorCachingMinTTL field's value.
+func (s *CustomErrorResponse) SetErrorCachingMinTTL(v int64) *CustomErrorResponse {
+	s.ErrorCachingMinTTL = &v
+	return s
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *CustomErrorResponse) SetErrorCode(v int64) *CustomErrorResponse {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetResponseCode sets the ResponseCode field's value.
+func (s *CustomErrorResponse) SetResponseCode(v string) *CustomErrorResponse {
+	s.ResponseCode = &v
+	return s
+}
+
+// SetResponsePagePath sets the ResponsePagePath field's value.
+func (s *CustomErrorResponse) SetResponsePagePath(v string) *CustomErrorResponse {
+	s.ResponsePagePath = &v
+	return s
+}
+
 // A complex type that controls:
 //
 //    * Whether CloudFront replaces HTTP status codes in the 4xx and 5xx range
@@ -3646,6 +4072,7 @@ func (s *CustomErrorResponse) Validate() error {
 // For more information about custom error pages, see Customizing Error Responses
 // (http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages.html)
 // in the Amazon CloudFront Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CustomErrorResponses
 type CustomErrorResponses struct {
 	_ struct{} `type:"structure"`
 
@@ -3694,7 +4121,20 @@ func (s *CustomErrorResponses) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *CustomErrorResponses) SetItems(v []*CustomErrorResponse) *CustomErrorResponses {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *CustomErrorResponses) SetQuantity(v int64) *CustomErrorResponses {
+	s.Quantity = &v
+	return s
+}
+
 // A complex type that contains the list of Custom Headers for each origin.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CustomHeaders
 type CustomHeaders struct {
 	_ struct{} `type:"structure"`
 
@@ -3742,7 +4182,20 @@ func (s *CustomHeaders) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *CustomHeaders) SetItems(v []*OriginCustomHeader) *CustomHeaders {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *CustomHeaders) SetQuantity(v int64) *CustomHeaders {
+	s.Quantity = &v
+	return s
+}
+
 // A customer origin.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CustomOriginConfig
 type CustomOriginConfig struct {
 	_ struct{} `type:"structure"`
 
@@ -3800,9 +4253,34 @@ func (s *CustomOriginConfig) Validate() error {
 	return nil
 }
 
+// SetHTTPPort sets the HTTPPort field's value.
+func (s *CustomOriginConfig) SetHTTPPort(v int64) *CustomOriginConfig {
+	s.HTTPPort = &v
+	return s
+}
+
+// SetHTTPSPort sets the HTTPSPort field's value.
+func (s *CustomOriginConfig) SetHTTPSPort(v int64) *CustomOriginConfig {
+	s.HTTPSPort = &v
+	return s
+}
+
+// SetOriginProtocolPolicy sets the OriginProtocolPolicy field's value.
+func (s *CustomOriginConfig) SetOriginProtocolPolicy(v string) *CustomOriginConfig {
+	s.OriginProtocolPolicy = &v
+	return s
+}
+
+// SetOriginSslProtocols sets the OriginSslProtocols field's value.
+func (s *CustomOriginConfig) SetOriginSslProtocols(v *OriginSslProtocols) *CustomOriginConfig {
+	s.OriginSslProtocols = v
+	return s
+}
+
 // A complex type that describes the default cache behavior if you do not specify
 // a CacheBehavior element or if files don't match any of the values of PathPattern
 // in CacheBehavior elements. You must create exactly one default cache behavior.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DefaultCacheBehavior
 type DefaultCacheBehavior struct {
 	_ struct{} `type:"structure"`
 
@@ -3842,6 +4320,10 @@ type DefaultCacheBehavior struct {
 	//
 	// ForwardedValues is a required field
 	ForwardedValues *ForwardedValues `type:"structure" required:"true"`
+
+	// A complex type that contains zero or more Lambda function associations for
+	// a cache behavior.
+	LambdaFunctionAssociations *LambdaFunctionAssociations `type:"structure"`
 
 	MaxTTL *int64 `type:"long"`
 
@@ -3960,6 +4442,11 @@ func (s *DefaultCacheBehavior) Validate() error {
 			invalidParams.AddNested("ForwardedValues", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.LambdaFunctionAssociations != nil {
+		if err := s.LambdaFunctionAssociations.Validate(); err != nil {
+			invalidParams.AddNested("LambdaFunctionAssociations", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.TrustedSigners != nil {
 		if err := s.TrustedSigners.Validate(); err != nil {
 			invalidParams.AddNested("TrustedSigners", err.(request.ErrInvalidParams))
@@ -3972,7 +4459,74 @@ func (s *DefaultCacheBehavior) Validate() error {
 	return nil
 }
 
+// SetAllowedMethods sets the AllowedMethods field's value.
+func (s *DefaultCacheBehavior) SetAllowedMethods(v *AllowedMethods) *DefaultCacheBehavior {
+	s.AllowedMethods = v
+	return s
+}
+
+// SetCompress sets the Compress field's value.
+func (s *DefaultCacheBehavior) SetCompress(v bool) *DefaultCacheBehavior {
+	s.Compress = &v
+	return s
+}
+
+// SetDefaultTTL sets the DefaultTTL field's value.
+func (s *DefaultCacheBehavior) SetDefaultTTL(v int64) *DefaultCacheBehavior {
+	s.DefaultTTL = &v
+	return s
+}
+
+// SetForwardedValues sets the ForwardedValues field's value.
+func (s *DefaultCacheBehavior) SetForwardedValues(v *ForwardedValues) *DefaultCacheBehavior {
+	s.ForwardedValues = v
+	return s
+}
+
+// SetLambdaFunctionAssociations sets the LambdaFunctionAssociations field's value.
+func (s *DefaultCacheBehavior) SetLambdaFunctionAssociations(v *LambdaFunctionAssociations) *DefaultCacheBehavior {
+	s.LambdaFunctionAssociations = v
+	return s
+}
+
+// SetMaxTTL sets the MaxTTL field's value.
+func (s *DefaultCacheBehavior) SetMaxTTL(v int64) *DefaultCacheBehavior {
+	s.MaxTTL = &v
+	return s
+}
+
+// SetMinTTL sets the MinTTL field's value.
+func (s *DefaultCacheBehavior) SetMinTTL(v int64) *DefaultCacheBehavior {
+	s.MinTTL = &v
+	return s
+}
+
+// SetSmoothStreaming sets the SmoothStreaming field's value.
+func (s *DefaultCacheBehavior) SetSmoothStreaming(v bool) *DefaultCacheBehavior {
+	s.SmoothStreaming = &v
+	return s
+}
+
+// SetTargetOriginId sets the TargetOriginId field's value.
+func (s *DefaultCacheBehavior) SetTargetOriginId(v string) *DefaultCacheBehavior {
+	s.TargetOriginId = &v
+	return s
+}
+
+// SetTrustedSigners sets the TrustedSigners field's value.
+func (s *DefaultCacheBehavior) SetTrustedSigners(v *TrustedSigners) *DefaultCacheBehavior {
+	s.TrustedSigners = v
+	return s
+}
+
+// SetViewerProtocolPolicy sets the ViewerProtocolPolicy field's value.
+func (s *DefaultCacheBehavior) SetViewerProtocolPolicy(v string) *DefaultCacheBehavior {
+	s.ViewerProtocolPolicy = &v
+	return s
+}
+
 // Deletes a origin access identity.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DeleteCloudFrontOriginAccessIdentityRequest
 type DeleteCloudFrontOriginAccessIdentityInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4009,6 +4563,19 @@ func (s *DeleteCloudFrontOriginAccessIdentityInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *DeleteCloudFrontOriginAccessIdentityInput) SetId(v string) *DeleteCloudFrontOriginAccessIdentityInput {
+	s.Id = &v
+	return s
+}
+
+// SetIfMatch sets the IfMatch field's value.
+func (s *DeleteCloudFrontOriginAccessIdentityInput) SetIfMatch(v string) *DeleteCloudFrontOriginAccessIdentityInput {
+	s.IfMatch = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DeleteCloudFrontOriginAccessIdentityOutput
 type DeleteCloudFrontOriginAccessIdentityOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4058,6 +4625,7 @@ func (s DeleteCloudFrontOriginAccessIdentityOutput) GoString() string {
 // For information about deleting a distribution using the CloudFront console,
 // see Deleting a Distribution (http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/HowToDeleteDistribution.html)
 // in the Amazon CloudFront Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DeleteDistributionRequest
 type DeleteDistributionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4094,6 +4662,19 @@ func (s *DeleteDistributionInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *DeleteDistributionInput) SetId(v string) *DeleteDistributionInput {
+	s.Id = &v
+	return s
+}
+
+// SetIfMatch sets the IfMatch field's value.
+func (s *DeleteDistributionInput) SetIfMatch(v string) *DeleteDistributionInput {
+	s.IfMatch = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DeleteDistributionOutput
 type DeleteDistributionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4109,6 +4690,7 @@ func (s DeleteDistributionOutput) GoString() string {
 }
 
 // The request to delete a streaming distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DeleteStreamingDistributionRequest
 type DeleteStreamingDistributionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4145,6 +4727,19 @@ func (s *DeleteStreamingDistributionInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *DeleteStreamingDistributionInput) SetId(v string) *DeleteStreamingDistributionInput {
+	s.Id = &v
+	return s
+}
+
+// SetIfMatch sets the IfMatch field's value.
+func (s *DeleteStreamingDistributionInput) SetIfMatch(v string) *DeleteStreamingDistributionInput {
+	s.IfMatch = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DeleteStreamingDistributionOutput
 type DeleteStreamingDistributionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4160,6 +4755,7 @@ func (s DeleteStreamingDistributionOutput) GoString() string {
 }
 
 // The distribution's information.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/Distribution
 type Distribution struct {
 	_ struct{} `type:"structure"`
 
@@ -4225,7 +4821,56 @@ func (s Distribution) GoString() string {
 	return s.String()
 }
 
+// SetARN sets the ARN field's value.
+func (s *Distribution) SetARN(v string) *Distribution {
+	s.ARN = &v
+	return s
+}
+
+// SetActiveTrustedSigners sets the ActiveTrustedSigners field's value.
+func (s *Distribution) SetActiveTrustedSigners(v *ActiveTrustedSigners) *Distribution {
+	s.ActiveTrustedSigners = v
+	return s
+}
+
+// SetDistributionConfig sets the DistributionConfig field's value.
+func (s *Distribution) SetDistributionConfig(v *DistributionConfig) *Distribution {
+	s.DistributionConfig = v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *Distribution) SetDomainName(v string) *Distribution {
+	s.DomainName = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Distribution) SetId(v string) *Distribution {
+	s.Id = &v
+	return s
+}
+
+// SetInProgressInvalidationBatches sets the InProgressInvalidationBatches field's value.
+func (s *Distribution) SetInProgressInvalidationBatches(v int64) *Distribution {
+	s.InProgressInvalidationBatches = &v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *Distribution) SetLastModifiedTime(v time.Time) *Distribution {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Distribution) SetStatus(v string) *Distribution {
+	s.Status = &v
+	return s
+}
+
 // A distribution configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DistributionConfig
 type DistributionConfig struct {
 	_ struct{} `type:"structure"`
 
@@ -4500,8 +5145,105 @@ func (s *DistributionConfig) Validate() error {
 	return nil
 }
 
+// SetAliases sets the Aliases field's value.
+func (s *DistributionConfig) SetAliases(v *Aliases) *DistributionConfig {
+	s.Aliases = v
+	return s
+}
+
+// SetCacheBehaviors sets the CacheBehaviors field's value.
+func (s *DistributionConfig) SetCacheBehaviors(v *CacheBehaviors) *DistributionConfig {
+	s.CacheBehaviors = v
+	return s
+}
+
+// SetCallerReference sets the CallerReference field's value.
+func (s *DistributionConfig) SetCallerReference(v string) *DistributionConfig {
+	s.CallerReference = &v
+	return s
+}
+
+// SetComment sets the Comment field's value.
+func (s *DistributionConfig) SetComment(v string) *DistributionConfig {
+	s.Comment = &v
+	return s
+}
+
+// SetCustomErrorResponses sets the CustomErrorResponses field's value.
+func (s *DistributionConfig) SetCustomErrorResponses(v *CustomErrorResponses) *DistributionConfig {
+	s.CustomErrorResponses = v
+	return s
+}
+
+// SetDefaultCacheBehavior sets the DefaultCacheBehavior field's value.
+func (s *DistributionConfig) SetDefaultCacheBehavior(v *DefaultCacheBehavior) *DistributionConfig {
+	s.DefaultCacheBehavior = v
+	return s
+}
+
+// SetDefaultRootObject sets the DefaultRootObject field's value.
+func (s *DistributionConfig) SetDefaultRootObject(v string) *DistributionConfig {
+	s.DefaultRootObject = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *DistributionConfig) SetEnabled(v bool) *DistributionConfig {
+	s.Enabled = &v
+	return s
+}
+
+// SetHttpVersion sets the HttpVersion field's value.
+func (s *DistributionConfig) SetHttpVersion(v string) *DistributionConfig {
+	s.HttpVersion = &v
+	return s
+}
+
+// SetIsIPV6Enabled sets the IsIPV6Enabled field's value.
+func (s *DistributionConfig) SetIsIPV6Enabled(v bool) *DistributionConfig {
+	s.IsIPV6Enabled = &v
+	return s
+}
+
+// SetLogging sets the Logging field's value.
+func (s *DistributionConfig) SetLogging(v *LoggingConfig) *DistributionConfig {
+	s.Logging = v
+	return s
+}
+
+// SetOrigins sets the Origins field's value.
+func (s *DistributionConfig) SetOrigins(v *Origins) *DistributionConfig {
+	s.Origins = v
+	return s
+}
+
+// SetPriceClass sets the PriceClass field's value.
+func (s *DistributionConfig) SetPriceClass(v string) *DistributionConfig {
+	s.PriceClass = &v
+	return s
+}
+
+// SetRestrictions sets the Restrictions field's value.
+func (s *DistributionConfig) SetRestrictions(v *Restrictions) *DistributionConfig {
+	s.Restrictions = v
+	return s
+}
+
+// SetViewerCertificate sets the ViewerCertificate field's value.
+func (s *DistributionConfig) SetViewerCertificate(v *ViewerCertificate) *DistributionConfig {
+	s.ViewerCertificate = v
+	return s
+}
+
+// SetWebACLId sets the WebACLId field's value.
+func (s *DistributionConfig) SetWebACLId(v string) *DistributionConfig {
+	s.WebACLId = &v
+	return s
+}
+
 // A distribution Configuration and a list of tags to be associated with the
 // distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DistributionConfigWithTags
 type DistributionConfigWithTags struct {
 	_ struct{} `type:"structure"`
 
@@ -4552,7 +5294,20 @@ func (s *DistributionConfigWithTags) Validate() error {
 	return nil
 }
 
+// SetDistributionConfig sets the DistributionConfig field's value.
+func (s *DistributionConfigWithTags) SetDistributionConfig(v *DistributionConfig) *DistributionConfigWithTags {
+	s.DistributionConfig = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DistributionConfigWithTags) SetTags(v *Tags) *DistributionConfigWithTags {
+	s.Tags = v
+	return s
+}
+
 // A distribution list.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DistributionList
 type DistributionList struct {
 	_ struct{} `type:"structure"`
 
@@ -4599,7 +5354,44 @@ func (s DistributionList) GoString() string {
 	return s.String()
 }
 
+// SetIsTruncated sets the IsTruncated field's value.
+func (s *DistributionList) SetIsTruncated(v bool) *DistributionList {
+	s.IsTruncated = &v
+	return s
+}
+
+// SetItems sets the Items field's value.
+func (s *DistributionList) SetItems(v []*DistributionSummary) *DistributionList {
+	s.Items = v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DistributionList) SetMarker(v string) *DistributionList {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *DistributionList) SetMaxItems(v int64) *DistributionList {
+	s.MaxItems = &v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *DistributionList) SetNextMarker(v string) *DistributionList {
+	s.NextMarker = &v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *DistributionList) SetQuantity(v int64) *DistributionList {
+	s.Quantity = &v
+	return s
+}
+
 // A summary of the information about a CloudFront distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/DistributionSummary
 type DistributionSummary struct {
 	_ struct{} `type:"structure"`
 
@@ -4724,7 +5516,116 @@ func (s DistributionSummary) GoString() string {
 	return s.String()
 }
 
+// SetARN sets the ARN field's value.
+func (s *DistributionSummary) SetARN(v string) *DistributionSummary {
+	s.ARN = &v
+	return s
+}
+
+// SetAliases sets the Aliases field's value.
+func (s *DistributionSummary) SetAliases(v *Aliases) *DistributionSummary {
+	s.Aliases = v
+	return s
+}
+
+// SetCacheBehaviors sets the CacheBehaviors field's value.
+func (s *DistributionSummary) SetCacheBehaviors(v *CacheBehaviors) *DistributionSummary {
+	s.CacheBehaviors = v
+	return s
+}
+
+// SetComment sets the Comment field's value.
+func (s *DistributionSummary) SetComment(v string) *DistributionSummary {
+	s.Comment = &v
+	return s
+}
+
+// SetCustomErrorResponses sets the CustomErrorResponses field's value.
+func (s *DistributionSummary) SetCustomErrorResponses(v *CustomErrorResponses) *DistributionSummary {
+	s.CustomErrorResponses = v
+	return s
+}
+
+// SetDefaultCacheBehavior sets the DefaultCacheBehavior field's value.
+func (s *DistributionSummary) SetDefaultCacheBehavior(v *DefaultCacheBehavior) *DistributionSummary {
+	s.DefaultCacheBehavior = v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DistributionSummary) SetDomainName(v string) *DistributionSummary {
+	s.DomainName = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *DistributionSummary) SetEnabled(v bool) *DistributionSummary {
+	s.Enabled = &v
+	return s
+}
+
+// SetHttpVersion sets the HttpVersion field's value.
+func (s *DistributionSummary) SetHttpVersion(v string) *DistributionSummary {
+	s.HttpVersion = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *DistributionSummary) SetId(v string) *DistributionSummary {
+	s.Id = &v
+	return s
+}
+
+// SetIsIPV6Enabled sets the IsIPV6Enabled field's value.
+func (s *DistributionSummary) SetIsIPV6Enabled(v bool) *DistributionSummary {
+	s.IsIPV6Enabled = &v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *DistributionSummary) SetLastModifiedTime(v time.Time) *DistributionSummary {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetOrigins sets the Origins field's value.
+func (s *DistributionSummary) SetOrigins(v *Origins) *DistributionSummary {
+	s.Origins = v
+	return s
+}
+
+// SetPriceClass sets the PriceClass field's value.
+func (s *DistributionSummary) SetPriceClass(v string) *DistributionSummary {
+	s.PriceClass = &v
+	return s
+}
+
+// SetRestrictions sets the Restrictions field's value.
+func (s *DistributionSummary) SetRestrictions(v *Restrictions) *DistributionSummary {
+	s.Restrictions = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *DistributionSummary) SetStatus(v string) *DistributionSummary {
+	s.Status = &v
+	return s
+}
+
+// SetViewerCertificate sets the ViewerCertificate field's value.
+func (s *DistributionSummary) SetViewerCertificate(v *ViewerCertificate) *DistributionSummary {
+	s.ViewerCertificate = v
+	return s
+}
+
+// SetWebACLId sets the WebACLId field's value.
+func (s *DistributionSummary) SetWebACLId(v string) *DistributionSummary {
+	s.WebACLId = &v
+	return s
+}
+
 // A complex type that specifies how CloudFront handles query strings and cookies.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ForwardedValues
 type ForwardedValues struct {
 	_ struct{} `type:"structure"`
 
@@ -4814,8 +5715,33 @@ func (s *ForwardedValues) Validate() error {
 	return nil
 }
 
+// SetCookies sets the Cookies field's value.
+func (s *ForwardedValues) SetCookies(v *CookiePreference) *ForwardedValues {
+	s.Cookies = v
+	return s
+}
+
+// SetHeaders sets the Headers field's value.
+func (s *ForwardedValues) SetHeaders(v *Headers) *ForwardedValues {
+	s.Headers = v
+	return s
+}
+
+// SetQueryString sets the QueryString field's value.
+func (s *ForwardedValues) SetQueryString(v bool) *ForwardedValues {
+	s.QueryString = &v
+	return s
+}
+
+// SetQueryStringCacheKeys sets the QueryStringCacheKeys field's value.
+func (s *ForwardedValues) SetQueryStringCacheKeys(v *QueryStringCacheKeys) *ForwardedValues {
+	s.QueryStringCacheKeys = v
+	return s
+}
+
 // A complex type that controls the countries in which your content is distributed.
 // CloudFront determines the location of your users using MaxMind GeoIP databases.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GeoRestriction
 type GeoRestriction struct {
 	_ struct{} `type:"structure"`
 
@@ -4883,8 +5809,27 @@ func (s *GeoRestriction) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *GeoRestriction) SetItems(v []*string) *GeoRestriction {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *GeoRestriction) SetQuantity(v int64) *GeoRestriction {
+	s.Quantity = &v
+	return s
+}
+
+// SetRestrictionType sets the RestrictionType field's value.
+func (s *GeoRestriction) SetRestrictionType(v string) *GeoRestriction {
+	s.RestrictionType = &v
+	return s
+}
+
 // The origin access identity's configuration information. For more information,
 // see CloudFrontOriginAccessIdentityConfigComplexType.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetCloudFrontOriginAccessIdentityConfigRequest
 type GetCloudFrontOriginAccessIdentityConfigInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4917,7 +5862,14 @@ func (s *GetCloudFrontOriginAccessIdentityConfigInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *GetCloudFrontOriginAccessIdentityConfigInput) SetId(v string) *GetCloudFrontOriginAccessIdentityConfigInput {
+	s.Id = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetCloudFrontOriginAccessIdentityConfigResult
 type GetCloudFrontOriginAccessIdentityConfigOutput struct {
 	_ struct{} `type:"structure" payload:"CloudFrontOriginAccessIdentityConfig"`
 
@@ -4938,7 +5890,20 @@ func (s GetCloudFrontOriginAccessIdentityConfigOutput) GoString() string {
 	return s.String()
 }
 
+// SetCloudFrontOriginAccessIdentityConfig sets the CloudFrontOriginAccessIdentityConfig field's value.
+func (s *GetCloudFrontOriginAccessIdentityConfigOutput) SetCloudFrontOriginAccessIdentityConfig(v *OriginAccessIdentityConfig) *GetCloudFrontOriginAccessIdentityConfigOutput {
+	s.CloudFrontOriginAccessIdentityConfig = v
+	return s
+}
+
+// SetETag sets the ETag field's value.
+func (s *GetCloudFrontOriginAccessIdentityConfigOutput) SetETag(v string) *GetCloudFrontOriginAccessIdentityConfigOutput {
+	s.ETag = &v
+	return s
+}
+
 // The request to get an origin access identity's information.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetCloudFrontOriginAccessIdentityRequest
 type GetCloudFrontOriginAccessIdentityInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4971,7 +5936,14 @@ func (s *GetCloudFrontOriginAccessIdentityInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *GetCloudFrontOriginAccessIdentityInput) SetId(v string) *GetCloudFrontOriginAccessIdentityInput {
+	s.Id = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetCloudFrontOriginAccessIdentityResult
 type GetCloudFrontOriginAccessIdentityOutput struct {
 	_ struct{} `type:"structure" payload:"CloudFrontOriginAccessIdentity"`
 
@@ -4993,7 +5965,20 @@ func (s GetCloudFrontOriginAccessIdentityOutput) GoString() string {
 	return s.String()
 }
 
+// SetCloudFrontOriginAccessIdentity sets the CloudFrontOriginAccessIdentity field's value.
+func (s *GetCloudFrontOriginAccessIdentityOutput) SetCloudFrontOriginAccessIdentity(v *OriginAccessIdentity) *GetCloudFrontOriginAccessIdentityOutput {
+	s.CloudFrontOriginAccessIdentity = v
+	return s
+}
+
+// SetETag sets the ETag field's value.
+func (s *GetCloudFrontOriginAccessIdentityOutput) SetETag(v string) *GetCloudFrontOriginAccessIdentityOutput {
+	s.ETag = &v
+	return s
+}
+
 // The request to get a distribution configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetDistributionConfigRequest
 type GetDistributionConfigInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5026,7 +6011,14 @@ func (s *GetDistributionConfigInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *GetDistributionConfigInput) SetId(v string) *GetDistributionConfigInput {
+	s.Id = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetDistributionConfigResult
 type GetDistributionConfigOutput struct {
 	_ struct{} `type:"structure" payload:"DistributionConfig"`
 
@@ -5047,7 +6039,20 @@ func (s GetDistributionConfigOutput) GoString() string {
 	return s.String()
 }
 
+// SetDistributionConfig sets the DistributionConfig field's value.
+func (s *GetDistributionConfigOutput) SetDistributionConfig(v *DistributionConfig) *GetDistributionConfigOutput {
+	s.DistributionConfig = v
+	return s
+}
+
+// SetETag sets the ETag field's value.
+func (s *GetDistributionConfigOutput) SetETag(v string) *GetDistributionConfigOutput {
+	s.ETag = &v
+	return s
+}
+
 // The request to get a distribution's information.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetDistributionRequest
 type GetDistributionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5080,7 +6085,14 @@ func (s *GetDistributionInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *GetDistributionInput) SetId(v string) *GetDistributionInput {
+	s.Id = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetDistributionResult
 type GetDistributionOutput struct {
 	_ struct{} `type:"structure" payload:"Distribution"`
 
@@ -5101,7 +6113,20 @@ func (s GetDistributionOutput) GoString() string {
 	return s.String()
 }
 
+// SetDistribution sets the Distribution field's value.
+func (s *GetDistributionOutput) SetDistribution(v *Distribution) *GetDistributionOutput {
+	s.Distribution = v
+	return s
+}
+
+// SetETag sets the ETag field's value.
+func (s *GetDistributionOutput) SetETag(v string) *GetDistributionOutput {
+	s.ETag = &v
+	return s
+}
+
 // The request to get an invalidation's information.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetInvalidationRequest
 type GetInvalidationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5142,7 +6167,20 @@ func (s *GetInvalidationInput) Validate() error {
 	return nil
 }
 
+// SetDistributionId sets the DistributionId field's value.
+func (s *GetInvalidationInput) SetDistributionId(v string) *GetInvalidationInput {
+	s.DistributionId = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *GetInvalidationInput) SetId(v string) *GetInvalidationInput {
+	s.Id = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetInvalidationResult
 type GetInvalidationOutput struct {
 	_ struct{} `type:"structure" payload:"Invalidation"`
 
@@ -5161,7 +6199,14 @@ func (s GetInvalidationOutput) GoString() string {
 	return s.String()
 }
 
+// SetInvalidation sets the Invalidation field's value.
+func (s *GetInvalidationOutput) SetInvalidation(v *Invalidation) *GetInvalidationOutput {
+	s.Invalidation = v
+	return s
+}
+
 // To request to get a streaming distribution configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetStreamingDistributionConfigRequest
 type GetStreamingDistributionConfigInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5194,7 +6239,14 @@ func (s *GetStreamingDistributionConfigInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *GetStreamingDistributionConfigInput) SetId(v string) *GetStreamingDistributionConfigInput {
+	s.Id = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetStreamingDistributionConfigResult
 type GetStreamingDistributionConfigOutput struct {
 	_ struct{} `type:"structure" payload:"StreamingDistributionConfig"`
 
@@ -5215,7 +6267,20 @@ func (s GetStreamingDistributionConfigOutput) GoString() string {
 	return s.String()
 }
 
+// SetETag sets the ETag field's value.
+func (s *GetStreamingDistributionConfigOutput) SetETag(v string) *GetStreamingDistributionConfigOutput {
+	s.ETag = &v
+	return s
+}
+
+// SetStreamingDistributionConfig sets the StreamingDistributionConfig field's value.
+func (s *GetStreamingDistributionConfigOutput) SetStreamingDistributionConfig(v *StreamingDistributionConfig) *GetStreamingDistributionConfigOutput {
+	s.StreamingDistributionConfig = v
+	return s
+}
+
 // The request to get a streaming distribution's information.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetStreamingDistributionRequest
 type GetStreamingDistributionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5248,7 +6313,14 @@ func (s *GetStreamingDistributionInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *GetStreamingDistributionInput) SetId(v string) *GetStreamingDistributionInput {
+	s.Id = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/GetStreamingDistributionResult
 type GetStreamingDistributionOutput struct {
 	_ struct{} `type:"structure" payload:"StreamingDistribution"`
 
@@ -5270,6 +6342,18 @@ func (s GetStreamingDistributionOutput) GoString() string {
 	return s.String()
 }
 
+// SetETag sets the ETag field's value.
+func (s *GetStreamingDistributionOutput) SetETag(v string) *GetStreamingDistributionOutput {
+	s.ETag = &v
+	return s
+}
+
+// SetStreamingDistribution sets the StreamingDistribution field's value.
+func (s *GetStreamingDistributionOutput) SetStreamingDistribution(v *StreamingDistribution) *GetStreamingDistributionOutput {
+	s.StreamingDistribution = v
+	return s
+}
+
 // A complex type that specifies the headers that you want CloudFront to forward
 // to the origin for this cache behavior.
 //
@@ -5282,6 +6366,7 @@ func (s GetStreamingDistributionOutput) GoString() string {
 // once for each header value. For more information about caching based on header
 // values, see How CloudFront Forwards and Caches Headers (http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/header-caching.html)
 // in the Amazon CloudFront Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/Headers
 type Headers struct {
 	_ struct{} `type:"structure"`
 
@@ -5339,7 +6424,20 @@ func (s *Headers) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *Headers) SetItems(v []*string) *Headers {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *Headers) SetQuantity(v int64) *Headers {
+	s.Quantity = &v
+	return s
+}
+
 // An invalidation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/Invalidation
 type Invalidation struct {
 	_ struct{} `type:"structure"`
 
@@ -5375,7 +6473,32 @@ func (s Invalidation) GoString() string {
 	return s.String()
 }
 
+// SetCreateTime sets the CreateTime field's value.
+func (s *Invalidation) SetCreateTime(v time.Time) *Invalidation {
+	s.CreateTime = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Invalidation) SetId(v string) *Invalidation {
+	s.Id = &v
+	return s
+}
+
+// SetInvalidationBatch sets the InvalidationBatch field's value.
+func (s *Invalidation) SetInvalidationBatch(v *InvalidationBatch) *Invalidation {
+	s.InvalidationBatch = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Invalidation) SetStatus(v string) *Invalidation {
+	s.Status = &v
+	return s
+}
+
 // An invalidation batch.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/InvalidationBatch
 type InvalidationBatch struct {
 	_ struct{} `type:"structure"`
 
@@ -5438,10 +6561,23 @@ func (s *InvalidationBatch) Validate() error {
 	return nil
 }
 
+// SetCallerReference sets the CallerReference field's value.
+func (s *InvalidationBatch) SetCallerReference(v string) *InvalidationBatch {
+	s.CallerReference = &v
+	return s
+}
+
+// SetPaths sets the Paths field's value.
+func (s *InvalidationBatch) SetPaths(v *Paths) *InvalidationBatch {
+	s.Paths = v
+	return s
+}
+
 // The InvalidationList complex type describes the list of invalidation objects.
 // For more information about invalidation, see Invalidating Objects (Web Distributions
 // Only) (http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Invalidation.html)
 // in the Amazon CloudFront Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/InvalidationList
 type InvalidationList struct {
 	_ struct{} `type:"structure"`
 
@@ -5488,7 +6624,44 @@ func (s InvalidationList) GoString() string {
 	return s.String()
 }
 
+// SetIsTruncated sets the IsTruncated field's value.
+func (s *InvalidationList) SetIsTruncated(v bool) *InvalidationList {
+	s.IsTruncated = &v
+	return s
+}
+
+// SetItems sets the Items field's value.
+func (s *InvalidationList) SetItems(v []*InvalidationSummary) *InvalidationList {
+	s.Items = v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *InvalidationList) SetMarker(v string) *InvalidationList {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *InvalidationList) SetMaxItems(v int64) *InvalidationList {
+	s.MaxItems = &v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *InvalidationList) SetNextMarker(v string) *InvalidationList {
+	s.NextMarker = &v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *InvalidationList) SetQuantity(v int64) *InvalidationList {
+	s.Quantity = &v
+	return s
+}
+
 // A summary of an invalidation request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/InvalidationSummary
 type InvalidationSummary struct {
 	_ struct{} `type:"structure"`
 
@@ -5516,10 +6689,29 @@ func (s InvalidationSummary) GoString() string {
 	return s.String()
 }
 
+// SetCreateTime sets the CreateTime field's value.
+func (s *InvalidationSummary) SetCreateTime(v time.Time) *InvalidationSummary {
+	s.CreateTime = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *InvalidationSummary) SetId(v string) *InvalidationSummary {
+	s.Id = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *InvalidationSummary) SetStatus(v string) *InvalidationSummary {
+	s.Status = &v
+	return s
+}
+
 // A complex type that lists the active CloudFront key pairs, if any, that are
 // associated with AwsAccountNumber.
 //
 // For more information, see ActiveTrustedSigners.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/KeyPairIds
 type KeyPairIds struct {
 	_ struct{} `type:"structure"`
 
@@ -5547,7 +6739,123 @@ func (s KeyPairIds) GoString() string {
 	return s.String()
 }
 
+// SetItems sets the Items field's value.
+func (s *KeyPairIds) SetItems(v []*string) *KeyPairIds {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *KeyPairIds) SetQuantity(v int64) *KeyPairIds {
+	s.Quantity = &v
+	return s
+}
+
+// A complex type that contains a Lambda function association.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/LambdaFunctionAssociation
+type LambdaFunctionAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the event type that triggers a Lambda function invocation. Valid
+	// values are:
+	//
+	//    * viewer-request
+	//
+	//    * origin-request
+	//
+	//    * viewer-response
+	//
+	//    * origin-response
+	EventType *string `type:"string" enum:"EventType"`
+
+	// The ARN of the Lambda function.
+	LambdaFunctionARN *string `type:"string"`
+}
+
+// String returns the string representation
+func (s LambdaFunctionAssociation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s LambdaFunctionAssociation) GoString() string {
+	return s.String()
+}
+
+// SetEventType sets the EventType field's value.
+func (s *LambdaFunctionAssociation) SetEventType(v string) *LambdaFunctionAssociation {
+	s.EventType = &v
+	return s
+}
+
+// SetLambdaFunctionARN sets the LambdaFunctionARN field's value.
+func (s *LambdaFunctionAssociation) SetLambdaFunctionARN(v string) *LambdaFunctionAssociation {
+	s.LambdaFunctionARN = &v
+	return s
+}
+
+// A complex type that specifies a list of Lambda functions associations for
+// a cache behavior.
+//
+// If you want to invoke one or more Lambda functions triggered by requests
+// that match the PathPattern of the cache behavior, specify the applicable
+// values for Quantity and Items. Note that there can be up to 4 LambdaFunctionAssociation
+// items in this list (one for each possible value of EventType) and each EventType
+// can be associated with the Lambda function only once.
+//
+// If you don't want to invoke any Lambda functions for the requests that match
+// PathPattern, specify 0 for Quantity and omit Items.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/LambdaFunctionAssociations
+type LambdaFunctionAssociations struct {
+	_ struct{} `type:"structure"`
+
+	// Optional: A complex type that contains LambdaFunctionAssociation items for
+	// this cache behavior. If Quantity is 0, you can omit Items.
+	Items []*LambdaFunctionAssociation `locationNameList:"LambdaFunctionAssociation" type:"list"`
+
+	// The number of Lambda function associations for this cache behavior.
+	//
+	// Quantity is a required field
+	Quantity *int64 `type:"integer" required:"true"`
+}
+
+// String returns the string representation
+func (s LambdaFunctionAssociations) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s LambdaFunctionAssociations) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LambdaFunctionAssociations) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LambdaFunctionAssociations"}
+	if s.Quantity == nil {
+		invalidParams.Add(request.NewErrParamRequired("Quantity"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetItems sets the Items field's value.
+func (s *LambdaFunctionAssociations) SetItems(v []*LambdaFunctionAssociation) *LambdaFunctionAssociations {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *LambdaFunctionAssociations) SetQuantity(v int64) *LambdaFunctionAssociations {
+	s.Quantity = &v
+	return s
+}
+
 // The request to list origin access identities.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListCloudFrontOriginAccessIdentitiesRequest
 type ListCloudFrontOriginAccessIdentitiesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5572,7 +6880,20 @@ func (s ListCloudFrontOriginAccessIdentitiesInput) GoString() string {
 	return s.String()
 }
 
+// SetMarker sets the Marker field's value.
+func (s *ListCloudFrontOriginAccessIdentitiesInput) SetMarker(v string) *ListCloudFrontOriginAccessIdentitiesInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *ListCloudFrontOriginAccessIdentitiesInput) SetMaxItems(v int64) *ListCloudFrontOriginAccessIdentitiesInput {
+	s.MaxItems = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListCloudFrontOriginAccessIdentitiesResult
 type ListCloudFrontOriginAccessIdentitiesOutput struct {
 	_ struct{} `type:"structure" payload:"CloudFrontOriginAccessIdentityList"`
 
@@ -5590,8 +6911,15 @@ func (s ListCloudFrontOriginAccessIdentitiesOutput) GoString() string {
 	return s.String()
 }
 
+// SetCloudFrontOriginAccessIdentityList sets the CloudFrontOriginAccessIdentityList field's value.
+func (s *ListCloudFrontOriginAccessIdentitiesOutput) SetCloudFrontOriginAccessIdentityList(v *OriginAccessIdentityList) *ListCloudFrontOriginAccessIdentitiesOutput {
+	s.CloudFrontOriginAccessIdentityList = v
+	return s
+}
+
 // The request to list distributions that are associated with a specified AWS
 // WAF web ACL.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListDistributionsByWebACLIdRequest
 type ListDistributionsByWebACLIdInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5637,8 +6965,27 @@ func (s *ListDistributionsByWebACLIdInput) Validate() error {
 	return nil
 }
 
+// SetMarker sets the Marker field's value.
+func (s *ListDistributionsByWebACLIdInput) SetMarker(v string) *ListDistributionsByWebACLIdInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *ListDistributionsByWebACLIdInput) SetMaxItems(v int64) *ListDistributionsByWebACLIdInput {
+	s.MaxItems = &v
+	return s
+}
+
+// SetWebACLId sets the WebACLId field's value.
+func (s *ListDistributionsByWebACLIdInput) SetWebACLId(v string) *ListDistributionsByWebACLIdInput {
+	s.WebACLId = &v
+	return s
+}
+
 // The response to a request to list the distributions that are associated with
 // a specified AWS WAF web ACL.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListDistributionsByWebACLIdResult
 type ListDistributionsByWebACLIdOutput struct {
 	_ struct{} `type:"structure" payload:"DistributionList"`
 
@@ -5656,7 +7003,14 @@ func (s ListDistributionsByWebACLIdOutput) GoString() string {
 	return s.String()
 }
 
+// SetDistributionList sets the DistributionList field's value.
+func (s *ListDistributionsByWebACLIdOutput) SetDistributionList(v *DistributionList) *ListDistributionsByWebACLIdOutput {
+	s.DistributionList = v
+	return s
+}
+
 // The request to list your distributions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListDistributionsRequest
 type ListDistributionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5681,7 +7035,20 @@ func (s ListDistributionsInput) GoString() string {
 	return s.String()
 }
 
+// SetMarker sets the Marker field's value.
+func (s *ListDistributionsInput) SetMarker(v string) *ListDistributionsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *ListDistributionsInput) SetMaxItems(v int64) *ListDistributionsInput {
+	s.MaxItems = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListDistributionsResult
 type ListDistributionsOutput struct {
 	_ struct{} `type:"structure" payload:"DistributionList"`
 
@@ -5699,7 +7066,14 @@ func (s ListDistributionsOutput) GoString() string {
 	return s.String()
 }
 
+// SetDistributionList sets the DistributionList field's value.
+func (s *ListDistributionsOutput) SetDistributionList(v *DistributionList) *ListDistributionsOutput {
+	s.DistributionList = v
+	return s
+}
+
 // The request to list invalidations.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListInvalidationsRequest
 type ListInvalidationsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5745,7 +7119,26 @@ func (s *ListInvalidationsInput) Validate() error {
 	return nil
 }
 
+// SetDistributionId sets the DistributionId field's value.
+func (s *ListInvalidationsInput) SetDistributionId(v string) *ListInvalidationsInput {
+	s.DistributionId = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *ListInvalidationsInput) SetMarker(v string) *ListInvalidationsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *ListInvalidationsInput) SetMaxItems(v int64) *ListInvalidationsInput {
+	s.MaxItems = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListInvalidationsResult
 type ListInvalidationsOutput struct {
 	_ struct{} `type:"structure" payload:"InvalidationList"`
 
@@ -5763,7 +7156,14 @@ func (s ListInvalidationsOutput) GoString() string {
 	return s.String()
 }
 
+// SetInvalidationList sets the InvalidationList field's value.
+func (s *ListInvalidationsOutput) SetInvalidationList(v *InvalidationList) *ListInvalidationsOutput {
+	s.InvalidationList = v
+	return s
+}
+
 // The request to list your streaming distributions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListStreamingDistributionsRequest
 type ListStreamingDistributionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5784,7 +7184,20 @@ func (s ListStreamingDistributionsInput) GoString() string {
 	return s.String()
 }
 
+// SetMarker sets the Marker field's value.
+func (s *ListStreamingDistributionsInput) SetMarker(v string) *ListStreamingDistributionsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *ListStreamingDistributionsInput) SetMaxItems(v int64) *ListStreamingDistributionsInput {
+	s.MaxItems = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListStreamingDistributionsResult
 type ListStreamingDistributionsOutput struct {
 	_ struct{} `type:"structure" payload:"StreamingDistributionList"`
 
@@ -5802,7 +7215,14 @@ func (s ListStreamingDistributionsOutput) GoString() string {
 	return s.String()
 }
 
+// SetStreamingDistributionList sets the StreamingDistributionList field's value.
+func (s *ListStreamingDistributionsOutput) SetStreamingDistributionList(v *StreamingDistributionList) *ListStreamingDistributionsOutput {
+	s.StreamingDistributionList = v
+	return s
+}
+
 // The request to list tags for a CloudFront resource.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListTagsForResourceRequest
 type ListTagsForResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5835,7 +7255,14 @@ func (s *ListTagsForResourceInput) Validate() error {
 	return nil
 }
 
+// SetResource sets the Resource field's value.
+func (s *ListTagsForResourceInput) SetResource(v string) *ListTagsForResourceInput {
+	s.Resource = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ListTagsForResourceResult
 type ListTagsForResourceOutput struct {
 	_ struct{} `type:"structure" payload:"Tags"`
 
@@ -5855,7 +7282,14 @@ func (s ListTagsForResourceOutput) GoString() string {
 	return s.String()
 }
 
+// SetTags sets the Tags field's value.
+func (s *ListTagsForResourceOutput) SetTags(v *Tags) *ListTagsForResourceOutput {
+	s.Tags = v
+	return s
+}
+
 // A complex type that controls whether access logs are written for the distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/LoggingConfig
 type LoggingConfig struct {
 	_ struct{} `type:"structure"`
 
@@ -5925,6 +7359,30 @@ func (s *LoggingConfig) Validate() error {
 	return nil
 }
 
+// SetBucket sets the Bucket field's value.
+func (s *LoggingConfig) SetBucket(v string) *LoggingConfig {
+	s.Bucket = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *LoggingConfig) SetEnabled(v bool) *LoggingConfig {
+	s.Enabled = &v
+	return s
+}
+
+// SetIncludeCookies sets the IncludeCookies field's value.
+func (s *LoggingConfig) SetIncludeCookies(v bool) *LoggingConfig {
+	s.IncludeCookies = &v
+	return s
+}
+
+// SetPrefix sets the Prefix field's value.
+func (s *LoggingConfig) SetPrefix(v string) *LoggingConfig {
+	s.Prefix = &v
+	return s
+}
+
 // A complex type that describes the Amazon S3 bucket or the HTTP server (for
 // example, a web server) from which CloudFront gets your files. You must create
 // at least one origin.
@@ -5932,6 +7390,7 @@ func (s *LoggingConfig) Validate() error {
 // For the current limit on the number of origins that you can create for a
 // distribution, see Amazon CloudFront Limits (http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_cloudfront)
 // in the AWS General Reference.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/Origin
 type Origin struct {
 	_ struct{} `type:"structure"`
 
@@ -6052,7 +7511,44 @@ func (s *Origin) Validate() error {
 	return nil
 }
 
+// SetCustomHeaders sets the CustomHeaders field's value.
+func (s *Origin) SetCustomHeaders(v *CustomHeaders) *Origin {
+	s.CustomHeaders = v
+	return s
+}
+
+// SetCustomOriginConfig sets the CustomOriginConfig field's value.
+func (s *Origin) SetCustomOriginConfig(v *CustomOriginConfig) *Origin {
+	s.CustomOriginConfig = v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *Origin) SetDomainName(v string) *Origin {
+	s.DomainName = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Origin) SetId(v string) *Origin {
+	s.Id = &v
+	return s
+}
+
+// SetOriginPath sets the OriginPath field's value.
+func (s *Origin) SetOriginPath(v string) *Origin {
+	s.OriginPath = &v
+	return s
+}
+
+// SetS3OriginConfig sets the S3OriginConfig field's value.
+func (s *Origin) SetS3OriginConfig(v *S3OriginConfig) *Origin {
+	s.S3OriginConfig = v
+	return s
+}
+
 // CloudFront origin access identity.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CloudFrontOriginAccessIdentity
 type OriginAccessIdentity struct {
 	_ struct{} `type:"structure"`
 
@@ -6082,8 +7578,27 @@ func (s OriginAccessIdentity) GoString() string {
 	return s.String()
 }
 
+// SetCloudFrontOriginAccessIdentityConfig sets the CloudFrontOriginAccessIdentityConfig field's value.
+func (s *OriginAccessIdentity) SetCloudFrontOriginAccessIdentityConfig(v *OriginAccessIdentityConfig) *OriginAccessIdentity {
+	s.CloudFrontOriginAccessIdentityConfig = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *OriginAccessIdentity) SetId(v string) *OriginAccessIdentity {
+	s.Id = &v
+	return s
+}
+
+// SetS3CanonicalUserId sets the S3CanonicalUserId field's value.
+func (s *OriginAccessIdentity) SetS3CanonicalUserId(v string) *OriginAccessIdentity {
+	s.S3CanonicalUserId = &v
+	return s
+}
+
 // Origin access identity configuration. Send a GET request to the /CloudFront
 // API version/CloudFront/identity ID/config resource.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CloudFrontOriginAccessIdentityConfig
 type OriginAccessIdentityConfig struct {
 	_ struct{} `type:"structure"`
 
@@ -6137,12 +7652,25 @@ func (s *OriginAccessIdentityConfig) Validate() error {
 	return nil
 }
 
+// SetCallerReference sets the CallerReference field's value.
+func (s *OriginAccessIdentityConfig) SetCallerReference(v string) *OriginAccessIdentityConfig {
+	s.CallerReference = &v
+	return s
+}
+
+// SetComment sets the Comment field's value.
+func (s *OriginAccessIdentityConfig) SetComment(v string) *OriginAccessIdentityConfig {
+	s.Comment = &v
+	return s
+}
+
 // Lists the origin access identities for CloudFront.Send a GET request to the
 // /CloudFront API version/origin-access-identity/cloudfront resource. The response
 // includes a CloudFrontOriginAccessIdentityList element with zero or more CloudFrontOriginAccessIdentitySummary
 // child elements. By default, your entire list of origin access identities
 // is returned in one single page. If the list is long, you can paginate it
 // using the MaxItems and Marker parameters.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CloudFrontOriginAccessIdentityList
 type OriginAccessIdentityList struct {
 	_ struct{} `type:"structure"`
 
@@ -6194,7 +7722,44 @@ func (s OriginAccessIdentityList) GoString() string {
 	return s.String()
 }
 
+// SetIsTruncated sets the IsTruncated field's value.
+func (s *OriginAccessIdentityList) SetIsTruncated(v bool) *OriginAccessIdentityList {
+	s.IsTruncated = &v
+	return s
+}
+
+// SetItems sets the Items field's value.
+func (s *OriginAccessIdentityList) SetItems(v []*OriginAccessIdentitySummary) *OriginAccessIdentityList {
+	s.Items = v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *OriginAccessIdentityList) SetMarker(v string) *OriginAccessIdentityList {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *OriginAccessIdentityList) SetMaxItems(v int64) *OriginAccessIdentityList {
+	s.MaxItems = &v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *OriginAccessIdentityList) SetNextMarker(v string) *OriginAccessIdentityList {
+	s.NextMarker = &v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *OriginAccessIdentityList) SetQuantity(v int64) *OriginAccessIdentityList {
+	s.Quantity = &v
+	return s
+}
+
 // Summary of the information about a CloudFront origin access identity.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/CloudFrontOriginAccessIdentitySummary
 type OriginAccessIdentitySummary struct {
 	_ struct{} `type:"structure"`
 
@@ -6227,8 +7792,27 @@ func (s OriginAccessIdentitySummary) GoString() string {
 	return s.String()
 }
 
+// SetComment sets the Comment field's value.
+func (s *OriginAccessIdentitySummary) SetComment(v string) *OriginAccessIdentitySummary {
+	s.Comment = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *OriginAccessIdentitySummary) SetId(v string) *OriginAccessIdentitySummary {
+	s.Id = &v
+	return s
+}
+
+// SetS3CanonicalUserId sets the S3CanonicalUserId field's value.
+func (s *OriginAccessIdentitySummary) SetS3CanonicalUserId(v string) *OriginAccessIdentitySummary {
+	s.S3CanonicalUserId = &v
+	return s
+}
+
 // A complex type that contains HeaderName and HeaderValue elements, if any,
 // for this distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/OriginCustomHeader
 type OriginCustomHeader struct {
 	_ struct{} `type:"structure"`
 
@@ -6272,8 +7856,21 @@ func (s *OriginCustomHeader) Validate() error {
 	return nil
 }
 
+// SetHeaderName sets the HeaderName field's value.
+func (s *OriginCustomHeader) SetHeaderName(v string) *OriginCustomHeader {
+	s.HeaderName = &v
+	return s
+}
+
+// SetHeaderValue sets the HeaderValue field's value.
+func (s *OriginCustomHeader) SetHeaderValue(v string) *OriginCustomHeader {
+	s.HeaderValue = &v
+	return s
+}
+
 // A complex type that contains information about the SSL/TLS protocols that
 // CloudFront can use when establishing an HTTPS connection with your origin.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/OriginSslProtocols
 type OriginSslProtocols struct {
 	_ struct{} `type:"structure"`
 
@@ -6315,7 +7912,20 @@ func (s *OriginSslProtocols) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *OriginSslProtocols) SetItems(v []*string) *OriginSslProtocols {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *OriginSslProtocols) SetQuantity(v int64) *OriginSslProtocols {
+	s.Quantity = &v
+	return s
+}
+
 // A complex type that contains information about origins for this distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/Origins
 type Origins struct {
 	_ struct{} `type:"structure"`
 
@@ -6364,10 +7974,23 @@ func (s *Origins) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *Origins) SetItems(v []*Origin) *Origins {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *Origins) SetQuantity(v int64) *Origins {
+	s.Quantity = &v
+	return s
+}
+
 // A complex type that contains information about the objects that you want
 // to invalidate. For more information, see Specifying the Objects to Invalidate
 // (http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Invalidation.html#invalidation-specifying-objects)
 // in the Amazon CloudFront Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/Paths
 type Paths struct {
 	_ struct{} `type:"structure"`
 
@@ -6403,6 +8026,19 @@ func (s *Paths) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *Paths) SetItems(v []*string) *Paths {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *Paths) SetQuantity(v int64) *Paths {
+	s.Quantity = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/QueryStringCacheKeys
 type QueryStringCacheKeys struct {
 	_ struct{} `type:"structure"`
 
@@ -6440,8 +8076,21 @@ func (s *QueryStringCacheKeys) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *QueryStringCacheKeys) SetItems(v []*string) *QueryStringCacheKeys {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *QueryStringCacheKeys) SetQuantity(v int64) *QueryStringCacheKeys {
+	s.Quantity = &v
+	return s
+}
+
 // A complex type that identifies ways in which you want to restrict distribution
 // of your content.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/Restrictions
 type Restrictions struct {
 	_ struct{} `type:"structure"`
 
@@ -6480,8 +8129,15 @@ func (s *Restrictions) Validate() error {
 	return nil
 }
 
+// SetGeoRestriction sets the GeoRestriction field's value.
+func (s *Restrictions) SetGeoRestriction(v *GeoRestriction) *Restrictions {
+	s.GeoRestriction = v
+	return s
+}
+
 // A complex type that contains information about the Amazon S3 bucket from
 // which you want CloudFront to get your media files for distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/S3Origin
 type S3Origin struct {
 	_ struct{} `type:"structure"`
 
@@ -6538,8 +8194,21 @@ func (s *S3Origin) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *S3Origin) SetDomainName(v string) *S3Origin {
+	s.DomainName = &v
+	return s
+}
+
+// SetOriginAccessIdentity sets the OriginAccessIdentity field's value.
+func (s *S3Origin) SetOriginAccessIdentity(v string) *S3Origin {
+	s.OriginAccessIdentity = &v
+	return s
+}
+
 // A complex type that contains information about the Amazon S3 origin. If the
 // origin is a custom origin, use the CustomOriginConfig element instead.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/S3OriginConfig
 type S3OriginConfig struct {
 	_ struct{} `type:"structure"`
 
@@ -6594,8 +8263,15 @@ func (s *S3OriginConfig) Validate() error {
 	return nil
 }
 
+// SetOriginAccessIdentity sets the OriginAccessIdentity field's value.
+func (s *S3OriginConfig) SetOriginAccessIdentity(v string) *S3OriginConfig {
+	s.OriginAccessIdentity = &v
+	return s
+}
+
 // A complex type that lists the AWS accounts that were included in the TrustedSigners
 // complex type, as well as their active CloudFront key pair IDs, if any.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/Signer
 type Signer struct {
 	_ struct{} `type:"structure"`
 
@@ -6622,7 +8298,20 @@ func (s Signer) GoString() string {
 	return s.String()
 }
 
+// SetAwsAccountNumber sets the AwsAccountNumber field's value.
+func (s *Signer) SetAwsAccountNumber(v string) *Signer {
+	s.AwsAccountNumber = &v
+	return s
+}
+
+// SetKeyPairIds sets the KeyPairIds field's value.
+func (s *Signer) SetKeyPairIds(v *KeyPairIds) *Signer {
+	s.KeyPairIds = v
+	return s
+}
+
 // A streaming distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/StreamingDistribution
 type StreamingDistribution struct {
 	_ struct{} `type:"structure"`
 
@@ -6681,7 +8370,50 @@ func (s StreamingDistribution) GoString() string {
 	return s.String()
 }
 
+// SetARN sets the ARN field's value.
+func (s *StreamingDistribution) SetARN(v string) *StreamingDistribution {
+	s.ARN = &v
+	return s
+}
+
+// SetActiveTrustedSigners sets the ActiveTrustedSigners field's value.
+func (s *StreamingDistribution) SetActiveTrustedSigners(v *ActiveTrustedSigners) *StreamingDistribution {
+	s.ActiveTrustedSigners = v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *StreamingDistribution) SetDomainName(v string) *StreamingDistribution {
+	s.DomainName = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *StreamingDistribution) SetId(v string) *StreamingDistribution {
+	s.Id = &v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *StreamingDistribution) SetLastModifiedTime(v time.Time) *StreamingDistribution {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *StreamingDistribution) SetStatus(v string) *StreamingDistribution {
+	s.Status = &v
+	return s
+}
+
+// SetStreamingDistributionConfig sets the StreamingDistributionConfig field's value.
+func (s *StreamingDistribution) SetStreamingDistributionConfig(v *StreamingDistributionConfig) *StreamingDistribution {
+	s.StreamingDistributionConfig = v
+	return s
+}
+
 // The RTMP distribution's configuration information.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/StreamingDistributionConfig
 type StreamingDistributionConfig struct {
 	_ struct{} `type:"structure"`
 
@@ -6794,8 +8526,57 @@ func (s *StreamingDistributionConfig) Validate() error {
 	return nil
 }
 
+// SetAliases sets the Aliases field's value.
+func (s *StreamingDistributionConfig) SetAliases(v *Aliases) *StreamingDistributionConfig {
+	s.Aliases = v
+	return s
+}
+
+// SetCallerReference sets the CallerReference field's value.
+func (s *StreamingDistributionConfig) SetCallerReference(v string) *StreamingDistributionConfig {
+	s.CallerReference = &v
+	return s
+}
+
+// SetComment sets the Comment field's value.
+func (s *StreamingDistributionConfig) SetComment(v string) *StreamingDistributionConfig {
+	s.Comment = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *StreamingDistributionConfig) SetEnabled(v bool) *StreamingDistributionConfig {
+	s.Enabled = &v
+	return s
+}
+
+// SetLogging sets the Logging field's value.
+func (s *StreamingDistributionConfig) SetLogging(v *StreamingLoggingConfig) *StreamingDistributionConfig {
+	s.Logging = v
+	return s
+}
+
+// SetPriceClass sets the PriceClass field's value.
+func (s *StreamingDistributionConfig) SetPriceClass(v string) *StreamingDistributionConfig {
+	s.PriceClass = &v
+	return s
+}
+
+// SetS3Origin sets the S3Origin field's value.
+func (s *StreamingDistributionConfig) SetS3Origin(v *S3Origin) *StreamingDistributionConfig {
+	s.S3Origin = v
+	return s
+}
+
+// SetTrustedSigners sets the TrustedSigners field's value.
+func (s *StreamingDistributionConfig) SetTrustedSigners(v *TrustedSigners) *StreamingDistributionConfig {
+	s.TrustedSigners = v
+	return s
+}
+
 // A streaming distribution Configuration and a list of tags to be associated
 // with the streaming distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/StreamingDistributionConfigWithTags
 type StreamingDistributionConfigWithTags struct {
 	_ struct{} `type:"structure"`
 
@@ -6846,7 +8627,20 @@ func (s *StreamingDistributionConfigWithTags) Validate() error {
 	return nil
 }
 
+// SetStreamingDistributionConfig sets the StreamingDistributionConfig field's value.
+func (s *StreamingDistributionConfigWithTags) SetStreamingDistributionConfig(v *StreamingDistributionConfig) *StreamingDistributionConfigWithTags {
+	s.StreamingDistributionConfig = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *StreamingDistributionConfigWithTags) SetTags(v *Tags) *StreamingDistributionConfigWithTags {
+	s.Tags = v
+	return s
+}
+
 // A streaming distribution list.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/StreamingDistributionList
 type StreamingDistributionList struct {
 	_ struct{} `type:"structure"`
 
@@ -6894,7 +8688,44 @@ func (s StreamingDistributionList) GoString() string {
 	return s.String()
 }
 
+// SetIsTruncated sets the IsTruncated field's value.
+func (s *StreamingDistributionList) SetIsTruncated(v bool) *StreamingDistributionList {
+	s.IsTruncated = &v
+	return s
+}
+
+// SetItems sets the Items field's value.
+func (s *StreamingDistributionList) SetItems(v []*StreamingDistributionSummary) *StreamingDistributionList {
+	s.Items = v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *StreamingDistributionList) SetMarker(v string) *StreamingDistributionList {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *StreamingDistributionList) SetMaxItems(v int64) *StreamingDistributionList {
+	s.MaxItems = &v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *StreamingDistributionList) SetNextMarker(v string) *StreamingDistributionList {
+	s.NextMarker = &v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *StreamingDistributionList) SetQuantity(v int64) *StreamingDistributionList {
+	s.Quantity = &v
+	return s
+}
+
 // A summary of the information for an Amazon CloudFront streaming distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/StreamingDistributionSummary
 type StreamingDistributionSummary struct {
 	_ struct{} `type:"structure"`
 
@@ -6977,8 +8808,75 @@ func (s StreamingDistributionSummary) GoString() string {
 	return s.String()
 }
 
+// SetARN sets the ARN field's value.
+func (s *StreamingDistributionSummary) SetARN(v string) *StreamingDistributionSummary {
+	s.ARN = &v
+	return s
+}
+
+// SetAliases sets the Aliases field's value.
+func (s *StreamingDistributionSummary) SetAliases(v *Aliases) *StreamingDistributionSummary {
+	s.Aliases = v
+	return s
+}
+
+// SetComment sets the Comment field's value.
+func (s *StreamingDistributionSummary) SetComment(v string) *StreamingDistributionSummary {
+	s.Comment = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *StreamingDistributionSummary) SetDomainName(v string) *StreamingDistributionSummary {
+	s.DomainName = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *StreamingDistributionSummary) SetEnabled(v bool) *StreamingDistributionSummary {
+	s.Enabled = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *StreamingDistributionSummary) SetId(v string) *StreamingDistributionSummary {
+	s.Id = &v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *StreamingDistributionSummary) SetLastModifiedTime(v time.Time) *StreamingDistributionSummary {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetPriceClass sets the PriceClass field's value.
+func (s *StreamingDistributionSummary) SetPriceClass(v string) *StreamingDistributionSummary {
+	s.PriceClass = &v
+	return s
+}
+
+// SetS3Origin sets the S3Origin field's value.
+func (s *StreamingDistributionSummary) SetS3Origin(v *S3Origin) *StreamingDistributionSummary {
+	s.S3Origin = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *StreamingDistributionSummary) SetStatus(v string) *StreamingDistributionSummary {
+	s.Status = &v
+	return s
+}
+
+// SetTrustedSigners sets the TrustedSigners field's value.
+func (s *StreamingDistributionSummary) SetTrustedSigners(v *TrustedSigners) *StreamingDistributionSummary {
+	s.TrustedSigners = v
+	return s
+}
+
 // A complex type that controls whether access logs are written for this streaming
 // distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/StreamingLoggingConfig
 type StreamingLoggingConfig struct {
 	_ struct{} `type:"structure"`
 
@@ -7035,7 +8933,26 @@ func (s *StreamingLoggingConfig) Validate() error {
 	return nil
 }
 
+// SetBucket sets the Bucket field's value.
+func (s *StreamingLoggingConfig) SetBucket(v string) *StreamingLoggingConfig {
+	s.Bucket = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *StreamingLoggingConfig) SetEnabled(v bool) *StreamingLoggingConfig {
+	s.Enabled = &v
+	return s
+}
+
+// SetPrefix sets the Prefix field's value.
+func (s *StreamingLoggingConfig) SetPrefix(v string) *StreamingLoggingConfig {
+	s.Prefix = &v
+	return s
+}
+
 // A complex type that contains Tag key and Tag value.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/Tag
 type Tag struct {
 	_ struct{} `type:"structure"`
 
@@ -7080,7 +8997,20 @@ func (s *Tag) Validate() error {
 	return nil
 }
 
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
+}
+
 // A complex type that contains zero or more Tag elements.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/TagKeys
 type TagKeys struct {
 	_ struct{} `type:"structure"`
 
@@ -7098,7 +9028,14 @@ func (s TagKeys) GoString() string {
 	return s.String()
 }
 
+// SetItems sets the Items field's value.
+func (s *TagKeys) SetItems(v []*string) *TagKeys {
+	s.Items = v
+	return s
+}
+
 // The request to add tags to a CloudFront resource.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/TagResourceRequest
 type TagResourceInput struct {
 	_ struct{} `type:"structure" payload:"Tags"`
 
@@ -7144,6 +9081,19 @@ func (s *TagResourceInput) Validate() error {
 	return nil
 }
 
+// SetResource sets the Resource field's value.
+func (s *TagResourceInput) SetResource(v string) *TagResourceInput {
+	s.Resource = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *TagResourceInput) SetTags(v *Tags) *TagResourceInput {
+	s.Tags = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/TagResourceOutput
 type TagResourceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7159,6 +9109,7 @@ func (s TagResourceOutput) GoString() string {
 }
 
 // A complex type that contains zero or more Tag elements.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/Tags
 type Tags struct {
 	_ struct{} `type:"structure"`
 
@@ -7196,6 +9147,12 @@ func (s *Tags) Validate() error {
 	return nil
 }
 
+// SetItems sets the Items field's value.
+func (s *Tags) SetItems(v []*Tag) *Tags {
+	s.Items = v
+	return s
+}
+
 // A complex type that specifies the AWS accounts, if any, that you want to
 // allow to create signed URLs for private content.
 //
@@ -7214,6 +9171,7 @@ func (s *Tags) Validate() error {
 //
 // For more information about updating the distribution configuration, see DistributionConfig
 // .
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/TrustedSigners
 type TrustedSigners struct {
 	_ struct{} `type:"structure"`
 
@@ -7259,7 +9217,26 @@ func (s *TrustedSigners) Validate() error {
 	return nil
 }
 
+// SetEnabled sets the Enabled field's value.
+func (s *TrustedSigners) SetEnabled(v bool) *TrustedSigners {
+	s.Enabled = &v
+	return s
+}
+
+// SetItems sets the Items field's value.
+func (s *TrustedSigners) SetItems(v []*string) *TrustedSigners {
+	s.Items = v
+	return s
+}
+
+// SetQuantity sets the Quantity field's value.
+func (s *TrustedSigners) SetQuantity(v int64) *TrustedSigners {
+	s.Quantity = &v
+	return s
+}
+
 // The request to remove tags from a CloudFront resource.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UntagResourceRequest
 type UntagResourceInput struct {
 	_ struct{} `type:"structure" payload:"TagKeys"`
 
@@ -7300,6 +9277,19 @@ func (s *UntagResourceInput) Validate() error {
 	return nil
 }
 
+// SetResource sets the Resource field's value.
+func (s *UntagResourceInput) SetResource(v string) *UntagResourceInput {
+	s.Resource = &v
+	return s
+}
+
+// SetTagKeys sets the TagKeys field's value.
+func (s *UntagResourceInput) SetTagKeys(v *TagKeys) *UntagResourceInput {
+	s.TagKeys = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UntagResourceOutput
 type UntagResourceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7315,6 +9305,7 @@ func (s UntagResourceOutput) GoString() string {
 }
 
 // The request to update an origin access identity.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UpdateCloudFrontOriginAccessIdentityRequest
 type UpdateCloudFrontOriginAccessIdentityInput struct {
 	_ struct{} `type:"structure" payload:"CloudFrontOriginAccessIdentityConfig"`
 
@@ -7364,7 +9355,26 @@ func (s *UpdateCloudFrontOriginAccessIdentityInput) Validate() error {
 	return nil
 }
 
+// SetCloudFrontOriginAccessIdentityConfig sets the CloudFrontOriginAccessIdentityConfig field's value.
+func (s *UpdateCloudFrontOriginAccessIdentityInput) SetCloudFrontOriginAccessIdentityConfig(v *OriginAccessIdentityConfig) *UpdateCloudFrontOriginAccessIdentityInput {
+	s.CloudFrontOriginAccessIdentityConfig = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *UpdateCloudFrontOriginAccessIdentityInput) SetId(v string) *UpdateCloudFrontOriginAccessIdentityInput {
+	s.Id = &v
+	return s
+}
+
+// SetIfMatch sets the IfMatch field's value.
+func (s *UpdateCloudFrontOriginAccessIdentityInput) SetIfMatch(v string) *UpdateCloudFrontOriginAccessIdentityInput {
+	s.IfMatch = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UpdateCloudFrontOriginAccessIdentityResult
 type UpdateCloudFrontOriginAccessIdentityOutput struct {
 	_ struct{} `type:"structure" payload:"CloudFrontOriginAccessIdentity"`
 
@@ -7385,7 +9395,20 @@ func (s UpdateCloudFrontOriginAccessIdentityOutput) GoString() string {
 	return s.String()
 }
 
+// SetCloudFrontOriginAccessIdentity sets the CloudFrontOriginAccessIdentity field's value.
+func (s *UpdateCloudFrontOriginAccessIdentityOutput) SetCloudFrontOriginAccessIdentity(v *OriginAccessIdentity) *UpdateCloudFrontOriginAccessIdentityOutput {
+	s.CloudFrontOriginAccessIdentity = v
+	return s
+}
+
+// SetETag sets the ETag field's value.
+func (s *UpdateCloudFrontOriginAccessIdentityOutput) SetETag(v string) *UpdateCloudFrontOriginAccessIdentityOutput {
+	s.ETag = &v
+	return s
+}
+
 // The request to update a distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UpdateDistributionRequest
 type UpdateDistributionInput struct {
 	_ struct{} `type:"structure" payload:"DistributionConfig"`
 
@@ -7435,7 +9458,26 @@ func (s *UpdateDistributionInput) Validate() error {
 	return nil
 }
 
+// SetDistributionConfig sets the DistributionConfig field's value.
+func (s *UpdateDistributionInput) SetDistributionConfig(v *DistributionConfig) *UpdateDistributionInput {
+	s.DistributionConfig = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *UpdateDistributionInput) SetId(v string) *UpdateDistributionInput {
+	s.Id = &v
+	return s
+}
+
+// SetIfMatch sets the IfMatch field's value.
+func (s *UpdateDistributionInput) SetIfMatch(v string) *UpdateDistributionInput {
+	s.IfMatch = &v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UpdateDistributionResult
 type UpdateDistributionOutput struct {
 	_ struct{} `type:"structure" payload:"Distribution"`
 
@@ -7456,7 +9498,20 @@ func (s UpdateDistributionOutput) GoString() string {
 	return s.String()
 }
 
+// SetDistribution sets the Distribution field's value.
+func (s *UpdateDistributionOutput) SetDistribution(v *Distribution) *UpdateDistributionOutput {
+	s.Distribution = v
+	return s
+}
+
+// SetETag sets the ETag field's value.
+func (s *UpdateDistributionOutput) SetETag(v string) *UpdateDistributionOutput {
+	s.ETag = &v
+	return s
+}
+
 // The request to update a streaming distribution.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UpdateStreamingDistributionRequest
 type UpdateStreamingDistributionInput struct {
 	_ struct{} `type:"structure" payload:"StreamingDistributionConfig"`
 
@@ -7506,7 +9561,26 @@ func (s *UpdateStreamingDistributionInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *UpdateStreamingDistributionInput) SetId(v string) *UpdateStreamingDistributionInput {
+	s.Id = &v
+	return s
+}
+
+// SetIfMatch sets the IfMatch field's value.
+func (s *UpdateStreamingDistributionInput) SetIfMatch(v string) *UpdateStreamingDistributionInput {
+	s.IfMatch = &v
+	return s
+}
+
+// SetStreamingDistributionConfig sets the StreamingDistributionConfig field's value.
+func (s *UpdateStreamingDistributionInput) SetStreamingDistributionConfig(v *StreamingDistributionConfig) *UpdateStreamingDistributionInput {
+	s.StreamingDistributionConfig = v
+	return s
+}
+
 // The returned result of the corresponding request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/UpdateStreamingDistributionResult
 type UpdateStreamingDistributionOutput struct {
 	_ struct{} `type:"structure" payload:"StreamingDistribution"`
 
@@ -7527,6 +9601,18 @@ func (s UpdateStreamingDistributionOutput) GoString() string {
 	return s.String()
 }
 
+// SetETag sets the ETag field's value.
+func (s *UpdateStreamingDistributionOutput) SetETag(v string) *UpdateStreamingDistributionOutput {
+	s.ETag = &v
+	return s
+}
+
+// SetStreamingDistribution sets the StreamingDistribution field's value.
+func (s *UpdateStreamingDistributionOutput) SetStreamingDistribution(v *StreamingDistribution) *UpdateStreamingDistributionOutput {
+	s.StreamingDistribution = v
+	return s
+}
+
 // A complex type that specifies the following:
 //
 //    * Which SSL/TLS certificate to use when viewers request objects using
@@ -7541,13 +9627,10 @@ func (s UpdateStreamingDistributionOutput) GoString() string {
 // For more information, see Using an HTTPS Connection to Access Your Objects
 // (http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/SecureConnections.html)
 // in the Amazon Amazon CloudFront Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2016-11-25/ViewerCertificate
 type ViewerCertificate struct {
 	_ struct{} `type:"structure"`
 
-	// If you want viewers to use HTTPS to request your objects and you're using
-	// an alternate domain name in your object URLs (for example, https://example.com/logo.jpg),
-	// specify the ACM certificate ARN of the custom viewer certificate for this
-	// distribution. Specify either this value, IAMCertificateId, or CloudFrontDefaultCertificate.
 	ACMCertificateArn *string `type:"string"`
 
 	// Include one of these values to specify the following:
@@ -7635,16 +9718,8 @@ type ViewerCertificate struct {
 	// IAMCertificateId, or CloudFrontDefaultCertificate].
 	CertificateSource *string `deprecated:"true" type:"string" enum:"CertificateSource"`
 
-	// If you want viewers to use HTTPS to request your objects and you're using
-	// the CloudFront domain name of your distribution in your object URLs (for
-	// example, https://d111111abcdef8.cloudfront.net/logo.jpg), set to true. Omit
-	// this value if you are setting an ACMCertificateArn or IAMCertificateId.
 	CloudFrontDefaultCertificate *bool `type:"boolean"`
 
-	// If you want viewers to use HTTPS to request your objects and you're using
-	// an alternate domain name in your object URLs (for example, https://example.com/logo.jpg),
-	// specify the IAM certificate identifier of the custom viewer certificate for
-	// this distribution. Specify either this value, ACMCertificateArn, or CloudFrontDefaultCertificate.
 	IAMCertificateId *string `type:"string"`
 
 	// Specify the minimum version of the SSL/TLS protocol that you want CloudFront
@@ -7703,6 +9778,48 @@ func (s ViewerCertificate) GoString() string {
 	return s.String()
 }
 
+// SetACMCertificateArn sets the ACMCertificateArn field's value.
+func (s *ViewerCertificate) SetACMCertificateArn(v string) *ViewerCertificate {
+	s.ACMCertificateArn = &v
+	return s
+}
+
+// SetCertificate sets the Certificate field's value.
+func (s *ViewerCertificate) SetCertificate(v string) *ViewerCertificate {
+	s.Certificate = &v
+	return s
+}
+
+// SetCertificateSource sets the CertificateSource field's value.
+func (s *ViewerCertificate) SetCertificateSource(v string) *ViewerCertificate {
+	s.CertificateSource = &v
+	return s
+}
+
+// SetCloudFrontDefaultCertificate sets the CloudFrontDefaultCertificate field's value.
+func (s *ViewerCertificate) SetCloudFrontDefaultCertificate(v bool) *ViewerCertificate {
+	s.CloudFrontDefaultCertificate = &v
+	return s
+}
+
+// SetIAMCertificateId sets the IAMCertificateId field's value.
+func (s *ViewerCertificate) SetIAMCertificateId(v string) *ViewerCertificate {
+	s.IAMCertificateId = &v
+	return s
+}
+
+// SetMinimumProtocolVersion sets the MinimumProtocolVersion field's value.
+func (s *ViewerCertificate) SetMinimumProtocolVersion(v string) *ViewerCertificate {
+	s.MinimumProtocolVersion = &v
+	return s
+}
+
+// SetSSLSupportMethod sets the SSLSupportMethod field's value.
+func (s *ViewerCertificate) SetSSLSupportMethod(v string) *ViewerCertificate {
+	s.SSLSupportMethod = &v
+	return s
+}
+
 const (
 	// CertificateSourceCloudfront is a CertificateSource enum value
 	CertificateSourceCloudfront = "cloudfront"
@@ -7712,6 +9829,20 @@ const (
 
 	// CertificateSourceAcm is a CertificateSource enum value
 	CertificateSourceAcm = "acm"
+)
+
+const (
+	// EventTypeViewerRequest is a EventType enum value
+	EventTypeViewerRequest = "viewer-request"
+
+	// EventTypeViewerResponse is a EventType enum value
+	EventTypeViewerResponse = "viewer-response"
+
+	// EventTypeOriginRequest is a EventType enum value
+	EventTypeOriginRequest = "origin-request"
+
+	// EventTypeOriginResponse is a EventType enum value
+	EventTypeOriginResponse = "origin-response"
 )
 
 const (

@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -75,5 +75,28 @@ func TestTriggerDupSuppression(t *testing.T) {
 
 	if g := <-ch; g != nil {
 		t.Errorf("unexpected non-nil value: %v (%T)", g, g)
+	}
+}
+
+func TestIsRegistered(t *testing.T) {
+	wt := New()
+
+	wt.Register(0)
+	wt.Register(1)
+	wt.Register(2)
+
+	for i := uint64(0); i < 3; i++ {
+		if !wt.IsRegistered(i) {
+			t.Errorf("event ID %d isn't registered", i)
+		}
+	}
+
+	if wt.IsRegistered(4) {
+		t.Errorf("event ID 4 shouldn't be registered")
+	}
+
+	wt.Trigger(0, "foo")
+	if wt.IsRegistered(0) {
+		t.Errorf("event ID 0 is already triggered, shouldn't be registered")
 	}
 }

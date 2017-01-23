@@ -47,6 +47,7 @@ golden:
 	make -B my_test/test.pb.go
 	sed -i '/return.*fileDescriptor/d' my_test/test.pb.go
 	sed -i '/^var fileDescriptor/,/^}/d' my_test/test.pb.go
+	sed -i '/proto.RegisterFile.*fileDescriptor/d' my_test/test.pb.go
 	gofmt -w my_test/test.pb.go
 	diff -w my_test/test.pb.go my_test/test.pb.go.golden
 
@@ -57,7 +58,7 @@ testbuild:	regenerate
 
 regenerate:
 	# Invoke protoc once to generate three independent .pb.go files in the same package.
-	protoc --go_out=. multi/multi{1,2,3}.proto
+	protoc --go_out=. multi/multi1.proto multi/multi2.proto multi/multi3.proto
 
 #extension_test:	extension_test.$O
 #	$(LD) -L. -o $@ $<

@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -125,6 +125,13 @@ func (s *storeRecorder) DeleteExpiredKeys(cutoff time.Time) {
 		Name:   "DeleteExpiredKeys",
 		Params: []interface{}{cutoff},
 	})
+}
+
+func (s *storeRecorder) HasTTLKeys() bool {
+	s.Record(testutil.Action{
+		Name: "HasTTLKeys",
+	})
+	return true
 }
 
 // errStoreRecorder is a storeRecorder, but returns the given error on

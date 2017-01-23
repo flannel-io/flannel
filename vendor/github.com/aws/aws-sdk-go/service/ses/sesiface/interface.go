@@ -63,6 +63,14 @@ type SESAPI interface {
 
 	CloneReceiptRuleSet(*ses.CloneReceiptRuleSetInput) (*ses.CloneReceiptRuleSetOutput, error)
 
+	CreateConfigurationSetRequest(*ses.CreateConfigurationSetInput) (*request.Request, *ses.CreateConfigurationSetOutput)
+
+	CreateConfigurationSet(*ses.CreateConfigurationSetInput) (*ses.CreateConfigurationSetOutput, error)
+
+	CreateConfigurationSetEventDestinationRequest(*ses.CreateConfigurationSetEventDestinationInput) (*request.Request, *ses.CreateConfigurationSetEventDestinationOutput)
+
+	CreateConfigurationSetEventDestination(*ses.CreateConfigurationSetEventDestinationInput) (*ses.CreateConfigurationSetEventDestinationOutput, error)
+
 	CreateReceiptFilterRequest(*ses.CreateReceiptFilterInput) (*request.Request, *ses.CreateReceiptFilterOutput)
 
 	CreateReceiptFilter(*ses.CreateReceiptFilterInput) (*ses.CreateReceiptFilterOutput, error)
@@ -74,6 +82,14 @@ type SESAPI interface {
 	CreateReceiptRuleSetRequest(*ses.CreateReceiptRuleSetInput) (*request.Request, *ses.CreateReceiptRuleSetOutput)
 
 	CreateReceiptRuleSet(*ses.CreateReceiptRuleSetInput) (*ses.CreateReceiptRuleSetOutput, error)
+
+	DeleteConfigurationSetRequest(*ses.DeleteConfigurationSetInput) (*request.Request, *ses.DeleteConfigurationSetOutput)
+
+	DeleteConfigurationSet(*ses.DeleteConfigurationSetInput) (*ses.DeleteConfigurationSetOutput, error)
+
+	DeleteConfigurationSetEventDestinationRequest(*ses.DeleteConfigurationSetEventDestinationInput) (*request.Request, *ses.DeleteConfigurationSetEventDestinationOutput)
+
+	DeleteConfigurationSetEventDestination(*ses.DeleteConfigurationSetEventDestinationInput) (*ses.DeleteConfigurationSetEventDestinationOutput, error)
 
 	DeleteIdentityRequest(*ses.DeleteIdentityInput) (*request.Request, *ses.DeleteIdentityOutput)
 
@@ -102,6 +118,10 @@ type SESAPI interface {
 	DescribeActiveReceiptRuleSetRequest(*ses.DescribeActiveReceiptRuleSetInput) (*request.Request, *ses.DescribeActiveReceiptRuleSetOutput)
 
 	DescribeActiveReceiptRuleSet(*ses.DescribeActiveReceiptRuleSetInput) (*ses.DescribeActiveReceiptRuleSetOutput, error)
+
+	DescribeConfigurationSetRequest(*ses.DescribeConfigurationSetInput) (*request.Request, *ses.DescribeConfigurationSetOutput)
+
+	DescribeConfigurationSet(*ses.DescribeConfigurationSetInput) (*ses.DescribeConfigurationSetOutput, error)
 
 	DescribeReceiptRuleRequest(*ses.DescribeReceiptRuleInput) (*request.Request, *ses.DescribeReceiptRuleOutput)
 
@@ -138,6 +158,10 @@ type SESAPI interface {
 	GetSendStatisticsRequest(*ses.GetSendStatisticsInput) (*request.Request, *ses.GetSendStatisticsOutput)
 
 	GetSendStatistics(*ses.GetSendStatisticsInput) (*ses.GetSendStatisticsOutput, error)
+
+	ListConfigurationSetsRequest(*ses.ListConfigurationSetsInput) (*request.Request, *ses.ListConfigurationSetsOutput)
+
+	ListConfigurationSets(*ses.ListConfigurationSetsInput) (*ses.ListConfigurationSetsOutput, error)
 
 	ListIdentitiesRequest(*ses.ListIdentitiesInput) (*request.Request, *ses.ListIdentitiesOutput)
 
@@ -208,6 +232,10 @@ type SESAPI interface {
 	SetReceiptRulePositionRequest(*ses.SetReceiptRulePositionInput) (*request.Request, *ses.SetReceiptRulePositionOutput)
 
 	SetReceiptRulePosition(*ses.SetReceiptRulePositionInput) (*ses.SetReceiptRulePositionOutput, error)
+
+	UpdateConfigurationSetEventDestinationRequest(*ses.UpdateConfigurationSetEventDestinationInput) (*request.Request, *ses.UpdateConfigurationSetEventDestinationOutput)
+
+	UpdateConfigurationSetEventDestination(*ses.UpdateConfigurationSetEventDestinationInput) (*ses.UpdateConfigurationSetEventDestinationOutput, error)
 
 	UpdateReceiptRuleRequest(*ses.UpdateReceiptRuleInput) (*request.Request, *ses.UpdateReceiptRuleOutput)
 

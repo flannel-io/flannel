@@ -22,8 +22,11 @@ import (
 
 // puller fetches messages from the server in a batch.
 type puller struct {
-	Client    *Client
-	Sub       string
+	Client *Client
+	Sub    string
+
+	// The maximum number of messages to fetch at once.
+	// No more than BatchSize messages will be outstanding at any time.
 	BatchSize int64
 
 	// A function to call when a new message is fetched from the server, but not yet returned from Next.
@@ -39,7 +42,6 @@ func (p *puller) Next(ctx context.Context) (*Message, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	// TODO: prefetch.
 	for len(p.buf) == 0 {
 		var err error
 		p.buf, err = p.Client.s.fetchMessages(ctx, p.Sub, p.BatchSize)

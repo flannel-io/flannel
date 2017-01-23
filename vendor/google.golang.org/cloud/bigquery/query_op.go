@@ -41,6 +41,37 @@ func (opt disableQueryCache) customizeQuery(conf *bq.JobConfigurationQuery, proj
 	conf.UseQueryCache = &f
 }
 
+// DisableFlattenedResults returns an Option that prevents results being flattened.
+// If this Option is not used, results from nested and repeated fields are flattened.
+// DisableFlattenedResults implies AllowLargeResults
+// For more information, see https://cloud.google.com/bigquery/docs/data#nested
+func DisableFlattenedResults() Option { return disableFlattenedResults{} }
+
+type disableFlattenedResults struct{}
+
+func (opt disableFlattenedResults) implementsOption() {}
+
+func (opt disableFlattenedResults) customizeQuery(conf *bq.JobConfigurationQuery, projectID string) {
+	f := false
+	conf.FlattenResults = &f
+	// DisableFlattenedResults implies AllowLargeResults
+	allowLargeResults{}.customizeQuery(conf, projectID)
+}
+
+// AllowLargeResults returns an Option that allows the query to produce arbitrarily large result tables.
+// The destination must be a table.
+// When using this option, queries will take longer to execute, even if the result set is small.
+// For additional limitations, see https://cloud.google.com/bigquery/querying-data#largequeryresults
+func AllowLargeResults() Option { return allowLargeResults{} }
+
+type allowLargeResults struct{}
+
+func (opt allowLargeResults) implementsOption() {}
+
+func (opt allowLargeResults) customizeQuery(conf *bq.JobConfigurationQuery, projectID string) {
+	conf.AllowLargeResults = true
+}
+
 // JobPriority returns an Option that causes a query to be scheduled with the specified priority.
 // The default priority is InteractivePriority.
 // For more information, see https://cloud.google.com/bigquery/querying-data#batchqueries
@@ -58,9 +89,6 @@ const (
 	BatchPriority       = "BATCH"
 	InteractivePriority = "INTERACTIVE"
 )
-
-// TODO(mcgreevy): support large results.
-// TODO(mcgreevy): support non-flattened results.
 
 func (c *Client) query(ctx context.Context, dst *Table, src *Query, options []Option) (*Job, error) {
 	job, options := initJobProto(c.projectID, options)

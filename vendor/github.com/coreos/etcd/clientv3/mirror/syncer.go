@@ -1,4 +1,4 @@
-// Copyright 2016 CoreOS, Inc.
+// Copyright 2016 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ func (s *syncer) SyncBase(ctx context.Context) (<-chan clientv3.GetResponse, cha
 			// If len(s.prefix) != 0, we will sync key-value space with given prefix.
 			// We then range from the prefix to the next prefix if exists. Or we will
 			// range from the prefix to the end if the next prefix does not exists.
-			opts = append(opts, clientv3.WithPrefix())
+			opts = append(opts, clientv3.WithRange(clientv3.GetPrefixRangeEnd(s.prefix)))
 			key = s.prefix
 		}
 
