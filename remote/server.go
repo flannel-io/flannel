@@ -391,7 +391,7 @@ func RunServer(ctx context.Context, sm subnet.Manager, listenAddr, cafile, certf
 		c <- http.Serve(l, httpLogger(r))
 	}()
 
-	daemon.SdNotify("READY=1")
+	daemon.SdNotify(false, "READY=1")
 
 	select {
 	case <-ctx.Done():
