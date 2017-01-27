@@ -1,6 +1,4 @@
-// Protocol Buffers for Go with Gadgets
-//
-// Copyright (c) 2013, The GoGo Authors. All rights reserved.
+// Copyright (c) 2013, Vastech SA (PTY) LTD. All rights reserved.
 // http://github.com/gogo/protobuf
 //
 // Redistribution and use in source and binary forms, with or without
@@ -369,45 +367,29 @@ func (p *size) generateField(proto3 bool, file *generator.FileDescriptor, messag
 				descriptor.FieldDescriptorProto_TYPE_SINT64:
 				sum = append(sum, `soz`+p.localName+`(uint64(k))`)
 			}
+			sum = append(sum, strconv.Itoa(valueKeySize))
 			switch m.ValueField.GetType() {
 			case descriptor.FieldDescriptorProto_TYPE_DOUBLE,
 				descriptor.FieldDescriptorProto_TYPE_FIXED64,
 				descriptor.FieldDescriptorProto_TYPE_SFIXED64:
-				sum = append(sum, strconv.Itoa(valueKeySize))
 				sum = append(sum, strconv.Itoa(8))
 			case descriptor.FieldDescriptorProto_TYPE_FLOAT,
 				descriptor.FieldDescriptorProto_TYPE_FIXED32,
 				descriptor.FieldDescriptorProto_TYPE_SFIXED32:
-				sum = append(sum, strconv.Itoa(valueKeySize))
 				sum = append(sum, strconv.Itoa(4))
 			case descriptor.FieldDescriptorProto_TYPE_INT64,
 				descriptor.FieldDescriptorProto_TYPE_UINT64,
 				descriptor.FieldDescriptorProto_TYPE_UINT32,
 				descriptor.FieldDescriptorProto_TYPE_ENUM,
 				descriptor.FieldDescriptorProto_TYPE_INT32:
-				sum = append(sum, strconv.Itoa(valueKeySize))
 				sum = append(sum, `sov`+p.localName+`(uint64(v))`)
 			case descriptor.FieldDescriptorProto_TYPE_BOOL:
-				sum = append(sum, strconv.Itoa(valueKeySize))
 				sum = append(sum, `1`)
-			case descriptor.FieldDescriptorProto_TYPE_STRING:
-				sum = append(sum, strconv.Itoa(valueKeySize))
+			case descriptor.FieldDescriptorProto_TYPE_STRING,
+				descriptor.FieldDescriptorProto_TYPE_BYTES:
 				sum = append(sum, `len(v)+sov`+p.localName+`(uint64(len(v)))`)
-			case descriptor.FieldDescriptorProto_TYPE_BYTES:
-				p.P(`l = 0`)
-				if proto3 {
-					p.P(`if len(v) > 0 {`)
-				} else {
-					p.P(`if v != nil {`)
-				}
-				p.In()
-				p.P(`l = `, strconv.Itoa(valueKeySize), ` + len(v)+sov`+p.localName+`(uint64(len(v)))`)
-				p.Out()
-				p.P(`}`)
-				sum = append(sum, `l`)
 			case descriptor.FieldDescriptorProto_TYPE_SINT32,
 				descriptor.FieldDescriptorProto_TYPE_SINT64:
-				sum = append(sum, strconv.Itoa(valueKeySize))
 				sum = append(sum, `soz`+p.localName+`(uint64(v))`)
 			case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
 				if nullable {
@@ -419,19 +401,16 @@ func (p *size) generateField(proto3 bool, file *generator.FileDescriptor, messag
 					} else {
 						p.P(`l = v.`, sizeName, `()`)
 					}
-					p.P(`l += `, strconv.Itoa(valueKeySize), ` + sov`+p.localName+`(uint64(l))`)
 					p.Out()
 					p.P(`}`)
-					sum = append(sum, `l`)
 				} else {
 					if valuegoTyp != valuegoAliasTyp {
 						p.P(`l = ((*`, valuegoTyp, `)(&v)).`, sizeName, `()`)
 					} else {
 						p.P(`l = v.`, sizeName, `()`)
 					}
-					sum = append(sum, strconv.Itoa(valueKeySize))
-					sum = append(sum, `l+sov`+p.localName+`(uint64(l))`)
 				}
+				sum = append(sum, `l+sov`+p.localName+`(uint64(l))`)
 			}
 			p.P(`mapEntrySize := `, strings.Join(sum, "+"))
 			p.P(`n+=mapEntrySize+`, fieldKeySize, `+sov`, p.localName, `(uint64(mapEntrySize))`)
@@ -564,15 +543,15 @@ func (p *size) Generate(file *generator.FileDescriptor) {
 			}
 		}
 		if message.DescriptorProto.HasExtension() {
+			p.P(`if m.XXX_extensions != nil {`)
+			p.In()
 			if gogoproto.HasExtensionsMap(file.FileDescriptorProto, message.DescriptorProto) {
-				p.P(`n += `, protoPkg.Use(), `.SizeOfInternalExtension(m)`)
+				p.P(`n += `, protoPkg.Use(), `.SizeOfExtensionMap(m.XXX_extensions)`)
 			} else {
-				p.P(`if m.XXX_extensions != nil {`)
-				p.In()
 				p.P(`n+=len(m.XXX_extensions)`)
-				p.Out()
-				p.P(`}`)
 			}
+			p.Out()
+			p.P(`}`)
 		}
 		if gogoproto.HasUnrecognized(file.FileDescriptorProto, message.DescriptorProto) {
 			p.P(`if m.XXX_unrecognized != nil {`)

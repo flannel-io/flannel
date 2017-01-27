@@ -26,9 +26,7 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion1
 
 type M struct {
 	F map[string]float64 `protobuf:"bytes,1,rep,name=f" json:"f,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"fixed64,2,opt,name=value,proto3"`
@@ -232,44 +230,39 @@ func (m *M) Unmarshal(data []byte) error {
 			}
 			mapkey := string(data[iNdEx:postStringIndexmapkey])
 			iNdEx = postStringIndexmapkey
+			var valuekey uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowNopackage
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				valuekey |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			var mapvaluetemp uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += 8
+			mapvaluetemp = uint64(data[iNdEx-8])
+			mapvaluetemp |= uint64(data[iNdEx-7]) << 8
+			mapvaluetemp |= uint64(data[iNdEx-6]) << 16
+			mapvaluetemp |= uint64(data[iNdEx-5]) << 24
+			mapvaluetemp |= uint64(data[iNdEx-4]) << 32
+			mapvaluetemp |= uint64(data[iNdEx-3]) << 40
+			mapvaluetemp |= uint64(data[iNdEx-2]) << 48
+			mapvaluetemp |= uint64(data[iNdEx-1]) << 56
+			mapvalue := math.Float64frombits(mapvaluetemp)
 			if m.F == nil {
 				m.F = make(map[string]float64)
 			}
-			if iNdEx < postIndex {
-				var valuekey uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowNopackage
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := data[iNdEx]
-					iNdEx++
-					valuekey |= (uint64(b) & 0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				var mapvaluetemp uint64
-				if (iNdEx + 8) > l {
-					return io.ErrUnexpectedEOF
-				}
-				iNdEx += 8
-				mapvaluetemp = uint64(data[iNdEx-8])
-				mapvaluetemp |= uint64(data[iNdEx-7]) << 8
-				mapvaluetemp |= uint64(data[iNdEx-6]) << 16
-				mapvaluetemp |= uint64(data[iNdEx-5]) << 24
-				mapvaluetemp |= uint64(data[iNdEx-4]) << 32
-				mapvaluetemp |= uint64(data[iNdEx-3]) << 40
-				mapvaluetemp |= uint64(data[iNdEx-2]) << 48
-				mapvaluetemp |= uint64(data[iNdEx-1]) << 56
-				mapvalue := math.Float64frombits(mapvaluetemp)
-				m.F[mapkey] = mapvalue
-			} else {
-				var mapvalue float64
-				m.F[mapkey] = mapvalue
-			}
+			m.F[mapkey] = mapvalue
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -397,17 +390,15 @@ var (
 	ErrIntOverflowNopackage   = fmt.Errorf("proto: integer overflow")
 )
 
-func init() { proto.RegisterFile("nopackage.proto", fileDescriptorNopackage) }
-
 var fileDescriptorNopackage = []byte{
-	// 134 bytes of a gzipped FileDescriptorProto
+	// 129 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0xe2, 0xcf, 0xcb, 0x2f, 0x48,
 	0x4c, 0xce, 0x4e, 0x4c, 0x4f, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x57, 0x0a, 0xe2, 0x62, 0xf4,
 	0x15, 0x12, 0xe7, 0x62, 0x4c, 0x93, 0x60, 0x54, 0x60, 0xd6, 0xe0, 0x36, 0xe2, 0xd4, 0xf3, 0xd5,
 	0x73, 0x73, 0xcd, 0x2b, 0x29, 0xaa, 0x0c, 0x62, 0x4c, 0x93, 0x32, 0xe1, 0x62, 0x83, 0x70, 0x84,
-	0x04, 0xb8, 0x98, 0xb3, 0x53, 0x2b, 0x25, 0x18, 0x15, 0x18, 0x35, 0x38, 0x83, 0x40, 0x4c, 0x21,
-	0x11, 0x2e, 0xd6, 0xb2, 0xc4, 0x9c, 0xd2, 0x54, 0x09, 0x26, 0x05, 0x46, 0x0d, 0xc6, 0x20, 0x08,
-	0xc7, 0x8a, 0xc9, 0x82, 0xd1, 0x89, 0xe7, 0xc4, 0x23, 0x39, 0xc6, 0x0b, 0x8f, 0xe4, 0x18, 0x1f,
-	0x3c, 0x92, 0x63, 0x4c, 0x62, 0x03, 0x5b, 0x64, 0x0c, 0x08, 0x00, 0x00, 0xff, 0xff, 0x62, 0x62,
-	0xb2, 0xed, 0x7b, 0x00, 0x00, 0x00,
+	0x04, 0xb8, 0x98, 0xb3, 0x53, 0x2b, 0x81, 0x8a, 0x18, 0x35, 0x38, 0x83, 0x40, 0x4c, 0x21, 0x11,
+	0x2e, 0xd6, 0xb2, 0xc4, 0x9c, 0xd2, 0x54, 0x09, 0x26, 0xa0, 0x18, 0x63, 0x10, 0x84, 0x63, 0xc5,
+	0x64, 0xc1, 0xe8, 0xc4, 0x73, 0xe2, 0x91, 0x1c, 0xe3, 0x05, 0x20, 0x7e, 0x00, 0xc4, 0x49, 0x6c,
+	0x60, 0x8b, 0x8c, 0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x62, 0x62, 0xb2, 0xed, 0x7b, 0x00, 0x00,
+	0x00,
 }

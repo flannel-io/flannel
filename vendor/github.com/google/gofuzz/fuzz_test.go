@@ -220,30 +220,6 @@ func TestFuzz_structslice(t *testing.T) {
 	})
 }
 
-func TestFuzz_structarray(t *testing.T) {
-	obj := &struct {
-		A [3]struct {
-			S string
-		}
-		B [2]int
-	}{}
-
-	tryFuzz(t, New(), obj, func() (int, bool) {
-		for _, v := range obj.A {
-			if v.S == "" {
-				return 1, false
-			}
-		}
-
-		for _, v := range obj.B {
-			if v == 0 {
-				return 2, false
-			}
-		}
-		return 3, true
-	})
-}
-
 func TestFuzz_custom(t *testing.T) {
 	obj := &struct {
 		A string

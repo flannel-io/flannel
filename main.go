@@ -59,6 +59,8 @@ type CmdLineOpts struct {
 	remoteCertfile string
 	remoteCAFile   string
 	kubeSubnetMgr  bool
+	kubeMaster     string
+	Kubeconfig     string
 }
 
 var opts CmdLineOpts
@@ -77,6 +79,8 @@ func init() {
 	flag.StringVar(&opts.remoteCertfile, "remote-certfile", "", "SSL certification file used to secure client/server communication")
 	flag.StringVar(&opts.remoteCAFile, "remote-cafile", "", "SSL Certificate Authority file used to secure client/server communication")
 	flag.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "Contact the Kubernetes API for subnet assignement instead of etcd or flannel-server.")
+	flag.StringVar(&opts.kubeMaster, "kube-master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
+	flag.StringVar(&opts.Kubeconfig, "kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
 }
@@ -86,7 +90,7 @@ func newSubnetManager() (subnet.Manager, error) {
 		return remote.NewRemoteManager(opts.remote, opts.remoteCAFile, opts.remoteCertfile, opts.remoteKeyfile)
 	}
 	if opts.kubeSubnetMgr {
-		return kube.NewSubnetManager()
+		return kube.NewSubnetManager(opts.kubeMaster, opts.Kubeconfig)
 	}
 
 	cfg := &subnet.EtcdConfig{

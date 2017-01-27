@@ -1,6 +1,4 @@
-// Protocol Buffers for Go with Gadgets
-//
-// Copyright (c) 2013, The GoGo Authors. All rights reserved.
+// Copyright (c) 2013, Vastech SA (PTY) LTD. All rights reserved.
 // http://github.com/gogo/protobuf
 //
 // Redistribution and use in source and binary forms, with or without
@@ -36,6 +34,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"unsafe"
 )
 
 type Uint128 [2]uint64
@@ -52,15 +51,7 @@ func (u Uint128) MarshalTo(data []byte) (n int, err error) {
 }
 
 func GetLittleEndianUint64(b []byte, offset int) uint64 {
-	v := uint64(b[offset+7]) << 56
-	v += uint64(b[offset+6]) << 48
-	v += uint64(b[offset+5]) << 40
-	v += uint64(b[offset+4]) << 32
-	v += uint64(b[offset+3]) << 24
-	v += uint64(b[offset+2]) << 16
-	v += uint64(b[offset+1]) << 8
-	v += uint64(b[offset])
-	return v
+	return *(*uint64)(unsafe.Pointer(&b[offset]))
 }
 
 func PutLittleEndianUint64(b []byte, offset int, v uint64) {

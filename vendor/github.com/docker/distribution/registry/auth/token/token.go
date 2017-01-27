@@ -20,9 +20,6 @@ const (
 	// TokenSeparator is the value which separates the header, claims, and
 	// signature in the compact serialization of a JSON Web Token.
 	TokenSeparator = "."
-	// Leeway is the Duration that will be added to NBF and EXP claim
-	// checks to account for clock skew as per https://tools.ietf.org/html/rfc7519#section-4.1.5
-	Leeway = 60 * time.Second
 )
 
 // Errors used by token parsing and verification.
@@ -95,7 +92,7 @@ func NewToken(rawToken string) (*Token, error) {
 
 	defer func() {
 		if err != nil {
-			log.Infof("error while unmarshalling raw token: %s", err)
+			log.Errorf("error while unmarshalling raw token: %s", err)
 		}
 	}()
 
@@ -135,47 +132,39 @@ func NewToken(rawToken string) (*Token, error) {
 func (t *Token) Verify(verifyOpts VerifyOptions) error {
 	// Verify that the Issuer claim is a trusted authority.
 	if !contains(verifyOpts.TrustedIssuers, t.Claims.Issuer) {
-		log.Infof("token from untrusted issuer: %q", t.Claims.Issuer)
+		log.Errorf("token from untrusted issuer: %q", t.Claims.Issuer)
 		return ErrInvalidToken
 	}
 
 	// Verify that the Audience claim is allowed.
 	if !contains(verifyOpts.AcceptedAudiences, t.Claims.Audience) {
-		log.Infof("token intended for another audience: %q", t.Claims.Audience)
+		log.Errorf("token intended for another audience: %q", t.Claims.Audience)
 		return ErrInvalidToken
 	}
 
 	// Verify that the token is currently usable and not expired.
-	currentTime := time.Now()
-
-	ExpWithLeeway := time.Unix(t.Claims.Expiration, 0).Add(Leeway)
-	if currentTime.After(ExpWithLeeway) {
-		log.Infof("token not to be used after %s - currently %s", ExpWithLeeway, currentTime)
-		return ErrInvalidToken
-	}
-
-	NotBeforeWithLeeway := time.Unix(t.Claims.NotBefore, 0).Add(-Leeway)
-	if currentTime.Before(NotBeforeWithLeeway) {
-		log.Infof("token not to be used before %s - currently %s", NotBeforeWithLeeway, currentTime)
+	currentUnixTime := time.Now().Unix()
+	if !(t.Claims.NotBefore <= currentUnixTime && currentUnixTime <= t.Claims.Expiration) {
+		log.Errorf("token not to be used before %d or after %d - currently %d", t.Claims.NotBefore, t.Claims.Expiration, currentUnixTime)
 		return ErrInvalidToken
 	}
 
 	// Verify the token signature.
 	if len(t.Signature) == 0 {
-		log.Info("token has no signature")
+		log.Error("token has no signature")
 		return ErrInvalidToken
 	}
 
 	// Verify that the signing key is trusted.
 	signingKey, err := t.VerifySigningKey(verifyOpts)
 	if err != nil {
-		log.Info(err)
+		log.Error(err)
 		return ErrInvalidToken
 	}
 
 	// Finally, verify the signature of the token using the key which signed it.
 	if err := signingKey.Verify(strings.NewReader(t.Raw), t.Header.SigningAlg, t.Signature); err != nil {
-		log.Infof("unable to verify token signature: %s", err)
+		log.Errorf("unable to verify token signature: %s", err)
 		return ErrInvalidToken
 	}
 

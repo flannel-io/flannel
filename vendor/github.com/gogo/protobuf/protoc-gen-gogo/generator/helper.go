@@ -1,7 +1,5 @@
-// Protocol Buffers for Go with Gadgets
-//
-// Copyright (c) 2013, The GoGo Authors. All rights reserved.
-// http://github.com/gogo/protobuf
+// Copyright (c) 2013, Vastech SA (PTY) LTD. All rights reserved.
+// http://github.com/gogo/protobuf/gogoproto
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -296,7 +294,6 @@ func EmbedFieldName(goTyp string) string {
 }
 
 func (g *Generator) GeneratePlugin(p Plugin) {
-	plugins = []Plugin{p}
 	p.Init(g)
 	// Generate the output. The generator runs for every file, even the files
 	// that we don't generate output for, so that we can collate the full list

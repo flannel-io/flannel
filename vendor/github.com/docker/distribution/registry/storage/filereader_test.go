@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bytes"
+	"crypto/rand"
 	"io"
 	mrand "math/rand"
 	"os"
@@ -15,7 +16,7 @@ import (
 func TestSimpleRead(t *testing.T) {
 	ctx := context.Background()
 	content := make([]byte, 1<<20)
-	n, err := mrand.Read(content)
+	n, err := rand.Read(content)
 	if err != nil {
 		t.Fatalf("unexpected error building random data: %v", err)
 	}
@@ -182,7 +183,7 @@ func TestFileReaderNonExistentFile(t *testing.T) {
 // conditions that can arise when reading a layer.
 func TestFileReaderErrors(t *testing.T) {
 	// TODO(stevvooe): We need to cover error return types, driven by the
-	// errors returned via the HTTP API. For now, here is an incomplete list:
+	// errors returned via the HTTP API. For now, here is a incomplete list:
 	//
 	// 	1. Layer Not Found: returned when layer is not found or access is
 	//        denied.
