@@ -1,3 +1,17 @@
+// Copyright 2015 CoreOS, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package unit
 
 import (
@@ -54,7 +68,7 @@ ExecStart=/usr/bin/sleep infinity
 `,
 		},
 
-		// no optimization for unsorted options
+		// options are grouped into sections
 		{
 			[]*UnitOption{
 				&UnitOption{"Unit", "Description", "Foo"},
@@ -63,12 +77,34 @@ ExecStart=/usr/bin/sleep infinity
 			},
 			`[Unit]
 Description=Foo
+BindsTo=bar.service
 
 [Service]
 ExecStart=/usr/bin/sleep infinity
+`,
+		},
 
-[Unit]
+		// options are ordered within groups, and sections are ordered in the order in which they were first seen
+		{
+			[]*UnitOption{
+				&UnitOption{"Unit", "Description", "Foo"},
+				&UnitOption{"Service", "ExecStart", "/usr/bin/sleep infinity"},
+				&UnitOption{"Unit", "BindsTo", "bar.service"},
+				&UnitOption{"X-Foo", "Bar", "baz"},
+				&UnitOption{"Service", "ExecStop", "/usr/bin/sleep 1"},
+				&UnitOption{"Unit", "Documentation", "https://foo.com"},
+			},
+			`[Unit]
+Description=Foo
 BindsTo=bar.service
+Documentation=https://foo.com
+
+[Service]
+ExecStart=/usr/bin/sleep infinity
+ExecStop=/usr/bin/sleep 1
+
+[X-Foo]
+Bar=baz
 `,
 		},
 
@@ -126,7 +162,7 @@ o
 
 		output := string(outBytes)
 		if tt.output != output {
-			t.Errorf("case %d: incorrect output")
+			t.Errorf("case %d: incorrect output", i)
 			t.Logf("Expected:\n%s", tt.output)
 			t.Logf("Actual:\n%s", output)
 		}

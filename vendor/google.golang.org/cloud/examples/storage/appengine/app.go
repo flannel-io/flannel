@@ -179,7 +179,7 @@ func (d *demo) copyFile(fileName string) {
 	copyName := fileName + "-copy"
 	fmt.Fprintf(d.w, "Copying file /%v/%v to /%v/%v:\n", bucket, fileName, bucket, copyName)
 
-	obj, err := d.client.CopyObject(d.ctx, bucket, fileName, bucket, copyName, nil)
+	obj, err := d.bucket.Object(fileName).CopyTo(d.ctx, d.bucket.Object(copyName), nil)
 	if err != nil {
 		d.errorf("copyFile: unable to copy /%v/%v to bucket %q, file %q: %v", bucket, fileName, bucket, copyName, err)
 		return

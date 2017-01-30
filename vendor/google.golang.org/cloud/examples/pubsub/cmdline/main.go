@@ -17,30 +17,24 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"sync"
 	"time"
 
 	"golang.org/x/net/context"
 
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/cloud"
-	"google.golang.org/cloud/compute/metadata"
 	"google.golang.org/cloud/pubsub"
 )
 
 var (
-	jsonFile  = flag.String("j", "", "A path to your JSON key file for your service account downloaded from Google Developer Console, not needed if you run it on Compute Engine instances.")
 	projID    = flag.String("p", "", "The ID of your Google Cloud project.")
 	reportMPS = flag.Bool("report", false, "Reports the incoming/outgoing message rate in msg/sec if set.")
-	size      = flag.Int("size", 10, "Batch size for pull_messages and publish_messages subcommands.")
+	size      = flag.Int("size", 10, "Batch size for publish_messages subcommand.")
 )
 
 const (
@@ -75,39 +69,6 @@ func checkArgs(argv []string, min int) {
 	if len(argv) < min {
 		usageAndExit("Missing arguments")
 	}
-}
-
-// newClient creates http.Client with a jwt service account when
-// jsonFile flag is specified, otherwise by obtaining the GCE service
-// account's access token.
-func newClient(jsonFile string) (*http.Client, error) {
-	if jsonFile != "" {
-		jsonKey, err := ioutil.ReadFile(jsonFile)
-		if err != nil {
-			return nil, err
-		}
-		conf, err := google.JWTConfigFromJSON(jsonKey, pubsub.ScopePubSub)
-		if err != nil {
-			return nil, err
-		}
-		return conf.Client(oauth2.NoContext), nil
-	}
-	if metadata.OnGCE() {
-		c := &http.Client{
-			Transport: &oauth2.Transport{
-				Source: google.ComputeTokenSource(""),
-			},
-		}
-		if *projID == "" {
-			projectID, err := metadata.ProjectID()
-			if err != nil {
-				return nil, fmt.Errorf("ProjectID failed, %v", err)
-			}
-			*projID = projectID
-		}
-		return c, nil
-	}
-	return nil, errors.New("Could not create an authenticated client.")
 }
 
 func createTopic(client *pubsub.Client, argv []string) {
@@ -235,49 +196,102 @@ func publish(client *pubsub.Client, argv []string) {
 	fmt.Printf("Message '%s' published to topic %s and the message id is %s\n", message, topic, msgIDs[0])
 }
 
+// reporter maintains a counter and reports stats about the rate of increase of that counter.
 type reporter struct {
 	reportTitle string
 	lastC       uint64
 	c           uint64
-	result      <-chan int
+	count       chan int
+
+	// Close done to shut down reporter.
+	done chan struct{}
 }
 
-func (r *reporter) report() {
+// newReporter constructs a reporter which logs stats if --report is true.
+// Users must call Stop once the reporter is no longer needed.
+func newReporter(reportTitle string) *reporter {
+	rep := &reporter{reportTitle: reportTitle}
+	rep.start()
+	return rep
+}
+
+func (r *reporter) start() {
 	ticker := time.NewTicker(tick)
-	defer func() {
-		ticker.Stop()
-	}()
-	for {
-		select {
-		case <-ticker.C:
-			n := r.c - r.lastC
-			r.lastC = r.c
-			mps := n / uint64(tick/time.Second)
-			log.Printf("%s ~%d msgs/s, total: %d", r.reportTitle, mps, r.c)
-		case n := <-r.result:
-			r.c += uint64(n)
+	r.done = make(chan struct{})
+	r.count = make(chan int, 1024)
+	go func() {
+		defer func() {
+			ticker.Stop()
+		}()
+		for {
+			select {
+			case <-ticker.C:
+				n := r.c - r.lastC
+				r.lastC = r.c
+				mps := n / uint64(tick/time.Second)
+				if *reportMPS {
+					log.Printf("%s ~%d msgs/s, total: %d", r.reportTitle, mps, r.c)
+				}
+			case n := <-r.count:
+				r.c += uint64(n)
+			case <-r.done:
+				return
+			}
 		}
+	}()
+}
+
+// Inc increments the message count by n.
+func (r *reporter) Inc(n int) {
+	r.count <- n
+}
+
+// Stop Stops the reporting that was started by Start.
+func (r *reporter) Stop() {
+	close(r.done)
+}
+
+var quit chan os.Signal
+
+func init() {
+	quit = make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+}
+
+func shouldQuit() bool {
+	select {
+	case <-quit:
+		signal.Stop(quit)
+		close(quit)
+		return true
+	default:
+		return false
 	}
 }
 
-func publishLoop(client *pubsub.Client, topic string, workerid int, result chan<- int) {
-	var r uint64
-	for {
-		msgs := make([]*pubsub.Message, *size)
-		for i := 0; i < *size; i++ {
-			msgs[i] = &pubsub.Message{
-				Data: []byte(fmt.Sprintf("Worker: %d, Round: %d, Message: %d", workerid, r, i)),
-			}
+// genMessages generates a batch of messages to send.
+func genMessages(prefix string) []*pubsub.Message {
+	msgs := make([]*pubsub.Message, *size)
+	for i := 0; i < *size; i++ {
+		msgs[i] = &pubsub.Message{
+			Data: []byte(fmt.Sprintf("%s Message: %d", prefix, i)),
 		}
-		_, err := client.Topic(topic).Publish(context.Background(), msgs...)
-		if err != nil {
+	}
+	return msgs
+}
+
+// publish publishes a series of messages to the named topic.
+func publishMessageBatches(client *pubsub.Client, topicName string, workerid int, rep *reporter) {
+	var r uint64
+	topic := client.Topic(topicName)
+	for !shouldQuit() {
+		msgPrefix := fmt.Sprintf("Worker: %d, Round: %d,", workerid, r)
+		if _, err := topic.Publish(context.Background(), genMessages(msgPrefix)...); err != nil {
 			log.Printf("Publish failed, %v\n", err)
 			return
 		}
 		r++
-		if *reportMPS {
-			result <- *size
-		}
+		rep.Inc(*size)
 	}
 }
 
@@ -288,71 +302,70 @@ func publishMessages(client *pubsub.Client, argv []string) {
 	if err != nil {
 		log.Fatalf("Atoi failed, %v", err)
 	}
-	result := make(chan int, 1024)
+	rep := newReporter("Sent")
+	defer rep.Stop()
+
+	var wg sync.WaitGroup
 	for i := 0; i < int(workers); i++ {
-		go publishLoop(client, topic, i, result)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			publishMessageBatches(client, topic, i, rep)
+		}()
 	}
-	if *reportMPS {
-		r := reporter{reportTitle: "Sent", result: result}
-		r.report()
-	} else {
-		select {}
+	wg.Wait()
+}
+
+// processMessages reads Messages from msgs and processes them, until mgss is closed.
+// It calls Done on each Message that is read from msgs.
+func processMessages(msgs <-chan *pubsub.Message, rep *reporter, printMsg bool) {
+	for m := range msgs {
+		if printMsg {
+			fmt.Printf("Got a message: %s\n", m.Data)
+		}
+		rep.Inc(1)
+		m.Done(true)
 	}
 }
 
-// NOTE: the following operations (which take a Context rather than a Client)
-// use the old API which is being progressively deprecated.
-
-func ack(ctx context.Context, sub string, ackID ...string) {
-	err := pubsub.Ack(ctx, sub, ackID...)
-	if err != nil {
-		log.Printf("Ack failed, %v\n", err)
-	}
-}
-
-func pullLoop(ctx context.Context, sub string, result chan<- int) {
-	for {
-		msgs, err := pubsub.PullWait(ctx, sub, *size)
-		if err != nil {
-			log.Printf("PullWait failed, %v\n", err)
-			time.Sleep(5 * time.Second)
-			continue
-		}
-		if len(msgs) == 0 {
-			log.Println("Received no messages")
-			continue
-		}
-		if *reportMPS {
-			result <- len(msgs)
-		}
-		ackIDs := make([]string, len(msgs))
-		for i, msg := range msgs {
-			if !*reportMPS {
-				fmt.Printf("Got a message: %s\n", msg.Data)
-			}
-			ackIDs[i] = msg.AckID
-		}
-		go ack(ctx, sub, ackIDs...)
-	}
-}
-
-func pullMessages(ctx context.Context, argv []string) {
+// pullMessages reads messages from a subscription, and farms them out to a
+// number of goroutines for processing.
+func pullMessages(client *pubsub.Client, argv []string) {
 	checkArgs(argv, 3)
-	sub := argv[1]
+	sub := client.Subscription(argv[1])
+
 	workers, err := strconv.Atoi(argv[2])
 	if err != nil {
 		log.Fatalf("Atoi failed, %v", err)
 	}
-	result := make(chan int, 1024)
+
+	rep := newReporter("Received")
+	defer rep.Stop()
+
+	msgs := make(chan *pubsub.Message)
 	for i := 0; i < int(workers); i++ {
-		go pullLoop(ctx, sub, result)
+		go processMessages(msgs, rep, !*reportMPS)
 	}
-	if *reportMPS {
-		r := reporter{reportTitle: "Received", result: result}
-		r.report()
-	} else {
-		select {}
+
+	it, err := sub.Pull(context.Background(), pubsub.MaxExtension(time.Minute))
+	if err != nil {
+		log.Fatalf("failed to construct iterator: %v", err)
 	}
+	defer it.Stop()
+
+	for !shouldQuit() {
+		m, err := it.Next()
+		if err != nil {
+			log.Fatalf("error reading from iterator: %v", err)
+		}
+		msgs <- m
+	}
+
+	// Shut down all processMessages goroutines.
+	close(msgs)
+
+	// The deferred call to it.Stop will block until each m.Done has been
+	// called on each message.
 }
 
 // This example demonstrates calling the Cloud Pub/Sub API.
@@ -399,11 +412,12 @@ func main() {
 	if *projID == "" {
 		usageAndExit("Please specify Project ID.")
 	}
-	oldStyle := map[string]func(ctx context.Context, argv []string){
-		"pull_messages": pullMessages,
+	client, err := pubsub.NewClient(context.Background(), *projID)
+	if err != nil {
+		log.Fatalf("creating pubsub client: %v", err)
 	}
 
-	newStyle := map[string]func(client *pubsub.Client, argv []string){
+	commands := map[string]func(client *pubsub.Client, argv []string){
 		"create_topic":             createTopic,
 		"delete_topic":             deleteTopic,
 		"list_topics":              listTopics,
@@ -416,20 +430,10 @@ func main() {
 		"list_subscriptions":       listSubscriptions,
 		"publish":                  publish,
 		"publish_messages":         publishMessages,
+		"pull_messages":            pullMessages,
 	}
 	subcommand := argv[0]
-	if f, ok := oldStyle[subcommand]; ok {
-		httpClient, err := newClient(*jsonFile)
-		if err != nil {
-			log.Fatalf("clientAndId failed, %v", err)
-		}
-		ctx := cloud.NewContext(*projID, httpClient)
-		f(ctx, argv)
-	} else if f, ok := newStyle[subcommand]; ok {
-		client, err := pubsub.NewClient(context.Background(), *projID)
-		if err != nil {
-			log.Fatalf("creating pubsub client: %v", err)
-		}
+	if f, ok := commands[subcommand]; ok {
 		f(client, argv)
 	} else {
 		usageAndExit(fmt.Sprintf("Function not found for %s", subcommand))

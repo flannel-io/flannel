@@ -73,37 +73,21 @@ var configStruct = Configuration{
 			Certificate string   `yaml:"certificate,omitempty"`
 			Key         string   `yaml:"key,omitempty"`
 			ClientCAs   []string `yaml:"clientcas,omitempty"`
-			LetsEncrypt struct {
-				CacheFile string `yaml:"cachefile,omitempty"`
-				Email     string `yaml:"email,omitempty"`
-			} `yaml:"letsencrypt,omitempty"`
 		} `yaml:"tls,omitempty"`
 		Headers http.Header `yaml:"headers,omitempty"`
 		Debug   struct {
 			Addr string `yaml:"addr,omitempty"`
 		} `yaml:"debug,omitempty"`
-		HTTP2 struct {
-			Disabled bool `yaml:"disabled,omitempty"`
-		} `yaml:"http2,omitempty"`
 	}{
 		TLS: struct {
 			Certificate string   `yaml:"certificate,omitempty"`
 			Key         string   `yaml:"key,omitempty"`
 			ClientCAs   []string `yaml:"clientcas,omitempty"`
-			LetsEncrypt struct {
-				CacheFile string `yaml:"cachefile,omitempty"`
-				Email     string `yaml:"email,omitempty"`
-			} `yaml:"letsencrypt,omitempty"`
 		}{
 			ClientCAs: []string{"/path/to/ca.pem"},
 		},
 		Headers: http.Header{
 			"X-Content-Type-Options": []string{"nosniff"},
-		},
-		HTTP2: struct {
-			Disabled bool `yaml:"disabled,omitempty"`
-		}{
-			Disabled: false,
 		},
 	},
 }

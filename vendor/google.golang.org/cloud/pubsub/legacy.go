@@ -223,9 +223,36 @@ func Publish(ctx context.Context, topic string, msgs ...*Message) ([]string, err
 	return resp.MessageIds, nil
 }
 
+// ModifyPushEndpoint modifies the URL endpoint to modify the resource
+// to handle push notifications coming from the Pub/Sub backend
+// for the specified subscription.
+//
+// Deprecated: Use SubscriptionHandle.ModifyPushConfig instead.
+func ModifyPushEndpoint(ctx context.Context, sub, endpoint string) error {
+	_, err := rawService(ctx).Projects.Subscriptions.ModifyPushConfig(fullSubName(internal.ProjID(ctx), sub), &raw.ModifyPushConfigRequest{
+		PushConfig: &raw.PushConfig{
+			PushEndpoint: endpoint,
+		},
+	}).Do()
+	return err
+}
+
+// fullSubName returns the fully qualified name for a subscription.
+// E.g. /subscriptions/project-id/subscription-name.
+func fullSubName(proj, name string) string {
+	return fmt.Sprintf("projects/%s/subscriptions/%s", proj, name)
+}
+
+func rawService(ctx context.Context) *raw.Service {
+	return internal.Service(ctx, "pubsub", func(hc *http.Client) interface{} {
+		svc, _ := raw.New(hc)
+		svc.BasePath = baseAddr()
+		return svc
+	}).(*raw.Service)
+}
+
 // fullTopicName returns the fully qualified name for a topic.
 // E.g. /topics/project-id/topic-name.
 func fullTopicName(proj, name string) string {
-	// TODO(mcgreevy): remove this in favour of Topic.fullyQualifiedName.
 	return fmt.Sprintf("projects/%s/topics/%s", proj, name)
 }

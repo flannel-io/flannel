@@ -35,7 +35,6 @@ const opCancelJob = "CancelJob"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) CancelJobRequest(input *CancelJobInput) (req *request.Request, output *CancelJobOutput) {
 	op := &request.Operation{
 		Name:       opCancelJob,
@@ -47,9 +46,8 @@ func (c *ElasticTranscoder) CancelJobRequest(input *CancelJobInput) (req *reques
 		input = &CancelJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CancelJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -122,7 +120,6 @@ const opCreateJob = "CreateJob"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) CreateJobRequest(input *CreateJobInput) (req *request.Request, output *CreateJobResponse) {
 	op := &request.Operation{
 		Name:       opCreateJob,
@@ -134,9 +131,8 @@ func (c *ElasticTranscoder) CreateJobRequest(input *CreateJobInput) (req *reques
 		input = &CreateJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateJobResponse{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -211,7 +207,6 @@ const opCreatePipeline = "CreatePipeline"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) CreatePipelineRequest(input *CreatePipelineInput) (req *request.Request, output *CreatePipelineOutput) {
 	op := &request.Operation{
 		Name:       opCreatePipeline,
@@ -223,9 +218,8 @@ func (c *ElasticTranscoder) CreatePipelineRequest(input *CreatePipelineInput) (r
 		input = &CreatePipelineInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreatePipelineOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -294,7 +288,6 @@ const opCreatePreset = "CreatePreset"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) CreatePresetRequest(input *CreatePresetInput) (req *request.Request, output *CreatePresetOutput) {
 	op := &request.Operation{
 		Name:       opCreatePreset,
@@ -306,9 +299,8 @@ func (c *ElasticTranscoder) CreatePresetRequest(input *CreatePresetInput) (req *
 		input = &CreatePresetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreatePresetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -324,7 +316,9 @@ func (c *ElasticTranscoder) CreatePresetRequest(input *CreatePresetInput) (req *
 // strictly compliant with the H.264 standard, Elastic Transcoder creates the
 // preset and returns a warning message in the response. This helps you determine
 // whether your settings comply with the H.264 standard while giving you greater
-// flexibility with respect to the video that Elastic Transcoder produces.Elastic Transcoder uses the H.264 video-compression format. For more information,
+// flexibility with respect to the video that Elastic Transcoder produces.
+//
+// Elastic Transcoder uses the H.264 video-compression format. For more information,
 // see the International Telecommunication Union publication Recommendation
 // ITU-T H.264: Advanced video coding for generic audiovisual services.
 //
@@ -384,7 +378,6 @@ const opDeletePipeline = "DeletePipeline"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) DeletePipelineRequest(input *DeletePipelineInput) (req *request.Request, output *DeletePipelineOutput) {
 	op := &request.Operation{
 		Name:       opDeletePipeline,
@@ -396,9 +389,8 @@ func (c *ElasticTranscoder) DeletePipelineRequest(input *DeletePipelineInput) (r
 		input = &DeletePipelineInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeletePipelineOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -471,7 +463,6 @@ const opDeletePreset = "DeletePreset"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) DeletePresetRequest(input *DeletePresetInput) (req *request.Request, output *DeletePresetOutput) {
 	op := &request.Operation{
 		Name:       opDeletePreset,
@@ -483,9 +474,8 @@ func (c *ElasticTranscoder) DeletePresetRequest(input *DeletePresetInput) (req *
 		input = &DeletePresetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeletePresetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -552,7 +542,6 @@ const opListJobsByPipeline = "ListJobsByPipeline"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) ListJobsByPipelineRequest(input *ListJobsByPipelineInput) (req *request.Request, output *ListJobsByPipelineOutput) {
 	op := &request.Operation{
 		Name:       opListJobsByPipeline,
@@ -570,9 +559,8 @@ func (c *ElasticTranscoder) ListJobsByPipelineRequest(input *ListJobsByPipelineI
 		input = &ListJobsByPipelineInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListJobsByPipelineOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -666,7 +654,6 @@ const opListJobsByStatus = "ListJobsByStatus"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) ListJobsByStatusRequest(input *ListJobsByStatusInput) (req *request.Request, output *ListJobsByStatusOutput) {
 	op := &request.Operation{
 		Name:       opListJobsByStatus,
@@ -684,9 +671,8 @@ func (c *ElasticTranscoder) ListJobsByStatusRequest(input *ListJobsByStatusInput
 		input = &ListJobsByStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListJobsByStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -778,7 +764,6 @@ const opListPipelines = "ListPipelines"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) ListPipelinesRequest(input *ListPipelinesInput) (req *request.Request, output *ListPipelinesOutput) {
 	op := &request.Operation{
 		Name:       opListPipelines,
@@ -796,9 +781,8 @@ func (c *ElasticTranscoder) ListPipelinesRequest(input *ListPipelinesInput) (req
 		input = &ListPipelinesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPipelinesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -884,7 +868,6 @@ const opListPresets = "ListPresets"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) ListPresetsRequest(input *ListPresetsInput) (req *request.Request, output *ListPresetsOutput) {
 	op := &request.Operation{
 		Name:       opListPresets,
@@ -902,9 +885,8 @@ func (c *ElasticTranscoder) ListPresetsRequest(input *ListPresetsInput) (req *re
 		input = &ListPresetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPresetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -990,7 +972,6 @@ const opReadJob = "ReadJob"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) ReadJobRequest(input *ReadJobInput) (req *request.Request, output *ReadJobOutput) {
 	op := &request.Operation{
 		Name:       opReadJob,
@@ -1002,9 +983,8 @@ func (c *ElasticTranscoder) ReadJobRequest(input *ReadJobInput) (req *request.Re
 		input = &ReadJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ReadJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1069,7 +1049,6 @@ const opReadPipeline = "ReadPipeline"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) ReadPipelineRequest(input *ReadPipelineInput) (req *request.Request, output *ReadPipelineOutput) {
 	op := &request.Operation{
 		Name:       opReadPipeline,
@@ -1081,9 +1060,8 @@ func (c *ElasticTranscoder) ReadPipelineRequest(input *ReadPipelineInput) (req *
 		input = &ReadPipelineInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ReadPipelineOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1148,7 +1126,6 @@ const opReadPreset = "ReadPreset"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) ReadPresetRequest(input *ReadPresetInput) (req *request.Request, output *ReadPresetOutput) {
 	op := &request.Operation{
 		Name:       opReadPreset,
@@ -1160,9 +1137,8 @@ func (c *ElasticTranscoder) ReadPresetRequest(input *ReadPresetInput) (req *requ
 		input = &ReadPresetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ReadPresetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1227,8 +1203,10 @@ const opTestRole = "TestRole"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) TestRoleRequest(input *TestRoleInput) (req *request.Request, output *TestRoleOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, TestRole, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opTestRole,
 		HTTPMethod: "POST",
@@ -1239,9 +1217,8 @@ func (c *ElasticTranscoder) TestRoleRequest(input *TestRoleInput) (req *request.
 		input = &TestRoleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &TestRoleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1312,7 +1289,6 @@ const opUpdatePipeline = "UpdatePipeline"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) UpdatePipelineRequest(input *UpdatePipelineInput) (req *request.Request, output *UpdatePipelineOutput) {
 	op := &request.Operation{
 		Name:       opUpdatePipeline,
@@ -1324,19 +1300,19 @@ func (c *ElasticTranscoder) UpdatePipelineRequest(input *UpdatePipelineInput) (r
 		input = &UpdatePipelineInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdatePipelineOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
 // UpdatePipeline API operation for Amazon Elastic Transcoder.
 //
-// Use the UpdatePipeline operation to update settings for a pipeline. When
-// you change pipeline settings, your changes take effect immediately. Jobs
-// that you have already submitted and that Elastic Transcoder has not started
-// to process are affected in addition to jobs that you submit after you change
-// settings.
+// Use the UpdatePipeline operation to update settings for a pipeline.
+//
+// When you change pipeline settings, your changes take effect immediately.
+// Jobs that you have already submitted and that Elastic Transcoder has not
+// started to process are affected in addition to jobs that you submit after
+// you change settings.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1399,7 +1375,6 @@ const opUpdatePipelineNotifications = "UpdatePipelineNotifications"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) UpdatePipelineNotificationsRequest(input *UpdatePipelineNotificationsInput) (req *request.Request, output *UpdatePipelineNotificationsOutput) {
 	op := &request.Operation{
 		Name:       opUpdatePipelineNotifications,
@@ -1411,9 +1386,8 @@ func (c *ElasticTranscoder) UpdatePipelineNotificationsRequest(input *UpdatePipe
 		input = &UpdatePipelineNotificationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdatePipelineNotificationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1486,7 +1460,6 @@ const opUpdatePipelineStatus = "UpdatePipelineStatus"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *ElasticTranscoder) UpdatePipelineStatusRequest(input *UpdatePipelineStatusInput) (req *request.Request, output *UpdatePipelineStatusOutput) {
 	op := &request.Operation{
 		Name:       opUpdatePipelineStatus,
@@ -1498,9 +1471,8 @@ func (c *ElasticTranscoder) UpdatePipelineStatusRequest(input *UpdatePipelineSta
 		input = &UpdatePipelineStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdatePipelineStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1598,28 +1570,33 @@ type Artwork struct {
 	// Specify one of the following values to control scaling of the output album
 	// art:
 	//
-	// Fit: Elastic Transcoder scales the output art so it matches the value that
-	// you specified in either MaxWidth or MaxHeight without exceeding the other
-	// value.
-	// Fill: Elastic Transcoder scales the output art so it matches the value that
-	// you specified in either MaxWidth or MaxHeight and matches or exceeds the
-	// other value. Elastic Transcoder centers the output art and then crops it
-	// in the dimension (if any) that exceeds the maximum value.
-	// Stretch: Elastic Transcoder stretches the output art to match the values
-	// that you specified for MaxWidth and MaxHeight. If the relative proportions
-	// of the input art and the output art are different, the output art will be
-	// distorted.
-	// Keep: Elastic Transcoder does not scale the output art. If either dimension
-	// of the input art exceeds the values that you specified for MaxWidth and MaxHeight,
-	// Elastic Transcoder crops the output art.
-	// ShrinkToFit: Elastic Transcoder scales the output art down so that its dimensions
-	// match the values that you specified for at least one of MaxWidth and MaxHeight
-	// without exceeding either value. If you specify this option, Elastic Transcoder
-	// does not scale the art up.
-	// ShrinkToFill Elastic Transcoder scales the output art down so that its dimensions
-	// match the values that you specified for at least one of MaxWidth and MaxHeight
-	// without dropping below either value. If you specify this option, Elastic
-	// Transcoder does not scale the art up.
+	//    * Fit: Elastic Transcoder scales the output art so it matches the value
+	//    that you specified in either MaxWidth or MaxHeight without exceeding the
+	//    other value.
+	//
+	//    * Fill: Elastic Transcoder scales the output art so it matches the value
+	//    that you specified in either MaxWidth or MaxHeight and matches or exceeds
+	//    the other value. Elastic Transcoder centers the output art and then crops
+	//    it in the dimension (if any) that exceeds the maximum value.
+	//
+	//    * Stretch: Elastic Transcoder stretches the output art to match the values
+	//    that you specified for MaxWidth and MaxHeight. If the relative proportions
+	//    of the input art and the output art are different, the output art will
+	//    be distorted.
+	//
+	//    * Keep: Elastic Transcoder does not scale the output art. If either dimension
+	//    of the input art exceeds the values that you specified for MaxWidth and
+	//    MaxHeight, Elastic Transcoder crops the output art.
+	//
+	//    * ShrinkToFit: Elastic Transcoder scales the output art down so that its
+	//    dimensions match the values that you specified for at least one of MaxWidth
+	//    and MaxHeight without exceeding either value. If you specify this option,
+	//    Elastic Transcoder does not scale the art up.
+	//
+	//    * ShrinkToFill Elastic Transcoder scales the output art down so that its
+	//    dimensions match the values that you specified for at least one of MaxWidth
+	//    and MaxHeight without dropping below either value. If you specify this
+	//    option, Elastic Transcoder does not scale the art up.
 	SizingPolicy *string `type:"string"`
 }
 
@@ -1644,6 +1621,48 @@ func (s *Artwork) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAlbumArtFormat sets the AlbumArtFormat field's value.
+func (s *Artwork) SetAlbumArtFormat(v string) *Artwork {
+	s.AlbumArtFormat = &v
+	return s
+}
+
+// SetEncryption sets the Encryption field's value.
+func (s *Artwork) SetEncryption(v *Encryption) *Artwork {
+	s.Encryption = v
+	return s
+}
+
+// SetInputKey sets the InputKey field's value.
+func (s *Artwork) SetInputKey(v string) *Artwork {
+	s.InputKey = &v
+	return s
+}
+
+// SetMaxHeight sets the MaxHeight field's value.
+func (s *Artwork) SetMaxHeight(v string) *Artwork {
+	s.MaxHeight = &v
+	return s
+}
+
+// SetMaxWidth sets the MaxWidth field's value.
+func (s *Artwork) SetMaxWidth(v string) *Artwork {
+	s.MaxWidth = &v
+	return s
+}
+
+// SetPaddingPolicy sets the PaddingPolicy field's value.
+func (s *Artwork) SetPaddingPolicy(v string) *Artwork {
+	s.PaddingPolicy = &v
+	return s
+}
+
+// SetSizingPolicy sets the SizingPolicy field's value.
+func (s *Artwork) SetSizingPolicy(v string) *Artwork {
+	s.SizingPolicy = &v
+	return s
 }
 
 // Options associated with your audio codec.
@@ -1676,14 +1695,18 @@ type AudioCodecOptions struct {
 	// Specify the AAC profile for the output file. Elastic Transcoder supports
 	// the following profiles:
 	//
-	//    * auto: If you specify auto, Elastic Transcoder will select the profile
-	//    based on the bit rate selected for the output file.
+	//    * auto: If you specify auto, Elastic Transcoder selects the profile based
+	//    on the bit rate selected for the output file.
+	//
 	//    * AAC-LC: The most common AAC profile. Use for bit rates larger than 64
 	//    kbps.
+	//
 	//    * HE-AAC: Not supported on some older players and devices. Use for bit
 	//    rates between 40 and 80 kbps.
+	//
 	//    * HE-AACv2: Not supported on some players and devices. Use for bit rates
 	//    less than 48 kbps.
+	//
 	// All outputs in a Smooth playlist must have the same value for Profile.
 	//
 	// If you created any presets before AAC profiles were added, Elastic Transcoder
@@ -1711,6 +1734,30 @@ func (s AudioCodecOptions) GoString() string {
 	return s.String()
 }
 
+// SetBitDepth sets the BitDepth field's value.
+func (s *AudioCodecOptions) SetBitDepth(v string) *AudioCodecOptions {
+	s.BitDepth = &v
+	return s
+}
+
+// SetBitOrder sets the BitOrder field's value.
+func (s *AudioCodecOptions) SetBitOrder(v string) *AudioCodecOptions {
+	s.BitOrder = &v
+	return s
+}
+
+// SetProfile sets the Profile field's value.
+func (s *AudioCodecOptions) SetProfile(v string) *AudioCodecOptions {
+	s.Profile = &v
+	return s
+}
+
+// SetSigned sets the Signed field's value.
+func (s *AudioCodecOptions) SetSigned(v string) *AudioCodecOptions {
+	s.Signed = &v
+	return s
+}
+
 // Parameters required for transcoding audio.
 type AudioParameters struct {
 	_ struct{} `type:"structure"`
@@ -1732,22 +1779,29 @@ type AudioParameters struct {
 	// follows:
 	//
 	//    * 0 channels with any input: Audio omitted from the output
+	//
 	//    * 1, 2, or auto channels with no audio input: Audio omitted from the output
 	//
 	//    * 1 channel with any input with audio: One track with one channel, downmixed
 	//    if necessary
+	//
 	//    * 2 channels with one track with one channel: One track with two identical
 	//    channels
+	//
 	//    * 2 or auto channels with two tracks with one channel each: One track
 	//    with two channels
+	//
 	//    * 2 or auto channels with one track with two channels: One track with
 	//    two channels
+	//
 	//    * 2 channels with one track with multiple channels: One track with two
 	//    channels
+	//
 	//    * auto channels with one track with one channel: One track with one channel
 	//
 	//    * auto channels with one track with multiple channels: One track with
 	//    multiple channels
+	//
 	// When you specify OneChannelPerTrack, Elastic Transcoder creates a new track
 	// for every channel in your output. Your output can have up to eight single-channel
 	// tracks.
@@ -1756,22 +1810,29 @@ type AudioParameters struct {
 	// are as follows:
 	//
 	//    * 0 channels with any input: Audio omitted from the output
+	//
 	//    * 1, 2, or auto channels with no audio input: Audio omitted from the output
 	//
 	//    * 1 channel with any input with audio: One track with one channel, downmixed
 	//    if necessary
+	//
 	//    * 2 channels with one track with one channel: Two tracks with one identical
 	//    channel each
+	//
 	//    * 2 or auto channels with two tracks with one channel each: Two tracks
 	//    with one channel each
+	//
 	//    * 2 or auto channels with one track with two channels: Two tracks with
 	//    one channel each
+	//
 	//    * 2 channels with one track with multiple channels: Two tracks with one
 	//    channel each
+	//
 	//    * auto channels with one track with one channel: One track with one channel
 	//
 	//    * auto channels with one track with multiple channels: Up to eight tracks
 	//    with one channel each
+	//
 	// When you specify OneChannelPerTrackWithMosTo8Tracks, Elastic Transcoder creates
 	// eight single-channel tracks for your output. All tracks that do not contain
 	// audio data from an input channel are MOS, or Mit Out Sound, tracks.
@@ -1780,20 +1841,27 @@ type AudioParameters struct {
 	// value and inputs are as follows:
 	//
 	//    * 0 channels with any input: Audio omitted from the output
+	//
 	//    * 1, 2, or auto channels with no audio input: Audio omitted from the output
 	//
 	//    * 1 channel with any input with audio: One track with one channel, downmixed
 	//    if necessary, plus six MOS tracks
+	//
 	//    * 2 channels with one track with one channel: Two tracks with one identical
 	//    channel each, plus six MOS tracks
+	//
 	//    * 2 or auto channels with two tracks with one channel each: Two tracks
 	//    with one channel each, plus six MOS tracks
+	//
 	//    * 2 or auto channels with one track with two channels: Two tracks with
 	//    one channel each, plus six MOS tracks
+	//
 	//    * 2 channels with one track with multiple channels: Two tracks with one
 	//    channel each, plus six MOS tracks
+	//
 	//    * auto channels with one track with one channel: One track with one channel,
 	//    plus seven MOS tracks
+	//
 	//    * auto channels with one track with multiple channels: Up to eight tracks
 	//    with one channel each, plus MOS tracks until there are eight tracks in
 	//    all
@@ -1819,9 +1887,11 @@ type AudioParameters struct {
 	//
 	//    * auto channel specified, with any input: Pass through up to eight input
 	//    channels.
+	//
 	//    * 0 channels specified, with any input: Audio omitted from the output.
 	//
 	//    * 1 channel specified, with at least one input channel: Mono sound.
+	//
 	//    * 2 channels specified, with any input: Two identical mono channels or
 	//    stereo. For more information about tracks, see Audio:AudioPackingMode.
 	//
@@ -1862,6 +1932,42 @@ func (s AudioParameters) GoString() string {
 	return s.String()
 }
 
+// SetAudioPackingMode sets the AudioPackingMode field's value.
+func (s *AudioParameters) SetAudioPackingMode(v string) *AudioParameters {
+	s.AudioPackingMode = &v
+	return s
+}
+
+// SetBitRate sets the BitRate field's value.
+func (s *AudioParameters) SetBitRate(v string) *AudioParameters {
+	s.BitRate = &v
+	return s
+}
+
+// SetChannels sets the Channels field's value.
+func (s *AudioParameters) SetChannels(v string) *AudioParameters {
+	s.Channels = &v
+	return s
+}
+
+// SetCodec sets the Codec field's value.
+func (s *AudioParameters) SetCodec(v string) *AudioParameters {
+	s.Codec = &v
+	return s
+}
+
+// SetCodecOptions sets the CodecOptions field's value.
+func (s *AudioParameters) SetCodecOptions(v *AudioCodecOptions) *AudioParameters {
+	s.CodecOptions = v
+	return s
+}
+
+// SetSampleRate sets the SampleRate field's value.
+func (s *AudioParameters) SetSampleRate(v string) *AudioParameters {
+	s.SampleRate = &v
+	return s
+}
+
 // The CancelJobRequest structure.
 type CancelJobInput struct {
 	_ struct{} `type:"structure"`
@@ -1896,6 +2002,12 @@ func (s *CancelJobInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetId sets the Id field's value.
+func (s *CancelJobInput) SetId(v string) *CancelJobInput {
+	s.Id = &v
+	return s
 }
 
 // The response body contains a JSON object. If the job is successfully canceled,
@@ -1954,9 +2066,11 @@ type CaptionFormat struct {
 	// The prefix for caption filenames, in the form description-{language}, where:
 	//
 	//    * description is a description of the video.
+	//
 	//    * {language} is a literal value that Elastic Transcoder replaces with
 	//    the two- or three-letter code for the language of the caption in the output
 	//    file names.
+	//
 	// If you don't include {language} in the file name pattern, Elastic Transcoder
 	// automatically appends "{language}" to the value that you specify for the
 	// description. In addition, Elastic Transcoder automatically appends the count
@@ -1964,7 +2078,7 @@ type CaptionFormat struct {
 	//
 	// For example, suppose you're transcoding into srt format. When you enter "Sydney-{language}-sunrise",
 	// and the language of the captions is English (en), the name of the first caption
-	// file will be Sydney-en-sunrise00000.srt.
+	// file is be Sydney-en-sunrise00000.srt.
 	Pattern *string `type:"string"`
 }
 
@@ -1978,13 +2092,32 @@ func (s CaptionFormat) GoString() string {
 	return s.String()
 }
 
+// SetEncryption sets the Encryption field's value.
+func (s *CaptionFormat) SetEncryption(v *Encryption) *CaptionFormat {
+	s.Encryption = v
+	return s
+}
+
+// SetFormat sets the Format field's value.
+func (s *CaptionFormat) SetFormat(v string) *CaptionFormat {
+	s.Format = &v
+	return s
+}
+
+// SetPattern sets the Pattern field's value.
+func (s *CaptionFormat) SetPattern(v string) *CaptionFormat {
+	s.Pattern = &v
+	return s
+}
+
 // A source file for the input sidecar captions used during the transcoding
 // process.
 type CaptionSource struct {
 	_ struct{} `type:"structure"`
 
-	// The encryption settings, if any, that you want Elastic Transcoder to apply
-	// to your caption sources.
+	// The encryption settings, if any, that Elastic Transcoder needs to decyrpt
+	// your caption sources, or that you want Elastic Transcoder to apply to your
+	// caption sources.
 	Encryption *Encryption `type:"structure"`
 
 	// The name of the sidecar caption file that you want Elastic Transcoder to
@@ -1996,8 +2129,9 @@ type CaptionSource struct {
 	// the captions.
 	Label *string `min:"1" type:"string"`
 
-	// A string that specifies the language of the caption. Specify this as one
-	// of:
+	// A string that specifies the language of the caption. If you specified multiple
+	// inputs with captions, the caption language must match in order to be included
+	// in the output. Specify this as one of:
 	//
 	//    * 2-character ISO 639-1 code
 	//
@@ -2044,6 +2178,36 @@ func (s *CaptionSource) Validate() error {
 	return nil
 }
 
+// SetEncryption sets the Encryption field's value.
+func (s *CaptionSource) SetEncryption(v *Encryption) *CaptionSource {
+	s.Encryption = v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *CaptionSource) SetKey(v string) *CaptionSource {
+	s.Key = &v
+	return s
+}
+
+// SetLabel sets the Label field's value.
+func (s *CaptionSource) SetLabel(v string) *CaptionSource {
+	s.Label = &v
+	return s
+}
+
+// SetLanguage sets the Language field's value.
+func (s *CaptionSource) SetLanguage(v string) *CaptionSource {
+	s.Language = &v
+	return s
+}
+
+// SetTimeOffset sets the TimeOffset field's value.
+func (s *CaptionSource) SetTimeOffset(v string) *CaptionSource {
+	s.TimeOffset = &v
+	return s
+}
+
 // The captions to be created, if any.
 type Captions struct {
 	_ struct{} `type:"structure"`
@@ -2054,7 +2218,7 @@ type Captions struct {
 
 	// Source files for the input sidecar captions used during the transcoding process.
 	// To omit all sidecar captions, leave CaptionSources blank.
-	CaptionSources []*CaptionSource `type:"list"`
+	CaptionSources []*CaptionSource `deprecated:"true" type:"list"`
 
 	// A policy that determines how Elastic Transcoder handles the existence of
 	// multiple captions.
@@ -2075,7 +2239,7 @@ type Captions struct {
 	//    you specify in CaptionSources.
 	//
 	// MergePolicy cannot be null.
-	MergePolicy *string `type:"string"`
+	MergePolicy *string `deprecated:"true" type:"string"`
 }
 
 // String returns the string representation
@@ -2108,10 +2272,28 @@ func (s *Captions) Validate() error {
 	return nil
 }
 
+// SetCaptionFormats sets the CaptionFormats field's value.
+func (s *Captions) SetCaptionFormats(v []*CaptionFormat) *Captions {
+	s.CaptionFormats = v
+	return s
+}
+
+// SetCaptionSources sets the CaptionSources field's value.
+func (s *Captions) SetCaptionSources(v []*CaptionSource) *Captions {
+	s.CaptionSources = v
+	return s
+}
+
+// SetMergePolicy sets the MergePolicy field's value.
+func (s *Captions) SetMergePolicy(v string) *Captions {
+	s.MergePolicy = &v
+	return s
+}
+
 // Settings for one clip in a composition. All jobs in a playlist must have
 // the same clip settings.
 type Clip struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `deprecated:"true" type:"structure"`
 
 	// Settings that determine when a clip begins and how long it lasts.
 	TimeSpan *TimeSpan `type:"structure"`
@@ -2127,17 +2309,27 @@ func (s Clip) GoString() string {
 	return s.String()
 }
 
+// SetTimeSpan sets the TimeSpan field's value.
+func (s *Clip) SetTimeSpan(v *TimeSpan) *Clip {
+	s.TimeSpan = v
+	return s
+}
+
 // The CreateJobRequest structure.
 type CreateJobInput struct {
 	_ struct{} `type:"structure"`
 
 	// A section of the request body that provides information about the file that
 	// is being transcoded.
-	//
-	// Input is a required field
-	Input *JobInput `type:"structure" required:"true"`
+	Input *JobInput `type:"structure"`
 
-	// The CreateJobOutput structure.
+	// A section of the request body that provides information about the files that
+	// are being transcoded.
+	Inputs []*JobInput `type:"list"`
+
+	// A section of the request body that provides information about the transcoded
+	// (target) file. We strongly recommend that you use the Outputs syntax instead
+	// of the Output syntax.
 	Output *CreateJobOutput `type:"structure"`
 
 	// The value, if any, that you want Elastic Transcoder to prepend to the names
@@ -2168,7 +2360,7 @@ type CreateJobInput struct {
 	// User-defined metadata that you want to associate with an Elastic Transcoder
 	// job. You specify metadata in key/value pairs, and you can add up to 10 key/value
 	// pairs per job. Elastic Transcoder does not guarantee that key/value pairs
-	// will be returned in the same order in which you specify them.
+	// are returned in the same order in which you specify them.
 	UserMetadata map[string]*string `type:"map"`
 }
 
@@ -2185,9 +2377,6 @@ func (s CreateJobInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateJobInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateJobInput"}
-	if s.Input == nil {
-		invalidParams.Add(request.NewErrParamRequired("Input"))
-	}
 	if s.OutputKeyPrefix != nil && len(*s.OutputKeyPrefix) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("OutputKeyPrefix", 1))
 	}
@@ -2197,6 +2386,16 @@ func (s *CreateJobInput) Validate() error {
 	if s.Input != nil {
 		if err := s.Input.Validate(); err != nil {
 			invalidParams.AddNested("Input", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Inputs != nil {
+		for i, v := range s.Inputs {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Inputs", i), err.(request.ErrInvalidParams))
+			}
 		}
 	}
 	if s.Output != nil {
@@ -2229,6 +2428,54 @@ func (s *CreateJobInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetInput sets the Input field's value.
+func (s *CreateJobInput) SetInput(v *JobInput) *CreateJobInput {
+	s.Input = v
+	return s
+}
+
+// SetInputs sets the Inputs field's value.
+func (s *CreateJobInput) SetInputs(v []*JobInput) *CreateJobInput {
+	s.Inputs = v
+	return s
+}
+
+// SetOutput sets the Output field's value.
+func (s *CreateJobInput) SetOutput(v *CreateJobOutput) *CreateJobInput {
+	s.Output = v
+	return s
+}
+
+// SetOutputKeyPrefix sets the OutputKeyPrefix field's value.
+func (s *CreateJobInput) SetOutputKeyPrefix(v string) *CreateJobInput {
+	s.OutputKeyPrefix = &v
+	return s
+}
+
+// SetOutputs sets the Outputs field's value.
+func (s *CreateJobInput) SetOutputs(v []*CreateJobOutput) *CreateJobInput {
+	s.Outputs = v
+	return s
+}
+
+// SetPipelineId sets the PipelineId field's value.
+func (s *CreateJobInput) SetPipelineId(v string) *CreateJobInput {
+	s.PipelineId = &v
+	return s
+}
+
+// SetPlaylists sets the Playlists field's value.
+func (s *CreateJobInput) SetPlaylists(v []*CreateJobPlaylist) *CreateJobInput {
+	s.Playlists = v
+	return s
+}
+
+// SetUserMetadata sets the UserMetadata field's value.
+func (s *CreateJobInput) SetUserMetadata(v map[string]*string) *CreateJobInput {
+	s.UserMetadata = v
+	return s
 }
 
 // The CreateJobOutput structure.
@@ -2290,7 +2537,7 @@ type CreateJobOutput struct {
 	// of the file. The Composition object contains settings for the clips that
 	// make up an output file. For the current release, you can only specify settings
 	// for a single clip per output file. The Composition object cannot be null.
-	Composition []*Clip `type:"list"`
+	Composition []*Clip `deprecated:"true" type:"list"`
 
 	// You can specify encryption settings for any output files that you want to
 	// use for a transcoding job. This includes the output file and any watermarks,
@@ -2314,13 +2561,14 @@ type CreateJobOutput struct {
 	// transcoding contains rotation metadata.
 	Rotate *string `type:"string"`
 
-	// (Outputs in Fragmented MP4 or MPEG-TS format only.If you specify a preset
-	// in PresetId for which the value of Container is fmp4 (Fragmented MP4) or
-	// ts (MPEG-TS), SegmentDuration is the target maximum duration of each segment
-	// in seconds. For HLSv3 format playlists, each media segment is stored in a
-	// separate .ts file. For HLSv4 and Smooth playlists, all media segments for
-	// an output are stored in a single file. Each segment is approximately the
-	// length of the SegmentDuration, though individual segments might be shorter
+	// (Outputs in Fragmented MP4 or MPEG-TS format only.
+	//
+	// If you specify a preset in PresetId for which the value of Container is fmp4
+	// (Fragmented MP4) or ts (MPEG-TS), SegmentDuration is the target maximum duration
+	// of each segment in seconds. For HLSv3 format playlists, each media segment
+	// is stored in a separate .ts file. For HLSv4 and Smooth playlists, all media
+	// segments for an output are stored in a single file. Each segment is approximately
+	// the length of the SegmentDuration, though individual segments might be shorter
 	// or longer.
 	//
 	// The range of valid values is 1 to 60 seconds. If the duration of the video
@@ -2354,6 +2602,7 @@ type CreateJobOutput struct {
 	// If you specify a literal value and/or {resolution} but you omit {count},
 	//    Elastic Transcoder returns a validation error and does not create the
 	//    job.
+	//
 	//    * Literal values (Optional): You can specify literal values anywhere in
 	//    the ThumbnailPattern object. For example, you can include them as a file
 	//    name prefix or as a delimiter between {resolution} and {count}.
@@ -2418,6 +2667,72 @@ func (s *CreateJobOutput) Validate() error {
 	return nil
 }
 
+// SetAlbumArt sets the AlbumArt field's value.
+func (s *CreateJobOutput) SetAlbumArt(v *JobAlbumArt) *CreateJobOutput {
+	s.AlbumArt = v
+	return s
+}
+
+// SetCaptions sets the Captions field's value.
+func (s *CreateJobOutput) SetCaptions(v *Captions) *CreateJobOutput {
+	s.Captions = v
+	return s
+}
+
+// SetComposition sets the Composition field's value.
+func (s *CreateJobOutput) SetComposition(v []*Clip) *CreateJobOutput {
+	s.Composition = v
+	return s
+}
+
+// SetEncryption sets the Encryption field's value.
+func (s *CreateJobOutput) SetEncryption(v *Encryption) *CreateJobOutput {
+	s.Encryption = v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *CreateJobOutput) SetKey(v string) *CreateJobOutput {
+	s.Key = &v
+	return s
+}
+
+// SetPresetId sets the PresetId field's value.
+func (s *CreateJobOutput) SetPresetId(v string) *CreateJobOutput {
+	s.PresetId = &v
+	return s
+}
+
+// SetRotate sets the Rotate field's value.
+func (s *CreateJobOutput) SetRotate(v string) *CreateJobOutput {
+	s.Rotate = &v
+	return s
+}
+
+// SetSegmentDuration sets the SegmentDuration field's value.
+func (s *CreateJobOutput) SetSegmentDuration(v string) *CreateJobOutput {
+	s.SegmentDuration = &v
+	return s
+}
+
+// SetThumbnailEncryption sets the ThumbnailEncryption field's value.
+func (s *CreateJobOutput) SetThumbnailEncryption(v *Encryption) *CreateJobOutput {
+	s.ThumbnailEncryption = v
+	return s
+}
+
+// SetThumbnailPattern sets the ThumbnailPattern field's value.
+func (s *CreateJobOutput) SetThumbnailPattern(v string) *CreateJobOutput {
+	s.ThumbnailPattern = &v
+	return s
+}
+
+// SetWatermarks sets the Watermarks field's value.
+func (s *CreateJobOutput) SetWatermarks(v []*JobWatermark) *CreateJobOutput {
+	s.Watermarks = v
+	return s
+}
+
 // Information about the master playlist.
 type CreateJobPlaylist struct {
 	_ struct{} `type:"structure"`
@@ -2436,10 +2751,10 @@ type CreateJobPlaylist struct {
 	// you create more than one master playlist, the values of all Name objects
 	// must be unique.
 	//
-	// Note: Elastic Transcoder automatically appends the relevant file extension
-	// to the file name (.m3u8 for HLSv3 and HLSv4 playlists, and .ism and .ismc
-	// for Smooth playlists). If you include a file extension in Name, the file
-	// name will have two extensions.
+	// Elastic Transcoder automatically appends the relevant file extension to the
+	// file name (.m3u8 for HLSv3 and HLSv4 playlists, and .ism and .ismc for Smooth
+	// playlists). If you include a file extension in Name, the file name will have
+	// two extensions.
 	Name *string `min:"1" type:"string"`
 
 	// For each output in this job that you want to include in a master playlist,
@@ -2513,6 +2828,36 @@ func (s *CreateJobPlaylist) Validate() error {
 	return nil
 }
 
+// SetFormat sets the Format field's value.
+func (s *CreateJobPlaylist) SetFormat(v string) *CreateJobPlaylist {
+	s.Format = &v
+	return s
+}
+
+// SetHlsContentProtection sets the HlsContentProtection field's value.
+func (s *CreateJobPlaylist) SetHlsContentProtection(v *HlsContentProtection) *CreateJobPlaylist {
+	s.HlsContentProtection = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateJobPlaylist) SetName(v string) *CreateJobPlaylist {
+	s.Name = &v
+	return s
+}
+
+// SetOutputKeys sets the OutputKeys field's value.
+func (s *CreateJobPlaylist) SetOutputKeys(v []*string) *CreateJobPlaylist {
+	s.OutputKeys = v
+	return s
+}
+
+// SetPlayReadyDrm sets the PlayReadyDrm field's value.
+func (s *CreateJobPlaylist) SetPlayReadyDrm(v *PlayReadyDrm) *CreateJobPlaylist {
+	s.PlayReadyDrm = v
+	return s
+}
+
 // The CreateJobResponse structure.
 type CreateJobResponse struct {
 	_ struct{} `type:"structure"`
@@ -2530,6 +2875,12 @@ func (s CreateJobResponse) String() string {
 // GoString returns the string representation
 func (s CreateJobResponse) GoString() string {
 	return s.String()
+}
+
+// SetJob sets the Job field's value.
+func (s *CreateJobResponse) SetJob(v *Job) *CreateJobResponse {
+	s.Job = v
+	return s
 }
 
 // The CreatePipelineRequest structure.
@@ -2560,22 +2911,28 @@ type CreatePipelineInput struct {
 	//
 	//    * Bucket: The Amazon S3 bucket in which you want Elastic Transcoder to
 	//    save transcoded files and playlists.
+	//
 	//    * Permissions (Optional): The Permissions object specifies which users
 	//    you want to have access to transcoded files and the type of access you
 	//    want them to have. You can grant permissions to a maximum of 30 users
 	//    and/or predefined Amazon S3 groups.
+	//
 	//    * Grantee Type: Specify the type of value that appears in the Grantee
-	//    object: Canonical: The value in the Grantee object is either the canonical
-	//    user ID for an AWS account or an origin access identity for an Amazon
-	//    CloudFront distribution. For more information about canonical user IDs,
-	//    see Access Control List (ACL) Overview in the Amazon Simple Storage Service
-	//    Developer Guide. For more information about using CloudFront origin access
-	//    identities to require that users use CloudFront URLs instead of Amazon
-	//    S3 URLs, see Using an Origin Access Identity to Restrict Access to Your
-	//    Amazon S3 Content. A canonical user ID is not the same as an AWS account
-	//    number.
+	//    object:
+	//
+	// Canonical: The value in the Grantee object is either the canonical user ID
+	//    for an AWS account or an origin access identity for an Amazon CloudFront
+	//    distribution. For more information about canonical user IDs, see Access
+	//    Control List (ACL) Overview in the Amazon Simple Storage Service Developer
+	//    Guide. For more information about using CloudFront origin access identities
+	//    to require that users use CloudFront URLs instead of Amazon S3 URLs, see
+	//    Using an Origin Access Identity to Restrict Access to Your Amazon S3 Content.
+	//
+	// A canonical user ID is not the same as an AWS account number.
+	//
 	// Email: The value in the Grantee object is the registered email address of
 	//    an AWS account.
+	//
 	// Group: The value in the Grantee object is one of the following predefined
 	//    Amazon S3 groups: AllUsers, AuthenticatedUsers, or LogDelivery.
 	//
@@ -2584,15 +2941,21 @@ type CreatePipelineInput struct {
 	//    canonical user ID for an AWS account, an origin access identity for a
 	//    CloudFront distribution, the registered email address of an AWS account,
 	//    or a predefined Amazon S3 group
+	//
 	//    * Access: The permission that you want to give to the AWS user that you
 	//    specified in Grantee. Permissions are granted on the files that Elastic
 	//    Transcoder adds to the bucket, including playlists and video files. Valid
-	//    values include: READ: The grantee can read the objects and metadata for
-	//    objects that Elastic Transcoder adds to the Amazon S3 bucket.
+	//    values include:
+	//
+	// READ: The grantee can read the objects and metadata for objects that Elastic
+	//    Transcoder adds to the Amazon S3 bucket.
+	//
 	// READ_ACP: The grantee can read the object ACL for objects that Elastic Transcoder
 	//    adds to the Amazon S3 bucket.
+	//
 	// WRITE_ACP: The grantee can write the ACL for the objects that Elastic Transcoder
 	//    adds to the Amazon S3 bucket.
+	//
 	// FULL_CONTROL: The grantee has READ, READ_ACP, and WRITE_ACP permissions for
 	//    the objects that Elastic Transcoder adds to the Amazon S3 bucket.
 	//
@@ -2619,18 +2982,23 @@ type CreatePipelineInput struct {
 	// notify to report job status.
 	//
 	// To receive notifications, you must also subscribe to the new topic in the
-	// Amazon SNS console.   * Progressing: The topic ARN for the Amazon Simple Notification Service
+	// Amazon SNS console.
+	//
+	//    * Progressing: The topic ARN for the Amazon Simple Notification Service
 	//    (Amazon SNS) topic that you want to notify when Elastic Transcoder has
 	//    started to process a job in this pipeline. This is the ARN that Amazon
 	//    SNS returned when you created the topic. For more information, see Create
 	//    a Topic in the Amazon Simple Notification Service Developer Guide.
+	//
 	//    * Completed: The topic ARN for the Amazon SNS topic that you want to notify
 	//    when Elastic Transcoder has finished processing a job in this pipeline.
 	//    This is the ARN that Amazon SNS returned when you created the topic.
+	//
 	//    * Warning: The topic ARN for the Amazon SNS topic that you want to notify
 	//    when Elastic Transcoder encounters a warning condition while processing
 	//    a job in this pipeline. This is the ARN that Amazon SNS returned when
 	//    you created the topic.
+	//
 	//    * Error: The topic ARN for the Amazon SNS topic that you want to notify
 	//    when Elastic Transcoder encounters an error condition while processing
 	//    a job in this pipeline. This is the ARN that Amazon SNS returned when
@@ -2640,17 +3008,23 @@ type CreatePipelineInput struct {
 	// The Amazon S3 bucket in which you want Elastic Transcoder to save the transcoded
 	// files. (Use this, or use ContentConfig:Bucket plus ThumbnailConfig:Bucket.)
 	//
-	// Specify this value when all of the following are true: You want to save transcoded
-	// files, thumbnails (if any), and playlists (if any) together in one bucket.
+	// Specify this value when all of the following are true:
 	//
-	// You do not want to specify the users or groups who have access to the transcoded
-	// files, thumbnails, and playlists.
-	// You do not want to specify the permissions that Elastic Transcoder grants
-	// to the files. When Elastic Transcoder saves files in OutputBucket, it grants
-	// full control over the files only to the AWS account that owns the role that
-	// is specified by Role.
-	// You want to associate the transcoded files and thumbnails with the Amazon
-	// S3 Standard storage class.
+	//    * You want to save transcoded files, thumbnails (if any), and playlists
+	//    (if any) together in one bucket.
+	//
+	//    * You do not want to specify the users or groups who have access to the
+	//    transcoded files, thumbnails, and playlists.
+	//
+	//    * You do not want to specify the permissions that Elastic Transcoder grants
+	//    to the files.
+	//
+	// When Elastic Transcoder saves files in OutputBucket, it grants full control
+	//    over the files only to the AWS account that owns the role that is specified
+	//    by Role.
+	//
+	//    * You want to associate the transcoded files and thumbnails with the Amazon
+	//    S3 Standard storage class.
 	//
 	// If you want to save transcoded files and playlists in one bucket and thumbnails
 	// in another bucket, specify which users can access the transcoded files or
@@ -2677,17 +3051,24 @@ type CreatePipelineInput struct {
 	//
 	//    * Bucket: The Amazon S3 bucket in which you want Elastic Transcoder to
 	//    save thumbnail files.
+	//
 	//    * Permissions (Optional): The Permissions object specifies which users
 	//    and/or predefined Amazon S3 groups you want to have access to thumbnail
 	//    files, and the type of access you want them to have. You can grant permissions
 	//    to a maximum of 30 users and/or predefined Amazon S3 groups.
+	//
 	//    * GranteeType: Specify the type of value that appears in the Grantee object:
-	//    Canonical: The value in the Grantee object is either the canonical user
-	//    ID for an AWS account or an origin access identity for an Amazon CloudFront
-	//    distribution. A canonical user ID is not the same as an AWS account number.
+	//
+	//
+	// Canonical: The value in the Grantee object is either the canonical user ID
+	//    for an AWS account or an origin access identity for an Amazon CloudFront
+	//    distribution.
+	//
+	// A canonical user ID is not the same as an AWS account number.
 	//
 	// Email: The value in the Grantee object is the registered email address of
 	//    an AWS account.
+	//
 	// Group: The value in the Grantee object is one of the following predefined
 	//    Amazon S3 groups: AllUsers, AuthenticatedUsers, or LogDelivery.
 	//
@@ -2696,15 +3077,20 @@ type CreatePipelineInput struct {
 	//    ID for an AWS account, an origin access identity for a CloudFront distribution,
 	//    the registered email address of an AWS account, or a predefined Amazon
 	//    S3 group.
+	//
 	//    * Access: The permission that you want to give to the AWS user that you
 	//    specified in Grantee. Permissions are granted on the thumbnail files that
-	//    Elastic Transcoder adds to the bucket. Valid values include: READ: The
-	//    grantee can read the thumbnails and metadata for objects that Elastic
+	//    Elastic Transcoder adds to the bucket. Valid values include:
+	//
+	// READ: The grantee can read the thumbnails and metadata for objects that Elastic
 	//    Transcoder adds to the Amazon S3 bucket.
+	//
 	// READ_ACP: The grantee can read the object ACL for thumbnails that Elastic
 	//    Transcoder adds to the Amazon S3 bucket.
+	//
 	// WRITE_ACP: The grantee can write the ACL for the thumbnails that Elastic
 	//    Transcoder adds to the Amazon S3 bucket.
+	//
 	// FULL_CONTROL: The grantee has READ, READ_ACP, and WRITE_ACP permissions for
 	//    the thumbnails that Elastic Transcoder adds to the Amazon S3 bucket.
 	//
@@ -2756,6 +3142,54 @@ func (s *CreatePipelineInput) Validate() error {
 	return nil
 }
 
+// SetAwsKmsKeyArn sets the AwsKmsKeyArn field's value.
+func (s *CreatePipelineInput) SetAwsKmsKeyArn(v string) *CreatePipelineInput {
+	s.AwsKmsKeyArn = &v
+	return s
+}
+
+// SetContentConfig sets the ContentConfig field's value.
+func (s *CreatePipelineInput) SetContentConfig(v *PipelineOutputConfig) *CreatePipelineInput {
+	s.ContentConfig = v
+	return s
+}
+
+// SetInputBucket sets the InputBucket field's value.
+func (s *CreatePipelineInput) SetInputBucket(v string) *CreatePipelineInput {
+	s.InputBucket = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreatePipelineInput) SetName(v string) *CreatePipelineInput {
+	s.Name = &v
+	return s
+}
+
+// SetNotifications sets the Notifications field's value.
+func (s *CreatePipelineInput) SetNotifications(v *Notifications) *CreatePipelineInput {
+	s.Notifications = v
+	return s
+}
+
+// SetOutputBucket sets the OutputBucket field's value.
+func (s *CreatePipelineInput) SetOutputBucket(v string) *CreatePipelineInput {
+	s.OutputBucket = &v
+	return s
+}
+
+// SetRole sets the Role field's value.
+func (s *CreatePipelineInput) SetRole(v string) *CreatePipelineInput {
+	s.Role = &v
+	return s
+}
+
+// SetThumbnailConfig sets the ThumbnailConfig field's value.
+func (s *CreatePipelineInput) SetThumbnailConfig(v *PipelineOutputConfig) *CreatePipelineInput {
+	s.ThumbnailConfig = v
+	return s
+}
+
 // When you create a pipeline, Elastic Transcoder returns the values that you
 // specified in the request.
 type CreatePipelineOutput struct {
@@ -2782,6 +3216,18 @@ func (s CreatePipelineOutput) String() string {
 // GoString returns the string representation
 func (s CreatePipelineOutput) GoString() string {
 	return s.String()
+}
+
+// SetPipeline sets the Pipeline field's value.
+func (s *CreatePipelineOutput) SetPipeline(v *Pipeline) *CreatePipelineOutput {
+	s.Pipeline = v
+	return s
+}
+
+// SetWarnings sets the Warnings field's value.
+func (s *CreatePipelineOutput) SetWarnings(v []*Warning) *CreatePipelineOutput {
+	s.Warnings = v
+	return s
 }
 
 // The CreatePresetRequest structure.
@@ -2848,6 +3294,42 @@ func (s *CreatePresetInput) Validate() error {
 	return nil
 }
 
+// SetAudio sets the Audio field's value.
+func (s *CreatePresetInput) SetAudio(v *AudioParameters) *CreatePresetInput {
+	s.Audio = v
+	return s
+}
+
+// SetContainer sets the Container field's value.
+func (s *CreatePresetInput) SetContainer(v string) *CreatePresetInput {
+	s.Container = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreatePresetInput) SetDescription(v string) *CreatePresetInput {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreatePresetInput) SetName(v string) *CreatePresetInput {
+	s.Name = &v
+	return s
+}
+
+// SetThumbnails sets the Thumbnails field's value.
+func (s *CreatePresetInput) SetThumbnails(v *Thumbnails) *CreatePresetInput {
+	s.Thumbnails = v
+	return s
+}
+
+// SetVideo sets the Video field's value.
+func (s *CreatePresetInput) SetVideo(v *VideoParameters) *CreatePresetInput {
+	s.Video = v
+	return s
+}
+
 // The CreatePresetResponse structure.
 type CreatePresetOutput struct {
 	_ struct{} `type:"structure"`
@@ -2871,6 +3353,18 @@ func (s CreatePresetOutput) String() string {
 // GoString returns the string representation
 func (s CreatePresetOutput) GoString() string {
 	return s.String()
+}
+
+// SetPreset sets the Preset field's value.
+func (s *CreatePresetOutput) SetPreset(v *Preset) *CreatePresetOutput {
+	s.Preset = v
+	return s
+}
+
+// SetWarning sets the Warning field's value.
+func (s *CreatePresetOutput) SetWarning(v string) *CreatePresetOutput {
+	s.Warning = &v
+	return s
 }
 
 // The DeletePipelineRequest structure.
@@ -2904,6 +3398,12 @@ func (s *DeletePipelineInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetId sets the Id field's value.
+func (s *DeletePipelineInput) SetId(v string) *DeletePipelineInput {
+	s.Id = &v
+	return s
 }
 
 // The DeletePipelineResponse structure.
@@ -2954,6 +3454,12 @@ func (s *DeletePresetInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *DeletePresetInput) SetId(v string) *DeletePresetInput {
+	s.Id = &v
+	return s
+}
+
 // The DeletePresetResponse structure.
 type DeletePresetOutput struct {
 	_ struct{} `type:"structure"`
@@ -3000,9 +3506,39 @@ func (s DetectedProperties) GoString() string {
 	return s.String()
 }
 
+// SetDurationMillis sets the DurationMillis field's value.
+func (s *DetectedProperties) SetDurationMillis(v int64) *DetectedProperties {
+	s.DurationMillis = &v
+	return s
+}
+
+// SetFileSize sets the FileSize field's value.
+func (s *DetectedProperties) SetFileSize(v int64) *DetectedProperties {
+	s.FileSize = &v
+	return s
+}
+
+// SetFrameRate sets the FrameRate field's value.
+func (s *DetectedProperties) SetFrameRate(v string) *DetectedProperties {
+	s.FrameRate = &v
+	return s
+}
+
+// SetHeight sets the Height field's value.
+func (s *DetectedProperties) SetHeight(v int64) *DetectedProperties {
+	s.Height = &v
+	return s
+}
+
+// SetWidth sets the Width field's value.
+func (s *DetectedProperties) SetWidth(v int64) *DetectedProperties {
+	s.Width = &v
+	return s
+}
+
 // The encryption settings, if any, that are used for decrypting your input
 // files or encrypting your output files. If your input file is encrypted, you
-// must specify the mode that Elastic Transcoder will use to decrypt your file,
+// must specify the mode that Elastic Transcoder uses to decrypt your file,
 // otherwise you must specify the mode you want Elastic Transcoder to use to
 // encrypt your output files.
 type Encryption struct {
@@ -3051,7 +3587,7 @@ type Encryption struct {
 	//
 	//    * AES-GCM: AES Galois Counter Mode, a mode of operation that is an authenticated
 	//    encryption format, meaning that a file, key, or initialization vector
-	//    that has been tampered with will fail the decryption process.
+	//    that has been tampered with fails the decryption process.
 	//
 	// For all three AES options, you must provide the following settings, which
 	// must be base64-encoded:
@@ -3077,6 +3613,30 @@ func (s Encryption) String() string {
 // GoString returns the string representation
 func (s Encryption) GoString() string {
 	return s.String()
+}
+
+// SetInitializationVector sets the InitializationVector field's value.
+func (s *Encryption) SetInitializationVector(v string) *Encryption {
+	s.InitializationVector = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *Encryption) SetKey(v string) *Encryption {
+	s.Key = &v
+	return s
+}
+
+// SetKeyMd5 sets the KeyMd5 field's value.
+func (s *Encryption) SetKeyMd5(v string) *Encryption {
+	s.KeyMd5 = &v
+	return s
+}
+
+// SetMode sets the Mode field's value.
+func (s *Encryption) SetMode(v string) *Encryption {
+	s.Mode = &v
+	return s
 }
 
 // The HLS content protection settings, if any, that you want Elastic Transcoder
@@ -3125,7 +3685,7 @@ type HlsContentProtection struct {
 
 	// The content protection method for your output. The only valid value is: aes-128.
 	//
-	// This value will be written into the method attribute of the EXT-X-KEY metadata
+	// This value is written into the method attribute of the EXT-X-KEY metadata
 	// tag in the output playlist.
 	Method *string `type:"string"`
 }
@@ -3138,6 +3698,114 @@ func (s HlsContentProtection) String() string {
 // GoString returns the string representation
 func (s HlsContentProtection) GoString() string {
 	return s.String()
+}
+
+// SetInitializationVector sets the InitializationVector field's value.
+func (s *HlsContentProtection) SetInitializationVector(v string) *HlsContentProtection {
+	s.InitializationVector = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *HlsContentProtection) SetKey(v string) *HlsContentProtection {
+	s.Key = &v
+	return s
+}
+
+// SetKeyMd5 sets the KeyMd5 field's value.
+func (s *HlsContentProtection) SetKeyMd5(v string) *HlsContentProtection {
+	s.KeyMd5 = &v
+	return s
+}
+
+// SetKeyStoragePolicy sets the KeyStoragePolicy field's value.
+func (s *HlsContentProtection) SetKeyStoragePolicy(v string) *HlsContentProtection {
+	s.KeyStoragePolicy = &v
+	return s
+}
+
+// SetLicenseAcquisitionUrl sets the LicenseAcquisitionUrl field's value.
+func (s *HlsContentProtection) SetLicenseAcquisitionUrl(v string) *HlsContentProtection {
+	s.LicenseAcquisitionUrl = &v
+	return s
+}
+
+// SetMethod sets the Method field's value.
+func (s *HlsContentProtection) SetMethod(v string) *HlsContentProtection {
+	s.Method = &v
+	return s
+}
+
+// The captions to be created, if any.
+type InputCaptions struct {
+	_ struct{} `type:"structure"`
+
+	// Source files for the input sidecar captions used during the transcoding process.
+	// To omit all sidecar captions, leave CaptionSources blank.
+	CaptionSources []*CaptionSource `type:"list"`
+
+	// A policy that determines how Elastic Transcoder handles the existence of
+	// multiple captions.
+	//
+	//    * MergeOverride: Elastic Transcoder transcodes both embedded and sidecar
+	//    captions into outputs. If captions for a language are embedded in the
+	//    input file and also appear in a sidecar file, Elastic Transcoder uses
+	//    the sidecar captions and ignores the embedded captions for that language.
+	//
+	//    * MergeRetain: Elastic Transcoder transcodes both embedded and sidecar
+	//    captions into outputs. If captions for a language are embedded in the
+	//    input file and also appear in a sidecar file, Elastic Transcoder uses
+	//    the embedded captions and ignores the sidecar captions for that language.
+	//    If CaptionSources is empty, Elastic Transcoder omits all sidecar captions
+	//    from the output files.
+	//
+	//    * Override: Elastic Transcoder transcodes only the sidecar captions that
+	//    you specify in CaptionSources.
+	//
+	// MergePolicy cannot be null.
+	MergePolicy *string `type:"string"`
+}
+
+// String returns the string representation
+func (s InputCaptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s InputCaptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InputCaptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InputCaptions"}
+	if s.CaptionSources != nil {
+		for i, v := range s.CaptionSources {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "CaptionSources", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCaptionSources sets the CaptionSources field's value.
+func (s *InputCaptions) SetCaptionSources(v []*CaptionSource) *InputCaptions {
+	s.CaptionSources = v
+	return s
+}
+
+// SetMergePolicy sets the MergePolicy field's value.
+func (s *InputCaptions) SetMergePolicy(v string) *InputCaptions {
+	s.MergePolicy = &v
+	return s
 }
 
 // A section of the response body that provides information about the job that
@@ -3156,13 +3824,20 @@ type Job struct {
 	// the file that is being transcoded.
 	Input *JobInput `type:"structure"`
 
+	// Information about the files that you're transcoding. If you specified multiple
+	// files for this job, Elastic Transcoder stitches the files together to make
+	// one output.
+	Inputs []*JobInput `type:"list"`
+
 	// If you specified one output for a job, information about that output. If
 	// you specified multiple outputs for a job, the Output object lists information
 	// about the first output. This duplicates the information that is listed for
 	// the first output in the Outputs object.
 	//
-	// Outputs recommended instead. A section of the request or response body that
-	// provides information about the transcoded (target) file.
+	// Outputs recommended instead.
+	//
+	// A section of the request or response body that provides information about
+	// the transcoded (target) file.
 	Output *JobOutput `type:"structure"`
 
 	// The value, if any, that you want Elastic Transcoder to prepend to the names
@@ -3186,10 +3861,11 @@ type Job struct {
 	// into which Elastic Transcoder puts the transcoded files.
 	PipelineId *string `type:"string"`
 
-	// Outputs in Fragmented MP4 or MPEG-TS format only.If you specify a preset
-	// in PresetId for which the value of Container is fmp4 (Fragmented MP4) or
-	// ts (MPEG-TS), Playlists contains information about the master playlists that
-	// you want Elastic Transcoder to create.
+	// Outputs in Fragmented MP4 or MPEG-TS format only.
+	//
+	// If you specify a preset in PresetId for which the value of Container is fmp4
+	// (Fragmented MP4) or ts (MPEG-TS), Playlists contains information about the
+	// master playlists that you want Elastic Transcoder to create.
 	//
 	// The maximum number of master playlists in a job is 30.
 	Playlists []*Playlist `type:"list"`
@@ -3203,7 +3879,7 @@ type Job struct {
 	// User-defined metadata that you want to associate with an Elastic Transcoder
 	// job. You specify metadata in key/value pairs, and you can add up to 10 key/value
 	// pairs per job. Elastic Transcoder does not guarantee that key/value pairs
-	// will be returned in the same order in which you specify them.
+	// are returned in the same order in which you specify them.
 	//
 	// Metadata keys and values must use characters from the following list:
 	//
@@ -3227,6 +3903,78 @@ func (s Job) GoString() string {
 	return s.String()
 }
 
+// SetArn sets the Arn field's value.
+func (s *Job) SetArn(v string) *Job {
+	s.Arn = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Job) SetId(v string) *Job {
+	s.Id = &v
+	return s
+}
+
+// SetInput sets the Input field's value.
+func (s *Job) SetInput(v *JobInput) *Job {
+	s.Input = v
+	return s
+}
+
+// SetInputs sets the Inputs field's value.
+func (s *Job) SetInputs(v []*JobInput) *Job {
+	s.Inputs = v
+	return s
+}
+
+// SetOutput sets the Output field's value.
+func (s *Job) SetOutput(v *JobOutput) *Job {
+	s.Output = v
+	return s
+}
+
+// SetOutputKeyPrefix sets the OutputKeyPrefix field's value.
+func (s *Job) SetOutputKeyPrefix(v string) *Job {
+	s.OutputKeyPrefix = &v
+	return s
+}
+
+// SetOutputs sets the Outputs field's value.
+func (s *Job) SetOutputs(v []*JobOutput) *Job {
+	s.Outputs = v
+	return s
+}
+
+// SetPipelineId sets the PipelineId field's value.
+func (s *Job) SetPipelineId(v string) *Job {
+	s.PipelineId = &v
+	return s
+}
+
+// SetPlaylists sets the Playlists field's value.
+func (s *Job) SetPlaylists(v []*Playlist) *Job {
+	s.Playlists = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Job) SetStatus(v string) *Job {
+	s.Status = &v
+	return s
+}
+
+// SetTiming sets the Timing field's value.
+func (s *Job) SetTiming(v *Timing) *Job {
+	s.Timing = v
+	return s
+}
+
+// SetUserMetadata sets the UserMetadata field's value.
+func (s *Job) SetUserMetadata(v map[string]*string) *Job {
+	s.UserMetadata = v
+	return s
+}
+
 // The .jpg or .png file associated with an audio file.
 type JobAlbumArt struct {
 	_ struct{} `type:"structure"`
@@ -3235,17 +3983,19 @@ type JobAlbumArt struct {
 	// with an audio file, to a maximum of 20. Valid formats are .jpg and .png
 	Artwork []*Artwork `type:"list"`
 
-	// A policy that determines how Elastic Transcoder will handle the existence
-	// of multiple album artwork files.
+	// A policy that determines how Elastic Transcoder handles the existence of
+	// multiple album artwork files.
 	//
-	// Replace: The specified album art will replace any existing album art.
-	// Prepend: The specified album art will be placed in front of any existing
-	// album art.
-	// Append: The specified album art will be placed after any existing album art.
+	//    * Replace: The specified album art replaces any existing album art.
 	//
-	// Fallback: If the original input file contains artwork, Elastic Transcoder
-	// will use that artwork for the output. If the original input does not contain
-	// artwork, Elastic Transcoder will use the specified album art file.
+	//    * Prepend: The specified album art is placed in front of any existing
+	//    album art.
+	//
+	//    * Append: The specified album art is placed after any existing album art.
+	//
+	//    * Fallback: If the original input file contains artwork, Elastic Transcoder
+	//    uses that artwork for the output. If the original input does not contain
+	//    artwork, Elastic Transcoder uses the specified album art file.
 	MergePolicy *string `type:"string"`
 }
 
@@ -3279,6 +4029,18 @@ func (s *JobAlbumArt) Validate() error {
 	return nil
 }
 
+// SetArtwork sets the Artwork field's value.
+func (s *JobAlbumArt) SetArtwork(v []*Artwork) *JobAlbumArt {
+	s.Artwork = v
+	return s
+}
+
+// SetMergePolicy sets the MergePolicy field's value.
+func (s *JobAlbumArt) SetMergePolicy(v string) *JobAlbumArt {
+	s.MergePolicy = &v
+	return s
+}
+
 // Information about the file that you're transcoding.
 type JobInput struct {
 	_ struct{} `type:"structure"`
@@ -3307,7 +4069,7 @@ type JobInput struct {
 
 	// The encryption settings, if any, that are used for decrypting your input
 	// files. If your input file is encrypted, you must specify the mode that Elastic
-	// Transcoder will use to decrypt your file.
+	// Transcoder uses to decrypt your file.
 	Encryption *Encryption `type:"structure"`
 
 	// The frame rate of the input file. If you want Elastic Transcoder to automatically
@@ -3319,6 +4081,50 @@ type JobInput struct {
 	// If you specify a value other than auto, Elastic Transcoder disables automatic
 	// detection of the frame rate.
 	FrameRate *string `type:"string"`
+
+	// You can configure Elastic Transcoder to transcode captions, or subtitles,
+	// from one format to another. All captions must be in UTF-8. Elastic Transcoder
+	// supports two types of captions:
+	//
+	//    * Embedded: Embedded captions are included in the same file as the audio
+	//    and video. Elastic Transcoder supports only one embedded caption per language,
+	//    to a maximum of 300 embedded captions per file.
+	//
+	// Valid input values include: CEA-608 (EIA-608, first non-empty channel only),
+	//    CEA-708 (EIA-708, first non-empty channel only), and mov-text
+	//
+	// Valid outputs include: mov-text
+	//
+	// Elastic Transcoder supports a maximum of one embedded format per output.
+	//
+	//    * Sidecar: Sidecar captions are kept in a separate metadata file from
+	//    the audio and video data. Sidecar captions require a player that is capable
+	//    of understanding the relationship between the video file and the sidecar
+	//    file. Elastic Transcoder supports only one sidecar caption per language,
+	//    to a maximum of 20 sidecar captions per file.
+	//
+	// Valid input values include: dfxp (first div element only), ebu-tt, scc, smpt,
+	//    srt, ttml (first div element only), and webvtt
+	//
+	// Valid outputs include: dfxp (first div element only), scc, srt, and webvtt.
+	//
+	// If you want ttml or smpte-tt compatible captions, specify dfxp as your output
+	// format.
+	//
+	// Elastic Transcoder does not support OCR (Optical Character Recognition),
+	// does not accept pictures as a valid input for captions, and is not available
+	// for audio-only transcoding. Elastic Transcoder does not preserve text formatting
+	// (for example, italics) during the transcoding process.
+	//
+	// To remove captions or leave the captions empty, set Captions to null. To
+	// pass through existing captions unchanged, set the MergePolicy to MergeRetain,
+	// and pass in a null CaptionSources array.
+	//
+	// For more information on embedded files, see the Subtitles Wikipedia page.
+	//
+	// For more information on sidecar files, see the Extensible Metadata Platform
+	// and Sidecar file Wikipedia pages.
+	InputCaptions *InputCaptions `type:"structure"`
 
 	// Whether the input file is interlaced. If you want Elastic Transcoder to automatically
 	// detect whether the input file is interlaced, specify auto. If you want to
@@ -3344,6 +4150,9 @@ type JobInput struct {
 	// This value must be auto, which causes Elastic Transcoder to automatically
 	// detect the resolution of the input file.
 	Resolution *string `type:"string"`
+
+	// Settings for clipping an input. Each input can have different clip settings.
+	TimeSpan *TimeSpan `type:"structure"`
 }
 
 // String returns the string representation
@@ -3362,6 +4171,11 @@ func (s *JobInput) Validate() error {
 	if s.Key != nil && len(*s.Key) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
 	}
+	if s.InputCaptions != nil {
+		if err := s.InputCaptions.Validate(); err != nil {
+			invalidParams.AddNested("InputCaptions", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -3369,10 +4183,72 @@ func (s *JobInput) Validate() error {
 	return nil
 }
 
-// Outputs recommended instead.If you specified one output for a job, information
-// about that output. If you specified multiple outputs for a job, the Output
-// object lists information about the first output. This duplicates the information
-// that is listed for the first output in the Outputs object.
+// SetAspectRatio sets the AspectRatio field's value.
+func (s *JobInput) SetAspectRatio(v string) *JobInput {
+	s.AspectRatio = &v
+	return s
+}
+
+// SetContainer sets the Container field's value.
+func (s *JobInput) SetContainer(v string) *JobInput {
+	s.Container = &v
+	return s
+}
+
+// SetDetectedProperties sets the DetectedProperties field's value.
+func (s *JobInput) SetDetectedProperties(v *DetectedProperties) *JobInput {
+	s.DetectedProperties = v
+	return s
+}
+
+// SetEncryption sets the Encryption field's value.
+func (s *JobInput) SetEncryption(v *Encryption) *JobInput {
+	s.Encryption = v
+	return s
+}
+
+// SetFrameRate sets the FrameRate field's value.
+func (s *JobInput) SetFrameRate(v string) *JobInput {
+	s.FrameRate = &v
+	return s
+}
+
+// SetInputCaptions sets the InputCaptions field's value.
+func (s *JobInput) SetInputCaptions(v *InputCaptions) *JobInput {
+	s.InputCaptions = v
+	return s
+}
+
+// SetInterlaced sets the Interlaced field's value.
+func (s *JobInput) SetInterlaced(v string) *JobInput {
+	s.Interlaced = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *JobInput) SetKey(v string) *JobInput {
+	s.Key = &v
+	return s
+}
+
+// SetResolution sets the Resolution field's value.
+func (s *JobInput) SetResolution(v string) *JobInput {
+	s.Resolution = &v
+	return s
+}
+
+// SetTimeSpan sets the TimeSpan field's value.
+func (s *JobInput) SetTimeSpan(v *TimeSpan) *JobInput {
+	s.TimeSpan = v
+	return s
+}
+
+// Outputs recommended instead.
+//
+// If you specified one output for a job, information about that output. If
+// you specified multiple outputs for a job, the Output object lists information
+// about the first output. This duplicates the information that is listed for
+// the first output in the Outputs object.
 type JobOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3382,7 +4258,7 @@ type JobOutput struct {
 	// If Elastic Transcoder used a preset with a ColorSpaceConversionMode to transcode
 	// the output file, the AppliedColorSpaceConversion parameter shows the conversion
 	// used. If no ColorSpaceConversionMode was defined in the preset, this parameter
-	// will not be included in the job response.
+	// is not be included in the job response.
 	AppliedColorSpaceConversion *string `type:"string"`
 
 	// You can configure Elastic Transcoder to transcode captions, or subtitles,
@@ -3434,7 +4310,7 @@ type JobOutput struct {
 	// of the file. The Composition object contains settings for the clips that
 	// make up an output file. For the current release, you can only specify settings
 	// for a single clip per output file. The Composition object cannot be null.
-	Composition []*Clip `type:"list"`
+	Composition []*Clip `deprecated:"true" type:"list"`
 
 	// Duration of the output file, in seconds.
 	Duration *int64 `type:"long"`
@@ -3444,8 +4320,8 @@ type JobOutput struct {
 
 	// The encryption settings, if any, that you want Elastic Transcoder to apply
 	// to your output files. If you choose to use encryption, you must specify a
-	// mode to use. If you choose not to use encryption, Elastic Transcoder will
-	// write an unencrypted file to your Amazon S3 bucket.
+	// mode to use. If you choose not to use encryption, Elastic Transcoder writes
+	// an unencrypted file to your Amazon S3 bucket.
 	Encryption *Encryption `type:"structure"`
 
 	// File size of the output file, in bytes.
@@ -3484,14 +4360,15 @@ type JobOutput struct {
 	// rotation metadata.
 	Rotate *string `type:"string"`
 
-	// (Outputs in Fragmented MP4 or MPEG-TS format only.If you specify a preset
-	// in PresetId for which the value of Container is fmp4 (Fragmented MP4) or
-	// ts (MPEG-TS), SegmentDuration is the target maximum duration of each segment
-	// in seconds. For HLSv3 format playlists, each media segment is stored in a
-	// separate .ts file. For HLSv4 and Smooth playlists, all media segments for
-	// an output are stored in a single file. Each segment is approximately the
-	// length of the SegmentDuration, though individual segments might be shorter
-	// or longer.
+	// (Outputs in Fragmented MP4 or MPEG-TS format only.
+	//
+	// If you specify a preset in PresetId for which the value of Container is fmp4
+	// (Fragmented MP4) or ts (MPEG-TS), SegmentDuration is the target maximum duration
+	// of each segment in seconds. For HLSv3 format playlists, each media segment
+	// is stored in a separate .ts file. For HLSv4, MPEG-DASH, and Smooth playlists,
+	// all media segments for an output are stored in a single file. Each segment
+	// is approximately the length of the SegmentDuration, though individual segments
+	// might be shorter or longer.
 	//
 	// The range of valid values is 1 to 60 seconds. If the duration of the video
 	// is not evenly divisible by SegmentDuration, the duration of the last segment
@@ -3504,19 +4381,25 @@ type JobOutput struct {
 
 	// The status of one output in a job. If you specified only one output for the
 	// job, Outputs:Status is always the same as Job:Status. If you specified more
-	// than one output: Job:Status and Outputs:Status for all of the outputs is
-	// Submitted until Elastic Transcoder starts to process the first output.
-	// When Elastic Transcoder starts to process the first output, Outputs:Status
-	// for that output and Job:Status both change to Progressing. For each output,
-	// the value of Outputs:Status remains Submitted until Elastic Transcoder starts
-	// to process the output.
-	// Job:Status remains Progressing until all of the outputs reach a terminal
-	// status, either Complete or Error.
-	// When all of the outputs reach a terminal status, Job:Status changes to Complete
-	// only if Outputs:Status for all of the outputs is Complete. If Outputs:Status
-	// for one or more outputs is Error, the terminal status for Job:Status is also
-	// Error.
-	//  The value of Status is one of the following: Submitted, Progressing, Complete,
+	// than one output:
+	//
+	//    * Job:Status and Outputs:Status for all of the outputs is Submitted until
+	//    Elastic Transcoder starts to process the first output.
+	//
+	//    * When Elastic Transcoder starts to process the first output, Outputs:Status
+	//    for that output and Job:Status both change to Progressing. For each output,
+	//    the value of Outputs:Status remains Submitted until Elastic Transcoder
+	//    starts to process the output.
+	//
+	//    * Job:Status remains Progressing until all of the outputs reach a terminal
+	//    status, either Complete or Error.
+	//
+	//    * When all of the outputs reach a terminal status, Job:Status changes
+	//    to Complete only if Outputs:Status for all of the outputs is Complete.
+	//    If Outputs:Status for one or more outputs is Error, the terminal status
+	//    for Job:Status is also Error.
+	//
+	// The value of Status is one of the following: Submitted, Progressing, Complete,
 	// Canceled, or Error.
 	Status *string `type:"string"`
 
@@ -3545,6 +4428,7 @@ type JobOutput struct {
 	// If you specify a literal value and/or {resolution} but you omit {count},
 	//    Elastic Transcoder returns a validation error and does not create the
 	//    job.
+	//
 	//    * Literal values (Optional): You can specify literal values anywhere in
 	//    the ThumbnailPattern object. For example, you can include them as a file
 	//    name prefix or as a delimiter between {resolution} and {count}.
@@ -3568,9 +4452,9 @@ type JobOutput struct {
 	// them in the job output—the first watermark in the list is added to the output
 	// video first, the second watermark in the list is added next, and so on. As
 	// a result, if the settings in a preset cause Elastic Transcoder to place all
-	// watermarks in the same location, the second watermark that you add will cover
-	// the first one, the third one will cover the second, and the fourth one will
-	// cover the third.
+	// watermarks in the same location, the second watermark that you add covers
+	// the first one, the third one covers the second, and the fourth one covers
+	// the third.
 	Watermarks []*JobWatermark `type:"list"`
 
 	// Specifies the width of the output file in pixels.
@@ -3585,6 +4469,132 @@ func (s JobOutput) String() string {
 // GoString returns the string representation
 func (s JobOutput) GoString() string {
 	return s.String()
+}
+
+// SetAlbumArt sets the AlbumArt field's value.
+func (s *JobOutput) SetAlbumArt(v *JobAlbumArt) *JobOutput {
+	s.AlbumArt = v
+	return s
+}
+
+// SetAppliedColorSpaceConversion sets the AppliedColorSpaceConversion field's value.
+func (s *JobOutput) SetAppliedColorSpaceConversion(v string) *JobOutput {
+	s.AppliedColorSpaceConversion = &v
+	return s
+}
+
+// SetCaptions sets the Captions field's value.
+func (s *JobOutput) SetCaptions(v *Captions) *JobOutput {
+	s.Captions = v
+	return s
+}
+
+// SetComposition sets the Composition field's value.
+func (s *JobOutput) SetComposition(v []*Clip) *JobOutput {
+	s.Composition = v
+	return s
+}
+
+// SetDuration sets the Duration field's value.
+func (s *JobOutput) SetDuration(v int64) *JobOutput {
+	s.Duration = &v
+	return s
+}
+
+// SetDurationMillis sets the DurationMillis field's value.
+func (s *JobOutput) SetDurationMillis(v int64) *JobOutput {
+	s.DurationMillis = &v
+	return s
+}
+
+// SetEncryption sets the Encryption field's value.
+func (s *JobOutput) SetEncryption(v *Encryption) *JobOutput {
+	s.Encryption = v
+	return s
+}
+
+// SetFileSize sets the FileSize field's value.
+func (s *JobOutput) SetFileSize(v int64) *JobOutput {
+	s.FileSize = &v
+	return s
+}
+
+// SetFrameRate sets the FrameRate field's value.
+func (s *JobOutput) SetFrameRate(v string) *JobOutput {
+	s.FrameRate = &v
+	return s
+}
+
+// SetHeight sets the Height field's value.
+func (s *JobOutput) SetHeight(v int64) *JobOutput {
+	s.Height = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *JobOutput) SetId(v string) *JobOutput {
+	s.Id = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *JobOutput) SetKey(v string) *JobOutput {
+	s.Key = &v
+	return s
+}
+
+// SetPresetId sets the PresetId field's value.
+func (s *JobOutput) SetPresetId(v string) *JobOutput {
+	s.PresetId = &v
+	return s
+}
+
+// SetRotate sets the Rotate field's value.
+func (s *JobOutput) SetRotate(v string) *JobOutput {
+	s.Rotate = &v
+	return s
+}
+
+// SetSegmentDuration sets the SegmentDuration field's value.
+func (s *JobOutput) SetSegmentDuration(v string) *JobOutput {
+	s.SegmentDuration = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *JobOutput) SetStatus(v string) *JobOutput {
+	s.Status = &v
+	return s
+}
+
+// SetStatusDetail sets the StatusDetail field's value.
+func (s *JobOutput) SetStatusDetail(v string) *JobOutput {
+	s.StatusDetail = &v
+	return s
+}
+
+// SetThumbnailEncryption sets the ThumbnailEncryption field's value.
+func (s *JobOutput) SetThumbnailEncryption(v *Encryption) *JobOutput {
+	s.ThumbnailEncryption = v
+	return s
+}
+
+// SetThumbnailPattern sets the ThumbnailPattern field's value.
+func (s *JobOutput) SetThumbnailPattern(v string) *JobOutput {
+	s.ThumbnailPattern = &v
+	return s
+}
+
+// SetWatermarks sets the Watermarks field's value.
+func (s *JobOutput) SetWatermarks(v []*JobWatermark) *JobOutput {
+	s.Watermarks = v
+	return s
+}
+
+// SetWidth sets the Width field's value.
+func (s *JobOutput) SetWidth(v int64) *JobOutput {
+	s.Width = &v
+	return s
 }
 
 // Watermarks can be in .png or .jpg format. If you want to display a watermark
@@ -3639,6 +4649,24 @@ func (s *JobWatermark) Validate() error {
 	return nil
 }
 
+// SetEncryption sets the Encryption field's value.
+func (s *JobWatermark) SetEncryption(v *Encryption) *JobWatermark {
+	s.Encryption = v
+	return s
+}
+
+// SetInputKey sets the InputKey field's value.
+func (s *JobWatermark) SetInputKey(v string) *JobWatermark {
+	s.InputKey = &v
+	return s
+}
+
+// SetPresetWatermarkId sets the PresetWatermarkId field's value.
+func (s *JobWatermark) SetPresetWatermarkId(v string) *JobWatermark {
+	s.PresetWatermarkId = &v
+	return s
+}
+
 // The ListJobsByPipelineRequest structure.
 type ListJobsByPipelineInput struct {
 	_ struct{} `type:"structure"`
@@ -3680,6 +4708,24 @@ func (s *ListJobsByPipelineInput) Validate() error {
 	return nil
 }
 
+// SetAscending sets the Ascending field's value.
+func (s *ListJobsByPipelineInput) SetAscending(v string) *ListJobsByPipelineInput {
+	s.Ascending = &v
+	return s
+}
+
+// SetPageToken sets the PageToken field's value.
+func (s *ListJobsByPipelineInput) SetPageToken(v string) *ListJobsByPipelineInput {
+	s.PageToken = &v
+	return s
+}
+
+// SetPipelineId sets the PipelineId field's value.
+func (s *ListJobsByPipelineInput) SetPipelineId(v string) *ListJobsByPipelineInput {
+	s.PipelineId = &v
+	return s
+}
+
 // The ListJobsByPipelineResponse structure.
 type ListJobsByPipelineOutput struct {
 	_ struct{} `type:"structure"`
@@ -3701,6 +4747,18 @@ func (s ListJobsByPipelineOutput) String() string {
 // GoString returns the string representation
 func (s ListJobsByPipelineOutput) GoString() string {
 	return s.String()
+}
+
+// SetJobs sets the Jobs field's value.
+func (s *ListJobsByPipelineOutput) SetJobs(v []*Job) *ListJobsByPipelineOutput {
+	s.Jobs = v
+	return s
+}
+
+// SetNextPageToken sets the NextPageToken field's value.
+func (s *ListJobsByPipelineOutput) SetNextPageToken(v string) *ListJobsByPipelineOutput {
+	s.NextPageToken = &v
+	return s
 }
 
 // The ListJobsByStatusRequest structure.
@@ -3746,6 +4804,24 @@ func (s *ListJobsByStatusInput) Validate() error {
 	return nil
 }
 
+// SetAscending sets the Ascending field's value.
+func (s *ListJobsByStatusInput) SetAscending(v string) *ListJobsByStatusInput {
+	s.Ascending = &v
+	return s
+}
+
+// SetPageToken sets the PageToken field's value.
+func (s *ListJobsByStatusInput) SetPageToken(v string) *ListJobsByStatusInput {
+	s.PageToken = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ListJobsByStatusInput) SetStatus(v string) *ListJobsByStatusInput {
+	s.Status = &v
+	return s
+}
+
 // The ListJobsByStatusResponse structure.
 type ListJobsByStatusOutput struct {
 	_ struct{} `type:"structure"`
@@ -3767,6 +4843,18 @@ func (s ListJobsByStatusOutput) String() string {
 // GoString returns the string representation
 func (s ListJobsByStatusOutput) GoString() string {
 	return s.String()
+}
+
+// SetJobs sets the Jobs field's value.
+func (s *ListJobsByStatusOutput) SetJobs(v []*Job) *ListJobsByStatusOutput {
+	s.Jobs = v
+	return s
+}
+
+// SetNextPageToken sets the NextPageToken field's value.
+func (s *ListJobsByStatusOutput) SetNextPageToken(v string) *ListJobsByStatusOutput {
+	s.NextPageToken = &v
+	return s
 }
 
 // The ListPipelineRequest structure.
@@ -3793,6 +4881,18 @@ func (s ListPipelinesInput) GoString() string {
 	return s.String()
 }
 
+// SetAscending sets the Ascending field's value.
+func (s *ListPipelinesInput) SetAscending(v string) *ListPipelinesInput {
+	s.Ascending = &v
+	return s
+}
+
+// SetPageToken sets the PageToken field's value.
+func (s *ListPipelinesInput) SetPageToken(v string) *ListPipelinesInput {
+	s.PageToken = &v
+	return s
+}
+
 // A list of the pipelines associated with the current AWS account.
 type ListPipelinesOutput struct {
 	_ struct{} `type:"structure"`
@@ -3814,6 +4914,18 @@ func (s ListPipelinesOutput) String() string {
 // GoString returns the string representation
 func (s ListPipelinesOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextPageToken sets the NextPageToken field's value.
+func (s *ListPipelinesOutput) SetNextPageToken(v string) *ListPipelinesOutput {
+	s.NextPageToken = &v
+	return s
+}
+
+// SetPipelines sets the Pipelines field's value.
+func (s *ListPipelinesOutput) SetPipelines(v []*Pipeline) *ListPipelinesOutput {
+	s.Pipelines = v
+	return s
 }
 
 // The ListPresetsRequest structure.
@@ -3840,6 +4952,18 @@ func (s ListPresetsInput) GoString() string {
 	return s.String()
 }
 
+// SetAscending sets the Ascending field's value.
+func (s *ListPresetsInput) SetAscending(v string) *ListPresetsInput {
+	s.Ascending = &v
+	return s
+}
+
+// SetPageToken sets the PageToken field's value.
+func (s *ListPresetsInput) SetPageToken(v string) *ListPresetsInput {
+	s.PageToken = &v
+	return s
+}
+
 // The ListPresetsResponse structure.
 type ListPresetsOutput struct {
 	_ struct{} `type:"structure"`
@@ -3861,6 +4985,18 @@ func (s ListPresetsOutput) String() string {
 // GoString returns the string representation
 func (s ListPresetsOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextPageToken sets the NextPageToken field's value.
+func (s *ListPresetsOutput) SetNextPageToken(v string) *ListPresetsOutput {
+	s.NextPageToken = &v
+	return s
+}
+
+// SetPresets sets the Presets field's value.
+func (s *ListPresetsOutput) SetPresets(v []*Preset) *ListPresetsOutput {
+	s.Presets = v
+	return s
 }
 
 // The Amazon Simple Notification Service (Amazon SNS) topic or topics to notify
@@ -3898,19 +5034,48 @@ func (s Notifications) GoString() string {
 	return s.String()
 }
 
+// SetCompleted sets the Completed field's value.
+func (s *Notifications) SetCompleted(v string) *Notifications {
+	s.Completed = &v
+	return s
+}
+
+// SetError sets the Error field's value.
+func (s *Notifications) SetError(v string) *Notifications {
+	s.Error = &v
+	return s
+}
+
+// SetProgressing sets the Progressing field's value.
+func (s *Notifications) SetProgressing(v string) *Notifications {
+	s.Progressing = &v
+	return s
+}
+
+// SetWarning sets the Warning field's value.
+func (s *Notifications) SetWarning(v string) *Notifications {
+	s.Warning = &v
+	return s
+}
+
 // The Permission structure.
 type Permission struct {
 	_ struct{} `type:"structure"`
 
 	// The permission that you want to give to the AWS user that is listed in Grantee.
-	// Valid values include: READ: The grantee can read the thumbnails and metadata
-	// for thumbnails that Elastic Transcoder adds to the Amazon S3 bucket.
-	// READ_ACP: The grantee can read the object ACL for thumbnails that Elastic
-	// Transcoder adds to the Amazon S3 bucket.
-	// WRITE_ACP: The grantee can write the ACL for the thumbnails that Elastic
-	// Transcoder adds to the Amazon S3 bucket.
-	// FULL_CONTROL: The grantee has READ, READ_ACP, and WRITE_ACP permissions for
-	// the thumbnails that Elastic Transcoder adds to the Amazon S3 bucket.
+	// Valid values include:
+	//
+	//    * READ: The grantee can read the thumbnails and metadata for thumbnails
+	//    that Elastic Transcoder adds to the Amazon S3 bucket.
+	//
+	//    * READ_ACP: The grantee can read the object ACL for thumbnails that Elastic
+	//    Transcoder adds to the Amazon S3 bucket.
+	//
+	//    * WRITE_ACP: The grantee can write the ACL for the thumbnails that Elastic
+	//    Transcoder adds to the Amazon S3 bucket.
+	//
+	//    * FULL_CONTROL: The grantee has READ, READ_ACP, and WRITE_ACP permissions
+	//    for the thumbnails that Elastic Transcoder adds to the Amazon S3 bucket.
 	Access []*string `type:"list"`
 
 	// The AWS user or group that you want to have access to transcoded files and
@@ -3920,13 +5085,17 @@ type Permission struct {
 	// group.
 	Grantee *string `min:"1" type:"string"`
 
-	// The type of value that appears in the Grantee object: Canonical: Either the
-	// canonical user ID for an AWS account or an origin access identity for an
-	// Amazon CloudFront distribution. A canonical user ID is not the same as an
-	// AWS account number.
-	// Email: The registered email address of an AWS account.
-	// Group: One of the following predefined Amazon S3 groups: AllUsers, AuthenticatedUsers,
-	// or LogDelivery.
+	// The type of value that appears in the Grantee object:
+	//
+	//    * Canonical: Either the canonical user ID for an AWS account or an origin
+	//    access identity for an Amazon CloudFront distribution.
+	//
+	// A canonical user ID is not the same as an AWS account number.
+	//
+	//    * Email: The registered email address of an AWS account.
+	//
+	//    * Group: One of the following predefined Amazon S3 groups: AllUsers, AuthenticatedUsers,
+	//    or LogDelivery.
 	GranteeType *string `type:"string"`
 }
 
@@ -3953,6 +5122,24 @@ func (s *Permission) Validate() error {
 	return nil
 }
 
+// SetAccess sets the Access field's value.
+func (s *Permission) SetAccess(v []*string) *Permission {
+	s.Access = v
+	return s
+}
+
+// SetGrantee sets the Grantee field's value.
+func (s *Permission) SetGrantee(v string) *Permission {
+	s.Grantee = &v
+	return s
+}
+
+// SetGranteeType sets the GranteeType field's value.
+func (s *Permission) SetGranteeType(v string) *Permission {
+	s.GranteeType = &v
+	return s
+}
+
 // The pipeline (queue) that is used to manage jobs.
 type Pipeline struct {
 	_ struct{} `type:"structure"`
@@ -3976,26 +5163,36 @@ type Pipeline struct {
 	//
 	//    * Bucket: The Amazon S3 bucket in which you want Elastic Transcoder to
 	//    save transcoded files and playlists.
+	//
 	//    * Permissions: A list of the users and/or predefined Amazon S3 groups
 	//    you want to have access to transcoded files and playlists, and the type
-	//    of access that you want them to have. GranteeType: The type of value that
-	//    appears in the Grantee object: Canonical: Either the canonical user ID
-	//    for an AWS account or an origin access identity for an Amazon CloudFront
-	//    distribution.
+	//    of access that you want them to have.
+	//
+	// GranteeType: The type of value that appears in the Grantee object:
+	//
+	// Canonical: Either the canonical user ID for an AWS account or an origin access
+	//    identity for an Amazon CloudFront distribution.
+	//
 	// Email: The registered email address of an AWS account.
+	//
 	// Group: One of the following predefined Amazon S3 groups: AllUsers, AuthenticatedUsers,
 	//    or LogDelivery.
 	//
 	// Grantee: The AWS user or group that you want to have access to transcoded
 	//    files and playlists.
+	//
 	// Access: The permission that you want to give to the AWS user that is listed
-	//    in Grantee. Valid values include: READ: The grantee can read the objects
-	//    and metadata for objects that Elastic Transcoder adds to the Amazon S3
-	//    bucket.
+	//    in Grantee. Valid values include:
+	//
+	// READ: The grantee can read the objects and metadata for objects that Elastic
+	//    Transcoder adds to the Amazon S3 bucket.
+	//
 	// READ_ACP: The grantee can read the object ACL for objects that Elastic Transcoder
 	//    adds to the Amazon S3 bucket.
+	//
 	// WRITE_ACP: The grantee can write the ACL for the objects that Elastic Transcoder
 	//    adds to the Amazon S3 bucket.
+	//
 	// FULL_CONTROL: The grantee has READ, READ_ACP, and WRITE_ACP permissions for
 	//    the objects that Elastic Transcoder adds to the Amazon S3 bucket.
 	//
@@ -4023,13 +5220,18 @@ type Pipeline struct {
 	// notify to report job status.
 	//
 	// To receive notifications, you must also subscribe to the new topic in the
-	// Amazon SNS console.   * Progressing (optional): The Amazon Simple Notification Service (Amazon
+	// Amazon SNS console.
+	//
+	//    * Progressing (optional): The Amazon Simple Notification Service (Amazon
 	//    SNS) topic that you want to notify when Elastic Transcoder has started
 	//    to process the job.
+	//
 	//    * Completed (optional): The Amazon SNS topic that you want to notify when
 	//    Elastic Transcoder has finished processing the job.
+	//
 	//    * Warning (optional): The Amazon SNS topic that you want to notify when
 	//    Elastic Transcoder encounters a warning condition.
+	//
 	//    * Error (optional): The Amazon SNS topic that you want to notify when
 	//    Elastic Transcoder encounters an error condition.
 	Notifications *Notifications `type:"structure"`
@@ -4046,6 +5248,7 @@ type Pipeline struct {
 	// The current status of the pipeline:
 	//
 	//    * Active: The pipeline is processing jobs.
+	//
 	//    * Paused: The pipeline is not currently processing jobs.
 	Status *string `type:"string"`
 
@@ -4055,26 +5258,38 @@ type Pipeline struct {
 	//
 	//    * Bucket: The Amazon S3 bucket in which you want Elastic Transcoder to
 	//    save thumbnail files.
+	//
 	//    * Permissions: A list of the users and/or predefined Amazon S3 groups
 	//    you want to have access to thumbnail files, and the type of access that
-	//    you want them to have. GranteeType: The type of value that appears in
-	//    the Grantee object: Canonical: Either the canonical user ID for an AWS
-	//    account or an origin access identity for an Amazon CloudFront distribution.
-	//    A canonical user ID is not the same as an AWS account number.
+	//    you want them to have.
+	//
+	// GranteeType: The type of value that appears in the Grantee object:
+	//
+	// Canonical: Either the canonical user ID for an AWS account or an origin access
+	//    identity for an Amazon CloudFront distribution.
+	//
+	// A canonical user ID is not the same as an AWS account number.
+	//
 	// Email: The registered email address of an AWS account.
+	//
 	// Group: One of the following predefined Amazon S3 groups: AllUsers, AuthenticatedUsers,
 	//    or LogDelivery.
 	//
 	// Grantee: The AWS user or group that you want to have access to thumbnail
 	//    files.
+	//
 	// Access: The permission that you want to give to the AWS user that is listed
-	//    in Grantee. Valid values include: READ: The grantee can read the thumbnails
-	//    and metadata for thumbnails that Elastic Transcoder adds to the Amazon
-	//    S3 bucket.
+	//    in Grantee. Valid values include:
+	//
+	// READ: The grantee can read the thumbnails and metadata for thumbnails that
+	//    Elastic Transcoder adds to the Amazon S3 bucket.
+	//
 	// READ_ACP: The grantee can read the object ACL for thumbnails that Elastic
 	//    Transcoder adds to the Amazon S3 bucket.
+	//
 	// WRITE_ACP: The grantee can write the ACL for the thumbnails that Elastic
 	//    Transcoder adds to the Amazon S3 bucket.
+	//
 	// FULL_CONTROL: The grantee has READ, READ_ACP, and WRITE_ACP permissions for
 	//    the thumbnails that Elastic Transcoder adds to the Amazon S3 bucket.
 	//
@@ -4094,21 +5309,92 @@ func (s Pipeline) GoString() string {
 	return s.String()
 }
 
+// SetArn sets the Arn field's value.
+func (s *Pipeline) SetArn(v string) *Pipeline {
+	s.Arn = &v
+	return s
+}
+
+// SetAwsKmsKeyArn sets the AwsKmsKeyArn field's value.
+func (s *Pipeline) SetAwsKmsKeyArn(v string) *Pipeline {
+	s.AwsKmsKeyArn = &v
+	return s
+}
+
+// SetContentConfig sets the ContentConfig field's value.
+func (s *Pipeline) SetContentConfig(v *PipelineOutputConfig) *Pipeline {
+	s.ContentConfig = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Pipeline) SetId(v string) *Pipeline {
+	s.Id = &v
+	return s
+}
+
+// SetInputBucket sets the InputBucket field's value.
+func (s *Pipeline) SetInputBucket(v string) *Pipeline {
+	s.InputBucket = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Pipeline) SetName(v string) *Pipeline {
+	s.Name = &v
+	return s
+}
+
+// SetNotifications sets the Notifications field's value.
+func (s *Pipeline) SetNotifications(v *Notifications) *Pipeline {
+	s.Notifications = v
+	return s
+}
+
+// SetOutputBucket sets the OutputBucket field's value.
+func (s *Pipeline) SetOutputBucket(v string) *Pipeline {
+	s.OutputBucket = &v
+	return s
+}
+
+// SetRole sets the Role field's value.
+func (s *Pipeline) SetRole(v string) *Pipeline {
+	s.Role = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Pipeline) SetStatus(v string) *Pipeline {
+	s.Status = &v
+	return s
+}
+
+// SetThumbnailConfig sets the ThumbnailConfig field's value.
+func (s *Pipeline) SetThumbnailConfig(v *PipelineOutputConfig) *Pipeline {
+	s.ThumbnailConfig = v
+	return s
+}
+
 // The PipelineOutputConfig structure.
 type PipelineOutputConfig struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon S3 bucket in which you want Elastic Transcoder to save the transcoded
-	// files. Specify this value when all of the following are true: You want to
-	// save transcoded files, thumbnails (if any), and playlists (if any) together
-	// in one bucket.
-	// You do not want to specify the users or groups who have access to the transcoded
-	// files, thumbnails, and playlists.
-	// You do not want to specify the permissions that Elastic Transcoder grants
-	// to the files.
-	// You want to associate the transcoded files and thumbnails with the Amazon
-	// S3 Standard storage class.
-	//  If you want to save transcoded files and playlists in one bucket and thumbnails
+	// files. Specify this value when all of the following are true:
+	//
+	//    * You want to save transcoded files, thumbnails (if any), and playlists
+	//    (if any) together in one bucket.
+	//
+	//    * You do not want to specify the users or groups who have access to the
+	//    transcoded files, thumbnails, and playlists.
+	//
+	//    * You do not want to specify the permissions that Elastic Transcoder grants
+	//    to the files.
+	//
+	//    * You want to associate the transcoded files and thumbnails with the Amazon
+	//    S3 Standard storage class.
+	//
+	// If you want to save transcoded files and playlists in one bucket and thumbnails
 	// in another bucket, specify which users can access the transcoded files or
 	// the permissions the users have, or change the Amazon S3 storage class, omit
 	// OutputBucket and specify values for ContentConfig and ThumbnailConfig instead.
@@ -4165,6 +5451,24 @@ func (s *PipelineOutputConfig) Validate() error {
 	return nil
 }
 
+// SetBucket sets the Bucket field's value.
+func (s *PipelineOutputConfig) SetBucket(v string) *PipelineOutputConfig {
+	s.Bucket = &v
+	return s
+}
+
+// SetPermissions sets the Permissions field's value.
+func (s *PipelineOutputConfig) SetPermissions(v []*Permission) *PipelineOutputConfig {
+	s.Permissions = v
+	return s
+}
+
+// SetStorageClass sets the StorageClass field's value.
+func (s *PipelineOutputConfig) SetStorageClass(v string) *PipelineOutputConfig {
+	s.StorageClass = &v
+	return s
+}
+
 // The PlayReady DRM settings, if any, that you want Elastic Transcoder to apply
 // to the output files associated with this playlist.
 //
@@ -4197,7 +5501,7 @@ type PlayReadyDrm struct {
 	// The ID for your DRM key, so that your DRM license provider knows which key
 	// to provide.
 	//
-	// The key ID must be provided in big endian, and Elastic Transcoder will convert
+	// The key ID must be provided in big endian, and Elastic Transcoder converts
 	// it to little endian before inserting it into the PlayReady DRM headers. If
 	// you are unsure whether your license server provides your key ID in big or
 	// little endian, check with your DRM provider.
@@ -4240,6 +5544,42 @@ func (s *PlayReadyDrm) Validate() error {
 	return nil
 }
 
+// SetFormat sets the Format field's value.
+func (s *PlayReadyDrm) SetFormat(v string) *PlayReadyDrm {
+	s.Format = &v
+	return s
+}
+
+// SetInitializationVector sets the InitializationVector field's value.
+func (s *PlayReadyDrm) SetInitializationVector(v string) *PlayReadyDrm {
+	s.InitializationVector = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *PlayReadyDrm) SetKey(v string) *PlayReadyDrm {
+	s.Key = &v
+	return s
+}
+
+// SetKeyId sets the KeyId field's value.
+func (s *PlayReadyDrm) SetKeyId(v string) *PlayReadyDrm {
+	s.KeyId = &v
+	return s
+}
+
+// SetKeyMd5 sets the KeyMd5 field's value.
+func (s *PlayReadyDrm) SetKeyMd5(v string) *PlayReadyDrm {
+	s.KeyMd5 = &v
+	return s
+}
+
+// SetLicenseAcquisitionUrl sets the LicenseAcquisitionUrl field's value.
+func (s *PlayReadyDrm) SetLicenseAcquisitionUrl(v string) *PlayReadyDrm {
+	s.LicenseAcquisitionUrl = &v
+	return s
+}
+
 // Use Only for Fragmented MP4 or MPEG-TS Outputs. If you specify a preset for
 // which the value of Container is fmp4 (Fragmented MP4) or ts (MPEG-TS), Playlists
 // contains information about the master playlists that you want Elastic Transcoder
@@ -4262,10 +5602,10 @@ type Playlist struct {
 	// you create more than one master playlist, the values of all Name objects
 	// must be unique.
 	//
-	// Note: Elastic Transcoder automatically appends the relevant file extension
-	// to the file name (.m3u8 for HLSv3 and HLSv4 playlists, and .ism and .ismc
-	// for Smooth playlists). If you include a file extension in Name, the file
-	// name will have two extensions.
+	// Elastic Transcoder automatically appends the relevant file extension to the
+	// file name (.m3u8 for HLSv3 and HLSv4 playlists, and .ism and .ismc for Smooth
+	// playlists). If you include a file extension in Name, the file name will have
+	// two extensions.
 	Name *string `min:"1" type:"string"`
 
 	// For each output in this job that you want to include in a master playlist,
@@ -4327,6 +5667,48 @@ func (s Playlist) GoString() string {
 	return s.String()
 }
 
+// SetFormat sets the Format field's value.
+func (s *Playlist) SetFormat(v string) *Playlist {
+	s.Format = &v
+	return s
+}
+
+// SetHlsContentProtection sets the HlsContentProtection field's value.
+func (s *Playlist) SetHlsContentProtection(v *HlsContentProtection) *Playlist {
+	s.HlsContentProtection = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Playlist) SetName(v string) *Playlist {
+	s.Name = &v
+	return s
+}
+
+// SetOutputKeys sets the OutputKeys field's value.
+func (s *Playlist) SetOutputKeys(v []*string) *Playlist {
+	s.OutputKeys = v
+	return s
+}
+
+// SetPlayReadyDrm sets the PlayReadyDrm field's value.
+func (s *Playlist) SetPlayReadyDrm(v *PlayReadyDrm) *Playlist {
+	s.PlayReadyDrm = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Playlist) SetStatus(v string) *Playlist {
+	s.Status = &v
+	return s
+}
+
+// SetStatusDetail sets the StatusDetail field's value.
+func (s *Playlist) SetStatusDetail(v string) *Playlist {
+	s.StatusDetail = &v
+	return s
+}
+
 // Presets are templates that contain most of the settings for transcoding media
 // files from one format to another. Elastic Transcoder includes some default
 // presets for common formats, for example, several iPod and iPhone versions.
@@ -4380,6 +5762,60 @@ func (s Preset) GoString() string {
 	return s.String()
 }
 
+// SetArn sets the Arn field's value.
+func (s *Preset) SetArn(v string) *Preset {
+	s.Arn = &v
+	return s
+}
+
+// SetAudio sets the Audio field's value.
+func (s *Preset) SetAudio(v *AudioParameters) *Preset {
+	s.Audio = v
+	return s
+}
+
+// SetContainer sets the Container field's value.
+func (s *Preset) SetContainer(v string) *Preset {
+	s.Container = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Preset) SetDescription(v string) *Preset {
+	s.Description = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Preset) SetId(v string) *Preset {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Preset) SetName(v string) *Preset {
+	s.Name = &v
+	return s
+}
+
+// SetThumbnails sets the Thumbnails field's value.
+func (s *Preset) SetThumbnails(v *Thumbnails) *Preset {
+	s.Thumbnails = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *Preset) SetType(v string) *Preset {
+	s.Type = &v
+	return s
+}
+
+// SetVideo sets the Video field's value.
+func (s *Preset) SetVideo(v *VideoParameters) *Preset {
+	s.Video = v
+	return s
+}
+
 // Settings for the size, location, and opacity of graphics that you want Elastic
 // Transcoder to overlay over videos that are transcoded using this preset.
 // You can specify settings for up to four watermarks. Watermarks appear in
@@ -4398,18 +5834,25 @@ type PresetWatermark struct {
 	_ struct{} `type:"structure"`
 
 	// The horizontal position of the watermark unless you specify a non-zero value
-	// for HorizontalOffset: Left: The left edge of the watermark is aligned with
-	// the left border of the video.
-	// Right: The right edge of the watermark is aligned with the right border of
-	// the video.
-	// Center: The watermark is centered between the left and right borders.
+	// for HorizontalOffset:
+	//
+	//    * Left: The left edge of the watermark is aligned with the left border
+	//    of the video.
+	//
+	//    * Right: The right edge of the watermark is aligned with the right border
+	//    of the video.
+	//
+	//    * Center: The watermark is centered between the left and right borders.
 	HorizontalAlign *string `type:"string"`
 
 	// The amount by which you want the horizontal position of the watermark to
-	// be offset from the position specified by HorizontalAlign: number of pixels
-	// (px): The minimum value is 0 pixels, and the maximum value is the value of
-	// MaxWidth.
-	// integer percentage (%): The range of valid values is 0 to 100.
+	// be offset from the position specified by HorizontalAlign:
+	//
+	//    * number of pixels (px): The minimum value is 0 pixels, and the maximum
+	//    value is the value of MaxWidth.
+	//
+	//    * integer percentage (%): The range of valid values is 0 to 100.
+	//
 	// For example, if you specify Left for HorizontalAlign and 5px for HorizontalOffset,
 	// the left side of the watermark appears 5 pixels from the left border of the
 	// output video.
@@ -4425,27 +5868,34 @@ type PresetWatermark struct {
 	// bars that are added by Elastic Transcoder, if any, in the offset calculation.
 	HorizontalOffset *string `type:"string"`
 
-	// A unique identifier for the settings for one watermark. The value of Id
+	// A unique identifier for the settings for one watermark. The value of Id can
+	// be up to 40 characters long.
 	Id *string `min:"1" type:"string"`
 
-	// The maximum height of the watermark in one of the following formats: number
-	// of pixels (px): The minimum value is 16 pixels, and the maximum value is
-	// the value of MaxHeight.
-	// integer percentage (%): The range of valid values is 0 to 100. Use the value
-	// of Target to specify whether you want Elastic Transcoder to include the black
-	// bars that are added by Elastic Transcoder, if any, in the calculation.
-	//  If you specify the value in pixels, it must be less than or equal to the
+	// The maximum height of the watermark in one of the following formats:
+	//
+	//    * number of pixels (px): The minimum value is 16 pixels, and the maximum
+	//    value is the value of MaxHeight.
+	//
+	//    * integer percentage (%): The range of valid values is 0 to 100. Use the
+	//    value of Target to specify whether you want Elastic Transcoder to include
+	//    the black bars that are added by Elastic Transcoder, if any, in the calculation.
+	//
+	// If you specify the value in pixels, it must be less than or equal to the
 	// value of MaxHeight.
 	MaxHeight *string `type:"string"`
 
-	// The maximum width of the watermark in one of the following formats: number
-	// of pixels (px): The minimum value is 16 pixels, and the maximum value is
-	// the value of MaxWidth.
-	// integer percentage (%): The range of valid values is 0 to 100. Use the value
-	// of Target to specify whether you want Elastic Transcoder to include the black
-	// bars that are added by Elastic Transcoder, if any, in the calculation.
-	//  If you specify the value in pixels, it must be less than or equal to the
-	// value of MaxWidth.
+	// The maximum width of the watermark in one of the following formats:
+	//
+	//    * number of pixels (px): The minimum value is 16 pixels, and the maximum
+	//    value is the value of MaxWidth.
+	//
+	//    * integer percentage (%): The range of valid values is 0 to 100. Use the
+	//    value of Target to specify whether you want Elastic Transcoder to include
+	//    the black bars that are added by Elastic Transcoder, if any, in the calculation.
+	//
+	// If you specify the value in pixels, it must be less than or equal to the
+	//    value of MaxWidth.
 	MaxWidth *string `type:"string"`
 
 	// A percentage that indicates how much you want a watermark to obscure the
@@ -4458,48 +5908,62 @@ type PresetWatermark struct {
 	// a value of 0 for Opacity. The .jpg file format doesn't support transparency.
 	Opacity *string `type:"string"`
 
-	// A value that controls scaling of the watermark: Fit: Elastic Transcoder scales
-	// the watermark so it matches the value that you specified in either MaxWidth
-	// or MaxHeight without exceeding the other value.
-	// Stretch: Elastic Transcoder stretches the watermark to match the values that
-	// you specified for MaxWidth and MaxHeight. If the relative proportions of
-	// the watermark and the values of MaxWidth and MaxHeight are different, the
-	// watermark will be distorted.
-	// ShrinkToFit: Elastic Transcoder scales the watermark down so that its dimensions
-	// match the values that you specified for at least one of MaxWidth and MaxHeight
-	// without exceeding either value. If you specify this option, Elastic Transcoder
-	// does not scale the watermark up.
+	// A value that controls scaling of the watermark:
+	//
+	//    * Fit: Elastic Transcoder scales the watermark so it matches the value
+	//    that you specified in either MaxWidth or MaxHeight without exceeding the
+	//    other value.
+	//
+	//    * Stretch: Elastic Transcoder stretches the watermark to match the values
+	//    that you specified for MaxWidth and MaxHeight. If the relative proportions
+	//    of the watermark and the values of MaxWidth and MaxHeight are different,
+	//    the watermark will be distorted.
+	//
+	//    * ShrinkToFit: Elastic Transcoder scales the watermark down so that its
+	//    dimensions match the values that you specified for at least one of MaxWidth
+	//    and MaxHeight without exceeding either value. If you specify this option,
+	//    Elastic Transcoder does not scale the watermark up.
 	SizingPolicy *string `type:"string"`
 
 	// A value that determines how Elastic Transcoder interprets values that you
 	// specified for HorizontalOffset, VerticalOffset, MaxWidth, and MaxHeight:
-	// Content: HorizontalOffset and VerticalOffset values are calculated based
-	// on the borders of the video excluding black bars added by Elastic Transcoder,
-	// if any. In addition, MaxWidth and MaxHeight, if specified as a percentage,
-	// are calculated based on the borders of the video excluding black bars added
-	// by Elastic Transcoder, if any.
-	// Frame: HorizontalOffset and VerticalOffset values are calculated based on
-	// the borders of the video including black bars added by Elastic Transcoder,
-	// if any.
-	//  In addition, MaxWidth and MaxHeight, if specified as a percentage, are calculated
-	// based on the borders of the video including black bars added by Elastic Transcoder,
-	// if any.
+	//
+	//    * Content: HorizontalOffset and VerticalOffset values are calculated based
+	//    on the borders of the video excluding black bars added by Elastic Transcoder,
+	//    if any. In addition, MaxWidth and MaxHeight, if specified as a percentage,
+	//    are calculated based on the borders of the video excluding black bars
+	//    added by Elastic Transcoder, if any.
+	//
+	//    * Frame: HorizontalOffset and VerticalOffset values are calculated based
+	//    on the borders of the video including black bars added by Elastic Transcoder,
+	//    if any. In addition, MaxWidth and MaxHeight, if specified as a percentage,
+	//    are calculated based on the borders of the video including black bars
+	//    added by Elastic Transcoder, if any.
 	Target *string `type:"string"`
 
 	// The vertical position of the watermark unless you specify a non-zero value
-	// for VerticalOffset: Top: The top edge of the watermark is aligned with the
-	// top border of the video.
-	// Bottom: The bottom edge of the watermark is aligned with the bottom border
-	// of the video.
-	// Center: The watermark is centered between the top and bottom borders.
+	// for VerticalOffset:
+	//
+	//    * Top: The top edge of the watermark is aligned with the top border of
+	//    the video.
+	//
+	//    * Bottom: The bottom edge of the watermark is aligned with the bottom
+	//    border of the video.
+	//
+	//    * Center: The watermark is centered between the top and bottom borders.
 	VerticalAlign *string `type:"string"`
 
-	// VerticalOffsetThe amount by which you want the vertical position of the watermark to be
-	// offset from the position specified by VerticalAlign:number of pixels (px):
-	// The minimum value is 0 pixels, and the maximum value is the value of MaxHeight.
+	// VerticalOffset
 	//
-	// integer percentage (%): The range of valid values is 0 to 100.
-	//  For example, if you specify Top for VerticalAlign and 5px for VerticalOffset,
+	// The amount by which you want the vertical position of the watermark to be
+	// offset from the position specified by VerticalAlign:
+	//
+	//    * number of pixels (px): The minimum value is 0 pixels, and the maximum
+	//    value is the value of MaxHeight.
+	//
+	//    * integer percentage (%): The range of valid values is 0 to 100.
+	//
+	// For example, if you specify Top for VerticalAlign and 5px for VerticalOffset,
 	// the top of the watermark appears 5 pixels from the top border of the output
 	// video.
 	//
@@ -4540,6 +6004,66 @@ func (s *PresetWatermark) Validate() error {
 	return nil
 }
 
+// SetHorizontalAlign sets the HorizontalAlign field's value.
+func (s *PresetWatermark) SetHorizontalAlign(v string) *PresetWatermark {
+	s.HorizontalAlign = &v
+	return s
+}
+
+// SetHorizontalOffset sets the HorizontalOffset field's value.
+func (s *PresetWatermark) SetHorizontalOffset(v string) *PresetWatermark {
+	s.HorizontalOffset = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *PresetWatermark) SetId(v string) *PresetWatermark {
+	s.Id = &v
+	return s
+}
+
+// SetMaxHeight sets the MaxHeight field's value.
+func (s *PresetWatermark) SetMaxHeight(v string) *PresetWatermark {
+	s.MaxHeight = &v
+	return s
+}
+
+// SetMaxWidth sets the MaxWidth field's value.
+func (s *PresetWatermark) SetMaxWidth(v string) *PresetWatermark {
+	s.MaxWidth = &v
+	return s
+}
+
+// SetOpacity sets the Opacity field's value.
+func (s *PresetWatermark) SetOpacity(v string) *PresetWatermark {
+	s.Opacity = &v
+	return s
+}
+
+// SetSizingPolicy sets the SizingPolicy field's value.
+func (s *PresetWatermark) SetSizingPolicy(v string) *PresetWatermark {
+	s.SizingPolicy = &v
+	return s
+}
+
+// SetTarget sets the Target field's value.
+func (s *PresetWatermark) SetTarget(v string) *PresetWatermark {
+	s.Target = &v
+	return s
+}
+
+// SetVerticalAlign sets the VerticalAlign field's value.
+func (s *PresetWatermark) SetVerticalAlign(v string) *PresetWatermark {
+	s.VerticalAlign = &v
+	return s
+}
+
+// SetVerticalOffset sets the VerticalOffset field's value.
+func (s *PresetWatermark) SetVerticalOffset(v string) *PresetWatermark {
+	s.VerticalOffset = &v
+	return s
+}
+
 // The ReadJobRequest structure.
 type ReadJobInput struct {
 	_ struct{} `type:"structure"`
@@ -4573,6 +6097,12 @@ func (s *ReadJobInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *ReadJobInput) SetId(v string) *ReadJobInput {
+	s.Id = &v
+	return s
+}
+
 // The ReadJobResponse structure.
 type ReadJobOutput struct {
 	_ struct{} `type:"structure"`
@@ -4589,6 +6119,12 @@ func (s ReadJobOutput) String() string {
 // GoString returns the string representation
 func (s ReadJobOutput) GoString() string {
 	return s.String()
+}
+
+// SetJob sets the Job field's value.
+func (s *ReadJobOutput) SetJob(v *Job) *ReadJobOutput {
+	s.Job = v
+	return s
 }
 
 // The ReadPipelineRequest structure.
@@ -4624,6 +6160,12 @@ func (s *ReadPipelineInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *ReadPipelineInput) SetId(v string) *ReadPipelineInput {
+	s.Id = &v
+	return s
+}
+
 // The ReadPipelineResponse structure.
 type ReadPipelineOutput struct {
 	_ struct{} `type:"structure"`
@@ -4648,6 +6190,18 @@ func (s ReadPipelineOutput) String() string {
 // GoString returns the string representation
 func (s ReadPipelineOutput) GoString() string {
 	return s.String()
+}
+
+// SetPipeline sets the Pipeline field's value.
+func (s *ReadPipelineOutput) SetPipeline(v *Pipeline) *ReadPipelineOutput {
+	s.Pipeline = v
+	return s
+}
+
+// SetWarnings sets the Warnings field's value.
+func (s *ReadPipelineOutput) SetWarnings(v []*Warning) *ReadPipelineOutput {
+	s.Warnings = v
+	return s
 }
 
 // The ReadPresetRequest structure.
@@ -4683,6 +6237,12 @@ func (s *ReadPresetInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *ReadPresetInput) SetId(v string) *ReadPresetInput {
+	s.Id = &v
+	return s
+}
+
 // The ReadPresetResponse structure.
 type ReadPresetOutput struct {
 	_ struct{} `type:"structure"`
@@ -4701,9 +6261,15 @@ func (s ReadPresetOutput) GoString() string {
 	return s.String()
 }
 
+// SetPreset sets the Preset field's value.
+func (s *ReadPresetOutput) SetPreset(v *Preset) *ReadPresetOutput {
+	s.Preset = v
+	return s
+}
+
 // The TestRoleRequest structure.
 type TestRoleInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `deprecated:"true" type:"structure"`
 
 	// The Amazon S3 bucket that contains media files to be transcoded. The action
 	// attempts to read from this bucket.
@@ -4711,8 +6277,8 @@ type TestRoleInput struct {
 	// InputBucket is a required field
 	InputBucket *string `type:"string" required:"true"`
 
-	// The Amazon S3 bucket that Elastic Transcoder will write transcoded media
-	// files to. The action attempts to read from this bucket.
+	// The Amazon S3 bucket that Elastic Transcoder writes transcoded media files
+	// to. The action attempts to read from this bucket.
 	//
 	// OutputBucket is a required field
 	OutputBucket *string `type:"string" required:"true"`
@@ -4762,9 +6328,33 @@ func (s *TestRoleInput) Validate() error {
 	return nil
 }
 
+// SetInputBucket sets the InputBucket field's value.
+func (s *TestRoleInput) SetInputBucket(v string) *TestRoleInput {
+	s.InputBucket = &v
+	return s
+}
+
+// SetOutputBucket sets the OutputBucket field's value.
+func (s *TestRoleInput) SetOutputBucket(v string) *TestRoleInput {
+	s.OutputBucket = &v
+	return s
+}
+
+// SetRole sets the Role field's value.
+func (s *TestRoleInput) SetRole(v string) *TestRoleInput {
+	s.Role = &v
+	return s
+}
+
+// SetTopics sets the Topics field's value.
+func (s *TestRoleInput) SetTopics(v []*string) *TestRoleInput {
+	s.Topics = v
+	return s
+}
+
 // The TestRoleResponse structure.
 type TestRoleOutput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `deprecated:"true" type:"structure"`
 
 	// If the Success element contains false, this value is an array of one or more
 	// error messages that were generated during the test process.
@@ -4783,6 +6373,18 @@ func (s TestRoleOutput) String() string {
 // GoString returns the string representation
 func (s TestRoleOutput) GoString() string {
 	return s.String()
+}
+
+// SetMessages sets the Messages field's value.
+func (s *TestRoleOutput) SetMessages(v []*string) *TestRoleOutput {
+	s.Messages = v
+	return s
+}
+
+// SetSuccess sets the Success field's value.
+func (s *TestRoleOutput) SetSuccess(v string) *TestRoleOutput {
+	s.Success = &v
+	return s
 }
 
 // Thumbnails for videos.
@@ -4840,28 +6442,33 @@ type Thumbnails struct {
 
 	// Specify one of the following values to control scaling of thumbnails:
 	//
-	// Fit: Elastic Transcoder scales thumbnails so they match the value that you
-	// specified in thumbnail MaxWidth or MaxHeight settings without exceeding the
-	// other value.
-	// Fill: Elastic Transcoder scales thumbnails so they match the value that you
-	// specified in thumbnail MaxWidth or MaxHeight settings and matches or exceeds
-	// the other value. Elastic Transcoder centers the image in thumbnails and then
-	// crops in the dimension (if any) that exceeds the maximum value.
-	// Stretch: Elastic Transcoder stretches thumbnails to match the values that
-	// you specified for thumbnail MaxWidth and MaxHeight settings. If the relative
-	// proportions of the input video and thumbnails are different, the thumbnails
-	// will be distorted.
-	// Keep: Elastic Transcoder does not scale thumbnails. If either dimension of
-	// the input video exceeds the values that you specified for thumbnail MaxWidth
-	// and MaxHeight settings, Elastic Transcoder crops the thumbnails.
-	// ShrinkToFit: Elastic Transcoder scales thumbnails down so that their dimensions
-	// match the values that you specified for at least one of thumbnail MaxWidth
-	// and MaxHeight without exceeding either value. If you specify this option,
-	// Elastic Transcoder does not scale thumbnails up.
-	// ShrinkToFill: Elastic Transcoder scales thumbnails down so that their dimensions
-	// match the values that you specified for at least one of MaxWidth and MaxHeight
-	// without dropping below either value. If you specify this option, Elastic
-	// Transcoder does not scale thumbnails up.
+	//    * Fit: Elastic Transcoder scales thumbnails so they match the value that
+	//    you specified in thumbnail MaxWidth or MaxHeight settings without exceeding
+	//    the other value.
+	//
+	//    * Fill: Elastic Transcoder scales thumbnails so they match the value that
+	//    you specified in thumbnail MaxWidth or MaxHeight settings and matches
+	//    or exceeds the other value. Elastic Transcoder centers the image in thumbnails
+	//    and then crops in the dimension (if any) that exceeds the maximum value.
+	//
+	//    * Stretch: Elastic Transcoder stretches thumbnails to match the values
+	//    that you specified for thumbnail MaxWidth and MaxHeight settings. If the
+	//    relative proportions of the input video and thumbnails are different,
+	//    the thumbnails will be distorted.
+	//
+	//    * Keep: Elastic Transcoder does not scale thumbnails. If either dimension
+	//    of the input video exceeds the values that you specified for thumbnail
+	//    MaxWidth and MaxHeight settings, Elastic Transcoder crops the thumbnails.
+	//
+	//    * ShrinkToFit: Elastic Transcoder scales thumbnails down so that their
+	//    dimensions match the values that you specified for at least one of thumbnail
+	//    MaxWidth and MaxHeight without exceeding either value. If you specify
+	//    this option, Elastic Transcoder does not scale thumbnails up.
+	//
+	//    * ShrinkToFill: Elastic Transcoder scales thumbnails down so that their
+	//    dimensions match the values that you specified for at least one of MaxWidth
+	//    and MaxHeight without dropping below either value. If you specify this
+	//    option, Elastic Transcoder does not scale thumbnails up.
 	SizingPolicy *string `type:"string"`
 }
 
@@ -4873,6 +6480,54 @@ func (s Thumbnails) String() string {
 // GoString returns the string representation
 func (s Thumbnails) GoString() string {
 	return s.String()
+}
+
+// SetAspectRatio sets the AspectRatio field's value.
+func (s *Thumbnails) SetAspectRatio(v string) *Thumbnails {
+	s.AspectRatio = &v
+	return s
+}
+
+// SetFormat sets the Format field's value.
+func (s *Thumbnails) SetFormat(v string) *Thumbnails {
+	s.Format = &v
+	return s
+}
+
+// SetInterval sets the Interval field's value.
+func (s *Thumbnails) SetInterval(v string) *Thumbnails {
+	s.Interval = &v
+	return s
+}
+
+// SetMaxHeight sets the MaxHeight field's value.
+func (s *Thumbnails) SetMaxHeight(v string) *Thumbnails {
+	s.MaxHeight = &v
+	return s
+}
+
+// SetMaxWidth sets the MaxWidth field's value.
+func (s *Thumbnails) SetMaxWidth(v string) *Thumbnails {
+	s.MaxWidth = &v
+	return s
+}
+
+// SetPaddingPolicy sets the PaddingPolicy field's value.
+func (s *Thumbnails) SetPaddingPolicy(v string) *Thumbnails {
+	s.PaddingPolicy = &v
+	return s
+}
+
+// SetResolution sets the Resolution field's value.
+func (s *Thumbnails) SetResolution(v string) *Thumbnails {
+	s.Resolution = &v
+	return s
+}
+
+// SetSizingPolicy sets the SizingPolicy field's value.
+func (s *Thumbnails) SetSizingPolicy(v string) *Thumbnails {
+	s.SizingPolicy = &v
+	return s
 }
 
 // Settings that determine when a clip begins and how long it lasts.
@@ -4905,6 +6560,18 @@ func (s TimeSpan) GoString() string {
 	return s.String()
 }
 
+// SetDuration sets the Duration field's value.
+func (s *TimeSpan) SetDuration(v string) *TimeSpan {
+	s.Duration = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *TimeSpan) SetStartTime(v string) *TimeSpan {
+	s.StartTime = &v
+	return s
+}
+
 // Details about the timing of a job.
 type Timing struct {
 	_ struct{} `type:"structure"`
@@ -4927,6 +6594,24 @@ func (s Timing) String() string {
 // GoString returns the string representation
 func (s Timing) GoString() string {
 	return s.String()
+}
+
+// SetFinishTimeMillis sets the FinishTimeMillis field's value.
+func (s *Timing) SetFinishTimeMillis(v int64) *Timing {
+	s.FinishTimeMillis = &v
+	return s
+}
+
+// SetStartTimeMillis sets the StartTimeMillis field's value.
+func (s *Timing) SetStartTimeMillis(v int64) *Timing {
+	s.StartTimeMillis = &v
+	return s
+}
+
+// SetSubmitTimeMillis sets the SubmitTimeMillis field's value.
+func (s *Timing) SetSubmitTimeMillis(v int64) *Timing {
+	s.SubmitTimeMillis = &v
+	return s
 }
 
 // The UpdatePipelineRequest structure.
@@ -4957,22 +6642,28 @@ type UpdatePipelineInput struct {
 	//
 	//    * Bucket: The Amazon S3 bucket in which you want Elastic Transcoder to
 	//    save transcoded files and playlists.
+	//
 	//    * Permissions (Optional): The Permissions object specifies which users
 	//    you want to have access to transcoded files and the type of access you
 	//    want them to have. You can grant permissions to a maximum of 30 users
 	//    and/or predefined Amazon S3 groups.
+	//
 	//    * Grantee Type: Specify the type of value that appears in the Grantee
-	//    object: Canonical: The value in the Grantee object is either the canonical
-	//    user ID for an AWS account or an origin access identity for an Amazon
-	//    CloudFront distribution. For more information about canonical user IDs,
-	//    see Access Control List (ACL) Overview in the Amazon Simple Storage Service
-	//    Developer Guide. For more information about using CloudFront origin access
-	//    identities to require that users use CloudFront URLs instead of Amazon
-	//    S3 URLs, see Using an Origin Access Identity to Restrict Access to Your
-	//    Amazon S3 Content. A canonical user ID is not the same as an AWS account
-	//    number.
+	//    object:
+	//
+	// Canonical: The value in the Grantee object is either the canonical user ID
+	//    for an AWS account or an origin access identity for an Amazon CloudFront
+	//    distribution. For more information about canonical user IDs, see Access
+	//    Control List (ACL) Overview in the Amazon Simple Storage Service Developer
+	//    Guide. For more information about using CloudFront origin access identities
+	//    to require that users use CloudFront URLs instead of Amazon S3 URLs, see
+	//    Using an Origin Access Identity to Restrict Access to Your Amazon S3 Content.
+	//
+	// A canonical user ID is not the same as an AWS account number.
+	//
 	// Email: The value in the Grantee object is the registered email address of
 	//    an AWS account.
+	//
 	// Group: The value in the Grantee object is one of the following predefined
 	//    Amazon S3 groups: AllUsers, AuthenticatedUsers, or LogDelivery.
 	//
@@ -4981,15 +6672,21 @@ type UpdatePipelineInput struct {
 	//    canonical user ID for an AWS account, an origin access identity for a
 	//    CloudFront distribution, the registered email address of an AWS account,
 	//    or a predefined Amazon S3 group
+	//
 	//    * Access: The permission that you want to give to the AWS user that you
 	//    specified in Grantee. Permissions are granted on the files that Elastic
 	//    Transcoder adds to the bucket, including playlists and video files. Valid
-	//    values include: READ: The grantee can read the objects and metadata for
-	//    objects that Elastic Transcoder adds to the Amazon S3 bucket.
+	//    values include:
+	//
+	// READ: The grantee can read the objects and metadata for objects that Elastic
+	//    Transcoder adds to the Amazon S3 bucket.
+	//
 	// READ_ACP: The grantee can read the object ACL for objects that Elastic Transcoder
 	//    adds to the Amazon S3 bucket.
+	//
 	// WRITE_ACP: The grantee can write the ACL for the objects that Elastic Transcoder
 	//    adds to the Amazon S3 bucket.
+	//
 	// FULL_CONTROL: The grantee has READ, READ_ACP, and WRITE_ACP permissions for
 	//    the objects that Elastic Transcoder adds to the Amazon S3 bucket.
 	//
@@ -5013,11 +6710,28 @@ type UpdatePipelineInput struct {
 	// Constraints: Maximum 40 characters
 	Name *string `min:"1" type:"string"`
 
-	// The Amazon Simple Notification Service (Amazon SNS) topic or topics to notify
-	// in order to report job status.
+	// The topic ARN for the Amazon Simple Notification Service (Amazon SNS) topic
+	// that you want to notify to report job status.
 	//
 	// To receive notifications, you must also subscribe to the new topic in the
 	// Amazon SNS console.
+	//
+	//    * Progressing: The topic ARN for the Amazon Simple Notification Service
+	//    (Amazon SNS) topic that you want to notify when Elastic Transcoder has
+	//    started to process jobs that are added to this pipeline. This is the ARN
+	//    that Amazon SNS returned when you created the topic.
+	//
+	//    * Completed: The topic ARN for the Amazon SNS topic that you want to notify
+	//    when Elastic Transcoder has finished processing a job. This is the ARN
+	//    that Amazon SNS returned when you created the topic.
+	//
+	//    * Warning: The topic ARN for the Amazon SNS topic that you want to notify
+	//    when Elastic Transcoder encounters a warning condition. This is the ARN
+	//    that Amazon SNS returned when you created the topic.
+	//
+	//    * Error: The topic ARN for the Amazon SNS topic that you want to notify
+	//    when Elastic Transcoder encounters an error condition. This is the ARN
+	//    that Amazon SNS returned when you created the topic.
 	Notifications *Notifications `type:"structure"`
 
 	// The IAM Amazon Resource Name (ARN) for the role that you want Elastic Transcoder
@@ -5037,17 +6751,23 @@ type UpdatePipelineInput struct {
 	//
 	//    * Bucket: The Amazon S3 bucket in which you want Elastic Transcoder to
 	//    save thumbnail files.
+	//
 	//    * Permissions (Optional): The Permissions object specifies which users
 	//    and/or predefined Amazon S3 groups you want to have access to thumbnail
 	//    files, and the type of access you want them to have. You can grant permissions
 	//    to a maximum of 30 users and/or predefined Amazon S3 groups.
+	//
 	//    * GranteeType: Specify the type of value that appears in the Grantee object:
-	//    Canonical: The value in the Grantee object is either the canonical user
-	//    ID for an AWS account or an origin access identity for an Amazon CloudFront
-	//    distribution. A canonical user ID is not the same as an AWS account number.
+	//
+	// Canonical: The value in the Grantee object is either the canonical user ID
+	//    for an AWS account or an origin access identity for an Amazon CloudFront
+	//    distribution.
+	//
+	// A canonical user ID is not the same as an AWS account number.
 	//
 	// Email: The value in the Grantee object is the registered email address of
 	//    an AWS account.
+	//
 	// Group: The value in the Grantee object is one of the following predefined
 	//    Amazon S3 groups: AllUsers, AuthenticatedUsers, or LogDelivery.
 	//
@@ -5056,15 +6776,20 @@ type UpdatePipelineInput struct {
 	//    ID for an AWS account, an origin access identity for a CloudFront distribution,
 	//    the registered email address of an AWS account, or a predefined Amazon
 	//    S3 group.
+	//
 	//    * Access: The permission that you want to give to the AWS user that you
 	//    specified in Grantee. Permissions are granted on the thumbnail files that
-	//    Elastic Transcoder adds to the bucket. Valid values include: READ: The
-	//    grantee can read the thumbnails and metadata for objects that Elastic
+	//    Elastic Transcoder adds to the bucket. Valid values include:
+	//
+	// READ: The grantee can read the thumbnails and metadata for objects that Elastic
 	//    Transcoder adds to the Amazon S3 bucket.
+	//
 	// READ_ACP: The grantee can read the object ACL for thumbnails that Elastic
 	//    Transcoder adds to the Amazon S3 bucket.
+	//
 	// WRITE_ACP: The grantee can write the ACL for the thumbnails that Elastic
 	//    Transcoder adds to the Amazon S3 bucket.
+	//
 	// FULL_CONTROL: The grantee has READ, READ_ACP, and WRITE_ACP permissions for
 	//    the thumbnails that Elastic Transcoder adds to the Amazon S3 bucket.
 	//
@@ -5110,6 +6835,54 @@ func (s *UpdatePipelineInput) Validate() error {
 	return nil
 }
 
+// SetAwsKmsKeyArn sets the AwsKmsKeyArn field's value.
+func (s *UpdatePipelineInput) SetAwsKmsKeyArn(v string) *UpdatePipelineInput {
+	s.AwsKmsKeyArn = &v
+	return s
+}
+
+// SetContentConfig sets the ContentConfig field's value.
+func (s *UpdatePipelineInput) SetContentConfig(v *PipelineOutputConfig) *UpdatePipelineInput {
+	s.ContentConfig = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *UpdatePipelineInput) SetId(v string) *UpdatePipelineInput {
+	s.Id = &v
+	return s
+}
+
+// SetInputBucket sets the InputBucket field's value.
+func (s *UpdatePipelineInput) SetInputBucket(v string) *UpdatePipelineInput {
+	s.InputBucket = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdatePipelineInput) SetName(v string) *UpdatePipelineInput {
+	s.Name = &v
+	return s
+}
+
+// SetNotifications sets the Notifications field's value.
+func (s *UpdatePipelineInput) SetNotifications(v *Notifications) *UpdatePipelineInput {
+	s.Notifications = v
+	return s
+}
+
+// SetRole sets the Role field's value.
+func (s *UpdatePipelineInput) SetRole(v string) *UpdatePipelineInput {
+	s.Role = &v
+	return s
+}
+
+// SetThumbnailConfig sets the ThumbnailConfig field's value.
+func (s *UpdatePipelineInput) SetThumbnailConfig(v *PipelineOutputConfig) *UpdatePipelineInput {
+	s.ThumbnailConfig = v
+	return s
+}
+
 // The UpdatePipelineNotificationsRequest structure.
 type UpdatePipelineNotificationsInput struct {
 	_ struct{} `type:"structure"`
@@ -5124,16 +6897,21 @@ type UpdatePipelineNotificationsInput struct {
 	// that you want to notify to report job status.
 	//
 	// To receive notifications, you must also subscribe to the new topic in the
-	// Amazon SNS console.   * Progressing: The topic ARN for the Amazon Simple Notification Service
+	// Amazon SNS console.
+	//
+	//    * Progressing: The topic ARN for the Amazon Simple Notification Service
 	//    (Amazon SNS) topic that you want to notify when Elastic Transcoder has
 	//    started to process jobs that are added to this pipeline. This is the ARN
 	//    that Amazon SNS returned when you created the topic.
+	//
 	//    * Completed: The topic ARN for the Amazon SNS topic that you want to notify
 	//    when Elastic Transcoder has finished processing a job. This is the ARN
 	//    that Amazon SNS returned when you created the topic.
+	//
 	//    * Warning: The topic ARN for the Amazon SNS topic that you want to notify
 	//    when Elastic Transcoder encounters a warning condition. This is the ARN
 	//    that Amazon SNS returned when you created the topic.
+	//
 	//    * Error: The topic ARN for the Amazon SNS topic that you want to notify
 	//    when Elastic Transcoder encounters an error condition. This is the ARN
 	//    that Amazon SNS returned when you created the topic.
@@ -5168,11 +6946,24 @@ func (s *UpdatePipelineNotificationsInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *UpdatePipelineNotificationsInput) SetId(v string) *UpdatePipelineNotificationsInput {
+	s.Id = &v
+	return s
+}
+
+// SetNotifications sets the Notifications field's value.
+func (s *UpdatePipelineNotificationsInput) SetNotifications(v *Notifications) *UpdatePipelineNotificationsInput {
+	s.Notifications = v
+	return s
+}
+
 // The UpdatePipelineNotificationsResponse structure.
 type UpdatePipelineNotificationsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// A section of the response body that provides information about the pipeline.
+	// A section of the response body that provides information about the pipeline
+	// associated with this notification.
 	Pipeline *Pipeline `type:"structure"`
 }
 
@@ -5186,12 +6977,18 @@ func (s UpdatePipelineNotificationsOutput) GoString() string {
 	return s.String()
 }
 
+// SetPipeline sets the Pipeline field's value.
+func (s *UpdatePipelineNotificationsOutput) SetPipeline(v *Pipeline) *UpdatePipelineNotificationsOutput {
+	s.Pipeline = v
+	return s
+}
+
 // When you update a pipeline, Elastic Transcoder returns the values that you
 // specified in the request.
 type UpdatePipelineOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The pipeline (queue) that is used to manage jobs.
+	// The pipeline updated by this UpdatePipelineResponse call.
 	Pipeline *Pipeline `type:"structure"`
 
 	// Elastic Transcoder returns a warning if the resources used by your pipeline
@@ -5213,6 +7010,18 @@ func (s UpdatePipelineOutput) GoString() string {
 	return s.String()
 }
 
+// SetPipeline sets the Pipeline field's value.
+func (s *UpdatePipelineOutput) SetPipeline(v *Pipeline) *UpdatePipelineOutput {
+	s.Pipeline = v
+	return s
+}
+
+// SetWarnings sets the Warnings field's value.
+func (s *UpdatePipelineOutput) SetWarnings(v []*Warning) *UpdatePipelineOutput {
+	s.Warnings = v
+	return s
+}
+
 // The UpdatePipelineStatusRequest structure.
 type UpdatePipelineStatusInput struct {
 	_ struct{} `type:"structure"`
@@ -5225,6 +7034,7 @@ type UpdatePipelineStatusInput struct {
 	// The desired status of the pipeline:
 	//
 	//    * Active: The pipeline is processing jobs.
+	//
 	//    * Paused: The pipeline is not currently processing jobs.
 	//
 	// Status is a required field
@@ -5257,6 +7067,18 @@ func (s *UpdatePipelineStatusInput) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *UpdatePipelineStatusInput) SetId(v string) *UpdatePipelineStatusInput {
+	s.Id = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *UpdatePipelineStatusInput) SetStatus(v string) *UpdatePipelineStatusInput {
+	s.Status = &v
+	return s
+}
+
 // When you update status for a pipeline, Elastic Transcoder returns the values
 // that you specified in the request.
 type UpdatePipelineStatusOutput struct {
@@ -5274,6 +7096,12 @@ func (s UpdatePipelineStatusOutput) String() string {
 // GoString returns the string representation
 func (s UpdatePipelineStatusOutput) GoString() string {
 	return s.String()
+}
+
+// SetPipeline sets the Pipeline field's value.
+func (s *UpdatePipelineStatusOutput) SetPipeline(v *Pipeline) *UpdatePipelineStatusOutput {
+	s.Pipeline = v
+	return s
 }
 
 // The VideoParameters structure.
@@ -5309,34 +7137,47 @@ type VideoParameters struct {
 	// : maximum video bit rate in kilobits/second (high Profile)
 	//
 	//    * 1 - 64 : 80
+	//
 	//    * 1b - 128 : 160
+	//
 	//    * 1.1 - 192 : 240
+	//
 	//    * 1.2 - 384 : 480
+	//
 	//    * 1.3 - 768 : 960
+	//
 	//    * 2 - 2000 : 2500
+	//
 	//    * 3 - 10000 : 12500
+	//
 	//    * 3.1 - 14000 : 17500
+	//
 	//    * 3.2 - 20000 : 25000
+	//
 	//    * 4 - 20000 : 25000
+	//
 	//    * 4.1 - 50000 : 62500
 	BitRate *string `type:"string"`
 
 	// The video codec for the output file. Valid values include gif, H.264, mpeg2,
-	// and vp8. You can only specify vp8 when the container type is webm, gif when
-	// the container type is gif, and mpeg2 when the container type is mpg.
+	// vp8, and vp9. You can only specify vp8 and vp9 when the container type is
+	// webm, gif when the container type is gif, and mpeg2 when the container type
+	// is mpg.
 	Codec *string `type:"string"`
 
-	// Profile (H.264/VP8 Only)
+	// Profile (H.264/VP8/VP9 Only)
 	//
 	// The H.264 profile that you want to use for the output file. Elastic Transcoder
 	// supports the following profiles:
 	//
 	//    * baseline: The profile most commonly used for videoconferencing and for
 	//    mobile applications.
+	//
 	//    * main: The profile used for standard-definition digital TV broadcasts.
 	//
 	//    * high: The profile used for high-definition digital TV broadcasts and
 	//    for Blu-ray discs.
+	//
 	// Level (H.264 Only)
 	//
 	// The H.264 level that you want to use for the output file. Elastic Transcoder
@@ -5360,26 +7201,39 @@ type VideoParameters struct {
 	// block of pixels measuring 16x16.)
 	//
 	//    * 1 - 396
+	//
 	//    * 1b - 396
+	//
 	//    * 1.1 - 900
+	//
 	//    * 1.2 - 2376
+	//
 	//    * 1.3 - 2376
+	//
 	//    * 2 - 2376
+	//
 	//    * 2.1 - 4752
+	//
 	//    * 2.2 - 8100
+	//
 	//    * 3 - 8100
+	//
 	//    * 3.1 - 18000
+	//
 	//    * 3.2 - 20480
+	//
 	//    * 4 - 32768
+	//
 	//    * 4.1 - 32768
-	// MaxBitRate (Optional, H.264/MPEG2/VP8 only)
+	//
+	// MaxBitRate (Optional, H.264/MPEG2/VP8/VP9 only)
 	//
 	// The maximum number of bits per second in a video buffer; the size of the
 	// buffer is specified by BufferSize. Specify a value between 16 and 62,500.
 	// You can reduce the bandwidth required to stream a video by reducing the maximum
 	// bit rate, but this also reduces the quality of the video.
 	//
-	// BufferSize (Optional, H.264/MPEG2/VP8 only)
+	// BufferSize (Optional, H.264/MPEG2/VP8/VP9 only)
 	//
 	// The maximum number of bits in any x seconds of the output video. This window
 	// is commonly 10 seconds, the standard segment duration when you're using FMP4
@@ -5426,7 +7280,9 @@ type VideoParameters struct {
 	//    * HD to Standard, 1920x1080 to 720x576 - Elastic Transcoder applies Bt709ToBt601
 	//
 	// Elastic Transcoder may change the behavior of the ColorspaceConversionModeAuto
-	// mode in the future. All outputs in a playlist must use the same ColorSpaceConversionMode.If you do not specify a ColorSpaceConversionMode, Elastic Transcoder does
+	// mode in the future. All outputs in a playlist must use the same ColorSpaceConversionMode.
+	//
+	// If you do not specify a ColorSpaceConversionMode, Elastic Transcoder does
 	// not change the color space of a file. If you are unsure what ColorSpaceConversionMode
 	// was applied to your output file, you can check the AppliedColorSpaceConversion
 	// parameter included in your job response. If your job does not have an AppliedColorSpaceConversion
@@ -5458,7 +7314,9 @@ type VideoParameters struct {
 	//    * true: Elastic Transcoder uses the value of KeyframesMaxDist for the
 	//    distance between key frames (the number of frames in a group of pictures,
 	//    or GOP).
+	//
 	//    * false: The distance between key frames can vary.
+	//
 	// FixedGOP must be set to true for fmp4 containers.
 	FixedGOP *string `type:"string"`
 
@@ -5478,24 +7336,38 @@ type VideoParameters struct {
 	//
 	//    * width in pixels and height in pixels represent the Resolution of the
 	//    output video.
+	//
 	//    * maximum recommended decoding speed in Luma samples/second is less than
 	//    or equal to the maximum value listed in the following table, based on
 	//    the value that you specified for Level.
+	//
 	// The maximum recommended decoding speed in Luma samples/second for each level
 	// is described in the following list (Level - Decoding speed):
 	//
 	//    * 1 - 380160
+	//
 	//    * 1b - 380160
+	//
 	//    * 1.1 - 76800
+	//
 	//    * 1.2 - 1536000
+	//
 	//    * 1.3 - 3041280
+	//
 	//    * 2 - 3041280
+	//
 	//    * 2.1 - 5068800
+	//
 	//    * 2.2 - 5184000
+	//
 	//    * 3 - 10368000
+	//
 	//    * 3.1 - 27648000
+	//
 	//    * 3.2 - 55296000
+	//
 	//    * 4 - 62914560
+	//
 	//    * 4.1 - 62914560
 	FrameRate *string `type:"string"`
 
@@ -5555,12 +7427,15 @@ type VideoParameters struct {
 	//
 	//    * auto: Elastic Transcoder attempts to preserve the width and height of
 	//    the input file, subject to the following rules.
+	//
 	//    * width x height: The width and height of the output video in pixels.
 	//
 	// Note the following about specifying the width and height:
 	//
 	//    * The width must be an even integer between 128 and 4096, inclusive.
+	//
 	//    * The height must be an even integer between 96 and 3072, inclusive.
+	//
 	//    * If you specify a resolution that is less than the resolution of the
 	//    input file, Elastic Transcoder rescales the output file to the lower resolution.
 	//
@@ -5570,45 +7445,63 @@ type VideoParameters struct {
 	//    * We recommend that you specify a resolution for which the product of
 	//    width and height is less than or equal to the applicable value in the
 	//    following list (List - Max width x height value):
-	//    * 1 - 25344
+	//
+	// 1 - 25344
+	//
 	// 1b - 25344
+	//
 	// 1.1 - 101376
+	//
 	// 1.2 - 101376
+	//
 	// 1.3 - 101376
+	//
 	// 2 - 101376
+	//
 	// 2.1 - 202752
+	//
 	// 2.2 - 404720
+	//
 	// 3 - 404720
+	//
 	// 3.1 - 921600
+	//
 	// 3.2 - 1310720
+	//
 	// 4 - 2097152
+	//
 	// 4.1 - 2097152
 	Resolution *string `type:"string"`
 
 	// Specify one of the following values to control scaling of the output video:
 	//
-	// Fit: Elastic Transcoder scales the output video so it matches the value that
-	// you specified in either MaxWidth or MaxHeight without exceeding the other
-	// value.
-	// Fill: Elastic Transcoder scales the output video so it matches the value
-	// that you specified in either MaxWidth or MaxHeight and matches or exceeds
-	// the other value. Elastic Transcoder centers the output video and then crops
-	// it in the dimension (if any) that exceeds the maximum value.
-	// Stretch: Elastic Transcoder stretches the output video to match the values
-	// that you specified for MaxWidth and MaxHeight. If the relative proportions
-	// of the input video and the output video are different, the output video will
-	// be distorted.
-	// Keep: Elastic Transcoder does not scale the output video. If either dimension
-	// of the input video exceeds the values that you specified for MaxWidth and
-	// MaxHeight, Elastic Transcoder crops the output video.
-	// ShrinkToFit: Elastic Transcoder scales the output video down so that its
-	// dimensions match the values that you specified for at least one of MaxWidth
-	// and MaxHeight without exceeding either value. If you specify this option,
-	// Elastic Transcoder does not scale the video up.
-	// ShrinkToFill: Elastic Transcoder scales the output video down so that its
-	// dimensions match the values that you specified for at least one of MaxWidth
-	// and MaxHeight without dropping below either value. If you specify this option,
-	// Elastic Transcoder does not scale the video up.
+	//    * Fit: Elastic Transcoder scales the output video so it matches the value
+	//    that you specified in either MaxWidth or MaxHeight without exceeding the
+	//    other value.
+	//
+	//    * Fill: Elastic Transcoder scales the output video so it matches the value
+	//    that you specified in either MaxWidth or MaxHeight and matches or exceeds
+	//    the other value. Elastic Transcoder centers the output video and then
+	//    crops it in the dimension (if any) that exceeds the maximum value.
+	//
+	//    * Stretch: Elastic Transcoder stretches the output video to match the
+	//    values that you specified for MaxWidth and MaxHeight. If the relative
+	//    proportions of the input video and the output video are different, the
+	//    output video will be distorted.
+	//
+	//    * Keep: Elastic Transcoder does not scale the output video. If either
+	//    dimension of the input video exceeds the values that you specified for
+	//    MaxWidth and MaxHeight, Elastic Transcoder crops the output video.
+	//
+	//    * ShrinkToFit: Elastic Transcoder scales the output video down so that
+	//    its dimensions match the values that you specified for at least one of
+	//    MaxWidth and MaxHeight without exceeding either value. If you specify
+	//    this option, Elastic Transcoder does not scale the video up.
+	//
+	//    * ShrinkToFill: Elastic Transcoder scales the output video down so that
+	//    its dimensions match the values that you specified for at least one of
+	//    MaxWidth and MaxHeight without dropping below either value. If you specify
+	//    this option, Elastic Transcoder does not scale the video up.
 	SizingPolicy *string `type:"string"`
 
 	// Settings for the size, location, and opacity of graphics that you want Elastic
@@ -5658,6 +7551,96 @@ func (s *VideoParameters) Validate() error {
 	return nil
 }
 
+// SetAspectRatio sets the AspectRatio field's value.
+func (s *VideoParameters) SetAspectRatio(v string) *VideoParameters {
+	s.AspectRatio = &v
+	return s
+}
+
+// SetBitRate sets the BitRate field's value.
+func (s *VideoParameters) SetBitRate(v string) *VideoParameters {
+	s.BitRate = &v
+	return s
+}
+
+// SetCodec sets the Codec field's value.
+func (s *VideoParameters) SetCodec(v string) *VideoParameters {
+	s.Codec = &v
+	return s
+}
+
+// SetCodecOptions sets the CodecOptions field's value.
+func (s *VideoParameters) SetCodecOptions(v map[string]*string) *VideoParameters {
+	s.CodecOptions = v
+	return s
+}
+
+// SetDisplayAspectRatio sets the DisplayAspectRatio field's value.
+func (s *VideoParameters) SetDisplayAspectRatio(v string) *VideoParameters {
+	s.DisplayAspectRatio = &v
+	return s
+}
+
+// SetFixedGOP sets the FixedGOP field's value.
+func (s *VideoParameters) SetFixedGOP(v string) *VideoParameters {
+	s.FixedGOP = &v
+	return s
+}
+
+// SetFrameRate sets the FrameRate field's value.
+func (s *VideoParameters) SetFrameRate(v string) *VideoParameters {
+	s.FrameRate = &v
+	return s
+}
+
+// SetKeyframesMaxDist sets the KeyframesMaxDist field's value.
+func (s *VideoParameters) SetKeyframesMaxDist(v string) *VideoParameters {
+	s.KeyframesMaxDist = &v
+	return s
+}
+
+// SetMaxFrameRate sets the MaxFrameRate field's value.
+func (s *VideoParameters) SetMaxFrameRate(v string) *VideoParameters {
+	s.MaxFrameRate = &v
+	return s
+}
+
+// SetMaxHeight sets the MaxHeight field's value.
+func (s *VideoParameters) SetMaxHeight(v string) *VideoParameters {
+	s.MaxHeight = &v
+	return s
+}
+
+// SetMaxWidth sets the MaxWidth field's value.
+func (s *VideoParameters) SetMaxWidth(v string) *VideoParameters {
+	s.MaxWidth = &v
+	return s
+}
+
+// SetPaddingPolicy sets the PaddingPolicy field's value.
+func (s *VideoParameters) SetPaddingPolicy(v string) *VideoParameters {
+	s.PaddingPolicy = &v
+	return s
+}
+
+// SetResolution sets the Resolution field's value.
+func (s *VideoParameters) SetResolution(v string) *VideoParameters {
+	s.Resolution = &v
+	return s
+}
+
+// SetSizingPolicy sets the SizingPolicy field's value.
+func (s *VideoParameters) SetSizingPolicy(v string) *VideoParameters {
+	s.SizingPolicy = &v
+	return s
+}
+
+// SetWatermarks sets the Watermarks field's value.
+func (s *VideoParameters) SetWatermarks(v []*PresetWatermark) *VideoParameters {
+	s.Watermarks = v
+	return s
+}
+
 // Elastic Transcoder returns a warning if the resources used by your pipeline
 // are not in the same region as the pipeline.
 //
@@ -5673,7 +7656,7 @@ type Warning struct {
 	// The message explaining what resources are in a different region from the
 	// pipeline.
 	//
-	// Note: AWS KMS keys must be in the same region as the pipeline.
+	// AWS KMS keys must be in the same region as the pipeline.
 	Message *string `type:"string"`
 }
 
@@ -5685,4 +7668,16 @@ func (s Warning) String() string {
 // GoString returns the string representation
 func (s Warning) GoString() string {
 	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *Warning) SetCode(v string) *Warning {
+	s.Code = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *Warning) SetMessage(v string) *Warning {
+	s.Message = &v
+	return s
 }

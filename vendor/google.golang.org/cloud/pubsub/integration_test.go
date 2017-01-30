@@ -16,22 +16,37 @@ package pubsub
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
+
+	"golang.org/x/net/context"
 
 	"google.golang.org/cloud"
 	"google.golang.org/cloud/internal/testutil"
 )
 
+// messageData is used to hold the contents of a message so that it can be compared againts the contents
+// of another message without regard to irrelevant fields.
+type messageData struct {
+	ID         string
+	Data       []byte
+	Attributes map[string]string
+}
+
+func extractMessageData(m *Message) *messageData {
+	return &messageData{
+		ID:         m.ID,
+		Data:       m.Data,
+		Attributes: m.Attributes,
+	}
+}
+
 func TestAll(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Integration tests skipped in short mode")
 	}
-	// TODO(djd): Replace this ctx with context.Background() when the new API is complete.
-	ctx := testutil.Context(ScopePubSub, ScopeCloudPlatform)
-	if ctx == nil {
-		t.Skip("Integration tests skipped. See CONTRIBUTING.md for details")
-	}
+	ctx := context.Background()
 	ts := testutil.TokenSource(ctx, ScopePubSub, ScopeCloudPlatform)
 	if ts == nil {
 		t.Skip("Integration tests skipped. See CONTRIBUTING.md for details")
@@ -72,83 +87,71 @@ func TestAll(t *testing.T) {
 		t.Errorf("subscription %s should exist, but it doesn't", subName)
 	}
 
-	max := 10
-	msgs := make([]*Message, max)
-	expectedMsgs := make(map[string]bool, max)
-	for i := 0; i < max; i++ {
+	msgs := []*Message{}
+	for i := 0; i < 10; i++ {
 		text := fmt.Sprintf("a message with an index %d", i)
 		attrs := make(map[string]string)
 		attrs["foo"] = "bar"
-		msgs[i] = &Message{
+		msgs = append(msgs, &Message{
 			Data:       []byte(text),
 			Attributes: attrs,
-		}
-		expectedMsgs[text] = false
+		})
 	}
 
-	ids, err := Publish(ctx, topicName, msgs...)
+	ids, err := topic.Publish(ctx, msgs...)
 	if err != nil {
 		t.Fatalf("Publish (1) error: %v", err)
 	}
 
-	if len(ids) != max {
-		t.Errorf("unexpected number of message IDs received; %d, want %d", len(ids), max)
+	if len(ids) != len(msgs) {
+		t.Errorf("unexpected number of message IDs received; %d, want %d", len(ids), len(msgs))
 	}
 
-	expectedIDs := make(map[string]bool, max)
-	for _, id := range ids {
-		expectedIDs[id] = false
+	want := make(map[string]*messageData)
+	for i, m := range msgs {
+		md := extractMessageData(m)
+		md.ID = ids[i]
+		want[md.ID] = md
 	}
 
-	received, err := PullWait(ctx, subName, max)
+	// Use a timeout to ensure that Pull does not block indefinitely if there are unexpectedly few messages available.
+	timeoutCtx, _ := context.WithTimeout(ctx, time.Minute)
+	it, err := sub.Pull(timeoutCtx)
 	if err != nil {
-		t.Fatalf("PullWait error: %v", err)
+		t.Fatalf("error constructing iterator: %v", err)
 	}
-
-	if len(received) != max {
-		t.Errorf("unexpected number of messages received; %d, want %d", len(received), max)
-	}
-
-	for _, msg := range received {
-		expectedMsgs[string(msg.Data)] = true
-		expectedIDs[msg.ID] = true
-		if msg.Attributes["foo"] != "bar" {
-			t.Errorf("message attribute foo is expected to be 'bar', found '%s'", msg.Attributes["foo"])
+	defer it.Stop()
+	got := make(map[string]*messageData)
+	for i := 0; i < len(want); i++ {
+		m, err := it.Next()
+		if err != nil {
+			t.Fatalf("error getting next message:", err) // TODO: add deadline to context.
 		}
+		md := extractMessageData(m)
+		got[md.ID] = md
+		m.Done(true)
 	}
 
-	for msg, found := range expectedMsgs {
-		if !found {
-			t.Errorf("message '%s' should be received", msg)
-		}
-	}
-
-	for id, found := range expectedIDs {
-		if !found {
-			t.Errorf("message with the message id '%s' should be received", id)
-		}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("messages: got: %v ; want: %v", got, want)
 	}
 
 	// base64 test
 	data := "=@~"
-	msg := &Message{
-		Data: []byte(data),
-	}
-	_, err = Publish(ctx, topicName, msg)
+	_, err = topic.Publish(ctx, &Message{Data: []byte(data)})
 	if err != nil {
-		t.Fatalf("Publish (2) error: %v", err)
+		t.Fatalf("Publish error: %v", err)
 	}
 
-	received, err = PullWait(ctx, subName, 1)
+	m, err := it.Next()
 	if err != nil {
-		t.Fatalf("PullWait error: %v", err)
+		t.Fatalf("Pull error: %v", err)
 	}
-	if len(received) != 1 {
-		t.Fatalf("unexpected number of messages received; %d, want %d", len(received), 1)
+
+	if string(m.Data) != data {
+		t.Errorf("unexpected message received; %s, want %s", string(m.Data), data)
 	}
-	if string(received[0].Data) != data {
-		t.Errorf("unexpexted message received; %s, want %s", string(received[0].Data), data)
-	}
+	m.Done(true)
 
 	err = sub.Delete(ctx)
 	if err != nil {

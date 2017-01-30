@@ -51,23 +51,20 @@ func main() {
 
 	sub := client.Subscription(*subName)
 
-	it, err := sub.Pull(ctx, time.Hour)
+	it, err := sub.Pull(ctx, pubsub.MaxExtension(time.Minute))
 	if err != nil {
 		fmt.Printf("error constructing iterator: %v", err)
 		return
 	}
+	defer it.Stop()
 
 	for i := 0; i < *numConsume; i++ {
-		m, err := it.Next(ctx)
+		m, err := it.Next()
 		if err != nil {
+			fmt.Printf("advancing iterator: %v", err)
 			break
 		}
 		fmt.Printf("got message: %v\n", string(m.Data))
 		m.Done(true)
-	}
-
-	it.Close()
-	if err != nil {
-		fmt.Printf("%v", err)
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -26,11 +27,28 @@ var plog = capnslog.NewPackageLogger("github.com/coreos/etcd", "etcd-agent")
 
 func main() {
 	etcdPath := flag.String("etcd-path", filepath.Join(os.Getenv("GOPATH"), "bin/etcd"), "the path to etcd binary")
-	etcdLogPath := flag.String("etcd-log-path", "etcd.log", "the path to etcd log")
+	etcdLogDir := flag.String("etcd-log-dir", "etcd-log", "directory to store etcd logs")
 	port := flag.String("port", ":9027", "port to serve agent server")
+	useRoot := flag.Bool("use-root", true, "use root permissions")
+	failpointAddr := flag.String("failpoint-addr", ":2381", "interface for gofail's HTTP server")
 	flag.Parse()
 
-	a, err := newAgent(*etcdPath, *etcdLogPath)
+	cfg := AgentConfig{
+		EtcdPath:      *etcdPath,
+		LogDir:        *etcdLogDir,
+		FailpointAddr: *failpointAddr,
+		UseRoot:       *useRoot,
+	}
+
+	if *useRoot && os.Getuid() != 0 {
+		fmt.Println("got --use-root=true but not root user")
+		os.Exit(1)
+	}
+	if !*useRoot {
+		fmt.Println("root permissions disabled, agent will not modify network")
+	}
+
+	a, err := newAgent(cfg)
 	if err != nil {
 		plog.Fatal(err)
 	}

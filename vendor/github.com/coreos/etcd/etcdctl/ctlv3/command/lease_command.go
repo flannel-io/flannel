@@ -1,4 +1,4 @@
-// Copyright 2016 CoreOS, Inc.
+// Copyright 2016 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package command
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
 	v3 "github.com/coreos/etcd/clientv3"
@@ -27,12 +26,13 @@ import (
 // NewLeaseCommand returns the cobra command for "lease".
 func NewLeaseCommand() *cobra.Command {
 	lc := &cobra.Command{
-		Use:   "lease",
-		Short: "lease is used to manage leases.",
+		Use:   "lease <subcommand>",
+		Short: "Lease related commands",
 	}
 
 	lc.AddCommand(NewLeaseGrantCommand())
 	lc.AddCommand(NewLeaseRevokeCommand())
+	lc.AddCommand(NewLeaseTimeToLiveCommand())
 	lc.AddCommand(NewLeaseKeepAliveCommand())
 
 	return lc
@@ -41,8 +41,8 @@ func NewLeaseCommand() *cobra.Command {
 // NewLeaseGrantCommand returns the cobra command for "lease grant".
 func NewLeaseGrantCommand() *cobra.Command {
 	lc := &cobra.Command{
-		Use:   "grant",
-		Short: "grant is used to create leases.",
+		Use:   "grant <ttl>",
+		Short: "Creates leases",
 
 		Run: leaseGrantCommandFunc,
 	}
@@ -65,8 +65,7 @@ func leaseGrantCommandFunc(cmd *cobra.Command, args []string) {
 	resp, err := mustClientFromCmd(cmd).Grant(ctx, ttl)
 	cancel()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to grant lease (%v)\n", err)
-		return
+		ExitWithError(ExitError, fmt.Errorf("failed to grant lease (%v)\n", err))
 	}
 	fmt.Printf("lease %016x granted with TTL(%ds)\n", resp.ID, resp.TTL)
 }
@@ -74,8 +73,8 @@ func leaseGrantCommandFunc(cmd *cobra.Command, args []string) {
 // NewLeaseRevokeCommand returns the cobra command for "lease revoke".
 func NewLeaseRevokeCommand() *cobra.Command {
 	lc := &cobra.Command{
-		Use:   "revoke",
-		Short: "revoke is used to revoke leases.",
+		Use:   "revoke <leaseID>",
+		Short: "Revokes leases",
 
 		Run: leaseRevokeCommandFunc,
 	}
@@ -89,26 +88,52 @@ func leaseRevokeCommandFunc(cmd *cobra.Command, args []string) {
 		ExitWithError(ExitBadArgs, fmt.Errorf("lease revoke command needs 1 argument"))
 	}
 
-	id, err := strconv.ParseInt(args[0], 16, 64)
-	if err != nil {
-		ExitWithError(ExitBadArgs, fmt.Errorf("bad lease ID arg (%v), expecting ID in Hex", err))
-	}
-
+	id := leaseFromArgs(args[0])
 	ctx, cancel := commandCtx(cmd)
-	_, err = mustClientFromCmd(cmd).Revoke(ctx, v3.LeaseID(id))
+	_, err := mustClientFromCmd(cmd).Revoke(ctx, id)
 	cancel()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to revoke lease (%v)\n", err)
-		return
+		ExitWithError(ExitError, fmt.Errorf("failed to revoke lease (%v)\n", err))
 	}
 	fmt.Printf("lease %016x revoked\n", id)
+}
+
+var timeToLiveKeys bool
+
+// NewLeaseTimeToLiveCommand returns the cobra command for "lease timetolive".
+func NewLeaseTimeToLiveCommand() *cobra.Command {
+	lc := &cobra.Command{
+		Use:   "timetolive <leaseID> [options]",
+		Short: "Get lease information",
+
+		Run: leaseTimeToLiveCommandFunc,
+	}
+	lc.Flags().BoolVar(&timeToLiveKeys, "keys", false, "Get keys attached to this lease")
+
+	return lc
+}
+
+// leaseTimeToLiveCommandFunc executes the "lease timetolive" command.
+func leaseTimeToLiveCommandFunc(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		ExitWithError(ExitBadArgs, fmt.Errorf("lease timetolive command needs lease ID as argument"))
+	}
+	var opts []v3.LeaseOption
+	if timeToLiveKeys {
+		opts = append(opts, v3.WithAttachedKeys())
+	}
+	resp, rerr := mustClientFromCmd(cmd).TimeToLive(context.TODO(), leaseFromArgs(args[0]), opts...)
+	if rerr != nil {
+		ExitWithError(ExitBadConnection, rerr)
+	}
+	display.TimeToLive(*resp, timeToLiveKeys)
 }
 
 // NewLeaseKeepAliveCommand returns the cobra command for "lease keep-alive".
 func NewLeaseKeepAliveCommand() *cobra.Command {
 	lc := &cobra.Command{
-		Use:   "keep-alive",
-		Short: "keep-alive is used to keep leases alive.",
+		Use:   "keep-alive <leaseID>",
+		Short: "Keeps leases alive (renew)",
 
 		Run: leaseKeepAliveCommandFunc,
 	}
@@ -122,12 +147,8 @@ func leaseKeepAliveCommandFunc(cmd *cobra.Command, args []string) {
 		ExitWithError(ExitBadArgs, fmt.Errorf("lease keep-alive command needs lease ID as argument"))
 	}
 
-	id, err := strconv.ParseInt(args[0], 16, 64)
-	if err != nil {
-		ExitWithError(ExitBadArgs, fmt.Errorf("bad lease ID arg (%v), expecting ID in Hex", err))
-	}
-
-	respc, kerr := mustClientFromCmd(cmd).KeepAlive(context.TODO(), v3.LeaseID(id))
+	id := leaseFromArgs(args[0])
+	respc, kerr := mustClientFromCmd(cmd).KeepAlive(context.TODO(), id)
 	if kerr != nil {
 		ExitWithError(ExitBadConnection, kerr)
 	}
@@ -136,4 +157,12 @@ func leaseKeepAliveCommandFunc(cmd *cobra.Command, args []string) {
 		fmt.Printf("lease %016x keepalived with TTL(%d)\n", resp.ID, resp.TTL)
 	}
 	fmt.Printf("lease %016x expired or revoked.\n", id)
+}
+
+func leaseFromArgs(arg string) v3.LeaseID {
+	id, err := strconv.ParseInt(arg, 16, 64)
+	if err != nil {
+		ExitWithError(ExitBadArgs, fmt.Errorf("bad lease ID arg (%v), expecting ID in Hex", err))
+	}
+	return v3.LeaseID(id)
 }

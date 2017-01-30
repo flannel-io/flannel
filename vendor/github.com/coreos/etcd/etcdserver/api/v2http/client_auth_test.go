@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,13 +15,22 @@
 package v2http
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/json"
+	"encoding/pem"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"path"
+	"sort"
 	"strings"
 	"testing"
 
+	"github.com/coreos/etcd/etcdserver/api"
 	"github.com/coreos/etcd/etcdserver/auth"
 )
 
@@ -43,7 +52,14 @@ type mockAuthStore struct {
 	enabled bool
 }
 
-func (s *mockAuthStore) AllUsers() ([]string, error) { return []string{"alice", "bob", "root"}, s.err }
+func (s *mockAuthStore) AllUsers() ([]string, error) {
+	var us []string
+	for u := range s.users {
+		us = append(us, u)
+	}
+	sort.Strings(us)
+	return us, s.err
+}
 func (s *mockAuthStore) GetUser(name string) (auth.User, error) {
 	u, ok := s.users[name]
 	if !ok {
@@ -53,11 +69,11 @@ func (s *mockAuthStore) GetUser(name string) (auth.User, error) {
 }
 func (s *mockAuthStore) CreateOrUpdateUser(user auth.User) (out auth.User, created bool, err error) {
 	if s.users == nil {
-		u, err := s.CreateUser(user)
-		return u, true, err
+		out, err = s.CreateUser(user)
+		return out, true, err
 	}
-	u, err := s.UpdateUser(user)
-	return u, false, err
+	out, err = s.UpdateUser(user)
+	return out, false, err
 }
 func (s *mockAuthStore) CreateUser(user auth.User) (auth.User, error) { return user, s.err }
 func (s *mockAuthStore) DeleteUser(name string) error                 { return s.err }
@@ -67,9 +83,15 @@ func (s *mockAuthStore) UpdateUser(user auth.User) (auth.User, error) {
 func (s *mockAuthStore) AllRoles() ([]string, error) {
 	return []string{"awesome", "guest", "root"}, s.err
 }
-func (s *mockAuthStore) GetRole(name string) (auth.Role, error) { return *s.roles[name], s.err }
-func (s *mockAuthStore) CreateRole(role auth.Role) error        { return s.err }
-func (s *mockAuthStore) DeleteRole(name string) error           { return s.err }
+func (s *mockAuthStore) GetRole(name string) (auth.Role, error) {
+	r, ok := s.roles[name]
+	if ok {
+		return *r, s.err
+	}
+	return auth.Role{}, fmt.Errorf("%q does not exist (%v)", name, s.err)
+}
+func (s *mockAuthStore) CreateRole(role auth.Role) error { return s.err }
+func (s *mockAuthStore) DeleteRole(name string) error    { return s.err }
 func (s *mockAuthStore) UpdateRole(role auth.Role) (auth.Role, error) {
 	return *s.roles[role.Role], s.err
 }
@@ -86,10 +108,7 @@ func (s *mockAuthStore) HashPassword(password string) (string, error) {
 }
 
 func TestAuthFlow(t *testing.T) {
-	enableMapMu.Lock()
-	enabledMap = make(map[capability]bool)
-	enabledMap[authCapability] = true
-	enableMapMu.Unlock()
+	api.EnableCapability(api.AuthCapability)
 	var testCases = []struct {
 		req   *http.Request
 		store mockAuthStore
@@ -361,12 +380,93 @@ func TestAuthFlow(t *testing.T) {
 	}
 }
 
+func TestGetUserGrantedWithNonexistingRole(t *testing.T) {
+	sh := &authHandler{
+		sec: &mockAuthStore{
+			users: map[string]*auth.User{
+				"root": {
+					User:  "root",
+					Roles: []string{"root", "foo"},
+				},
+			},
+			roles: map[string]*auth.Role{
+				"root": {
+					Role: "root",
+				},
+			},
+		},
+		cluster: &fakeCluster{id: 1},
+	}
+	srv := httptest.NewServer(http.HandlerFunc(sh.baseUsers))
+	defer srv.Close()
+
+	req, err := http.NewRequest("GET", "", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.URL, err = url.Parse(srv.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	cli := http.DefaultClient
+	resp, err := cli.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	var uc usersCollections
+	if err := json.NewDecoder(resp.Body).Decode(&uc); err != nil {
+		t.Fatal(err)
+	}
+	if len(uc.Users) != 1 {
+		t.Fatalf("expected 1 user, got %+v", uc.Users)
+	}
+	if uc.Users[0].User != "root" {
+		t.Fatalf("expected 'root', got %q", uc.Users[0].User)
+	}
+	if len(uc.Users[0].Roles) != 1 {
+		t.Fatalf("expected 1 role, got %+v", uc.Users[0].Roles)
+	}
+	if uc.Users[0].Roles[0].Role != "root" {
+		t.Fatalf("expected 'root', got %q", uc.Users[0].Roles[0].Role)
+	}
+}
+
 func mustAuthRequest(method, username, password string) *http.Request {
 	req, err := http.NewRequest(method, "path", strings.NewReader(""))
 	if err != nil {
 		panic("Cannot make auth request: " + err.Error())
 	}
 	req.SetBasicAuth(username, password)
+	return req
+}
+
+func unauthedRequest(method string) *http.Request {
+	req, err := http.NewRequest(method, "path", strings.NewReader(""))
+	if err != nil {
+		panic("Cannot make request: " + err.Error())
+	}
+	return req
+}
+
+func tlsAuthedRequest(req *http.Request, certname string) *http.Request {
+	bytes, err := ioutil.ReadFile(fmt.Sprintf("testdata/%s.pem", certname))
+	if err != nil {
+		panic(err)
+	}
+
+	block, _ := pem.Decode(bytes)
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	req.TLS = &tls.ConnectionState{
+		VerifiedChains: [][]*x509.Certificate{{cert}},
+	}
 	return req
 }
 
@@ -617,17 +717,194 @@ func TestPrefixAccess(t *testing.T) {
 			hasKeyPrefixAccess: false,
 			hasRecursiveAccess: false,
 		},
+		{ // guest access in non-TLS mode
+			key: "/foo",
+			req: (func() *http.Request {
+				return mustJSONRequest(t, "GET", "somepath", "")
+			})(),
+			store: &mockAuthStore{
+				enabled: true,
+				users: map[string]*auth.User{
+					"root": {
+						User:     "root",
+						Password: goodPassword,
+						Roles:    []string{"root"},
+					},
+				},
+				roles: map[string]*auth.Role{
+					"guest": {
+						Role: "guest",
+						Permissions: auth.Permissions{
+							KV: auth.RWPermission{
+								Read:  []string{"/foo*"},
+								Write: []string{"/foo*"},
+							},
+						},
+					},
+				},
+			},
+			hasRoot:            false,
+			hasKeyPrefixAccess: true,
+			hasRecursiveAccess: true,
+		},
 	}
 
 	for i, tt := range table {
-		if tt.hasRoot != hasRootAccess(tt.store, tt.req) {
+		if tt.hasRoot != hasRootAccess(tt.store, tt.req, true) {
 			t.Errorf("#%d: hasRoot doesn't match (expected %v)", i, tt.hasRoot)
 		}
-		if tt.hasKeyPrefixAccess != hasKeyPrefixAccess(tt.store, tt.req, tt.key, false) {
+		if tt.hasKeyPrefixAccess != hasKeyPrefixAccess(tt.store, tt.req, tt.key, false, true) {
 			t.Errorf("#%d: hasKeyPrefixAccess doesn't match (expected %v)", i, tt.hasRoot)
 		}
-		if tt.hasRecursiveAccess != hasKeyPrefixAccess(tt.store, tt.req, tt.key, true) {
+		if tt.hasRecursiveAccess != hasKeyPrefixAccess(tt.store, tt.req, tt.key, true, true) {
 			t.Errorf("#%d: hasRecursiveAccess doesn't match (expected %v)", i, tt.hasRoot)
+		}
+	}
+}
+
+func TestUserFromClientCertificate(t *testing.T) {
+	witherror := &mockAuthStore{
+		users: map[string]*auth.User{
+			"user": {
+				User:     "user",
+				Roles:    []string{"root"},
+				Password: "password",
+			},
+			"basicauth": {
+				User:     "basicauth",
+				Roles:    []string{"root"},
+				Password: "password",
+			},
+		},
+		roles: map[string]*auth.Role{
+			"root": {
+				Role: "root",
+			},
+		},
+		err: errors.New(""),
+	}
+
+	noerror := &mockAuthStore{
+		users: map[string]*auth.User{
+			"user": {
+				User:     "user",
+				Roles:    []string{"root"},
+				Password: "password",
+			},
+			"basicauth": {
+				User:     "basicauth",
+				Roles:    []string{"root"},
+				Password: "password",
+			},
+		},
+		roles: map[string]*auth.Role{
+			"root": {
+				Role: "root",
+			},
+		},
+	}
+
+	var table = []struct {
+		req        *http.Request
+		userExists bool
+		store      auth.Store
+		username   string
+	}{
+		{
+			// non tls request
+			req:        unauthedRequest("GET"),
+			userExists: false,
+			store:      witherror,
+		},
+		{
+			// cert with cn of existing user
+			req:        tlsAuthedRequest(unauthedRequest("GET"), "user"),
+			userExists: true,
+			username:   "user",
+			store:      noerror,
+		},
+		{
+			// cert with cn of non-existing user
+			req:        tlsAuthedRequest(unauthedRequest("GET"), "otheruser"),
+			userExists: false,
+			store:      witherror,
+		},
+	}
+
+	for i, tt := range table {
+		user := userFromClientCertificate(tt.store, tt.req)
+		userExists := user != nil
+
+		if tt.userExists != userExists {
+			t.Errorf("#%d: userFromClientCertificate doesn't match (expected %v)", i, tt.userExists)
+		}
+		if user != nil && (tt.username != user.User) {
+			t.Errorf("#%d: userFromClientCertificate username doesn't match (expected %s, got %s)", i, tt.username, user.User)
+		}
+	}
+}
+
+func TestUserFromBasicAuth(t *testing.T) {
+	sec := &mockAuthStore{
+		users: map[string]*auth.User{
+			"user": {
+				User:     "user",
+				Roles:    []string{"root"},
+				Password: "password",
+			},
+		},
+		roles: map[string]*auth.Role{
+			"root": {
+				Role: "root",
+			},
+		},
+	}
+
+	var table = []struct {
+		username   string
+		req        *http.Request
+		userExists bool
+	}{
+		{
+			// valid user, valid pass
+			username:   "user",
+			req:        mustAuthRequest("GET", "user", "password"),
+			userExists: true,
+		},
+		{
+			// valid user, bad pass
+			username:   "user",
+			req:        mustAuthRequest("GET", "user", "badpass"),
+			userExists: false,
+		},
+		{
+			// valid user, no pass
+			username:   "user",
+			req:        mustAuthRequest("GET", "user", ""),
+			userExists: false,
+		},
+		{
+			// missing user
+			username:   "missing",
+			req:        mustAuthRequest("GET", "missing", "badpass"),
+			userExists: false,
+		},
+		{
+			// no basic auth
+			req:        unauthedRequest("GET"),
+			userExists: false,
+		},
+	}
+
+	for i, tt := range table {
+		user := userFromBasicAuth(sec, tt.req)
+		userExists := user != nil
+
+		if tt.userExists != userExists {
+			t.Errorf("#%d: userFromBasicAuth doesn't match (expected %v)", i, tt.userExists)
+		}
+		if user != nil && (tt.username != user.User) {
+			t.Errorf("#%d: userFromBasicAuth username doesn't match (expected %s, got %s)", i, tt.username, user.User)
 		}
 	}
 }

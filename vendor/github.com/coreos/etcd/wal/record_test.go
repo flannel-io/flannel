@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ func TestWriteRecord(t *testing.T) {
 	typ := int64(0xABCD)
 	d := []byte("Hello world!")
 	buf := new(bytes.Buffer)
-	e := newEncoder(buf, 0)
+	e := newEncoder(buf, 0, 0)
 	e.encode(&walpb.Record{Type: typ, Data: d})
 	e.flush()
 	decoder := newDecoder(ioutil.NopCloser(buf))

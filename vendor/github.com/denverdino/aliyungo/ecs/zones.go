@@ -27,11 +27,16 @@ type AvailableDiskCategoriesType struct {
 	DiskCategories []DiskCategory //enum for cloud, ephemeral, ephemeral_ssd
 }
 
+type AvailableInstanceTypesType struct {
+	InstanceTypes []string
+}
+
 //
 // You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&zonetype
 type ZoneType struct {
 	ZoneId                    string
 	LocalName                 string
+	AvailableInstanceTypes    AvailableInstanceTypesType
 	AvailableResourceCreation AvailableResourceCreationType
 	AvailableDiskCategories   AvailableDiskCategoriesType
 }

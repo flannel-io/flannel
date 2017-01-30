@@ -17,7 +17,6 @@ package pubsub_test
 import (
 	"io/ioutil"
 	"log"
-	"testing"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -25,10 +24,6 @@ import (
 	"google.golang.org/cloud"
 	"google.golang.org/cloud/pubsub"
 )
-
-// TODO(jbd): Remove after Go 1.4.
-// Related to https://codereview.appspot.com/107320046
-func TestA(t *testing.T) {}
 
 func Example_auth() context.Context {
 	// Initialize an authorized context with Google Developers Console

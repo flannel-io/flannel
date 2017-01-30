@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"strings"
 	"time"
 
+	"github.com/bgentry/speakeasy"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/pkg/flags"
 	"github.com/coreos/etcd/pkg/transport"
@@ -40,6 +42,8 @@ type GlobalFlags struct {
 
 	OutputFormat string
 	IsHex        bool
+
+	User string
 }
 
 type secureCfg struct {
@@ -51,7 +55,26 @@ type secureCfg struct {
 	insecureSkipVerify bool
 }
 
+type authCfg struct {
+	username string
+	password string
+}
+
 var display printer = &simplePrinter{}
+
+func initDisplayFromCmd(cmd *cobra.Command) {
+	isHex, err := cmd.Flags().GetBool("hex")
+	if err != nil {
+		ExitWithError(ExitError, err)
+	}
+	outputType, err := cmd.Flags().GetString("write-out")
+	if err != nil {
+		ExitWithError(ExitError, err)
+	}
+	if display = NewPrinter(outputType, isHex); display == nil {
+		ExitWithError(ExitBadFeature, errors.New("unsupported output format"))
+	}
+}
 
 func mustClientFromCmd(cmd *cobra.Command) *clientv3.Client {
 	flags.SetPflagsFromEnv("ETCDCTL", cmd.InheritedFlags())
@@ -62,12 +85,15 @@ func mustClientFromCmd(cmd *cobra.Command) *clientv3.Client {
 	}
 	dialTimeout := dialTimeoutFromCmd(cmd)
 	sec := secureCfgFromCmd(cmd)
+	auth := authCfgFromCmd(cmd)
 
-	return mustClient(endpoints, dialTimeout, sec)
+	initDisplayFromCmd(cmd)
+
+	return mustClient(endpoints, dialTimeout, sec, auth)
 }
 
-func mustClient(endpoints []string, dialTimeout time.Duration, scfg *secureCfg) *clientv3.Client {
-	cfg, err := newClientCfg(endpoints, dialTimeout, scfg)
+func mustClient(endpoints []string, dialTimeout time.Duration, scfg *secureCfg, acfg *authCfg) *clientv3.Client {
+	cfg, err := newClientCfg(endpoints, dialTimeout, scfg, acfg)
 	if err != nil {
 		ExitWithError(ExitBadArgs, err)
 	}
@@ -80,7 +106,7 @@ func mustClient(endpoints []string, dialTimeout time.Duration, scfg *secureCfg) 
 	return client
 }
 
-func newClientCfg(endpoints []string, dialTimeout time.Duration, scfg *secureCfg) (*clientv3.Config, error) {
+func newClientCfg(endpoints []string, dialTimeout time.Duration, scfg *secureCfg, acfg *authCfg) (*clientv3.Config, error) {
 	// set tls if any one tls option set
 	var cfgtls *transport.TLSInfo
 	tlsinfo := transport.TLSInfo{}
@@ -122,6 +148,12 @@ func newClientCfg(endpoints []string, dialTimeout time.Duration, scfg *secureCfg
 	if scfg.insecureSkipVerify && cfg.TLS != nil {
 		cfg.TLS.InsecureSkipVerify = true
 	}
+
+	if acfg != nil {
+		cfg.Username = acfg.username
+		cfg.Password = acfg.password
+	}
+
 	return cfg, nil
 }
 
@@ -196,4 +228,31 @@ func keyAndCertFromCmd(cmd *cobra.Command) (cert, key, cacert string) {
 	}
 
 	return cert, key, cacert
+}
+
+func authCfgFromCmd(cmd *cobra.Command) *authCfg {
+	userFlag, err := cmd.Flags().GetString("user")
+	if err != nil {
+		ExitWithError(ExitBadArgs, err)
+	}
+
+	if userFlag == "" {
+		return nil
+	}
+
+	var cfg authCfg
+
+	splitted := strings.SplitN(userFlag, ":", 2)
+	if len(splitted) < 2 {
+		cfg.username = userFlag
+		cfg.password, err = speakeasy.Ask("Password: ")
+		if err != nil {
+			ExitWithError(ExitError, err)
+		}
+	} else {
+		cfg.username = splitted[0]
+		cfg.password = splitted[1]
+	}
+
+	return &cfg
 }

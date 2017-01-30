@@ -1,41 +1,42 @@
-hash: 0c68184c3f3cc19fb664ef1918c50b26ab325deff98d714869b6567c7aab7363
-updated: 2016-10-28T15:31:56.900140259+01:00
+hash: c7b7efed4963a86c321e55c2e85edecc6b125a3124b89c6a25d7932cf41a7dc3
+updated: 2017-01-23T14:15:38.059129112-08:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 6c577e9e7b08a6d10bad1c9703227cd0403a8dd7
+  version: 15bd33ce2edbdb46acdec779652ed39926682a9f
   subpackages:
   - aws
   - aws/awserr
   - aws/awsutil
   - aws/client
   - aws/client/metadata
+  - aws/corehandlers
   - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/credentials/stscreds
+  - aws/defaults
   - aws/ec2metadata
+  - aws/endpoints
   - aws/request
   - aws/session
   - aws/signer/v4
-  - internal/endpoints
-  - internal/protocol/ec2query
-  - internal/protocol/query/queryutil
-  - internal/protocol/rest
-  - internal/protocol/xml/xmlutil
-  - internal/signer/v4
-  - private/endpoints
   - private/protocol
   - private/protocol/ec2query
+  - private/protocol/query
   - private/protocol/query/queryutil
   - private/protocol/rest
   - private/protocol/xml/xmlutil
   - private/waiter
   - service/ec2
+  - service/sts
 - name: github.com/blang/semver
-  version: 60ec3488bfea7cca02b021d106d9911120d25fe9
-- name: github.com/cloudfoundry-incubator/candiedyaml
-  version: 99c3df83b51532e3615f851d8c2dbb638f5313bf
+  version: 31b736133b98f26d5e078ec9eb591666edfd091f
 - name: github.com/coreos/etcd
-  version: 8b320e7c550067b1dfb37bd1682e8067023e0751
+  version: 8ba2897a21e4fc51b298ca553d251318425f93ae
   subpackages:
   - client
+  - clientv3
+  - pkg/fileutil
   - pkg/pathutil
   - pkg/tlsutil
   - pkg/transport
@@ -45,61 +46,73 @@ imports:
   subpackages:
   - iptables
 - name: github.com/coreos/go-systemd
-  version: a606a1e936df81b70d85448221c7b1c6d8a74ef1
+  version: 48702e0da86bd25e76cfef347e2adeb434a0d0a6
   subpackages:
   - activation
   - daemon
+  - journal
 - name: github.com/coreos/pkg
-  version: 7f080b6c11ac2d2347c3cd7521e810207ea1a041
+  version: 3ac0863d7acf3bc44daf49afef8919af12f704ef
   subpackages:
+  - capnslog
   - flagutil
 - name: github.com/davecgh/go-spew
-  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
   - spew
+- name: github.com/denverdino/aliyungo
+  version: 33365dab57be370c8462f0101b8e61fdf69af3fc
+  subpackages:
+  - common
+  - ecs
+  - metadata
+  - util
 - name: github.com/docker/distribution
-  version: 5e8d18f615031aeb79f3bdedcc954b08f86e9719
+  version: cd27f179f2c10c5d300e6d09025b538c475b0d51
   subpackages:
   - digest
   - reference
 - name: github.com/emicklei/go-restful
-  version: bf50d2be18145391aa3d4339b07195807b25a427
+  version: 89ef8af493ab468a45a42bb0d89a06fccdd2fb22
   subpackages:
   - log
   - swagger
 - name: github.com/ghodss/yaml
-  version: aa0c862057666179de291b67d9f093d12b5a8473
+  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
+- name: github.com/go-ini/ini
+  version: e3c2d47c61e5333f9aa2974695dd94396eb69c75
 - name: github.com/gogo/protobuf
-  version: d7788ac7ca647999a3775cb756e449ab177dd138
+  version: 909568be09de550ed094403c2bf8a261b5bb730a
   subpackages:
   - proto
   - sortkeys
 - name: github.com/golang/glog
   version: 44145f04b68cf362d9c4df2182967c2275eaefed
 - name: github.com/golang/protobuf
-  version: 127091107ff5f822298f1faa7487ffcf578adcf6
+  version: 4bd1920723d7b7c925de087aa32e2187708897f7
   subpackages:
+  - jsonpb
   - proto
 - name: github.com/google/gofuzz
-  version: fd52762d25a41827db7ef64c43756fd4b9f7e382
+  version: bbcb9da2d746f8bdbd6a936686a0a6067ada0ec5
 - name: github.com/gorilla/context
   version: 50c25fb3b2b3b3cc724e9b6ac75fb44b3bccd0da
 - name: github.com/gorilla/mux
-  version: e444e69cbd2e2e3e0749a2f3c717cec491552bbf
+  version: 392c28fe23e1c45ddba891b0320b3b5df220beea
+- name: github.com/jmespath/go-jmespath
+  version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
 - name: github.com/jonboulle/clockwork
-  version: fad208dd89dbc316a149043e332a192477f0e2a2
+  version: 2eee05ed794112d45db504eb05aa693efd2b8b09
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/pborman/uuid
-  version: b984ec7fa9ff9e428bd0cf0abf429384dfbe3e37
+  version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - name: github.com/spf13/pflag
-  version: 6fd2ff4ff8dfcdf5556fbdc0ac0284408274b1a7
+  version: 08b1a584251b5b62f458943640fc8ebd4d50aaa5
 - name: github.com/ugorji/go
-  version: 5cd0f2b3b6cca8e3a0a4101821e41a73cb59bed6
+  version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
   - codec
-- name: github.com/vaughan0/go-ini
-  version: a98ad7ee00ec53921f08832bc06ecf7fd600e6a1
 - name: github.com/vishvananda/netlink
   version: e73bad418fd727ed3a02830b1af1ad0283a1de6c
   subpackages:
@@ -107,12 +120,14 @@ imports:
 - name: github.com/vishvananda/netns
   version: 8ba1072b58e0c2a240eb5f6120165c7776c3e7b8
 - name: golang.org/x/net
-  version: b6d7b1396ec874c3b00f6c84cd4301a17c56c8ed
+  version: f2499483f923065a842d38eb4c7f1927e6fc6e6d
   subpackages:
   - context
   - context/ctxhttp
   - http2
   - http2/hpack
+  - idna
+  - lex/httplex
 - name: golang.org/x/oauth2
   version: 188fb45fbef6ffd967b3a8abcfe176fd473361df
   subpackages:
@@ -140,12 +155,14 @@ imports:
   - internal/urlfetch
   - urlfetch
 - name: google.golang.org/cloud
-  version: 872c736f496c2ba12786bedbb8325576bbdb33cf
+  version: eb47ba841d53d93506cfbfbc03927daf9cc48f88
   subpackages:
   - compute/metadata
   - internal
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
+- name: gopkg.in/yaml.v2
+  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/kubernetes
   version: 44368db9916cc345ebef8b6fbde3cdf0dc9d79dc
   subpackages:

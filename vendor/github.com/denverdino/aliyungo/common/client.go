@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+	"strings"
 
 	"github.com/denverdino/aliyungo/util"
 )
@@ -74,12 +75,12 @@ func (client *Client) Invoke(action string, args interface{}, response interface
 
 	httpReq, err := http.NewRequest(ECSRequestMethod, requestURL, nil)
 
-	// TODO move to util and add build val flag
-	httpReq.Header.Set("X-SDK-Client", `AliyunGO/`+Version)
-
 	if err != nil {
 		return GetClientError(err)
 	}
+
+	// TODO move to util and add build val flag
+	httpReq.Header.Set("X-SDK-Client", `AliyunGO/`+Version)
 
 	t0 := time.Now()
 	httpResp, err := client.httpClient.Do(httpReq)
@@ -91,6 +92,85 @@ func (client *Client) Invoke(action string, args interface{}, response interface
 
 	if client.debug {
 		log.Printf("Invoke %s %s %d (%v)", ECSRequestMethod, requestURL, statusCode, t1.Sub(t0))
+	}
+
+	defer httpResp.Body.Close()
+	body, err := ioutil.ReadAll(httpResp.Body)
+
+	if err != nil {
+		return GetClientError(err)
+	}
+
+	if client.debug {
+		var prettyJSON bytes.Buffer
+		err = json.Indent(&prettyJSON, body, "", "    ")
+		log.Println(string(prettyJSON.Bytes()))
+	}
+
+	if statusCode >= 400 && statusCode <= 599 {
+		errorResponse := ErrorResponse{}
+		err = json.Unmarshal(body, &errorResponse)
+		ecsError := &Error{
+			ErrorResponse: errorResponse,
+			StatusCode:    statusCode,
+		}
+		return ecsError
+	}
+
+	err = json.Unmarshal(body, response)
+	//log.Printf("%++v", response)
+	if err != nil {
+		return GetClientError(err)
+	}
+
+	return nil
+}
+
+// Invoke sends the raw HTTP request for ECS services
+//改进了一下上面那个方法，可以使用各种Http方法
+func (client *Client) InvokeByAnyMethod(method, action string, args interface{}, response interface{}) error {
+
+	request := Request{}
+	request.init(client.version, action, client.AccessKeyId)
+
+	data := util.ConvertToQueryValues(request)
+	util.SetQueryValues(args, &data)
+
+	// Sign request
+	signature := util.CreateSignatureForRequest(method, &data, client.AccessKeySecret)
+
+	data.Add("Signature", signature)
+
+	// Generate the request URL
+	var (
+		httpReq *http.Request
+		err error
+	)
+	if method == http.MethodGet {
+		requestURL := client.endpoint + "?" + data.Encode()
+		httpReq, err = http.NewRequest(method, requestURL, nil)
+	} else {
+		httpReq, err = http.NewRequest(method, client.endpoint, strings.NewReader(data.Encode()))
+		httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
+
+	if err != nil {
+		return GetClientError(err)
+	}
+
+	// TODO move to util and add build val flag
+	httpReq.Header.Set("X-SDK-Client", `AliyunGO/` + Version)
+
+	t0 := time.Now()
+	httpResp, err := client.httpClient.Do(httpReq)
+	t1 := time.Now()
+	if err != nil {
+		return GetClientError(err)
+	}
+	statusCode := httpResp.StatusCode
+
+	if client.debug {
+		log.Printf("Invoke %s %s %d (%v) %v", ECSRequestMethod, client.endpoint, statusCode, t1.Sub(t0), data.Encode())
 	}
 
 	defer httpResp.Body.Close()

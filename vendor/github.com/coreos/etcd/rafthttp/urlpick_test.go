@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ func TestURLPickerPickTwice(t *testing.T) {
 
 	u := picker.pick()
 	urlmap := map[url.URL]bool{
-		url.URL{Scheme: "http", Host: "127.0.0.1:2380"}: true,
-		url.URL{Scheme: "http", Host: "127.0.0.1:7001"}: true,
+		{Scheme: "http", Host: "127.0.0.1:2380"}: true,
+		{Scheme: "http", Host: "127.0.0.1:7001"}: true,
 	}
 	if !urlmap[u] {
 		t.Errorf("url picked = %+v, want a possible url in %+v", u, urlmap)
@@ -48,8 +48,8 @@ func TestURLPickerUpdate(t *testing.T) {
 
 	u := picker.pick()
 	urlmap := map[url.URL]bool{
-		url.URL{Scheme: "http", Host: "localhost:2380"}: true,
-		url.URL{Scheme: "http", Host: "localhost:7001"}: true,
+		{Scheme: "http", Host: "localhost:2380"}: true,
+		{Scheme: "http", Host: "localhost:7001"}: true,
 	}
 	if !urlmap[u] {
 		t.Errorf("url picked = %+v, want a possible url in %+v", u, urlmap)

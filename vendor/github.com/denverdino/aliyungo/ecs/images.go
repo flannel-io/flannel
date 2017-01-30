@@ -30,6 +30,13 @@ const (
 	ImageStatusCreateFailed = ImageStatus("CreateFailed")
 )
 
+type ImageUsage string
+
+const (
+	ImageUsageInstance = ImageUsage("instance")
+	ImageUsageNone     = ImageUsage("none")
+)
+
 // DescribeImagesArgs repsents arguements to describe images
 type DescribeImagesArgs struct {
 	RegionId        common.Region
@@ -71,14 +78,20 @@ type ImageType struct {
 	Size               int
 	ImageOwnerAlias    string
 	OSName             string
+	OSType             string
+	Platform           string
 	DiskDeviceMappings struct {
 		DiskDeviceMapping []DiskDeviceMapping
 	}
-	ProductCode  string
-	IsSubscribed bool
-	Progress     string
-	Status       ImageStatus
-	CreationTime util.ISO6801Time
+	ProductCode          string
+	IsSubscribed         bool
+	IsSelfShared         string
+	IsCopied             bool
+	IsSupportIoOptimized bool
+	Progress             string
+	Usage                ImageUsage
+	Status               ImageStatus
+	CreationTime         util.ISO6801Time
 }
 
 // DescribeImages describes images

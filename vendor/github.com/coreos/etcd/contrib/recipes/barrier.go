@@ -1,4 +1,4 @@
-// Copyright 2016 CoreOS, Inc.
+// Copyright 2016 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package recipe
 
 import (
 	v3 "github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/storage/storagepb"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 	"golang.org/x/net/context"
 )
 
@@ -35,7 +35,7 @@ func NewBarrier(client *v3.Client, key string) *Barrier {
 
 // Hold creates the barrier key causing processes to block on Wait.
 func (b *Barrier) Hold() error {
-	_, err := NewKey(b.client, b.key, 0)
+	_, err := newKey(b.client, b.key, 0)
 	return err
 }
 
@@ -60,6 +60,6 @@ func (b *Barrier) Wait() error {
 		b.client,
 		b.key,
 		resp.Header.Revision,
-		[]storagepb.Event_EventType{storagepb.PUT, storagepb.DELETE})
+		[]mvccpb.Event_EventType{mvccpb.PUT, mvccpb.DELETE})
 	return err
 }

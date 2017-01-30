@@ -55,7 +55,11 @@ func (cr *copyReader) updateProgressBar() error {
 
 // NewCopyProgressPrinter returns a new CopyProgressPrinter
 func NewCopyProgressPrinter() *CopyProgressPrinter {
-	return &CopyProgressPrinter{results: make(chan error), cancel: make(chan struct{})}
+	return &CopyProgressPrinter{
+		results: make(chan error),
+		cancel:  make(chan struct{}),
+		pbp:     &ProgressBarPrinter{PadToBeEven: true},
+	}
 }
 
 // CopyProgressPrinter will perform an arbitrary number of io.Copy calls, while
@@ -83,10 +87,6 @@ func (cpp *CopyProgressPrinter) AddCopy(reader io.Reader, name string, size int6
 
 	if cpp.started {
 		return ErrAlreadyStarted
-	}
-	if cpp.pbp == nil {
-		cpp.pbp = &ProgressBarPrinter{}
-		cpp.pbp.PadToBeEven = true
 	}
 
 	cr := &copyReader{

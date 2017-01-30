@@ -1,4 +1,4 @@
-// Copyright 2016 CoreOS, Inc.
+// Copyright 2016 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import (
 func NewLockCommand() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "lock <lockname>",
-		Short: "lock acquires a named lock",
+		Short: "Acquires a named lock",
 		Run:   lockCommandFunc,
 	}
 	return c
@@ -37,7 +37,7 @@ func NewLockCommand() *cobra.Command {
 
 func lockCommandFunc(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
-		ExitWithError(ExitBadArgs, errors.New("lock takes one lock name arguement."))
+		ExitWithError(ExitBadArgs, errors.New("lock takes one lock name argument."))
 	}
 	c := mustClientFromCmd(cmd)
 	if err := lockUntilSignal(c, args[0]); err != nil {
@@ -46,7 +46,12 @@ func lockCommandFunc(cmd *cobra.Command, args []string) {
 }
 
 func lockUntilSignal(c *clientv3.Client, lockname string) error {
-	m := concurrency.NewMutex(c, lockname)
+	s, err := concurrency.NewSession(c)
+	if err != nil {
+		return err
+	}
+
+	m := concurrency.NewMutex(s, lockname)
 	ctx, cancel := context.WithCancel(context.TODO())
 
 	// unlock in case of ordinary shutdown
@@ -58,11 +63,6 @@ func lockUntilSignal(c *clientv3.Client, lockname string) error {
 		cancel()
 		close(donec)
 	}()
-
-	s, serr := concurrency.NewSession(c)
-	if serr != nil {
-		return serr
-	}
 
 	if err := m.Lock(ctx); err != nil {
 		return err
@@ -80,7 +80,7 @@ func lockUntilSignal(c *clientv3.Client, lockname string) error {
 
 	select {
 	case <-donec:
-		return m.Unlock()
+		return m.Unlock(context.TODO())
 	case <-s.Done():
 	}
 

@@ -161,7 +161,9 @@ func setupContentLengthTestServer(t *testing.T, hasContentLength bool, contentLe
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, ok := r.Header["Content-Length"]
 		assert.Equal(t, hasContentLength, ok, "expect content length to be set, %t", hasContentLength)
-		assert.Equal(t, contentLength, r.ContentLength)
+		if hasContentLength {
+			assert.Equal(t, contentLength, r.ContentLength)
+		}
 
 		b, err := ioutil.ReadAll(r.Body)
 		assert.NoError(t, err)

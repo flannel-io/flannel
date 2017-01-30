@@ -33,33 +33,29 @@ type acker struct {
 	// if at least one attempt has been made to acknowledge it.
 	Notify func(string)
 
-	in chan string
+	mu      sync.Mutex
+	pending []string
 
-	done chan struct{}
 	wg   sync.WaitGroup
+	done chan struct{}
 }
 
 // Start intiates processing of ackIDs which are added via Add.
 // Notify is called with each ackID once it has been processed.
 func (a *acker) Start() {
-	a.in = make(chan string)
 	a.done = make(chan struct{})
 
-	var pending []string
 	a.wg.Add(1)
 	go func() {
 		defer a.wg.Done()
 		for {
 			select {
-			case ackID := <-a.in:
-				pending = append(pending, ackID)
 			case <-a.AckTick:
 				// Launch Ack requests in a separate goroutine so that we don't
 				// block the in channel while waiting for the ack request to run.
-				a.launchAckRequest(pending)
-				pending = nil
+				a.launchAckRequest(a.batch())
 			case <-a.done:
-				a.launchAckRequest(pending)
+				a.launchAckRequest(a.batch())
 				return
 			}
 		}
@@ -68,8 +64,19 @@ func (a *acker) Start() {
 }
 
 // Ack adds an ack id to be acked in the next batch.
-func (acker *acker) Ack(ackID string) {
-	acker.in <- ackID
+func (a *acker) Ack(ackID string) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.pending = append(a.pending, ackID)
+}
+
+// batch removes a batch of ackIDs from the pending list and returns them.
+func (a *acker) batch() []string {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	ret := a.pending
+	a.pending = nil
+	return ret
 }
 
 // launchAckRequest initiates an acknowledgement request in a separate goroutine.
@@ -93,13 +100,22 @@ func (a *acker) Stop() {
 	a.wg.Wait()
 }
 
+const maxAckRetries = 1
+
 // ack acknowledges the supplied ackIDs.
 func (a *acker) ack(ids []string) {
-	// TODO: split into separate requests if there are too many ackIDs.
-	if len(ids) > 0 {
-		a.Client.s.acknowledge(a.Ctx, a.Sub, ids)
+	var retries int
+	head, tail := a.Client.s.splitAckIDs(ids)
+	for len(head) > 0 {
+		err := a.Client.s.acknowledge(a.Ctx, a.Sub, head)
+		if err != nil && retries < maxAckRetries {
+			// TODO(mcgreevy): more sophisticated retry on failure.
+			// NOTE: it is not incorrect to drop acks if we decide not to retry; the messages
+			//  will be redelievered, but this is a documented behaviour of the API.
+			retries += 1
+			continue
+		}
+		retries = 0
+		head, tail = a.Client.s.splitAckIDs(tail)
 	}
-	// TODO: retry on failure. NOTE: it is not incorrect to drop acks.  The
-	// messages will be redelievered, but this is a documented behaviour of
-	// the API.
 }

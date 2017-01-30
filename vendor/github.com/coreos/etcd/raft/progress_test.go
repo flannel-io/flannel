@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -155,10 +155,10 @@ func TestInflightFreeTo(t *testing.T) {
 	in.freeTo(14)
 
 	wantIn4 := &inflights{
-		start: 5,
+		start: 0,
 		count: 0,
 		size:  10,
-		//                                   ↓
+		//               ↓
 		buffer: []uint64{10, 11, 12, 13, 14, 5, 6, 7, 8, 9},
 	}
 

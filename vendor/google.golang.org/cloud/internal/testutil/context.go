@@ -23,7 +23,6 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/cloud"
 )
 
 const (
@@ -58,14 +57,4 @@ func TokenSource(ctx context.Context, scopes ...string) oauth2.TokenSource {
 		log.Fatalf("google.JWTConfigFromJSON: %v", err)
 	}
 	return conf.TokenSource(ctx)
-}
-
-// TODO(djd): Delete this function when it's no longer used.
-func Context(scopes ...string) context.Context {
-	ctx := oauth2.NoContext
-	ts := TokenSource(ctx, scopes...)
-	if ts == nil {
-		return nil
-	}
-	return cloud.NewContext(ProjID(), oauth2.NewClient(ctx, ts))
 }

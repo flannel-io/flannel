@@ -3,6 +3,7 @@ package ecs
 import "github.com/denverdino/aliyungo/common"
 
 type DescribeInstanceTypesArgs struct {
+	InstanceTypeFamily string
 }
 
 //
@@ -28,6 +29,19 @@ func (client *Client) DescribeInstanceTypes() (instanceTypes []InstanceTypeItemT
 	response := DescribeInstanceTypesResponse{}
 
 	err = client.Invoke("DescribeInstanceTypes", &DescribeInstanceTypesArgs{}, &response)
+
+	if err != nil {
+		return []InstanceTypeItemType{}, err
+	}
+	return response.InstanceTypes.InstanceType, nil
+
+}
+
+// support user args
+func (client *Client) DescribeInstanceTypesNew(args *DescribeInstanceTypesArgs) (instanceTypes []InstanceTypeItemType, err error) {
+	response := DescribeInstanceTypesResponse{}
+
+	err = client.Invoke("DescribeInstanceTypes", args, &response)
 
 	if err != nil {
 		return []InstanceTypeItemType{}, err

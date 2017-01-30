@@ -43,7 +43,7 @@ func init() {
 	protocol.RandReader = &awstesting.ZeroReader{}
 }
 
-//The service client's operations are safe to be used concurrently.
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type OutputService1ProtocolTest struct {
 	*client.Client
@@ -61,21 +61,20 @@ type OutputService1ProtocolTest struct {
 //     svc := outputservice1protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService1ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService1ProtocolTest {
 	c := p.ClientConfig("outputservice1protocoltest", cfgs...)
-	return newOutputService1ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newOutputService1ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newOutputService1ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *OutputService1ProtocolTest {
+func newOutputService1ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *OutputService1ProtocolTest {
 	svc := &OutputService1ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice1protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "",
-				JSONVersion:   "",
-				TargetPrefix:  "",
 			},
 			handlers,
 		),
@@ -124,7 +123,6 @@ const opOutputService1TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *OutputService1ProtocolTest) OutputService1TestCaseOperation1Request(input *OutputService1TestShapeOutputService1TestCaseOperation1Input) (req *request.Request, output *OutputService1TestShapeOutputService1TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService1TestCaseOperation1,
@@ -135,9 +133,8 @@ func (c *OutputService1ProtocolTest) OutputService1TestCaseOperation1Request(inp
 		input = &OutputService1TestShapeOutputService1TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService1TestShapeOutputService1TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -179,7 +176,55 @@ type OutputService1TestShapeOutputService1TestCaseOperation1Output struct {
 	TrueBool *bool `type:"boolean"`
 }
 
-//The service client's operations are safe to be used concurrently.
+// SetChar sets the Char field's value.
+func (s *OutputService1TestShapeOutputService1TestCaseOperation1Output) SetChar(v string) *OutputService1TestShapeOutputService1TestCaseOperation1Output {
+	s.Char = &v
+	return s
+}
+
+// SetDouble sets the Double field's value.
+func (s *OutputService1TestShapeOutputService1TestCaseOperation1Output) SetDouble(v float64) *OutputService1TestShapeOutputService1TestCaseOperation1Output {
+	s.Double = &v
+	return s
+}
+
+// SetFalseBool sets the FalseBool field's value.
+func (s *OutputService1TestShapeOutputService1TestCaseOperation1Output) SetFalseBool(v bool) *OutputService1TestShapeOutputService1TestCaseOperation1Output {
+	s.FalseBool = &v
+	return s
+}
+
+// SetFloat sets the Float field's value.
+func (s *OutputService1TestShapeOutputService1TestCaseOperation1Output) SetFloat(v float64) *OutputService1TestShapeOutputService1TestCaseOperation1Output {
+	s.Float = &v
+	return s
+}
+
+// SetLong sets the Long field's value.
+func (s *OutputService1TestShapeOutputService1TestCaseOperation1Output) SetLong(v int64) *OutputService1TestShapeOutputService1TestCaseOperation1Output {
+	s.Long = &v
+	return s
+}
+
+// SetNum sets the Num field's value.
+func (s *OutputService1TestShapeOutputService1TestCaseOperation1Output) SetNum(v int64) *OutputService1TestShapeOutputService1TestCaseOperation1Output {
+	s.Num = &v
+	return s
+}
+
+// SetStr sets the Str field's value.
+func (s *OutputService1TestShapeOutputService1TestCaseOperation1Output) SetStr(v string) *OutputService1TestShapeOutputService1TestCaseOperation1Output {
+	s.Str = &v
+	return s
+}
+
+// SetTrueBool sets the TrueBool field's value.
+func (s *OutputService1TestShapeOutputService1TestCaseOperation1Output) SetTrueBool(v bool) *OutputService1TestShapeOutputService1TestCaseOperation1Output {
+	s.TrueBool = &v
+	return s
+}
+
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type OutputService2ProtocolTest struct {
 	*client.Client
@@ -197,21 +242,20 @@ type OutputService2ProtocolTest struct {
 //     svc := outputservice2protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService2ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService2ProtocolTest {
 	c := p.ClientConfig("outputservice2protocoltest", cfgs...)
-	return newOutputService2ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newOutputService2ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newOutputService2ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *OutputService2ProtocolTest {
+func newOutputService2ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *OutputService2ProtocolTest {
 	svc := &OutputService2ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice2protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "",
-				JSONVersion:   "",
-				TargetPrefix:  "",
 			},
 			handlers,
 		),
@@ -260,7 +304,6 @@ const opOutputService2TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *OutputService2ProtocolTest) OutputService2TestCaseOperation1Request(input *OutputService2TestShapeOutputService2TestCaseOperation1Input) (req *request.Request, output *OutputService2TestShapeOutputService2TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService2TestCaseOperation1,
@@ -271,9 +314,8 @@ func (c *OutputService2ProtocolTest) OutputService2TestCaseOperation1Request(inp
 		input = &OutputService2TestShapeOutputService2TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService2TestShapeOutputService2TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -298,6 +340,12 @@ type OutputService2TestShapeBlobContainer struct {
 	Foo []byte `locationName:"foo" type:"blob"`
 }
 
+// SetFoo sets the Foo field's value.
+func (s *OutputService2TestShapeBlobContainer) SetFoo(v []byte) *OutputService2TestShapeBlobContainer {
+	s.Foo = v
+	return s
+}
+
 type OutputService2TestShapeOutputService2TestCaseOperation1Input struct {
 	_ struct{} `type:"structure"`
 }
@@ -311,7 +359,19 @@ type OutputService2TestShapeOutputService2TestCaseOperation1Output struct {
 	StructMember *OutputService2TestShapeBlobContainer `type:"structure"`
 }
 
-//The service client's operations are safe to be used concurrently.
+// SetBlobMember sets the BlobMember field's value.
+func (s *OutputService2TestShapeOutputService2TestCaseOperation1Output) SetBlobMember(v []byte) *OutputService2TestShapeOutputService2TestCaseOperation1Output {
+	s.BlobMember = v
+	return s
+}
+
+// SetStructMember sets the StructMember field's value.
+func (s *OutputService2TestShapeOutputService2TestCaseOperation1Output) SetStructMember(v *OutputService2TestShapeBlobContainer) *OutputService2TestShapeOutputService2TestCaseOperation1Output {
+	s.StructMember = v
+	return s
+}
+
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type OutputService3ProtocolTest struct {
 	*client.Client
@@ -329,21 +389,20 @@ type OutputService3ProtocolTest struct {
 //     svc := outputservice3protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService3ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService3ProtocolTest {
 	c := p.ClientConfig("outputservice3protocoltest", cfgs...)
-	return newOutputService3ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newOutputService3ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newOutputService3ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *OutputService3ProtocolTest {
+func newOutputService3ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *OutputService3ProtocolTest {
 	svc := &OutputService3ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice3protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "",
-				JSONVersion:   "",
-				TargetPrefix:  "",
 			},
 			handlers,
 		),
@@ -392,7 +451,6 @@ const opOutputService3TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *OutputService3ProtocolTest) OutputService3TestCaseOperation1Request(input *OutputService3TestShapeOutputService3TestCaseOperation1Input) (req *request.Request, output *OutputService3TestShapeOutputService3TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService3TestCaseOperation1,
@@ -403,9 +461,8 @@ func (c *OutputService3ProtocolTest) OutputService3TestCaseOperation1Request(inp
 		input = &OutputService3TestShapeOutputService3TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService3TestShapeOutputService3TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -435,13 +492,31 @@ type OutputService3TestShapeOutputService3TestCaseOperation1Output struct {
 	TimeMember *time.Time `type:"timestamp" timestampFormat:"unix"`
 }
 
+// SetStructMember sets the StructMember field's value.
+func (s *OutputService3TestShapeOutputService3TestCaseOperation1Output) SetStructMember(v *OutputService3TestShapeTimeContainer) *OutputService3TestShapeOutputService3TestCaseOperation1Output {
+	s.StructMember = v
+	return s
+}
+
+// SetTimeMember sets the TimeMember field's value.
+func (s *OutputService3TestShapeOutputService3TestCaseOperation1Output) SetTimeMember(v time.Time) *OutputService3TestShapeOutputService3TestCaseOperation1Output {
+	s.TimeMember = &v
+	return s
+}
+
 type OutputService3TestShapeTimeContainer struct {
 	_ struct{} `type:"structure"`
 
 	Foo *time.Time `locationName:"foo" type:"timestamp" timestampFormat:"unix"`
 }
 
-//The service client's operations are safe to be used concurrently.
+// SetFoo sets the Foo field's value.
+func (s *OutputService3TestShapeTimeContainer) SetFoo(v time.Time) *OutputService3TestShapeTimeContainer {
+	s.Foo = &v
+	return s
+}
+
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type OutputService4ProtocolTest struct {
 	*client.Client
@@ -459,21 +534,20 @@ type OutputService4ProtocolTest struct {
 //     svc := outputservice4protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService4ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService4ProtocolTest {
 	c := p.ClientConfig("outputservice4protocoltest", cfgs...)
-	return newOutputService4ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newOutputService4ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newOutputService4ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *OutputService4ProtocolTest {
+func newOutputService4ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *OutputService4ProtocolTest {
 	svc := &OutputService4ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice4protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "",
-				JSONVersion:   "",
-				TargetPrefix:  "",
 			},
 			handlers,
 		),
@@ -522,7 +596,6 @@ const opOutputService4TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *OutputService4ProtocolTest) OutputService4TestCaseOperation1Request(input *OutputService4TestShapeOutputService4TestCaseOperation1Input) (req *request.Request, output *OutputService4TestShapeOutputShape) {
 	op := &request.Operation{
 		Name:     opOutputService4TestCaseOperation1,
@@ -533,9 +606,8 @@ func (c *OutputService4ProtocolTest) OutputService4TestCaseOperation1Request(inp
 		input = &OutputService4TestShapeOutputService4TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService4TestShapeOutputShape{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -578,7 +650,6 @@ const opOutputService4TestCaseOperation2 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *OutputService4ProtocolTest) OutputService4TestCaseOperation2Request(input *OutputService4TestShapeOutputService4TestCaseOperation2Input) (req *request.Request, output *OutputService4TestShapeOutputShape) {
 	op := &request.Operation{
 		Name:     opOutputService4TestCaseOperation2,
@@ -589,9 +660,8 @@ func (c *OutputService4ProtocolTest) OutputService4TestCaseOperation2Request(inp
 		input = &OutputService4TestShapeOutputService4TestCaseOperation2Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService4TestShapeOutputShape{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -627,11 +697,29 @@ type OutputService4TestShapeOutputShape struct {
 	ListMemberStruct []*OutputService4TestShapeStructType `type:"list"`
 }
 
+// SetListMember sets the ListMember field's value.
+func (s *OutputService4TestShapeOutputShape) SetListMember(v []*string) *OutputService4TestShapeOutputShape {
+	s.ListMember = v
+	return s
+}
+
+// SetListMemberMap sets the ListMemberMap field's value.
+func (s *OutputService4TestShapeOutputShape) SetListMemberMap(v []map[string]*string) *OutputService4TestShapeOutputShape {
+	s.ListMemberMap = v
+	return s
+}
+
+// SetListMemberStruct sets the ListMemberStruct field's value.
+func (s *OutputService4TestShapeOutputShape) SetListMemberStruct(v []*OutputService4TestShapeStructType) *OutputService4TestShapeOutputShape {
+	s.ListMemberStruct = v
+	return s
+}
+
 type OutputService4TestShapeStructType struct {
 	_ struct{} `type:"structure"`
 }
 
-//The service client's operations are safe to be used concurrently.
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type OutputService5ProtocolTest struct {
 	*client.Client
@@ -649,21 +737,20 @@ type OutputService5ProtocolTest struct {
 //     svc := outputservice5protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService5ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService5ProtocolTest {
 	c := p.ClientConfig("outputservice5protocoltest", cfgs...)
-	return newOutputService5ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newOutputService5ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newOutputService5ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *OutputService5ProtocolTest {
+func newOutputService5ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *OutputService5ProtocolTest {
 	svc := &OutputService5ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice5protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "",
-				JSONVersion:   "",
-				TargetPrefix:  "",
 			},
 			handlers,
 		),
@@ -712,7 +799,6 @@ const opOutputService5TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *OutputService5ProtocolTest) OutputService5TestCaseOperation1Request(input *OutputService5TestShapeOutputService5TestCaseOperation1Input) (req *request.Request, output *OutputService5TestShapeOutputService5TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService5TestCaseOperation1,
@@ -723,9 +809,8 @@ func (c *OutputService5ProtocolTest) OutputService5TestCaseOperation1Request(inp
 		input = &OutputService5TestShapeOutputService5TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService5TestShapeOutputService5TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -753,7 +838,13 @@ type OutputService5TestShapeOutputService5TestCaseOperation1Output struct {
 	MapMember map[string][]*int64 `type:"map"`
 }
 
-//The service client's operations are safe to be used concurrently.
+// SetMapMember sets the MapMember field's value.
+func (s *OutputService5TestShapeOutputService5TestCaseOperation1Output) SetMapMember(v map[string][]*int64) *OutputService5TestShapeOutputService5TestCaseOperation1Output {
+	s.MapMember = v
+	return s
+}
+
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type OutputService6ProtocolTest struct {
 	*client.Client
@@ -771,21 +862,20 @@ type OutputService6ProtocolTest struct {
 //     svc := outputservice6protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService6ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService6ProtocolTest {
 	c := p.ClientConfig("outputservice6protocoltest", cfgs...)
-	return newOutputService6ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newOutputService6ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newOutputService6ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *OutputService6ProtocolTest {
+func newOutputService6ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *OutputService6ProtocolTest {
 	svc := &OutputService6ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice6protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "",
-				JSONVersion:   "",
-				TargetPrefix:  "",
 			},
 			handlers,
 		),
@@ -834,7 +924,6 @@ const opOutputService6TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *OutputService6ProtocolTest) OutputService6TestCaseOperation1Request(input *OutputService6TestShapeOutputService6TestCaseOperation1Input) (req *request.Request, output *OutputService6TestShapeOutputService6TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService6TestCaseOperation1,
@@ -845,9 +934,8 @@ func (c *OutputService6ProtocolTest) OutputService6TestCaseOperation1Request(inp
 		input = &OutputService6TestShapeOutputService6TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService6TestShapeOutputService6TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -873,6 +961,12 @@ type OutputService6TestShapeOutputService6TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 
 	StrType *string `type:"string"`
+}
+
+// SetStrType sets the StrType field's value.
+func (s *OutputService6TestShapeOutputService6TestCaseOperation1Output) SetStrType(v string) *OutputService6TestShapeOutputService6TestCaseOperation1Output {
+	s.StrType = &v
+	return s
 }
 
 //

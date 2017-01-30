@@ -235,7 +235,7 @@ func TestInvalidKeyDecode(t *testing.T) {
 	for _, enc := range invalid {
 		key, err := DecodeKey(enc)
 		if err == nil || key != nil {
-			t.Errorf("DecodeKey(%q) = %v, %v; want nil, error", key, err)
+			t.Errorf("DecodeKey(%q) = %v, %v; want nil, error", enc, key, err)
 		}
 	}
 }

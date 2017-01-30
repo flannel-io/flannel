@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -50,8 +50,9 @@ func TestReadWriteTimeoutDialer(t *testing.T) {
 
 	select {
 	case <-done:
-	// It waits 1s more to avoid delay in low-end system.
-	case <-time.After(d.wtimeoutd*10 + time.Second):
+	// Wait 5s more than timeout to avoid delay in low-end systems;
+	// the slack was 1s extra, but that wasn't enough for CI.
+	case <-time.After(d.wtimeoutd*10 + 5*time.Second):
 		t.Fatal("wait timeout")
 	}
 

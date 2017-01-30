@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ func TestFindConflict(t *testing.T) {
 		wconflict uint64
 	}{
 		// no conflict, empty ent
-		{[]pb.Entry{}, 0},
 		{[]pb.Entry{}, 0},
 		// no conflict
 		{[]pb.Entry{{Index: 1, Term: 1}, {Index: 2, Term: 2}, {Index: 3, Term: 3}}, 0},
@@ -73,7 +72,7 @@ func TestIsUpToDate(t *testing.T) {
 		{raftLog.lastIndex() - 1, 2, false},
 		{raftLog.lastIndex(), 2, false},
 		{raftLog.lastIndex() + 1, 2, false},
-		// equal term, lager lastIndex wins
+		// equal term, equal or lager lastIndex wins
 		{raftLog.lastIndex() - 1, 3, false},
 		{raftLog.lastIndex(), 3, true},
 		{raftLog.lastIndex() + 1, 3, true},
@@ -709,7 +708,7 @@ func TestTerm(t *testing.T) {
 
 	for j, tt := range tests {
 		term := mustTerm(l.term(tt.index))
-		if !reflect.DeepEqual(term, tt.w) {
+		if term != tt.w {
 			t.Errorf("#%d: at = %d, want %d", j, term, tt.w)
 		}
 	}
@@ -739,7 +738,7 @@ func TestTermWithUnstableSnapshot(t *testing.T) {
 
 	for i, tt := range tests {
 		term := mustTerm(l.term(tt.index))
-		if !reflect.DeepEqual(term, tt.w) {
+		if term != tt.w {
 			t.Errorf("#%d: at = %d, want %d", i, term, tt.w)
 		}
 	}
@@ -782,6 +781,7 @@ func TestSlice(t *testing.T) {
 		// test limit
 		{half - 1, half + 1, 0, []pb.Entry{{Index: half - 1, Term: half - 1}}, false},
 		{half - 1, half + 1, uint64(halfe.Size() + 1), []pb.Entry{{Index: half - 1, Term: half - 1}}, false},
+		{half - 2, half + 1, uint64(halfe.Size() + 1), []pb.Entry{{Index: half - 2, Term: half - 2}}, false},
 		{half - 1, half + 1, uint64(halfe.Size() * 2), []pb.Entry{{Index: half - 1, Term: half - 1}, {Index: half, Term: half}}, false},
 		{half - 1, half + 2, uint64(halfe.Size() * 3), []pb.Entry{{Index: half - 1, Term: half - 1}, {Index: half, Term: half}, {Index: half + 1, Term: half + 1}}, false},
 		{half, half + 2, uint64(halfe.Size()), []pb.Entry{{Index: half, Term: half}}, false},

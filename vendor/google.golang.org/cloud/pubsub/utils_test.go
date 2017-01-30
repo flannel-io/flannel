@@ -57,3 +57,7 @@ func (s *testService) acknowledge(ctx context.Context, subName string, ackIDs []
 	}
 	return nil
 }
+
+func (s *testService) splitAckIDs(ids []string) ([]string, []string) {
+	return ids, nil
+}

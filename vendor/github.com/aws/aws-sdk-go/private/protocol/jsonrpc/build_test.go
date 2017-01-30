@@ -43,7 +43,7 @@ func init() {
 	protocol.RandReader = &awstesting.ZeroReader{}
 }
 
-//The service client's operations are safe to be used concurrently.
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type InputService1ProtocolTest struct {
 	*client.Client
@@ -61,16 +61,17 @@ type InputService1ProtocolTest struct {
 //     svc := inputservice1protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewInputService1ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *InputService1ProtocolTest {
 	c := p.ClientConfig("inputservice1protocoltest", cfgs...)
-	return newInputService1ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newInputService1ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newInputService1ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *InputService1ProtocolTest {
+func newInputService1ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *InputService1ProtocolTest {
 	svc := &InputService1ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "inputservice1protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "",
@@ -124,7 +125,6 @@ const opInputService1TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService1ProtocolTest) InputService1TestCaseOperation1Request(input *InputService1TestShapeInputService1TestCaseOperation1Input) (req *request.Request, output *InputService1TestShapeInputService1TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:       opInputService1TestCaseOperation1,
@@ -136,11 +136,10 @@ func (c *InputService1ProtocolTest) InputService1TestCaseOperation1Request(input
 		input = &InputService1TestShapeInputService1TestCaseOperation1Input{}
 	}
 
+	output = &InputService1TestShapeInputService1TestCaseOperation1Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService1TestShapeInputService1TestCaseOperation1Output{}
-	req.Data = output
 	return
 }
 
@@ -164,11 +163,17 @@ type InputService1TestShapeInputService1TestCaseOperation1Input struct {
 	Name *string `type:"string"`
 }
 
+// SetName sets the Name field's value.
+func (s *InputService1TestShapeInputService1TestCaseOperation1Input) SetName(v string) *InputService1TestShapeInputService1TestCaseOperation1Input {
+	s.Name = &v
+	return s
+}
+
 type InputService1TestShapeInputService1TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-//The service client's operations are safe to be used concurrently.
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type InputService2ProtocolTest struct {
 	*client.Client
@@ -186,16 +191,17 @@ type InputService2ProtocolTest struct {
 //     svc := inputservice2protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewInputService2ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *InputService2ProtocolTest {
 	c := p.ClientConfig("inputservice2protocoltest", cfgs...)
-	return newInputService2ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newInputService2ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newInputService2ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *InputService2ProtocolTest {
+func newInputService2ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *InputService2ProtocolTest {
 	svc := &InputService2ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "inputservice2protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "",
@@ -249,7 +255,6 @@ const opInputService2TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService2ProtocolTest) InputService2TestCaseOperation1Request(input *InputService2TestShapeInputService2TestCaseOperation1Input) (req *request.Request, output *InputService2TestShapeInputService2TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opInputService2TestCaseOperation1,
@@ -260,11 +265,10 @@ func (c *InputService2ProtocolTest) InputService2TestCaseOperation1Request(input
 		input = &InputService2TestShapeInputService2TestCaseOperation1Input{}
 	}
 
+	output = &InputService2TestShapeInputService2TestCaseOperation1Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService2TestShapeInputService2TestCaseOperation1Output{}
-	req.Data = output
 	return
 }
 
@@ -288,11 +292,17 @@ type InputService2TestShapeInputService2TestCaseOperation1Input struct {
 	TimeArg *time.Time `type:"timestamp" timestampFormat:"unix"`
 }
 
+// SetTimeArg sets the TimeArg field's value.
+func (s *InputService2TestShapeInputService2TestCaseOperation1Input) SetTimeArg(v time.Time) *InputService2TestShapeInputService2TestCaseOperation1Input {
+	s.TimeArg = &v
+	return s
+}
+
 type InputService2TestShapeInputService2TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-//The service client's operations are safe to be used concurrently.
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type InputService3ProtocolTest struct {
 	*client.Client
@@ -310,16 +320,17 @@ type InputService3ProtocolTest struct {
 //     svc := inputservice3protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewInputService3ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *InputService3ProtocolTest {
 	c := p.ClientConfig("inputservice3protocoltest", cfgs...)
-	return newInputService3ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newInputService3ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newInputService3ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *InputService3ProtocolTest {
+func newInputService3ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *InputService3ProtocolTest {
 	svc := &InputService3ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "inputservice3protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "",
@@ -373,7 +384,6 @@ const opInputService3TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService3ProtocolTest) InputService3TestCaseOperation1Request(input *InputService3TestShapeInputShape) (req *request.Request, output *InputService3TestShapeInputService3TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opInputService3TestCaseOperation1,
@@ -384,11 +394,10 @@ func (c *InputService3ProtocolTest) InputService3TestCaseOperation1Request(input
 		input = &InputService3TestShapeInputShape{}
 	}
 
+	output = &InputService3TestShapeInputService3TestCaseOperation1Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService3TestShapeInputService3TestCaseOperation1Output{}
-	req.Data = output
 	return
 }
 
@@ -431,7 +440,6 @@ const opInputService3TestCaseOperation2 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService3ProtocolTest) InputService3TestCaseOperation2Request(input *InputService3TestShapeInputShape) (req *request.Request, output *InputService3TestShapeInputService3TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:     opInputService3TestCaseOperation2,
@@ -442,11 +450,10 @@ func (c *InputService3ProtocolTest) InputService3TestCaseOperation2Request(input
 		input = &InputService3TestShapeInputShape{}
 	}
 
+	output = &InputService3TestShapeInputService3TestCaseOperation2Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService3TestShapeInputService3TestCaseOperation2Output{}
-	req.Data = output
 	return
 }
 
@@ -481,7 +488,19 @@ type InputService3TestShapeInputShape struct {
 	BlobMap map[string][]byte `type:"map"`
 }
 
-//The service client's operations are safe to be used concurrently.
+// SetBlobArg sets the BlobArg field's value.
+func (s *InputService3TestShapeInputShape) SetBlobArg(v []byte) *InputService3TestShapeInputShape {
+	s.BlobArg = v
+	return s
+}
+
+// SetBlobMap sets the BlobMap field's value.
+func (s *InputService3TestShapeInputShape) SetBlobMap(v map[string][]byte) *InputService3TestShapeInputShape {
+	s.BlobMap = v
+	return s
+}
+
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type InputService4ProtocolTest struct {
 	*client.Client
@@ -499,16 +518,17 @@ type InputService4ProtocolTest struct {
 //     svc := inputservice4protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewInputService4ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *InputService4ProtocolTest {
 	c := p.ClientConfig("inputservice4protocoltest", cfgs...)
-	return newInputService4ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newInputService4ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newInputService4ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *InputService4ProtocolTest {
+func newInputService4ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *InputService4ProtocolTest {
 	svc := &InputService4ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "inputservice4protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "",
@@ -562,7 +582,6 @@ const opInputService4TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService4ProtocolTest) InputService4TestCaseOperation1Request(input *InputService4TestShapeInputService4TestCaseOperation1Input) (req *request.Request, output *InputService4TestShapeInputService4TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:       opInputService4TestCaseOperation1,
@@ -574,11 +593,10 @@ func (c *InputService4ProtocolTest) InputService4TestCaseOperation1Request(input
 		input = &InputService4TestShapeInputService4TestCaseOperation1Input{}
 	}
 
+	output = &InputService4TestShapeInputService4TestCaseOperation1Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService4TestShapeInputService4TestCaseOperation1Output{}
-	req.Data = output
 	return
 }
 
@@ -602,11 +620,17 @@ type InputService4TestShapeInputService4TestCaseOperation1Input struct {
 	ListParam [][]byte `type:"list"`
 }
 
+// SetListParam sets the ListParam field's value.
+func (s *InputService4TestShapeInputService4TestCaseOperation1Input) SetListParam(v [][]byte) *InputService4TestShapeInputService4TestCaseOperation1Input {
+	s.ListParam = v
+	return s
+}
+
 type InputService4TestShapeInputService4TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-//The service client's operations are safe to be used concurrently.
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type InputService5ProtocolTest struct {
 	*client.Client
@@ -624,16 +648,17 @@ type InputService5ProtocolTest struct {
 //     svc := inputservice5protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewInputService5ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *InputService5ProtocolTest {
 	c := p.ClientConfig("inputservice5protocoltest", cfgs...)
-	return newInputService5ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newInputService5ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newInputService5ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *InputService5ProtocolTest {
+func newInputService5ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *InputService5ProtocolTest {
 	svc := &InputService5ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "inputservice5protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "",
@@ -687,7 +712,6 @@ const opInputService5TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService5ProtocolTest) InputService5TestCaseOperation1Request(input *InputService5TestShapeInputShape) (req *request.Request, output *InputService5TestShapeInputService5TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opInputService5TestCaseOperation1,
@@ -698,11 +722,10 @@ func (c *InputService5ProtocolTest) InputService5TestCaseOperation1Request(input
 		input = &InputService5TestShapeInputShape{}
 	}
 
+	output = &InputService5TestShapeInputService5TestCaseOperation1Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService5TestShapeInputService5TestCaseOperation1Output{}
-	req.Data = output
 	return
 }
 
@@ -745,7 +768,6 @@ const opInputService5TestCaseOperation2 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService5ProtocolTest) InputService5TestCaseOperation2Request(input *InputService5TestShapeInputShape) (req *request.Request, output *InputService5TestShapeInputService5TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:     opInputService5TestCaseOperation2,
@@ -756,11 +778,10 @@ func (c *InputService5ProtocolTest) InputService5TestCaseOperation2Request(input
 		input = &InputService5TestShapeInputShape{}
 	}
 
+	output = &InputService5TestShapeInputService5TestCaseOperation2Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService5TestShapeInputService5TestCaseOperation2Output{}
-	req.Data = output
 	return
 }
 
@@ -803,7 +824,6 @@ const opInputService5TestCaseOperation3 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService5ProtocolTest) InputService5TestCaseOperation3Request(input *InputService5TestShapeInputShape) (req *request.Request, output *InputService5TestShapeInputService5TestCaseOperation3Output) {
 	op := &request.Operation{
 		Name:     opInputService5TestCaseOperation3,
@@ -814,11 +834,10 @@ func (c *InputService5ProtocolTest) InputService5TestCaseOperation3Request(input
 		input = &InputService5TestShapeInputShape{}
 	}
 
+	output = &InputService5TestShapeInputService5TestCaseOperation3Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService5TestShapeInputService5TestCaseOperation3Output{}
-	req.Data = output
 	return
 }
 
@@ -861,7 +880,6 @@ const opInputService5TestCaseOperation4 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService5ProtocolTest) InputService5TestCaseOperation4Request(input *InputService5TestShapeInputShape) (req *request.Request, output *InputService5TestShapeInputService5TestCaseOperation4Output) {
 	op := &request.Operation{
 		Name:     opInputService5TestCaseOperation4,
@@ -872,11 +890,10 @@ func (c *InputService5ProtocolTest) InputService5TestCaseOperation4Request(input
 		input = &InputService5TestShapeInputShape{}
 	}
 
+	output = &InputService5TestShapeInputService5TestCaseOperation4Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService5TestShapeInputService5TestCaseOperation4Output{}
-	req.Data = output
 	return
 }
 
@@ -919,7 +936,6 @@ const opInputService5TestCaseOperation5 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService5ProtocolTest) InputService5TestCaseOperation5Request(input *InputService5TestShapeInputShape) (req *request.Request, output *InputService5TestShapeInputService5TestCaseOperation5Output) {
 	op := &request.Operation{
 		Name:     opInputService5TestCaseOperation5,
@@ -930,11 +946,10 @@ func (c *InputService5ProtocolTest) InputService5TestCaseOperation5Request(input
 		input = &InputService5TestShapeInputShape{}
 	}
 
+	output = &InputService5TestShapeInputService5TestCaseOperation5Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService5TestShapeInputService5TestCaseOperation5Output{}
-	req.Data = output
 	return
 }
 
@@ -977,7 +992,6 @@ const opInputService5TestCaseOperation6 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService5ProtocolTest) InputService5TestCaseOperation6Request(input *InputService5TestShapeInputShape) (req *request.Request, output *InputService5TestShapeInputService5TestCaseOperation6Output) {
 	op := &request.Operation{
 		Name:     opInputService5TestCaseOperation6,
@@ -988,11 +1002,10 @@ func (c *InputService5ProtocolTest) InputService5TestCaseOperation6Request(input
 		input = &InputService5TestShapeInputShape{}
 	}
 
+	output = &InputService5TestShapeInputService5TestCaseOperation6Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService5TestShapeInputService5TestCaseOperation6Output{}
-	req.Data = output
 	return
 }
 
@@ -1040,6 +1053,12 @@ type InputService5TestShapeInputShape struct {
 	RecursiveStruct *InputService5TestShapeRecursiveStructType `type:"structure"`
 }
 
+// SetRecursiveStruct sets the RecursiveStruct field's value.
+func (s *InputService5TestShapeInputShape) SetRecursiveStruct(v *InputService5TestShapeRecursiveStructType) *InputService5TestShapeInputShape {
+	s.RecursiveStruct = v
+	return s
+}
+
 type InputService5TestShapeRecursiveStructType struct {
 	_ struct{} `type:"structure"`
 
@@ -1052,7 +1071,31 @@ type InputService5TestShapeRecursiveStructType struct {
 	RecursiveStruct *InputService5TestShapeRecursiveStructType `type:"structure"`
 }
 
-//The service client's operations are safe to be used concurrently.
+// SetNoRecurse sets the NoRecurse field's value.
+func (s *InputService5TestShapeRecursiveStructType) SetNoRecurse(v string) *InputService5TestShapeRecursiveStructType {
+	s.NoRecurse = &v
+	return s
+}
+
+// SetRecursiveList sets the RecursiveList field's value.
+func (s *InputService5TestShapeRecursiveStructType) SetRecursiveList(v []*InputService5TestShapeRecursiveStructType) *InputService5TestShapeRecursiveStructType {
+	s.RecursiveList = v
+	return s
+}
+
+// SetRecursiveMap sets the RecursiveMap field's value.
+func (s *InputService5TestShapeRecursiveStructType) SetRecursiveMap(v map[string]*InputService5TestShapeRecursiveStructType) *InputService5TestShapeRecursiveStructType {
+	s.RecursiveMap = v
+	return s
+}
+
+// SetRecursiveStruct sets the RecursiveStruct field's value.
+func (s *InputService5TestShapeRecursiveStructType) SetRecursiveStruct(v *InputService5TestShapeRecursiveStructType) *InputService5TestShapeRecursiveStructType {
+	s.RecursiveStruct = v
+	return s
+}
+
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type InputService6ProtocolTest struct {
 	*client.Client
@@ -1070,16 +1113,17 @@ type InputService6ProtocolTest struct {
 //     svc := inputservice6protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewInputService6ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *InputService6ProtocolTest {
 	c := p.ClientConfig("inputservice6protocoltest", cfgs...)
-	return newInputService6ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newInputService6ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newInputService6ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *InputService6ProtocolTest {
+func newInputService6ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *InputService6ProtocolTest {
 	svc := &InputService6ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "inputservice6protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "",
@@ -1133,7 +1177,6 @@ const opInputService6TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService6ProtocolTest) InputService6TestCaseOperation1Request(input *InputService6TestShapeInputService6TestCaseOperation1Input) (req *request.Request, output *InputService6TestShapeInputService6TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:       opInputService6TestCaseOperation1,
@@ -1145,11 +1188,10 @@ func (c *InputService6ProtocolTest) InputService6TestCaseOperation1Request(input
 		input = &InputService6TestShapeInputService6TestCaseOperation1Input{}
 	}
 
+	output = &InputService6TestShapeInputService6TestCaseOperation1Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService6TestShapeInputService6TestCaseOperation1Output{}
-	req.Data = output
 	return
 }
 
@@ -1173,11 +1215,17 @@ type InputService6TestShapeInputService6TestCaseOperation1Input struct {
 	Map map[string]*string `type:"map"`
 }
 
+// SetMap sets the Map field's value.
+func (s *InputService6TestShapeInputService6TestCaseOperation1Input) SetMap(v map[string]*string) *InputService6TestShapeInputService6TestCaseOperation1Input {
+	s.Map = v
+	return s
+}
+
 type InputService6TestShapeInputService6TestCaseOperation1Output struct {
 	_ struct{} `type:"structure"`
 }
 
-//The service client's operations are safe to be used concurrently.
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type InputService7ProtocolTest struct {
 	*client.Client
@@ -1195,21 +1243,20 @@ type InputService7ProtocolTest struct {
 //     svc := inputservice7protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewInputService7ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *InputService7ProtocolTest {
 	c := p.ClientConfig("inputservice7protocoltest", cfgs...)
-	return newInputService7ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	return newInputService7ProtocolTestClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newInputService7ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *InputService7ProtocolTest {
+func newInputService7ProtocolTestClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *InputService7ProtocolTest {
 	svc := &InputService7ProtocolTest{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "inputservice7protocoltest",
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "2014-01-01",
-				JSONVersion:   "",
-				TargetPrefix:  "",
 			},
 			handlers,
 		),
@@ -1258,7 +1305,6 @@ const opInputService7TestCaseOperation1 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService7ProtocolTest) InputService7TestCaseOperation1Request(input *InputService7TestShapeInputShape) (req *request.Request, output *InputService7TestShapeInputService7TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:       opInputService7TestCaseOperation1,
@@ -1270,11 +1316,10 @@ func (c *InputService7ProtocolTest) InputService7TestCaseOperation1Request(input
 		input = &InputService7TestShapeInputShape{}
 	}
 
+	output = &InputService7TestShapeInputService7TestCaseOperation1Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService7TestShapeInputService7TestCaseOperation1Output{}
-	req.Data = output
 	return
 }
 
@@ -1317,7 +1362,6 @@ const opInputService7TestCaseOperation2 = "OperationName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *InputService7ProtocolTest) InputService7TestCaseOperation2Request(input *InputService7TestShapeInputShape) (req *request.Request, output *InputService7TestShapeInputService7TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:       opInputService7TestCaseOperation2,
@@ -1329,11 +1373,10 @@ func (c *InputService7ProtocolTest) InputService7TestCaseOperation2Request(input
 		input = &InputService7TestShapeInputShape{}
 	}
 
+	output = &InputService7TestShapeInputService7TestCaseOperation2Output{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &InputService7TestShapeInputService7TestCaseOperation2Output{}
-	req.Data = output
 	return
 }
 
@@ -1363,6 +1406,12 @@ type InputService7TestShapeInputShape struct {
 	_ struct{} `type:"structure"`
 
 	Token *string `type:"string" idempotencyToken:"true"`
+}
+
+// SetToken sets the Token field's value.
+func (s *InputService7TestShapeInputShape) SetToken(v string) *InputService7TestShapeInputShape {
+	s.Token = &v
+	return s
 }
 
 //
