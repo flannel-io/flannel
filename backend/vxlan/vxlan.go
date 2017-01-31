@@ -35,27 +35,27 @@ const (
 )
 
 type VXLANBackend struct {
-	sm       subnet.Manager
-	extIface *backend.ExternalInterface
+	subnetMgr subnet.Manager
+	extIface  *backend.ExternalInterface
 }
 
 func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backend, error) {
-	be := &VXLANBackend{
-		sm:       sm,
-		extIface: extIface,
+	backend := &VXLANBackend{
+		subnetMgr: sm,
+		extIface:  extIface,
 	}
 
-	return be, nil
+	return backend, nil
 }
 
-func newSubnetAttrs(extEaddr net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, error) {
+func newSubnetAttrs(publicIP net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, error) {
 	data, err := json.Marshal(&vxlanLeaseAttrs{hardwareAddr(mac)})
 	if err != nil {
 		return nil, err
 	}
 
 	return &subnet.LeaseAttrs{
-		PublicIP:    ip.FromIP(extEaddr),
+		PublicIP:    ip.FromIP(publicIP),
 		BackendType: "vxlan",
 		BackendData: json.RawMessage(data),
 	}, nil
@@ -95,12 +95,12 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, network string, con
 		return nil, err
 	}
 
-	sa, err := newSubnetAttrs(be.extIface.ExtAddr, dev.MACAddr())
+	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, dev.MACAddr())
 	if err != nil {
 		return nil, err
 	}
 
-	l, err := be.sm.AcquireLease(ctx, network, sa)
+	lease, err := be.subnetMgr.AcquireLease(ctx, network, subnetAttrs)
 	switch err {
 	case nil:
 
@@ -114,14 +114,14 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, network string, con
 	// vxlan's subnet is that of the whole overlay network (e.g. /16)
 	// and not that of the individual host (e.g. /24)
 	vxlanNet := ip.IP4Net{
-		IP:        l.Subnet.IP,
+		IP:        lease.Subnet.IP,
 		PrefixLen: config.Network.PrefixLen,
 	}
 	if err = dev.Configure(vxlanNet); err != nil {
 		return nil, err
 	}
 
-	return newNetwork(network, be.sm, be.extIface, dev, vxlanNet, l)
+	return newNetwork(network, be.subnetMgr, be.extIface, dev, vxlanNet, lease)
 }
 
 // So we can make it JSON (un)marshalable
@@ -131,14 +131,14 @@ func (hw hardwareAddr) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("%q", net.HardwareAddr(hw))), nil
 }
 
-func (hw *hardwareAddr) UnmarshalJSON(b []byte) error {
-	if len(b) < 2 || b[0] != '"' || b[len(b)-1] != '"' {
+func (hw *hardwareAddr) UnmarshalJSON(bytes []byte) error {
+	if len(bytes) < 2 || bytes[0] != '"' || bytes[len(bytes)-1] != '"' {
 		return fmt.Errorf("error parsing hardware addr")
 	}
 
-	b = b[1 : len(b)-1]
+	bytes = bytes[1 : len(bytes)-1]
 
-	mac, err := net.ParseMAC(string(b))
+	mac, err := net.ParseMAC(string(bytes))
 	if err != nil {
 		return err
 	}
