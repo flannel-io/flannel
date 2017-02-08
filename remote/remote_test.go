@@ -15,10 +15,12 @@
 package remote
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/url"
 	"os"
+	"reflect"
 	"sync"
 	"syscall"
 	"testing"
@@ -132,12 +134,23 @@ func TestGetConfig(t *testing.T) {
 	}
 }
 
+type leaseData struct {
+	Dummy string
+}
+
 func TestAcquireRenewLease(t *testing.T) {
 	f := newFixture(t)
 	defer f.Close()
 
+	ld, err := json.Marshal(&leaseData{Dummy: "test string"})
+	if err != nil {
+		t.Fatalf("Failed to marshal leaseData: %v", err)
+	}
+
 	attrs := &subnet.LeaseAttrs{
-		PublicIP: mustParseIP4("1.1.1.1"),
+		PublicIP:    mustParseIP4("1.1.1.1"),
+		BackendType: "vxlan",
+		BackendData: json.RawMessage(ld),
 	}
 
 	l, err := f.sm.AcquireLease(f.ctx, "_", attrs)
@@ -149,8 +162,16 @@ func TestAcquireRenewLease(t *testing.T) {
 		t.Errorf("AcquireLease returned subnet not in network: %v (in %v)", l.Subnet, expectedNetwork)
 	}
 
+	if !reflect.DeepEqual(&l.Attrs, attrs) {
+		t.Errorf("LeaseAttrs changed: was %#v, now %#v", attrs, &l.Attrs)
+	}
+
 	if err = f.sm.RenewLease(f.ctx, "_", l); err != nil {
 		t.Errorf("RenewLease failed: %v", err)
+	}
+
+	if !reflect.DeepEqual(&l.Attrs, attrs) {
+		t.Errorf("LeaseAttrs changed: was %#v, now %#v", attrs, &l.Attrs)
 	}
 }
 

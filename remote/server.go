@@ -92,14 +92,14 @@ func handleRenewLease(ctx context.Context, sm subnet.Manager, w http.ResponseWri
 		network = ""
 	}
 
-	lease := subnet.Lease{}
-	if err := json.NewDecoder(r.Body).Decode(&lease); err != nil {
+	lease := &subnet.Lease{}
+	if err := json.NewDecoder(r.Body).Decode(lease); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprint(w, "JSON decoding error: ", err)
 		return
 	}
 
-	if err := sm.RenewLease(ctx, network, &lease); err != nil {
+	if err := sm.RenewLease(ctx, network, lease); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, err)
 		return
