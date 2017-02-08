@@ -141,10 +141,6 @@ Additionally it will monitor etcd for new members of the network and adjust the 
 
 After flannel has acquired the subnet and configured backend, it will write out an environment variable file (`/run/flannel/subnet.env` by default) with subnet address and MTU that it supports.
 
-## Client/Server mode (EXPERIMENTAL)
-
-Please see [Documentation/client-server.md](https://github.com/coreos/flannel/tree/master/Documentation/client-server.md).
-
 ## Multi-network mode (EXPERIMENTAL)
 
 Multi-network mode allows a single flannel daemon to join multiple networks.
@@ -171,16 +167,6 @@ blue.env  green.env  red.env
 This is because some networks may initialize slower than others (or never).
 Use systemd.path files for unit synchronization.
 
-**Note**: Multi-network mode can work in conjunction with the client/server mode.
-The `--networks` flag is only passed to the client:
-
-```
-# Server daemon
-$ flanneld --listen=0.0.0.0:8888
-
-# Client daemon
-$ flanneld --remote=10.0.0.3:8888 --networks=blue,green
-```
 
 ## Key command line options
 
@@ -196,11 +182,6 @@ $ flanneld --remote=10.0.0.3:8888 --networks=blue,green
 --subnet-file=/run/flannel/subnet.env: filename where env variables (subnet and MTU values) will be written to.
 --subnet-lease-renew-margin=60: subnet lease renewal margin, in minutes.
 --ip-masq=false: setup IP masquerade for traffic destined for outside the flannel network. Flannel assumes that the default policy is ACCEPT in the NAT POSTROUTING chain.
---listen="": if specified, will run in server mode. Value is IP and port (e.g. `0.0.0.0:8888`) to listen on or `fd://` for [socket activation](http://www.freedesktop.org/software/systemd/man/systemd.socket.html).
---remote="": if specified, will run in client mode. Value is IP and port of the server.
---remote-keyfile="": SSL key file used to secure client/server communication.
---remote-certfile="": SSL certification file used to secure client/server communication.
---remote-cafile="": SSL Certificate Authority file used to secure client/server communication.
 --networks="": if specified, will run in multi-network mode. Value is comma separate list of networks to join.
 -v=0: log level for V logs. Set to 1 to see messages related to data path.
 --version: print version and exit
