@@ -56,14 +56,14 @@ run_test() {
 
 	# rm any old flannel container that maybe running, ignore error as it might not exist
 	docker rm -f flannel-e2e-test-flannel1 2>/dev/null
-	docker run --name=flannel-e2e-test-flannel1 -d --privileged $flannel_img --etcd-endpoints=$etcd_endpt
+	docker run --name=flannel-e2e-test-flannel1 -d --privileged $flannel_img --etcd-endpoints=$etcd_endpt -v 10
 	if [ $? -ne 0 ]; then
 		exit 1
 	fi
 
 	# rm any old flannel container that maybe running, ignore error as it might not exist
 	docker rm -f flannel-e2e-test-flannel2 2>/dev/null
-	docker run --name=flannel-e2e-test-flannel2 -d --privileged $flannel_img --etcd-endpoints=$etcd_endpt
+	docker run --name=flannel-e2e-test-flannel2 -d --privileged $flannel_img --etcd-endpoints=$etcd_endpt -v 10
 	if [ $? -ne 0 ]; then
 		exit 1
 	fi
@@ -96,7 +96,7 @@ run_test() {
         docker rm -f flannel-e2e-test-flannel1-iperf 2>/dev/null
         docker run -d --name flannel-e2e-test-flannel1-iperf --net=container:flannel-e2e-test-flannel1 mlabbe/iperf3
         docker run --rm --net=container:flannel-e2e-test-flannel2 mlabbe/iperf3 -c $ping_dest
- fi
+    fi
 
 	docker stop flannel-e2e-test-flannel1 flannel-e2e-test-flannel2 >/dev/null
 
