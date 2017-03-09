@@ -49,10 +49,6 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return &be, nil
 }
 
-func (be *AwsVpcBackend) Run(ctx context.Context) {
-	<-ctx.Done()
-}
-
 type backendConfig struct {
 	RouteTableID interface{} `json:"RouteTableID"`
 }

@@ -73,7 +73,7 @@ func (bm *manager) GetBackend(backendType string) (Backend, error) {
 
 	bm.wg.Add(1)
 	go func() {
-		be.Run(bm.ctx)
+		<-bm.ctx.Done()
 
 		// TODO(eyakubovich): this obviosly introduces a race.
 		// GetBackend() could get called while we are here.

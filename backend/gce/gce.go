@@ -82,10 +82,6 @@ func (g *GCEBackend) ensureAPI() error {
 	return err
 }
 
-func (g *GCEBackend) Run(ctx context.Context) {
-	<-ctx.Done()
-}
-
 func (g *GCEBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
 	attrs := subnet.LeaseAttrs{
 		PublicIP: ip.FromIP(g.extIface.ExtAddr),

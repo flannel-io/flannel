@@ -51,10 +51,6 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return be, nil
 }
 
-func (_ *HostgwBackend) Run(ctx context.Context) {
-	<-ctx.Done()
-}
-
 func (be *HostgwBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
 	n := &network{
 		extIface: be.extIface,
