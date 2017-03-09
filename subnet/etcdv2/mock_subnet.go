@@ -12,8 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package subnet
+package etcdv2
 
-import "github.com/jonboulle/clockwork"
+import (
+	"github.com/coreos/flannel/subnet"
+)
 
-var clock clockwork.Clock = clockwork.NewRealClock()
+func NewMockManager(registry *MockSubnetRegistry) subnet.Manager {
+	return newLocalManager(registry)
+}

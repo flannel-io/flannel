@@ -29,30 +29,31 @@ import (
 
 	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/subnet"
+	"github.com/coreos/flannel/subnet/etcdv2"
 	"github.com/coreos/flannel/subnet/kube"
 	"github.com/coreos/flannel/version"
 
 	// Backends need to be imported for their init() to get executed and them to register
+	_ "github.com/coreos/flannel/backend/alivpc"
 	_ "github.com/coreos/flannel/backend/alloc"
 	_ "github.com/coreos/flannel/backend/awsvpc"
 	_ "github.com/coreos/flannel/backend/gce"
 	_ "github.com/coreos/flannel/backend/hostgw"
 	_ "github.com/coreos/flannel/backend/udp"
 	_ "github.com/coreos/flannel/backend/vxlan"
-	_ "github.com/coreos/flannel/backend/alivpc"
 )
 
 type CmdLineOpts struct {
-	etcdEndpoints  string
-	etcdPrefix     string
-	etcdKeyfile    string
-	etcdCertfile   string
-	etcdCAFile     string
-	etcdUsername   string
-	etcdPassword   string
-	help           bool
-	version        bool
-	kubeSubnetMgr  bool
+	etcdEndpoints string
+	etcdPrefix    string
+	etcdKeyfile   string
+	etcdCertfile  string
+	etcdCAFile    string
+	etcdUsername  string
+	etcdPassword  string
+	help          bool
+	version       bool
+	kubeSubnetMgr bool
 }
 
 var opts CmdLineOpts
@@ -75,7 +76,7 @@ func newSubnetManager() (subnet.Manager, error) {
 		return kube.NewSubnetManager()
 	}
 
-	cfg := &subnet.EtcdConfig{
+	cfg := &etcdv2.EtcdConfig{
 		Endpoints: strings.Split(opts.etcdEndpoints, ","),
 		Keyfile:   opts.etcdKeyfile,
 		Certfile:  opts.etcdCertfile,
@@ -85,7 +86,7 @@ func newSubnetManager() (subnet.Manager, error) {
 		Password:  opts.etcdPassword,
 	}
 
-	return subnet.NewLocalManager(cfg)
+	return etcdv2.NewLocalManager(cfg)
 }
 
 func main() {
