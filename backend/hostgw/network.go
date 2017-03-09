@@ -144,6 +144,11 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 }
 
 func (n *network) addToRouteList(route netlink.Route) {
+	for _, r := range n.rl {
+		if routeEqual(r, route) {
+			return
+		}
+	}
 	n.rl = append(n.rl, route)
 }
 
