@@ -30,8 +30,17 @@ ifeq ($(ARCH),ppc64le)
 	LIB_DIR=powerpc64le-linux-gnu
 	CC=powerpc64le-linux-gnu-gcc
 endif
+ifeq ($(ARCH),s390x)
+	LIB_DIR=s390x-linux-gnu
+	CC=s390x-linux-gnu-gcc
+endif
 GOARM=6
-KUBE_CROSS_TAG=v1.6.2-2
+ifeq ($(ARCH),s390x)
+	# kube-cross:v1.7.4-1 supports s390x
+	KUBE_CROSS_TAG=v1.7.4-1
+else
+	KUBE_CROSS_TAG=v1.6.2-2
+endif
 IPTABLES_VERSION=1.4.21
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
@@ -96,8 +105,8 @@ endif
 
 ## Build an architecture specific flanneld binary
 dist/flanneld-$(ARCH):
-	# Build for other platforms with ARCH=$$ARCH make build
-	# valid values for $$ARCH are [amd64 arm arm64 ppc64le]
+	# Build for other platforms with 'ARCH=$$ARCH make dist/flanneld-$$ARCH'
+	# valid values for $$ARCH are [amd64 arm arm64 ppc64le s390x]
 	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) \
 		-u $(shell id -u):$(shell id -g) \
 	    -v ${PWD}:/go/src/github.com/coreos/flannel:ro \
@@ -110,7 +119,14 @@ dist/flanneld-$(ARCH):
 
 ## Busybox images are missing pthread. Pull it out of the kube-cross image
 dist/libpthread.so.0-$(ARCH):
+ifeq ($(ARCH),s390x)
+	# Busybox images are having older version of libc.so.6 and ld64.so.1. Pull it out of the kube-cross image
+	docker run --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp /usr/$(LIB_DIR)/lib/libpthread.so.0 /host/dist/libpthread.so.0-$(ARCH)
+	docker run --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp /usr/$(LIB_DIR)/lib/libc-2.23.so /host/dist/libc.so.6
+	docker run --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp /usr/$(LIB_DIR)/lib/ld-2.23.so /host/dist/ld64.so.1
+else
 	docker run --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp /lib/$(LIB_DIR)/libpthread.so.0 /host/dist/libpthread.so.0-$(ARCH)
+endif
 
 ## Build an architecture specific iptables binary
 dist/iptables-$(ARCH):
@@ -134,12 +150,23 @@ dist/iptables-$(ARCH):
             cd /go/src/github.com/coreos/flannel && \
             file dist/iptables-$(ARCH)'
 
-## Build a .tar.gz for the amd64 flanneld binary
-tar.gz: dist/flannel-$(TAG)-linux-amd64.tar.gz
-dist/flannel-$(TAG)-linux-amd64.tar.gz:
+## Build a .tar.gz for the amd64 ppc64le arm arm64 flanneld binary
+tar.gz:	
 	ARCH=amd64 make dist/flanneld-amd64
 	tar --transform='flags=r;s|-amd64||' -zcvf dist/flannel-$(TAG)-linux-amd64.tar.gz -C dist flanneld-amd64 mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-amd64.tar.gz
+	ARCH=ppc64le make dist/flanneld-ppc64le
+	tar --transform='flags=r;s|-ppc64le||' -zcvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz -C dist flanneld-ppc64le mk-docker-opts.sh ../README.md
+	tar -tvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz
+	ARCH=arm make dist/flanneld-arm
+	tar --transform='flags=r;s|-arm||' -zcvf dist/flannel-$(TAG)-linux-arm.tar.gz -C dist flanneld-arm mk-docker-opts.sh ../README.md
+	tar -tvf dist/flannel-$(TAG)-linux-arm.tar.gz
+	ARCH=arm64 make dist/flanneld-arm64
+	tar --transform='flags=r;s|-arm64||' -zcvf dist/flannel-$(TAG)-linux-arm64.tar.gz -C dist flanneld-arm64 mk-docker-opts.sh ../README.md
+	tar -tvf dist/flannel-$(TAG)-linux-arm64.tar.gz
+	ARCH=s390x make dist/flanneld-s390x
+	tar --transform='flags=r;s|-s390x||' -zcvf dist/flannel-$(TAG)-linux-s390x.tar.gz -C dist flanneld-s390x mk-docker-opts.sh ../README.md
+	tar -tvf dist/flannel-$(TAG)-linux-s390x.tar.gz
 
 ## Make a release after creating a tag
 release: dist/flannel-$(TAG)-linux-amd64.tar.gz
@@ -147,6 +174,7 @@ release: dist/flannel-$(TAG)-linux-amd64.tar.gz
 	ARCH=arm make dist/flanneld-$(TAG)-arm.aci
 	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.aci
 	ARCH=ppc64le make dist/flanneld-$(TAG)-ppc64le.aci
+	ARCH=s390x make dist/flanneld-$(TAG)-s390x.aci
 	@echo "Everything should be built for $(TAG)"
 	@echo "Add all *.aci, flanneld-* and *.tar.gz files from dist/ to the Github release"
 	@echo "Use make docker-push-all to push the images to a registry"
@@ -156,6 +184,7 @@ docker-push-all:
 	ARCH=arm make docker-push
 	ARCH=arm64 make docker-push
 	ARCH=ppc64le make docker-push
+	ARCH=s390x make docker-push
 
 flannel-git:
 	ARCH=amd64 REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-amd64.docker docker-push
@@ -164,3 +193,4 @@ flannel-git:
 	ARCH=arm REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-arm.docker docker-push
 	ARCH=arm64 REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-arm64.docker docker-push
 	ARCH=ppc64le REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-ppc64le.docker docker-push
+	ARCH=s390x REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-s390x.docker docker-push
