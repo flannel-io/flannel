@@ -82,8 +82,8 @@ func newLocalManager(r Registry) Manager {
 	}
 }
 
-func (m *LocalManager) GetNetworkConfig(ctx context.Context, network string) (*Config, error) {
-	cfg, err := m.registry.getNetworkConfig(ctx, network)
+func (m *LocalManager) GetNetworkConfig(ctx context.Context) (*Config, error) {
+	cfg, err := m.registry.getNetworkConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -91,14 +91,14 @@ func (m *LocalManager) GetNetworkConfig(ctx context.Context, network string) (*C
 	return ParseConfig(cfg)
 }
 
-func (m *LocalManager) AcquireLease(ctx context.Context, network string, attrs *LeaseAttrs) (*Lease, error) {
-	config, err := m.GetNetworkConfig(ctx, network)
+func (m *LocalManager) AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Lease, error) {
+	config, err := m.GetNetworkConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	for i := 0; i < raceRetries; i++ {
-		l, err := m.tryAcquireLease(ctx, network, config, attrs.PublicIP, attrs)
+		l, err := m.tryAcquireLease(ctx, config, attrs.PublicIP, attrs)
 		switch err {
 		case nil:
 			return l, nil
@@ -122,8 +122,8 @@ func findLeaseByIP(leases []Lease, pubIP ip.IP4) *Lease {
 	return nil
 }
 
-func (m *LocalManager) tryAcquireLease(ctx context.Context, network string, config *Config, extIaddr ip.IP4, attrs *LeaseAttrs) (*Lease, error) {
-	leases, _, err := m.registry.getSubnets(ctx, network)
+func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extIaddr ip.IP4, attrs *LeaseAttrs) (*Lease, error) {
+	leases, _, err := m.registry.getSubnets(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, network string, conf
 				// Not a reservation
 				ttl = subnetTTL
 			}
-			exp, err := m.registry.updateSubnet(ctx, network, l.Subnet, attrs, ttl, 0)
+			exp, err := m.registry.updateSubnet(ctx, l.Subnet, attrs, ttl, 0)
 			if err != nil {
 				return nil, err
 			}
@@ -149,7 +149,7 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, network string, conf
 			return l, nil
 		} else {
 			log.Infof("Found lease (%v) for current IP (%v) but not compatible with current config, deleting", l.Subnet, extIaddr)
-			if err := m.registry.deleteSubnet(ctx, network, l.Subnet); err != nil {
+			if err := m.registry.deleteSubnet(ctx, l.Subnet); err != nil {
 				return nil, err
 			}
 		}
@@ -161,9 +161,10 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, network string, conf
 		return nil, err
 	}
 
-	exp, err := m.registry.createSubnet(ctx, network, sn, attrs, subnetTTL)
+	exp, err := m.registry.createSubnet(ctx, sn, attrs, subnetTTL)
 	switch {
 	case err == nil:
+		log.Infof("Allocated lease (%v) to current node (%v) ", sn, extIaddr)
 		return &Lease{
 			Subnet:     sn,
 			Attrs:      *attrs,
@@ -200,12 +201,12 @@ OuterLoop:
 	}
 }
 
-func (m *LocalManager) RevokeLease(ctx context.Context, network string, sn ip.IP4Net) error {
-	return m.registry.deleteSubnet(ctx, network, sn)
+func (m *LocalManager) RevokeLease(ctx context.Context, sn ip.IP4Net) error {
+	return m.registry.deleteSubnet(ctx, sn)
 }
 
-func (m *LocalManager) RenewLease(ctx context.Context, network string, lease *Lease) error {
-	exp, err := m.registry.updateSubnet(ctx, network, lease.Subnet, &lease.Attrs, subnetTTL, 0)
+func (m *LocalManager) RenewLease(ctx context.Context, lease *Lease) error {
+	exp, err := m.registry.updateSubnet(ctx, lease.Subnet, &lease.Attrs, subnetTTL, 0)
 	if err != nil {
 		return err
 	}
@@ -232,8 +233,8 @@ func getNextIndex(cursor interface{}) (uint64, error) {
 	return nextIndex, nil
 }
 
-func (m *LocalManager) leaseWatchReset(ctx context.Context, network string, sn ip.IP4Net) (LeaseWatchResult, error) {
-	l, index, err := m.registry.getSubnet(ctx, network, sn)
+func (m *LocalManager) leaseWatchReset(ctx context.Context, sn ip.IP4Net) (LeaseWatchResult, error) {
+	l, index, err := m.registry.getSubnet(ctx, sn)
 	if err != nil {
 		return LeaseWatchResult{}, err
 	}
@@ -244,9 +245,9 @@ func (m *LocalManager) leaseWatchReset(ctx context.Context, network string, sn i
 	}, nil
 }
 
-func (m *LocalManager) WatchLease(ctx context.Context, network string, sn ip.IP4Net, cursor interface{}) (LeaseWatchResult, error) {
+func (m *LocalManager) WatchLease(ctx context.Context, sn ip.IP4Net, cursor interface{}) (LeaseWatchResult, error) {
 	if cursor == nil {
-		return m.leaseWatchReset(ctx, network, sn)
+		return m.leaseWatchReset(ctx, sn)
 	}
 
 	nextIndex, err := getNextIndex(cursor)
@@ -254,7 +255,7 @@ func (m *LocalManager) WatchLease(ctx context.Context, network string, sn ip.IP4
 		return LeaseWatchResult{}, err
 	}
 
-	evt, index, err := m.registry.watchSubnet(ctx, network, nextIndex, sn)
+	evt, index, err := m.registry.watchSubnet(ctx, nextIndex, sn)
 
 	switch {
 	case err == nil:
@@ -265,16 +266,16 @@ func (m *LocalManager) WatchLease(ctx context.Context, network string, sn ip.IP4
 
 	case isIndexTooSmall(err):
 		log.Warning("Watch of subnet leases failed because etcd index outside history window")
-		return m.leaseWatchReset(ctx, network, sn)
+		return m.leaseWatchReset(ctx, sn)
 
 	default:
 		return LeaseWatchResult{}, err
 	}
 }
 
-func (m *LocalManager) WatchLeases(ctx context.Context, network string, cursor interface{}) (LeaseWatchResult, error) {
+func (m *LocalManager) WatchLeases(ctx context.Context, cursor interface{}) (LeaseWatchResult, error) {
 	if cursor == nil {
-		return m.leasesWatchReset(ctx, network)
+		return m.leasesWatchReset(ctx)
 	}
 
 	nextIndex, err := getNextIndex(cursor)
@@ -282,7 +283,7 @@ func (m *LocalManager) WatchLeases(ctx context.Context, network string, cursor i
 		return LeaseWatchResult{}, err
 	}
 
-	evt, index, err := m.registry.watchSubnets(ctx, network, nextIndex)
+	evt, index, err := m.registry.watchSubnets(ctx, nextIndex)
 
 	switch {
 	case err == nil:
@@ -293,43 +294,10 @@ func (m *LocalManager) WatchLeases(ctx context.Context, network string, cursor i
 
 	case isIndexTooSmall(err):
 		log.Warning("Watch of subnet leases failed because etcd index outside history window")
-		return m.leasesWatchReset(ctx, network)
+		return m.leasesWatchReset(ctx)
 
 	default:
 		return LeaseWatchResult{}, err
-	}
-}
-
-func (m *LocalManager) WatchNetworks(ctx context.Context, cursor interface{}) (NetworkWatchResult, error) {
-	if cursor == nil {
-		return m.networkWatchReset(ctx)
-	}
-
-	nextIndex, err := getNextIndex(cursor)
-	if err != nil {
-		return NetworkWatchResult{}, err
-	}
-
-	for {
-		evt, index, err := m.registry.watchNetworks(ctx, nextIndex)
-
-		switch {
-		case err == nil:
-			return NetworkWatchResult{
-				Events: []Event{evt},
-				Cursor: watchCursor{index},
-			}, nil
-
-		case err == errTryAgain:
-			nextIndex = index
-
-		case isIndexTooSmall(err):
-			log.Warning("Watch of networks failed because etcd index outside history window")
-			return m.networkWatchReset(ctx)
-
-		default:
-			return NetworkWatchResult{}, err
-		}
 	}
 }
 
@@ -339,30 +307,16 @@ func isIndexTooSmall(err error) bool {
 }
 
 // leasesWatchReset is called when incremental lease watch failed and we need to grab a snapshot
-func (m *LocalManager) leasesWatchReset(ctx context.Context, network string) (LeaseWatchResult, error) {
+func (m *LocalManager) leasesWatchReset(ctx context.Context) (LeaseWatchResult, error) {
 	wr := LeaseWatchResult{}
 
-	leases, index, err := m.registry.getSubnets(ctx, network)
+	leases, index, err := m.registry.getSubnets(ctx)
 	if err != nil {
 		return wr, fmt.Errorf("failed to retrieve subnet leases: %v", err)
 	}
 
 	wr.Cursor = watchCursor{index}
 	wr.Snapshot = leases
-	return wr, nil
-}
-
-// networkWatchReset is called when incremental network watch failed and we need to grab a snapshot
-func (m *LocalManager) networkWatchReset(ctx context.Context) (NetworkWatchResult, error) {
-	wr := NetworkWatchResult{}
-
-	networks, index, err := m.registry.getNetworks(ctx)
-	if err != nil {
-		return wr, fmt.Errorf("failed to retrieve networks: %v", err)
-	}
-
-	wr.Cursor = watchCursor{index}
-	wr.Snapshot = networks
 	return wr, nil
 }
 
@@ -374,12 +328,12 @@ func isSubnetConfigCompat(config *Config, sn ip.IP4Net) bool {
 	return sn.PrefixLen == config.SubnetLen
 }
 
-func (m *LocalManager) tryAddReservation(ctx context.Context, network string, r *Reservation) error {
+func (m *LocalManager) tryAddReservation(ctx context.Context, r *Reservation) error {
 	attrs := &LeaseAttrs{
 		PublicIP: r.PublicIP,
 	}
 
-	_, err := m.registry.createSubnet(ctx, network, r.Subnet, attrs, 0)
+	_, err := m.registry.createSubnet(ctx, r.Subnet, attrs, 0)
 	switch {
 	case err == nil:
 		return nil
@@ -392,7 +346,7 @@ func (m *LocalManager) tryAddReservation(ctx context.Context, network string, r 
 	// Get what's there and
 	// - if PublicIP matches, remove the TTL make it a reservation
 	// - otherwise, error out
-	sub, asof, err := m.registry.getSubnet(ctx, network, r.Subnet)
+	sub, asof, err := m.registry.getSubnet(ctx, r.Subnet)
 	switch {
 	case err == nil:
 	case isErrEtcdKeyNotFound(err):
@@ -408,15 +362,15 @@ func (m *LocalManager) tryAddReservation(ctx context.Context, network string, r 
 	}
 
 	// remove TTL
-	_, err = m.registry.updateSubnet(ctx, network, r.Subnet, &sub.Attrs, 0, asof)
+	_, err = m.registry.updateSubnet(ctx, r.Subnet, &sub.Attrs, 0, asof)
 	if isErrEtcdTestFailed(err) {
 		return errTryAgain
 	}
 	return err
 }
 
-func (m *LocalManager) AddReservation(ctx context.Context, network string, r *Reservation) error {
-	config, err := m.GetNetworkConfig(ctx, network)
+func (m *LocalManager) AddReservation(ctx context.Context, r *Reservation) error {
+	config, err := m.GetNetworkConfig(ctx)
 	if err != nil {
 		return err
 	}
@@ -430,7 +384,7 @@ func (m *LocalManager) AddReservation(ctx context.Context, network string, r *Re
 	}
 
 	for i := 0; i < raceRetries; i++ {
-		err := m.tryAddReservation(ctx, network, r)
+		err := m.tryAddReservation(ctx, r)
 		switch {
 		case err == nil:
 			return nil
@@ -444,14 +398,14 @@ func (m *LocalManager) AddReservation(ctx context.Context, network string, r *Re
 	return ErrNoMoreTries
 }
 
-func (m *LocalManager) tryRemoveReservation(ctx context.Context, network string, subnet ip.IP4Net) error {
-	sub, asof, err := m.registry.getSubnet(ctx, network, subnet)
+func (m *LocalManager) tryRemoveReservation(ctx context.Context, subnet ip.IP4Net) error {
+	sub, asof, err := m.registry.getSubnet(ctx, subnet)
 	if err != nil {
 		return err
 	}
 
 	// add back the TTL
-	_, err = m.registry.updateSubnet(ctx, network, subnet, &sub.Attrs, subnetTTL, asof)
+	_, err = m.registry.updateSubnet(ctx, subnet, &sub.Attrs, subnetTTL, asof)
 	if isErrEtcdTestFailed(err) {
 		return errTryAgain
 	}
@@ -459,9 +413,9 @@ func (m *LocalManager) tryRemoveReservation(ctx context.Context, network string,
 }
 
 //RemoveReservation removes the subnet by setting TTL back to subnetTTL (24hours)
-func (m *LocalManager) RemoveReservation(ctx context.Context, network string, subnet ip.IP4Net) error {
+func (m *LocalManager) RemoveReservation(ctx context.Context, subnet ip.IP4Net) error {
 	for i := 0; i < raceRetries; i++ {
-		err := m.tryRemoveReservation(ctx, network, subnet)
+		err := m.tryRemoveReservation(ctx, subnet)
 		switch {
 		case err == nil:
 			return nil
@@ -475,8 +429,8 @@ func (m *LocalManager) RemoveReservation(ctx context.Context, network string, su
 	return ErrNoMoreTries
 }
 
-func (m *LocalManager) ListReservations(ctx context.Context, network string) ([]Reservation, error) {
-	subnets, _, err := m.registry.getSubnets(ctx, network)
+func (m *LocalManager) ListReservations(ctx context.Context) ([]Reservation, error) {
+	subnets, _, err := m.registry.getSubnets(ctx)
 	if err != nil {
 		return nil, err
 	}

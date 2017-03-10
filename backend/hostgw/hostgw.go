@@ -55,9 +55,8 @@ func (_ *HostgwBackend) Run(ctx context.Context) {
 	<-ctx.Done()
 }
 
-func (be *HostgwBackend) RegisterNetwork(ctx context.Context, netname string, config *subnet.Config) (backend.Network, error) {
+func (be *HostgwBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
 	n := &network{
-		name:     netname,
 		extIface: be.extIface,
 		sm:       be.sm,
 	}
@@ -67,7 +66,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, netname string, co
 		BackendType: "host-gw",
 	}
 
-	l, err := be.sm.AcquireLease(ctx, netname, &attrs)
+	l, err := be.sm.AcquireLease(ctx, &attrs)
 	switch err {
 	case nil:
 		n.lease = l
@@ -80,8 +79,6 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, netname string, co
 	}
 
 	/* NB: docker will create the local route to `sn` */
-
-	be.networks[netname] = n
 
 	return n, nil
 }

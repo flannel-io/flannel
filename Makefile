@@ -194,3 +194,41 @@ flannel-git:
 	ARCH=arm64 REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-arm64.docker docker-push
 	ARCH=ppc64le REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-ppc64le.docker docker-push
 	ARCH=s390x REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-s390x.docker docker-push
+
+install:
+	# This is intended as just a developer convenience to help speed up non-containerized builds
+	# It is NOT how you install flannel
+	CGO_ENABLED=1 go install -v github.com/coreos/flannel
+
+minikube-start:
+	minikube start --network-plugin cni
+
+minikube-build-image: dist/iptables-amd64 dist/libpthread.so.0-amd64
+	CGO_ENABLED=1 go build -v -o dist/flanneld-amd64
+	# Make sure the minikube docker is being used "eval $(minikube docker-env)"
+	sh -c 'eval $$(minikube docker-env) && docker build -f Dockerfile.amd64 -t flannel/minikube .'
+
+minikube-deploy-flannel:
+	kubectl apply -f Documentation/minikube.yml
+
+minikube-remove-flannel:
+	kubectl delete -f Documentation/minikube.yml
+
+minikube-restart-pod:
+	# Use this to pick up a new image
+	kubectl delete pods -l app=flannel --grace-period=0
+
+kubernetes-logs:
+	kubectl logs `kubectl get po -l app=flannel -o=custom-columns=NAME:metadata.name --no-headers=true` -c kube-flannel -f
+
+LOCAL_IP_ENV?=$(shell ip route get 8.8.8.8 | head -1 | awk '{print $$7}')
+run-etcd: stop-etcd
+	docker run --detach \
+	-p 2379:2379 \
+	--name flannel-etcd quay.io/coreos/etcd \
+	etcd \
+	--advertise-client-urls "http://$(LOCAL_IP_ENV):2379,http://127.0.0.1:2379,http://$(LOCAL_IP_ENV):4001,http://127.0.0.1:4001" \
+	--listen-client-urls "http://0.0.0.0:2379,http://0.0.0.0:4001"
+
+stop-etcd:
+	@-docker rm -f flannel-etcd

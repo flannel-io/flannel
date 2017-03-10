@@ -33,20 +33,18 @@ import (
 
 type network struct {
 	backend.SimpleNetwork
-	name      string
 	extIface  *backend.ExternalInterface
 	dev       *vxlanDevice
 	routes    routes
 	subnetMgr subnet.Manager
 }
 
-func newNetwork(name string, subnetMgr subnet.Manager, extIface *backend.ExternalInterface, dev *vxlanDevice, _ ip.IP4Net, lease *subnet.Lease) (*network, error) {
+func newNetwork(subnetMgr subnet.Manager, extIface *backend.ExternalInterface, dev *vxlanDevice, _ ip.IP4Net, lease *subnet.Lease) (*network, error) {
 	nw := &network{
 		SimpleNetwork: backend.SimpleNetwork{
 			SubnetLease: lease,
 			ExtIface:    extIface,
 		},
-		name:      name,
 		subnetMgr: subnetMgr,
 		dev:       dev,
 	}
@@ -67,7 +65,7 @@ func (nw *network) Run(ctx context.Context) {
 	events := make(chan []subnet.Event)
 	wg.Add(1)
 	go func() {
-		subnet.WatchLeases(ctx, nw.subnetMgr, nw.name, nw.SubnetLease, events)
+		subnet.WatchLeases(ctx, nw.subnetMgr, nw.SubnetLease, events)
 		log.V(1).Info("WatchLeases exited")
 		wg.Done()
 	}()

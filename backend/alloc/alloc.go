@@ -44,12 +44,12 @@ func (_ *AllocBackend) Run(ctx context.Context) {
 	<-ctx.Done()
 }
 
-func (be *AllocBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (backend.Network, error) {
+func (be *AllocBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
 	attrs := subnet.LeaseAttrs{
 		PublicIP: ip.FromIP(be.extIface.ExtAddr),
 	}
 
-	l, err := be.sm.AcquireLease(ctx, network, &attrs)
+	l, err := be.sm.AcquireLease(ctx, &attrs)
 	switch err {
 	case nil:
 		return &backend.SimpleNetwork{
