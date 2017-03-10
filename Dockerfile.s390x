@@ -1,0 +1,11 @@
+FROM s390x/busybox:glibc
+
+MAINTAINER Tom Denham <tom@tigera.io>
+
+COPY dist/flanneld-s390x /opt/bin/flanneld
+COPY dist/iptables-s390x /usr/local/bin/iptables
+COPY dist/mk-docker-opts.sh /opt/bin/
+COPY dist/libpthread.so.0-s390x /lib/libpthread.so.0
+COPY dist/ld64.so.1 /lib/ld64.so.1
+COPY dist/libc.so.6 /lib/libc.so.6
+CMD ["/opt/bin/flanneld"]
