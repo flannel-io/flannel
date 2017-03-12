@@ -35,7 +35,9 @@ GOARM=7
 # List images with gcloud alpha container images list-tags gcr.io/google_containers/kube-cross
 KUBE_CROSS_TAG=v1.8.3-1
 IPTABLES_VERSION=1.4.21
-STRONGSWAN_VERSION=5.5.0
+STRONGSWAN_VERSION=5.5.1
+
+dist/all-$(ARCH): dist/flanneld-$(ARCH) dist/iptables-$(ARCH) dist/strongswan-$(ARCH) dist/libpthread.so.0-$(ARCH) dist/strongswanlibs-$(ARCH)
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
 	go build -o dist/flanneld \
@@ -87,6 +89,7 @@ clean:
 	rm -rf dist/strongswan*
 	rm -f dist/*.docker
 	rm -f dist/*.tar.gz
+	rm -f dist/*.so.*
 
 ## Create a docker image on disk for a specific arch and tag
 dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH) dist/libpthread.so.0-$(ARCH) dist/strongswan-$(ARCH)
@@ -133,6 +136,17 @@ dist/flanneld-$(ARCH):
 		mv dist/flanneld dist/flanneld-$(ARCH) && \
 		file dist/flanneld-$(ARCH)'
 
+## Busybox images need updated libs. Pull them out of the kube-cross image
+dist/libpthread.so.0-$(ARCH) dist/libc.so.6-$(ARCH) dist/ld64.so.1-$(ARCH):
+	docker run --rm -v $(CURDIR):/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp $(LIB_DIR)/libc-2.23.so /host/dist/libc.so.6-$(ARCH)
+	docker run --rm -v $(CURDIR):/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp $(LIB_DIR)/ld-2.23.so /host/dist/ld64.so.1-$(ARCH)
+	docker run --rm -v $(CURDIR):/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp $(LIB_DIR)/libpthread.so.0 /host/dist/libpthread.so.0-$(ARCH)
+
+## Busybox images are missing libatomic/libdl. Pull it out of the kube-cross image
+dist/strongswanlibs-$(ARCH):
+	docker run -ti --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp /usr/lib/$(LIB_DIR)/libatomic.so.1 /host/dist/libatomic.so.1-$(ARCH)
+	docker run -ti --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp /lib/$(LIB_DIR)/libdl.so.2 /host/dist/libdl.so.2-$(ARCH)
+	
 ## Build an architecture specific iptables binary
 dist/iptables-$(ARCH):
 	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) \
@@ -156,16 +170,17 @@ dist/iptables-$(ARCH):
             file dist/iptables-$(ARCH)'
 
 ## Build an architecture specific StrongSwan (we need charon daemon)
-dist/strongswan-$(ARCH):
+## 
+dist/strongswan-$(ARCH): dist/strongswanlibs-$(ARCH)
 	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) -it \
             -v ${PWD}:/go/src/github.com/coreos/flannel:ro \
-            -v ${PWD}/dist:/go/src/github.com/coreos/flannel/dist \
+            -v ${PWD}/dist/strongswan-$(ARCH):/usr/local/strongswan-$(ARCH) \
             gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
-	    apt-get update && apt-get install -y libgmp3-dev && \
+	    apt-get update && apt-get install -y libgmp3-dev &&\
 	    curl --sSL https://download.strongswan.org/strongswan-$(STRONGSWAN_VERSION).tar.bz2 | tar -jxv && \
 	    cd strongswan-$(STRONGSWAN_VERSION) && \
 	    ./configure \
-	        --prefix=/go/src/github.com/coreos/flannel/dist/strongswan-$(ARCH) \
+	        --prefix=/usr/local/strongswan-$(ARCH) \
 		--enable-static=no \
 	        --enable-vici \
 		--disable-swanctl \
@@ -173,7 +188,6 @@ dist/strongswan-$(ARCH):
 	        --disable-constraints \
 	        --disable-dnskey \
 	        --disable-fips-prf \
-	        --disable-ikev2 \
 	        --disable-md5 \
 	        --disable-pgp \
 	        --disable-pem \
@@ -192,7 +206,8 @@ dist/strongswan-$(ARCH):
 	        --disable-x509 \
 	        --disable-xauth-generic && \
 	    make && \
-	    make install'
+	    make install && \
+	    cp /usr/lib/x86_64-linux-gnu/libgmp.so.10 /usr/local/strongswan-$(ARCH)/lib/ipsec'
 
 ## Build a .tar.gz for the amd64 ppc64le arm arm64 flanneld binary
 tar.gz:

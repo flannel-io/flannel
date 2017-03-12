@@ -133,7 +133,7 @@ func (charon *CharonIKEDaemon) LoadConnection(localLease, remoteLease *subnet.Le
 		LocalAddrs:  []string{localLease.Attrs.PublicIP.String()},
 		RemoteAddrs: []string{remoteLease.Attrs.PublicIP.String()},
 		Proposals:   []string{"aes256-sha256-modp4096"},
-		Version:     "1",
+		Version:     "2",
 		KeyingTries: "0", //continues to retry
 		LocalAuth:   localAuthConf,
 		RemoteAuth:  remoteAuthConf,

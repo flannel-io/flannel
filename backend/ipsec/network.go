@@ -93,6 +93,15 @@ func (n *network) Run(ctx context.Context) {
 		wg.Done()
 	}()
 
+	for {
+		err := n.iked.LoadSharedKey(n.SimpleNetwork.SubnetLease.Attrs.PublicIP.ToIP().String(), n.password)
+		if err == nil {
+			break
+		}
+		log.Error(err, " Failed to load my key. Retrying")
+		time.Sleep(time.Second)
+	}
+
 	initialEvtsBatch := <-evts
 	for {
 		err := n.handleInitialSubnetEvents(initialEvtsBatch)

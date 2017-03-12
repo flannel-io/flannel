@@ -8,5 +8,12 @@ COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld
 COPY dist/iptables-$FLANNEL_ARCH /usr/local/bin/iptables
 COPY dist/strongswan-arm /usr/local/
 COPY dist/mk-docker-opts.sh /opt/bin/
+COPY dist/libpthread.so.0-$FLANNEL_ARCH /lib/libpthread.so.0
+COPY dist/ld64.so.1-$FLANNEL_ARCH /lib/ld64.so.1
+COPY dist/libc.so.6-$FLANNEL_ARCH /lib/libc.so.6
+
+COPY dist/strongswan-$FLANNEL_ARCH /usr/local/strongswan-arm
+COPY dist/libatomic.so.1-$FLANNEL_ARCH /lib/libatomic.so.1
+COPY dist/libdl.so.2-$FLANNEL_ARCH /lib/libdl.so.2
 
 ENTRYPOINT ["/opt/bin/flanneld"]

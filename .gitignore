@@ -1,6 +1,8 @@
 dist/*.tar.gz
 dist/flanneld*
 dist/*.docker
+dist/strongswan*
+dist/*.so.*
 cover.out
 .editorconfig
 .idea/
