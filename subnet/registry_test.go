@@ -32,14 +32,14 @@ func newTestEtcdRegistry(t *testing.T) (Registry, *mockEtcd) {
 		Prefix:    "/coreos.com/network",
 	}
 
-	r, err := newEtcdSubnetRegistry(cfg, func(c *EtcdConfig) (etcd.KeysAPI, error) {
+	r, err := newEtcdV2SubnetRegistry(cfg, func(c *EtcdConfig) (etcd.KeysAPI, error) {
 		return newMockEtcd(), nil
 	})
 	if err != nil {
 		t.Fatal("Failed to create etcd subnet registry")
 	}
 
-	return r, r.(*etcdSubnetRegistry).cli.(*mockEtcd)
+	return r, r.(*etcdV2SubnetRegistry).cli.(*mockEtcd)
 }
 
 func watchSubnets(t *testing.T, r Registry, ctx context.Context, sn ip.IP4Net, nextIndex uint64, result chan error) {

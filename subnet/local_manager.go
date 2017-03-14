@@ -68,7 +68,14 @@ func (c watchCursor) String() string {
 }
 
 func NewLocalManager(config *EtcdConfig) (Manager, error) {
-	r, err := newEtcdSubnetRegistry(config, nil)
+	var err error
+	var r Registry
+
+	if config.UseV3API {
+		r, err = newEtcdV3SubnetRegistry(config, nil)
+	} else {
+		r, err = newEtcdV3SubnetRegistry(config, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
