@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package subnet
+package etcdv2
 
 import (
 	"fmt"
@@ -21,10 +21,14 @@ import (
 	"time"
 
 	etcd "github.com/coreos/etcd/client"
+	"github.com/jonboulle/clockwork"
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/pkg/ip"
+	. "github.com/coreos/flannel/subnet"
 )
+
+var clock clockwork.Clock = clockwork.NewRealClock()
 
 type netwk struct {
 	config        string
@@ -168,7 +172,7 @@ func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, network string,
 		Subnet:     sn,
 		Attrs:      *attrs,
 		Expiration: exp,
-		asof:       msr.index,
+		Asof:       msr.index,
 	}
 	n.subnets = append(n.subnets, l)
 
@@ -205,7 +209,7 @@ func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, network string,
 	}
 
 	sub.Attrs = *attrs
-	sub.asof = msr.index
+	sub.Asof = msr.index
 	sub.Expiration = exp
 	n.subnets[i] = sub
 	n.sendSubnetEvent(sn, event{
@@ -237,7 +241,7 @@ func (msr *MockSubnetRegistry) deleteSubnet(ctx context.Context, network string,
 
 	n.subnets[i] = n.subnets[len(n.subnets)-1]
 	n.subnets = n.subnets[:len(n.subnets)-1]
-	sub.asof = msr.index
+	sub.Asof = msr.index
 	n.sendSubnetEvent(sn, event{
 		Event{
 			Type:    EventRemoved,
@@ -332,7 +336,7 @@ func (msr *MockSubnetRegistry) expireSubnet(network string, sn ip.IP4Net) {
 		msr.index += 1
 		n.subnets[i] = n.subnets[len(n.subnets)-1]
 		n.subnets = n.subnets[:len(n.subnets)-1]
-		sub.asof = msr.index
+		sub.Asof = msr.index
 		n.sendSubnetEvent(sn, event{
 			Event{
 				Type:  EventRemoved,

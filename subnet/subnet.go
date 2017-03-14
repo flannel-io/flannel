@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -27,8 +28,9 @@ import (
 )
 
 var (
-	ErrLeaseTaken  = errors.New("subnet: lease already taken")
-	ErrNoMoreTries = errors.New("subnet: no more tries")
+	ErrLeaseTaken                 = errors.New("subnet: lease already taken")
+	ErrNoMoreTries                = errors.New("subnet: no more tries")
+	subnetRegex    *regexp.Regexp = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)`)
 )
 
 type LeaseAttrs struct {
@@ -42,7 +44,7 @@ type Lease struct {
 	Attrs      LeaseAttrs
 	Expiration time.Time
 
-	asof uint64
+	Asof uint64
 }
 
 func (l *Lease) Key() string {

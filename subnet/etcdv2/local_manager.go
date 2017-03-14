@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package subnet
+package etcdv2
 
 import (
 	"errors"
@@ -22,6 +22,7 @@ import (
 
 	etcd "github.com/coreos/etcd/client"
 	"github.com/coreos/flannel/pkg/ip"
+	. "github.com/coreos/flannel/subnet"
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 )

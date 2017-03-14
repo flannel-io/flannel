@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package subnet
+package etcdv2
 
 import (
 	"encoding/json"
@@ -21,10 +21,10 @@ import (
 	"time"
 
 	etcd "github.com/coreos/etcd/client"
+	"github.com/coreos/flannel/pkg/ip"
+	. "github.com/coreos/flannel/subnet"
 	"github.com/jonboulle/clockwork"
 	"golang.org/x/net/context"
-
-	"github.com/coreos/flannel/pkg/ip"
 )
 
 func newDummyRegistry() *MockSubnetRegistry {

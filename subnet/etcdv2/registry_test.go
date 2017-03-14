@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package subnet
+package etcdv2
 
 import (
 	"fmt"
@@ -24,6 +24,7 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/pkg/ip"
+	. "github.com/coreos/flannel/subnet"
 )
 
 func newTestEtcdRegistry(t *testing.T) (Registry, *mockEtcd) {

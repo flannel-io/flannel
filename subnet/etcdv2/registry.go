@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package subnet
+package etcdv2
 
 import (
 	"encoding/json"
@@ -29,11 +29,11 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/pkg/ip"
+	. "github.com/coreos/flannel/subnet"
 )
 
 var (
-	subnetRegex *regexp.Regexp = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)`)
-	errTryAgain                = errors.New("try again")
+	errTryAgain = errors.New("try again")
 )
 
 type Registry interface {
@@ -414,7 +414,7 @@ func nodeToLease(node *etcd.Node) (*Lease, error) {
 		Subnet:     *sn,
 		Attrs:      *attrs,
 		Expiration: exp,
-		asof:       node.ModifiedIndex,
+		Asof:       node.ModifiedIndex,
 	}
 
 	return &lease, nil
