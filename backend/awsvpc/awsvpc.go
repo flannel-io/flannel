@@ -18,8 +18,6 @@ package awsvpc
 import (
 	"encoding/json"
 	"fmt"
-	"net"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -27,6 +25,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
+	"net"
+	"sync"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
@@ -80,7 +80,7 @@ func (conf *backendConfig) routeTableConfigured() bool {
 	return configured
 }
 
-func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
+func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 	// Parse our configuration
 	var cfg backendConfig
 

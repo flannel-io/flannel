@@ -298,6 +298,27 @@ func parseSubnetWatchResponse(resp *etcd.Response) (Event, error) {
 	}
 }
 
+func (esr *etcdSubnetRegistry) createBackendData(ctx context.Context, network, data string) error {
+	key := path.Join(esr.etcdCfg.Prefix, network, "backend-data")
+	_, err := esr.client().Create(ctx, key, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (esr *etcdSubnetRegistry) getBackendData(ctx context.Context, network string) (string, error) {
+	key := path.Join(esr.etcdCfg.Prefix, network, "backend-data")
+	etcdResponse, err := esr.client().Get(ctx, key, nil)
+
+	if err != nil {
+		return "", err
+	}
+
+	return etcdResponse.Node.Value, nil
+}
+
 func nodeToLease(node *etcd.Node) (*Lease, error) {
 	sn := ParseSubnetKey(node.Key)
 	if sn == nil {

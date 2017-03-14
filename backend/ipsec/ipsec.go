@@ -15,24 +15,22 @@
 package ipsec
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
+	"sync"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
 )
 
-var CharonPath string
+var CharonViciUri string
 
 const (
-	defaultCharonPath = "/opt/flannel/libexec/ipsec/charon"
-	passwordLength    = 40
+	defaultESPProposal = "aes128gcm16-sha256-prfsha256-ecp256"
+	minPasswordLength  = 96
 )
 
 func init() {
@@ -44,7 +42,8 @@ type IPSECBackend struct {
 	extIface *backend.ExternalInterface
 }
 
-func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backend, error) {
+func New(sm subnet.Manager, extIface *backend.ExternalInterface) (
+	backend.Backend, error) {
 	be := &IPSECBackend{
 		sm:       sm,
 		extIface: extIface,
@@ -53,10 +52,17 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return be, nil
 }
 
-func (be *IPSECBackend) RegisterNetwork(ctx context.Context, netname string, config *subnet.Config) (backend.Network, error) {
+func (be *IPSECBackend) RegisterNetwork(
+	ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+
 	cfg := struct {
-		UDPEncap bool
-	}{}
+		UDPEncap    bool
+		ESPProposal string
+		PSK         string
+	}{
+		UDPEncap:    false,
+		ESPProposal: defaultESPProposal,
+	}
 
 	if len(config.Backend) > 0 {
 		log.Info("i.config.backend length > 0")
@@ -65,12 +71,18 @@ func (be *IPSECBackend) RegisterNetwork(ctx context.Context, netname string, con
 		}
 	}
 
+	if len(cfg.PSK) < minPasswordLength {
+		return nil, fmt.Errorf(
+			"config error, password should be at least %s characters long",
+			minPasswordLength)
+	}
+
 	attrs := subnet.LeaseAttrs{
 		PublicIP:    ip.FromIP(be.extIface.ExtAddr),
 		BackendType: "ipsec",
 	}
 
-	l, err := be.sm.AcquireLease(ctx, netname, &attrs)
+	l, err := be.sm.AcquireLease(ctx, &attrs)
 
 	switch err {
 	case nil:
@@ -82,56 +94,16 @@ func (be *IPSECBackend) RegisterNetwork(ctx context.Context, netname string, con
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
-	if CharonPath == "" {
-		CharonPath = defaultCharonPath
-	}
-
-	ikeDaemon, err := NewCharonIKEDaemon(CharonPath)
+	ikeDaemon, err := NewCharonIKEDaemon(ctx, wg, CharonViciUri, cfg.ESPProposal)
 	if err != nil {
 		return nil, fmt.Errorf("error creating CharonIKEDaemon struct: %v", err)
 	}
 
 	log.Info("UDPEncap: ", cfg.UDPEncap)
 
-	password, err := GenerateRandomString(passwordLength)
-	if err != nil {
-		return nil, fmt.Errorf("error generating random string: %v", err)
-	}
-
-	err = be.sm.CreateBackendData(ctx, netname, password)
-	if err != nil {
-		return nil, fmt.Errorf("error creating password: %v", err)
-	}
-
-	password, err = be.sm.GetBackendData(ctx, netname)
-	if err != nil {
-		return nil, fmt.Errorf("error getting password: %v", err)
-	}
-
-	return newNetwork(netname, be.sm, be.extIface, cfg.UDPEncap, password, ikeDaemon, l)
+	return newNetwork(be.sm, be.extIface, cfg.UDPEncap, cfg.PSK, ikeDaemon, l)
 }
 
 func (be *IPSECBackend) Run(ctx context.Context) {
 	<-ctx.Done()
-}
-
-func generateRandomBytes(n int) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
-}
-
-func GenerateRandomString(s int) (string, error) {
-	b, err := generateRandomBytes(s)
-
-	if err != nil {
-		return "", err
-	}
-
-	return base64.StdEncoding.EncodeToString(b), nil
 }

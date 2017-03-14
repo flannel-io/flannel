@@ -47,20 +47,20 @@ const (
 
 type network struct {
 	backend.SimpleNetwork
-	name     string
 	password string
 	UDPEncap bool
 	sm       subnet.Manager
 	iked     *CharonIKEDaemon
 }
 
-func newNetwork(name string, sm subnet.Manager, extIface *backend.ExternalInterface, UDPEncap bool, password string, ikeDaemon *CharonIKEDaemon, l *subnet.Lease) (*network, error) {
+func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface,
+	UDPEncap bool, password string, ikeDaemon *CharonIKEDaemon,
+	l *subnet.Lease) (*network, error) {
 	n := &network{
 		SimpleNetwork: backend.SimpleNetwork{
 			SubnetLease: l,
 			ExtIface:    extIface,
 		},
-		name:     name,
 		sm:       sm,
 		iked:     ikeDaemon,
 		password: password,
@@ -74,24 +74,25 @@ func (n *network) Run(ctx context.Context) {
 	wg := sync.WaitGroup{}
 	defer wg.Wait()
 
-	wg.Add(1)
-	go func() {
-		log.Info("Starting charon \n")
-		n.startIKEDaemon()
-		log.Info("Charon daemon exited")
-		wg.Done()
-	}()
-
 	log.Info("Watching for new subnet leases")
 
 	evts := make(chan []subnet.Event)
 
 	wg.Add(1)
 	go func() {
-		subnet.WatchLeases(ctx, n.sm, n.name, n.SubnetLease, evts)
+		subnet.WatchLeases(ctx, n.sm, n.SubnetLease, evts)
 		log.Info("WatchLeases exited")
 		wg.Done()
 	}()
+
+	for {
+		err := n.iked.LoadSharedKey(n.SimpleNetwork.SubnetLease.Attrs.PublicIP.ToIP().String(), n.password)
+		if err == nil {
+			break
+		}
+		log.Error(err, " Failed to load my key. Retrying")
+		time.Sleep(time.Second)
+	}
 
 	initialEvtsBatch := <-evts
 	for {
@@ -227,12 +228,6 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				log.Errorf("error deleting ipsec policies: %v", err)
 			}
 		}
-	}
-}
-
-func (n *network) startIKEDaemon() {
-	if err := n.iked.Run(); err != nil {
-		log.Info("error starting IKE daemon: ", err)
 	}
 }
 

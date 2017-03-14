@@ -325,11 +325,3 @@ func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, curs
 func (ksm *kubeSubnetManager) Name() string {
 	return fmt.Sprintf("Kubernetes Subnet Manager - %s", ksm.nodeName)
 }
-
-func (ksm *kubeSubnetManager) GetBackendData(ctx context.Context, network string) (string, error) {
-	return "", ErrUnimplemented
-}
-
-func (ksm *kubeSubnetManager) CreateBackendData(ctx context.Context, network, data string) error {
-	return ErrUnimplemented
-}

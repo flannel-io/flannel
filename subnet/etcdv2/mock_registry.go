@@ -31,6 +31,7 @@ var clock clockwork.Clock = clockwork.NewRealClock()
 
 type netwk struct {
 	config        string
+	backendData   string
 	subnets       []Lease
 	subnetsEvents chan event
 

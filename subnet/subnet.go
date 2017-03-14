@@ -131,7 +131,4 @@ type Manager interface {
 	WatchLeases(ctx context.Context, cursor interface{}) (LeaseWatchResult, error)
 
 	Name() string
-
-	GetBackendData(ctx context.Context, network string) (string, error)
-	CreateBackendData(ctx context.Context, network, data string) error
 }
