@@ -17,6 +17,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -33,26 +34,27 @@ import (
 	"github.com/coreos/flannel/version"
 
 	// Backends need to be imported for their init() to get executed and them to register
+	_ "github.com/coreos/flannel/backend/alivpc"
 	_ "github.com/coreos/flannel/backend/alloc"
 	_ "github.com/coreos/flannel/backend/awsvpc"
 	_ "github.com/coreos/flannel/backend/gce"
 	_ "github.com/coreos/flannel/backend/hostgw"
 	_ "github.com/coreos/flannel/backend/udp"
 	_ "github.com/coreos/flannel/backend/vxlan"
-	_ "github.com/coreos/flannel/backend/alivpc"
 )
 
 type CmdLineOpts struct {
-	etcdEndpoints  string
-	etcdPrefix     string
-	etcdKeyfile    string
-	etcdCertfile   string
-	etcdCAFile     string
-	etcdUsername   string
-	etcdPassword   string
-	help           bool
-	version        bool
-	kubeSubnetMgr  bool
+	etcdEndpoints   string
+	etcdPrefix      string
+	etcdKeyfile     string
+	etcdCertfile    string
+	etcdCAFile      string
+	etcdUsername    string
+	etcdPassword    string
+	help            bool
+	version         bool
+	kubeSubnetMgr   bool
+	healthCheckPort int
 }
 
 var opts CmdLineOpts
@@ -68,6 +70,7 @@ func init() {
 	flag.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "Contact the Kubernetes API for subnet assignement instead of etcd or flannel-server.")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
+	flag.IntVar(&opts.healthCheckPort, "health-check-port", 0, "Run a simple HTTP health-check server on this port")
 }
 
 func newSubnetManager() (subnet.Manager, error) {
@@ -122,15 +125,13 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	var runFunc func(ctx context.Context)
-
 	nm, err := network.NewNetworkManager(ctx, sm)
 	if err != nil {
 		log.Error("Failed to create NetworkManager: ", err)
 		os.Exit(1)
 	}
 
-	runFunc = func(ctx context.Context) {
+	runFunc := func(ctx context.Context) {
 		nm.Run(ctx)
 	}
 
@@ -140,6 +141,13 @@ func main() {
 		runFunc(ctx)
 		wg.Done()
 	}()
+
+	if opts.healthCheckPort > 0 {
+		go http.ListenAndServe(fmt.Sprintf(":%d", opts.healthCheckPort), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("flanneld is up!\n"))
+		}))
+	}
 
 	<-sigs
 	// unregister to get default OS nuke behaviour in case we don't exit cleanly
