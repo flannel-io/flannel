@@ -225,10 +225,15 @@ To work around this issue, use `--iface` option to specify the interface that ha
 If you're running on CoreOS, use cloud-config to set `coreos.flannel.interface` to `$public_ipv4`.
 
 
-# Release Process
+## Release Process
 * Create a release on Github and use it to create a tag
 * Check the tag out and run
   * `make release`
 * Attach all the files in `dist` to the Github release
 * Run `make docker-push-all` to push all the images to a registry
 
+## Related Links
+
+### Integrations and Production Users
+- [Projects integrating with flannel](https://github.com/coreos/flannel/blob/master/Documentation/integrations.md)
+- [Production users](https://github.com/coreos/flannel/blob/master/Documentation/production-users.md)
