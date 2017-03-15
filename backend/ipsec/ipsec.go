@@ -31,8 +31,9 @@ import (
 var CharonPath string
 
 const (
-	defaultCharonPath = "/opt/flannel/libexec/ipsec/charon"
-	passwordLength    = 40
+	defaultCharonPath  = "/opt/flannel/libexec/ipsec/charon"
+	defaultESPProposal = "aes128gcm16-sha256-prfsha256-ecp256"
+	passwordLength     = 96
 )
 
 func init() {
@@ -55,7 +56,8 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 
 func (be *IPSECBackend) RegisterNetwork(ctx context.Context, netname string, config *subnet.Config) (backend.Network, error) {
 	cfg := struct {
-		UDPEncap bool
+		UDPEncap    bool
+		ESPProposal string
 	}{}
 
 	if len(config.Backend) > 0 {
@@ -63,6 +65,11 @@ func (be *IPSECBackend) RegisterNetwork(ctx context.Context, netname string, con
 		if err := json.Unmarshal(config.Backend, &cfg); err != nil {
 			return nil, fmt.Errorf("error decoding IPSEC backend config: %v", err)
 		}
+	}
+	// Applying defaults
+	if cfg.ESPProposal == "" {
+		log.Info("Applying default ESP proposal: ", defaultESPProposal)
+		cfg.ESPProposal = defaultESPProposal
 	}
 
 	attrs := subnet.LeaseAttrs{
@@ -86,7 +93,7 @@ func (be *IPSECBackend) RegisterNetwork(ctx context.Context, netname string, con
 		CharonPath = defaultCharonPath
 	}
 
-	ikeDaemon, err := NewCharonIKEDaemon(CharonPath)
+	ikeDaemon, err := NewCharonIKEDaemon(CharonPath, cfg.ESPProposal)
 	if err != nil {
 		return nil, fmt.Errorf("error creating CharonIKEDaemon struct: %v", err)
 	}

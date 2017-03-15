@@ -28,20 +28,19 @@ import (
 )
 
 type CharonIKEDaemon struct {
-	path string
+	path        string
+	espProposal string
 }
 
-func NewCharonIKEDaemon(charonPath string) (*CharonIKEDaemon, error) {
+func NewCharonIKEDaemon(charonPath string, espProposal string) (*CharonIKEDaemon, error) {
 	path, err := exec.LookPath(charonPath)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Info("Launching IKE charon path: ", path)
+	log.Info("Launching IKE charon path: ", path, " ESP proposal: ", espProposal)
 
-	return &CharonIKEDaemon{
-		path: path,
-	}, nil
+	return &CharonIKEDaemon{path, espProposal}, nil
 }
 
 func (charon *CharonIKEDaemon) Run() error {
@@ -109,7 +108,7 @@ func (charon *CharonIKEDaemon) LoadConnection(localLease, remoteLease *subnet.Le
 	childSAConf := goStrongswanVici.ChildSAConf{
 		Local_ts:     []string{localLease.Subnet.String()},
 		Remote_ts:    []string{remoteLease.Subnet.String()},
-		ESPProposals: []string{"aes256-sha256-modp4096"},
+		ESPProposals: []string{charon.espProposal},
 		StartAction:  "start",
 		CloseAction:  "trap",
 		Mode:         "tunnel",
