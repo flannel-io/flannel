@@ -1,7 +1,5 @@
-# Create the clusterrole:
+# Create the clusterrole and clusterrolebinding:
 # $ kubectl create -f kube-flannel-rbac.yml
-# Bind the flannel serviceaccount to the flannel clusterrole:
-# $ kubectl create clusterrolebinding flannel --clusterrole=flannel --serviceaccount=kube-system:flannel
 # Create the pod using the same namespace used by the flannel serviceaccount:
 # $ kubectl create --namespace kube-system -f kube-flannel.yml
 ---
@@ -24,3 +22,16 @@ rules:
       - list
       - update
       - watch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: flannel
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: flannel
+subjects:
+- kind: ServiceAccount
+  name: flannel
+  namespace: kube-system
