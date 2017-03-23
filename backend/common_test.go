@@ -1,4 +1,4 @@
-// Copyright 2015 flannel authors
+// Copyright 2017 flannel authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,28 +13,21 @@
 // limitations under the License.
 // +build !windows
 
-package hostgw
+package backend
 
 import (
 	"net"
-	"runtime"
 	"testing"
 
-	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/pkg/ns"
 	"github.com/coreos/flannel/subnet"
 	"github.com/vishvananda/netlink"
-	"github.com/vishvananda/netns"
 )
 
 func TestRouteCache(t *testing.T) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
-	origns, _ := netns.Get()
-	defer origns.Close()
-	newns, _ := netns.New()
-	netns.Set(newns)
-	defer newns.Close()
+	teardown := ns.SetUpNetlinkTest(t)
+	defer teardown()
 
 	lo, err := netlink.LinkByName("lo")
 	if err != nil {
@@ -46,26 +39,40 @@ func TestRouteCache(t *testing.T) {
 	if err := netlink.LinkSetUp(lo); err != nil {
 		t.Fatal(err)
 	}
-	nw := network{extIface: &backend.ExternalInterface{Iface: &net.Interface{Index: lo.Attrs().Index}}}
+	nw := RouteNetwork{
+		SimpleNetwork: SimpleNetwork{
+			ExtIface: &ExternalInterface{Iface: &net.Interface{Index: lo.Attrs().Index}},
+		},
+		BackendType: "host-gw",
+		LinkIndex:   lo.Attrs().Index,
+	}
+	nw.GetRoute = func(lease *subnet.Lease) *netlink.Route {
+		return &netlink.Route{
+			Dst:       lease.Subnet.ToIPNet(),
+			Gw:        lease.Attrs.PublicIP.ToIP(),
+			LinkIndex: nw.LinkIndex,
+		}
+	}
 	gw1, gw2 := ip.FromIP(net.ParseIP("127.0.0.1")), ip.FromIP(net.ParseIP("127.0.0.2"))
 	subnet1 := ip.IP4Net{IP: ip.FromIP(net.ParseIP("192.168.0.0")), PrefixLen: 24}
 	nw.handleSubnetEvents([]subnet.Event{
-		{Type: subnet.EventAdded, Lease: subnet.Lease{Subnet: subnet1, Attrs: subnet.LeaseAttrs{PublicIP: gw1, BackendType: "host-gw"}}},
+		{Type: subnet.EventAdded, Lease: subnet.Lease{
+			Subnet: subnet1, Attrs: subnet.LeaseAttrs{PublicIP: gw1, BackendType: "host-gw"}}},
 	})
-	if len(nw.rl) != 1 {
-		t.Fatal(nw.rl)
+	if len(nw.routes) != 1 {
+		t.Fatal(nw.routes)
 	}
-	if !routeEqual(nw.rl[0], netlink.Route{Dst: subnet1.ToIPNet(), Gw: gw1.ToIP()}) {
-		t.Fatal(nw.rl[0])
+	if !routeEqual(nw.routes[0], netlink.Route{Dst: subnet1.ToIPNet(), Gw: gw1.ToIP(), LinkIndex: lo.Attrs().Index}) {
+		t.Fatal(nw.routes[0])
 	}
 	// change gateway of previous route
 	nw.handleSubnetEvents([]subnet.Event{
 		{Type: subnet.EventAdded, Lease: subnet.Lease{
 			Subnet: subnet1, Attrs: subnet.LeaseAttrs{PublicIP: gw2, BackendType: "host-gw"}}}})
-	if len(nw.rl) != 1 {
-		t.Fatal(nw.rl)
+	if len(nw.routes) != 1 {
+		t.Fatal(nw.routes)
 	}
-	if !routeEqual(nw.rl[0], netlink.Route{Dst: subnet1.ToIPNet(), Gw: gw2.ToIP()}) {
-		t.Fatal(nw.rl[0])
+	if !routeEqual(nw.routes[0], netlink.Route{Dst: subnet1.ToIPNet(), Gw: gw2.ToIP(), LinkIndex: lo.Attrs().Index}) {
+		t.Fatal(nw.routes[0])
 	}
 }

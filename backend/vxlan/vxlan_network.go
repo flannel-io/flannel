@@ -115,14 +115,10 @@ func (nw *network) handleSubnetEvents(batch []subnet.Event) {
 		}
 		var directRoutingOK = false
 		if nw.dev.directRouting {
-			routes, err := netlink.RouteGet(attrs.PublicIP.ToIP())
-			if err != nil {
-				log.Errorf("Couldn't lookup route to %v: %v", attrs.PublicIP, err)
-				continue
-			}
-			if len(routes) == 1 && routes[0].Gw == nil {
-				// There is only a single route and there's no gateway (i.e. it's directly connected)
-				directRoutingOK = true
+			if dr, err := ip.DirectRouting(attrs.PublicIP.ToIP()); err != nil {
+				log.Error(err)
+			} else {
+				directRoutingOK = dr
 			}
 		}
 

@@ -107,30 +107,8 @@ func ensureLink(vxlan *netlink.Vxlan) (*netlink.Vxlan, error) {
 }
 
 func (dev *vxlanDevice) Configure(ipn ip.IP4Net) error {
-	addr := netlink.Addr{IPNet: ipn.ToIPNet()}
-	existingAddrs, err := netlink.AddrList(dev.link, netlink.FAMILY_V4)
-	if err != nil {
-		return err
-	}
-
-	// flannel will never make this happen. This situation can only be caused by a user, so get them to sort it out.
-	if len(existingAddrs) > 1 {
-		return fmt.Errorf("link has incompatible addresses. Remove additional addresses and try again. %#v", dev.link)
-	}
-
-	// If the device has an incompatible address then delete it. This can happen if the lease changes for example.
-	if len(existingAddrs) == 1 && !existingAddrs[0].Equal(addr) {
-		if err := netlink.AddrDel(dev.link, &existingAddrs[0]); err != nil {
-			return fmt.Errorf("failed to remove IP address %s from %s: %s", ipn.String(), dev.link.Attrs().Name, err)
-		}
-		existingAddrs = []netlink.Addr{}
-	}
-
-	// Actually add the desired address to the interface if needed.
-	if len(existingAddrs) == 0 {
-		if err := netlink.AddrAdd(dev.link, &addr); err != nil {
-			return fmt.Errorf("failed to add IP address %s to %s: %s", ipn.String(), dev.link.Attrs().Name, err)
-		}
+	if err := ip.EnsureV4AddressOnLink(ipn, dev.link); err != nil {
+		return fmt.Errorf("failed to ensure address of interface %s: %s", dev.link.Attrs().Name, err)
 	}
 
 	if err := netlink.LinkSetUp(dev.link); err != nil {
