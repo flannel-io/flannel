@@ -134,12 +134,20 @@ dist/iptables-$(ARCH):
             cd /go/src/github.com/coreos/flannel && \
             file dist/iptables-$(ARCH)'
 
-## Build a .tar.gz for the amd64 flanneld binary
-tar.gz: dist/flannel-$(TAG)-linux-amd64.tar.gz
-dist/flannel-$(TAG)-linux-amd64.tar.gz:
+## Build a .tar.gz for the amd64 ppc64le arm arm64 flanneld binary
+tar.gz:	
 	ARCH=amd64 make dist/flanneld-amd64
 	tar --transform='flags=r;s|-amd64||' -zcvf dist/flannel-$(TAG)-linux-amd64.tar.gz -C dist flanneld-amd64 mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-amd64.tar.gz
+	ARCH=ppc64le make dist/flanneld-ppc64le
+	tar --transform='flags=r;s|-ppc64le||' -zcvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz -C dist flanneld-ppc64le mk-docker-opts.sh ../README.md
+	tar -tvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz
+	ARCH=arm make dist/flanneld-arm
+	tar --transform='flags=r;s|-arm||' -zcvf dist/flannel-$(TAG)-linux-arm.tar.gz -C dist flanneld-arm mk-docker-opts.sh ../README.md
+	tar -tvf dist/flannel-$(TAG)-linux-arm.tar.gz
+	ARCH=arm64 make dist/flanneld-arm64
+	tar --transform='flags=r;s|-arm64||' -zcvf dist/flannel-$(TAG)-linux-arm64.tar.gz -C dist flanneld-arm64 mk-docker-opts.sh ../README.md
+	tar -tvf dist/flannel-$(TAG)-linux-arm64.tar.gz
 
 ## Make a release after creating a tag
 release: dist/flannel-$(TAG)-linux-amd64.tar.gz
