@@ -280,7 +280,7 @@ func TestRenewLease(t *testing.T) {
 	// check that it's still good
 	n, err := msr.getNetwork(ctx, "_")
 	if err != nil {
-		t.Error("Failed to renew lease: could not get networks: %v", err)
+		t.Errorf("Failed to renew lease: could not get networks: %v", err)
 	}
 
 	for _, sn := range n.subnets {
@@ -296,7 +296,7 @@ func TestRenewLease(t *testing.T) {
 		}
 	}
 
-	t.Fatalf("Failed to find acquired lease")
+	t.Fatal("Failed to find acquired lease")
 }
 
 func TestLeaseRevoked(t *testing.T) {
@@ -336,7 +336,7 @@ func TestWatchGetNetworks(t *testing.T) {
 
 	resp, err := sm.WatchNetworks(ctx, nil)
 	if err != nil {
-		t.Errorf("WatchNetworks(nil) failed:", err)
+		t.Errorf("WatchNetworks(nil) failed: %v", err)
 	}
 
 	if len(resp.Snapshot) != 1 {

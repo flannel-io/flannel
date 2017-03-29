@@ -116,6 +116,9 @@ func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, co
 	}
 
 	networkConfig, err := be.sm.GetNetworkConfig(ctx, network)
+	if err != nil {
+		log.Errorf("Error fetching network config: %v", err)
+	}
 
 	err = be.cleanupBlackholeRoutes(cfg.RouteTableID, networkConfig.Network, ec2c)
 	if err != nil {

@@ -119,7 +119,7 @@ func (g *GCEBackend) RegisterNetwork(ctx context.Context, network string, config
 
 		err = g.api.pollOperationStatus(operation.Name)
 		if err != nil {
-			return nil, fmt.Errorf("insert operaiton failed: ", err)
+			return nil, fmt.Errorf("insert operaiton failed: %v", err)
 		}
 	}
 

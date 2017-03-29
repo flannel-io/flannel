@@ -353,7 +353,7 @@ func (esr *etcdSubnetRegistry) parseNetworkWatchResponse(resp *etcd.Response) (E
 		return Event{}, index, errTryAgain
 	}
 
-	evt := Event{}
+	var evt Event
 
 	switch resp.Action {
 	case "delete":
