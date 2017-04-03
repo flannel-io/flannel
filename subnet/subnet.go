@@ -28,9 +28,9 @@ import (
 )
 
 var (
-	ErrLeaseTaken                 = errors.New("subnet: lease already taken")
-	ErrNoMoreTries                = errors.New("subnet: no more tries")
-	subnetRegex    *regexp.Regexp = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)`)
+	ErrLeaseTaken  = errors.New("subnet: lease already taken")
+	ErrNoMoreTries = errors.New("subnet: no more tries")
+	subnetRegex    = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)`)
 )
 
 type LeaseAttrs struct {

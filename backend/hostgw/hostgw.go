@@ -17,10 +17,10 @@ package hostgw
 import (
 	"fmt"
 
-	"golang.org/x/net/context"
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
+	"golang.org/x/net/context"
 )
 
 func init() {

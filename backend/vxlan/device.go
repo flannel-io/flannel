@@ -243,7 +243,7 @@ func (dev *vxlanDevice) processNeighMsg(msg syscall.NetlinkMessage, misses chan 
 		return
 	}
 
-	if int(neigh.LinkIndex) != dev.link.Index {
+	if neigh.LinkIndex != dev.link.Index {
 		return
 	}
 

@@ -88,8 +88,6 @@ func watchSubnets(t *testing.T, r Registry, ctx context.Context, sn ip.IP4Net, n
 			return
 		}
 	}
-
-	result <- fmt.Errorf("Should never get here")
 }
 
 func TestEtcdRegistry(t *testing.T) {
@@ -152,19 +150,19 @@ func TestEtcdRegistry(t *testing.T) {
 		t.Fatal("Failed to create subnet lease")
 	}
 	if !exp.After(time.Now()) {
-		t.Fatal("Subnet lease duration %v not in the future", exp)
+		t.Fatalf("Subnet lease duration %v not in the future", exp)
 	}
 
 	// Make sure the lease got created
 	resp, err := m.Get(ctx, "/coreos.com/network/foobar/subnets/10.1.5.0-24", nil)
 	if err != nil {
-		t.Fatal("Failed to verify subnet lease directly in etcd: %v", err)
+		t.Fatalf("Failed to verify subnet lease directly in etcd: %v", err)
 	}
 	if resp == nil || resp.Node == nil {
 		t.Fatal("Failed to retrive node in subnet lease")
 	}
 	if resp.Node.Value != "{\"PublicIP\":\"1.2.3.4\"}" {
-		t.Fatal("Unexpected subnet lease node %s value %s", resp.Node.Key, resp.Node.Value)
+		t.Fatalf("Unexpected subnet lease node %s value %s", resp.Node.Key, resp.Node.Value)
 	}
 
 	leases, _, err := r.getSubnets(ctx, "foobar")
