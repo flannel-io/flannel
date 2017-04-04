@@ -22,9 +22,6 @@ import (
 	"golang.org/x/net/context"
 )
 
-// TODO(mcgreevy): make this more dynamic.
-const batchPullSize = 100
-
 type Iterator struct {
 	// The name of the subscription that the Iterator is pulling messages from.
 	sub string
@@ -46,13 +43,10 @@ type Iterator struct {
 	closed bool
 }
 
-// newIterator starts a new Iterator.  Close must be called on the Iterator
+// newIterator starts a new Iterator.  Stop must be called on the Iterator
 // when it is no longer needed.
 // subName is the full name of the subscription to pull messages from.
-// ackDeadline is the default ack deadline for the subscription
-// maxExtension is the maximum period for which the iterator should automatically extend
-// the ack deadline for each message.
-func (c *Client) newIterator(ctx context.Context, subName string, ackDeadline, maxExtension time.Duration) *Iterator {
+func (c *Client) newIterator(ctx context.Context, subName string, po *pullOptions) *Iterator {
 	it := &Iterator{
 		sub: subName,
 		ctx: ctx,
@@ -61,21 +55,21 @@ func (c *Client) newIterator(ctx context.Context, subName string, ackDeadline, m
 
 	// TODO: make kaTicker frequency more configurable.
 	// (ackDeadline - 5s) is a reasonable default for now, because the minimum ack period is 10s.  This gives us 5s grace.
-	keepAlivePeriod := ackDeadline - 5*time.Second
-	it.kaTicker = time.NewTicker(keepAlivePeriod) // Stopped in it.Close
+	keepAlivePeriod := po.ackDeadline - 5*time.Second
+	it.kaTicker = time.NewTicker(keepAlivePeriod) // Stopped in it.Stop
 	it.ka = keepAlive{
 		Client:        it.c,
 		Ctx:           it.ctx,
 		Sub:           it.sub,
 		ExtensionTick: it.kaTicker.C,
-		Deadline:      ackDeadline,
-		MaxExtension:  maxExtension,
+		Deadline:      po.ackDeadline,
+		MaxExtension:  po.maxExtension,
 	}
 
 	// TODO: make ackTicker more configurable.  Something less than
 	// kaTicker is a reasonable default (there's no point extending
 	// messages when they could be acked instead).
-	it.ackTicker = time.NewTicker(keepAlivePeriod / 2) // Stopped in it.Close
+	it.ackTicker = time.NewTicker(keepAlivePeriod / 2) // Stopped in it.Stop
 	it.acker = acker{
 		Client:  it.c,
 		Ctx:     it.ctx,
@@ -87,7 +81,7 @@ func (c *Client) newIterator(ctx context.Context, subName string, ackDeadline, m
 	it.puller = puller{
 		Client:    it.c,
 		Sub:       it.sub,
-		BatchSize: batchPullSize,
+		BatchSize: int64(po.maxPrefetch),
 		Notify:    it.ka.Add,
 	}
 
@@ -97,10 +91,9 @@ func (c *Client) newIterator(ctx context.Context, subName string, ackDeadline, m
 }
 
 // Next returns the next Message to be processed.  The caller must call Done on
-// the returned Message once it is finished with it.
-// Once Close has been called, subsequent calls to Next will return io.EOF.
-func (it *Iterator) Next(ctx context.Context) (*Message, error) {
-	// TODO: decide whether to use it.ctx instead of ctx.
+// the returned Message when finished with it.
+// Once Stop has been called, subsequent calls to Next will return io.EOF.
+func (it *Iterator) Next() (*Message, error) {
 	it.mu.Lock()
 	defer it.mu.Unlock()
 	if it.closed {
@@ -108,15 +101,15 @@ func (it *Iterator) Next(ctx context.Context) (*Message, error) {
 	}
 
 	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
+	case <-it.ctx.Done():
+		return nil, it.ctx.Err()
 	default:
 	}
 
 	// Note: this is the only place where messages are added to keepAlive,
 	// and this code is protected by mu. This means once an iterator starts
 	// being closed down, no more messages will be added to keepalive.
-	m, err := it.puller.Next(ctx)
+	m, err := it.puller.Next(it.ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -124,16 +117,18 @@ func (it *Iterator) Next(ctx context.Context) (*Message, error) {
 	return m, nil
 }
 
-// Client code must call Close on an Iterator when finished with it.
-// Close will block until Done has been called on all Messages that have been
-// returned by Next.
-// Close need only be called once, but may be called multiple times from multiple goroutines.
-func (it *Iterator) Close() error {
+// Client code must call Stop on an Iterator when finished with it.
+// Stop will block until Done has been called on all Messages that have been
+// returned by Next, or until the context with which the Iterator was created
+// is cancelled or exceeds its deadline.
+// Stop need only be called once, but may be called multiple times from
+// multiple goroutines.
+func (it *Iterator) Stop() {
 	// TODO: test calling from multiple goroutines.
 	it.mu.Lock()
 	defer it.mu.Unlock()
 	if it.closed {
-		return nil
+		return
 	}
 	it.closed = true
 
@@ -145,16 +140,16 @@ func (it *Iterator) Close() error {
 		it.ka.Remove(m.AckID)
 	}
 
-	// This will block until all messages have been removed from keepAlive.
-	// This will happen once all outstanding messages have been either
-	// ACKed or NACKed.
+	// This will block until
+	//   (a) it.Ctx is done, or
+	//   (b) all messages have been removed from keepAlive.
+	// (b) will happen once all outstanding messages have been either ACKed or NACKed.
 	it.ka.Stop()
 
 	it.acker.Stop()
 
 	it.kaTicker.Stop()
 	it.ackTicker.Stop()
-	return nil
 }
 
 func (it *Iterator) done(ackID string, ack bool) {

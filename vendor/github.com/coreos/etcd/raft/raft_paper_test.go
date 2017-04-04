@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -159,7 +159,7 @@ func testNonleaderStartElection(t *testing.T, state StateType) {
 		r.becomeCandidate()
 	}
 
-	for i := 0; i < 2*et; i++ {
+	for i := 1; i < 2*et; i++ {
 		r.tick()
 	}
 
@@ -757,7 +757,9 @@ func TestLeaderSyncFollowerLog(t *testing.T) {
 		// first node needs the vote from the third node to become the leader.
 		n := newNetwork(lead, follower, nopStepper)
 		n.send(pb.Message{From: 1, To: 1, Type: pb.MsgHup})
-		n.send(pb.Message{From: 3, To: 1, Type: pb.MsgVoteResp, Term: 1})
+		// The election occurs in the term after the one we loaded with
+		// lead.loadState above.
+		n.send(pb.Message{From: 3, To: 1, Type: pb.MsgVoteResp, Term: term + 1})
 
 		n.send(pb.Message{From: 1, To: 1, Type: pb.MsgProp, Entries: []pb.Entry{{}}})
 
@@ -785,7 +787,7 @@ func TestVoteRequest(t *testing.T) {
 		})
 		r.readMessages()
 
-		for i := 0; i < r.electionTimeout*2; i++ {
+		for i := 1; i < r.electionTimeout*2; i++ {
 			r.tickElection()
 		}
 

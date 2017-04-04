@@ -14,20 +14,24 @@ import (
 
 // A ShapeRef defines the usage of a shape within the API.
 type ShapeRef struct {
-	API              *API   `json:"-"`
-	Shape            *Shape `json:"-"`
-	Documentation    string
-	ShapeName        string `json:"shape"`
-	Location         string
-	LocationName     string
-	QueryName        string
-	Flattened        bool
-	Streaming        bool
-	XMLAttribute     bool
+	API           *API   `json:"-"`
+	Shape         *Shape `json:"-"`
+	Documentation string
+	ShapeName     string `json:"shape"`
+	Location      string
+	LocationName  string
+	QueryName     string
+	Flattened     bool
+	Streaming     bool
+	XMLAttribute  bool
+	// Ignore, if set, will not be sent over the wire
+	Ignore           bool
 	XMLNamespace     XMLInfo
 	Payload          string
 	IdempotencyToken bool `json:"idempotencyToken"`
 	Deprecated       bool `json:"deprecated"`
+
+	OrigShapeName string `json:"-"`
 }
 
 // ErrorInfo represents the error block of a shape's structure
@@ -69,6 +73,8 @@ type Shape struct {
 	refs       []*ShapeRef // References to this shape
 	resolvePkg string      // use this package in the goType() if present
 
+	OrigShapeName string `json:"-"`
+
 	// Defines if the shape is a placeholder and should not be used directly
 	Placeholder bool
 
@@ -105,10 +111,12 @@ func (s *Shape) GoTags(root, required bool) string {
 // the associated API's reference to use newName.
 func (s *Shape) Rename(newName string) {
 	for _, r := range s.refs {
+		r.OrigShapeName = r.ShapeName
 		r.ShapeName = newName
 	}
 
 	delete(s.API.Shapes, s.ShapeName)
+	s.OrigShapeName = s.ShapeName
 	s.API.Shapes[newName] = s
 	s.ShapeName = newName
 }
@@ -130,14 +138,38 @@ func (s *Shape) GoTypeWithPkgName() string {
 	return goType(s, true)
 }
 
+// GenAccessors returns if the shape's reference should have setters generated.
+func (s *ShapeRef) UseIndirection() bool {
+	switch s.Shape.Type {
+	case "map", "list", "blob", "structure":
+		return false
+	}
+
+	if s.Streaming || s.Shape.Streaming {
+		return false
+	}
+
+	return true
+}
+
+// GoStructValueType returns the Shape's Go type value instead of a pointer
+// for the type.
+func (s *Shape) GoStructValueType(name string, ref *ShapeRef) string {
+	v := s.GoStructType(name, ref)
+
+	if ref.UseIndirection() && v[0] == '*' {
+		return v[1:]
+	}
+
+	return v
+}
+
 // GoStructType returns the type of a struct field based on the API
 // model definition.
 func (s *Shape) GoStructType(name string, ref *ShapeRef) string {
 	if (ref.Streaming || ref.Shape.Streaming) && s.Payload == name {
 		rtype := "io.ReadSeeker"
-		if len(s.refs) > 1 {
-			rtype = "aws.ReaderSeekCloser"
-		} else if strings.HasSuffix(s.ShapeName, "Output") {
+		if strings.HasSuffix(s.ShapeName, "Output") {
 			rtype = "io.ReadCloser"
 		}
 
@@ -357,6 +389,10 @@ func (ref *ShapeRef) GoTags(toplevel bool, isRequired bool) string {
 		tags = append(tags, ShapeTag{"idempotencyToken", "true"})
 	}
 
+	if ref.Ignore {
+		tags = append(tags, ShapeTag{"ignore", "true"})
+	}
+
 	return fmt.Sprintf("`%s`", tags)
 }
 
@@ -445,12 +481,25 @@ func (s *Shape) NestedShape() *Shape {
 	return nestedShape
 }
 
-var structShapeTmpl = template.Must(template.New("StructShape").Parse(`
+var structShapeTmpl = template.Must(template.New("StructShape").Funcs(template.FuncMap{
+	"GetCrosslinkURL": GetCrosslinkURL,
+}).Parse(`
 {{ .Docstring }}
+{{ if ne $.OrigShapeName "" -}}
+{{ $crosslinkURL := GetCrosslinkURL $.API.BaseCrosslinkURL $.API.APIName $.API.Metadata.UID $.OrigShapeName -}}
+{{ if ne $crosslinkURL "" -}} 
+// Please also see {{ $crosslinkURL }}
+{{ end -}}
+{{ else -}}
+{{ $crosslinkURL := GetCrosslinkURL $.API.BaseCrosslinkURL $.API.APIName $.API.Metadata.UID $.ShapeName -}}
+{{ if ne $crosslinkURL "" -}} 
+// Please also see {{ $crosslinkURL }}
+{{ end -}}
+{{ end -}}
+{{ $context := . -}}
 type {{ .ShapeName }} struct {
 	_ struct{} {{ .GoTags true false }}
 
-	{{ $context := . -}}
 	{{ range $_, $name := $context.MemberNames -}}
 		{{ $elem := index $context.MemberRefs $name -}}
 		{{ $isRequired := $context.IsRequired $name -}}
@@ -474,6 +523,26 @@ type {{ .ShapeName }} struct {
 	{{ if .Validations -}}
 		{{ .Validations.GoCode . }}
 	{{ end }}
+{{ end }}
+
+{{ if not .API.NoGenStructFieldAccessors }}
+
+{{ $builderShapeName := print .ShapeName -}}
+
+{{ range $_, $name := $context.MemberNames -}}
+	{{ $elem := index $context.MemberRefs $name -}}
+
+// Set{{ $name }} sets the {{ $name }} field's value.
+func (s *{{ $builderShapeName }}) Set{{ $name }}(v {{ $context.GoStructValueType $name $elem }}) *{{ $builderShapeName }} {
+	{{ if $elem.UseIndirection -}}
+	s.{{ $name }} = &v
+	{{ else -}}
+	s.{{ $name }} = v
+	{{ end -}}
+	return s
+}
+
+{{ end }}
 {{ end }}
 `))
 

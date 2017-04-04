@@ -47,7 +47,7 @@ func WatchLeases(ctx context.Context, sm Manager, network string, ownLease *Leas
 
 		cursor = res.Cursor
 
-		batch := []Event{}
+		var batch []Event
 
 		if len(res.Events) > 0 {
 			batch = lw.update(res.Events)
@@ -175,7 +175,7 @@ func WatchNetworks(ctx context.Context, sm Manager, receiver chan []Event) {
 		}
 		cursor = res.Cursor
 
-		batch := []Event{}
+		var batch []Event
 
 		if len(res.Events) > 0 {
 			batch = nw.update(res.Events)
@@ -212,7 +212,7 @@ func (nw *netWatcher) reset(networks []string) []Event {
 	}
 
 	// everything left in sm.networks has been deleted
-	for netname, _ := range nw.networks {
+	for netname := range nw.networks {
 		batch = append(batch, Event{EventRemoved, Lease{}, netname})
 	}
 

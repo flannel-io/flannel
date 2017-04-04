@@ -39,6 +39,7 @@ const opCreateAlias = "CreateAlias"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateAlias
 func (c *GameLift) CreateAliasRequest(input *CreateAliasInput) (req *request.Request, output *CreateAliasOutput) {
 	op := &request.Operation{
 		Name:       opCreateAlias,
@@ -50,9 +51,8 @@ func (c *GameLift) CreateAliasRequest(input *CreateAliasInput) (req *request.Req
 		input = &CreateAliasInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateAliasOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -101,6 +101,7 @@ func (c *GameLift) CreateAliasRequest(input *CreateAliasInput) (req *request.Req
 //   The requested operation would cause the resource to exceed the allowed service
 //   limit. Resolve the issue before retrying.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateAlias
 func (c *GameLift) CreateAlias(input *CreateAliasInput) (*CreateAliasOutput, error) {
 	req, out := c.CreateAliasRequest(input)
 	err := req.Send()
@@ -133,6 +134,7 @@ const opCreateBuild = "CreateBuild"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateBuild
 func (c *GameLift) CreateBuildRequest(input *CreateBuildInput) (req *request.Request, output *CreateBuildOutput) {
 	op := &request.Operation{
 		Name:       opCreateBuild,
@@ -144,9 +146,8 @@ func (c *GameLift) CreateBuildRequest(input *CreateBuildInput) (req *request.Req
 		input = &CreateBuildInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateBuildOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -196,6 +197,7 @@ func (c *GameLift) CreateBuildRequest(input *CreateBuildInput) (req *request.Req
 //   the request. Clients can retry such requests immediately or after a waiting
 //   period.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateBuild
 func (c *GameLift) CreateBuild(input *CreateBuildInput) (*CreateBuildOutput, error) {
 	req, out := c.CreateBuildRequest(input)
 	err := req.Send()
@@ -228,6 +230,7 @@ const opCreateFleet = "CreateFleet"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateFleet
 func (c *GameLift) CreateFleetRequest(input *CreateFleetInput) (req *request.Request, output *CreateFleetOutput) {
 	op := &request.Operation{
 		Name:       opCreateFleet,
@@ -239,9 +242,8 @@ func (c *GameLift) CreateFleetRequest(input *CreateFleetInput) (req *request.Req
 		input = &CreateFleetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateFleetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -330,6 +332,7 @@ func (c *GameLift) CreateFleetRequest(input *CreateFleetInput) (req *request.Req
 //   * UnauthorizedException
 //   The client failed authentication. Clients should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateFleet
 func (c *GameLift) CreateFleet(input *CreateFleetInput) (*CreateFleetOutput, error) {
 	req, out := c.CreateFleetRequest(input)
 	err := req.Send()
@@ -362,6 +365,7 @@ const opCreateGameSession = "CreateGameSession"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateGameSession
 func (c *GameLift) CreateGameSessionRequest(input *CreateGameSessionInput) (req *request.Request, output *CreateGameSessionOutput) {
 	op := &request.Operation{
 		Name:       opCreateGameSession,
@@ -373,27 +377,29 @@ func (c *GameLift) CreateGameSessionRequest(input *CreateGameSessionInput) (req 
 		input = &CreateGameSessionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateGameSessionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
 // CreateGameSession API operation for Amazon GameLift.
 //
 // Creates a multiplayer game session for players. This action creates a game
-// session record and assigns the new session to an instance in the specified
-// fleet, which initializes a new server process to host the game session. A
-// fleet must be in an ACTIVE status before a game session can be created in
-// it.
+// session record and assigns an available server process in the specified fleet
+// to host the game session. A fleet must be in an ACTIVE status before a game
+// session can be created in it.
 //
-// To create a game session, specify either a fleet ID or an alias ID and indicate
-// the maximum number of players the game session allows. You can also provide
-// a name and a set of properties for your game (optional). If successful, a
-// GameSession object is returned containing session properties, including an
-// IP address. By default, newly created game sessions are set to accept adding
-// any new players to the game session. Use UpdateGameSession to change the
+// To create a game session, specify either fleet ID or alias ID, and indicate
+// a maximum number of players to allow in the game session. You can also provide
+// a name and game-specific properties for this game session. If successful,
+// a GameSession object is returned containing session properties, including
+// an IP address. By default, newly created game sessions allow new players
+// to join. Use UpdateGameSession to change the game sessions player session
 // creation policy.
+//
+// When creating a game session on a fleet with a resource limit creation policy,
+// the request should include a creator ID. If none is provided, GameLift does
+// not evaluate the fleet's resource limit creation policy.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -448,6 +454,7 @@ func (c *GameLift) CreateGameSessionRequest(input *CreateGameSessionInput) (req 
 //   A game session with this custom ID string already exists in this fleet. Resolve
 //   this conflict before retrying this request.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateGameSession
 func (c *GameLift) CreateGameSession(input *CreateGameSessionInput) (*CreateGameSessionOutput, error) {
 	req, out := c.CreateGameSessionRequest(input)
 	err := req.Send()
@@ -480,6 +487,7 @@ const opCreatePlayerSession = "CreatePlayerSession"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreatePlayerSession
 func (c *GameLift) CreatePlayerSessionRequest(input *CreatePlayerSessionInput) (req *request.Request, output *CreatePlayerSessionOutput) {
 	op := &request.Operation{
 		Name:       opCreatePlayerSession,
@@ -491,9 +499,8 @@ func (c *GameLift) CreatePlayerSessionRequest(input *CreatePlayerSessionInput) (
 		input = &CreatePlayerSessionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreatePlayerSessionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -547,6 +554,7 @@ func (c *GameLift) CreatePlayerSessionRequest(input *CreatePlayerSessionInput) (
 //   A service resource associated with the request could not be found. Clients
 //   should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreatePlayerSession
 func (c *GameLift) CreatePlayerSession(input *CreatePlayerSessionInput) (*CreatePlayerSessionOutput, error) {
 	req, out := c.CreatePlayerSessionRequest(input)
 	err := req.Send()
@@ -579,6 +587,7 @@ const opCreatePlayerSessions = "CreatePlayerSessions"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreatePlayerSessions
 func (c *GameLift) CreatePlayerSessionsRequest(input *CreatePlayerSessionsInput) (req *request.Request, output *CreatePlayerSessionsOutput) {
 	op := &request.Operation{
 		Name:       opCreatePlayerSessions,
@@ -590,9 +599,8 @@ func (c *GameLift) CreatePlayerSessionsRequest(input *CreatePlayerSessionsInput)
 		input = &CreatePlayerSessionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreatePlayerSessionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -648,6 +656,7 @@ func (c *GameLift) CreatePlayerSessionsRequest(input *CreatePlayerSessionsInput)
 //   A service resource associated with the request could not be found. Clients
 //   should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreatePlayerSessions
 func (c *GameLift) CreatePlayerSessions(input *CreatePlayerSessionsInput) (*CreatePlayerSessionsOutput, error) {
 	req, out := c.CreatePlayerSessionsRequest(input)
 	err := req.Send()
@@ -680,6 +689,7 @@ const opDeleteAlias = "DeleteAlias"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteAlias
 func (c *GameLift) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Request, output *DeleteAliasOutput) {
 	op := &request.Operation{
 		Name:       opDeleteAlias,
@@ -691,11 +701,10 @@ func (c *GameLift) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Req
 		input = &DeleteAliasInput{}
 	}
 
+	output = &DeleteAliasOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteAliasOutput{}
-	req.Data = output
 	return
 }
 
@@ -729,6 +738,7 @@ func (c *GameLift) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Req
 //   the request. Clients can retry such requests immediately or after a waiting
 //   period.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteAlias
 func (c *GameLift) DeleteAlias(input *DeleteAliasInput) (*DeleteAliasOutput, error) {
 	req, out := c.DeleteAliasRequest(input)
 	err := req.Send()
@@ -761,6 +771,7 @@ const opDeleteBuild = "DeleteBuild"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteBuild
 func (c *GameLift) DeleteBuildRequest(input *DeleteBuildInput) (req *request.Request, output *DeleteBuildOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBuild,
@@ -772,11 +783,10 @@ func (c *GameLift) DeleteBuildRequest(input *DeleteBuildInput) (req *request.Req
 		input = &DeleteBuildInput{}
 	}
 
+	output = &DeleteBuildOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteBuildOutput{}
-	req.Data = output
 	return
 }
 
@@ -813,6 +823,7 @@ func (c *GameLift) DeleteBuildRequest(input *DeleteBuildInput) (req *request.Req
 //   One or more parameter values in the request are invalid. Correct the invalid
 //   parameter values before retrying.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteBuild
 func (c *GameLift) DeleteBuild(input *DeleteBuildInput) (*DeleteBuildOutput, error) {
 	req, out := c.DeleteBuildRequest(input)
 	err := req.Send()
@@ -845,6 +856,7 @@ const opDeleteFleet = "DeleteFleet"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteFleet
 func (c *GameLift) DeleteFleetRequest(input *DeleteFleetInput) (req *request.Request, output *DeleteFleetOutput) {
 	op := &request.Operation{
 		Name:       opDeleteFleet,
@@ -856,11 +868,10 @@ func (c *GameLift) DeleteFleetRequest(input *DeleteFleetInput) (req *request.Req
 		input = &DeleteFleetInput{}
 	}
 
+	output = &DeleteFleetOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteFleetOutput{}
-	req.Data = output
 	return
 }
 
@@ -901,6 +912,7 @@ func (c *GameLift) DeleteFleetRequest(input *DeleteFleetInput) (req *request.Req
 //   One or more parameter values in the request are invalid. Correct the invalid
 //   parameter values before retrying.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteFleet
 func (c *GameLift) DeleteFleet(input *DeleteFleetInput) (*DeleteFleetOutput, error) {
 	req, out := c.DeleteFleetRequest(input)
 	err := req.Send()
@@ -933,6 +945,7 @@ const opDeleteScalingPolicy = "DeleteScalingPolicy"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteScalingPolicy
 func (c *GameLift) DeleteScalingPolicyRequest(input *DeleteScalingPolicyInput) (req *request.Request, output *DeleteScalingPolicyOutput) {
 	op := &request.Operation{
 		Name:       opDeleteScalingPolicy,
@@ -944,11 +957,10 @@ func (c *GameLift) DeleteScalingPolicyRequest(input *DeleteScalingPolicyInput) (
 		input = &DeleteScalingPolicyInput{}
 	}
 
+	output = &DeleteScalingPolicyOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteScalingPolicyOutput{}
-	req.Data = output
 	return
 }
 
@@ -982,6 +994,7 @@ func (c *GameLift) DeleteScalingPolicyRequest(input *DeleteScalingPolicyInput) (
 //   A service resource associated with the request could not be found. Clients
 //   should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteScalingPolicy
 func (c *GameLift) DeleteScalingPolicy(input *DeleteScalingPolicyInput) (*DeleteScalingPolicyOutput, error) {
 	req, out := c.DeleteScalingPolicyRequest(input)
 	err := req.Send()
@@ -1014,6 +1027,7 @@ const opDescribeAlias = "DescribeAlias"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeAlias
 func (c *GameLift) DescribeAliasRequest(input *DescribeAliasInput) (req *request.Request, output *DescribeAliasOutput) {
 	op := &request.Operation{
 		Name:       opDescribeAlias,
@@ -1025,9 +1039,8 @@ func (c *GameLift) DescribeAliasRequest(input *DescribeAliasInput) (req *request
 		input = &DescribeAliasInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAliasOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1060,6 +1073,7 @@ func (c *GameLift) DescribeAliasRequest(input *DescribeAliasInput) (req *request
 //   the request. Clients can retry such requests immediately or after a waiting
 //   period.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeAlias
 func (c *GameLift) DescribeAlias(input *DescribeAliasInput) (*DescribeAliasOutput, error) {
 	req, out := c.DescribeAliasRequest(input)
 	err := req.Send()
@@ -1092,6 +1106,7 @@ const opDescribeBuild = "DescribeBuild"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeBuild
 func (c *GameLift) DescribeBuildRequest(input *DescribeBuildInput) (req *request.Request, output *DescribeBuildOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBuild,
@@ -1103,9 +1118,8 @@ func (c *GameLift) DescribeBuildRequest(input *DescribeBuildInput) (req *request
 		input = &DescribeBuildInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeBuildOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1138,6 +1152,7 @@ func (c *GameLift) DescribeBuildRequest(input *DescribeBuildInput) (req *request
 //   the request. Clients can retry such requests immediately or after a waiting
 //   period.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeBuild
 func (c *GameLift) DescribeBuild(input *DescribeBuildInput) (*DescribeBuildOutput, error) {
 	req, out := c.DescribeBuildRequest(input)
 	err := req.Send()
@@ -1170,6 +1185,7 @@ const opDescribeEC2InstanceLimits = "DescribeEC2InstanceLimits"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeEC2InstanceLimits
 func (c *GameLift) DescribeEC2InstanceLimitsRequest(input *DescribeEC2InstanceLimitsInput) (req *request.Request, output *DescribeEC2InstanceLimitsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeEC2InstanceLimits,
@@ -1181,9 +1197,8 @@ func (c *GameLift) DescribeEC2InstanceLimitsRequest(input *DescribeEC2InstanceLi
 		input = &DescribeEC2InstanceLimitsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeEC2InstanceLimitsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1219,6 +1234,7 @@ func (c *GameLift) DescribeEC2InstanceLimitsRequest(input *DescribeEC2InstanceLi
 //   * UnauthorizedException
 //   The client failed authentication. Clients should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeEC2InstanceLimits
 func (c *GameLift) DescribeEC2InstanceLimits(input *DescribeEC2InstanceLimitsInput) (*DescribeEC2InstanceLimitsOutput, error) {
 	req, out := c.DescribeEC2InstanceLimitsRequest(input)
 	err := req.Send()
@@ -1251,6 +1267,7 @@ const opDescribeFleetAttributes = "DescribeFleetAttributes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetAttributes
 func (c *GameLift) DescribeFleetAttributesRequest(input *DescribeFleetAttributesInput) (req *request.Request, output *DescribeFleetAttributesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeFleetAttributes,
@@ -1262,9 +1279,8 @@ func (c *GameLift) DescribeFleetAttributesRequest(input *DescribeFleetAttributes
 		input = &DescribeFleetAttributesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeFleetAttributesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1306,6 +1322,7 @@ func (c *GameLift) DescribeFleetAttributesRequest(input *DescribeFleetAttributes
 //   * UnauthorizedException
 //   The client failed authentication. Clients should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetAttributes
 func (c *GameLift) DescribeFleetAttributes(input *DescribeFleetAttributesInput) (*DescribeFleetAttributesOutput, error) {
 	req, out := c.DescribeFleetAttributesRequest(input)
 	err := req.Send()
@@ -1338,6 +1355,7 @@ const opDescribeFleetCapacity = "DescribeFleetCapacity"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetCapacity
 func (c *GameLift) DescribeFleetCapacityRequest(input *DescribeFleetCapacityInput) (req *request.Request, output *DescribeFleetCapacityOutput) {
 	op := &request.Operation{
 		Name:       opDescribeFleetCapacity,
@@ -1349,9 +1367,8 @@ func (c *GameLift) DescribeFleetCapacityRequest(input *DescribeFleetCapacityInpu
 		input = &DescribeFleetCapacityInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeFleetCapacityOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1394,6 +1411,7 @@ func (c *GameLift) DescribeFleetCapacityRequest(input *DescribeFleetCapacityInpu
 //   * UnauthorizedException
 //   The client failed authentication. Clients should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetCapacity
 func (c *GameLift) DescribeFleetCapacity(input *DescribeFleetCapacityInput) (*DescribeFleetCapacityOutput, error) {
 	req, out := c.DescribeFleetCapacityRequest(input)
 	err := req.Send()
@@ -1426,6 +1444,7 @@ const opDescribeFleetEvents = "DescribeFleetEvents"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetEvents
 func (c *GameLift) DescribeFleetEventsRequest(input *DescribeFleetEventsInput) (req *request.Request, output *DescribeFleetEventsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeFleetEvents,
@@ -1437,9 +1456,8 @@ func (c *GameLift) DescribeFleetEventsRequest(input *DescribeFleetEventsInput) (
 		input = &DescribeFleetEventsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeFleetEventsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1474,6 +1492,7 @@ func (c *GameLift) DescribeFleetEventsRequest(input *DescribeFleetEventsInput) (
 //   One or more parameter values in the request are invalid. Correct the invalid
 //   parameter values before retrying.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetEvents
 func (c *GameLift) DescribeFleetEvents(input *DescribeFleetEventsInput) (*DescribeFleetEventsOutput, error) {
 	req, out := c.DescribeFleetEventsRequest(input)
 	err := req.Send()
@@ -1506,6 +1525,7 @@ const opDescribeFleetPortSettings = "DescribeFleetPortSettings"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetPortSettings
 func (c *GameLift) DescribeFleetPortSettingsRequest(input *DescribeFleetPortSettingsInput) (req *request.Request, output *DescribeFleetPortSettingsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeFleetPortSettings,
@@ -1517,9 +1537,8 @@ func (c *GameLift) DescribeFleetPortSettingsRequest(input *DescribeFleetPortSett
 		input = &DescribeFleetPortSettingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeFleetPortSettingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1556,6 +1575,7 @@ func (c *GameLift) DescribeFleetPortSettingsRequest(input *DescribeFleetPortSett
 //   * UnauthorizedException
 //   The client failed authentication. Clients should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetPortSettings
 func (c *GameLift) DescribeFleetPortSettings(input *DescribeFleetPortSettingsInput) (*DescribeFleetPortSettingsOutput, error) {
 	req, out := c.DescribeFleetPortSettingsRequest(input)
 	err := req.Send()
@@ -1588,6 +1608,7 @@ const opDescribeFleetUtilization = "DescribeFleetUtilization"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetUtilization
 func (c *GameLift) DescribeFleetUtilizationRequest(input *DescribeFleetUtilizationInput) (req *request.Request, output *DescribeFleetUtilizationOutput) {
 	op := &request.Operation{
 		Name:       opDescribeFleetUtilization,
@@ -1599,9 +1620,8 @@ func (c *GameLift) DescribeFleetUtilizationRequest(input *DescribeFleetUtilizati
 		input = &DescribeFleetUtilizationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeFleetUtilizationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1642,6 +1662,7 @@ func (c *GameLift) DescribeFleetUtilizationRequest(input *DescribeFleetUtilizati
 //   * UnauthorizedException
 //   The client failed authentication. Clients should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetUtilization
 func (c *GameLift) DescribeFleetUtilization(input *DescribeFleetUtilizationInput) (*DescribeFleetUtilizationOutput, error) {
 	req, out := c.DescribeFleetUtilizationRequest(input)
 	err := req.Send()
@@ -1674,6 +1695,7 @@ const opDescribeGameSessionDetails = "DescribeGameSessionDetails"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessionDetails
 func (c *GameLift) DescribeGameSessionDetailsRequest(input *DescribeGameSessionDetailsInput) (req *request.Request, output *DescribeGameSessionDetailsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeGameSessionDetails,
@@ -1685,9 +1707,8 @@ func (c *GameLift) DescribeGameSessionDetailsRequest(input *DescribeGameSessionD
 		input = &DescribeGameSessionDetailsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeGameSessionDetailsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1736,6 +1757,7 @@ func (c *GameLift) DescribeGameSessionDetailsRequest(input *DescribeGameSessionD
 //   Such requests should only be retried if the routing strategy for the specified
 //   alias is modified.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessionDetails
 func (c *GameLift) DescribeGameSessionDetails(input *DescribeGameSessionDetailsInput) (*DescribeGameSessionDetailsOutput, error) {
 	req, out := c.DescribeGameSessionDetailsRequest(input)
 	err := req.Send()
@@ -1768,6 +1790,7 @@ const opDescribeGameSessions = "DescribeGameSessions"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessions
 func (c *GameLift) DescribeGameSessionsRequest(input *DescribeGameSessionsInput) (req *request.Request, output *DescribeGameSessionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeGameSessions,
@@ -1779,9 +1802,8 @@ func (c *GameLift) DescribeGameSessionsRequest(input *DescribeGameSessionsInput)
 		input = &DescribeGameSessionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeGameSessionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1832,6 +1854,7 @@ func (c *GameLift) DescribeGameSessionsRequest(input *DescribeGameSessionsInput)
 //   Such requests should only be retried if the routing strategy for the specified
 //   alias is modified.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessions
 func (c *GameLift) DescribeGameSessions(input *DescribeGameSessionsInput) (*DescribeGameSessionsOutput, error) {
 	req, out := c.DescribeGameSessionsRequest(input)
 	err := req.Send()
@@ -1864,6 +1887,7 @@ const opDescribeInstances = "DescribeInstances"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeInstances
 func (c *GameLift) DescribeInstancesRequest(input *DescribeInstancesInput) (req *request.Request, output *DescribeInstancesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeInstances,
@@ -1875,20 +1899,21 @@ func (c *GameLift) DescribeInstancesRequest(input *DescribeInstancesInput) (req 
 		input = &DescribeInstancesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeInstancesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
 // DescribeInstances API operation for Amazon GameLift.
 //
-// Retrieves information about instances in a fleet.
+// Retrieves information about a fleet's instances, including instance IDs.
+// Use this action to get details on all instances in the fleet or get details
+// on one specific instance.
 //
-// To get information on a specific instance, specify both a fleet ID and instance
-// ID. To get information for all instances in a fleet, specify a fleet ID only.
-// Use the pagination parameters to retrieve results as a set of sequential
-// pages. If successful, an Instance object is returned for each result.
+// To get a specific instance, specify fleet ID and instance ID. To get all
+// instances in a fleet, specify a fleet ID only. Use the pagination parameters
+// to retrieve results as a set of sequential pages. If successful, an Instance
+// object is returned for each result.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1914,6 +1939,7 @@ func (c *GameLift) DescribeInstancesRequest(input *DescribeInstancesInput) (req 
 //   the request. Clients can retry such requests immediately or after a waiting
 //   period.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeInstances
 func (c *GameLift) DescribeInstances(input *DescribeInstancesInput) (*DescribeInstancesOutput, error) {
 	req, out := c.DescribeInstancesRequest(input)
 	err := req.Send()
@@ -1946,6 +1972,7 @@ const opDescribePlayerSessions = "DescribePlayerSessions"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribePlayerSessions
 func (c *GameLift) DescribePlayerSessionsRequest(input *DescribePlayerSessionsInput) (req *request.Request, output *DescribePlayerSessionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribePlayerSessions,
@@ -1957,9 +1984,8 @@ func (c *GameLift) DescribePlayerSessionsRequest(input *DescribePlayerSessionsIn
 		input = &DescribePlayerSessionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribePlayerSessionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2002,6 +2028,7 @@ func (c *GameLift) DescribePlayerSessionsRequest(input *DescribePlayerSessionsIn
 //   * UnauthorizedException
 //   The client failed authentication. Clients should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribePlayerSessions
 func (c *GameLift) DescribePlayerSessions(input *DescribePlayerSessionsInput) (*DescribePlayerSessionsOutput, error) {
 	req, out := c.DescribePlayerSessionsRequest(input)
 	err := req.Send()
@@ -2034,6 +2061,7 @@ const opDescribeRuntimeConfiguration = "DescribeRuntimeConfiguration"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeRuntimeConfiguration
 func (c *GameLift) DescribeRuntimeConfigurationRequest(input *DescribeRuntimeConfigurationInput) (req *request.Request, output *DescribeRuntimeConfigurationOutput) {
 	op := &request.Operation{
 		Name:       opDescribeRuntimeConfiguration,
@@ -2045,9 +2073,8 @@ func (c *GameLift) DescribeRuntimeConfigurationRequest(input *DescribeRuntimeCon
 		input = &DescribeRuntimeConfigurationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeRuntimeConfigurationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2081,6 +2108,7 @@ func (c *GameLift) DescribeRuntimeConfigurationRequest(input *DescribeRuntimeCon
 //   One or more parameter values in the request are invalid. Correct the invalid
 //   parameter values before retrying.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeRuntimeConfiguration
 func (c *GameLift) DescribeRuntimeConfiguration(input *DescribeRuntimeConfigurationInput) (*DescribeRuntimeConfigurationOutput, error) {
 	req, out := c.DescribeRuntimeConfigurationRequest(input)
 	err := req.Send()
@@ -2113,6 +2141,7 @@ const opDescribeScalingPolicies = "DescribeScalingPolicies"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeScalingPolicies
 func (c *GameLift) DescribeScalingPoliciesRequest(input *DescribeScalingPoliciesInput) (req *request.Request, output *DescribeScalingPoliciesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeScalingPolicies,
@@ -2124,9 +2153,8 @@ func (c *GameLift) DescribeScalingPoliciesRequest(input *DescribeScalingPolicies
 		input = &DescribeScalingPoliciesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeScalingPoliciesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2163,6 +2191,7 @@ func (c *GameLift) DescribeScalingPoliciesRequest(input *DescribeScalingPolicies
 //   A service resource associated with the request could not be found. Clients
 //   should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeScalingPolicies
 func (c *GameLift) DescribeScalingPolicies(input *DescribeScalingPoliciesInput) (*DescribeScalingPoliciesOutput, error) {
 	req, out := c.DescribeScalingPoliciesRequest(input)
 	err := req.Send()
@@ -2195,6 +2224,7 @@ const opGetGameSessionLogUrl = "GetGameSessionLogUrl"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GetGameSessionLogUrl
 func (c *GameLift) GetGameSessionLogUrlRequest(input *GetGameSessionLogUrlInput) (req *request.Request, output *GetGameSessionLogUrlOutput) {
 	op := &request.Operation{
 		Name:       opGetGameSessionLogUrl,
@@ -2206,9 +2236,8 @@ func (c *GameLift) GetGameSessionLogUrlRequest(input *GetGameSessionLogUrlInput)
 		input = &GetGameSessionLogUrlInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetGameSessionLogUrlOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2246,8 +2275,102 @@ func (c *GameLift) GetGameSessionLogUrlRequest(input *GetGameSessionLogUrlInput)
 //   One or more parameter values in the request are invalid. Correct the invalid
 //   parameter values before retrying.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GetGameSessionLogUrl
 func (c *GameLift) GetGameSessionLogUrl(input *GetGameSessionLogUrlInput) (*GetGameSessionLogUrlOutput, error) {
 	req, out := c.GetGameSessionLogUrlRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opGetInstanceAccess = "GetInstanceAccess"
+
+// GetInstanceAccessRequest generates a "aws/request.Request" representing the
+// client's request for the GetInstanceAccess operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetInstanceAccess for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetInstanceAccess method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetInstanceAccessRequest method.
+//    req, resp := client.GetInstanceAccessRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GetInstanceAccess
+func (c *GameLift) GetInstanceAccessRequest(input *GetInstanceAccessInput) (req *request.Request, output *GetInstanceAccessOutput) {
+	op := &request.Operation{
+		Name:       opGetInstanceAccess,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetInstanceAccessInput{}
+	}
+
+	output = &GetInstanceAccessOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetInstanceAccess API operation for Amazon GameLift.
+//
+// Requests remote access to a fleet instance. Remote access is useful for debugging,
+// gathering benchmarking data, or watching activity in real time.
+//
+// Access requires credentials that match the operating system of the instance.
+// For a Windows instance, GameLift returns a username and password as strings
+// for use with a Windows Remote Desktop client. For a Linux instance, GameLift
+// returns a username and RSA private key, also as strings, for use with an
+// SSH client. The private key must be saved in the proper format to a .pem
+// file before using. If you're making this request using the AWS CLI, saving
+// the secret can be handled as part of the GetInstanceAccess request (see the
+// example later in this topic). For more information on remote access, see
+// Remotely Accessing an Instance (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-remote-access.html).
+//
+// To request access to a specific instance, specify the IDs of the instance
+// and the fleet it belongs to. If successful, an InstanceAccess object is returned
+// containing the instance's IP address and a set of credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon GameLift's
+// API operation GetInstanceAccess for usage and error information.
+//
+// Returned Error Codes:
+//   * UnauthorizedException
+//   The client failed authentication. Clients should not retry such requests.
+//
+//   * InvalidRequestException
+//   One or more parameter values in the request are invalid. Correct the invalid
+//   parameter values before retrying.
+//
+//   * NotFoundException
+//   A service resource associated with the request could not be found. Clients
+//   should not retry such requests.
+//
+//   * InternalServiceException
+//   The service encountered an unrecoverable internal failure while processing
+//   the request. Clients can retry such requests immediately or after a waiting
+//   period.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GetInstanceAccess
+func (c *GameLift) GetInstanceAccess(input *GetInstanceAccessInput) (*GetInstanceAccessOutput, error) {
+	req, out := c.GetInstanceAccessRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -2278,6 +2401,7 @@ const opListAliases = "ListAliases"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListAliases
 func (c *GameLift) ListAliasesRequest(input *ListAliasesInput) (req *request.Request, output *ListAliasesOutput) {
 	op := &request.Operation{
 		Name:       opListAliases,
@@ -2289,9 +2413,8 @@ func (c *GameLift) ListAliasesRequest(input *ListAliasesInput) (req *request.Req
 		input = &ListAliasesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListAliasesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2323,6 +2446,7 @@ func (c *GameLift) ListAliasesRequest(input *ListAliasesInput) (req *request.Req
 //   the request. Clients can retry such requests immediately or after a waiting
 //   period.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListAliases
 func (c *GameLift) ListAliases(input *ListAliasesInput) (*ListAliasesOutput, error) {
 	req, out := c.ListAliasesRequest(input)
 	err := req.Send()
@@ -2355,6 +2479,7 @@ const opListBuilds = "ListBuilds"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListBuilds
 func (c *GameLift) ListBuildsRequest(input *ListBuildsInput) (req *request.Request, output *ListBuildsOutput) {
 	op := &request.Operation{
 		Name:       opListBuilds,
@@ -2366,9 +2491,8 @@ func (c *GameLift) ListBuildsRequest(input *ListBuildsInput) (req *request.Reque
 		input = &ListBuildsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListBuildsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2401,6 +2525,7 @@ func (c *GameLift) ListBuildsRequest(input *ListBuildsInput) (req *request.Reque
 //   the request. Clients can retry such requests immediately or after a waiting
 //   period.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListBuilds
 func (c *GameLift) ListBuilds(input *ListBuildsInput) (*ListBuildsOutput, error) {
 	req, out := c.ListBuildsRequest(input)
 	err := req.Send()
@@ -2433,6 +2558,7 @@ const opListFleets = "ListFleets"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListFleets
 func (c *GameLift) ListFleetsRequest(input *ListFleetsInput) (req *request.Request, output *ListFleetsOutput) {
 	op := &request.Operation{
 		Name:       opListFleets,
@@ -2444,9 +2570,8 @@ func (c *GameLift) ListFleetsRequest(input *ListFleetsInput) (req *request.Reque
 		input = &ListFleetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListFleetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2482,6 +2607,7 @@ func (c *GameLift) ListFleetsRequest(input *ListFleetsInput) (req *request.Reque
 //   * UnauthorizedException
 //   The client failed authentication. Clients should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListFleets
 func (c *GameLift) ListFleets(input *ListFleetsInput) (*ListFleetsOutput, error) {
 	req, out := c.ListFleetsRequest(input)
 	err := req.Send()
@@ -2514,6 +2640,7 @@ const opPutScalingPolicy = "PutScalingPolicy"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/PutScalingPolicy
 func (c *GameLift) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req *request.Request, output *PutScalingPolicyOutput) {
 	op := &request.Operation{
 		Name:       opPutScalingPolicy,
@@ -2525,9 +2652,8 @@ func (c *GameLift) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req *r
 		input = &PutScalingPolicyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutScalingPolicyOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2580,6 +2706,7 @@ func (c *GameLift) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req *r
 //   A service resource associated with the request could not be found. Clients
 //   should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/PutScalingPolicy
 func (c *GameLift) PutScalingPolicy(input *PutScalingPolicyInput) (*PutScalingPolicyOutput, error) {
 	req, out := c.PutScalingPolicyRequest(input)
 	err := req.Send()
@@ -2612,6 +2739,7 @@ const opRequestUploadCredentials = "RequestUploadCredentials"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/RequestUploadCredentials
 func (c *GameLift) RequestUploadCredentialsRequest(input *RequestUploadCredentialsInput) (req *request.Request, output *RequestUploadCredentialsOutput) {
 	op := &request.Operation{
 		Name:       opRequestUploadCredentials,
@@ -2623,9 +2751,8 @@ func (c *GameLift) RequestUploadCredentialsRequest(input *RequestUploadCredentia
 		input = &RequestUploadCredentialsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RequestUploadCredentialsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2635,7 +2762,7 @@ func (c *GameLift) RequestUploadCredentialsRequest(input *RequestUploadCredentia
 // location for a specific build. Valid credentials are required to upload your
 // game build files to Amazon S3.
 //
-// Call this action only if you need credentials for a build created with CreateBuild.
+// Call this action only if you need credentials for a build created withCreateBuild.
 // This is a rare situation; in most cases, builds are created using the CLI
 // command upload-build, which creates a build record and also uploads build
 // files.
@@ -2669,6 +2796,7 @@ func (c *GameLift) RequestUploadCredentialsRequest(input *RequestUploadCredentia
 //   the request. Clients can retry such requests immediately or after a waiting
 //   period.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/RequestUploadCredentials
 func (c *GameLift) RequestUploadCredentials(input *RequestUploadCredentialsInput) (*RequestUploadCredentialsOutput, error) {
 	req, out := c.RequestUploadCredentialsRequest(input)
 	err := req.Send()
@@ -2701,6 +2829,7 @@ const opResolveAlias = "ResolveAlias"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ResolveAlias
 func (c *GameLift) ResolveAliasRequest(input *ResolveAliasInput) (req *request.Request, output *ResolveAliasOutput) {
 	op := &request.Operation{
 		Name:       opResolveAlias,
@@ -2712,9 +2841,8 @@ func (c *GameLift) ResolveAliasRequest(input *ResolveAliasInput) (req *request.R
 		input = &ResolveAliasInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ResolveAliasOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2753,6 +2881,7 @@ func (c *GameLift) ResolveAliasRequest(input *ResolveAliasInput) (req *request.R
 //   the request. Clients can retry such requests immediately or after a waiting
 //   period.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ResolveAlias
 func (c *GameLift) ResolveAlias(input *ResolveAliasInput) (*ResolveAliasOutput, error) {
 	req, out := c.ResolveAliasRequest(input)
 	err := req.Send()
@@ -2785,6 +2914,7 @@ const opSearchGameSessions = "SearchGameSessions"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/SearchGameSessions
 func (c *GameLift) SearchGameSessionsRequest(input *SearchGameSessionsInput) (req *request.Request, output *SearchGameSessionsOutput) {
 	op := &request.Operation{
 		Name:       opSearchGameSessions,
@@ -2796,9 +2926,8 @@ func (c *GameLift) SearchGameSessionsRequest(input *SearchGameSessionsInput) (re
 		input = &SearchGameSessionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SearchGameSessionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2881,6 +3010,7 @@ func (c *GameLift) SearchGameSessionsRequest(input *SearchGameSessionsInput) (re
 //   Such requests should only be retried if the routing strategy for the specified
 //   alias is modified.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/SearchGameSessions
 func (c *GameLift) SearchGameSessions(input *SearchGameSessionsInput) (*SearchGameSessionsOutput, error) {
 	req, out := c.SearchGameSessionsRequest(input)
 	err := req.Send()
@@ -2913,6 +3043,7 @@ const opUpdateAlias = "UpdateAlias"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateAlias
 func (c *GameLift) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Request, output *UpdateAliasOutput) {
 	op := &request.Operation{
 		Name:       opUpdateAlias,
@@ -2924,9 +3055,8 @@ func (c *GameLift) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Req
 		input = &UpdateAliasInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateAliasOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2961,6 +3091,7 @@ func (c *GameLift) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Req
 //   the request. Clients can retry such requests immediately or after a waiting
 //   period.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateAlias
 func (c *GameLift) UpdateAlias(input *UpdateAliasInput) (*UpdateAliasOutput, error) {
 	req, out := c.UpdateAliasRequest(input)
 	err := req.Send()
@@ -2993,6 +3124,7 @@ const opUpdateBuild = "UpdateBuild"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateBuild
 func (c *GameLift) UpdateBuildRequest(input *UpdateBuildInput) (req *request.Request, output *UpdateBuildOutput) {
 	op := &request.Operation{
 		Name:       opUpdateBuild,
@@ -3004,9 +3136,8 @@ func (c *GameLift) UpdateBuildRequest(input *UpdateBuildInput) (req *request.Req
 		input = &UpdateBuildInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateBuildOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3041,6 +3172,7 @@ func (c *GameLift) UpdateBuildRequest(input *UpdateBuildInput) (req *request.Req
 //   the request. Clients can retry such requests immediately or after a waiting
 //   period.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateBuild
 func (c *GameLift) UpdateBuild(input *UpdateBuildInput) (*UpdateBuildOutput, error) {
 	req, out := c.UpdateBuildRequest(input)
 	err := req.Send()
@@ -3073,6 +3205,7 @@ const opUpdateFleetAttributes = "UpdateFleetAttributes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetAttributes
 func (c *GameLift) UpdateFleetAttributesRequest(input *UpdateFleetAttributesInput) (req *request.Request, output *UpdateFleetAttributesOutput) {
 	op := &request.Operation{
 		Name:       opUpdateFleetAttributes,
@@ -3084,9 +3217,8 @@ func (c *GameLift) UpdateFleetAttributesRequest(input *UpdateFleetAttributesInpu
 		input = &UpdateFleetAttributesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateFleetAttributesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3134,6 +3266,7 @@ func (c *GameLift) UpdateFleetAttributesRequest(input *UpdateFleetAttributesInpu
 //   * UnauthorizedException
 //   The client failed authentication. Clients should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetAttributes
 func (c *GameLift) UpdateFleetAttributes(input *UpdateFleetAttributesInput) (*UpdateFleetAttributesOutput, error) {
 	req, out := c.UpdateFleetAttributesRequest(input)
 	err := req.Send()
@@ -3166,6 +3299,7 @@ const opUpdateFleetCapacity = "UpdateFleetCapacity"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetCapacity
 func (c *GameLift) UpdateFleetCapacityRequest(input *UpdateFleetCapacityInput) (req *request.Request, output *UpdateFleetCapacityOutput) {
 	op := &request.Operation{
 		Name:       opUpdateFleetCapacity,
@@ -3177,9 +3311,8 @@ func (c *GameLift) UpdateFleetCapacityRequest(input *UpdateFleetCapacityInput) (
 		input = &UpdateFleetCapacityInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateFleetCapacityOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3239,6 +3372,7 @@ func (c *GameLift) UpdateFleetCapacityRequest(input *UpdateFleetCapacityInput) (
 //   * UnauthorizedException
 //   The client failed authentication. Clients should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetCapacity
 func (c *GameLift) UpdateFleetCapacity(input *UpdateFleetCapacityInput) (*UpdateFleetCapacityOutput, error) {
 	req, out := c.UpdateFleetCapacityRequest(input)
 	err := req.Send()
@@ -3271,6 +3405,7 @@ const opUpdateFleetPortSettings = "UpdateFleetPortSettings"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetPortSettings
 func (c *GameLift) UpdateFleetPortSettingsRequest(input *UpdateFleetPortSettingsInput) (req *request.Request, output *UpdateFleetPortSettingsOutput) {
 	op := &request.Operation{
 		Name:       opUpdateFleetPortSettings,
@@ -3282,9 +3417,8 @@ func (c *GameLift) UpdateFleetPortSettingsRequest(input *UpdateFleetPortSettings
 		input = &UpdateFleetPortSettingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateFleetPortSettingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3335,6 +3469,7 @@ func (c *GameLift) UpdateFleetPortSettingsRequest(input *UpdateFleetPortSettings
 //   * UnauthorizedException
 //   The client failed authentication. Clients should not retry such requests.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetPortSettings
 func (c *GameLift) UpdateFleetPortSettings(input *UpdateFleetPortSettingsInput) (*UpdateFleetPortSettingsOutput, error) {
 	req, out := c.UpdateFleetPortSettingsRequest(input)
 	err := req.Send()
@@ -3367,6 +3502,7 @@ const opUpdateGameSession = "UpdateGameSession"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateGameSession
 func (c *GameLift) UpdateGameSessionRequest(input *UpdateGameSessionInput) (req *request.Request, output *UpdateGameSessionOutput) {
 	op := &request.Operation{
 		Name:       opUpdateGameSession,
@@ -3378,9 +3514,8 @@ func (c *GameLift) UpdateGameSessionRequest(input *UpdateGameSessionInput) (req 
 		input = &UpdateGameSessionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateGameSessionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3428,6 +3563,7 @@ func (c *GameLift) UpdateGameSessionRequest(input *UpdateGameSessionInput) (req 
 //   One or more parameter values in the request are invalid. Correct the invalid
 //   parameter values before retrying.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateGameSession
 func (c *GameLift) UpdateGameSession(input *UpdateGameSessionInput) (*UpdateGameSessionOutput, error) {
 	req, out := c.UpdateGameSessionRequest(input)
 	err := req.Send()
@@ -3460,6 +3596,7 @@ const opUpdateRuntimeConfiguration = "UpdateRuntimeConfiguration"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateRuntimeConfiguration
 func (c *GameLift) UpdateRuntimeConfigurationRequest(input *UpdateRuntimeConfigurationInput) (req *request.Request, output *UpdateRuntimeConfigurationOutput) {
 	op := &request.Operation{
 		Name:       opUpdateRuntimeConfiguration,
@@ -3471,9 +3608,8 @@ func (c *GameLift) UpdateRuntimeConfigurationRequest(input *UpdateRuntimeConfigu
 		input = &UpdateRuntimeConfigurationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateRuntimeConfigurationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3524,6 +3660,7 @@ func (c *GameLift) UpdateRuntimeConfigurationRequest(input *UpdateRuntimeConfigu
 //   a resource associated with the request and/or the fleet. Resolve the conflict
 //   before retrying.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateRuntimeConfiguration
 func (c *GameLift) UpdateRuntimeConfiguration(input *UpdateRuntimeConfigurationInput) (*UpdateRuntimeConfigurationOutput, error) {
 	req, out := c.UpdateRuntimeConfigurationRequest(input)
 	err := req.Send()
@@ -3531,6 +3668,7 @@ func (c *GameLift) UpdateRuntimeConfiguration(input *UpdateRuntimeConfigurationI
 }
 
 // Properties describing a fleet alias.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/Alias
 type Alias struct {
 	_ struct{} `type:"structure"`
 
@@ -3538,14 +3676,14 @@ type Alias struct {
 	AliasId *string `type:"string"`
 
 	// Time stamp indicating when this data object was created. Format is a number
-	// expressed in Unix time as milliseconds (ex: "1469498468.057".
+	// expressed in Unix time as milliseconds (ex: "1469498468.057").
 	CreationTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 
 	// Human-readable description of an alias.
 	Description *string `type:"string"`
 
 	// Time stamp indicating when this data object was last modified. Format is
-	// a number expressed in Unix time as milliseconds (ex: "1469498468.057".
+	// a number expressed in Unix time as milliseconds (ex: "1469498468.057").
 	LastUpdatedTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 
 	// Descriptive label associated with an alias. Alias names do not need to be
@@ -3566,10 +3704,47 @@ func (s Alias) GoString() string {
 	return s.String()
 }
 
+// SetAliasId sets the AliasId field's value.
+func (s *Alias) SetAliasId(v string) *Alias {
+	s.AliasId = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *Alias) SetCreationTime(v time.Time) *Alias {
+	s.CreationTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Alias) SetDescription(v string) *Alias {
+	s.Description = &v
+	return s
+}
+
+// SetLastUpdatedTime sets the LastUpdatedTime field's value.
+func (s *Alias) SetLastUpdatedTime(v time.Time) *Alias {
+	s.LastUpdatedTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Alias) SetName(v string) *Alias {
+	s.Name = &v
+	return s
+}
+
+// SetRoutingStrategy sets the RoutingStrategy field's value.
+func (s *Alias) SetRoutingStrategy(v *RoutingStrategy) *Alias {
+	s.RoutingStrategy = v
+	return s
+}
+
 // AWS access credentials required to upload game build files to Amazon GameLift.
 // These credentials are generated with CreateBuild, and are valid for a limited
 // time. If they expire before you upload your game build, get a new set by
 // calling RequestUploadCredentials.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/AwsCredentials
 type AwsCredentials struct {
 	_ struct{} `type:"structure"`
 
@@ -3593,7 +3768,26 @@ func (s AwsCredentials) GoString() string {
 	return s.String()
 }
 
+// SetAccessKeyId sets the AccessKeyId field's value.
+func (s *AwsCredentials) SetAccessKeyId(v string) *AwsCredentials {
+	s.AccessKeyId = &v
+	return s
+}
+
+// SetSecretAccessKey sets the SecretAccessKey field's value.
+func (s *AwsCredentials) SetSecretAccessKey(v string) *AwsCredentials {
+	s.SecretAccessKey = &v
+	return s
+}
+
+// SetSessionToken sets the SessionToken field's value.
+func (s *AwsCredentials) SetSessionToken(v string) *AwsCredentials {
+	s.SessionToken = &v
+	return s
+}
+
 // Properties describing a game build.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/Build
 type Build struct {
 	_ struct{} `type:"structure"`
 
@@ -3601,7 +3795,7 @@ type Build struct {
 	BuildId *string `type:"string"`
 
 	// Time stamp indicating when this data object was created. Format is a number
-	// expressed in Unix time as milliseconds (ex: "1469498468.057".
+	// expressed in Unix time as milliseconds (ex: "1469498468.057").
 	CreationTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 
 	// Descriptive label associated with a build. Build names do not need to be
@@ -3646,7 +3840,50 @@ func (s Build) GoString() string {
 	return s.String()
 }
 
+// SetBuildId sets the BuildId field's value.
+func (s *Build) SetBuildId(v string) *Build {
+	s.BuildId = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *Build) SetCreationTime(v time.Time) *Build {
+	s.CreationTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Build) SetName(v string) *Build {
+	s.Name = &v
+	return s
+}
+
+// SetOperatingSystem sets the OperatingSystem field's value.
+func (s *Build) SetOperatingSystem(v string) *Build {
+	s.OperatingSystem = &v
+	return s
+}
+
+// SetSizeOnDisk sets the SizeOnDisk field's value.
+func (s *Build) SetSizeOnDisk(v int64) *Build {
+	s.SizeOnDisk = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Build) SetStatus(v string) *Build {
+	s.Status = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *Build) SetVersion(v string) *Build {
+	s.Version = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateAliasInput
 type CreateAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3697,7 +3934,26 @@ func (s *CreateAliasInput) Validate() error {
 	return nil
 }
 
+// SetDescription sets the Description field's value.
+func (s *CreateAliasInput) SetDescription(v string) *CreateAliasInput {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateAliasInput) SetName(v string) *CreateAliasInput {
+	s.Name = &v
+	return s
+}
+
+// SetRoutingStrategy sets the RoutingStrategy field's value.
+func (s *CreateAliasInput) SetRoutingStrategy(v *RoutingStrategy) *CreateAliasInput {
+	s.RoutingStrategy = v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateAliasOutput
 type CreateAliasOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3715,12 +3971,19 @@ func (s CreateAliasOutput) GoString() string {
 	return s.String()
 }
 
+// SetAlias sets the Alias field's value.
+func (s *CreateAliasOutput) SetAlias(v *Alias) *CreateAliasOutput {
+	s.Alias = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateBuildInput
 type CreateBuildInput struct {
 	_ struct{} `type:"structure"`
 
 	// Descriptive label associated with a build. Build names do not need to be
-	// unique. A build name can be changed later using UpdateBuild.
+	// unique. A build name can be changed later usingUpdateBuild.
 	Name *string `min:"1" type:"string"`
 
 	// Operating system that the game server binaries are built to run on. This
@@ -3734,7 +3997,7 @@ type CreateBuildInput struct {
 	StorageLocation *S3Location `type:"structure"`
 
 	// Version associated with this build. Version strings do not need to be unique
-	// to a build. A build version can be changed later using UpdateBuild.
+	// to a build. A build version can be changed later usingUpdateBuild.
 	Version *string `min:"1" type:"string"`
 }
 
@@ -3769,7 +4032,32 @@ func (s *CreateBuildInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *CreateBuildInput) SetName(v string) *CreateBuildInput {
+	s.Name = &v
+	return s
+}
+
+// SetOperatingSystem sets the OperatingSystem field's value.
+func (s *CreateBuildInput) SetOperatingSystem(v string) *CreateBuildInput {
+	s.OperatingSystem = &v
+	return s
+}
+
+// SetStorageLocation sets the StorageLocation field's value.
+func (s *CreateBuildInput) SetStorageLocation(v *S3Location) *CreateBuildInput {
+	s.StorageLocation = v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *CreateBuildInput) SetVersion(v string) *CreateBuildInput {
+	s.Version = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateBuildOutput
 type CreateBuildOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3781,7 +4069,7 @@ type CreateBuildOutput struct {
 
 	// AWS credentials required when uploading a game build to the storage location.
 	// These credentials have a limited lifespan and are valid only for the build
-	// they were issued for. If you need to get fresh credentials, call RequestUploadCredentials.
+	// they were issued for. If you need to get fresh credentials, callRequestUploadCredentials.
 	UploadCredentials *AwsCredentials `type:"structure"`
 }
 
@@ -3795,7 +4083,26 @@ func (s CreateBuildOutput) GoString() string {
 	return s.String()
 }
 
+// SetBuild sets the Build field's value.
+func (s *CreateBuildOutput) SetBuild(v *Build) *CreateBuildOutput {
+	s.Build = v
+	return s
+}
+
+// SetStorageLocation sets the StorageLocation field's value.
+func (s *CreateBuildOutput) SetStorageLocation(v *S3Location) *CreateBuildOutput {
+	s.StorageLocation = v
+	return s
+}
+
+// SetUploadCredentials sets the UploadCredentials field's value.
+func (s *CreateBuildOutput) SetUploadCredentials(v *AwsCredentials) *CreateBuildOutput {
+	s.UploadCredentials = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateFleetInput
 type CreateFleetInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3830,8 +4137,8 @@ type CreateFleetInput struct {
 	// in addition to game session logs; see more on game session logs in the Amazon
 	// GameLift Developer Guide (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-api-server-code).
 	// If no default log path for a fleet is specified, GameLift will automatically
-	// upload logs stored on each instance at C:\game\logs. Use the GameLift console
-	// to access stored logs.
+	// upload logs stored on each instance at C:\game\logs (for Windows) or /local/game/logs
+	// (for Linux). Use the GameLift console to access stored logs.
 	LogPaths []*string `type:"list"`
 
 	// Descriptive label associated with a fleet. Fleet names do not need to be
@@ -3939,7 +4246,74 @@ func (s *CreateFleetInput) Validate() error {
 	return nil
 }
 
+// SetBuildId sets the BuildId field's value.
+func (s *CreateFleetInput) SetBuildId(v string) *CreateFleetInput {
+	s.BuildId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateFleetInput) SetDescription(v string) *CreateFleetInput {
+	s.Description = &v
+	return s
+}
+
+// SetEC2InboundPermissions sets the EC2InboundPermissions field's value.
+func (s *CreateFleetInput) SetEC2InboundPermissions(v []*IpPermission) *CreateFleetInput {
+	s.EC2InboundPermissions = v
+	return s
+}
+
+// SetEC2InstanceType sets the EC2InstanceType field's value.
+func (s *CreateFleetInput) SetEC2InstanceType(v string) *CreateFleetInput {
+	s.EC2InstanceType = &v
+	return s
+}
+
+// SetLogPaths sets the LogPaths field's value.
+func (s *CreateFleetInput) SetLogPaths(v []*string) *CreateFleetInput {
+	s.LogPaths = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateFleetInput) SetName(v string) *CreateFleetInput {
+	s.Name = &v
+	return s
+}
+
+// SetNewGameSessionProtectionPolicy sets the NewGameSessionProtectionPolicy field's value.
+func (s *CreateFleetInput) SetNewGameSessionProtectionPolicy(v string) *CreateFleetInput {
+	s.NewGameSessionProtectionPolicy = &v
+	return s
+}
+
+// SetResourceCreationLimitPolicy sets the ResourceCreationLimitPolicy field's value.
+func (s *CreateFleetInput) SetResourceCreationLimitPolicy(v *ResourceCreationLimitPolicy) *CreateFleetInput {
+	s.ResourceCreationLimitPolicy = v
+	return s
+}
+
+// SetRuntimeConfiguration sets the RuntimeConfiguration field's value.
+func (s *CreateFleetInput) SetRuntimeConfiguration(v *RuntimeConfiguration) *CreateFleetInput {
+	s.RuntimeConfiguration = v
+	return s
+}
+
+// SetServerLaunchParameters sets the ServerLaunchParameters field's value.
+func (s *CreateFleetInput) SetServerLaunchParameters(v string) *CreateFleetInput {
+	s.ServerLaunchParameters = &v
+	return s
+}
+
+// SetServerLaunchPath sets the ServerLaunchPath field's value.
+func (s *CreateFleetInput) SetServerLaunchPath(v string) *CreateFleetInput {
+	s.ServerLaunchPath = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateFleetOutput
 type CreateFleetOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3957,7 +4331,14 @@ func (s CreateFleetOutput) GoString() string {
 	return s.String()
 }
 
+// SetFleetAttributes sets the FleetAttributes field's value.
+func (s *CreateFleetOutput) SetFleetAttributes(v *FleetAttributes) *CreateFleetOutput {
+	s.FleetAttributes = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateGameSessionInput
 type CreateGameSessionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3983,7 +4364,7 @@ type CreateGameSessionInput struct {
 	// ID in the following format: "arn:aws:gamelift:<region>::gamesession/fleet-<fleet
 	// ID>/<custom ID string>". For example, this full game session ID: "arn:aws:gamelift:us-west-2::gamesession/fleet-2ec2aae5-c2c7-43ca-b19d-8249fe5fddf2/my-game-session"
 	// includes the custom ID string "my-game-session". If this parameter is not
-	// set, GameLift creates a game session ID in the same format with an auto-generated
+	// set, GameLift creates a game session ID in the same format with an autogenerated
 	// ID string.
 	GameSessionId *string `min:"1" type:"string"`
 
@@ -4040,7 +4421,50 @@ func (s *CreateGameSessionInput) Validate() error {
 	return nil
 }
 
+// SetAliasId sets the AliasId field's value.
+func (s *CreateGameSessionInput) SetAliasId(v string) *CreateGameSessionInput {
+	s.AliasId = &v
+	return s
+}
+
+// SetCreatorId sets the CreatorId field's value.
+func (s *CreateGameSessionInput) SetCreatorId(v string) *CreateGameSessionInput {
+	s.CreatorId = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *CreateGameSessionInput) SetFleetId(v string) *CreateGameSessionInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetGameProperties sets the GameProperties field's value.
+func (s *CreateGameSessionInput) SetGameProperties(v []*GameProperty) *CreateGameSessionInput {
+	s.GameProperties = v
+	return s
+}
+
+// SetGameSessionId sets the GameSessionId field's value.
+func (s *CreateGameSessionInput) SetGameSessionId(v string) *CreateGameSessionInput {
+	s.GameSessionId = &v
+	return s
+}
+
+// SetMaximumPlayerSessionCount sets the MaximumPlayerSessionCount field's value.
+func (s *CreateGameSessionInput) SetMaximumPlayerSessionCount(v int64) *CreateGameSessionInput {
+	s.MaximumPlayerSessionCount = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateGameSessionInput) SetName(v string) *CreateGameSessionInput {
+	s.Name = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateGameSessionOutput
 type CreateGameSessionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4058,14 +4482,21 @@ func (s CreateGameSessionOutput) GoString() string {
 	return s.String()
 }
 
+// SetGameSession sets the GameSession field's value.
+func (s *CreateGameSessionOutput) SetGameSession(v *GameSession) *CreateGameSessionOutput {
+	s.GameSession = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreatePlayerSessionInput
 type CreatePlayerSessionInput struct {
 	_ struct{} `type:"structure"`
 
 	// Unique identifier for the game session to add a player to. Game session ID
 	// format is as follows: "arn:aws:gamelift:<region>::gamesession/fleet-<fleet
 	// ID>/<ID string>". The value of <ID string> is either a custom ID string (if
-	// one was specified when the game session was created) an auto-generated string.
+	// one was specified when the game session was created) an autogenerated string.
 	//
 	// GameSessionId is a required field
 	GameSessionId *string `min:"1" type:"string" required:"true"`
@@ -4108,7 +4539,20 @@ func (s *CreatePlayerSessionInput) Validate() error {
 	return nil
 }
 
+// SetGameSessionId sets the GameSessionId field's value.
+func (s *CreatePlayerSessionInput) SetGameSessionId(v string) *CreatePlayerSessionInput {
+	s.GameSessionId = &v
+	return s
+}
+
+// SetPlayerId sets the PlayerId field's value.
+func (s *CreatePlayerSessionInput) SetPlayerId(v string) *CreatePlayerSessionInput {
+	s.PlayerId = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreatePlayerSessionOutput
 type CreatePlayerSessionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4126,14 +4570,21 @@ func (s CreatePlayerSessionOutput) GoString() string {
 	return s.String()
 }
 
+// SetPlayerSession sets the PlayerSession field's value.
+func (s *CreatePlayerSessionOutput) SetPlayerSession(v *PlayerSession) *CreatePlayerSessionOutput {
+	s.PlayerSession = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreatePlayerSessionsInput
 type CreatePlayerSessionsInput struct {
 	_ struct{} `type:"structure"`
 
 	// Unique identifier for the game session to add players to. Game session ID
 	// format is as follows: "arn:aws:gamelift:<region>::gamesession/fleet-<fleet
 	// ID>/<ID string>". The value of <ID string> is either a custom ID string (if
-	// one was specified when the game session was created) an auto-generated string.
+	// one was specified when the game session was created) an autogenerated string.
 	//
 	// GameSessionId is a required field
 	GameSessionId *string `min:"1" type:"string" required:"true"`
@@ -4176,7 +4627,20 @@ func (s *CreatePlayerSessionsInput) Validate() error {
 	return nil
 }
 
+// SetGameSessionId sets the GameSessionId field's value.
+func (s *CreatePlayerSessionsInput) SetGameSessionId(v string) *CreatePlayerSessionsInput {
+	s.GameSessionId = &v
+	return s
+}
+
+// SetPlayerIds sets the PlayerIds field's value.
+func (s *CreatePlayerSessionsInput) SetPlayerIds(v []*string) *CreatePlayerSessionsInput {
+	s.PlayerIds = v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreatePlayerSessionsOutput
 type CreatePlayerSessionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4194,7 +4658,14 @@ func (s CreatePlayerSessionsOutput) GoString() string {
 	return s.String()
 }
 
+// SetPlayerSessions sets the PlayerSessions field's value.
+func (s *CreatePlayerSessionsOutput) SetPlayerSessions(v []*PlayerSession) *CreatePlayerSessionsOutput {
+	s.PlayerSessions = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteAliasInput
 type DeleteAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4227,6 +4698,13 @@ func (s *DeleteAliasInput) Validate() error {
 	return nil
 }
 
+// SetAliasId sets the AliasId field's value.
+func (s *DeleteAliasInput) SetAliasId(v string) *DeleteAliasInput {
+	s.AliasId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteAliasOutput
 type DeleteAliasOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4242,6 +4720,7 @@ func (s DeleteAliasOutput) GoString() string {
 }
 
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteBuildInput
 type DeleteBuildInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4274,6 +4753,13 @@ func (s *DeleteBuildInput) Validate() error {
 	return nil
 }
 
+// SetBuildId sets the BuildId field's value.
+func (s *DeleteBuildInput) SetBuildId(v string) *DeleteBuildInput {
+	s.BuildId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteBuildOutput
 type DeleteBuildOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4289,6 +4775,7 @@ func (s DeleteBuildOutput) GoString() string {
 }
 
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteFleetInput
 type DeleteFleetInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4321,6 +4808,13 @@ func (s *DeleteFleetInput) Validate() error {
 	return nil
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *DeleteFleetInput) SetFleetId(v string) *DeleteFleetInput {
+	s.FleetId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteFleetOutput
 type DeleteFleetOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4336,6 +4830,7 @@ func (s DeleteFleetOutput) GoString() string {
 }
 
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteScalingPolicyInput
 type DeleteScalingPolicyInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4380,6 +4875,19 @@ func (s *DeleteScalingPolicyInput) Validate() error {
 	return nil
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *DeleteScalingPolicyInput) SetFleetId(v string) *DeleteScalingPolicyInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DeleteScalingPolicyInput) SetName(v string) *DeleteScalingPolicyInput {
+	s.Name = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteScalingPolicyOutput
 type DeleteScalingPolicyOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4395,6 +4903,7 @@ func (s DeleteScalingPolicyOutput) GoString() string {
 }
 
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeAliasInput
 type DescribeAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4427,7 +4936,14 @@ func (s *DescribeAliasInput) Validate() error {
 	return nil
 }
 
+// SetAliasId sets the AliasId field's value.
+func (s *DescribeAliasInput) SetAliasId(v string) *DescribeAliasInput {
+	s.AliasId = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeAliasOutput
 type DescribeAliasOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4445,7 +4961,14 @@ func (s DescribeAliasOutput) GoString() string {
 	return s.String()
 }
 
+// SetAlias sets the Alias field's value.
+func (s *DescribeAliasOutput) SetAlias(v *Alias) *DescribeAliasOutput {
+	s.Alias = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeBuildInput
 type DescribeBuildInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4478,7 +5001,14 @@ func (s *DescribeBuildInput) Validate() error {
 	return nil
 }
 
+// SetBuildId sets the BuildId field's value.
+func (s *DescribeBuildInput) SetBuildId(v string) *DescribeBuildInput {
+	s.BuildId = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeBuildOutput
 type DescribeBuildOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4496,7 +5026,14 @@ func (s DescribeBuildOutput) GoString() string {
 	return s.String()
 }
 
+// SetBuild sets the Build field's value.
+func (s *DescribeBuildOutput) SetBuild(v *Build) *DescribeBuildOutput {
+	s.Build = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeEC2InstanceLimitsInput
 type DescribeEC2InstanceLimitsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4519,7 +5056,14 @@ func (s DescribeEC2InstanceLimitsInput) GoString() string {
 	return s.String()
 }
 
+// SetEC2InstanceType sets the EC2InstanceType field's value.
+func (s *DescribeEC2InstanceLimitsInput) SetEC2InstanceType(v string) *DescribeEC2InstanceLimitsInput {
+	s.EC2InstanceType = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeEC2InstanceLimitsOutput
 type DescribeEC2InstanceLimitsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4538,7 +5082,14 @@ func (s DescribeEC2InstanceLimitsOutput) GoString() string {
 	return s.String()
 }
 
+// SetEC2InstanceLimits sets the EC2InstanceLimits field's value.
+func (s *DescribeEC2InstanceLimitsOutput) SetEC2InstanceLimits(v []*EC2InstanceLimit) *DescribeEC2InstanceLimitsOutput {
+	s.EC2InstanceLimits = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetAttributesInput
 type DescribeFleetAttributesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4587,7 +5138,26 @@ func (s *DescribeFleetAttributesInput) Validate() error {
 	return nil
 }
 
+// SetFleetIds sets the FleetIds field's value.
+func (s *DescribeFleetAttributesInput) SetFleetIds(v []*string) *DescribeFleetAttributesInput {
+	s.FleetIds = v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeFleetAttributesInput) SetLimit(v int64) *DescribeFleetAttributesInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeFleetAttributesInput) SetNextToken(v string) *DescribeFleetAttributesInput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetAttributesOutput
 type DescribeFleetAttributesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4610,7 +5180,20 @@ func (s DescribeFleetAttributesOutput) GoString() string {
 	return s.String()
 }
 
+// SetFleetAttributes sets the FleetAttributes field's value.
+func (s *DescribeFleetAttributesOutput) SetFleetAttributes(v []*FleetAttributes) *DescribeFleetAttributesOutput {
+	s.FleetAttributes = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeFleetAttributesOutput) SetNextToken(v string) *DescribeFleetAttributesOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetCapacityInput
 type DescribeFleetCapacityInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4660,7 +5243,26 @@ func (s *DescribeFleetCapacityInput) Validate() error {
 	return nil
 }
 
+// SetFleetIds sets the FleetIds field's value.
+func (s *DescribeFleetCapacityInput) SetFleetIds(v []*string) *DescribeFleetCapacityInput {
+	s.FleetIds = v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeFleetCapacityInput) SetLimit(v int64) *DescribeFleetCapacityInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeFleetCapacityInput) SetNextToken(v string) *DescribeFleetCapacityInput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetCapacityOutput
 type DescribeFleetCapacityOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4684,13 +5286,26 @@ func (s DescribeFleetCapacityOutput) GoString() string {
 	return s.String()
 }
 
+// SetFleetCapacity sets the FleetCapacity field's value.
+func (s *DescribeFleetCapacityOutput) SetFleetCapacity(v []*FleetCapacity) *DescribeFleetCapacityOutput {
+	s.FleetCapacity = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeFleetCapacityOutput) SetNextToken(v string) *DescribeFleetCapacityOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetEventsInput
 type DescribeFleetEventsInput struct {
 	_ struct{} `type:"structure"`
 
 	// Most recent date to retrieve event logs for. If no end time is specified,
 	// this call returns entries from the specified start time up to the present.
-	// Format is a number expressed in Unix time as milliseconds (ex: "1469498468.057".
+	// Format is a number expressed in Unix time as milliseconds (ex: "1469498468.057").
 	EndTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 
 	// Unique identifier for the fleet to get event logs for.
@@ -4710,7 +5325,7 @@ type DescribeFleetEventsInput struct {
 	// Earliest date to retrieve event logs for. If no start time is specified,
 	// this call returns entries starting from when the fleet was created to the
 	// specified end time. Format is a number expressed in Unix time as milliseconds
-	// (ex: "1469498468.057".
+	// (ex: "1469498468.057").
 	StartTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 }
 
@@ -4743,7 +5358,38 @@ func (s *DescribeFleetEventsInput) Validate() error {
 	return nil
 }
 
+// SetEndTime sets the EndTime field's value.
+func (s *DescribeFleetEventsInput) SetEndTime(v time.Time) *DescribeFleetEventsInput {
+	s.EndTime = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *DescribeFleetEventsInput) SetFleetId(v string) *DescribeFleetEventsInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeFleetEventsInput) SetLimit(v int64) *DescribeFleetEventsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeFleetEventsInput) SetNextToken(v string) *DescribeFleetEventsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *DescribeFleetEventsInput) SetStartTime(v time.Time) *DescribeFleetEventsInput {
+	s.StartTime = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetEventsOutput
 type DescribeFleetEventsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4765,7 +5411,20 @@ func (s DescribeFleetEventsOutput) GoString() string {
 	return s.String()
 }
 
+// SetEvents sets the Events field's value.
+func (s *DescribeFleetEventsOutput) SetEvents(v []*Event) *DescribeFleetEventsOutput {
+	s.Events = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeFleetEventsOutput) SetNextToken(v string) *DescribeFleetEventsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetPortSettingsInput
 type DescribeFleetPortSettingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4798,7 +5457,14 @@ func (s *DescribeFleetPortSettingsInput) Validate() error {
 	return nil
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *DescribeFleetPortSettingsInput) SetFleetId(v string) *DescribeFleetPortSettingsInput {
+	s.FleetId = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetPortSettingsOutput
 type DescribeFleetPortSettingsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4816,7 +5482,14 @@ func (s DescribeFleetPortSettingsOutput) GoString() string {
 	return s.String()
 }
 
+// SetInboundPermissions sets the InboundPermissions field's value.
+func (s *DescribeFleetPortSettingsOutput) SetInboundPermissions(v []*IpPermission) *DescribeFleetPortSettingsOutput {
+	s.InboundPermissions = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetUtilizationInput
 type DescribeFleetUtilizationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4865,7 +5538,26 @@ func (s *DescribeFleetUtilizationInput) Validate() error {
 	return nil
 }
 
+// SetFleetIds sets the FleetIds field's value.
+func (s *DescribeFleetUtilizationInput) SetFleetIds(v []*string) *DescribeFleetUtilizationInput {
+	s.FleetIds = v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeFleetUtilizationInput) SetLimit(v int64) *DescribeFleetUtilizationInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeFleetUtilizationInput) SetNextToken(v string) *DescribeFleetUtilizationInput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetUtilizationOutput
 type DescribeFleetUtilizationOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4888,7 +5580,20 @@ func (s DescribeFleetUtilizationOutput) GoString() string {
 	return s.String()
 }
 
+// SetFleetUtilization sets the FleetUtilization field's value.
+func (s *DescribeFleetUtilizationOutput) SetFleetUtilization(v []*FleetUtilization) *DescribeFleetUtilizationOutput {
+	s.FleetUtilization = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeFleetUtilizationOutput) SetNextToken(v string) *DescribeFleetUtilizationOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessionDetailsInput
 type DescribeGameSessionDetailsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4903,7 +5608,7 @@ type DescribeGameSessionDetailsInput struct {
 	// Unique identifier for the game session to retrieve information on. Game session
 	// ID format is as follows: "arn:aws:gamelift:<region>::gamesession/fleet-<fleet
 	// ID>/<ID string>". The value of <ID string> is either a custom ID string (if
-	// one was specified when the game session was created) an auto-generated string.
+	// one was specified when the game session was created) an autogenerated string.
 	GameSessionId *string `min:"1" type:"string"`
 
 	// Maximum number of results to return. Use this parameter with NextToken to
@@ -4953,7 +5658,44 @@ func (s *DescribeGameSessionDetailsInput) Validate() error {
 	return nil
 }
 
+// SetAliasId sets the AliasId field's value.
+func (s *DescribeGameSessionDetailsInput) SetAliasId(v string) *DescribeGameSessionDetailsInput {
+	s.AliasId = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *DescribeGameSessionDetailsInput) SetFleetId(v string) *DescribeGameSessionDetailsInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetGameSessionId sets the GameSessionId field's value.
+func (s *DescribeGameSessionDetailsInput) SetGameSessionId(v string) *DescribeGameSessionDetailsInput {
+	s.GameSessionId = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeGameSessionDetailsInput) SetLimit(v int64) *DescribeGameSessionDetailsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeGameSessionDetailsInput) SetNextToken(v string) *DescribeGameSessionDetailsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetStatusFilter sets the StatusFilter field's value.
+func (s *DescribeGameSessionDetailsInput) SetStatusFilter(v string) *DescribeGameSessionDetailsInput {
+	s.StatusFilter = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessionDetailsOutput
 type DescribeGameSessionDetailsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4976,7 +5718,20 @@ func (s DescribeGameSessionDetailsOutput) GoString() string {
 	return s.String()
 }
 
+// SetGameSessionDetails sets the GameSessionDetails field's value.
+func (s *DescribeGameSessionDetailsOutput) SetGameSessionDetails(v []*GameSessionDetail) *DescribeGameSessionDetailsOutput {
+	s.GameSessionDetails = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeGameSessionDetailsOutput) SetNextToken(v string) *DescribeGameSessionDetailsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessionsInput
 type DescribeGameSessionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4991,7 +5746,7 @@ type DescribeGameSessionsInput struct {
 	// Unique identifier for the game session to retrieve information on. Game session
 	// ID format is as follows: "arn:aws:gamelift:<region>::gamesession/fleet-<fleet
 	// ID>/<ID string>". The value of <ID string> is either a custom ID string (if
-	// one was specified when the game session was created) an auto-generated string.
+	// one was specified when the game session was created) an autogenerated string.
 	GameSessionId *string `min:"1" type:"string"`
 
 	// Maximum number of results to return. Use this parameter with NextToken to
@@ -5041,7 +5796,44 @@ func (s *DescribeGameSessionsInput) Validate() error {
 	return nil
 }
 
+// SetAliasId sets the AliasId field's value.
+func (s *DescribeGameSessionsInput) SetAliasId(v string) *DescribeGameSessionsInput {
+	s.AliasId = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *DescribeGameSessionsInput) SetFleetId(v string) *DescribeGameSessionsInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetGameSessionId sets the GameSessionId field's value.
+func (s *DescribeGameSessionsInput) SetGameSessionId(v string) *DescribeGameSessionsInput {
+	s.GameSessionId = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeGameSessionsInput) SetLimit(v int64) *DescribeGameSessionsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeGameSessionsInput) SetNextToken(v string) *DescribeGameSessionsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetStatusFilter sets the StatusFilter field's value.
+func (s *DescribeGameSessionsInput) SetStatusFilter(v string) *DescribeGameSessionsInput {
+	s.StatusFilter = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessionsOutput
 type DescribeGameSessionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5064,7 +5856,20 @@ func (s DescribeGameSessionsOutput) GoString() string {
 	return s.String()
 }
 
+// SetGameSessions sets the GameSessions field's value.
+func (s *DescribeGameSessionsOutput) SetGameSessions(v []*GameSession) *DescribeGameSessionsOutput {
+	s.GameSessions = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeGameSessionsOutput) SetNextToken(v string) *DescribeGameSessionsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeInstancesInput
 type DescribeInstancesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5117,7 +5922,32 @@ func (s *DescribeInstancesInput) Validate() error {
 	return nil
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *DescribeInstancesInput) SetFleetId(v string) *DescribeInstancesInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *DescribeInstancesInput) SetInstanceId(v string) *DescribeInstancesInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeInstancesInput) SetLimit(v int64) *DescribeInstancesInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeInstancesInput) SetNextToken(v string) *DescribeInstancesInput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeInstancesOutput
 type DescribeInstancesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5139,14 +5969,27 @@ func (s DescribeInstancesOutput) GoString() string {
 	return s.String()
 }
 
+// SetInstances sets the Instances field's value.
+func (s *DescribeInstancesOutput) SetInstances(v []*Instance) *DescribeInstancesOutput {
+	s.Instances = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeInstancesOutput) SetNextToken(v string) *DescribeInstancesOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribePlayerSessionsInput
 type DescribePlayerSessionsInput struct {
 	_ struct{} `type:"structure"`
 
-	// Unique identifier for the game session to get player sessions for.Game session
+	// Unique identifier for the game session to get player sessions for. Game session
 	// ID format is as follows: "arn:aws:gamelift:<region>::gamesession/fleet-<fleet
 	// ID>/<ID string>". The value of <ID string> is either a custom ID string (if
-	// one was specified when the game session was created) an auto-generated string.
+	// one was specified when the game session was created) an autogenerated string.
 	GameSessionId *string `min:"1" type:"string"`
 
 	// Maximum number of results to return. Use this parameter with NextToken to
@@ -5218,7 +6061,44 @@ func (s *DescribePlayerSessionsInput) Validate() error {
 	return nil
 }
 
+// SetGameSessionId sets the GameSessionId field's value.
+func (s *DescribePlayerSessionsInput) SetGameSessionId(v string) *DescribePlayerSessionsInput {
+	s.GameSessionId = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribePlayerSessionsInput) SetLimit(v int64) *DescribePlayerSessionsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribePlayerSessionsInput) SetNextToken(v string) *DescribePlayerSessionsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPlayerId sets the PlayerId field's value.
+func (s *DescribePlayerSessionsInput) SetPlayerId(v string) *DescribePlayerSessionsInput {
+	s.PlayerId = &v
+	return s
+}
+
+// SetPlayerSessionId sets the PlayerSessionId field's value.
+func (s *DescribePlayerSessionsInput) SetPlayerSessionId(v string) *DescribePlayerSessionsInput {
+	s.PlayerSessionId = &v
+	return s
+}
+
+// SetPlayerSessionStatusFilter sets the PlayerSessionStatusFilter field's value.
+func (s *DescribePlayerSessionsInput) SetPlayerSessionStatusFilter(v string) *DescribePlayerSessionsInput {
+	s.PlayerSessionStatusFilter = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribePlayerSessionsOutput
 type DescribePlayerSessionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5241,7 +6121,20 @@ func (s DescribePlayerSessionsOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *DescribePlayerSessionsOutput) SetNextToken(v string) *DescribePlayerSessionsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPlayerSessions sets the PlayerSessions field's value.
+func (s *DescribePlayerSessionsOutput) SetPlayerSessions(v []*PlayerSession) *DescribePlayerSessionsOutput {
+	s.PlayerSessions = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeRuntimeConfigurationInput
 type DescribeRuntimeConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5274,7 +6167,14 @@ func (s *DescribeRuntimeConfigurationInput) Validate() error {
 	return nil
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *DescribeRuntimeConfigurationInput) SetFleetId(v string) *DescribeRuntimeConfigurationInput {
+	s.FleetId = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeRuntimeConfigurationOutput
 type DescribeRuntimeConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5293,7 +6193,14 @@ func (s DescribeRuntimeConfigurationOutput) GoString() string {
 	return s.String()
 }
 
+// SetRuntimeConfiguration sets the RuntimeConfiguration field's value.
+func (s *DescribeRuntimeConfigurationOutput) SetRuntimeConfiguration(v *RuntimeConfiguration) *DescribeRuntimeConfigurationOutput {
+	s.RuntimeConfiguration = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeScalingPoliciesInput
 type DescribeScalingPoliciesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5361,7 +6268,32 @@ func (s *DescribeScalingPoliciesInput) Validate() error {
 	return nil
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *DescribeScalingPoliciesInput) SetFleetId(v string) *DescribeScalingPoliciesInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeScalingPoliciesInput) SetLimit(v int64) *DescribeScalingPoliciesInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeScalingPoliciesInput) SetNextToken(v string) *DescribeScalingPoliciesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetStatusFilter sets the StatusFilter field's value.
+func (s *DescribeScalingPoliciesInput) SetStatusFilter(v string) *DescribeScalingPoliciesInput {
+	s.StatusFilter = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeScalingPoliciesOutput
 type DescribeScalingPoliciesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5383,11 +6315,24 @@ func (s DescribeScalingPoliciesOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeScalingPoliciesOutput) SetNextToken(v string) *DescribeScalingPoliciesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetScalingPolicies sets the ScalingPolicies field's value.
+func (s *DescribeScalingPoliciesOutput) SetScalingPolicies(v []*ScalingPolicy) *DescribeScalingPoliciesOutput {
+	s.ScalingPolicies = v
+	return s
+}
+
 // Current status of fleet capacity. The number of active instances should match
 // or be in the process of matching the number of desired instances. Pending
 // and terminating counts are non-zero only if fleet capacity is adjusting to
 // an UpdateFleetCapacity request, or if access to resources is temporarily
 // affected.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/EC2InstanceCounts
 type EC2InstanceCounts struct {
 	_ struct{} `type:"structure"`
 
@@ -5425,8 +6370,51 @@ func (s EC2InstanceCounts) GoString() string {
 	return s.String()
 }
 
+// SetACTIVE sets the ACTIVE field's value.
+func (s *EC2InstanceCounts) SetACTIVE(v int64) *EC2InstanceCounts {
+	s.ACTIVE = &v
+	return s
+}
+
+// SetDESIRED sets the DESIRED field's value.
+func (s *EC2InstanceCounts) SetDESIRED(v int64) *EC2InstanceCounts {
+	s.DESIRED = &v
+	return s
+}
+
+// SetIDLE sets the IDLE field's value.
+func (s *EC2InstanceCounts) SetIDLE(v int64) *EC2InstanceCounts {
+	s.IDLE = &v
+	return s
+}
+
+// SetMAXIMUM sets the MAXIMUM field's value.
+func (s *EC2InstanceCounts) SetMAXIMUM(v int64) *EC2InstanceCounts {
+	s.MAXIMUM = &v
+	return s
+}
+
+// SetMINIMUM sets the MINIMUM field's value.
+func (s *EC2InstanceCounts) SetMINIMUM(v int64) *EC2InstanceCounts {
+	s.MINIMUM = &v
+	return s
+}
+
+// SetPENDING sets the PENDING field's value.
+func (s *EC2InstanceCounts) SetPENDING(v int64) *EC2InstanceCounts {
+	s.PENDING = &v
+	return s
+}
+
+// SetTERMINATING sets the TERMINATING field's value.
+func (s *EC2InstanceCounts) SetTERMINATING(v int64) *EC2InstanceCounts {
+	s.TERMINATING = &v
+	return s
+}
+
 // Maximum number of instances allowed based on the Amazon Elastic Compute Cloud
 // (Amazon EC2) instance type. Instance limits can be retrieved by calling DescribeEC2InstanceLimits.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/EC2InstanceLimit
 type EC2InstanceLimit struct {
 	_ struct{} `type:"structure"`
 
@@ -5455,8 +6443,28 @@ func (s EC2InstanceLimit) GoString() string {
 	return s.String()
 }
 
-// Log entry describing an event involving an Amazon GameLift resource (such
-// as a fleet).
+// SetCurrentInstances sets the CurrentInstances field's value.
+func (s *EC2InstanceLimit) SetCurrentInstances(v int64) *EC2InstanceLimit {
+	s.CurrentInstances = &v
+	return s
+}
+
+// SetEC2InstanceType sets the EC2InstanceType field's value.
+func (s *EC2InstanceLimit) SetEC2InstanceType(v string) *EC2InstanceLimit {
+	s.EC2InstanceType = &v
+	return s
+}
+
+// SetInstanceLimit sets the InstanceLimit field's value.
+func (s *EC2InstanceLimit) SetInstanceLimit(v int64) *EC2InstanceLimit {
+	s.InstanceLimit = &v
+	return s
+}
+
+// Log entry describing an event involving Amazon GameLift resources (such as
+// a fleet). In addition to tracking activity, event codes and messages can
+// provide additional information for troubleshooting and debugging problems.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/Event
 type Event struct {
 	_ struct{} `type:"structure"`
 
@@ -5467,7 +6475,7 @@ type Event struct {
 	EventId *string `min:"1" type:"string"`
 
 	// Time stamp indicating when this event occurred. Format is a number expressed
-	// in Unix time as milliseconds (ex: "1469498468.057".
+	// in Unix time as milliseconds (ex: "1469498468.057").
 	EventTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 
 	// Additional information related to the event.
@@ -5487,7 +6495,38 @@ func (s Event) GoString() string {
 	return s.String()
 }
 
+// SetEventCode sets the EventCode field's value.
+func (s *Event) SetEventCode(v string) *Event {
+	s.EventCode = &v
+	return s
+}
+
+// SetEventId sets the EventId field's value.
+func (s *Event) SetEventId(v string) *Event {
+	s.EventId = &v
+	return s
+}
+
+// SetEventTime sets the EventTime field's value.
+func (s *Event) SetEventTime(v time.Time) *Event {
+	s.EventTime = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *Event) SetMessage(v string) *Event {
+	s.Message = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *Event) SetResourceId(v string) *Event {
+	s.ResourceId = &v
+	return s
+}
+
 // General properties describing a fleet.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/FleetAttributes
 type FleetAttributes struct {
 	_ struct{} `type:"structure"`
 
@@ -5495,7 +6534,7 @@ type FleetAttributes struct {
 	BuildId *string `type:"string"`
 
 	// Time stamp indicating when this data object was created. Format is a number
-	// expressed in Unix time as milliseconds (ex: "1469498468.057".
+	// expressed in Unix time as milliseconds (ex: "1469498468.057").
 	CreationTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 
 	// Human-readable description of the fleet.
@@ -5509,8 +6548,9 @@ type FleetAttributes struct {
 	// in addition to game session logs; see more on game session logs in the Amazon
 	// GameLift Developer Guide (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-api-server-code).
 	// If no default log path for a fleet is specified, GameLift will automatically
-	// upload logs stored on each instance at C:\game\logs. Use the GameLift console
-	// to access stored logs.
+	// upload logs that are stored on each instance at C:\game\logs (for Windows)
+	// or /local/game/logs (for Linux). Use the GameLift console to access stored
+	// logs.
 	LogPaths []*string `type:"list"`
 
 	// Descriptive label associated with a fleet. Fleet names do not need to be
@@ -5568,7 +6608,7 @@ type FleetAttributes struct {
 	Status *string `type:"string" enum:"FleetStatus"`
 
 	// Time stamp indicating when this data object was terminated. Format is a number
-	// expressed in Unix time as milliseconds (ex: "1469498468.057".
+	// expressed in Unix time as milliseconds (ex: "1469498468.057").
 	TerminationTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 }
 
@@ -5582,10 +6622,89 @@ func (s FleetAttributes) GoString() string {
 	return s.String()
 }
 
+// SetBuildId sets the BuildId field's value.
+func (s *FleetAttributes) SetBuildId(v string) *FleetAttributes {
+	s.BuildId = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *FleetAttributes) SetCreationTime(v time.Time) *FleetAttributes {
+	s.CreationTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *FleetAttributes) SetDescription(v string) *FleetAttributes {
+	s.Description = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *FleetAttributes) SetFleetId(v string) *FleetAttributes {
+	s.FleetId = &v
+	return s
+}
+
+// SetLogPaths sets the LogPaths field's value.
+func (s *FleetAttributes) SetLogPaths(v []*string) *FleetAttributes {
+	s.LogPaths = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *FleetAttributes) SetName(v string) *FleetAttributes {
+	s.Name = &v
+	return s
+}
+
+// SetNewGameSessionProtectionPolicy sets the NewGameSessionProtectionPolicy field's value.
+func (s *FleetAttributes) SetNewGameSessionProtectionPolicy(v string) *FleetAttributes {
+	s.NewGameSessionProtectionPolicy = &v
+	return s
+}
+
+// SetOperatingSystem sets the OperatingSystem field's value.
+func (s *FleetAttributes) SetOperatingSystem(v string) *FleetAttributes {
+	s.OperatingSystem = &v
+	return s
+}
+
+// SetResourceCreationLimitPolicy sets the ResourceCreationLimitPolicy field's value.
+func (s *FleetAttributes) SetResourceCreationLimitPolicy(v *ResourceCreationLimitPolicy) *FleetAttributes {
+	s.ResourceCreationLimitPolicy = v
+	return s
+}
+
+// SetServerLaunchParameters sets the ServerLaunchParameters field's value.
+func (s *FleetAttributes) SetServerLaunchParameters(v string) *FleetAttributes {
+	s.ServerLaunchParameters = &v
+	return s
+}
+
+// SetServerLaunchPath sets the ServerLaunchPath field's value.
+func (s *FleetAttributes) SetServerLaunchPath(v string) *FleetAttributes {
+	s.ServerLaunchPath = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *FleetAttributes) SetStatus(v string) *FleetAttributes {
+	s.Status = &v
+	return s
+}
+
+// SetTerminationTime sets the TerminationTime field's value.
+func (s *FleetAttributes) SetTerminationTime(v time.Time) *FleetAttributes {
+	s.TerminationTime = &v
+	return s
+}
+
 // Information about the fleet's capacity. Fleet capacity is measured in EC2
 // instances. By default, new fleets have a capacity of one instance, but can
 // be updated as needed. The maximum number of instances for a fleet is determined
 // by the fleet's instance type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/FleetCapacity
 type FleetCapacity struct {
 	_ struct{} `type:"structure"`
 
@@ -5613,8 +6732,27 @@ func (s FleetCapacity) GoString() string {
 	return s.String()
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *FleetCapacity) SetFleetId(v string) *FleetCapacity {
+	s.FleetId = &v
+	return s
+}
+
+// SetInstanceCounts sets the InstanceCounts field's value.
+func (s *FleetCapacity) SetInstanceCounts(v *EC2InstanceCounts) *FleetCapacity {
+	s.InstanceCounts = v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *FleetCapacity) SetInstanceType(v string) *FleetCapacity {
+	s.InstanceType = &v
+	return s
+}
+
 // Current status of fleet utilization, including the number of game and player
 // sessions being hosted.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/FleetUtilization
 type FleetUtilization struct {
 	_ struct{} `type:"structure"`
 
@@ -5648,10 +6786,41 @@ func (s FleetUtilization) GoString() string {
 	return s.String()
 }
 
+// SetActiveGameSessionCount sets the ActiveGameSessionCount field's value.
+func (s *FleetUtilization) SetActiveGameSessionCount(v int64) *FleetUtilization {
+	s.ActiveGameSessionCount = &v
+	return s
+}
+
+// SetActiveServerProcessCount sets the ActiveServerProcessCount field's value.
+func (s *FleetUtilization) SetActiveServerProcessCount(v int64) *FleetUtilization {
+	s.ActiveServerProcessCount = &v
+	return s
+}
+
+// SetCurrentPlayerSessionCount sets the CurrentPlayerSessionCount field's value.
+func (s *FleetUtilization) SetCurrentPlayerSessionCount(v int64) *FleetUtilization {
+	s.CurrentPlayerSessionCount = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *FleetUtilization) SetFleetId(v string) *FleetUtilization {
+	s.FleetId = &v
+	return s
+}
+
+// SetMaximumPlayerSessionCount sets the MaximumPlayerSessionCount field's value.
+func (s *FleetUtilization) SetMaximumPlayerSessionCount(v int64) *FleetUtilization {
+	s.MaximumPlayerSessionCount = &v
+	return s
+}
+
 // Set of key-value pairs containing information a server process requires to
 // set up a game session. This object allows you to pass in any set of data
 // needed for your game. For more information, see the Amazon GameLift Developer
 // Guide (http://docs.aws.amazon.com/gamelift/latest/developerguide/).
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GameProperty
 type GameProperty struct {
 	_ struct{} `type:"structure"`
 
@@ -5692,17 +6861,30 @@ func (s *GameProperty) Validate() error {
 	return nil
 }
 
+// SetKey sets the Key field's value.
+func (s *GameProperty) SetKey(v string) *GameProperty {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *GameProperty) SetValue(v string) *GameProperty {
+	s.Value = &v
+	return s
+}
+
 // Properties describing a game session.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GameSession
 type GameSession struct {
 	_ struct{} `type:"structure"`
 
 	// Time stamp indicating when this data object was created. Format is a number
-	// expressed in Unix time as milliseconds (ex: "1469498468.057".
+	// expressed in Unix time as milliseconds (ex: "1469498468.057").
 	CreationTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 
 	// Player ID of the person or entity that created the game session. This ID
 	// is used to enforce a resource protection policy (if one exists) that limits
-	// the number of concurrent active game sessions one player can have.
+	// the number of concurrent active game sessions for a single player.
 	CreatorId *string `min:"1" type:"string"`
 
 	// Number of players currently in the game session.
@@ -5717,7 +6899,7 @@ type GameSession struct {
 	// Unique identifier for a game session. Game session ID format is as follows:
 	// "arn:aws:gamelift:<region>::gamesession/fleet-<fleet ID>/<ID string>". The
 	// value of <ID string> is either a custom ID string (if one was specified when
-	// the game session was created) an auto-generated string.
+	// the game session was created) an autogenerated string.
 	GameSessionId *string `min:"1" type:"string"`
 
 	// IP address of the game session. To connect to a GameLift server process,
@@ -5743,7 +6925,7 @@ type GameSession struct {
 	Status *string `type:"string" enum:"GameSessionStatus"`
 
 	// Time stamp indicating when this data object was terminated. Format is a number
-	// expressed in Unix time as milliseconds (ex: "1469498468.057".
+	// expressed in Unix time as milliseconds (ex: "1469498468.057").
 	TerminationTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 }
 
@@ -5757,7 +6939,86 @@ func (s GameSession) GoString() string {
 	return s.String()
 }
 
+// SetCreationTime sets the CreationTime field's value.
+func (s *GameSession) SetCreationTime(v time.Time) *GameSession {
+	s.CreationTime = &v
+	return s
+}
+
+// SetCreatorId sets the CreatorId field's value.
+func (s *GameSession) SetCreatorId(v string) *GameSession {
+	s.CreatorId = &v
+	return s
+}
+
+// SetCurrentPlayerSessionCount sets the CurrentPlayerSessionCount field's value.
+func (s *GameSession) SetCurrentPlayerSessionCount(v int64) *GameSession {
+	s.CurrentPlayerSessionCount = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *GameSession) SetFleetId(v string) *GameSession {
+	s.FleetId = &v
+	return s
+}
+
+// SetGameProperties sets the GameProperties field's value.
+func (s *GameSession) SetGameProperties(v []*GameProperty) *GameSession {
+	s.GameProperties = v
+	return s
+}
+
+// SetGameSessionId sets the GameSessionId field's value.
+func (s *GameSession) SetGameSessionId(v string) *GameSession {
+	s.GameSessionId = &v
+	return s
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *GameSession) SetIpAddress(v string) *GameSession {
+	s.IpAddress = &v
+	return s
+}
+
+// SetMaximumPlayerSessionCount sets the MaximumPlayerSessionCount field's value.
+func (s *GameSession) SetMaximumPlayerSessionCount(v int64) *GameSession {
+	s.MaximumPlayerSessionCount = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GameSession) SetName(v string) *GameSession {
+	s.Name = &v
+	return s
+}
+
+// SetPlayerSessionCreationPolicy sets the PlayerSessionCreationPolicy field's value.
+func (s *GameSession) SetPlayerSessionCreationPolicy(v string) *GameSession {
+	s.PlayerSessionCreationPolicy = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *GameSession) SetPort(v int64) *GameSession {
+	s.Port = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GameSession) SetStatus(v string) *GameSession {
+	s.Status = &v
+	return s
+}
+
+// SetTerminationTime sets the TerminationTime field's value.
+func (s *GameSession) SetTerminationTime(v time.Time) *GameSession {
+	s.TerminationTime = &v
+	return s
+}
+
 // A game session's properties and the protection policy currently in force.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GameSessionDetail
 type GameSessionDetail struct {
 	_ struct{} `type:"structure"`
 
@@ -5784,14 +7045,27 @@ func (s GameSessionDetail) GoString() string {
 	return s.String()
 }
 
+// SetGameSession sets the GameSession field's value.
+func (s *GameSessionDetail) SetGameSession(v *GameSession) *GameSessionDetail {
+	s.GameSession = v
+	return s
+}
+
+// SetProtectionPolicy sets the ProtectionPolicy field's value.
+func (s *GameSessionDetail) SetProtectionPolicy(v string) *GameSessionDetail {
+	s.ProtectionPolicy = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GetGameSessionLogUrlInput
 type GetGameSessionLogUrlInput struct {
 	_ struct{} `type:"structure"`
 
 	// Unique identifier for the game session to get logs for. Game session ID format
 	// is as follows: "arn:aws:gamelift:<region>::gamesession/fleet-<fleet ID>/<ID
 	// string>". The value of <ID string> is either a custom ID string (if one was
-	// specified when the game session was created) an auto-generated string.
+	// specified when the game session was created) an autogenerated string.
 	//
 	// GameSessionId is a required field
 	GameSessionId *string `min:"1" type:"string" required:"true"`
@@ -5823,7 +7097,14 @@ func (s *GetGameSessionLogUrlInput) Validate() error {
 	return nil
 }
 
+// SetGameSessionId sets the GameSessionId field's value.
+func (s *GetGameSessionLogUrlInput) SetGameSessionId(v string) *GetGameSessionLogUrlInput {
+	s.GameSessionId = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GetGameSessionLogUrlOutput
 type GetGameSessionLogUrlOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5841,8 +7122,97 @@ func (s GetGameSessionLogUrlOutput) GoString() string {
 	return s.String()
 }
 
-// Properties describing an instance of a virtual computing resource that is
-// hosting game servers. Fleets contain zero or more instances.
+// SetPreSignedUrl sets the PreSignedUrl field's value.
+func (s *GetGameSessionLogUrlOutput) SetPreSignedUrl(v string) *GetGameSessionLogUrlOutput {
+	s.PreSignedUrl = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GetInstanceAccessInput
+type GetInstanceAccessInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique identifier for a fleet. Specify the fleet that contain the instance
+	// you want access to. The fleet can be in any of the following statuses: ACTIVATING,
+	// ACTIVE, or ERROR. Fleets with an ERROR status can be accessed for a few hours
+	// before being deleted.
+	//
+	// FleetId is a required field
+	FleetId *string `type:"string" required:"true"`
+
+	// Unique identifier for an instance. Specify the instance you want to get access
+	// to. You can access an instance in any status.
+	//
+	// InstanceId is a required field
+	InstanceId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetInstanceAccessInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetInstanceAccessInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetInstanceAccessInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetInstanceAccessInput"}
+	if s.FleetId == nil {
+		invalidParams.Add(request.NewErrParamRequired("FleetId"))
+	}
+	if s.InstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *GetInstanceAccessInput) SetFleetId(v string) *GetInstanceAccessInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *GetInstanceAccessInput) SetInstanceId(v string) *GetInstanceAccessInput {
+	s.InstanceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GetInstanceAccessOutput
+type GetInstanceAccessOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Object containing connection information for a fleet instance, including
+	// IP address and access credentials.
+	InstanceAccess *InstanceAccess `type:"structure"`
+}
+
+// String returns the string representation
+func (s GetInstanceAccessOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetInstanceAccessOutput) GoString() string {
+	return s.String()
+}
+
+// SetInstanceAccess sets the InstanceAccess field's value.
+func (s *GetInstanceAccessOutput) SetInstanceAccess(v *InstanceAccess) *GetInstanceAccessOutput {
+	s.InstanceAccess = v
+	return s
+}
+
+// Properties that describe an instance of a virtual computing resource that
+// hosts one or more game servers. A fleet contains zero or more instances.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/Instance
 type Instance struct {
 	_ struct{} `type:"structure"`
 
@@ -5859,7 +7229,7 @@ type Instance struct {
 	// IP address assigned to the instance.
 	IpAddress *string `type:"string"`
 
-	// Operating system being used on this instance.
+	// Operating system that is running on this instance.
 	OperatingSystem *string `type:"string" enum:"OperatingSystem"`
 
 	// Current status of the instance. Possible statuses include the following:
@@ -5891,11 +7261,153 @@ func (s Instance) GoString() string {
 	return s.String()
 }
 
+// SetCreationTime sets the CreationTime field's value.
+func (s *Instance) SetCreationTime(v time.Time) *Instance {
+	s.CreationTime = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *Instance) SetFleetId(v string) *Instance {
+	s.FleetId = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *Instance) SetInstanceId(v string) *Instance {
+	s.InstanceId = &v
+	return s
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *Instance) SetIpAddress(v string) *Instance {
+	s.IpAddress = &v
+	return s
+}
+
+// SetOperatingSystem sets the OperatingSystem field's value.
+func (s *Instance) SetOperatingSystem(v string) *Instance {
+	s.OperatingSystem = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Instance) SetStatus(v string) *Instance {
+	s.Status = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *Instance) SetType(v string) *Instance {
+	s.Type = &v
+	return s
+}
+
+// Information required to remotely connect to a fleet instance. Access is requested
+// by calling GetInstanceAccess.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/InstanceAccess
+type InstanceAccess struct {
+	_ struct{} `type:"structure"`
+
+	// Credentials required to access the instance.
+	Credentials *InstanceCredentials `type:"structure"`
+
+	// Unique identifier for the fleet containing the instance being accessed.
+	FleetId *string `type:"string"`
+
+	// Unique identifier for the instance being accessed.
+	InstanceId *string `type:"string"`
+
+	// IP address assigned to the instance.
+	IpAddress *string `type:"string"`
+
+	// Operating system that is running on the instance.
+	OperatingSystem *string `type:"string" enum:"OperatingSystem"`
+}
+
+// String returns the string representation
+func (s InstanceAccess) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s InstanceAccess) GoString() string {
+	return s.String()
+}
+
+// SetCredentials sets the Credentials field's value.
+func (s *InstanceAccess) SetCredentials(v *InstanceCredentials) *InstanceAccess {
+	s.Credentials = v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *InstanceAccess) SetFleetId(v string) *InstanceAccess {
+	s.FleetId = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *InstanceAccess) SetInstanceId(v string) *InstanceAccess {
+	s.InstanceId = &v
+	return s
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *InstanceAccess) SetIpAddress(v string) *InstanceAccess {
+	s.IpAddress = &v
+	return s
+}
+
+// SetOperatingSystem sets the OperatingSystem field's value.
+func (s *InstanceAccess) SetOperatingSystem(v string) *InstanceAccess {
+	s.OperatingSystem = &v
+	return s
+}
+
+// Set of credentials required to remotely access a fleet instance. Access credentials
+// are requested by calling GetInstanceAccess and returned in an InstanceAccess
+// object.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/InstanceCredentials
+type InstanceCredentials struct {
+	_ struct{} `type:"structure"`
+
+	// Secret string. For Windows instances, the secret is a password. For Linux
+	// instances, it is a private key.
+	Secret *string `min:"1" type:"string"`
+
+	// User login string.
+	UserName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s InstanceCredentials) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s InstanceCredentials) GoString() string {
+	return s.String()
+}
+
+// SetSecret sets the Secret field's value.
+func (s *InstanceCredentials) SetSecret(v string) *InstanceCredentials {
+	s.Secret = &v
+	return s
+}
+
+// SetUserName sets the UserName field's value.
+func (s *InstanceCredentials) SetUserName(v string) *InstanceCredentials {
+	s.UserName = &v
+	return s
+}
+
 // A range of IP addresses and port settings that allow inbound traffic to connect
 // to server processes on GameLift. Each game session hosted on a fleet is assigned
 // a unique combination of IP address and port number, which must fall into
 // the fleet's allowed ranges. This combination is included in the GameSession
 // object.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/IpPermission
 type IpPermission struct {
 	_ struct{} `type:"structure"`
 
@@ -5961,7 +7473,32 @@ func (s *IpPermission) Validate() error {
 	return nil
 }
 
+// SetFromPort sets the FromPort field's value.
+func (s *IpPermission) SetFromPort(v int64) *IpPermission {
+	s.FromPort = &v
+	return s
+}
+
+// SetIpRange sets the IpRange field's value.
+func (s *IpPermission) SetIpRange(v string) *IpPermission {
+	s.IpRange = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *IpPermission) SetProtocol(v string) *IpPermission {
+	s.Protocol = &v
+	return s
+}
+
+// SetToPort sets the ToPort field's value.
+func (s *IpPermission) SetToPort(v int64) *IpPermission {
+	s.ToPort = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListAliasesInput
 type ListAliasesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6022,7 +7559,32 @@ func (s *ListAliasesInput) Validate() error {
 	return nil
 }
 
+// SetLimit sets the Limit field's value.
+func (s *ListAliasesInput) SetLimit(v int64) *ListAliasesInput {
+	s.Limit = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ListAliasesInput) SetName(v string) *ListAliasesInput {
+	s.Name = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAliasesInput) SetNextToken(v string) *ListAliasesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRoutingStrategyType sets the RoutingStrategyType field's value.
+func (s *ListAliasesInput) SetRoutingStrategyType(v string) *ListAliasesInput {
+	s.RoutingStrategyType = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListAliasesOutput
 type ListAliasesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6044,7 +7606,20 @@ func (s ListAliasesOutput) GoString() string {
 	return s.String()
 }
 
+// SetAliases sets the Aliases field's value.
+func (s *ListAliasesOutput) SetAliases(v []*Alias) *ListAliasesOutput {
+	s.Aliases = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAliasesOutput) SetNextToken(v string) *ListAliasesOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListBuildsInput
 type ListBuildsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6100,7 +7675,26 @@ func (s *ListBuildsInput) Validate() error {
 	return nil
 }
 
+// SetLimit sets the Limit field's value.
+func (s *ListBuildsInput) SetLimit(v int64) *ListBuildsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListBuildsInput) SetNextToken(v string) *ListBuildsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ListBuildsInput) SetStatus(v string) *ListBuildsInput {
+	s.Status = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListBuildsOutput
 type ListBuildsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6122,7 +7716,20 @@ func (s ListBuildsOutput) GoString() string {
 	return s.String()
 }
 
+// SetBuilds sets the Builds field's value.
+func (s *ListBuildsOutput) SetBuilds(v []*Build) *ListBuildsOutput {
+	s.Builds = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListBuildsOutput) SetNextToken(v string) *ListBuildsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListFleetsInput
 type ListFleetsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6167,7 +7774,26 @@ func (s *ListFleetsInput) Validate() error {
 	return nil
 }
 
+// SetBuildId sets the BuildId field's value.
+func (s *ListFleetsInput) SetBuildId(v string) *ListFleetsInput {
+	s.BuildId = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *ListFleetsInput) SetLimit(v int64) *ListFleetsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListFleetsInput) SetNextToken(v string) *ListFleetsInput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListFleetsOutput
 type ListFleetsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6191,12 +7817,25 @@ func (s ListFleetsOutput) GoString() string {
 	return s.String()
 }
 
+// SetFleetIds sets the FleetIds field's value.
+func (s *ListFleetsOutput) SetFleetIds(v []*string) *ListFleetsOutput {
+	s.FleetIds = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListFleetsOutput) SetNextToken(v string) *ListFleetsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Properties describing a player session.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/PlayerSession
 type PlayerSession struct {
 	_ struct{} `type:"structure"`
 
 	// Time stamp indicating when this data object was created. Format is a number
-	// expressed in Unix time as milliseconds (ex: "1469498468.057".
+	// expressed in Unix time as milliseconds (ex: "1469498468.057").
 	CreationTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 
 	// Unique identifier for a fleet.
@@ -6236,7 +7875,7 @@ type PlayerSession struct {
 	Status *string `type:"string" enum:"PlayerSessionStatus"`
 
 	// Time stamp indicating when this data object was terminated. Format is a number
-	// expressed in Unix time as milliseconds (ex: "1469498468.057".
+	// expressed in Unix time as milliseconds (ex: "1469498468.057").
 	TerminationTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 }
 
@@ -6250,7 +7889,62 @@ func (s PlayerSession) GoString() string {
 	return s.String()
 }
 
+// SetCreationTime sets the CreationTime field's value.
+func (s *PlayerSession) SetCreationTime(v time.Time) *PlayerSession {
+	s.CreationTime = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *PlayerSession) SetFleetId(v string) *PlayerSession {
+	s.FleetId = &v
+	return s
+}
+
+// SetGameSessionId sets the GameSessionId field's value.
+func (s *PlayerSession) SetGameSessionId(v string) *PlayerSession {
+	s.GameSessionId = &v
+	return s
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *PlayerSession) SetIpAddress(v string) *PlayerSession {
+	s.IpAddress = &v
+	return s
+}
+
+// SetPlayerId sets the PlayerId field's value.
+func (s *PlayerSession) SetPlayerId(v string) *PlayerSession {
+	s.PlayerId = &v
+	return s
+}
+
+// SetPlayerSessionId sets the PlayerSessionId field's value.
+func (s *PlayerSession) SetPlayerSessionId(v string) *PlayerSession {
+	s.PlayerSessionId = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *PlayerSession) SetPort(v int64) *PlayerSession {
+	s.Port = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *PlayerSession) SetStatus(v string) *PlayerSession {
+	s.Status = &v
+	return s
+}
+
+// SetTerminationTime sets the TerminationTime field's value.
+func (s *PlayerSession) SetTerminationTime(v time.Time) *PlayerSession {
+	s.TerminationTime = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/PutScalingPolicyInput
 type PutScalingPolicyInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6378,7 +8072,56 @@ func (s *PutScalingPolicyInput) Validate() error {
 	return nil
 }
 
+// SetComparisonOperator sets the ComparisonOperator field's value.
+func (s *PutScalingPolicyInput) SetComparisonOperator(v string) *PutScalingPolicyInput {
+	s.ComparisonOperator = &v
+	return s
+}
+
+// SetEvaluationPeriods sets the EvaluationPeriods field's value.
+func (s *PutScalingPolicyInput) SetEvaluationPeriods(v int64) *PutScalingPolicyInput {
+	s.EvaluationPeriods = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *PutScalingPolicyInput) SetFleetId(v string) *PutScalingPolicyInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetMetricName sets the MetricName field's value.
+func (s *PutScalingPolicyInput) SetMetricName(v string) *PutScalingPolicyInput {
+	s.MetricName = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *PutScalingPolicyInput) SetName(v string) *PutScalingPolicyInput {
+	s.Name = &v
+	return s
+}
+
+// SetScalingAdjustment sets the ScalingAdjustment field's value.
+func (s *PutScalingPolicyInput) SetScalingAdjustment(v int64) *PutScalingPolicyInput {
+	s.ScalingAdjustment = &v
+	return s
+}
+
+// SetScalingAdjustmentType sets the ScalingAdjustmentType field's value.
+func (s *PutScalingPolicyInput) SetScalingAdjustmentType(v string) *PutScalingPolicyInput {
+	s.ScalingAdjustmentType = &v
+	return s
+}
+
+// SetThreshold sets the Threshold field's value.
+func (s *PutScalingPolicyInput) SetThreshold(v float64) *PutScalingPolicyInput {
+	s.Threshold = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/PutScalingPolicyOutput
 type PutScalingPolicyOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6397,7 +8140,14 @@ func (s PutScalingPolicyOutput) GoString() string {
 	return s.String()
 }
 
+// SetName sets the Name field's value.
+func (s *PutScalingPolicyOutput) SetName(v string) *PutScalingPolicyOutput {
+	s.Name = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/RequestUploadCredentialsInput
 type RequestUploadCredentialsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6430,7 +8180,14 @@ func (s *RequestUploadCredentialsInput) Validate() error {
 	return nil
 }
 
+// SetBuildId sets the BuildId field's value.
+func (s *RequestUploadCredentialsInput) SetBuildId(v string) *RequestUploadCredentialsInput {
+	s.BuildId = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/RequestUploadCredentialsOutput
 type RequestUploadCredentialsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6453,7 +8210,20 @@ func (s RequestUploadCredentialsOutput) GoString() string {
 	return s.String()
 }
 
+// SetStorageLocation sets the StorageLocation field's value.
+func (s *RequestUploadCredentialsOutput) SetStorageLocation(v *S3Location) *RequestUploadCredentialsOutput {
+	s.StorageLocation = v
+	return s
+}
+
+// SetUploadCredentials sets the UploadCredentials field's value.
+func (s *RequestUploadCredentialsOutput) SetUploadCredentials(v *AwsCredentials) *RequestUploadCredentialsOutput {
+	s.UploadCredentials = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ResolveAliasInput
 type ResolveAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6486,7 +8256,14 @@ func (s *ResolveAliasInput) Validate() error {
 	return nil
 }
 
+// SetAliasId sets the AliasId field's value.
+func (s *ResolveAliasInput) SetAliasId(v string) *ResolveAliasInput {
+	s.AliasId = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ResolveAliasOutput
 type ResolveAliasOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6504,6 +8281,12 @@ func (s ResolveAliasOutput) GoString() string {
 	return s.String()
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *ResolveAliasOutput) SetFleetId(v string) *ResolveAliasOutput {
+	s.FleetId = &v
+	return s
+}
+
 // Policy that limits the number of game sessions a player can create on the
 // same fleet. This optional policy gives game owners control over how players
 // can consume available game server resources. A resource creation policy makes
@@ -6515,14 +8298,15 @@ func (s ResolveAliasOutput) GoString() string {
 // minutes, on receiving a CreateGameSession request, GameLift checks that the
 // player (identified by CreatorId) has created fewer than 10 game sessions
 // in the past 60 minutes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ResourceCreationLimitPolicy
 type ResourceCreationLimitPolicy struct {
 	_ struct{} `type:"structure"`
 
-	// Maximum number of game sessions an individual can create during the policy
-	// period.
+	// Maximum number of game sessions that an individual can create during the
+	// policy period.
 	NewGameSessionsPerCreator *int64 `type:"integer"`
 
-	// Time span used to evaluate the resource creation limit policy.
+	// Time span used in evaluating the resource creation limit policy.
 	PolicyPeriodInMinutes *int64 `type:"integer"`
 }
 
@@ -6536,7 +8320,20 @@ func (s ResourceCreationLimitPolicy) GoString() string {
 	return s.String()
 }
 
+// SetNewGameSessionsPerCreator sets the NewGameSessionsPerCreator field's value.
+func (s *ResourceCreationLimitPolicy) SetNewGameSessionsPerCreator(v int64) *ResourceCreationLimitPolicy {
+	s.NewGameSessionsPerCreator = &v
+	return s
+}
+
+// SetPolicyPeriodInMinutes sets the PolicyPeriodInMinutes field's value.
+func (s *ResourceCreationLimitPolicy) SetPolicyPeriodInMinutes(v int64) *ResourceCreationLimitPolicy {
+	s.PolicyPeriodInMinutes = &v
+	return s
+}
+
 // Routing configuration for a fleet alias.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/RoutingStrategy
 type RoutingStrategy struct {
 	_ struct{} `type:"structure"`
 
@@ -6569,6 +8366,24 @@ func (s RoutingStrategy) GoString() string {
 	return s.String()
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *RoutingStrategy) SetFleetId(v string) *RoutingStrategy {
+	s.FleetId = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *RoutingStrategy) SetMessage(v string) *RoutingStrategy {
+	s.Message = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *RoutingStrategy) SetType(v string) *RoutingStrategy {
+	s.Type = &v
+	return s
+}
+
 // Collection of server process configurations that describe what processes
 // should be run on each instance in a fleet. An instance can launch and maintain
 // multiple server processes based on the runtime configuration; it regularly
@@ -6587,6 +8402,7 @@ func (s RoutingStrategy) GoString() string {
 // calculate the total number of processes specified in a runtime configuration,
 // add the values of the ConcurrentExecutions parameter for each ServerProcess
 // object in the runtime configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/RuntimeConfiguration
 type RuntimeConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -6628,10 +8444,17 @@ func (s *RuntimeConfiguration) Validate() error {
 	return nil
 }
 
+// SetServerProcesses sets the ServerProcesses field's value.
+func (s *RuntimeConfiguration) SetServerProcesses(v []*ServerProcess) *RuntimeConfiguration {
+	s.ServerProcesses = v
+	return s
+}
+
 // Location in Amazon Simple Storage Service (Amazon S3) where a build's files
 // are stored. This location is assigned in response to a CreateBuild call,
 // and is always in the same region as the service used to create the build.
 // For more details see the Amazon S3 documentation (http://aws.amazon.com/documentation/s3/).
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/S3Location
 type S3Location struct {
 	_ struct{} `type:"structure"`
 
@@ -6675,8 +8498,27 @@ func (s *S3Location) Validate() error {
 	return nil
 }
 
+// SetBucket sets the Bucket field's value.
+func (s *S3Location) SetBucket(v string) *S3Location {
+	s.Bucket = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *S3Location) SetKey(v string) *S3Location {
+	s.Key = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *S3Location) SetRoleArn(v string) *S3Location {
+	s.RoleArn = &v
+	return s
+}
+
 // Rule that controls how a fleet is scaled. Scaling policies are uniquely identified
 // by the combination of name and fleet ID.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ScalingPolicy
 type ScalingPolicy struct {
 	_ struct{} `type:"structure"`
 
@@ -6766,7 +8608,62 @@ func (s ScalingPolicy) GoString() string {
 	return s.String()
 }
 
+// SetComparisonOperator sets the ComparisonOperator field's value.
+func (s *ScalingPolicy) SetComparisonOperator(v string) *ScalingPolicy {
+	s.ComparisonOperator = &v
+	return s
+}
+
+// SetEvaluationPeriods sets the EvaluationPeriods field's value.
+func (s *ScalingPolicy) SetEvaluationPeriods(v int64) *ScalingPolicy {
+	s.EvaluationPeriods = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *ScalingPolicy) SetFleetId(v string) *ScalingPolicy {
+	s.FleetId = &v
+	return s
+}
+
+// SetMetricName sets the MetricName field's value.
+func (s *ScalingPolicy) SetMetricName(v string) *ScalingPolicy {
+	s.MetricName = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ScalingPolicy) SetName(v string) *ScalingPolicy {
+	s.Name = &v
+	return s
+}
+
+// SetScalingAdjustment sets the ScalingAdjustment field's value.
+func (s *ScalingPolicy) SetScalingAdjustment(v int64) *ScalingPolicy {
+	s.ScalingAdjustment = &v
+	return s
+}
+
+// SetScalingAdjustmentType sets the ScalingAdjustmentType field's value.
+func (s *ScalingPolicy) SetScalingAdjustmentType(v string) *ScalingPolicy {
+	s.ScalingAdjustmentType = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ScalingPolicy) SetStatus(v string) *ScalingPolicy {
+	s.Status = &v
+	return s
+}
+
+// SetThreshold sets the Threshold field's value.
+func (s *ScalingPolicy) SetThreshold(v float64) *ScalingPolicy {
+	s.Threshold = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/SearchGameSessionsInput
 type SearchGameSessionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6877,7 +8774,44 @@ func (s *SearchGameSessionsInput) Validate() error {
 	return nil
 }
 
+// SetAliasId sets the AliasId field's value.
+func (s *SearchGameSessionsInput) SetAliasId(v string) *SearchGameSessionsInput {
+	s.AliasId = &v
+	return s
+}
+
+// SetFilterExpression sets the FilterExpression field's value.
+func (s *SearchGameSessionsInput) SetFilterExpression(v string) *SearchGameSessionsInput {
+	s.FilterExpression = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *SearchGameSessionsInput) SetFleetId(v string) *SearchGameSessionsInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *SearchGameSessionsInput) SetLimit(v int64) *SearchGameSessionsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *SearchGameSessionsInput) SetNextToken(v string) *SearchGameSessionsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetSortExpression sets the SortExpression field's value.
+func (s *SearchGameSessionsInput) SetSortExpression(v string) *SearchGameSessionsInput {
+	s.SortExpression = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/SearchGameSessionsOutput
 type SearchGameSessionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6900,11 +8834,24 @@ func (s SearchGameSessionsOutput) GoString() string {
 	return s.String()
 }
 
+// SetGameSessions sets the GameSessions field's value.
+func (s *SearchGameSessionsOutput) SetGameSessions(v []*GameSession) *SearchGameSessionsOutput {
+	s.GameSessions = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *SearchGameSessionsOutput) SetNextToken(v string) *SearchGameSessionsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // A set of instructions for launching server processes on each instance in
 // a fleet. Each instruction set identifies the location of the server executable,
 // optional launch parameters, and the number of server processes with this
 // configuration to maintain concurrently on the instance. Server process configurations
 // make up a fleet's RuntimeConfiguration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ServerProcess
 type ServerProcess struct {
 	_ struct{} `type:"structure"`
 
@@ -6914,9 +8861,12 @@ type ServerProcess struct {
 	// ConcurrentExecutions is a required field
 	ConcurrentExecutions *int64 `min:"1" type:"integer" required:"true"`
 
-	// Location in the game build of the server executable. All game builds are
-	// installed on instances at the root C:\game\..., so an executable file located
-	// at MyGame\latest\server.exe has a launch path of "C:\game\MyGame\latest\server.exe".
+	// Location of the server executable in a game build. All game builds are installed
+	// on instances at the root : for Windows instances C:\game, and for Linux instances
+	// /local/game. A Windows game build with an executable file located at MyGame\latest\server.exe
+	// must have a launch path of "C:\game\MyGame\latest\server.exe". A Linux game
+	// build with an executable file located at MyGame/latest/server.exe must have
+	// a launch path of "/local/game/MyGame/latest/server.exe".
 	//
 	// LaunchPath is a required field
 	LaunchPath *string `min:"1" type:"string" required:"true"`
@@ -6960,7 +8910,26 @@ func (s *ServerProcess) Validate() error {
 	return nil
 }
 
+// SetConcurrentExecutions sets the ConcurrentExecutions field's value.
+func (s *ServerProcess) SetConcurrentExecutions(v int64) *ServerProcess {
+	s.ConcurrentExecutions = &v
+	return s
+}
+
+// SetLaunchPath sets the LaunchPath field's value.
+func (s *ServerProcess) SetLaunchPath(v string) *ServerProcess {
+	s.LaunchPath = &v
+	return s
+}
+
+// SetParameters sets the Parameters field's value.
+func (s *ServerProcess) SetParameters(v string) *ServerProcess {
+	s.Parameters = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateAliasInput
 type UpdateAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7009,7 +8978,32 @@ func (s *UpdateAliasInput) Validate() error {
 	return nil
 }
 
+// SetAliasId sets the AliasId field's value.
+func (s *UpdateAliasInput) SetAliasId(v string) *UpdateAliasInput {
+	s.AliasId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateAliasInput) SetDescription(v string) *UpdateAliasInput {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateAliasInput) SetName(v string) *UpdateAliasInput {
+	s.Name = &v
+	return s
+}
+
+// SetRoutingStrategy sets the RoutingStrategy field's value.
+func (s *UpdateAliasInput) SetRoutingStrategy(v *RoutingStrategy) *UpdateAliasInput {
+	s.RoutingStrategy = v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateAliasOutput
 type UpdateAliasOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7027,7 +9021,14 @@ func (s UpdateAliasOutput) GoString() string {
 	return s.String()
 }
 
+// SetAlias sets the Alias field's value.
+func (s *UpdateAliasOutput) SetAlias(v *Alias) *UpdateAliasOutput {
+	s.Alias = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateBuildInput
 type UpdateBuildInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7074,7 +9075,26 @@ func (s *UpdateBuildInput) Validate() error {
 	return nil
 }
 
+// SetBuildId sets the BuildId field's value.
+func (s *UpdateBuildInput) SetBuildId(v string) *UpdateBuildInput {
+	s.BuildId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateBuildInput) SetName(v string) *UpdateBuildInput {
+	s.Name = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *UpdateBuildInput) SetVersion(v string) *UpdateBuildInput {
+	s.Version = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateBuildOutput
 type UpdateBuildOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7092,7 +9112,14 @@ func (s UpdateBuildOutput) GoString() string {
 	return s.String()
 }
 
+// SetBuild sets the Build field's value.
+func (s *UpdateBuildOutput) SetBuild(v *Build) *UpdateBuildOutput {
+	s.Build = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetAttributesInput
 type UpdateFleetAttributesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7153,7 +9180,38 @@ func (s *UpdateFleetAttributesInput) Validate() error {
 	return nil
 }
 
+// SetDescription sets the Description field's value.
+func (s *UpdateFleetAttributesInput) SetDescription(v string) *UpdateFleetAttributesInput {
+	s.Description = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *UpdateFleetAttributesInput) SetFleetId(v string) *UpdateFleetAttributesInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateFleetAttributesInput) SetName(v string) *UpdateFleetAttributesInput {
+	s.Name = &v
+	return s
+}
+
+// SetNewGameSessionProtectionPolicy sets the NewGameSessionProtectionPolicy field's value.
+func (s *UpdateFleetAttributesInput) SetNewGameSessionProtectionPolicy(v string) *UpdateFleetAttributesInput {
+	s.NewGameSessionProtectionPolicy = &v
+	return s
+}
+
+// SetResourceCreationLimitPolicy sets the ResourceCreationLimitPolicy field's value.
+func (s *UpdateFleetAttributesInput) SetResourceCreationLimitPolicy(v *ResourceCreationLimitPolicy) *UpdateFleetAttributesInput {
+	s.ResourceCreationLimitPolicy = v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetAttributesOutput
 type UpdateFleetAttributesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7171,7 +9229,14 @@ func (s UpdateFleetAttributesOutput) GoString() string {
 	return s.String()
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *UpdateFleetAttributesOutput) SetFleetId(v string) *UpdateFleetAttributesOutput {
+	s.FleetId = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetCapacityInput
 type UpdateFleetCapacityInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7215,7 +9280,32 @@ func (s *UpdateFleetCapacityInput) Validate() error {
 	return nil
 }
 
+// SetDesiredInstances sets the DesiredInstances field's value.
+func (s *UpdateFleetCapacityInput) SetDesiredInstances(v int64) *UpdateFleetCapacityInput {
+	s.DesiredInstances = &v
+	return s
+}
+
+// SetFleetId sets the FleetId field's value.
+func (s *UpdateFleetCapacityInput) SetFleetId(v string) *UpdateFleetCapacityInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetMaxSize sets the MaxSize field's value.
+func (s *UpdateFleetCapacityInput) SetMaxSize(v int64) *UpdateFleetCapacityInput {
+	s.MaxSize = &v
+	return s
+}
+
+// SetMinSize sets the MinSize field's value.
+func (s *UpdateFleetCapacityInput) SetMinSize(v int64) *UpdateFleetCapacityInput {
+	s.MinSize = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetCapacityOutput
 type UpdateFleetCapacityOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7233,7 +9323,14 @@ func (s UpdateFleetCapacityOutput) GoString() string {
 	return s.String()
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *UpdateFleetCapacityOutput) SetFleetId(v string) *UpdateFleetCapacityOutput {
+	s.FleetId = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetPortSettingsInput
 type UpdateFleetPortSettingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7292,7 +9389,26 @@ func (s *UpdateFleetPortSettingsInput) Validate() error {
 	return nil
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *UpdateFleetPortSettingsInput) SetFleetId(v string) *UpdateFleetPortSettingsInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetInboundPermissionAuthorizations sets the InboundPermissionAuthorizations field's value.
+func (s *UpdateFleetPortSettingsInput) SetInboundPermissionAuthorizations(v []*IpPermission) *UpdateFleetPortSettingsInput {
+	s.InboundPermissionAuthorizations = v
+	return s
+}
+
+// SetInboundPermissionRevocations sets the InboundPermissionRevocations field's value.
+func (s *UpdateFleetPortSettingsInput) SetInboundPermissionRevocations(v []*IpPermission) *UpdateFleetPortSettingsInput {
+	s.InboundPermissionRevocations = v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetPortSettingsOutput
 type UpdateFleetPortSettingsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7310,14 +9426,21 @@ func (s UpdateFleetPortSettingsOutput) GoString() string {
 	return s.String()
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *UpdateFleetPortSettingsOutput) SetFleetId(v string) *UpdateFleetPortSettingsOutput {
+	s.FleetId = &v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateGameSessionInput
 type UpdateGameSessionInput struct {
 	_ struct{} `type:"structure"`
 
 	// Unique identifier for the game session to update. Game session ID format
 	// is as follows: "arn:aws:gamelift:<region>::gamesession/fleet-<fleet ID>/<ID
 	// string>". The value of <ID string> is either a custom ID string (if one was
-	// specified when the game session was created) an auto-generated string.
+	// specified when the game session was created) an autogenerated string.
 	//
 	// GameSessionId is a required field
 	GameSessionId *string `min:"1" type:"string" required:"true"`
@@ -7372,7 +9495,38 @@ func (s *UpdateGameSessionInput) Validate() error {
 	return nil
 }
 
+// SetGameSessionId sets the GameSessionId field's value.
+func (s *UpdateGameSessionInput) SetGameSessionId(v string) *UpdateGameSessionInput {
+	s.GameSessionId = &v
+	return s
+}
+
+// SetMaximumPlayerSessionCount sets the MaximumPlayerSessionCount field's value.
+func (s *UpdateGameSessionInput) SetMaximumPlayerSessionCount(v int64) *UpdateGameSessionInput {
+	s.MaximumPlayerSessionCount = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateGameSessionInput) SetName(v string) *UpdateGameSessionInput {
+	s.Name = &v
+	return s
+}
+
+// SetPlayerSessionCreationPolicy sets the PlayerSessionCreationPolicy field's value.
+func (s *UpdateGameSessionInput) SetPlayerSessionCreationPolicy(v string) *UpdateGameSessionInput {
+	s.PlayerSessionCreationPolicy = &v
+	return s
+}
+
+// SetProtectionPolicy sets the ProtectionPolicy field's value.
+func (s *UpdateGameSessionInput) SetProtectionPolicy(v string) *UpdateGameSessionInput {
+	s.ProtectionPolicy = &v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateGameSessionOutput
 type UpdateGameSessionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7390,7 +9544,14 @@ func (s UpdateGameSessionOutput) GoString() string {
 	return s.String()
 }
 
+// SetGameSession sets the GameSession field's value.
+func (s *UpdateGameSessionOutput) SetGameSession(v *GameSession) *UpdateGameSessionOutput {
+	s.GameSession = v
+	return s
+}
+
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateRuntimeConfigurationInput
 type UpdateRuntimeConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7441,7 +9602,20 @@ func (s *UpdateRuntimeConfigurationInput) Validate() error {
 	return nil
 }
 
+// SetFleetId sets the FleetId field's value.
+func (s *UpdateRuntimeConfigurationInput) SetFleetId(v string) *UpdateRuntimeConfigurationInput {
+	s.FleetId = &v
+	return s
+}
+
+// SetRuntimeConfiguration sets the RuntimeConfiguration field's value.
+func (s *UpdateRuntimeConfigurationInput) SetRuntimeConfiguration(v *RuntimeConfiguration) *UpdateRuntimeConfigurationInput {
+	s.RuntimeConfiguration = v
+	return s
+}
+
 // Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateRuntimeConfigurationOutput
 type UpdateRuntimeConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7458,6 +9632,12 @@ func (s UpdateRuntimeConfigurationOutput) String() string {
 // GoString returns the string representation
 func (s UpdateRuntimeConfigurationOutput) GoString() string {
 	return s.String()
+}
+
+// SetRuntimeConfiguration sets the RuntimeConfiguration field's value.
+func (s *UpdateRuntimeConfigurationOutput) SetRuntimeConfiguration(v *RuntimeConfiguration) *UpdateRuntimeConfigurationOutput {
+	s.RuntimeConfiguration = v
+	return s
 }
 
 const (
@@ -7625,6 +9805,27 @@ const (
 
 	// EventCodeFleetNewGameSessionProtectionPolicyUpdated is a EventCode enum value
 	EventCodeFleetNewGameSessionProtectionPolicyUpdated = "FLEET_NEW_GAME_SESSION_PROTECTION_POLICY_UPDATED"
+
+	// EventCodeServerProcessInvalidPath is a EventCode enum value
+	EventCodeServerProcessInvalidPath = "SERVER_PROCESS_INVALID_PATH"
+
+	// EventCodeServerProcessSdkInitializationTimeout is a EventCode enum value
+	EventCodeServerProcessSdkInitializationTimeout = "SERVER_PROCESS_SDK_INITIALIZATION_TIMEOUT"
+
+	// EventCodeServerProcessProcessReadyTimeout is a EventCode enum value
+	EventCodeServerProcessProcessReadyTimeout = "SERVER_PROCESS_PROCESS_READY_TIMEOUT"
+
+	// EventCodeServerProcessCrashed is a EventCode enum value
+	EventCodeServerProcessCrashed = "SERVER_PROCESS_CRASHED"
+
+	// EventCodeServerProcessTerminatedUnhealthy is a EventCode enum value
+	EventCodeServerProcessTerminatedUnhealthy = "SERVER_PROCESS_TERMINATED_UNHEALTHY"
+
+	// EventCodeServerProcessForceTerminated is a EventCode enum value
+	EventCodeServerProcessForceTerminated = "SERVER_PROCESS_FORCE_TERMINATED"
+
+	// EventCodeServerProcessProcessExitTimeout is a EventCode enum value
+	EventCodeServerProcessProcessExitTimeout = "SERVER_PROCESS_PROCESS_EXIT_TIMEOUT"
 )
 
 const (

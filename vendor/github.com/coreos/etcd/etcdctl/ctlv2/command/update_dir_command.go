@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/codegangsta/cli"
 	"github.com/coreos/etcd/client"
+	"github.com/urfave/cli"
 )
 
 // NewUpdateDirCommand returns the CLI command for "updatedir".
@@ -29,10 +29,11 @@ func NewUpdateDirCommand() cli.Command {
 		Usage:     "update an existing directory",
 		ArgsUsage: "<key> <value>",
 		Flags: []cli.Flag{
-			cli.IntFlag{Name: "ttl", Value: 0, Usage: "key time-to-live"},
+			cli.IntFlag{Name: "ttl", Value: 0, Usage: "key time-to-live in seconds"},
 		},
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			updatedirCommandFunc(c, mustNewKeyAPI(c))
+			return nil
 		},
 	}
 }
@@ -40,14 +41,17 @@ func NewUpdateDirCommand() cli.Command {
 // updatedirCommandFunc executes the "updatedir" command.
 func updatedirCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	if len(c.Args()) == 0 {
-		handleError(ExitBadArgs, errors.New("key required"))
+		handleError(c, ExitBadArgs, errors.New("key required"))
 	}
 	key := c.Args()[0]
 	ttl := c.Int("ttl")
 	ctx, cancel := contextWithTotalTimeout(c)
-	_, err := ki.Set(ctx, key, "", &client.SetOptions{TTL: time.Duration(ttl) * time.Second, Dir: true, PrevExist: client.PrevExist})
+	resp, err := ki.Set(ctx, key, "", &client.SetOptions{TTL: time.Duration(ttl) * time.Second, Dir: true, PrevExist: client.PrevExist})
 	cancel()
 	if err != nil {
-		handleError(ExitServerError, err)
+		handleError(c, ExitServerError, err)
+	}
+	if c.GlobalString("output") != "simple" {
+		printResponseKey(resp, c.GlobalString("output"))
 	}
 }

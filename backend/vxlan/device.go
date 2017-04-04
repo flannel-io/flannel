@@ -113,6 +113,7 @@ func ensureLink(vxlan *netlink.Vxlan) (*netlink.Vxlan, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't locate created vxlan device with index %v", ifindex)
 	}
+
 	var ok bool
 	if vxlan, ok = link.(*netlink.Vxlan); !ok {
 		return nil, fmt.Errorf("created vxlan device with index %v is not vxlan", ifindex)
@@ -154,7 +155,7 @@ func (dev *vxlanDevice) MTU() int {
 	return dev.link.MTU
 }
 
-type neigh struct {
+type neighbor struct {
 	MAC net.HardwareAddr
 	IP  ip.IP4
 }
@@ -164,7 +165,7 @@ func (dev *vxlanDevice) GetL2List() ([]netlink.Neigh, error) {
 	return netlink.NeighList(dev.link.Index, syscall.AF_BRIDGE)
 }
 
-func (dev *vxlanDevice) AddL2(n neigh) error {
+func (dev *vxlanDevice) AddL2(n neighbor) error {
 	log.V(4).Infof("calling NeighAdd: %v, %v", n.IP, n.MAC)
 	return netlink.NeighAdd(&netlink.Neigh{
 		LinkIndex:    dev.link.Index,
@@ -176,7 +177,7 @@ func (dev *vxlanDevice) AddL2(n neigh) error {
 	})
 }
 
-func (dev *vxlanDevice) DelL2(n neigh) error {
+func (dev *vxlanDevice) DelL2(n neighbor) error {
 	log.V(4).Infof("calling NeighDel: %v, %v", n.IP, n.MAC)
 	return netlink.NeighDel(&netlink.Neigh{
 		LinkIndex:    dev.link.Index,
@@ -187,7 +188,7 @@ func (dev *vxlanDevice) DelL2(n neigh) error {
 	})
 }
 
-func (dev *vxlanDevice) AddL3(n neigh) error {
+func (dev *vxlanDevice) AddL3(n neighbor) error {
 	log.V(4).Infof("calling NeighSet: %v, %v", n.IP, n.MAC)
 	return netlink.NeighSet(&netlink.Neigh{
 		LinkIndex:    dev.link.Index,
@@ -198,7 +199,7 @@ func (dev *vxlanDevice) AddL3(n neigh) error {
 	})
 }
 
-func (dev *vxlanDevice) DelL3(n neigh) error {
+func (dev *vxlanDevice) DelL3(n neighbor) error {
 	log.V(4).Infof("calling NeighDel: %v, %v", n.IP, n.MAC)
 	return netlink.NeighDel(&netlink.Neigh{
 		LinkIndex:    dev.link.Index,
@@ -242,7 +243,7 @@ func (dev *vxlanDevice) processNeighMsg(msg syscall.NetlinkMessage, misses chan 
 		return
 	}
 
-	if int(neigh.LinkIndex) != dev.link.Index {
+	if neigh.LinkIndex != dev.link.Index {
 		return
 	}
 
@@ -293,24 +294,14 @@ func vxlanLinksIncompat(l1, l2 netlink.Link) string {
 	return ""
 }
 
-// sets IP4 addr on link removing any existing ones first
+// sets IP4 addr on link
 func setAddr4(link *netlink.Vxlan, ipn *net.IPNet) error {
-	addrs, err := netlink.AddrList(link, syscall.AF_INET)
-	if err != nil {
-		return err
-	}
-
-	for _, addr := range addrs {
-		if err = netlink.AddrDel(link, &addr); err != nil {
-			return fmt.Errorf("failed to delete IPv4 addr %s from %s", addr.String(), link.Attrs().Name)
-		}
-	}
 	// Ensure that the device has a /32 address so that no broadcast routes are created.
 	// This IP is just used as a source address for host to workload traffic (so
 	// the return path for the traffic has a decent address to use as the destination)
 	ipn.Mask = net.CIDRMask(32, 32)
 	addr := netlink.Addr{IPNet: ipn, Label: ""}
-	if err = netlink.AddrAdd(link, &addr); err != nil {
+	if err := netlink.AddrAdd(link, &addr); err != nil {
 		return fmt.Errorf("failed to add IP address %s to %s: %s", ipn.String(), link.Attrs().Name, err)
 	}
 

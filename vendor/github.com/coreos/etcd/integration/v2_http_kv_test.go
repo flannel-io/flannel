@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -28,12 +27,8 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/pkg/testutil"
-	"github.com/coreos/pkg/capnslog"
+	"github.com/coreos/etcd/pkg/transport"
 )
-
-func init() {
-	capnslog.SetGlobalLogLevel(capnslog.CRITICAL)
-}
 
 func TestV2Set(t *testing.T) {
 	defer testutil.AfterTest(t)
@@ -45,6 +40,9 @@ func TestV2Set(t *testing.T) {
 	tc := NewTestClient()
 	v := url.Values{}
 	v.Set("value", "bar")
+	vAndNoValue := url.Values{}
+	vAndNoValue.Set("value", "bar")
+	vAndNoValue.Set("noValueOnSuccess", "true")
 
 	tests := []struct {
 		relativeURL string
@@ -69,6 +67,12 @@ func TestV2Set(t *testing.T) {
 			url.Values(map[string][]string{"value": {""}}),
 			http.StatusCreated,
 			`{"action":"set","node":{"key":"/fooempty","value":"","modifiedIndex":6,"createdIndex":6}}`,
+		},
+		{
+			"/v2/keys/foo/novalue",
+			vAndNoValue,
+			http.StatusCreated,
+			`{"action":"set"}`,
 		},
 	}
 
@@ -181,6 +185,31 @@ func TestV2CreateUpdate(t *testing.T) {
 				"errorCode": float64(100),
 				"message":   "Key not found",
 				"cause":     "/nonexist",
+			},
+		},
+		// create with no value on success
+		{
+			"/v2/keys/create/novalue",
+			url.Values(map[string][]string{"value": {"XXX"}, "prevExist": {"false"}, "noValueOnSuccess": {"true"}}),
+			http.StatusCreated,
+			map[string]interface{}{},
+		},
+		// update with no value on success
+		{
+			"/v2/keys/create/novalue",
+			url.Values(map[string][]string{"value": {"XXX"}, "prevExist": {"true"}, "noValueOnSuccess": {"true"}}),
+			http.StatusOK,
+			map[string]interface{}{},
+		},
+		// created key failed with no value on success
+		{
+			"/v2/keys/create/foo",
+			url.Values(map[string][]string{"value": {"XXX"}, "prevExist": {"false"}, "noValueOnSuccess": {"true"}}),
+			http.StatusPreconditionFailed,
+			map[string]interface{}{
+				"errorCode": float64(105),
+				"message":   "Key already exists",
+				"cause":     "/create/foo",
 			},
 		},
 	}
@@ -310,6 +339,25 @@ func TestV2CAS(t *testing.T) {
 				"errorCode": float64(101),
 				"message":   "Compare failed",
 				"cause":     "[bad_value != ZZZ]",
+			},
+		},
+		{
+			"/v2/keys/cas/foo",
+			url.Values(map[string][]string{"value": {"YYY"}, "prevIndex": {"6"}, "noValueOnSuccess": {"true"}}),
+			http.StatusOK,
+			map[string]interface{}{
+				"action": "compareAndSwap",
+			},
+		},
+		{
+			"/v2/keys/cas/foo",
+			url.Values(map[string][]string{"value": {"YYY"}, "prevIndex": {"10"}, "noValueOnSuccess": {"true"}}),
+			http.StatusPreconditionFailed,
+			map[string]interface{}{
+				"errorCode": float64(101),
+				"message":   "Compare failed",
+				"cause":     "[10 != 7]",
+				"index":     float64(7),
 			},
 		},
 	}
@@ -1038,10 +1086,8 @@ type testHttpClient struct {
 
 // Creates a new HTTP client with KeepAlive disabled.
 func NewTestClient() *testHttpClient {
-	tr := &http.Transport{
-		Dial:              (&net.Dialer{Timeout: time.Second}).Dial,
-		DisableKeepAlives: true,
-	}
+	tr, _ := transport.NewTransport(transport.TLSInfo{}, time.Second)
+	tr.DisableKeepAlives = true
 	return &testHttpClient{&http.Client{Transport: tr}}
 }
 

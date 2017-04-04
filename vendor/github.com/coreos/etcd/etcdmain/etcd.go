@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// TODO: support arm64
-// +build amd64
-
 package etcdmain
 
 import (
@@ -24,7 +21,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"path"
 	"reflect"
@@ -33,44 +29,27 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/discovery"
+	"github.com/coreos/etcd/embed"
 	"github.com/coreos/etcd/etcdserver"
-	"github.com/coreos/etcd/etcdserver/api/v2http"
 	"github.com/coreos/etcd/pkg/cors"
 	"github.com/coreos/etcd/pkg/fileutil"
 	pkgioutil "github.com/coreos/etcd/pkg/ioutil"
 	"github.com/coreos/etcd/pkg/osutil"
-	runtimeutil "github.com/coreos/etcd/pkg/runtime"
 	"github.com/coreos/etcd/pkg/transport"
 	"github.com/coreos/etcd/pkg/types"
-	"github.com/coreos/etcd/proxy"
-	"github.com/coreos/etcd/rafthttp"
+	"github.com/coreos/etcd/proxy/httpproxy"
 	"github.com/coreos/etcd/version"
 	"github.com/coreos/go-systemd/daemon"
 	systemdutil "github.com/coreos/go-systemd/util"
 	"github.com/coreos/pkg/capnslog"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus"
+	"google.golang.org/grpc"
 )
 
 type dirType string
 
 var plog = capnslog.NewPackageLogger("github.com/coreos/etcd", "etcdmain")
-
-const (
-	// the owner can make/remove files inside the directory
-	privateDirMode = 0700
-
-	// internal fd usage includes disk usage and transport usage.
-	// To read/write snapshot, snap pkg needs 1. In normal case, wal pkg needs
-	// at most 2 to read/lock/write WALs. One case that it needs to 2 is to
-	// read all logs after some snapshot index, which locates at the end of
-	// the second last and the head of the last. For purging, it needs to read
-	// directory, so it needs 1. For fd monitor, it needs 1.
-	// For transport, rafthttp builds two long-polling connections and at most
-	// four temporary connections with each member. There are at most 9 members
-	// in a cluster, so it should reserve 96.
-	// For the safety, we set the total reserved number to 150.
-	reservedInternalFDNum = 150
-)
 
 var (
 	dirMember = dirType("member")
@@ -78,13 +57,17 @@ var (
 	dirEmpty  = dirType("empty")
 )
 
-func Main() {
-	cfg := NewConfig()
-	err := cfg.Parse(os.Args[1:])
+func startEtcdOrProxyV2() {
+	grpc.EnableTracing = false
+
+	cfg := newConfig()
+	defaultInitialCluster := cfg.InitialCluster
+
+	err := cfg.parse(os.Args[1:])
 	if err != nil {
 		plog.Errorf("error verifying flags, %v. See 'etcd --help'.", err)
 		switch err {
-		case errUnsetAdvertiseClientURLsFlag:
+		case embed.ErrUnsetAdvertiseClientURLsFlag:
 			plog.Errorf("When listening on specific address(es), this etcd process must advertise accessible url(s) to each connected client.")
 		}
 		os.Exit(1)
@@ -92,6 +75,7 @@ func Main() {
 	setupLogging(cfg)
 
 	var stopped <-chan struct{}
+	var errc <-chan error
 
 	plog.Infof("etcd Version: %s\n", version.Version)
 	plog.Infof("Git SHA: %s\n", version.GitSHA)
@@ -101,22 +85,19 @@ func Main() {
 	GoMaxProcs := runtime.GOMAXPROCS(0)
 	plog.Infof("setting maximum number of CPUs to %d, total number of available CPUs is %d", GoMaxProcs, runtime.NumCPU())
 
-	// TODO: check whether fields are set instead of whether fields have default value
-	if cfg.name != defaultName && cfg.initialCluster == initialClusterFromName(defaultName) {
-		cfg.initialCluster = initialClusterFromName(cfg.name)
+	(&cfg.Config).UpdateDefaultClusterFromName(defaultInitialCluster)
+
+	if cfg.Dir == "" {
+		cfg.Dir = fmt.Sprintf("%v.etcd", cfg.Name)
+		plog.Warningf("no data-dir provided, using default data-dir ./%s", cfg.Dir)
 	}
 
-	if cfg.dir == "" {
-		cfg.dir = fmt.Sprintf("%v.etcd", cfg.name)
-		plog.Warningf("no data-dir provided, using default data-dir ./%s", cfg.dir)
-	}
-
-	which := identifyDataDirOrDie(cfg.dir)
+	which := identifyDataDirOrDie(cfg.Dir)
 	if which != dirEmpty {
 		plog.Noticef("the server is already initialized as %v before, starting as etcd %v...", which, which)
 		switch which {
 		case dirMember:
-			stopped, err = startEtcd(cfg)
+			stopped, errc, err = startEtcd(&cfg.Config)
 		case dirProxy:
 			err = startProxy(cfg)
 		default:
@@ -125,7 +106,7 @@ func Main() {
 	} else {
 		shouldProxy := cfg.isProxy()
 		if !shouldProxy {
-			stopped, err = startEtcd(cfg)
+			stopped, errc, err = startEtcd(&cfg.Config)
 			if derr, ok := err.(*etcdserver.DiscoveryError); ok && derr.Err == discovery.ErrFullCluster {
 				if cfg.shouldFallbackToProxy() {
 					plog.Noticef("discovery cluster full, falling back to %s", fallbackFlagProxy)
@@ -142,17 +123,17 @@ func Main() {
 		if derr, ok := err.(*etcdserver.DiscoveryError); ok {
 			switch derr.Err {
 			case discovery.ErrDuplicateID:
-				plog.Errorf("member %q has previously registered with discovery service token (%s).", cfg.name, cfg.durl)
-				plog.Errorf("But etcd could not find valid cluster configuration in the given data dir (%s).", cfg.dir)
+				plog.Errorf("member %q has previously registered with discovery service token (%s).", cfg.Name, cfg.Durl)
+				plog.Errorf("But etcd could not find valid cluster configuration in the given data dir (%s).", cfg.Dir)
 				plog.Infof("Please check the given data dir path if the previous bootstrap succeeded")
 				plog.Infof("or use a new discovery token if the previous bootstrap failed.")
 			case discovery.ErrDuplicateName:
-				plog.Errorf("member with duplicated name has registered with discovery service token(%s).", cfg.durl)
+				plog.Errorf("member with duplicated name has registered with discovery service token(%s).", cfg.Durl)
 				plog.Errorf("please check (cURL) the discovery token for more information.")
 				plog.Errorf("please do not reuse the discovery token and generate a new one to bootstrap the cluster.")
 			default:
 				plog.Errorf("%v", err)
-				plog.Infof("discovery token %s was used, but failed to bootstrap the cluster.", cfg.durl)
+				plog.Infof("discovery token %s was used, but failed to bootstrap the cluster.", cfg.Durl)
 				plog.Infof("please generate a new discovery token and try to bootstrap again.")
 			}
 			os.Exit(1)
@@ -160,13 +141,13 @@ func Main() {
 
 		if strings.Contains(err.Error(), "include") && strings.Contains(err.Error(), "--initial-cluster") {
 			plog.Infof("%v", err)
-			if cfg.initialCluster == initialClusterFromName(cfg.name) {
+			if cfg.InitialCluster == cfg.InitialClusterFromName(cfg.Name) {
 				plog.Infof("forgot to set --initial-cluster flag?")
 			}
-			if types.URLs(cfg.apurls).String() == defaultInitialAdvertisePeerURLs {
+			if types.URLs(cfg.APUrls).String() == embed.DefaultInitialAdvertisePeerURLs {
 				plog.Infof("forgot to set --initial-advertise-peer-urls flag?")
 			}
-			if cfg.initialCluster == initialClusterFromName(cfg.name) && len(cfg.durl) == 0 {
+			if cfg.InitialCluster == cfg.InitialClusterFromName(cfg.Name) && len(cfg.Durl) == 0 {
 				plog.Infof("if you want to use discovery service, please set --discovery flag.")
 			}
 			os.Exit(1)
@@ -179,242 +160,83 @@ func Main() {
 	if systemdutil.IsRunningSystemd() {
 		// At this point, the initialization of etcd is done.
 		// The listeners are listening on the TCP ports and ready
-		// for accepting connections.
-		// The http server is probably ready for serving incoming
-		// connections. If it is not, the connection might be pending
-		// for less than one second.
-		err := daemon.SdNotify("READY=1")
+		// for accepting connections. The etcd instance should be
+		// joined with the cluster and ready to serve incoming
+		// connections.
+		sent, err := daemon.SdNotify(false, "READY=1")
 		if err != nil {
 			plog.Errorf("failed to notify systemd for readiness: %v", err)
-			if err == daemon.SdNotifyNoSocket {
-				plog.Errorf("forgot to set Type=notify in systemd service file?")
-			}
+		}
+		if !sent {
+			plog.Errorf("forgot to set Type=notify in systemd service file?")
 		}
 	}
 
-	<-stopped
+	select {
+	case lerr := <-errc:
+		// fatal out on listener errors
+		plog.Fatal(lerr)
+	case <-stopped:
+	}
+
 	osutil.Exit(0)
 }
 
-// startEtcd launches the etcd server and HTTP handlers for client/server communication.
-func startEtcd(cfg *config) (<-chan struct{}, error) {
-	urlsmap, token, err := getPeerURLsMapAndToken(cfg, "etcd")
-	if err != nil {
-		return nil, fmt.Errorf("error setting up initial cluster: %v", err)
-	}
-
-	if cfg.peerAutoTLS && cfg.peerTLSInfo.Empty() {
-		phosts := make([]string, 0)
-		for _, u := range cfg.lpurls {
-			phosts = append(phosts, u.Host)
-		}
-		cfg.peerTLSInfo, err = transport.SelfCert(cfg.dir, phosts)
-		if err != nil {
-			plog.Fatalf("could not get certs (%v)", err)
-		}
-	} else if cfg.peerAutoTLS {
-		plog.Warningf("ignoring peer auto TLS since certs given")
-	}
-
-	if !cfg.peerTLSInfo.Empty() {
-		plog.Infof("peerTLS: %s", cfg.peerTLSInfo)
-	}
-	plns := make([]net.Listener, 0)
-	for _, u := range cfg.lpurls {
-		if u.Scheme == "http" {
-			if !cfg.peerTLSInfo.Empty() {
-				plog.Warningf("The scheme of peer url %s is HTTP while peer key/cert files are presented. Ignored peer key/cert files.", u.String())
-			}
-			if cfg.peerTLSInfo.ClientCertAuth {
-				plog.Warningf("The scheme of peer url %s is HTTP while client cert auth (--peer-client-cert-auth) is enabled. Ignored client cert auth for this url.", u.String())
-			}
-		}
-		var (
-			l      net.Listener
-			tlscfg *tls.Config
-		)
-
-		if !cfg.peerTLSInfo.Empty() {
-			tlscfg, err = cfg.peerTLSInfo.ServerConfig()
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		l, err = rafthttp.NewListener(u, tlscfg)
-		if err != nil {
-			return nil, err
-		}
-
-		urlStr := u.String()
-		plog.Info("listening for peers on ", urlStr)
-		defer func() {
-			if err != nil {
-				l.Close()
-				plog.Info("stopping listening for peers on ", urlStr)
-			}
-		}()
-		plns = append(plns, l)
-	}
-
-	var ctlscfg *tls.Config
-	if !cfg.clientTLSInfo.Empty() {
-		plog.Infof("clientTLS: %s", cfg.clientTLSInfo)
-		ctlscfg, err = cfg.clientTLSInfo.ServerConfig()
-		if err != nil {
-			return nil, err
-		}
-	}
-	sctxs := make(map[string]*serveCtx)
-	for _, u := range cfg.lcurls {
-		if u.Scheme == "http" {
-			if !cfg.clientTLSInfo.Empty() {
-				plog.Warningf("The scheme of client url %s is HTTP while peer key/cert files are presented. Ignored key/cert files.", u.String())
-			}
-			if cfg.clientTLSInfo.ClientCertAuth {
-				plog.Warningf("The scheme of client url %s is HTTP while client cert auth (--client-cert-auth) is enabled. Ignored client cert auth for this url.", u.String())
-			}
-		}
-		if u.Scheme == "https" && ctlscfg == nil {
-			return nil, fmt.Errorf("TLS key/cert (--cert-file, --key-file) must be provided for client url %s with HTTPs scheme", u.String())
-		}
-
-		ctx := &serveCtx{host: u.Host}
-
-		if u.Scheme == "https" {
-			ctx.secure = true
+// startEtcd runs StartEtcd in addition to hooks needed for standalone etcd.
+func startEtcd(cfg *embed.Config) (<-chan struct{}, <-chan error, error) {
+	defaultHost, dhErr := cfg.IsDefaultHost()
+	if defaultHost != "" {
+		if dhErr == nil {
+			plog.Infof("advertising using detected default host %q", defaultHost)
 		} else {
-			ctx.insecure = true
+			plog.Noticef("failed to detect default host, advertise falling back to %q (%v)", defaultHost, dhErr)
 		}
-
-		if sctxs[u.Host] != nil {
-			if ctx.secure {
-				sctxs[u.Host].secure = true
-			}
-			if ctx.insecure {
-				sctxs[u.Host].insecure = true
-			}
-			continue
-		}
-
-		var l net.Listener
-
-		l, err = net.Listen("tcp", u.Host)
-		if err != nil {
-			return nil, err
-		}
-
-		var fdLimit uint64
-		if fdLimit, err = runtimeutil.FDLimit(); err == nil {
-			if fdLimit <= reservedInternalFDNum {
-				plog.Fatalf("file descriptor limit[%d] of etcd process is too low, and should be set higher than %d to ensure internal usage", fdLimit, reservedInternalFDNum)
-			}
-			l = transport.LimitListener(l, int(fdLimit-reservedInternalFDNum))
-		}
-
-		l, err = transport.NewKeepAliveListener(l, "tcp", nil)
-		ctx.l = l
-		if err != nil {
-			return nil, err
-		}
-
-		plog.Info("listening for client requests on ", u.Host)
-		defer func() {
-			if err != nil {
-				l.Close()
-				plog.Info("stopping listening for client requests on ", u.Host)
-			}
-		}()
-		sctxs[u.Host] = ctx
 	}
 
-	srvcfg := &etcdserver.ServerConfig{
-		Name:                    cfg.name,
-		ClientURLs:              cfg.acurls,
-		PeerURLs:                cfg.apurls,
-		DataDir:                 cfg.dir,
-		DedicatedWALDir:         cfg.walDir,
-		SnapCount:               cfg.snapCount,
-		MaxSnapFiles:            cfg.maxSnapFiles,
-		MaxWALFiles:             cfg.maxWalFiles,
-		InitialPeerURLsMap:      urlsmap,
-		InitialClusterToken:     token,
-		DiscoveryURL:            cfg.durl,
-		DiscoveryProxy:          cfg.dproxy,
-		NewCluster:              cfg.isNewCluster(),
-		ForceNewCluster:         cfg.forceNewCluster,
-		PeerTLSInfo:             cfg.peerTLSInfo,
-		TickMs:                  cfg.TickMs,
-		ElectionTicks:           cfg.electionTicks(),
-		AutoCompactionRetention: cfg.autoCompactionRetention,
-		QuotaBackendBytes:       cfg.quotaBackendBytes,
-		StrictReconfigCheck:     cfg.strictReconfigCheck,
-		EnablePprof:             cfg.enablePprof,
+	if cfg.Metrics == "extensive" {
+		grpc_prometheus.EnableHandlingTimeHistogram()
 	}
-	var s *etcdserver.EtcdServer
-	s, err = etcdserver.NewServer(srvcfg)
+
+	e, err := embed.StartEtcd(cfg)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	s.Start()
-	osutil.RegisterInterruptHandler(s.Stop)
-
-	if cfg.corsInfo.String() != "" {
-		plog.Infof("cors = %s", cfg.corsInfo)
-	}
-	ch := http.Handler(&cors.CORSHandler{
-		Handler: v2http.NewClientHandler(s, srvcfg.ReqTimeout()),
-		Info:    cfg.corsInfo,
-	})
-	ph := v2http.NewPeerHandler(s)
-
-	// Start the peer server in a goroutine
-	for _, l := range plns {
-		go func(l net.Listener) {
-			plog.Fatal(servePeerHTTP(l, ph))
-		}(l)
-	}
-	// Start a client server goroutine for each listen address
-	for _, sctx := range sctxs {
-		go func(sctx *serveCtx) {
-			// read timeout does not work with http close notify
-			// TODO: https://github.com/golang/go/issues/9524
-			plog.Fatal(serve(sctx, s, ctlscfg, ch))
-		}(sctx)
-	}
-
-	return s.StopNotify(), nil
+	osutil.RegisterInterruptHandler(e.Server.Stop)
+	<-e.Server.ReadyNotify() // wait for e.Server to join the cluster
+	return e.Server.StopNotify(), e.Err(), nil
 }
 
 // startProxy launches an HTTP proxy for client communication which proxies to other etcd nodes.
 func startProxy(cfg *config) error {
-	pt, err := transport.NewTimeoutTransport(cfg.peerTLSInfo, time.Duration(cfg.proxyDialTimeoutMs)*time.Millisecond, time.Duration(cfg.proxyReadTimeoutMs)*time.Millisecond, time.Duration(cfg.proxyWriteTimeoutMs)*time.Millisecond)
+	plog.Notice("proxy: this proxy supports v2 API only!")
+
+	pt, err := transport.NewTimeoutTransport(cfg.PeerTLSInfo, time.Duration(cfg.ProxyDialTimeoutMs)*time.Millisecond, time.Duration(cfg.ProxyReadTimeoutMs)*time.Millisecond, time.Duration(cfg.ProxyWriteTimeoutMs)*time.Millisecond)
 	if err != nil {
 		return err
 	}
-	pt.MaxIdleConnsPerHost = proxy.DefaultMaxIdleConnsPerHost
+	pt.MaxIdleConnsPerHost = httpproxy.DefaultMaxIdleConnsPerHost
 
-	tr, err := transport.NewTimeoutTransport(cfg.peerTLSInfo, time.Duration(cfg.proxyDialTimeoutMs)*time.Millisecond, time.Duration(cfg.proxyReadTimeoutMs)*time.Millisecond, time.Duration(cfg.proxyWriteTimeoutMs)*time.Millisecond)
+	tr, err := transport.NewTimeoutTransport(cfg.PeerTLSInfo, time.Duration(cfg.ProxyDialTimeoutMs)*time.Millisecond, time.Duration(cfg.ProxyReadTimeoutMs)*time.Millisecond, time.Duration(cfg.ProxyWriteTimeoutMs)*time.Millisecond)
 	if err != nil {
 		return err
 	}
 
-	cfg.dir = path.Join(cfg.dir, "proxy")
-	err = os.MkdirAll(cfg.dir, privateDirMode)
+	cfg.Dir = path.Join(cfg.Dir, "proxy")
+	err = os.MkdirAll(cfg.Dir, fileutil.PrivateDirMode)
 	if err != nil {
 		return err
 	}
 
 	var peerURLs []string
-	clusterfile := path.Join(cfg.dir, "cluster")
+	clusterfile := path.Join(cfg.Dir, "cluster")
 
 	b, err := ioutil.ReadFile(clusterfile)
 	switch {
 	case err == nil:
-		if cfg.durl != "" {
+		if cfg.Durl != "" {
 			plog.Warningf("discovery token ignored since the proxy has already been initialized. Valid cluster file found at %q", clusterfile)
 		}
-		if cfg.dnsCluster != "" {
+		if cfg.DNSCluster != "" {
 			plog.Warningf("DNS SRV discovery ignored since the proxy has already been initialized. Valid cluster file found at %q", clusterfile)
 		}
 		urls := struct{ PeerURLs []string }{}
@@ -426,14 +248,14 @@ func startProxy(cfg *config) error {
 		plog.Infof("proxy: using peer urls %v from cluster file %q", peerURLs, clusterfile)
 	case os.IsNotExist(err):
 		var urlsmap types.URLsMap
-		urlsmap, _, err = getPeerURLsMapAndToken(cfg, "proxy")
+		urlsmap, _, err = cfg.PeerURLsMapAndToken("proxy")
 		if err != nil {
 			return fmt.Errorf("error setting up initial cluster: %v", err)
 		}
 
-		if cfg.durl != "" {
+		if cfg.Durl != "" {
 			var s string
-			s, err = discovery.GetCluster(cfg.durl, cfg.dproxy)
+			s, err = discovery.GetCluster(cfg.Durl, cfg.Dproxy)
 			if err != nil {
 				return err
 			}
@@ -450,15 +272,12 @@ func startProxy(cfg *config) error {
 	clientURLs := []string{}
 	uf := func() []string {
 		gcls, gerr := etcdserver.GetClusterFromRemotePeers(peerURLs, tr)
-		// TODO: remove the 2nd check when we fix GetClusterFromRemotePeers
-		// GetClusterFromRemotePeers should not return nil error with an invalid empty cluster
+
 		if gerr != nil {
 			plog.Warningf("proxy: %v", gerr)
 			return []string{}
 		}
-		if len(gcls.Members()) == 0 {
-			return clientURLs
-		}
+
 		clientURLs = gcls.ClientURLs()
 
 		urls := struct{ PeerURLs []string }{gcls.PeerURLs()}
@@ -485,23 +304,23 @@ func startProxy(cfg *config) error {
 
 		return clientURLs
 	}
-	ph := proxy.NewHandler(pt, uf, time.Duration(cfg.proxyFailureWaitMs)*time.Millisecond, time.Duration(cfg.proxyRefreshIntervalMs)*time.Millisecond)
+	ph := httpproxy.NewHandler(pt, uf, time.Duration(cfg.ProxyFailureWaitMs)*time.Millisecond, time.Duration(cfg.ProxyRefreshIntervalMs)*time.Millisecond)
 	ph = &cors.CORSHandler{
 		Handler: ph,
-		Info:    cfg.corsInfo,
+		Info:    cfg.CorsInfo,
 	}
 
 	if cfg.isReadonlyProxy() {
-		ph = proxy.NewReadonlyHandler(ph)
+		ph = httpproxy.NewReadonlyHandler(ph)
 	}
 	// Start a proxy server goroutine for each listen address
-	for _, u := range cfg.lcurls {
+	for _, u := range cfg.LCUrls {
 		var (
 			l      net.Listener
 			tlscfg *tls.Config
 		)
-		if !cfg.clientTLSInfo.Empty() {
-			tlscfg, err = cfg.clientTLSInfo.ServerConfig()
+		if !cfg.ClientTLSInfo.Empty() {
+			tlscfg, err = cfg.ClientTLSInfo.ServerConfig()
 			if err != nil {
 				return err
 			}
@@ -522,37 +341,6 @@ func startProxy(cfg *config) error {
 		}()
 	}
 	return nil
-}
-
-// getPeerURLsMapAndToken sets up an initial peer URLsMap and cluster token for bootstrap or discovery.
-func getPeerURLsMapAndToken(cfg *config, which string) (urlsmap types.URLsMap, token string, err error) {
-	switch {
-	case cfg.durl != "":
-		urlsmap = types.URLsMap{}
-		// If using discovery, generate a temporary cluster based on
-		// self's advertised peer URLs
-		urlsmap[cfg.name] = cfg.apurls
-		token = cfg.durl
-	case cfg.dnsCluster != "":
-		var clusterStr string
-		clusterStr, token, err = discovery.SRVGetCluster(cfg.name, cfg.dnsCluster, cfg.initialClusterToken, cfg.apurls)
-		if err != nil {
-			return nil, "", err
-		}
-		urlsmap, err = types.NewURLsMap(clusterStr)
-		// only etcd member must belong to the discovered cluster.
-		// proxy does not need to belong to the discovered cluster.
-		if which == "etcd" {
-			if _, ok := urlsmap[cfg.name]; !ok {
-				return nil, "", fmt.Errorf("cannot find local etcd member %q in SRV records", cfg.name)
-			}
-		}
-	default:
-		// We're statically configured, and cluster has appropriately been set.
-		urlsmap, err = types.NewURLsMap(cfg.initialCluster)
-		token = cfg.initialClusterToken
-	}
-	return urlsmap, token, err
 }
 
 // identifyDataDirOrDie returns the type of the data dir.
@@ -592,16 +380,42 @@ func identifyDataDirOrDie(dir string) dirType {
 
 func setupLogging(cfg *config) {
 	capnslog.SetGlobalLogLevel(capnslog.INFO)
-	if cfg.debug {
+	if cfg.Debug {
 		capnslog.SetGlobalLogLevel(capnslog.DEBUG)
 	}
-	if cfg.logPkgLevels != "" {
+	if cfg.LogPkgLevels != "" {
 		repoLog := capnslog.MustRepoLogger("github.com/coreos/etcd")
-		settings, err := repoLog.ParseLogLevelConfig(cfg.logPkgLevels)
+		settings, err := repoLog.ParseLogLevelConfig(cfg.LogPkgLevels)
 		if err != nil {
 			plog.Warningf("couldn't parse log level string: %s, continuing with default levels", err.Error())
 			return
 		}
 		repoLog.SetLogLevel(settings)
 	}
+
+	// capnslog initially SetFormatter(NewDefaultFormatter(os.Stderr))
+	// where NewDefaultFormatter returns NewJournaldFormatter when syscall.Getppid() == 1
+	// specify 'stdout' or 'stderr' to skip journald logging even when running under systemd
+	switch cfg.logOutput {
+	case "stdout":
+		capnslog.SetFormatter(capnslog.NewPrettyFormatter(os.Stdout, cfg.Debug))
+	case "stderr":
+		capnslog.SetFormatter(capnslog.NewPrettyFormatter(os.Stderr, cfg.Debug))
+	case "default":
+	default:
+		plog.Panicf(`unknown log-output %q (only supports "default", "stdout", "stderr")`, cfg.logOutput)
+	}
+}
+
+func checkSupportArch() {
+	// TODO qualify arm64
+	if runtime.GOARCH == "amd64" {
+		return
+	}
+	if env, ok := os.LookupEnv("ETCD_UNSUPPORTED_ARCH"); ok && env == runtime.GOARCH {
+		plog.Warningf("running etcd on unsupported architecture %q since ETCD_UNSUPPORTED_ARCH is set", env)
+		return
+	}
+	plog.Errorf("etcd on unsupported platform without ETCD_UNSUPPORTED_ARCH=%s set.", runtime.GOARCH)
+	os.Exit(1)
 }

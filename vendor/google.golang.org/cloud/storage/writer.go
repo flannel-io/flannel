@@ -20,6 +20,8 @@ import (
 	"unicode/utf8"
 
 	"golang.org/x/net/context"
+	"google.golang.org/api/googleapi"
+	raw "google.golang.org/api/storage/v1"
 )
 
 // A Writer writes a Cloud Storage object.
@@ -29,10 +31,8 @@ type Writer struct {
 	// attributes are ignored.
 	ObjectAttrs
 
-	ctx    context.Context
-	client *Client
-	bucket string
-	name   string
+	ctx context.Context
+	o   *ObjectHandle
 
 	opened bool
 	pw     *io.PipeWriter
@@ -46,27 +46,40 @@ func (w *Writer) open() error {
 	attrs := w.ObjectAttrs
 	// Check the developer didn't change the object Name (this is unfortunate, but
 	// we don't want to store an object under the wrong name).
-	if attrs.Name != w.name {
-		return fmt.Errorf("storage: Writer.Name %q does not match object name %q", attrs.Name, w.name)
+	if attrs.Name != w.o.object {
+		return fmt.Errorf("storage: Writer.Name %q does not match object name %q", attrs.Name, w.o.object)
 	}
 	if !utf8.ValidString(attrs.Name) {
 		return fmt.Errorf("storage: object name %q is not valid UTF-8", attrs.Name)
 	}
 	pr, pw := io.Pipe()
-	r := &contentTyper{pr, attrs.ContentType}
 	w.pw = pw
 	w.opened = true
 
+	var mediaOpts []googleapi.MediaOption
+	if c := attrs.ContentType; c != "" {
+		mediaOpts = append(mediaOpts, googleapi.ContentType(c))
+	}
+
 	go func() {
-		resp, err := w.client.raw.Objects.Insert(
-			w.bucket, attrs.toRawObject(w.bucket)).Media(r).Projection("full").Context(w.ctx).Do()
-		w.err = err
+		defer close(w.donec)
+
+		call := w.o.c.raw.Objects.Insert(w.o.bucket, attrs.toRawObject(w.o.bucket)).
+			Media(pr, mediaOpts...).
+			Projection("full").
+			Context(w.ctx)
+
+		var resp *raw.Object
+		err := applyConds("NewWriter", w.o.conds, call)
 		if err == nil {
-			w.obj = newObject(resp)
-		} else {
-			pr.CloseWithError(w.err)
+			resp, err = call.Do()
 		}
-		close(w.donec)
+		if err != nil {
+			w.err = err
+			pr.CloseWithError(w.err)
+			return
+		}
+		w.obj = newObject(resp)
 	}()
 	return nil
 }

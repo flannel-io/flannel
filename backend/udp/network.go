@@ -142,11 +142,7 @@ func (n *network) initTun() error {
 	}
 
 	err = configureIface(tunName, n.tunNet, n.MTU())
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func configureIface(ifname string, ipn ip.IP4Net, mtu int) error {

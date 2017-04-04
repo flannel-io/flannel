@@ -37,7 +37,6 @@ const opCreateApiKey = "CreateApiKey"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) CreateApiKeyRequest(input *CreateApiKeyInput) (req *request.Request, output *ApiKey) {
 	op := &request.Operation{
 		Name:       opCreateApiKey,
@@ -49,9 +48,8 @@ func (c *APIGateway) CreateApiKeyRequest(input *CreateApiKeyInput) (req *request
 		input = &CreateApiKeyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ApiKey{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -118,7 +116,6 @@ const opCreateAuthorizer = "CreateAuthorizer"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) CreateAuthorizerRequest(input *CreateAuthorizerInput) (req *request.Request, output *Authorizer) {
 	op := &request.Operation{
 		Name:       opCreateAuthorizer,
@@ -130,9 +127,8 @@ func (c *APIGateway) CreateAuthorizerRequest(input *CreateAuthorizerInput) (req 
 		input = &CreateAuthorizerInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Authorizer{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -196,7 +192,6 @@ const opCreateBasePathMapping = "CreateBasePathMapping"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) CreateBasePathMappingRequest(input *CreateBasePathMappingInput) (req *request.Request, output *BasePathMapping) {
 	op := &request.Operation{
 		Name:       opCreateBasePathMapping,
@@ -208,9 +203,8 @@ func (c *APIGateway) CreateBasePathMappingRequest(input *CreateBasePathMappingIn
 		input = &CreateBasePathMappingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BasePathMapping{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -272,7 +266,6 @@ const opCreateDeployment = "CreateDeployment"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) CreateDeploymentRequest(input *CreateDeploymentInput) (req *request.Request, output *Deployment) {
 	op := &request.Operation{
 		Name:       opCreateDeployment,
@@ -284,9 +277,8 @@ func (c *APIGateway) CreateDeploymentRequest(input *CreateDeploymentInput) (req 
 		input = &CreateDeploymentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Deployment{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -330,6 +322,156 @@ func (c *APIGateway) CreateDeployment(input *CreateDeploymentInput) (*Deployment
 	return out, err
 }
 
+const opCreateDocumentationPart = "CreateDocumentationPart"
+
+// CreateDocumentationPartRequest generates a "aws/request.Request" representing the
+// client's request for the CreateDocumentationPart operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See CreateDocumentationPart for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the CreateDocumentationPart method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the CreateDocumentationPartRequest method.
+//    req, resp := client.CreateDocumentationPartRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) CreateDocumentationPartRequest(input *CreateDocumentationPartInput) (req *request.Request, output *DocumentationPart) {
+	op := &request.Operation{
+		Name:       opCreateDocumentationPart,
+		HTTPMethod: "POST",
+		HTTPPath:   "/restapis/{restapi_id}/documentation/parts",
+	}
+
+	if input == nil {
+		input = &CreateDocumentationPartInput{}
+	}
+
+	output = &DocumentationPart{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateDocumentationPart API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation CreateDocumentationPart for usage and error information.
+//
+// Returned Error Codes:
+//   * BadRequestException
+
+//
+//   * ConflictException
+
+//
+//   * UnauthorizedException
+
+//
+//   * NotFoundException
+
+//
+//   * LimitExceededException
+
+//
+//   * TooManyRequestsException
+
+//
+func (c *APIGateway) CreateDocumentationPart(input *CreateDocumentationPartInput) (*DocumentationPart, error) {
+	req, out := c.CreateDocumentationPartRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opCreateDocumentationVersion = "CreateDocumentationVersion"
+
+// CreateDocumentationVersionRequest generates a "aws/request.Request" representing the
+// client's request for the CreateDocumentationVersion operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See CreateDocumentationVersion for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the CreateDocumentationVersion method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the CreateDocumentationVersionRequest method.
+//    req, resp := client.CreateDocumentationVersionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) CreateDocumentationVersionRequest(input *CreateDocumentationVersionInput) (req *request.Request, output *DocumentationVersion) {
+	op := &request.Operation{
+		Name:       opCreateDocumentationVersion,
+		HTTPMethod: "POST",
+		HTTPPath:   "/restapis/{restapi_id}/documentation/versions",
+	}
+
+	if input == nil {
+		input = &CreateDocumentationVersionInput{}
+	}
+
+	output = &DocumentationVersion{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateDocumentationVersion API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation CreateDocumentationVersion for usage and error information.
+//
+// Returned Error Codes:
+//   * BadRequestException
+
+//
+//   * ConflictException
+
+//
+//   * UnauthorizedException
+
+//
+//   * NotFoundException
+
+//
+//   * LimitExceededException
+
+//
+//   * TooManyRequestsException
+
+//
+func (c *APIGateway) CreateDocumentationVersion(input *CreateDocumentationVersionInput) (*DocumentationVersion, error) {
+	req, out := c.CreateDocumentationVersionRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opCreateDomainName = "CreateDomainName"
 
 // CreateDomainNameRequest generates a "aws/request.Request" representing the
@@ -355,7 +497,6 @@ const opCreateDomainName = "CreateDomainName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) CreateDomainNameRequest(input *CreateDomainNameInput) (req *request.Request, output *DomainName) {
 	op := &request.Operation{
 		Name:       opCreateDomainName,
@@ -367,9 +508,8 @@ func (c *APIGateway) CreateDomainNameRequest(input *CreateDomainNameInput) (req 
 		input = &CreateDomainNameInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DomainName{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -428,7 +568,6 @@ const opCreateModel = "CreateModel"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) CreateModelRequest(input *CreateModelInput) (req *request.Request, output *Model) {
 	op := &request.Operation{
 		Name:       opCreateModel,
@@ -440,9 +579,8 @@ func (c *APIGateway) CreateModelRequest(input *CreateModelInput) (req *request.R
 		input = &CreateModelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Model{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -507,7 +645,6 @@ const opCreateResource = "CreateResource"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) CreateResourceRequest(input *CreateResourceInput) (req *request.Request, output *Resource) {
 	op := &request.Operation{
 		Name:       opCreateResource,
@@ -519,9 +656,8 @@ func (c *APIGateway) CreateResourceRequest(input *CreateResourceInput) (req *req
 		input = &CreateResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Resource{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -586,7 +722,6 @@ const opCreateRestApi = "CreateRestApi"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) CreateRestApiRequest(input *CreateRestApiInput) (req *request.Request, output *RestApi) {
 	op := &request.Operation{
 		Name:       opCreateRestApi,
@@ -598,9 +733,8 @@ func (c *APIGateway) CreateRestApiRequest(input *CreateRestApiInput) (req *reque
 		input = &CreateRestApiInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RestApi{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -659,7 +793,6 @@ const opCreateStage = "CreateStage"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) CreateStageRequest(input *CreateStageInput) (req *request.Request, output *Stage) {
 	op := &request.Operation{
 		Name:       opCreateStage,
@@ -671,9 +804,8 @@ func (c *APIGateway) CreateStageRequest(input *CreateStageInput) (req *request.R
 		input = &CreateStageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Stage{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -739,7 +871,6 @@ const opCreateUsagePlan = "CreateUsagePlan"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) CreateUsagePlanRequest(input *CreateUsagePlanInput) (req *request.Request, output *UsagePlan) {
 	op := &request.Operation{
 		Name:       opCreateUsagePlan,
@@ -751,9 +882,8 @@ func (c *APIGateway) CreateUsagePlanRequest(input *CreateUsagePlanInput) (req *r
 		input = &CreateUsagePlanInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UsagePlan{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -783,6 +913,9 @@ func (c *APIGateway) CreateUsagePlanRequest(input *CreateUsagePlanInput) (req *r
 
 //
 //   * ConflictException
+
+//
+//   * NotFoundException
 
 //
 func (c *APIGateway) CreateUsagePlan(input *CreateUsagePlanInput) (*UsagePlan, error) {
@@ -816,7 +949,6 @@ const opCreateUsagePlanKey = "CreateUsagePlanKey"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) CreateUsagePlanKeyRequest(input *CreateUsagePlanKeyInput) (req *request.Request, output *UsagePlanKey) {
 	op := &request.Operation{
 		Name:       opCreateUsagePlanKey,
@@ -828,9 +960,8 @@ func (c *APIGateway) CreateUsagePlanKeyRequest(input *CreateUsagePlanKeyInput) (
 		input = &CreateUsagePlanKeyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UsagePlanKey{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -892,7 +1023,6 @@ const opDeleteApiKey = "DeleteApiKey"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteApiKeyRequest(input *DeleteApiKeyInput) (req *request.Request, output *DeleteApiKeyOutput) {
 	op := &request.Operation{
 		Name:       opDeleteApiKey,
@@ -904,11 +1034,10 @@ func (c *APIGateway) DeleteApiKeyRequest(input *DeleteApiKeyInput) (req *request
 		input = &DeleteApiKeyInput{}
 	}
 
+	output = &DeleteApiKeyOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteApiKeyOutput{}
-	req.Data = output
 	return
 }
 
@@ -964,7 +1093,6 @@ const opDeleteAuthorizer = "DeleteAuthorizer"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteAuthorizerRequest(input *DeleteAuthorizerInput) (req *request.Request, output *DeleteAuthorizerOutput) {
 	op := &request.Operation{
 		Name:       opDeleteAuthorizer,
@@ -976,11 +1104,10 @@ func (c *APIGateway) DeleteAuthorizerRequest(input *DeleteAuthorizerInput) (req 
 		input = &DeleteAuthorizerInput{}
 	}
 
+	output = &DeleteAuthorizerOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteAuthorizerOutput{}
-	req.Data = output
 	return
 }
 
@@ -1044,7 +1171,6 @@ const opDeleteBasePathMapping = "DeleteBasePathMapping"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteBasePathMappingRequest(input *DeleteBasePathMappingInput) (req *request.Request, output *DeleteBasePathMappingOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBasePathMapping,
@@ -1056,11 +1182,10 @@ func (c *APIGateway) DeleteBasePathMappingRequest(input *DeleteBasePathMappingIn
 		input = &DeleteBasePathMappingInput{}
 	}
 
+	output = &DeleteBasePathMappingOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteBasePathMappingOutput{}
-	req.Data = output
 	return
 }
 
@@ -1116,7 +1241,6 @@ const opDeleteClientCertificate = "DeleteClientCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteClientCertificateRequest(input *DeleteClientCertificateInput) (req *request.Request, output *DeleteClientCertificateOutput) {
 	op := &request.Operation{
 		Name:       opDeleteClientCertificate,
@@ -1128,11 +1252,10 @@ func (c *APIGateway) DeleteClientCertificateRequest(input *DeleteClientCertifica
 		input = &DeleteClientCertificateInput{}
 	}
 
+	output = &DeleteClientCertificateOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteClientCertificateOutput{}
-	req.Data = output
 	return
 }
 
@@ -1191,7 +1314,6 @@ const opDeleteDeployment = "DeleteDeployment"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteDeploymentRequest(input *DeleteDeploymentInput) (req *request.Request, output *DeleteDeploymentOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDeployment,
@@ -1203,11 +1325,10 @@ func (c *APIGateway) DeleteDeploymentRequest(input *DeleteDeploymentInput) (req 
 		input = &DeleteDeploymentInput{}
 	}
 
+	output = &DeleteDeploymentOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteDeploymentOutput{}
-	req.Data = output
 	return
 }
 
@@ -1242,6 +1363,154 @@ func (c *APIGateway) DeleteDeployment(input *DeleteDeploymentInput) (*DeleteDepl
 	return out, err
 }
 
+const opDeleteDocumentationPart = "DeleteDocumentationPart"
+
+// DeleteDocumentationPartRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteDocumentationPart operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DeleteDocumentationPart for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DeleteDocumentationPart method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DeleteDocumentationPartRequest method.
+//    req, resp := client.DeleteDocumentationPartRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) DeleteDocumentationPartRequest(input *DeleteDocumentationPartInput) (req *request.Request, output *DeleteDocumentationPartOutput) {
+	op := &request.Operation{
+		Name:       opDeleteDocumentationPart,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/restapis/{restapi_id}/documentation/parts/{part_id}",
+	}
+
+	if input == nil {
+		input = &DeleteDocumentationPartInput{}
+	}
+
+	output = &DeleteDocumentationPartOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteDocumentationPart API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation DeleteDocumentationPart for usage and error information.
+//
+// Returned Error Codes:
+//   * UnauthorizedException
+
+//
+//   * NotFoundException
+
+//
+//   * TooManyRequestsException
+
+//
+//   * ConflictException
+
+//
+//   * BadRequestException
+
+//
+func (c *APIGateway) DeleteDocumentationPart(input *DeleteDocumentationPartInput) (*DeleteDocumentationPartOutput, error) {
+	req, out := c.DeleteDocumentationPartRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opDeleteDocumentationVersion = "DeleteDocumentationVersion"
+
+// DeleteDocumentationVersionRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteDocumentationVersion operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DeleteDocumentationVersion for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DeleteDocumentationVersion method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DeleteDocumentationVersionRequest method.
+//    req, resp := client.DeleteDocumentationVersionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) DeleteDocumentationVersionRequest(input *DeleteDocumentationVersionInput) (req *request.Request, output *DeleteDocumentationVersionOutput) {
+	op := &request.Operation{
+		Name:       opDeleteDocumentationVersion,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/restapis/{restapi_id}/documentation/versions/{doc_version}",
+	}
+
+	if input == nil {
+		input = &DeleteDocumentationVersionInput{}
+	}
+
+	output = &DeleteDocumentationVersionOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteDocumentationVersion API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation DeleteDocumentationVersion for usage and error information.
+//
+// Returned Error Codes:
+//   * UnauthorizedException
+
+//
+//   * NotFoundException
+
+//
+//   * BadRequestException
+
+//
+//   * ConflictException
+
+//
+//   * TooManyRequestsException
+
+//
+func (c *APIGateway) DeleteDocumentationVersion(input *DeleteDocumentationVersionInput) (*DeleteDocumentationVersionOutput, error) {
+	req, out := c.DeleteDocumentationVersionRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opDeleteDomainName = "DeleteDomainName"
 
 // DeleteDomainNameRequest generates a "aws/request.Request" representing the
@@ -1267,7 +1536,6 @@ const opDeleteDomainName = "DeleteDomainName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteDomainNameRequest(input *DeleteDomainNameInput) (req *request.Request, output *DeleteDomainNameOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDomainName,
@@ -1279,11 +1547,10 @@ func (c *APIGateway) DeleteDomainNameRequest(input *DeleteDomainNameInput) (req 
 		input = &DeleteDomainNameInput{}
 	}
 
+	output = &DeleteDomainNameOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteDomainNameOutput{}
-	req.Data = output
 	return
 }
 
@@ -1339,7 +1606,6 @@ const opDeleteIntegration = "DeleteIntegration"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteIntegrationRequest(input *DeleteIntegrationInput) (req *request.Request, output *DeleteIntegrationOutput) {
 	op := &request.Operation{
 		Name:       opDeleteIntegration,
@@ -1351,11 +1617,10 @@ func (c *APIGateway) DeleteIntegrationRequest(input *DeleteIntegrationInput) (re
 		input = &DeleteIntegrationInput{}
 	}
 
+	output = &DeleteIntegrationOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteIntegrationOutput{}
-	req.Data = output
 	return
 }
 
@@ -1414,7 +1679,6 @@ const opDeleteIntegrationResponse = "DeleteIntegrationResponse"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteIntegrationResponseRequest(input *DeleteIntegrationResponseInput) (req *request.Request, output *DeleteIntegrationResponseOutput) {
 	op := &request.Operation{
 		Name:       opDeleteIntegrationResponse,
@@ -1426,11 +1690,10 @@ func (c *APIGateway) DeleteIntegrationResponseRequest(input *DeleteIntegrationRe
 		input = &DeleteIntegrationResponseInput{}
 	}
 
+	output = &DeleteIntegrationResponseOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteIntegrationResponseOutput{}
-	req.Data = output
 	return
 }
 
@@ -1492,7 +1755,6 @@ const opDeleteMethod = "DeleteMethod"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteMethodRequest(input *DeleteMethodInput) (req *request.Request, output *DeleteMethodOutput) {
 	op := &request.Operation{
 		Name:       opDeleteMethod,
@@ -1504,11 +1766,10 @@ func (c *APIGateway) DeleteMethodRequest(input *DeleteMethodInput) (req *request
 		input = &DeleteMethodInput{}
 	}
 
+	output = &DeleteMethodOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteMethodOutput{}
-	req.Data = output
 	return
 }
 
@@ -1567,7 +1828,6 @@ const opDeleteMethodResponse = "DeleteMethodResponse"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteMethodResponseRequest(input *DeleteMethodResponseInput) (req *request.Request, output *DeleteMethodResponseOutput) {
 	op := &request.Operation{
 		Name:       opDeleteMethodResponse,
@@ -1579,11 +1839,10 @@ func (c *APIGateway) DeleteMethodResponseRequest(input *DeleteMethodResponseInpu
 		input = &DeleteMethodResponseInput{}
 	}
 
+	output = &DeleteMethodResponseOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteMethodResponseOutput{}
-	req.Data = output
 	return
 }
 
@@ -1645,7 +1904,6 @@ const opDeleteModel = "DeleteModel"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteModelRequest(input *DeleteModelInput) (req *request.Request, output *DeleteModelOutput) {
 	op := &request.Operation{
 		Name:       opDeleteModel,
@@ -1657,11 +1915,10 @@ func (c *APIGateway) DeleteModelRequest(input *DeleteModelInput) (req *request.R
 		input = &DeleteModelInput{}
 	}
 
+	output = &DeleteModelOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteModelOutput{}
-	req.Data = output
 	return
 }
 
@@ -1723,7 +1980,6 @@ const opDeleteResource = "DeleteResource"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteResourceRequest(input *DeleteResourceInput) (req *request.Request, output *DeleteResourceOutput) {
 	op := &request.Operation{
 		Name:       opDeleteResource,
@@ -1735,11 +1991,10 @@ func (c *APIGateway) DeleteResourceRequest(input *DeleteResourceInput) (req *req
 		input = &DeleteResourceInput{}
 	}
 
+	output = &DeleteResourceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteResourceOutput{}
-	req.Data = output
 	return
 }
 
@@ -1801,7 +2056,6 @@ const opDeleteRestApi = "DeleteRestApi"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteRestApiRequest(input *DeleteRestApiInput) (req *request.Request, output *DeleteRestApiOutput) {
 	op := &request.Operation{
 		Name:       opDeleteRestApi,
@@ -1813,11 +2067,10 @@ func (c *APIGateway) DeleteRestApiRequest(input *DeleteRestApiInput) (req *reque
 		input = &DeleteRestApiInput{}
 	}
 
+	output = &DeleteRestApiOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteRestApiOutput{}
-	req.Data = output
 	return
 }
 
@@ -1876,7 +2129,6 @@ const opDeleteStage = "DeleteStage"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteStageRequest(input *DeleteStageInput) (req *request.Request, output *DeleteStageOutput) {
 	op := &request.Operation{
 		Name:       opDeleteStage,
@@ -1888,11 +2140,10 @@ func (c *APIGateway) DeleteStageRequest(input *DeleteStageInput) (req *request.R
 		input = &DeleteStageInput{}
 	}
 
+	output = &DeleteStageOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteStageOutput{}
-	req.Data = output
 	return
 }
 
@@ -1951,7 +2202,6 @@ const opDeleteUsagePlan = "DeleteUsagePlan"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteUsagePlanRequest(input *DeleteUsagePlanInput) (req *request.Request, output *DeleteUsagePlanOutput) {
 	op := &request.Operation{
 		Name:       opDeleteUsagePlan,
@@ -1963,11 +2213,10 @@ func (c *APIGateway) DeleteUsagePlanRequest(input *DeleteUsagePlanInput) (req *r
 		input = &DeleteUsagePlanInput{}
 	}
 
+	output = &DeleteUsagePlanOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteUsagePlanOutput{}
-	req.Data = output
 	return
 }
 
@@ -2026,7 +2275,6 @@ const opDeleteUsagePlanKey = "DeleteUsagePlanKey"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) DeleteUsagePlanKeyRequest(input *DeleteUsagePlanKeyInput) (req *request.Request, output *DeleteUsagePlanKeyOutput) {
 	op := &request.Operation{
 		Name:       opDeleteUsagePlanKey,
@@ -2038,11 +2286,10 @@ func (c *APIGateway) DeleteUsagePlanKeyRequest(input *DeleteUsagePlanKeyInput) (
 		input = &DeleteUsagePlanKeyInput{}
 	}
 
+	output = &DeleteUsagePlanKeyOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteUsagePlanKeyOutput{}
-	req.Data = output
 	return
 }
 
@@ -2105,7 +2352,6 @@ const opFlushStageAuthorizersCache = "FlushStageAuthorizersCache"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) FlushStageAuthorizersCacheRequest(input *FlushStageAuthorizersCacheInput) (req *request.Request, output *FlushStageAuthorizersCacheOutput) {
 	op := &request.Operation{
 		Name:       opFlushStageAuthorizersCache,
@@ -2117,11 +2363,10 @@ func (c *APIGateway) FlushStageAuthorizersCacheRequest(input *FlushStageAuthoriz
 		input = &FlushStageAuthorizersCacheInput{}
 	}
 
+	output = &FlushStageAuthorizersCacheOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &FlushStageAuthorizersCacheOutput{}
-	req.Data = output
 	return
 }
 
@@ -2180,7 +2425,6 @@ const opFlushStageCache = "FlushStageCache"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) FlushStageCacheRequest(input *FlushStageCacheInput) (req *request.Request, output *FlushStageCacheOutput) {
 	op := &request.Operation{
 		Name:       opFlushStageCache,
@@ -2192,11 +2436,10 @@ func (c *APIGateway) FlushStageCacheRequest(input *FlushStageCacheInput) (req *r
 		input = &FlushStageCacheInput{}
 	}
 
+	output = &FlushStageCacheOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &FlushStageCacheOutput{}
-	req.Data = output
 	return
 }
 
@@ -2255,7 +2498,6 @@ const opGenerateClientCertificate = "GenerateClientCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GenerateClientCertificateRequest(input *GenerateClientCertificateInput) (req *request.Request, output *ClientCertificate) {
 	op := &request.Operation{
 		Name:       opGenerateClientCertificate,
@@ -2267,9 +2509,8 @@ func (c *APIGateway) GenerateClientCertificateRequest(input *GenerateClientCerti
 		input = &GenerateClientCertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ClientCertificate{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2325,7 +2566,6 @@ const opGetAccount = "GetAccount"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetAccountRequest(input *GetAccountInput) (req *request.Request, output *Account) {
 	op := &request.Operation{
 		Name:       opGetAccount,
@@ -2337,9 +2577,8 @@ func (c *APIGateway) GetAccountRequest(input *GetAccountInput) (req *request.Req
 		input = &GetAccountInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Account{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2395,7 +2634,6 @@ const opGetApiKey = "GetApiKey"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetApiKeyRequest(input *GetApiKeyInput) (req *request.Request, output *ApiKey) {
 	op := &request.Operation{
 		Name:       opGetApiKey,
@@ -2407,9 +2645,8 @@ func (c *APIGateway) GetApiKeyRequest(input *GetApiKeyInput) (req *request.Reque
 		input = &GetApiKeyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ApiKey{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2465,7 +2702,6 @@ const opGetApiKeys = "GetApiKeys"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetApiKeysRequest(input *GetApiKeysInput) (req *request.Request, output *GetApiKeysOutput) {
 	op := &request.Operation{
 		Name:       opGetApiKeys,
@@ -2483,9 +2719,8 @@ func (c *APIGateway) GetApiKeysRequest(input *GetApiKeysInput) (req *request.Req
 		input = &GetApiKeysInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetApiKeysOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2566,7 +2801,6 @@ const opGetAuthorizer = "GetAuthorizer"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetAuthorizerRequest(input *GetAuthorizerInput) (req *request.Request, output *Authorizer) {
 	op := &request.Operation{
 		Name:       opGetAuthorizer,
@@ -2578,9 +2812,8 @@ func (c *APIGateway) GetAuthorizerRequest(input *GetAuthorizerInput) (req *reque
 		input = &GetAuthorizerInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Authorizer{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2638,7 +2871,6 @@ const opGetAuthorizers = "GetAuthorizers"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetAuthorizersRequest(input *GetAuthorizersInput) (req *request.Request, output *GetAuthorizersOutput) {
 	op := &request.Operation{
 		Name:       opGetAuthorizers,
@@ -2650,9 +2882,8 @@ func (c *APIGateway) GetAuthorizersRequest(input *GetAuthorizersInput) (req *req
 		input = &GetAuthorizersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetAuthorizersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2713,7 +2944,6 @@ const opGetBasePathMapping = "GetBasePathMapping"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetBasePathMappingRequest(input *GetBasePathMappingInput) (req *request.Request, output *BasePathMapping) {
 	op := &request.Operation{
 		Name:       opGetBasePathMapping,
@@ -2725,9 +2955,8 @@ func (c *APIGateway) GetBasePathMappingRequest(input *GetBasePathMappingInput) (
 		input = &GetBasePathMappingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BasePathMapping{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2783,7 +3012,6 @@ const opGetBasePathMappings = "GetBasePathMappings"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetBasePathMappingsRequest(input *GetBasePathMappingsInput) (req *request.Request, output *GetBasePathMappingsOutput) {
 	op := &request.Operation{
 		Name:       opGetBasePathMappings,
@@ -2801,9 +3029,8 @@ func (c *APIGateway) GetBasePathMappingsRequest(input *GetBasePathMappingsInput)
 		input = &GetBasePathMappingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetBasePathMappingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2884,7 +3111,6 @@ const opGetClientCertificate = "GetClientCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetClientCertificateRequest(input *GetClientCertificateInput) (req *request.Request, output *ClientCertificate) {
 	op := &request.Operation{
 		Name:       opGetClientCertificate,
@@ -2896,9 +3122,8 @@ func (c *APIGateway) GetClientCertificateRequest(input *GetClientCertificateInpu
 		input = &GetClientCertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ClientCertificate{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2954,7 +3179,6 @@ const opGetClientCertificates = "GetClientCertificates"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetClientCertificatesRequest(input *GetClientCertificatesInput) (req *request.Request, output *GetClientCertificatesOutput) {
 	op := &request.Operation{
 		Name:       opGetClientCertificates,
@@ -2972,9 +3196,8 @@ func (c *APIGateway) GetClientCertificatesRequest(input *GetClientCertificatesIn
 		input = &GetClientCertificatesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetClientCertificatesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3055,7 +3278,6 @@ const opGetDeployment = "GetDeployment"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetDeploymentRequest(input *GetDeploymentInput) (req *request.Request, output *Deployment) {
 	op := &request.Operation{
 		Name:       opGetDeployment,
@@ -3067,9 +3289,8 @@ func (c *APIGateway) GetDeploymentRequest(input *GetDeploymentInput) (req *reque
 		input = &GetDeploymentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Deployment{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3128,7 +3349,6 @@ const opGetDeployments = "GetDeployments"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetDeploymentsRequest(input *GetDeploymentsInput) (req *request.Request, output *GetDeploymentsOutput) {
 	op := &request.Operation{
 		Name:       opGetDeployments,
@@ -3146,9 +3366,8 @@ func (c *APIGateway) GetDeploymentsRequest(input *GetDeploymentsInput) (req *req
 		input = &GetDeploymentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDeploymentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3207,6 +3426,276 @@ func (c *APIGateway) GetDeploymentsPages(input *GetDeploymentsInput, fn func(p *
 	})
 }
 
+const opGetDocumentationPart = "GetDocumentationPart"
+
+// GetDocumentationPartRequest generates a "aws/request.Request" representing the
+// client's request for the GetDocumentationPart operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetDocumentationPart for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetDocumentationPart method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetDocumentationPartRequest method.
+//    req, resp := client.GetDocumentationPartRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) GetDocumentationPartRequest(input *GetDocumentationPartInput) (req *request.Request, output *DocumentationPart) {
+	op := &request.Operation{
+		Name:       opGetDocumentationPart,
+		HTTPMethod: "GET",
+		HTTPPath:   "/restapis/{restapi_id}/documentation/parts/{part_id}",
+	}
+
+	if input == nil {
+		input = &GetDocumentationPartInput{}
+	}
+
+	output = &DocumentationPart{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetDocumentationPart API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation GetDocumentationPart for usage and error information.
+//
+// Returned Error Codes:
+//   * UnauthorizedException
+
+//
+//   * NotFoundException
+
+//
+//   * TooManyRequestsException
+
+//
+func (c *APIGateway) GetDocumentationPart(input *GetDocumentationPartInput) (*DocumentationPart, error) {
+	req, out := c.GetDocumentationPartRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opGetDocumentationParts = "GetDocumentationParts"
+
+// GetDocumentationPartsRequest generates a "aws/request.Request" representing the
+// client's request for the GetDocumentationParts operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetDocumentationParts for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetDocumentationParts method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetDocumentationPartsRequest method.
+//    req, resp := client.GetDocumentationPartsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) GetDocumentationPartsRequest(input *GetDocumentationPartsInput) (req *request.Request, output *GetDocumentationPartsOutput) {
+	op := &request.Operation{
+		Name:       opGetDocumentationParts,
+		HTTPMethod: "GET",
+		HTTPPath:   "/restapis/{restapi_id}/documentation/parts",
+	}
+
+	if input == nil {
+		input = &GetDocumentationPartsInput{}
+	}
+
+	output = &GetDocumentationPartsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetDocumentationParts API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation GetDocumentationParts for usage and error information.
+//
+// Returned Error Codes:
+//   * BadRequestException
+
+//
+//   * UnauthorizedException
+
+//
+//   * NotFoundException
+
+//
+//   * TooManyRequestsException
+
+//
+func (c *APIGateway) GetDocumentationParts(input *GetDocumentationPartsInput) (*GetDocumentationPartsOutput, error) {
+	req, out := c.GetDocumentationPartsRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opGetDocumentationVersion = "GetDocumentationVersion"
+
+// GetDocumentationVersionRequest generates a "aws/request.Request" representing the
+// client's request for the GetDocumentationVersion operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetDocumentationVersion for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetDocumentationVersion method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetDocumentationVersionRequest method.
+//    req, resp := client.GetDocumentationVersionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) GetDocumentationVersionRequest(input *GetDocumentationVersionInput) (req *request.Request, output *DocumentationVersion) {
+	op := &request.Operation{
+		Name:       opGetDocumentationVersion,
+		HTTPMethod: "GET",
+		HTTPPath:   "/restapis/{restapi_id}/documentation/versions/{doc_version}",
+	}
+
+	if input == nil {
+		input = &GetDocumentationVersionInput{}
+	}
+
+	output = &DocumentationVersion{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetDocumentationVersion API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation GetDocumentationVersion for usage and error information.
+//
+// Returned Error Codes:
+//   * UnauthorizedException
+
+//
+//   * NotFoundException
+
+//
+//   * TooManyRequestsException
+
+//
+func (c *APIGateway) GetDocumentationVersion(input *GetDocumentationVersionInput) (*DocumentationVersion, error) {
+	req, out := c.GetDocumentationVersionRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opGetDocumentationVersions = "GetDocumentationVersions"
+
+// GetDocumentationVersionsRequest generates a "aws/request.Request" representing the
+// client's request for the GetDocumentationVersions operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetDocumentationVersions for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetDocumentationVersions method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetDocumentationVersionsRequest method.
+//    req, resp := client.GetDocumentationVersionsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) GetDocumentationVersionsRequest(input *GetDocumentationVersionsInput) (req *request.Request, output *GetDocumentationVersionsOutput) {
+	op := &request.Operation{
+		Name:       opGetDocumentationVersions,
+		HTTPMethod: "GET",
+		HTTPPath:   "/restapis/{restapi_id}/documentation/versions",
+	}
+
+	if input == nil {
+		input = &GetDocumentationVersionsInput{}
+	}
+
+	output = &GetDocumentationVersionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetDocumentationVersions API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation GetDocumentationVersions for usage and error information.
+//
+// Returned Error Codes:
+//   * BadRequestException
+
+//
+//   * UnauthorizedException
+
+//
+//   * NotFoundException
+
+//
+//   * TooManyRequestsException
+
+//
+func (c *APIGateway) GetDocumentationVersions(input *GetDocumentationVersionsInput) (*GetDocumentationVersionsOutput, error) {
+	req, out := c.GetDocumentationVersionsRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opGetDomainName = "GetDomainName"
 
 // GetDomainNameRequest generates a "aws/request.Request" representing the
@@ -3232,7 +3721,6 @@ const opGetDomainName = "GetDomainName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetDomainNameRequest(input *GetDomainNameInput) (req *request.Request, output *DomainName) {
 	op := &request.Operation{
 		Name:       opGetDomainName,
@@ -3244,9 +3732,8 @@ func (c *APIGateway) GetDomainNameRequest(input *GetDomainNameInput) (req *reque
 		input = &GetDomainNameInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DomainName{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3306,7 +3793,6 @@ const opGetDomainNames = "GetDomainNames"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetDomainNamesRequest(input *GetDomainNamesInput) (req *request.Request, output *GetDomainNamesOutput) {
 	op := &request.Operation{
 		Name:       opGetDomainNames,
@@ -3324,9 +3810,8 @@ func (c *APIGateway) GetDomainNamesRequest(input *GetDomainNamesInput) (req *req
 		input = &GetDomainNamesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDomainNamesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3407,7 +3892,6 @@ const opGetExport = "GetExport"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetExportRequest(input *GetExportInput) (req *request.Request, output *GetExportOutput) {
 	op := &request.Operation{
 		Name:       opGetExport,
@@ -3419,9 +3903,8 @@ func (c *APIGateway) GetExportRequest(input *GetExportInput) (req *request.Reque
 		input = &GetExportInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetExportOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3480,7 +3963,6 @@ const opGetIntegration = "GetIntegration"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetIntegrationRequest(input *GetIntegrationInput) (req *request.Request, output *Integration) {
 	op := &request.Operation{
 		Name:       opGetIntegration,
@@ -3492,9 +3974,8 @@ func (c *APIGateway) GetIntegrationRequest(input *GetIntegrationInput) (req *req
 		input = &GetIntegrationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Integration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3550,7 +4031,6 @@ const opGetIntegrationResponse = "GetIntegrationResponse"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetIntegrationResponseRequest(input *GetIntegrationResponseInput) (req *request.Request, output *IntegrationResponse) {
 	op := &request.Operation{
 		Name:       opGetIntegrationResponse,
@@ -3562,9 +4042,8 @@ func (c *APIGateway) GetIntegrationResponseRequest(input *GetIntegrationResponse
 		input = &GetIntegrationResponseInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &IntegrationResponse{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3620,7 +4099,6 @@ const opGetMethod = "GetMethod"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetMethodRequest(input *GetMethodInput) (req *request.Request, output *Method) {
 	op := &request.Operation{
 		Name:       opGetMethod,
@@ -3632,9 +4110,8 @@ func (c *APIGateway) GetMethodRequest(input *GetMethodInput) (req *request.Reque
 		input = &GetMethodInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Method{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3690,7 +4167,6 @@ const opGetMethodResponse = "GetMethodResponse"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetMethodResponseRequest(input *GetMethodResponseInput) (req *request.Request, output *MethodResponse) {
 	op := &request.Operation{
 		Name:       opGetMethodResponse,
@@ -3702,9 +4178,8 @@ func (c *APIGateway) GetMethodResponseRequest(input *GetMethodResponseInput) (re
 		input = &GetMethodResponseInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &MethodResponse{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3760,7 +4235,6 @@ const opGetModel = "GetModel"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetModelRequest(input *GetModelInput) (req *request.Request, output *Model) {
 	op := &request.Operation{
 		Name:       opGetModel,
@@ -3772,9 +4246,8 @@ func (c *APIGateway) GetModelRequest(input *GetModelInput) (req *request.Request
 		input = &GetModelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Model{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3830,7 +4303,6 @@ const opGetModelTemplate = "GetModelTemplate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetModelTemplateRequest(input *GetModelTemplateInput) (req *request.Request, output *GetModelTemplateOutput) {
 	op := &request.Operation{
 		Name:       opGetModelTemplate,
@@ -3842,9 +4314,8 @@ func (c *APIGateway) GetModelTemplateRequest(input *GetModelTemplateInput) (req 
 		input = &GetModelTemplateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetModelTemplateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3904,7 +4375,6 @@ const opGetModels = "GetModels"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetModelsRequest(input *GetModelsInput) (req *request.Request, output *GetModelsOutput) {
 	op := &request.Operation{
 		Name:       opGetModels,
@@ -3922,9 +4392,8 @@ func (c *APIGateway) GetModelsRequest(input *GetModelsInput) (req *request.Reque
 		input = &GetModelsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetModelsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4008,7 +4477,6 @@ const opGetResource = "GetResource"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetResourceRequest(input *GetResourceInput) (req *request.Request, output *Resource) {
 	op := &request.Operation{
 		Name:       opGetResource,
@@ -4020,9 +4488,8 @@ func (c *APIGateway) GetResourceRequest(input *GetResourceInput) (req *request.R
 		input = &GetResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Resource{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4078,7 +4545,6 @@ const opGetResources = "GetResources"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetResourcesRequest(input *GetResourcesInput) (req *request.Request, output *GetResourcesOutput) {
 	op := &request.Operation{
 		Name:       opGetResources,
@@ -4096,9 +4562,8 @@ func (c *APIGateway) GetResourcesRequest(input *GetResourcesInput) (req *request
 		input = &GetResourcesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetResourcesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4182,7 +4647,6 @@ const opGetRestApi = "GetRestApi"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetRestApiRequest(input *GetRestApiInput) (req *request.Request, output *RestApi) {
 	op := &request.Operation{
 		Name:       opGetRestApi,
@@ -4194,9 +4658,8 @@ func (c *APIGateway) GetRestApiRequest(input *GetRestApiInput) (req *request.Req
 		input = &GetRestApiInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RestApi{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4252,7 +4715,6 @@ const opGetRestApis = "GetRestApis"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetRestApisRequest(input *GetRestApisInput) (req *request.Request, output *GetRestApisOutput) {
 	op := &request.Operation{
 		Name:       opGetRestApis,
@@ -4270,9 +4732,8 @@ func (c *APIGateway) GetRestApisRequest(input *GetRestApisInput) (req *request.R
 		input = &GetRestApisInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetRestApisOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4353,7 +4814,6 @@ const opGetSdk = "GetSdk"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetSdkRequest(input *GetSdkInput) (req *request.Request, output *GetSdkOutput) {
 	op := &request.Operation{
 		Name:       opGetSdk,
@@ -4365,9 +4825,8 @@ func (c *APIGateway) GetSdkRequest(input *GetSdkInput) (req *request.Request, ou
 		input = &GetSdkInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetSdkOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4401,6 +4860,135 @@ func (c *APIGateway) GetSdk(input *GetSdkInput) (*GetSdkOutput, error) {
 	return out, err
 }
 
+const opGetSdkType = "GetSdkType"
+
+// GetSdkTypeRequest generates a "aws/request.Request" representing the
+// client's request for the GetSdkType operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetSdkType for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetSdkType method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetSdkTypeRequest method.
+//    req, resp := client.GetSdkTypeRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) GetSdkTypeRequest(input *GetSdkTypeInput) (req *request.Request, output *SdkType) {
+	op := &request.Operation{
+		Name:       opGetSdkType,
+		HTTPMethod: "GET",
+		HTTPPath:   "/sdktypes/{sdktype_id}",
+	}
+
+	if input == nil {
+		input = &GetSdkTypeInput{}
+	}
+
+	output = &SdkType{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetSdkType API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation GetSdkType for usage and error information.
+//
+// Returned Error Codes:
+//   * UnauthorizedException
+
+//
+//   * NotFoundException
+
+//
+//   * TooManyRequestsException
+
+//
+func (c *APIGateway) GetSdkType(input *GetSdkTypeInput) (*SdkType, error) {
+	req, out := c.GetSdkTypeRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opGetSdkTypes = "GetSdkTypes"
+
+// GetSdkTypesRequest generates a "aws/request.Request" representing the
+// client's request for the GetSdkTypes operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetSdkTypes for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetSdkTypes method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetSdkTypesRequest method.
+//    req, resp := client.GetSdkTypesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) GetSdkTypesRequest(input *GetSdkTypesInput) (req *request.Request, output *GetSdkTypesOutput) {
+	op := &request.Operation{
+		Name:       opGetSdkTypes,
+		HTTPMethod: "GET",
+		HTTPPath:   "/sdktypes",
+	}
+
+	if input == nil {
+		input = &GetSdkTypesInput{}
+	}
+
+	output = &GetSdkTypesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetSdkTypes API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation GetSdkTypes for usage and error information.
+//
+// Returned Error Codes:
+//   * UnauthorizedException
+
+//
+//   * TooManyRequestsException
+
+//
+func (c *APIGateway) GetSdkTypes(input *GetSdkTypesInput) (*GetSdkTypesOutput, error) {
+	req, out := c.GetSdkTypesRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opGetStage = "GetStage"
 
 // GetStageRequest generates a "aws/request.Request" representing the
@@ -4426,7 +5014,6 @@ const opGetStage = "GetStage"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetStageRequest(input *GetStageInput) (req *request.Request, output *Stage) {
 	op := &request.Operation{
 		Name:       opGetStage,
@@ -4438,9 +5025,8 @@ func (c *APIGateway) GetStageRequest(input *GetStageInput) (req *request.Request
 		input = &GetStageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Stage{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4496,7 +5082,6 @@ const opGetStages = "GetStages"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetStagesRequest(input *GetStagesInput) (req *request.Request, output *GetStagesOutput) {
 	op := &request.Operation{
 		Name:       opGetStages,
@@ -4508,9 +5093,8 @@ func (c *APIGateway) GetStagesRequest(input *GetStagesInput) (req *request.Reque
 		input = &GetStagesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetStagesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4566,7 +5150,6 @@ const opGetUsage = "GetUsage"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetUsageRequest(input *GetUsageInput) (req *request.Request, output *Usage) {
 	op := &request.Operation{
 		Name:       opGetUsage,
@@ -4584,9 +5167,8 @@ func (c *APIGateway) GetUsageRequest(input *GetUsageInput) (req *request.Request
 		input = &GetUsageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Usage{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4670,7 +5252,6 @@ const opGetUsagePlan = "GetUsagePlan"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetUsagePlanRequest(input *GetUsagePlanInput) (req *request.Request, output *UsagePlan) {
 	op := &request.Operation{
 		Name:       opGetUsagePlan,
@@ -4682,9 +5263,8 @@ func (c *APIGateway) GetUsagePlanRequest(input *GetUsagePlanInput) (req *request
 		input = &GetUsagePlanInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UsagePlan{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4743,7 +5323,6 @@ const opGetUsagePlanKey = "GetUsagePlanKey"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetUsagePlanKeyRequest(input *GetUsagePlanKeyInput) (req *request.Request, output *UsagePlanKey) {
 	op := &request.Operation{
 		Name:       opGetUsagePlanKey,
@@ -4755,9 +5334,8 @@ func (c *APIGateway) GetUsagePlanKeyRequest(input *GetUsagePlanKeyInput) (req *r
 		input = &GetUsagePlanKeyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UsagePlanKey{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4816,7 +5394,6 @@ const opGetUsagePlanKeys = "GetUsagePlanKeys"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetUsagePlanKeysRequest(input *GetUsagePlanKeysInput) (req *request.Request, output *GetUsagePlanKeysOutput) {
 	op := &request.Operation{
 		Name:       opGetUsagePlanKeys,
@@ -4834,9 +5411,8 @@ func (c *APIGateway) GetUsagePlanKeysRequest(input *GetUsagePlanKeysInput) (req 
 		input = &GetUsagePlanKeysInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetUsagePlanKeysOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4921,7 +5497,6 @@ const opGetUsagePlans = "GetUsagePlans"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) GetUsagePlansRequest(input *GetUsagePlansInput) (req *request.Request, output *GetUsagePlansOutput) {
 	op := &request.Operation{
 		Name:       opGetUsagePlans,
@@ -4939,9 +5514,8 @@ func (c *APIGateway) GetUsagePlansRequest(input *GetUsagePlansInput) (req *reque
 		input = &GetUsagePlansInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetUsagePlansOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4967,6 +5541,9 @@ func (c *APIGateway) GetUsagePlansRequest(input *GetUsagePlansInput) (req *reque
 
 //
 //   * ConflictException
+
+//
+//   * NotFoundException
 
 //
 func (c *APIGateway) GetUsagePlans(input *GetUsagePlansInput) (*GetUsagePlansOutput, error) {
@@ -5025,7 +5602,6 @@ const opImportApiKeys = "ImportApiKeys"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) ImportApiKeysRequest(input *ImportApiKeysInput) (req *request.Request, output *ImportApiKeysOutput) {
 	op := &request.Operation{
 		Name:       opImportApiKeys,
@@ -5037,9 +5613,8 @@ func (c *APIGateway) ImportApiKeysRequest(input *ImportApiKeysInput) (req *reque
 		input = &ImportApiKeysInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ImportApiKeysOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5079,6 +5654,78 @@ func (c *APIGateway) ImportApiKeys(input *ImportApiKeysInput) (*ImportApiKeysOut
 	return out, err
 }
 
+const opImportDocumentationParts = "ImportDocumentationParts"
+
+// ImportDocumentationPartsRequest generates a "aws/request.Request" representing the
+// client's request for the ImportDocumentationParts operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See ImportDocumentationParts for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the ImportDocumentationParts method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the ImportDocumentationPartsRequest method.
+//    req, resp := client.ImportDocumentationPartsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) ImportDocumentationPartsRequest(input *ImportDocumentationPartsInput) (req *request.Request, output *ImportDocumentationPartsOutput) {
+	op := &request.Operation{
+		Name:       opImportDocumentationParts,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/restapis/{restapi_id}/documentation/parts",
+	}
+
+	if input == nil {
+		input = &ImportDocumentationPartsInput{}
+	}
+
+	output = &ImportDocumentationPartsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ImportDocumentationParts API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation ImportDocumentationParts for usage and error information.
+//
+// Returned Error Codes:
+//   * UnauthorizedException
+
+//
+//   * NotFoundException
+
+//
+//   * BadRequestException
+
+//
+//   * LimitExceededException
+
+//
+//   * TooManyRequestsException
+
+//
+func (c *APIGateway) ImportDocumentationParts(input *ImportDocumentationPartsInput) (*ImportDocumentationPartsOutput, error) {
+	req, out := c.ImportDocumentationPartsRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opImportRestApi = "ImportRestApi"
 
 // ImportRestApiRequest generates a "aws/request.Request" representing the
@@ -5104,7 +5751,6 @@ const opImportRestApi = "ImportRestApi"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) ImportRestApiRequest(input *ImportRestApiInput) (req *request.Request, output *RestApi) {
 	op := &request.Operation{
 		Name:       opImportRestApi,
@@ -5116,9 +5762,8 @@ func (c *APIGateway) ImportRestApiRequest(input *ImportRestApiInput) (req *reque
 		input = &ImportRestApiInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RestApi{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5181,7 +5826,6 @@ const opPutIntegration = "PutIntegration"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) PutIntegrationRequest(input *PutIntegrationInput) (req *request.Request, output *Integration) {
 	op := &request.Operation{
 		Name:       opPutIntegration,
@@ -5193,9 +5837,8 @@ func (c *APIGateway) PutIntegrationRequest(input *PutIntegrationInput) (req *req
 		input = &PutIntegrationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Integration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5257,7 +5900,6 @@ const opPutIntegrationResponse = "PutIntegrationResponse"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) PutIntegrationResponseRequest(input *PutIntegrationResponseInput) (req *request.Request, output *IntegrationResponse) {
 	op := &request.Operation{
 		Name:       opPutIntegrationResponse,
@@ -5269,9 +5911,8 @@ func (c *APIGateway) PutIntegrationResponseRequest(input *PutIntegrationResponse
 		input = &PutIntegrationResponseInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &IntegrationResponse{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5336,7 +5977,6 @@ const opPutMethod = "PutMethod"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) PutMethodRequest(input *PutMethodInput) (req *request.Request, output *Method) {
 	op := &request.Operation{
 		Name:       opPutMethod,
@@ -5348,9 +5988,8 @@ func (c *APIGateway) PutMethodRequest(input *PutMethodInput) (req *request.Reque
 		input = &PutMethodInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Method{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5415,7 +6054,6 @@ const opPutMethodResponse = "PutMethodResponse"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) PutMethodResponseRequest(input *PutMethodResponseInput) (req *request.Request, output *MethodResponse) {
 	op := &request.Operation{
 		Name:       opPutMethodResponse,
@@ -5427,9 +6065,8 @@ func (c *APIGateway) PutMethodResponseRequest(input *PutMethodResponseInput) (re
 		input = &PutMethodResponseInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &MethodResponse{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5494,7 +6131,6 @@ const opPutRestApi = "PutRestApi"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) PutRestApiRequest(input *PutRestApiInput) (req *request.Request, output *RestApi) {
 	op := &request.Operation{
 		Name:       opPutRestApi,
@@ -5506,9 +6142,8 @@ func (c *APIGateway) PutRestApiRequest(input *PutRestApiInput) (req *request.Req
 		input = &PutRestApiInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RestApi{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5576,7 +6211,6 @@ const opTestInvokeAuthorizer = "TestInvokeAuthorizer"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) TestInvokeAuthorizerRequest(input *TestInvokeAuthorizerInput) (req *request.Request, output *TestInvokeAuthorizerOutput) {
 	op := &request.Operation{
 		Name:       opTestInvokeAuthorizer,
@@ -5588,9 +6222,8 @@ func (c *APIGateway) TestInvokeAuthorizerRequest(input *TestInvokeAuthorizerInpu
 		input = &TestInvokeAuthorizerInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &TestInvokeAuthorizerOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5652,7 +6285,6 @@ const opTestInvokeMethod = "TestInvokeMethod"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) TestInvokeMethodRequest(input *TestInvokeMethodInput) (req *request.Request, output *TestInvokeMethodOutput) {
 	op := &request.Operation{
 		Name:       opTestInvokeMethod,
@@ -5664,9 +6296,8 @@ func (c *APIGateway) TestInvokeMethodRequest(input *TestInvokeMethodInput) (req 
 		input = &TestInvokeMethodInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &TestInvokeMethodOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5726,7 +6357,6 @@ const opUpdateAccount = "UpdateAccount"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateAccountRequest(input *UpdateAccountInput) (req *request.Request, output *Account) {
 	op := &request.Operation{
 		Name:       opUpdateAccount,
@@ -5738,9 +6368,8 @@ func (c *APIGateway) UpdateAccountRequest(input *UpdateAccountInput) (req *reque
 		input = &UpdateAccountInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Account{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5799,7 +6428,6 @@ const opUpdateApiKey = "UpdateApiKey"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateApiKeyRequest(input *UpdateApiKeyInput) (req *request.Request, output *ApiKey) {
 	op := &request.Operation{
 		Name:       opUpdateApiKey,
@@ -5811,9 +6439,8 @@ func (c *APIGateway) UpdateApiKeyRequest(input *UpdateApiKeyInput) (req *request
 		input = &UpdateApiKeyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ApiKey{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5875,7 +6502,6 @@ const opUpdateAuthorizer = "UpdateAuthorizer"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateAuthorizerRequest(input *UpdateAuthorizerInput) (req *request.Request, output *Authorizer) {
 	op := &request.Operation{
 		Name:       opUpdateAuthorizer,
@@ -5887,9 +6513,8 @@ func (c *APIGateway) UpdateAuthorizerRequest(input *UpdateAuthorizerInput) (req 
 		input = &UpdateAuthorizerInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Authorizer{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5950,7 +6575,6 @@ const opUpdateBasePathMapping = "UpdateBasePathMapping"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateBasePathMappingRequest(input *UpdateBasePathMappingInput) (req *request.Request, output *BasePathMapping) {
 	op := &request.Operation{
 		Name:       opUpdateBasePathMapping,
@@ -5962,9 +6586,8 @@ func (c *APIGateway) UpdateBasePathMappingRequest(input *UpdateBasePathMappingIn
 		input = &UpdateBasePathMappingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BasePathMapping{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6026,7 +6649,6 @@ const opUpdateClientCertificate = "UpdateClientCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateClientCertificateRequest(input *UpdateClientCertificateInput) (req *request.Request, output *ClientCertificate) {
 	op := &request.Operation{
 		Name:       opUpdateClientCertificate,
@@ -6038,9 +6660,8 @@ func (c *APIGateway) UpdateClientCertificateRequest(input *UpdateClientCertifica
 		input = &UpdateClientCertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ClientCertificate{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6099,7 +6720,6 @@ const opUpdateDeployment = "UpdateDeployment"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateDeploymentRequest(input *UpdateDeploymentInput) (req *request.Request, output *Deployment) {
 	op := &request.Operation{
 		Name:       opUpdateDeployment,
@@ -6111,9 +6731,8 @@ func (c *APIGateway) UpdateDeploymentRequest(input *UpdateDeploymentInput) (req 
 		input = &UpdateDeploymentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Deployment{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6150,6 +6769,153 @@ func (c *APIGateway) UpdateDeployment(input *UpdateDeploymentInput) (*Deployment
 	return out, err
 }
 
+const opUpdateDocumentationPart = "UpdateDocumentationPart"
+
+// UpdateDocumentationPartRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateDocumentationPart operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See UpdateDocumentationPart for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the UpdateDocumentationPart method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the UpdateDocumentationPartRequest method.
+//    req, resp := client.UpdateDocumentationPartRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) UpdateDocumentationPartRequest(input *UpdateDocumentationPartInput) (req *request.Request, output *DocumentationPart) {
+	op := &request.Operation{
+		Name:       opUpdateDocumentationPart,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/restapis/{restapi_id}/documentation/parts/{part_id}",
+	}
+
+	if input == nil {
+		input = &UpdateDocumentationPartInput{}
+	}
+
+	output = &DocumentationPart{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateDocumentationPart API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation UpdateDocumentationPart for usage and error information.
+//
+// Returned Error Codes:
+//   * BadRequestException
+
+//
+//   * UnauthorizedException
+
+//
+//   * NotFoundException
+
+//
+//   * ConflictException
+
+//
+//   * LimitExceededException
+
+//
+//   * TooManyRequestsException
+
+//
+func (c *APIGateway) UpdateDocumentationPart(input *UpdateDocumentationPartInput) (*DocumentationPart, error) {
+	req, out := c.UpdateDocumentationPartRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opUpdateDocumentationVersion = "UpdateDocumentationVersion"
+
+// UpdateDocumentationVersionRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateDocumentationVersion operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See UpdateDocumentationVersion for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the UpdateDocumentationVersion method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the UpdateDocumentationVersionRequest method.
+//    req, resp := client.UpdateDocumentationVersionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *APIGateway) UpdateDocumentationVersionRequest(input *UpdateDocumentationVersionInput) (req *request.Request, output *DocumentationVersion) {
+	op := &request.Operation{
+		Name:       opUpdateDocumentationVersion,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/restapis/{restapi_id}/documentation/versions/{doc_version}",
+	}
+
+	if input == nil {
+		input = &UpdateDocumentationVersionInput{}
+	}
+
+	output = &DocumentationVersion{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateDocumentationVersion API operation for Amazon API Gateway.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon API Gateway's
+// API operation UpdateDocumentationVersion for usage and error information.
+//
+// Returned Error Codes:
+//   * UnauthorizedException
+
+//
+//   * NotFoundException
+
+//
+//   * ConflictException
+
+//
+//   * BadRequestException
+
+//
+//   * TooManyRequestsException
+
+//
+func (c *APIGateway) UpdateDocumentationVersion(input *UpdateDocumentationVersionInput) (*DocumentationVersion, error) {
+	req, out := c.UpdateDocumentationVersionRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opUpdateDomainName = "UpdateDomainName"
 
 // UpdateDomainNameRequest generates a "aws/request.Request" representing the
@@ -6175,7 +6941,6 @@ const opUpdateDomainName = "UpdateDomainName"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateDomainNameRequest(input *UpdateDomainNameInput) (req *request.Request, output *DomainName) {
 	op := &request.Operation{
 		Name:       opUpdateDomainName,
@@ -6187,9 +6952,8 @@ func (c *APIGateway) UpdateDomainNameRequest(input *UpdateDomainNameInput) (req 
 		input = &UpdateDomainNameInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DomainName{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6251,7 +7015,6 @@ const opUpdateIntegration = "UpdateIntegration"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateIntegrationRequest(input *UpdateIntegrationInput) (req *request.Request, output *Integration) {
 	op := &request.Operation{
 		Name:       opUpdateIntegration,
@@ -6263,9 +7026,8 @@ func (c *APIGateway) UpdateIntegrationRequest(input *UpdateIntegrationInput) (re
 		input = &UpdateIntegrationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Integration{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6327,7 +7089,6 @@ const opUpdateIntegrationResponse = "UpdateIntegrationResponse"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateIntegrationResponseRequest(input *UpdateIntegrationResponseInput) (req *request.Request, output *IntegrationResponse) {
 	op := &request.Operation{
 		Name:       opUpdateIntegrationResponse,
@@ -6339,9 +7100,8 @@ func (c *APIGateway) UpdateIntegrationResponseRequest(input *UpdateIntegrationRe
 		input = &UpdateIntegrationResponseInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &IntegrationResponse{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6403,7 +7163,6 @@ const opUpdateMethod = "UpdateMethod"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateMethodRequest(input *UpdateMethodInput) (req *request.Request, output *Method) {
 	op := &request.Operation{
 		Name:       opUpdateMethod,
@@ -6415,9 +7174,8 @@ func (c *APIGateway) UpdateMethodRequest(input *UpdateMethodInput) (req *request
 		input = &UpdateMethodInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Method{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6479,7 +7237,6 @@ const opUpdateMethodResponse = "UpdateMethodResponse"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateMethodResponseRequest(input *UpdateMethodResponseInput) (req *request.Request, output *MethodResponse) {
 	op := &request.Operation{
 		Name:       opUpdateMethodResponse,
@@ -6491,9 +7248,8 @@ func (c *APIGateway) UpdateMethodResponseRequest(input *UpdateMethodResponseInpu
 		input = &UpdateMethodResponseInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &MethodResponse{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6558,7 +7314,6 @@ const opUpdateModel = "UpdateModel"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateModelRequest(input *UpdateModelInput) (req *request.Request, output *Model) {
 	op := &request.Operation{
 		Name:       opUpdateModel,
@@ -6570,9 +7325,8 @@ func (c *APIGateway) UpdateModelRequest(input *UpdateModelInput) (req *request.R
 		input = &UpdateModelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Model{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6634,7 +7388,6 @@ const opUpdateResource = "UpdateResource"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateResourceRequest(input *UpdateResourceInput) (req *request.Request, output *Resource) {
 	op := &request.Operation{
 		Name:       opUpdateResource,
@@ -6646,9 +7399,8 @@ func (c *APIGateway) UpdateResourceRequest(input *UpdateResourceInput) (req *req
 		input = &UpdateResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Resource{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6710,7 +7462,6 @@ const opUpdateRestApi = "UpdateRestApi"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateRestApiRequest(input *UpdateRestApiInput) (req *request.Request, output *RestApi) {
 	op := &request.Operation{
 		Name:       opUpdateRestApi,
@@ -6722,9 +7473,8 @@ func (c *APIGateway) UpdateRestApiRequest(input *UpdateRestApiInput) (req *reque
 		input = &UpdateRestApiInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RestApi{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6786,7 +7536,6 @@ const opUpdateStage = "UpdateStage"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateStageRequest(input *UpdateStageInput) (req *request.Request, output *Stage) {
 	op := &request.Operation{
 		Name:       opUpdateStage,
@@ -6798,9 +7547,8 @@ func (c *APIGateway) UpdateStageRequest(input *UpdateStageInput) (req *request.R
 		input = &UpdateStageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Stage{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6862,7 +7610,6 @@ const opUpdateUsage = "UpdateUsage"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateUsageRequest(input *UpdateUsageInput) (req *request.Request, output *Usage) {
 	op := &request.Operation{
 		Name:       opUpdateUsage,
@@ -6874,9 +7621,8 @@ func (c *APIGateway) UpdateUsageRequest(input *UpdateUsageInput) (req *request.R
 		input = &UpdateUsageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Usage{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6936,7 +7682,6 @@ const opUpdateUsagePlan = "UpdateUsagePlan"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *APIGateway) UpdateUsagePlanRequest(input *UpdateUsagePlanInput) (req *request.Request, output *UsagePlan) {
 	op := &request.Operation{
 		Name:       opUpdateUsagePlan,
@@ -6948,9 +7693,8 @@ func (c *APIGateway) UpdateUsagePlanRequest(input *UpdateUsagePlanInput) (req *r
 		input = &UpdateUsagePlanInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UsagePlan{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -7050,6 +7794,30 @@ func (s Account) GoString() string {
 	return s.String()
 }
 
+// SetApiKeyVersion sets the ApiKeyVersion field's value.
+func (s *Account) SetApiKeyVersion(v string) *Account {
+	s.ApiKeyVersion = &v
+	return s
+}
+
+// SetCloudwatchRoleArn sets the CloudwatchRoleArn field's value.
+func (s *Account) SetCloudwatchRoleArn(v string) *Account {
+	s.CloudwatchRoleArn = &v
+	return s
+}
+
+// SetFeatures sets the Features field's value.
+func (s *Account) SetFeatures(v []*string) *Account {
+	s.Features = v
+	return s
+}
+
+// SetThrottleSettings sets the ThrottleSettings field's value.
+func (s *Account) SetThrottleSettings(v *ThrottleSettings) *Account {
+	s.ThrottleSettings = v
+	return s
+}
+
 // A resource that can be distributed to callers for executing Method resources
 // that require an API key. API keys can be mapped to any Stage on any RestApi,
 // which indicates that the callers with the API key can make requests to that
@@ -7061,6 +7829,10 @@ type ApiKey struct {
 
 	// The date when the API Key was created, in ISO 8601 format (http://www.iso.org/iso/home/standards/iso8601.htm).
 	CreatedDate *time.Time `locationName:"createdDate" type:"timestamp" timestampFormat:"unix"`
+
+	// An AWS Marketplace customer identifier , when integrating with the AWS SaaS
+	// Marketplace.
+	CustomerId *string `locationName:"customerId" type:"string"`
 
 	// The description of the API Key.
 	Description *string `locationName:"description" type:"string"`
@@ -7094,6 +7866,60 @@ func (s ApiKey) GoString() string {
 	return s.String()
 }
 
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *ApiKey) SetCreatedDate(v time.Time) *ApiKey {
+	s.CreatedDate = &v
+	return s
+}
+
+// SetCustomerId sets the CustomerId field's value.
+func (s *ApiKey) SetCustomerId(v string) *ApiKey {
+	s.CustomerId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ApiKey) SetDescription(v string) *ApiKey {
+	s.Description = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *ApiKey) SetEnabled(v bool) *ApiKey {
+	s.Enabled = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *ApiKey) SetId(v string) *ApiKey {
+	s.Id = &v
+	return s
+}
+
+// SetLastUpdatedDate sets the LastUpdatedDate field's value.
+func (s *ApiKey) SetLastUpdatedDate(v time.Time) *ApiKey {
+	s.LastUpdatedDate = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ApiKey) SetName(v string) *ApiKey {
+	s.Name = &v
+	return s
+}
+
+// SetStageKeys sets the StageKeys field's value.
+func (s *ApiKey) SetStageKeys(v []*string) *ApiKey {
+	s.StageKeys = v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *ApiKey) SetValue(v string) *ApiKey {
+	s.Value = &v
+	return s
+}
+
 // API stage name of the associated API stage in a usage plan.
 type ApiStage struct {
 	_ struct{} `type:"structure"`
@@ -7113,6 +7939,18 @@ func (s ApiStage) String() string {
 // GoString returns the string representation
 func (s ApiStage) GoString() string {
 	return s.String()
+}
+
+// SetApiId sets the ApiId field's value.
+func (s *ApiStage) SetApiId(v string) *ApiStage {
+	s.ApiId = &v
+	return s
+}
+
+// SetStage sets the Stage field's value.
+func (s *ApiStage) SetStage(v string) *ApiStage {
+	s.Stage = &v
+	return s
 }
 
 // Represents an authorization layer for methods. If enabled on a method, API
@@ -7138,22 +7976,24 @@ type Authorizer struct {
 	AuthorizerResultTtlInSeconds *int64 `locationName:"authorizerResultTtlInSeconds" type:"integer"`
 
 	// [Required] Specifies the authorizer's Uniform Resource Identifier (URI).
-	// For TOKEN authorizers, this must be a well-formed Lambda function URI. The
-	// URI should be of the form arn:aws:apigateway:{region}:lambda:path/{service_api}.
-	// Region is used to determine the right endpoint. In this case, path is used
-	// to indicate that the remaining substring in the URI should be treated as
-	// the path to the resource, including the initial /. For Lambda functions,
-	// this is usually of the form /2015-03-31/functions/[FunctionARN]/invocations
+	// For TOKEN authorizers, this must be a well-formed Lambda function URI, for
+	// example, arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:{account_id}:function:{lambda_function_name}/invocations.
+	// In general, the URI has this form arn:aws:apigateway:{region}:lambda:path/{service_api},
+	// where {region} is the same as the region hosting the Lambda function, path
+	// indicates that the remaining substring in the URI should be treated as the
+	// path to the resource, including the initial /. For Lambda functions, this
+	// is usually of the form /2015-03-31/functions/[FunctionARN]/invocations.
 	AuthorizerUri *string `locationName:"authorizerUri" type:"string"`
 
 	// The identifier for the authorizer resource.
 	Id *string `locationName:"id" type:"string"`
 
-	// [Required] The source of the identity in an incoming request. For TOKEN authorizers,
-	// this value is a mapping expression with the same syntax as integration parameter
-	// mappings. The only valid source for tokens is 'header', so the expression
-	// should match 'method.request.header.[headerName]'. The value of the header
-	// '[headerName]' will be interpreted as the incoming token.
+	// [Required] The source of the identity in an incoming request. For a TOKEN
+	// authorizer, this value is a mapping expression with the same syntax as integration
+	// parameter mappings. The only valid source for tokens is 'header', so the
+	// expression should match 'method.request.header.[headerName]'. The value of
+	// the header '[headerName]' will be interpreted as the incoming token. For
+	// COGNITO_USER_POOLS authorizers, this property is used.
 	IdentitySource *string `locationName:"identitySource" type:"string"`
 
 	// A validation expression for the incoming identity. For TOKEN authorizers,
@@ -7165,11 +8005,13 @@ type Authorizer struct {
 	// [Required] The name of the authorizer.
 	Name *string `locationName:"name" type:"string"`
 
-	// A list of the provider ARNs of the authorizer.
+	// A list of the provider ARNs of the authorizer. For an TOKEN authorizer, this
+	// is not defined. For authorizers of the COGNITO_USER_POOLS type, each element
+	// corresponds to a user pool ARN of this format: arn:aws:cognito-idp:{region}:{account_id}:userpool/{user_pool_id}.
 	ProviderARNs []*string `locationName:"providerARNs" type:"list"`
 
-	// [Required] The type of the authorizer. Currently, the only valid type is
-	// TOKEN.
+	// [Required] The type of the authorizer. Currently, the valid type is TOKEN
+	// for a Lambda function or COGNITO_USER_POOLS for an Amazon Cognito user pool.
 	Type *string `locationName:"type" type:"string" enum:"AuthorizerType"`
 }
 
@@ -7181,6 +8023,66 @@ func (s Authorizer) String() string {
 // GoString returns the string representation
 func (s Authorizer) GoString() string {
 	return s.String()
+}
+
+// SetAuthType sets the AuthType field's value.
+func (s *Authorizer) SetAuthType(v string) *Authorizer {
+	s.AuthType = &v
+	return s
+}
+
+// SetAuthorizerCredentials sets the AuthorizerCredentials field's value.
+func (s *Authorizer) SetAuthorizerCredentials(v string) *Authorizer {
+	s.AuthorizerCredentials = &v
+	return s
+}
+
+// SetAuthorizerResultTtlInSeconds sets the AuthorizerResultTtlInSeconds field's value.
+func (s *Authorizer) SetAuthorizerResultTtlInSeconds(v int64) *Authorizer {
+	s.AuthorizerResultTtlInSeconds = &v
+	return s
+}
+
+// SetAuthorizerUri sets the AuthorizerUri field's value.
+func (s *Authorizer) SetAuthorizerUri(v string) *Authorizer {
+	s.AuthorizerUri = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Authorizer) SetId(v string) *Authorizer {
+	s.Id = &v
+	return s
+}
+
+// SetIdentitySource sets the IdentitySource field's value.
+func (s *Authorizer) SetIdentitySource(v string) *Authorizer {
+	s.IdentitySource = &v
+	return s
+}
+
+// SetIdentityValidationExpression sets the IdentityValidationExpression field's value.
+func (s *Authorizer) SetIdentityValidationExpression(v string) *Authorizer {
+	s.IdentityValidationExpression = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Authorizer) SetName(v string) *Authorizer {
+	s.Name = &v
+	return s
+}
+
+// SetProviderARNs sets the ProviderARNs field's value.
+func (s *Authorizer) SetProviderARNs(v []*string) *Authorizer {
+	s.ProviderARNs = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *Authorizer) SetType(v string) *Authorizer {
+	s.Type = &v
+	return s
 }
 
 // Represents the base path that callers of the API must provide as part of
@@ -7211,6 +8113,24 @@ func (s BasePathMapping) String() string {
 // GoString returns the string representation
 func (s BasePathMapping) GoString() string {
 	return s.String()
+}
+
+// SetBasePath sets the BasePath field's value.
+func (s *BasePathMapping) SetBasePath(v string) *BasePathMapping {
+	s.BasePath = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *BasePathMapping) SetRestApiId(v string) *BasePathMapping {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStage sets the Stage field's value.
+func (s *BasePathMapping) SetStage(v string) *BasePathMapping {
+	s.Stage = &v
+	return s
 }
 
 // Represents a client certificate used to configure client-side SSL authentication
@@ -7249,9 +8169,43 @@ func (s ClientCertificate) GoString() string {
 	return s.String()
 }
 
+// SetClientCertificateId sets the ClientCertificateId field's value.
+func (s *ClientCertificate) SetClientCertificateId(v string) *ClientCertificate {
+	s.ClientCertificateId = &v
+	return s
+}
+
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *ClientCertificate) SetCreatedDate(v time.Time) *ClientCertificate {
+	s.CreatedDate = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ClientCertificate) SetDescription(v string) *ClientCertificate {
+	s.Description = &v
+	return s
+}
+
+// SetExpirationDate sets the ExpirationDate field's value.
+func (s *ClientCertificate) SetExpirationDate(v time.Time) *ClientCertificate {
+	s.ExpirationDate = &v
+	return s
+}
+
+// SetPemEncodedCertificate sets the PemEncodedCertificate field's value.
+func (s *ClientCertificate) SetPemEncodedCertificate(v string) *ClientCertificate {
+	s.PemEncodedCertificate = &v
+	return s
+}
+
 // Request to create an ApiKey resource.
 type CreateApiKeyInput struct {
 	_ struct{} `type:"structure"`
+
+	// An AWS Marketplace customer identifier , when integrating with the AWS SaaS
+	// Marketplace.
+	CustomerId *string `locationName:"customerId" type:"string"`
 
 	// The description of the ApiKey.
 	Description *string `locationName:"description" type:"string"`
@@ -7281,6 +8235,48 @@ func (s CreateApiKeyInput) String() string {
 // GoString returns the string representation
 func (s CreateApiKeyInput) GoString() string {
 	return s.String()
+}
+
+// SetCustomerId sets the CustomerId field's value.
+func (s *CreateApiKeyInput) SetCustomerId(v string) *CreateApiKeyInput {
+	s.CustomerId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateApiKeyInput) SetDescription(v string) *CreateApiKeyInput {
+	s.Description = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *CreateApiKeyInput) SetEnabled(v bool) *CreateApiKeyInput {
+	s.Enabled = &v
+	return s
+}
+
+// SetGenerateDistinctId sets the GenerateDistinctId field's value.
+func (s *CreateApiKeyInput) SetGenerateDistinctId(v bool) *CreateApiKeyInput {
+	s.GenerateDistinctId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateApiKeyInput) SetName(v string) *CreateApiKeyInput {
+	s.Name = &v
+	return s
+}
+
+// SetStageKeys sets the StageKeys field's value.
+func (s *CreateApiKeyInput) SetStageKeys(v []*StageKey) *CreateApiKeyInput {
+	s.StageKeys = v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *CreateApiKeyInput) SetValue(v string) *CreateApiKeyInput {
+	s.Value = &v
+	return s
 }
 
 // Request to add a new Authorizer to an existing RestApi resource.
@@ -7359,6 +8355,66 @@ func (s *CreateAuthorizerInput) Validate() error {
 	return nil
 }
 
+// SetAuthType sets the AuthType field's value.
+func (s *CreateAuthorizerInput) SetAuthType(v string) *CreateAuthorizerInput {
+	s.AuthType = &v
+	return s
+}
+
+// SetAuthorizerCredentials sets the AuthorizerCredentials field's value.
+func (s *CreateAuthorizerInput) SetAuthorizerCredentials(v string) *CreateAuthorizerInput {
+	s.AuthorizerCredentials = &v
+	return s
+}
+
+// SetAuthorizerResultTtlInSeconds sets the AuthorizerResultTtlInSeconds field's value.
+func (s *CreateAuthorizerInput) SetAuthorizerResultTtlInSeconds(v int64) *CreateAuthorizerInput {
+	s.AuthorizerResultTtlInSeconds = &v
+	return s
+}
+
+// SetAuthorizerUri sets the AuthorizerUri field's value.
+func (s *CreateAuthorizerInput) SetAuthorizerUri(v string) *CreateAuthorizerInput {
+	s.AuthorizerUri = &v
+	return s
+}
+
+// SetIdentitySource sets the IdentitySource field's value.
+func (s *CreateAuthorizerInput) SetIdentitySource(v string) *CreateAuthorizerInput {
+	s.IdentitySource = &v
+	return s
+}
+
+// SetIdentityValidationExpression sets the IdentityValidationExpression field's value.
+func (s *CreateAuthorizerInput) SetIdentityValidationExpression(v string) *CreateAuthorizerInput {
+	s.IdentityValidationExpression = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateAuthorizerInput) SetName(v string) *CreateAuthorizerInput {
+	s.Name = &v
+	return s
+}
+
+// SetProviderARNs sets the ProviderARNs field's value.
+func (s *CreateAuthorizerInput) SetProviderARNs(v []*string) *CreateAuthorizerInput {
+	s.ProviderARNs = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *CreateAuthorizerInput) SetRestApiId(v string) *CreateAuthorizerInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CreateAuthorizerInput) SetType(v string) *CreateAuthorizerInput {
+	s.Type = &v
+	return s
+}
+
 // Requests Amazon API Gateway to create a new BasePathMapping resource.
 type CreateBasePathMappingInput struct {
 	_ struct{} `type:"structure"`
@@ -7411,6 +8467,30 @@ func (s *CreateBasePathMappingInput) Validate() error {
 	return nil
 }
 
+// SetBasePath sets the BasePath field's value.
+func (s *CreateBasePathMappingInput) SetBasePath(v string) *CreateBasePathMappingInput {
+	s.BasePath = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *CreateBasePathMappingInput) SetDomainName(v string) *CreateBasePathMappingInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *CreateBasePathMappingInput) SetRestApiId(v string) *CreateBasePathMappingInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStage sets the Stage field's value.
+func (s *CreateBasePathMappingInput) SetStage(v string) *CreateBasePathMappingInput {
+	s.Stage = &v
+	return s
+}
+
 // Requests Amazon API Gateway to create a Deployment resource.
 type CreateDeploymentInput struct {
 	_ struct{} `type:"structure"`
@@ -7434,9 +8514,7 @@ type CreateDeploymentInput struct {
 	StageDescription *string `locationName:"stageDescription" type:"string"`
 
 	// The name of the Stage resource for the Deployment resource to create.
-	//
-	// StageName is a required field
-	StageName *string `locationName:"stageName" type:"string" required:"true"`
+	StageName *string `locationName:"stageName" type:"string"`
 
 	// A map that defines the stage variables for the Stage resource that is associated
 	// with the new deployment. Variable names can have alphanumeric and underscore
@@ -7460,14 +8538,200 @@ func (s *CreateDeploymentInput) Validate() error {
 	if s.RestApiId == nil {
 		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
 	}
-	if s.StageName == nil {
-		invalidParams.Add(request.NewErrParamRequired("StageName"))
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCacheClusterEnabled sets the CacheClusterEnabled field's value.
+func (s *CreateDeploymentInput) SetCacheClusterEnabled(v bool) *CreateDeploymentInput {
+	s.CacheClusterEnabled = &v
+	return s
+}
+
+// SetCacheClusterSize sets the CacheClusterSize field's value.
+func (s *CreateDeploymentInput) SetCacheClusterSize(v string) *CreateDeploymentInput {
+	s.CacheClusterSize = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateDeploymentInput) SetDescription(v string) *CreateDeploymentInput {
+	s.Description = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *CreateDeploymentInput) SetRestApiId(v string) *CreateDeploymentInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStageDescription sets the StageDescription field's value.
+func (s *CreateDeploymentInput) SetStageDescription(v string) *CreateDeploymentInput {
+	s.StageDescription = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *CreateDeploymentInput) SetStageName(v string) *CreateDeploymentInput {
+	s.StageName = &v
+	return s
+}
+
+// SetVariables sets the Variables field's value.
+func (s *CreateDeploymentInput) SetVariables(v map[string]*string) *CreateDeploymentInput {
+	s.Variables = v
+	return s
+}
+
+// Creates a new documentation part of a given API.
+type CreateDocumentationPartInput struct {
+	_ struct{} `type:"structure"`
+
+	// [Required] The location of the targeted API entity of the to-be-created documentation
+	// part.
+	//
+	// Location is a required field
+	Location *DocumentationPartLocation `locationName:"location" type:"structure" required:"true"`
+
+	// [Required] The new documentation content map of the targeted API entity.
+	// Enclosed key-value pairs are API-specific, but only Swagger-compliant key-value
+	// pairs can be exported and, hence, published.
+	//
+	// Properties is a required field
+	Properties *string `locationName:"properties" type:"string" required:"true"`
+
+	// [Required] The identifier of an API of the to-be-created documentation part.
+	//
+	// RestApiId is a required field
+	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateDocumentationPartInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateDocumentationPartInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateDocumentationPartInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateDocumentationPartInput"}
+	if s.Location == nil {
+		invalidParams.Add(request.NewErrParamRequired("Location"))
+	}
+	if s.Properties == nil {
+		invalidParams.Add(request.NewErrParamRequired("Properties"))
+	}
+	if s.RestApiId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+	if s.Location != nil {
+		if err := s.Location.Validate(); err != nil {
+			invalidParams.AddNested("Location", err.(request.ErrInvalidParams))
+		}
 	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetLocation sets the Location field's value.
+func (s *CreateDocumentationPartInput) SetLocation(v *DocumentationPartLocation) *CreateDocumentationPartInput {
+	s.Location = v
+	return s
+}
+
+// SetProperties sets the Properties field's value.
+func (s *CreateDocumentationPartInput) SetProperties(v string) *CreateDocumentationPartInput {
+	s.Properties = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *CreateDocumentationPartInput) SetRestApiId(v string) *CreateDocumentationPartInput {
+	s.RestApiId = &v
+	return s
+}
+
+// Creates a new documentation version of a given API.
+type CreateDocumentationVersionInput struct {
+	_ struct{} `type:"structure"`
+
+	// A description about the new documentation snapshot.
+	Description *string `locationName:"description" type:"string"`
+
+	// [Required] The version identifier of the new snapshot.
+	//
+	// DocumentationVersion is a required field
+	DocumentationVersion *string `locationName:"documentationVersion" type:"string" required:"true"`
+
+	// [Required] Specifies the API identifier of the to-be-created documentation
+	// version.
+	//
+	// RestApiId is a required field
+	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
+
+	// The stage name to be associated with the new documentation snapshot.
+	StageName *string `locationName:"stageName" type:"string"`
+}
+
+// String returns the string representation
+func (s CreateDocumentationVersionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateDocumentationVersionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateDocumentationVersionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateDocumentationVersionInput"}
+	if s.DocumentationVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("DocumentationVersion"))
+	}
+	if s.RestApiId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateDocumentationVersionInput) SetDescription(v string) *CreateDocumentationVersionInput {
+	s.Description = &v
+	return s
+}
+
+// SetDocumentationVersion sets the DocumentationVersion field's value.
+func (s *CreateDocumentationVersionInput) SetDocumentationVersion(v string) *CreateDocumentationVersionInput {
+	s.DocumentationVersion = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *CreateDocumentationVersionInput) SetRestApiId(v string) *CreateDocumentationVersionInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *CreateDocumentationVersionInput) SetStageName(v string) *CreateDocumentationVersionInput {
+	s.StageName = &v
+	return s
 }
 
 // A request to create a new domain name.
@@ -7540,6 +8804,36 @@ func (s *CreateDomainNameInput) Validate() error {
 	return nil
 }
 
+// SetCertificateBody sets the CertificateBody field's value.
+func (s *CreateDomainNameInput) SetCertificateBody(v string) *CreateDomainNameInput {
+	s.CertificateBody = &v
+	return s
+}
+
+// SetCertificateChain sets the CertificateChain field's value.
+func (s *CreateDomainNameInput) SetCertificateChain(v string) *CreateDomainNameInput {
+	s.CertificateChain = &v
+	return s
+}
+
+// SetCertificateName sets the CertificateName field's value.
+func (s *CreateDomainNameInput) SetCertificateName(v string) *CreateDomainNameInput {
+	s.CertificateName = &v
+	return s
+}
+
+// SetCertificatePrivateKey sets the CertificatePrivateKey field's value.
+func (s *CreateDomainNameInput) SetCertificatePrivateKey(v string) *CreateDomainNameInput {
+	s.CertificatePrivateKey = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *CreateDomainNameInput) SetDomainName(v string) *CreateDomainNameInput {
+	s.DomainName = &v
+	return s
+}
+
 // Request to add a new Model to an existing RestApi resource.
 type CreateModelInput struct {
 	_ struct{} `type:"structure"`
@@ -7596,6 +8890,36 @@ func (s *CreateModelInput) Validate() error {
 	return nil
 }
 
+// SetContentType sets the ContentType field's value.
+func (s *CreateModelInput) SetContentType(v string) *CreateModelInput {
+	s.ContentType = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateModelInput) SetDescription(v string) *CreateModelInput {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateModelInput) SetName(v string) *CreateModelInput {
+	s.Name = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *CreateModelInput) SetRestApiId(v string) *CreateModelInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetSchema sets the Schema field's value.
+func (s *CreateModelInput) SetSchema(v string) *CreateModelInput {
+	s.Schema = &v
+	return s
+}
+
 // Requests Amazon API Gateway to create a Resource resource.
 type CreateResourceInput struct {
 	_ struct{} `type:"structure"`
@@ -7645,9 +8969,31 @@ func (s *CreateResourceInput) Validate() error {
 	return nil
 }
 
+// SetParentId sets the ParentId field's value.
+func (s *CreateResourceInput) SetParentId(v string) *CreateResourceInput {
+	s.ParentId = &v
+	return s
+}
+
+// SetPathPart sets the PathPart field's value.
+func (s *CreateResourceInput) SetPathPart(v string) *CreateResourceInput {
+	s.PathPart = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *CreateResourceInput) SetRestApiId(v string) *CreateResourceInput {
+	s.RestApiId = &v
+	return s
+}
+
 // The POST Request to add a new RestApi resource to your collection.
 type CreateRestApiInput struct {
 	_ struct{} `type:"structure"`
+
+	// The list of binary media types supported by the RestApi. By default, the
+	// RestApi supports only UTF-8-encoded text payloads.
+	BinaryMediaTypes []*string `locationName:"binaryMediaTypes" type:"list"`
 
 	// The ID of the RestApi that you want to clone from.
 	CloneFrom *string `locationName:"cloneFrom" type:"string"`
@@ -7659,6 +9005,9 @@ type CreateRestApiInput struct {
 	//
 	// Name is a required field
 	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// A version identifier for the API.
+	Version *string `locationName:"version" type:"string"`
 }
 
 // String returns the string representation
@@ -7684,6 +9033,36 @@ func (s *CreateRestApiInput) Validate() error {
 	return nil
 }
 
+// SetBinaryMediaTypes sets the BinaryMediaTypes field's value.
+func (s *CreateRestApiInput) SetBinaryMediaTypes(v []*string) *CreateRestApiInput {
+	s.BinaryMediaTypes = v
+	return s
+}
+
+// SetCloneFrom sets the CloneFrom field's value.
+func (s *CreateRestApiInput) SetCloneFrom(v string) *CreateRestApiInput {
+	s.CloneFrom = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateRestApiInput) SetDescription(v string) *CreateRestApiInput {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateRestApiInput) SetName(v string) *CreateRestApiInput {
+	s.Name = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *CreateRestApiInput) SetVersion(v string) *CreateRestApiInput {
+	s.Version = &v
+	return s
+}
+
 // Requests Amazon API Gateway to create a Stage resource.
 type CreateStageInput struct {
 	_ struct{} `type:"structure"`
@@ -7701,6 +9080,9 @@ type CreateStageInput struct {
 
 	// The description of the Stage resource.
 	Description *string `locationName:"description" type:"string"`
+
+	// The version of the associated API documentation.
+	DocumentationVersion *string `locationName:"documentationVersion" type:"string"`
 
 	// The identifier of the RestApi resource for the Stage resource to create.
 	//
@@ -7745,6 +9127,54 @@ func (s *CreateStageInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCacheClusterEnabled sets the CacheClusterEnabled field's value.
+func (s *CreateStageInput) SetCacheClusterEnabled(v bool) *CreateStageInput {
+	s.CacheClusterEnabled = &v
+	return s
+}
+
+// SetCacheClusterSize sets the CacheClusterSize field's value.
+func (s *CreateStageInput) SetCacheClusterSize(v string) *CreateStageInput {
+	s.CacheClusterSize = &v
+	return s
+}
+
+// SetDeploymentId sets the DeploymentId field's value.
+func (s *CreateStageInput) SetDeploymentId(v string) *CreateStageInput {
+	s.DeploymentId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateStageInput) SetDescription(v string) *CreateStageInput {
+	s.Description = &v
+	return s
+}
+
+// SetDocumentationVersion sets the DocumentationVersion field's value.
+func (s *CreateStageInput) SetDocumentationVersion(v string) *CreateStageInput {
+	s.DocumentationVersion = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *CreateStageInput) SetRestApiId(v string) *CreateStageInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *CreateStageInput) SetStageName(v string) *CreateStageInput {
+	s.StageName = &v
+	return s
+}
+
+// SetVariables sets the Variables field's value.
+func (s *CreateStageInput) SetVariables(v map[string]*string) *CreateStageInput {
+	s.Variables = v
+	return s
 }
 
 // The POST request to create a usage plan with the name, description, throttle
@@ -7792,6 +9222,36 @@ func (s *CreateUsagePlanInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetApiStages sets the ApiStages field's value.
+func (s *CreateUsagePlanInput) SetApiStages(v []*ApiStage) *CreateUsagePlanInput {
+	s.ApiStages = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateUsagePlanInput) SetDescription(v string) *CreateUsagePlanInput {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateUsagePlanInput) SetName(v string) *CreateUsagePlanInput {
+	s.Name = &v
+	return s
+}
+
+// SetQuota sets the Quota field's value.
+func (s *CreateUsagePlanInput) SetQuota(v *QuotaSettings) *CreateUsagePlanInput {
+	s.Quota = v
+	return s
+}
+
+// SetThrottle sets the Throttle field's value.
+func (s *CreateUsagePlanInput) SetThrottle(v *ThrottleSettings) *CreateUsagePlanInput {
+	s.Throttle = v
+	return s
 }
 
 // The POST request to create a usage plan key for adding an existing API key
@@ -7845,6 +9305,24 @@ func (s *CreateUsagePlanKeyInput) Validate() error {
 	return nil
 }
 
+// SetKeyId sets the KeyId field's value.
+func (s *CreateUsagePlanKeyInput) SetKeyId(v string) *CreateUsagePlanKeyInput {
+	s.KeyId = &v
+	return s
+}
+
+// SetKeyType sets the KeyType field's value.
+func (s *CreateUsagePlanKeyInput) SetKeyType(v string) *CreateUsagePlanKeyInput {
+	s.KeyType = &v
+	return s
+}
+
+// SetUsagePlanId sets the UsagePlanId field's value.
+func (s *CreateUsagePlanKeyInput) SetUsagePlanId(v string) *CreateUsagePlanKeyInput {
+	s.UsagePlanId = &v
+	return s
+}
+
 // A request to delete the ApiKey resource.
 type DeleteApiKeyInput struct {
 	_ struct{} `type:"structure"`
@@ -7876,6 +9354,12 @@ func (s *DeleteApiKeyInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetApiKey sets the ApiKey field's value.
+func (s *DeleteApiKeyInput) SetApiKey(v string) *DeleteApiKeyInput {
+	s.ApiKey = &v
+	return s
 }
 
 type DeleteApiKeyOutput struct {
@@ -7933,6 +9417,18 @@ func (s *DeleteAuthorizerInput) Validate() error {
 	return nil
 }
 
+// SetAuthorizerId sets the AuthorizerId field's value.
+func (s *DeleteAuthorizerInput) SetAuthorizerId(v string) *DeleteAuthorizerInput {
+	s.AuthorizerId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *DeleteAuthorizerInput) SetRestApiId(v string) *DeleteAuthorizerInput {
+	s.RestApiId = &v
+	return s
+}
+
 type DeleteAuthorizerOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7988,6 +9484,18 @@ func (s *DeleteBasePathMappingInput) Validate() error {
 	return nil
 }
 
+// SetBasePath sets the BasePath field's value.
+func (s *DeleteBasePathMappingInput) SetBasePath(v string) *DeleteBasePathMappingInput {
+	s.BasePath = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DeleteBasePathMappingInput) SetDomainName(v string) *DeleteBasePathMappingInput {
+	s.DomainName = &v
+	return s
+}
+
 type DeleteBasePathMappingOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8033,6 +9541,12 @@ func (s *DeleteClientCertificateInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetClientCertificateId sets the ClientCertificateId field's value.
+func (s *DeleteClientCertificateInput) SetClientCertificateId(v string) *DeleteClientCertificateInput {
+	s.ClientCertificateId = &v
+	return s
 }
 
 type DeleteClientCertificateOutput struct {
@@ -8090,6 +9604,18 @@ func (s *DeleteDeploymentInput) Validate() error {
 	return nil
 }
 
+// SetDeploymentId sets the DeploymentId field's value.
+func (s *DeleteDeploymentInput) SetDeploymentId(v string) *DeleteDeploymentInput {
+	s.DeploymentId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *DeleteDeploymentInput) SetRestApiId(v string) *DeleteDeploymentInput {
+	s.RestApiId = &v
+	return s
+}
+
 type DeleteDeploymentOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8101,6 +9627,141 @@ func (s DeleteDeploymentOutput) String() string {
 
 // GoString returns the string representation
 func (s DeleteDeploymentOutput) GoString() string {
+	return s.String()
+}
+
+// Deletes an existing documentation part of an API.
+type DeleteDocumentationPartInput struct {
+	_ struct{} `type:"structure"`
+
+	// [Required] The identifier of the to-be-deleted documentation part.
+	//
+	// DocumentationPartId is a required field
+	DocumentationPartId *string `location:"uri" locationName:"part_id" type:"string" required:"true"`
+
+	// [Required] Specifies the identifier of an API of the to-be-deleted documentation
+	// part.
+	//
+	// RestApiId is a required field
+	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteDocumentationPartInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteDocumentationPartInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteDocumentationPartInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteDocumentationPartInput"}
+	if s.DocumentationPartId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DocumentationPartId"))
+	}
+	if s.RestApiId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDocumentationPartId sets the DocumentationPartId field's value.
+func (s *DeleteDocumentationPartInput) SetDocumentationPartId(v string) *DeleteDocumentationPartInput {
+	s.DocumentationPartId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *DeleteDocumentationPartInput) SetRestApiId(v string) *DeleteDocumentationPartInput {
+	s.RestApiId = &v
+	return s
+}
+
+type DeleteDocumentationPartOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteDocumentationPartOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteDocumentationPartOutput) GoString() string {
+	return s.String()
+}
+
+// Deletes an existing documentation version of an API.
+type DeleteDocumentationVersionInput struct {
+	_ struct{} `type:"structure"`
+
+	// [Required] The version identifier of a to-be-deleted documentation snapshot.
+	//
+	// DocumentationVersion is a required field
+	DocumentationVersion *string `location:"uri" locationName:"doc_version" type:"string" required:"true"`
+
+	// [Required] The identifier of an API of a to-be-deleted documentation snapshot.
+	//
+	// RestApiId is a required field
+	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteDocumentationVersionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteDocumentationVersionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteDocumentationVersionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteDocumentationVersionInput"}
+	if s.DocumentationVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("DocumentationVersion"))
+	}
+	if s.RestApiId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDocumentationVersion sets the DocumentationVersion field's value.
+func (s *DeleteDocumentationVersionInput) SetDocumentationVersion(v string) *DeleteDocumentationVersionInput {
+	s.DocumentationVersion = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *DeleteDocumentationVersionInput) SetRestApiId(v string) *DeleteDocumentationVersionInput {
+	s.RestApiId = &v
+	return s
+}
+
+type DeleteDocumentationVersionOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteDocumentationVersionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteDocumentationVersionOutput) GoString() string {
 	return s.String()
 }
 
@@ -8135,6 +9796,12 @@ func (s *DeleteDomainNameInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DeleteDomainNameInput) SetDomainName(v string) *DeleteDomainNameInput {
+	s.DomainName = &v
+	return s
 }
 
 type DeleteDomainNameOutput struct {
@@ -8198,6 +9865,24 @@ func (s *DeleteIntegrationInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *DeleteIntegrationInput) SetHttpMethod(v string) *DeleteIntegrationInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *DeleteIntegrationInput) SetResourceId(v string) *DeleteIntegrationInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *DeleteIntegrationInput) SetRestApiId(v string) *DeleteIntegrationInput {
+	s.RestApiId = &v
+	return s
 }
 
 type DeleteIntegrationOutput struct {
@@ -8271,6 +9956,30 @@ func (s *DeleteIntegrationResponseInput) Validate() error {
 	return nil
 }
 
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *DeleteIntegrationResponseInput) SetHttpMethod(v string) *DeleteIntegrationResponseInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *DeleteIntegrationResponseInput) SetResourceId(v string) *DeleteIntegrationResponseInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *DeleteIntegrationResponseInput) SetRestApiId(v string) *DeleteIntegrationResponseInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *DeleteIntegrationResponseInput) SetStatusCode(v string) *DeleteIntegrationResponseInput {
+	s.StatusCode = &v
+	return s
+}
+
 type DeleteIntegrationResponseOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8332,6 +10041,24 @@ func (s *DeleteMethodInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *DeleteMethodInput) SetHttpMethod(v string) *DeleteMethodInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *DeleteMethodInput) SetResourceId(v string) *DeleteMethodInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *DeleteMethodInput) SetRestApiId(v string) *DeleteMethodInput {
+	s.RestApiId = &v
+	return s
 }
 
 type DeleteMethodOutput struct {
@@ -8405,6 +10132,30 @@ func (s *DeleteMethodResponseInput) Validate() error {
 	return nil
 }
 
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *DeleteMethodResponseInput) SetHttpMethod(v string) *DeleteMethodResponseInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *DeleteMethodResponseInput) SetResourceId(v string) *DeleteMethodResponseInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *DeleteMethodResponseInput) SetRestApiId(v string) *DeleteMethodResponseInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *DeleteMethodResponseInput) SetStatusCode(v string) *DeleteMethodResponseInput {
+	s.StatusCode = &v
+	return s
+}
+
 type DeleteMethodResponseOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8458,6 +10209,18 @@ func (s *DeleteModelInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetModelName sets the ModelName field's value.
+func (s *DeleteModelInput) SetModelName(v string) *DeleteModelInput {
+	s.ModelName = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *DeleteModelInput) SetRestApiId(v string) *DeleteModelInput {
+	s.RestApiId = &v
+	return s
 }
 
 type DeleteModelOutput struct {
@@ -8515,6 +10278,18 @@ func (s *DeleteResourceInput) Validate() error {
 	return nil
 }
 
+// SetResourceId sets the ResourceId field's value.
+func (s *DeleteResourceInput) SetResourceId(v string) *DeleteResourceInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *DeleteResourceInput) SetRestApiId(v string) *DeleteResourceInput {
+	s.RestApiId = &v
+	return s
+}
+
 type DeleteResourceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8560,6 +10335,12 @@ func (s *DeleteRestApiInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *DeleteRestApiInput) SetRestApiId(v string) *DeleteRestApiInput {
+	s.RestApiId = &v
+	return s
 }
 
 type DeleteRestApiOutput struct {
@@ -8617,6 +10398,18 @@ func (s *DeleteStageInput) Validate() error {
 	return nil
 }
 
+// SetRestApiId sets the RestApiId field's value.
+func (s *DeleteStageInput) SetRestApiId(v string) *DeleteStageInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *DeleteStageInput) SetStageName(v string) *DeleteStageInput {
+	s.StageName = &v
+	return s
+}
+
 type DeleteStageOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8664,6 +10457,12 @@ func (s *DeleteUsagePlanInput) Validate() error {
 	return nil
 }
 
+// SetUsagePlanId sets the UsagePlanId field's value.
+func (s *DeleteUsagePlanInput) SetUsagePlanId(v string) *DeleteUsagePlanInput {
+	s.UsagePlanId = &v
+	return s
+}
+
 // The DELETE request to delete a usage plan key and remove the underlying API
 // key from the associated usage plan.
 type DeleteUsagePlanKeyInput struct {
@@ -8705,6 +10504,18 @@ func (s *DeleteUsagePlanKeyInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetKeyId sets the KeyId field's value.
+func (s *DeleteUsagePlanKeyInput) SetKeyId(v string) *DeleteUsagePlanKeyInput {
+	s.KeyId = &v
+	return s
+}
+
+// SetUsagePlanId sets the UsagePlanId field's value.
+func (s *DeleteUsagePlanKeyInput) SetUsagePlanId(v string) *DeleteUsagePlanKeyInput {
+	s.UsagePlanId = &v
+	return s
 }
 
 type DeleteUsagePlanKeyOutput struct {
@@ -8772,6 +10583,245 @@ func (s Deployment) GoString() string {
 	return s.String()
 }
 
+// SetApiSummary sets the ApiSummary field's value.
+func (s *Deployment) SetApiSummary(v map[string]map[string]*MethodSnapshot) *Deployment {
+	s.ApiSummary = v
+	return s
+}
+
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *Deployment) SetCreatedDate(v time.Time) *Deployment {
+	s.CreatedDate = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Deployment) SetDescription(v string) *Deployment {
+	s.Description = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Deployment) SetId(v string) *Deployment {
+	s.Id = &v
+	return s
+}
+
+// A documentation part for a targeted API entity.
+//
+// A documentation part consists of a content map (properties) and a target
+// (location). The target specifies an API entity to which the documentation
+// content applies. The supported API entity types are API, AUTHORIZER, MODEL,
+// RESOURCE, METHOD, PATH_PARAMETER, QUERY_PARAMETER, REQUEST_HEADER, REQUEST_BODY,
+// RESPONSE, RESPONSE_HEADER, and RESPONSE_BODY. Valid location fields depend
+// on the API entity type. All valid fields are not required.
+//
+// The content map is a JSON string of API-specific key-value pairs. Although
+// an API can use any shape for the content map, only the Swagger-compliant
+// documentation fields will be injected into the associated API entity definition
+// in the exported Swagger definition file.
+//
+// Documenting an API (http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-documenting-api.html),
+// DocumentationParts
+type DocumentationPart struct {
+	_ struct{} `type:"structure"`
+
+	// The DocumentationPart identifier, generated by Amazon API Gateway when the
+	// DocumentationPart is created.
+	Id *string `locationName:"id" type:"string"`
+
+	// The location of the API entity to which the documentation applies. Valid
+	// fields depend on the targeted API entity type. All the valid location fields
+	// are not required. If not explicitly specified, a valid location field is
+	// treated as a wildcard and associated documentation content may be inherited
+	// by matching entities, unless overridden.
+	Location *DocumentationPartLocation `locationName:"location" type:"structure"`
+
+	// A content map of API-specific key-value pairs describing the targeted API
+	// entity. The map must be encoded as a JSON string, e.g., "{ \"description\":
+	// \"The API does ...\" }". Only Swagger-compliant documentation-related fields
+	// from the properties map are exported and, hence, published as part of the
+	// API entity definitions, while the original documentation parts are exported
+	// in a Swagger extension of x-amazon-apigateway-documentation.
+	Properties *string `locationName:"properties" type:"string"`
+}
+
+// String returns the string representation
+func (s DocumentationPart) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DocumentationPart) GoString() string {
+	return s.String()
+}
+
+// SetId sets the Id field's value.
+func (s *DocumentationPart) SetId(v string) *DocumentationPart {
+	s.Id = &v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *DocumentationPart) SetLocation(v *DocumentationPartLocation) *DocumentationPart {
+	s.Location = v
+	return s
+}
+
+// SetProperties sets the Properties field's value.
+func (s *DocumentationPart) SetProperties(v string) *DocumentationPart {
+	s.Properties = &v
+	return s
+}
+
+// Specifies the target API entity to which the documentation applies.
+type DocumentationPartLocation struct {
+	_ struct{} `type:"structure"`
+
+	// The HTTP verb of a method. It is a valid field for the API entity types of
+	// METHOD, PATH_PARAMETER, QUERY_PARAMETER, REQUEST_HEADER, REQUEST_BODY, RESPONSE,
+	// RESPONSE_HEADER, and RESPONSE_BODY. The default value is * for any method.
+	// When an applicable child entity inherits the content of an entity of the
+	// same type with more general specifications of the other location attributes,
+	// the child entity's method attribute must match that of the parent entity
+	// exactly.
+	Method *string `locationName:"method" type:"string"`
+
+	// The name of the targeted API entity. It is a valid and required field for
+	// the API entity types of AUTHORIZER, MODEL, PATH_PARAMETER, QUERY_PARAMETER,
+	// REQUEST_HEADER, REQUEST_BODY and RESPONSE_HEADER. It is an invalid field
+	// for any other entity type.
+	Name *string `locationName:"name" type:"string"`
+
+	// The URL path of the target. It is a valid field for the API entity types
+	// of RESOURCE, METHOD, PATH_PARAMETER, QUERY_PARAMETER, REQUEST_HEADER, REQUEST_BODY,
+	// RESPONSE, RESPONSE_HEADER, and RESPONSE_BODY. The default value is / for
+	// the root resource. When an applicable child entity inherits the content of
+	// another entity of the same type with more general specifications of the other
+	// location attributes, the child entity's path attribute must match that of
+	// the parent entity as a prefix.
+	Path *string `locationName:"path" type:"string"`
+
+	// The HTTP status code of a response. It is a valid field for the API entity
+	// types of RESPONSE, RESPONSE_HEADER, and RESPONSE_BODY. The default value
+	// is * for any status code. When an applicable child entity inherits the content
+	// of an entity of the same type with more general specifications of the other
+	// location attributes, the child entity's statusCode attribute must match that
+	// of the parent entity exactly.
+	StatusCode *string `locationName:"statusCode" type:"string"`
+
+	// The type of API entity to which the documentation content applies. It is
+	// a valid and required field for API entity types of API, AUTHORIZER, MODEL,
+	// RESOURCE, METHOD, PATH_PARAMETER, QUERY_PARAMETER, REQUEST_HEADER, REQUEST_BODY,
+	// RESPONSE, RESPONSE_HEADER, and RESPONSE_BODY. Content inheritance does not
+	// apply to any entity of the API, AUTHROZER, MODEL, or RESOURCE type.
+	//
+	// Type is a required field
+	Type *string `locationName:"type" type:"string" required:"true" enum:"DocumentationPartType"`
+}
+
+// String returns the string representation
+func (s DocumentationPartLocation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DocumentationPartLocation) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DocumentationPartLocation) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DocumentationPartLocation"}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMethod sets the Method field's value.
+func (s *DocumentationPartLocation) SetMethod(v string) *DocumentationPartLocation {
+	s.Method = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DocumentationPartLocation) SetName(v string) *DocumentationPartLocation {
+	s.Name = &v
+	return s
+}
+
+// SetPath sets the Path field's value.
+func (s *DocumentationPartLocation) SetPath(v string) *DocumentationPartLocation {
+	s.Path = &v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *DocumentationPartLocation) SetStatusCode(v string) *DocumentationPartLocation {
+	s.StatusCode = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *DocumentationPartLocation) SetType(v string) *DocumentationPartLocation {
+	s.Type = &v
+	return s
+}
+
+// A snapshot of the documentation of an API.
+//
+// Publishing API documentation involves creating a documentation version associated
+// with an API stage and exporting the versioned documentation to an external
+// (e.g., Swagger) file.
+//
+// Documenting an API (http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-documenting-api.html),
+// DocumentationPart, DocumentationVersions
+type DocumentationVersion struct {
+	_ struct{} `type:"structure"`
+
+	// The date when the API documentation snapshot is created.
+	CreatedDate *time.Time `locationName:"createdDate" type:"timestamp" timestampFormat:"unix"`
+
+	// The description of the API documentation snapshot.
+	Description *string `locationName:"description" type:"string"`
+
+	// The version identifier of the API documentation snapshot.
+	Version *string `locationName:"version" type:"string"`
+}
+
+// String returns the string representation
+func (s DocumentationVersion) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DocumentationVersion) GoString() string {
+	return s.String()
+}
+
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *DocumentationVersion) SetCreatedDate(v time.Time) *DocumentationVersion {
+	s.CreatedDate = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *DocumentationVersion) SetDescription(v string) *DocumentationVersion {
+	s.Description = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *DocumentationVersion) SetVersion(v string) *DocumentationVersion {
+	s.Version = &v
+	return s
+}
+
 // Represents a domain name that is contained in a simpler, more intuitive URL
 // that can be called.
 //
@@ -8801,6 +10851,30 @@ func (s DomainName) String() string {
 // GoString returns the string representation
 func (s DomainName) GoString() string {
 	return s.String()
+}
+
+// SetCertificateName sets the CertificateName field's value.
+func (s *DomainName) SetCertificateName(v string) *DomainName {
+	s.CertificateName = &v
+	return s
+}
+
+// SetCertificateUploadDate sets the CertificateUploadDate field's value.
+func (s *DomainName) SetCertificateUploadDate(v time.Time) *DomainName {
+	s.CertificateUploadDate = &v
+	return s
+}
+
+// SetDistributionDomainName sets the DistributionDomainName field's value.
+func (s *DomainName) SetDistributionDomainName(v string) *DomainName {
+	s.DistributionDomainName = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DomainName) SetDomainName(v string) *DomainName {
+	s.DomainName = &v
+	return s
 }
 
 // Request to flush authorizer cache entries on a specified stage.
@@ -8842,6 +10916,18 @@ func (s *FlushStageAuthorizersCacheInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *FlushStageAuthorizersCacheInput) SetRestApiId(v string) *FlushStageAuthorizersCacheInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *FlushStageAuthorizersCacheInput) SetStageName(v string) *FlushStageAuthorizersCacheInput {
+	s.StageName = &v
+	return s
 }
 
 type FlushStageAuthorizersCacheOutput struct {
@@ -8899,6 +10985,18 @@ func (s *FlushStageCacheInput) Validate() error {
 	return nil
 }
 
+// SetRestApiId sets the RestApiId field's value.
+func (s *FlushStageCacheInput) SetRestApiId(v string) *FlushStageCacheInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *FlushStageCacheInput) SetStageName(v string) *FlushStageCacheInput {
+	s.StageName = &v
+	return s
+}
+
 type FlushStageCacheOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8929,6 +11027,12 @@ func (s GenerateClientCertificateInput) String() string {
 // GoString returns the string representation
 func (s GenerateClientCertificateInput) GoString() string {
 	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *GenerateClientCertificateInput) SetDescription(v string) *GenerateClientCertificateInput {
+	s.Description = &v
+	return s
 }
 
 // Requests Amazon API Gateway to get information about the current Account
@@ -8984,9 +11088,25 @@ func (s *GetApiKeyInput) Validate() error {
 	return nil
 }
 
+// SetApiKey sets the ApiKey field's value.
+func (s *GetApiKeyInput) SetApiKey(v string) *GetApiKeyInput {
+	s.ApiKey = &v
+	return s
+}
+
+// SetIncludeValue sets the IncludeValue field's value.
+func (s *GetApiKeyInput) SetIncludeValue(v bool) *GetApiKeyInput {
+	s.IncludeValue = &v
+	return s
+}
+
 // A request to get information about the current ApiKeys resource.
 type GetApiKeysInput struct {
 	_ struct{} `type:"structure"`
+
+	// The identifier of a customer in AWS Marketplace or an external system, such
+	// as a developer portal.
+	CustomerId *string `location:"querystring" locationName:"customerId" type:"string"`
 
 	// A boolean flag to specify whether (true) or not (false) the result contains
 	// key values.
@@ -9010,6 +11130,36 @@ func (s GetApiKeysInput) String() string {
 // GoString returns the string representation
 func (s GetApiKeysInput) GoString() string {
 	return s.String()
+}
+
+// SetCustomerId sets the CustomerId field's value.
+func (s *GetApiKeysInput) SetCustomerId(v string) *GetApiKeysInput {
+	s.CustomerId = &v
+	return s
+}
+
+// SetIncludeValues sets the IncludeValues field's value.
+func (s *GetApiKeysInput) SetIncludeValues(v bool) *GetApiKeysInput {
+	s.IncludeValues = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *GetApiKeysInput) SetLimit(v int64) *GetApiKeysInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNameQuery sets the NameQuery field's value.
+func (s *GetApiKeysInput) SetNameQuery(v string) *GetApiKeysInput {
+	s.NameQuery = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetApiKeysInput) SetPosition(v string) *GetApiKeysInput {
+	s.Position = &v
+	return s
 }
 
 // Represents a collection of API keys as represented by an ApiKeys resource.
@@ -9036,6 +11186,24 @@ func (s GetApiKeysOutput) String() string {
 // GoString returns the string representation
 func (s GetApiKeysOutput) GoString() string {
 	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetApiKeysOutput) SetItems(v []*ApiKey) *GetApiKeysOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetApiKeysOutput) SetPosition(v string) *GetApiKeysOutput {
+	s.Position = &v
+	return s
+}
+
+// SetWarnings sets the Warnings field's value.
+func (s *GetApiKeysOutput) SetWarnings(v []*string) *GetApiKeysOutput {
+	s.Warnings = v
+	return s
 }
 
 // Request to describe an existing Authorizer resource.
@@ -9079,6 +11247,18 @@ func (s *GetAuthorizerInput) Validate() error {
 	return nil
 }
 
+// SetAuthorizerId sets the AuthorizerId field's value.
+func (s *GetAuthorizerInput) SetAuthorizerId(v string) *GetAuthorizerInput {
+	s.AuthorizerId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetAuthorizerInput) SetRestApiId(v string) *GetAuthorizerInput {
+	s.RestApiId = &v
+	return s
+}
+
 // Request to describe an existing Authorizers resource.
 type GetAuthorizersInput struct {
 	_ struct{} `type:"structure"`
@@ -9119,6 +11299,24 @@ func (s *GetAuthorizersInput) Validate() error {
 	return nil
 }
 
+// SetLimit sets the Limit field's value.
+func (s *GetAuthorizersInput) SetLimit(v int64) *GetAuthorizersInput {
+	s.Limit = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetAuthorizersInput) SetPosition(v string) *GetAuthorizersInput {
+	s.Position = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetAuthorizersInput) SetRestApiId(v string) *GetAuthorizersInput {
+	s.RestApiId = &v
+	return s
+}
+
 // Represents a collection of Authorizer resources.
 //
 // Enable custom authorization (http://docs.aws.amazon.com/apigateway/latest/developerguide/use-custom-authorizer.html)
@@ -9139,6 +11337,18 @@ func (s GetAuthorizersOutput) String() string {
 // GoString returns the string representation
 func (s GetAuthorizersOutput) GoString() string {
 	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetAuthorizersOutput) SetItems(v []*Authorizer) *GetAuthorizersOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetAuthorizersOutput) SetPosition(v string) *GetAuthorizersOutput {
+	s.Position = &v
+	return s
 }
 
 // Request to describe a BasePathMapping resource.
@@ -9185,6 +11395,18 @@ func (s *GetBasePathMappingInput) Validate() error {
 	return nil
 }
 
+// SetBasePath sets the BasePath field's value.
+func (s *GetBasePathMappingInput) SetBasePath(v string) *GetBasePathMappingInput {
+	s.BasePath = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *GetBasePathMappingInput) SetDomainName(v string) *GetBasePathMappingInput {
+	s.DomainName = &v
+	return s
+}
+
 // A request to get information about a collection of BasePathMapping resources.
 type GetBasePathMappingsInput struct {
 	_ struct{} `type:"structure"`
@@ -9227,6 +11449,24 @@ func (s *GetBasePathMappingsInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *GetBasePathMappingsInput) SetDomainName(v string) *GetBasePathMappingsInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *GetBasePathMappingsInput) SetLimit(v int64) *GetBasePathMappingsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetBasePathMappingsInput) SetPosition(v string) *GetBasePathMappingsInput {
+	s.Position = &v
+	return s
+}
+
 // Represents a collection of BasePathMapping resources.
 //
 // Use Custom Domain Names (http://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html)
@@ -9248,6 +11488,18 @@ func (s GetBasePathMappingsOutput) String() string {
 // GoString returns the string representation
 func (s GetBasePathMappingsOutput) GoString() string {
 	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetBasePathMappingsOutput) SetItems(v []*BasePathMapping) *GetBasePathMappingsOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetBasePathMappingsOutput) SetPosition(v string) *GetBasePathMappingsOutput {
+	s.Position = &v
+	return s
 }
 
 // A request to get information about the current ClientCertificate resource.
@@ -9283,6 +11535,12 @@ func (s *GetClientCertificateInput) Validate() error {
 	return nil
 }
 
+// SetClientCertificateId sets the ClientCertificateId field's value.
+func (s *GetClientCertificateInput) SetClientCertificateId(v string) *GetClientCertificateInput {
+	s.ClientCertificateId = &v
+	return s
+}
+
 // A request to get information about a collection of ClientCertificate resources.
 type GetClientCertificatesInput struct {
 	_ struct{} `type:"structure"`
@@ -9307,6 +11565,18 @@ func (s GetClientCertificatesInput) GoString() string {
 	return s.String()
 }
 
+// SetLimit sets the Limit field's value.
+func (s *GetClientCertificatesInput) SetLimit(v int64) *GetClientCertificatesInput {
+	s.Limit = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetClientCertificatesInput) SetPosition(v string) *GetClientCertificatesInput {
+	s.Position = &v
+	return s
+}
+
 // Represents a collection of ClientCertificate resources.
 //
 // Use Client-Side Certificate (http://docs.aws.amazon.com/apigateway/latest/developerguide/getting-started-client-side-ssl-authentication.html)
@@ -9328,6 +11598,18 @@ func (s GetClientCertificatesOutput) String() string {
 // GoString returns the string representation
 func (s GetClientCertificatesOutput) GoString() string {
 	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetClientCertificatesOutput) SetItems(v []*ClientCertificate) *GetClientCertificatesOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetClientCertificatesOutput) SetPosition(v string) *GetClientCertificatesOutput {
+	s.Position = &v
+	return s
 }
 
 // Requests Amazon API Gateway to get information about a Deployment resource.
@@ -9372,6 +11654,18 @@ func (s *GetDeploymentInput) Validate() error {
 	return nil
 }
 
+// SetDeploymentId sets the DeploymentId field's value.
+func (s *GetDeploymentInput) SetDeploymentId(v string) *GetDeploymentInput {
+	s.DeploymentId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetDeploymentInput) SetRestApiId(v string) *GetDeploymentInput {
+	s.RestApiId = &v
+	return s
+}
+
 // Requests Amazon API Gateway to get information about a Deployments collection.
 type GetDeploymentsInput struct {
 	_ struct{} `type:"structure"`
@@ -9414,6 +11708,24 @@ func (s *GetDeploymentsInput) Validate() error {
 	return nil
 }
 
+// SetLimit sets the Limit field's value.
+func (s *GetDeploymentsInput) SetLimit(v int64) *GetDeploymentsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetDeploymentsInput) SetPosition(v string) *GetDeploymentsInput {
+	s.Position = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetDeploymentsInput) SetRestApiId(v string) *GetDeploymentsInput {
+	s.RestApiId = &v
+	return s
+}
+
 // Represents a collection resource that contains zero or more references to
 // your existing deployments, and links that guide you on how to interact with
 // your collection. The collection offers a paginated view of the contained
@@ -9444,6 +11756,346 @@ func (s GetDeploymentsOutput) String() string {
 // GoString returns the string representation
 func (s GetDeploymentsOutput) GoString() string {
 	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetDeploymentsOutput) SetItems(v []*Deployment) *GetDeploymentsOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetDeploymentsOutput) SetPosition(v string) *GetDeploymentsOutput {
+	s.Position = &v
+	return s
+}
+
+// Gets a specified documentation part of a given API.
+type GetDocumentationPartInput struct {
+	_ struct{} `type:"structure"`
+
+	// [Required] The identifier of the to-be-retrieved documentation part.
+	//
+	// DocumentationPartId is a required field
+	DocumentationPartId *string `location:"uri" locationName:"part_id" type:"string" required:"true"`
+
+	// [Required] The identifier of an API of the to-be-retrieved documentation
+	// part.
+	//
+	// RestApiId is a required field
+	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetDocumentationPartInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetDocumentationPartInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetDocumentationPartInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetDocumentationPartInput"}
+	if s.DocumentationPartId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DocumentationPartId"))
+	}
+	if s.RestApiId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDocumentationPartId sets the DocumentationPartId field's value.
+func (s *GetDocumentationPartInput) SetDocumentationPartId(v string) *GetDocumentationPartInput {
+	s.DocumentationPartId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetDocumentationPartInput) SetRestApiId(v string) *GetDocumentationPartInput {
+	s.RestApiId = &v
+	return s
+}
+
+// Gets the documentation parts of an API. The result may be filtered by the
+// type, name, or path of API entities (targets).
+type GetDocumentationPartsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The size of the paged results.
+	Limit *int64 `location:"querystring" locationName:"limit" type:"integer"`
+
+	// The name of API entities of the to-be-retrieved documentation parts.
+	NameQuery *string `location:"querystring" locationName:"name" type:"string"`
+
+	// The path of API entities of the to-be-retrieved documentation parts.
+	Path *string `location:"querystring" locationName:"path" type:"string"`
+
+	// The position of the to-be-retrieved documentation part in the DocumentationParts
+	// collection.
+	Position *string `location:"querystring" locationName:"position" type:"string"`
+
+	// [Required] The identifier of the API of the to-be-retrieved documentation
+	// parts.
+	//
+	// RestApiId is a required field
+	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
+
+	// The type of API entities of the to-be-retrieved documentation parts.
+	Type *string `location:"querystring" locationName:"type" type:"string" enum:"DocumentationPartType"`
+}
+
+// String returns the string representation
+func (s GetDocumentationPartsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetDocumentationPartsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetDocumentationPartsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetDocumentationPartsInput"}
+	if s.RestApiId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLimit sets the Limit field's value.
+func (s *GetDocumentationPartsInput) SetLimit(v int64) *GetDocumentationPartsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNameQuery sets the NameQuery field's value.
+func (s *GetDocumentationPartsInput) SetNameQuery(v string) *GetDocumentationPartsInput {
+	s.NameQuery = &v
+	return s
+}
+
+// SetPath sets the Path field's value.
+func (s *GetDocumentationPartsInput) SetPath(v string) *GetDocumentationPartsInput {
+	s.Path = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetDocumentationPartsInput) SetPosition(v string) *GetDocumentationPartsInput {
+	s.Position = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetDocumentationPartsInput) SetRestApiId(v string) *GetDocumentationPartsInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *GetDocumentationPartsInput) SetType(v string) *GetDocumentationPartsInput {
+	s.Type = &v
+	return s
+}
+
+// The collection of documentation parts of an API.
+//
+// Documenting an API (http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-documenting-api.html), DocumentationPart
+type GetDocumentationPartsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The current page of DocumentationPart resources in the DocumentationParts
+	// collection.
+	Items []*DocumentationPart `locationName:"item" type:"list"`
+
+	Position *string `locationName:"position" type:"string"`
+}
+
+// String returns the string representation
+func (s GetDocumentationPartsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetDocumentationPartsOutput) GoString() string {
+	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetDocumentationPartsOutput) SetItems(v []*DocumentationPart) *GetDocumentationPartsOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetDocumentationPartsOutput) SetPosition(v string) *GetDocumentationPartsOutput {
+	s.Position = &v
+	return s
+}
+
+// Gets a documentation snapshot of an API.
+type GetDocumentationVersionInput struct {
+	_ struct{} `type:"structure"`
+
+	// [Required] The version identifier of the to-be-retrieved documentation snapshot.
+	//
+	// DocumentationVersion is a required field
+	DocumentationVersion *string `location:"uri" locationName:"doc_version" type:"string" required:"true"`
+
+	// [Required] The identifier of the API of the to-be-retrieved documentation
+	// snapshot.
+	//
+	// RestApiId is a required field
+	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetDocumentationVersionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetDocumentationVersionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetDocumentationVersionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetDocumentationVersionInput"}
+	if s.DocumentationVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("DocumentationVersion"))
+	}
+	if s.RestApiId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDocumentationVersion sets the DocumentationVersion field's value.
+func (s *GetDocumentationVersionInput) SetDocumentationVersion(v string) *GetDocumentationVersionInput {
+	s.DocumentationVersion = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetDocumentationVersionInput) SetRestApiId(v string) *GetDocumentationVersionInput {
+	s.RestApiId = &v
+	return s
+}
+
+// Gets the documentation versions of an API.
+type GetDocumentationVersionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The page size of the returned documentation versions.
+	Limit *int64 `location:"querystring" locationName:"limit" type:"integer"`
+
+	// The position of the returned DocumentationVersion in the DocumentationVersions
+	// collection.
+	Position *string `location:"querystring" locationName:"position" type:"string"`
+
+	// [Required] The identifier of an API of the to-be-retrieved documentation
+	// versions.
+	//
+	// RestApiId is a required field
+	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetDocumentationVersionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetDocumentationVersionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetDocumentationVersionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetDocumentationVersionsInput"}
+	if s.RestApiId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLimit sets the Limit field's value.
+func (s *GetDocumentationVersionsInput) SetLimit(v int64) *GetDocumentationVersionsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetDocumentationVersionsInput) SetPosition(v string) *GetDocumentationVersionsInput {
+	s.Position = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetDocumentationVersionsInput) SetRestApiId(v string) *GetDocumentationVersionsInput {
+	s.RestApiId = &v
+	return s
+}
+
+// The collection of documentation snapshots of an API.
+//
+// Use the DocumentationVersions to manage documentation snapshots associated
+// with various API stages.
+//
+// Documenting an API (http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-documenting-api.html),
+// DocumentationPart, DocumentationVersion
+type GetDocumentationVersionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The current page of DocumentationVersion items from the DocumentationVersions
+	// collection of an API.
+	Items []*DocumentationVersion `locationName:"item" type:"list"`
+
+	Position *string `locationName:"position" type:"string"`
+}
+
+// String returns the string representation
+func (s GetDocumentationVersionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetDocumentationVersionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetDocumentationVersionsOutput) SetItems(v []*DocumentationVersion) *GetDocumentationVersionsOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetDocumentationVersionsOutput) SetPosition(v string) *GetDocumentationVersionsOutput {
+	s.Position = &v
+	return s
 }
 
 // Request to get the name of a DomainName resource.
@@ -9479,6 +12131,12 @@ func (s *GetDomainNameInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *GetDomainNameInput) SetDomainName(v string) *GetDomainNameInput {
+	s.DomainName = &v
+	return s
+}
+
 // Request to describe a collection of DomainName resources.
 type GetDomainNamesInput struct {
 	_ struct{} `type:"structure"`
@@ -9499,6 +12157,18 @@ func (s GetDomainNamesInput) String() string {
 // GoString returns the string representation
 func (s GetDomainNamesInput) GoString() string {
 	return s.String()
+}
+
+// SetLimit sets the Limit field's value.
+func (s *GetDomainNamesInput) SetLimit(v int64) *GetDomainNamesInput {
+	s.Limit = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetDomainNamesInput) SetPosition(v string) *GetDomainNamesInput {
+	s.Position = &v
+	return s
 }
 
 // Represents a collection of DomainName resources.
@@ -9522,6 +12192,18 @@ func (s GetDomainNamesOutput) String() string {
 // GoString returns the string representation
 func (s GetDomainNamesOutput) GoString() string {
 	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetDomainNamesOutput) SetItems(v []*DomainName) *GetDomainNamesOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetDomainNamesOutput) SetPosition(v string) *GetDomainNamesOutput {
+	s.Position = &v
+	return s
 }
 
 // Request a new export of a RestApi for a particular Stage.
@@ -9587,6 +12269,36 @@ func (s *GetExportInput) Validate() error {
 	return nil
 }
 
+// SetAccepts sets the Accepts field's value.
+func (s *GetExportInput) SetAccepts(v string) *GetExportInput {
+	s.Accepts = &v
+	return s
+}
+
+// SetExportType sets the ExportType field's value.
+func (s *GetExportInput) SetExportType(v string) *GetExportInput {
+	s.ExportType = &v
+	return s
+}
+
+// SetParameters sets the Parameters field's value.
+func (s *GetExportInput) SetParameters(v map[string]*string) *GetExportInput {
+	s.Parameters = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetExportInput) SetRestApiId(v string) *GetExportInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *GetExportInput) SetStageName(v string) *GetExportInput {
+	s.StageName = &v
+	return s
+}
+
 // The binary blob response to GetExport, which contains the generated SDK.
 type GetExportOutput struct {
 	_ struct{} `type:"structure" payload:"Body"`
@@ -9610,6 +12322,24 @@ func (s GetExportOutput) String() string {
 // GoString returns the string representation
 func (s GetExportOutput) GoString() string {
 	return s.String()
+}
+
+// SetBody sets the Body field's value.
+func (s *GetExportOutput) SetBody(v []byte) *GetExportOutput {
+	s.Body = v
+	return s
+}
+
+// SetContentDisposition sets the ContentDisposition field's value.
+func (s *GetExportOutput) SetContentDisposition(v string) *GetExportOutput {
+	s.ContentDisposition = &v
+	return s
+}
+
+// SetContentType sets the ContentType field's value.
+func (s *GetExportOutput) SetContentType(v string) *GetExportOutput {
+	s.ContentType = &v
+	return s
 }
 
 // Represents a get integration request.
@@ -9659,6 +12389,24 @@ func (s *GetIntegrationInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *GetIntegrationInput) SetHttpMethod(v string) *GetIntegrationInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *GetIntegrationInput) SetResourceId(v string) *GetIntegrationInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetIntegrationInput) SetRestApiId(v string) *GetIntegrationInput {
+	s.RestApiId = &v
+	return s
 }
 
 // Represents a get integration response request.
@@ -9718,6 +12466,30 @@ func (s *GetIntegrationResponseInput) Validate() error {
 	return nil
 }
 
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *GetIntegrationResponseInput) SetHttpMethod(v string) *GetIntegrationResponseInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *GetIntegrationResponseInput) SetResourceId(v string) *GetIntegrationResponseInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetIntegrationResponseInput) SetRestApiId(v string) *GetIntegrationResponseInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *GetIntegrationResponseInput) SetStatusCode(v string) *GetIntegrationResponseInput {
+	s.StatusCode = &v
+	return s
+}
+
 // Request to describe an existing Method resource.
 type GetMethodInput struct {
 	_ struct{} `type:"structure"`
@@ -9765,6 +12537,24 @@ func (s *GetMethodInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *GetMethodInput) SetHttpMethod(v string) *GetMethodInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *GetMethodInput) SetResourceId(v string) *GetMethodInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetMethodInput) SetRestApiId(v string) *GetMethodInput {
+	s.RestApiId = &v
+	return s
 }
 
 // Request to describe a MethodResponse resource.
@@ -9824,6 +12614,30 @@ func (s *GetMethodResponseInput) Validate() error {
 	return nil
 }
 
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *GetMethodResponseInput) SetHttpMethod(v string) *GetMethodResponseInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *GetMethodResponseInput) SetResourceId(v string) *GetMethodResponseInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetMethodResponseInput) SetRestApiId(v string) *GetMethodResponseInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *GetMethodResponseInput) SetStatusCode(v string) *GetMethodResponseInput {
+	s.StatusCode = &v
+	return s
+}
+
 // Request to list information about a model in an existing RestApi resource.
 type GetModelInput struct {
 	_ struct{} `type:"structure"`
@@ -9870,6 +12684,24 @@ func (s *GetModelInput) Validate() error {
 	return nil
 }
 
+// SetFlatten sets the Flatten field's value.
+func (s *GetModelInput) SetFlatten(v bool) *GetModelInput {
+	s.Flatten = &v
+	return s
+}
+
+// SetModelName sets the ModelName field's value.
+func (s *GetModelInput) SetModelName(v string) *GetModelInput {
+	s.ModelName = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetModelInput) SetRestApiId(v string) *GetModelInput {
+	s.RestApiId = &v
+	return s
+}
+
 // Request to generate a sample mapping template used to transform the payload.
 type GetModelTemplateInput struct {
 	_ struct{} `type:"structure"`
@@ -9911,6 +12743,18 @@ func (s *GetModelTemplateInput) Validate() error {
 	return nil
 }
 
+// SetModelName sets the ModelName field's value.
+func (s *GetModelTemplateInput) SetModelName(v string) *GetModelTemplateInput {
+	s.ModelName = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetModelTemplateInput) SetRestApiId(v string) *GetModelTemplateInput {
+	s.RestApiId = &v
+	return s
+}
+
 // Represents a mapping template used to transform a payload.
 //
 // Mapping Templates (http://docs.aws.amazon.com/apigateway/latest/developerguide/models-mappings.html#models-mappings-mappings)
@@ -9930,6 +12774,12 @@ func (s GetModelTemplateOutput) String() string {
 // GoString returns the string representation
 func (s GetModelTemplateOutput) GoString() string {
 	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *GetModelTemplateOutput) SetValue(v string) *GetModelTemplateOutput {
+	s.Value = &v
+	return s
 }
 
 // Request to list existing Models defined for a RestApi resource.
@@ -9973,6 +12823,24 @@ func (s *GetModelsInput) Validate() error {
 	return nil
 }
 
+// SetLimit sets the Limit field's value.
+func (s *GetModelsInput) SetLimit(v int64) *GetModelsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetModelsInput) SetPosition(v string) *GetModelsInput {
+	s.Position = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetModelsInput) SetRestApiId(v string) *GetModelsInput {
+	s.RestApiId = &v
+	return s
+}
+
 // Represents a collection of Model resources.
 //
 // Method, MethodResponse, Models and Mappings (http://docs.aws.amazon.com/apigateway/latest/developerguide/models-mappings.html)
@@ -9993,6 +12861,18 @@ func (s GetModelsOutput) String() string {
 // GoString returns the string representation
 func (s GetModelsOutput) GoString() string {
 	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetModelsOutput) SetItems(v []*Model) *GetModelsOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetModelsOutput) SetPosition(v string) *GetModelsOutput {
+	s.Position = &v
+	return s
 }
 
 // Request to list information about a resource.
@@ -10036,6 +12916,18 @@ func (s *GetResourceInput) Validate() error {
 	return nil
 }
 
+// SetResourceId sets the ResourceId field's value.
+func (s *GetResourceInput) SetResourceId(v string) *GetResourceInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetResourceInput) SetRestApiId(v string) *GetResourceInput {
+	s.RestApiId = &v
+	return s
+}
+
 // Request to list information about a collection of resources.
 type GetResourcesInput struct {
 	_ struct{} `type:"structure"`
@@ -10077,6 +12969,24 @@ func (s *GetResourcesInput) Validate() error {
 	return nil
 }
 
+// SetLimit sets the Limit field's value.
+func (s *GetResourcesInput) SetLimit(v int64) *GetResourcesInput {
+	s.Limit = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetResourcesInput) SetPosition(v string) *GetResourcesInput {
+	s.Position = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetResourcesInput) SetRestApiId(v string) *GetResourcesInput {
+	s.RestApiId = &v
+	return s
+}
+
 // Represents a collection of Resource resources.
 //
 // Create an API (http://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-create-api.html)
@@ -10097,6 +13007,18 @@ func (s GetResourcesOutput) String() string {
 // GoString returns the string representation
 func (s GetResourcesOutput) GoString() string {
 	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetResourcesOutput) SetItems(v []*Resource) *GetResourcesOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetResourcesOutput) SetPosition(v string) *GetResourcesOutput {
+	s.Position = &v
+	return s
 }
 
 // The GET request to list an existing RestApi defined for your collection.
@@ -10132,6 +13054,12 @@ func (s *GetRestApiInput) Validate() error {
 	return nil
 }
 
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetRestApiInput) SetRestApiId(v string) *GetRestApiInput {
+	s.RestApiId = &v
+	return s
+}
+
 // The GET request to list existing RestApis defined for your collection.
 type GetRestApisInput struct {
 	_ struct{} `type:"structure"`
@@ -10155,6 +13083,18 @@ func (s GetRestApisInput) GoString() string {
 	return s.String()
 }
 
+// SetLimit sets the Limit field's value.
+func (s *GetRestApisInput) SetLimit(v int64) *GetRestApisInput {
+	s.Limit = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetRestApisInput) SetPosition(v string) *GetRestApisInput {
+	s.Position = &v
+	return s
+}
+
 // Contains references to your APIs and links that guide you in how to interact
 // with your collection. A collection offers a paginated view of your APIs.
 //
@@ -10176,6 +13116,18 @@ func (s GetRestApisOutput) String() string {
 // GoString returns the string representation
 func (s GetRestApisOutput) GoString() string {
 	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetRestApisOutput) SetItems(v []*RestApi) *GetRestApisOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetRestApisOutput) SetPosition(v string) *GetRestApisOutput {
+	s.Position = &v
+	return s
 }
 
 // Request a new generated client SDK for a RestApi and Stage.
@@ -10234,6 +13186,30 @@ func (s *GetSdkInput) Validate() error {
 	return nil
 }
 
+// SetParameters sets the Parameters field's value.
+func (s *GetSdkInput) SetParameters(v map[string]*string) *GetSdkInput {
+	s.Parameters = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetSdkInput) SetRestApiId(v string) *GetSdkInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetSdkType sets the SdkType field's value.
+func (s *GetSdkInput) SetSdkType(v string) *GetSdkInput {
+	s.SdkType = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *GetSdkInput) SetStageName(v string) *GetSdkInput {
+	s.StageName = &v
+	return s
+}
+
 // The binary blob response to GetSdk, which contains the generated SDK.
 type GetSdkOutput struct {
 	_ struct{} `type:"structure" payload:"Body"`
@@ -10256,6 +13232,128 @@ func (s GetSdkOutput) String() string {
 // GoString returns the string representation
 func (s GetSdkOutput) GoString() string {
 	return s.String()
+}
+
+// SetBody sets the Body field's value.
+func (s *GetSdkOutput) SetBody(v []byte) *GetSdkOutput {
+	s.Body = v
+	return s
+}
+
+// SetContentDisposition sets the ContentDisposition field's value.
+func (s *GetSdkOutput) SetContentDisposition(v string) *GetSdkOutput {
+	s.ContentDisposition = &v
+	return s
+}
+
+// SetContentType sets the ContentType field's value.
+func (s *GetSdkOutput) SetContentType(v string) *GetSdkOutput {
+	s.ContentType = &v
+	return s
+}
+
+// Get an SdkType instance.
+type GetSdkTypeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier of the queried SdkType instance.
+	//
+	// Id is a required field
+	Id *string `location:"uri" locationName:"sdktype_id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetSdkTypeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetSdkTypeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetSdkTypeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetSdkTypeInput"}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetId sets the Id field's value.
+func (s *GetSdkTypeInput) SetId(v string) *GetSdkTypeInput {
+	s.Id = &v
+	return s
+}
+
+// Get the SdkTypes collection.
+type GetSdkTypesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum number of SdkType instances to be returned.
+	Limit *int64 `location:"querystring" locationName:"limit" type:"integer"`
+
+	// The position of the last fetched element in the SdkTypes collection.
+	Position *string `location:"querystring" locationName:"position" type:"string"`
+}
+
+// String returns the string representation
+func (s GetSdkTypesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetSdkTypesInput) GoString() string {
+	return s.String()
+}
+
+// SetLimit sets the Limit field's value.
+func (s *GetSdkTypesInput) SetLimit(v int64) *GetSdkTypesInput {
+	s.Limit = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetSdkTypesInput) SetPosition(v string) *GetSdkTypesInput {
+	s.Position = &v
+	return s
+}
+
+// The collection of SdkType instances.
+type GetSdkTypesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The set of SdkType items that comprise this view of the SdkTypes collection.
+	Items []*SdkType `locationName:"item" type:"list"`
+
+	Position *string `locationName:"position" type:"string"`
+}
+
+// String returns the string representation
+func (s GetSdkTypesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetSdkTypesOutput) GoString() string {
+	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetSdkTypesOutput) SetItems(v []*SdkType) *GetSdkTypesOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetSdkTypesOutput) SetPosition(v string) *GetSdkTypesOutput {
+	s.Position = &v
+	return s
 }
 
 // Requests Amazon API Gateway to get information about a Stage resource.
@@ -10300,6 +13398,18 @@ func (s *GetStageInput) Validate() error {
 	return nil
 }
 
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetStageInput) SetRestApiId(v string) *GetStageInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *GetStageInput) SetStageName(v string) *GetStageInput {
+	s.StageName = &v
+	return s
+}
+
 // Requests Amazon API Gateway to get information about one or more Stage resources.
 type GetStagesInput struct {
 	_ struct{} `type:"structure"`
@@ -10336,6 +13446,18 @@ func (s *GetStagesInput) Validate() error {
 	return nil
 }
 
+// SetDeploymentId sets the DeploymentId field's value.
+func (s *GetStagesInput) SetDeploymentId(v string) *GetStagesInput {
+	s.DeploymentId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *GetStagesInput) SetRestApiId(v string) *GetStagesInput {
+	s.RestApiId = &v
+	return s
+}
+
 // A list of Stage resources that are associated with the ApiKey resource.
 //
 // Deploying API in Stages (http://docs.aws.amazon.com/apigateway/latest/developerguide/stages.html)
@@ -10354,6 +13476,12 @@ func (s GetStagesOutput) String() string {
 // GoString returns the string representation
 func (s GetStagesOutput) GoString() string {
 	return s.String()
+}
+
+// SetItem sets the Item field's value.
+func (s *GetStagesOutput) SetItem(v []*Stage) *GetStagesOutput {
+	s.Item = v
+	return s
 }
 
 // The GET request to get the usage data of a usage plan in a specified time
@@ -10415,6 +13543,42 @@ func (s *GetUsageInput) Validate() error {
 	return nil
 }
 
+// SetEndDate sets the EndDate field's value.
+func (s *GetUsageInput) SetEndDate(v string) *GetUsageInput {
+	s.EndDate = &v
+	return s
+}
+
+// SetKeyId sets the KeyId field's value.
+func (s *GetUsageInput) SetKeyId(v string) *GetUsageInput {
+	s.KeyId = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *GetUsageInput) SetLimit(v int64) *GetUsageInput {
+	s.Limit = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetUsageInput) SetPosition(v string) *GetUsageInput {
+	s.Position = &v
+	return s
+}
+
+// SetStartDate sets the StartDate field's value.
+func (s *GetUsageInput) SetStartDate(v string) *GetUsageInput {
+	s.StartDate = &v
+	return s
+}
+
+// SetUsagePlanId sets the UsagePlanId field's value.
+func (s *GetUsageInput) SetUsagePlanId(v string) *GetUsageInput {
+	s.UsagePlanId = &v
+	return s
+}
+
 // The GET request to get a usage plan of a given plan identifier.
 type GetUsagePlanInput struct {
 	_ struct{} `type:"structure"`
@@ -10446,6 +13610,12 @@ func (s *GetUsagePlanInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetUsagePlanId sets the UsagePlanId field's value.
+func (s *GetUsagePlanInput) SetUsagePlanId(v string) *GetUsagePlanInput {
+	s.UsagePlanId = &v
+	return s
 }
 
 // The GET request to get a usage plan key of a given key identifier.
@@ -10489,6 +13659,18 @@ func (s *GetUsagePlanKeyInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetKeyId sets the KeyId field's value.
+func (s *GetUsagePlanKeyInput) SetKeyId(v string) *GetUsagePlanKeyInput {
+	s.KeyId = &v
+	return s
+}
+
+// SetUsagePlanId sets the UsagePlanId field's value.
+func (s *GetUsagePlanKeyInput) SetUsagePlanId(v string) *GetUsagePlanKeyInput {
+	s.UsagePlanId = &v
+	return s
 }
 
 // The GET request to get all the usage plan keys representing the API keys
@@ -10537,6 +13719,30 @@ func (s *GetUsagePlanKeysInput) Validate() error {
 	return nil
 }
 
+// SetLimit sets the Limit field's value.
+func (s *GetUsagePlanKeysInput) SetLimit(v int64) *GetUsagePlanKeysInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNameQuery sets the NameQuery field's value.
+func (s *GetUsagePlanKeysInput) SetNameQuery(v string) *GetUsagePlanKeysInput {
+	s.NameQuery = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetUsagePlanKeysInput) SetPosition(v string) *GetUsagePlanKeysInput {
+	s.Position = &v
+	return s
+}
+
+// SetUsagePlanId sets the UsagePlanId field's value.
+func (s *GetUsagePlanKeysInput) SetUsagePlanId(v string) *GetUsagePlanKeysInput {
+	s.UsagePlanId = &v
+	return s
+}
+
 // Represents the collection of usage plan keys added to usage plans for the
 // associated API keys and, possibly, other types of keys.
 //
@@ -10558,6 +13764,18 @@ func (s GetUsagePlanKeysOutput) String() string {
 // GoString returns the string representation
 func (s GetUsagePlanKeysOutput) GoString() string {
 	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetUsagePlanKeysOutput) SetItems(v []*UsagePlanKey) *GetUsagePlanKeysOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetUsagePlanKeysOutput) SetPosition(v string) *GetUsagePlanKeysOutput {
+	s.Position = &v
+	return s
 }
 
 // The GET request to get all the usage plans of the caller's account.
@@ -10585,6 +13803,24 @@ func (s GetUsagePlansInput) GoString() string {
 	return s.String()
 }
 
+// SetKeyId sets the KeyId field's value.
+func (s *GetUsagePlansInput) SetKeyId(v string) *GetUsagePlansInput {
+	s.KeyId = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *GetUsagePlansInput) SetLimit(v int64) *GetUsagePlansInput {
+	s.Limit = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetUsagePlansInput) SetPosition(v string) *GetUsagePlansInput {
+	s.Position = &v
+	return s
+}
+
 // Represents a collection of usage plans for an AWS account.
 //
 // Create and Use Usage Plans (http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html)
@@ -10605,6 +13841,18 @@ func (s GetUsagePlansOutput) String() string {
 // GoString returns the string representation
 func (s GetUsagePlansOutput) GoString() string {
 	return s.String()
+}
+
+// SetItems sets the Items field's value.
+func (s *GetUsagePlansOutput) SetItems(v []*UsagePlan) *GetUsagePlansOutput {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *GetUsagePlansOutput) SetPosition(v string) *GetUsagePlansOutput {
+	s.Position = &v
+	return s
 }
 
 // The POST request to import API keys from an external source, such as a CSV-formatted
@@ -10655,7 +13903,25 @@ func (s *ImportApiKeysInput) Validate() error {
 	return nil
 }
 
-// The identifier of an API key used to reference an API key in a usage plan.
+// SetBody sets the Body field's value.
+func (s *ImportApiKeysInput) SetBody(v []byte) *ImportApiKeysInput {
+	s.Body = v
+	return s
+}
+
+// SetFailOnWarnings sets the FailOnWarnings field's value.
+func (s *ImportApiKeysInput) SetFailOnWarnings(v bool) *ImportApiKeysInput {
+	s.FailOnWarnings = &v
+	return s
+}
+
+// SetFormat sets the Format field's value.
+func (s *ImportApiKeysInput) SetFormat(v string) *ImportApiKeysInput {
+	s.Format = &v
+	return s
+}
+
+// The identifier of an ApiKey used in a UsagePlan.
 type ImportApiKeysOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -10674,6 +13940,133 @@ func (s ImportApiKeysOutput) String() string {
 // GoString returns the string representation
 func (s ImportApiKeysOutput) GoString() string {
 	return s.String()
+}
+
+// SetIds sets the Ids field's value.
+func (s *ImportApiKeysOutput) SetIds(v []*string) *ImportApiKeysOutput {
+	s.Ids = v
+	return s
+}
+
+// SetWarnings sets the Warnings field's value.
+func (s *ImportApiKeysOutput) SetWarnings(v []*string) *ImportApiKeysOutput {
+	s.Warnings = v
+	return s
+}
+
+// Import documentation parts from an external (e.g., Swagger) definition file.
+type ImportDocumentationPartsInput struct {
+	_ struct{} `type:"structure" payload:"Body"`
+
+	// [Required] Raw byte array representing the to-be-imported documentation parts.
+	// To import from a Swagger file, this is a JSON object.
+	//
+	// Body is a required field
+	Body []byte `locationName:"body" type:"blob" required:"true"`
+
+	// A query parameter to specify whether to rollback the documentation importation
+	// (true) or not (false) when a warning is encountered. The default value is
+	// false.
+	FailOnWarnings *bool `location:"querystring" locationName:"failonwarnings" type:"boolean"`
+
+	// A query parameter to indicate whether to overwrite (OVERWRITE) any existing
+	// DocumentationParts definition or to merge (MERGE) the new definition into
+	// the existing one. The default value is MERGE.
+	Mode *string `location:"querystring" locationName:"mode" type:"string" enum:"PutMode"`
+
+	// [Required] The identifier of an API of the to-be-imported documentation parts.
+	//
+	// RestApiId is a required field
+	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ImportDocumentationPartsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ImportDocumentationPartsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ImportDocumentationPartsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ImportDocumentationPartsInput"}
+	if s.Body == nil {
+		invalidParams.Add(request.NewErrParamRequired("Body"))
+	}
+	if s.RestApiId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBody sets the Body field's value.
+func (s *ImportDocumentationPartsInput) SetBody(v []byte) *ImportDocumentationPartsInput {
+	s.Body = v
+	return s
+}
+
+// SetFailOnWarnings sets the FailOnWarnings field's value.
+func (s *ImportDocumentationPartsInput) SetFailOnWarnings(v bool) *ImportDocumentationPartsInput {
+	s.FailOnWarnings = &v
+	return s
+}
+
+// SetMode sets the Mode field's value.
+func (s *ImportDocumentationPartsInput) SetMode(v string) *ImportDocumentationPartsInput {
+	s.Mode = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *ImportDocumentationPartsInput) SetRestApiId(v string) *ImportDocumentationPartsInput {
+	s.RestApiId = &v
+	return s
+}
+
+// A collection of the imported DocumentationPart identifiers.
+//
+// This is used to return the result when documentation parts in an external
+// (e.g., Swagger) file are imported into Amazon API Gateway
+// Documenting an API (http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-documenting-api.html),
+// documentationpart:import (http://docs.aws.amazon.com/apigateway/api-reference/link-relation/documentationpart-import/),
+// DocumentationPart
+type ImportDocumentationPartsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of the returned documentation part identifiers.
+	Ids []*string `locationName:"ids" type:"list"`
+
+	// A list of warning messages reported during import of documentation parts.
+	Warnings []*string `locationName:"warnings" type:"list"`
+}
+
+// String returns the string representation
+func (s ImportDocumentationPartsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ImportDocumentationPartsOutput) GoString() string {
+	return s.String()
+}
+
+// SetIds sets the Ids field's value.
+func (s *ImportDocumentationPartsOutput) SetIds(v []*string) *ImportDocumentationPartsOutput {
+	s.Ids = v
+	return s
+}
+
+// SetWarnings sets the Warnings field's value.
+func (s *ImportDocumentationPartsOutput) SetWarnings(v []*string) *ImportDocumentationPartsOutput {
+	s.Warnings = v
+	return s
 }
 
 // A POST request to import an API to Amazon API Gateway using an input of an
@@ -10718,7 +14111,25 @@ func (s *ImportRestApiInput) Validate() error {
 	return nil
 }
 
-// Represents an HTTP, AWS, or Mock integration.
+// SetBody sets the Body field's value.
+func (s *ImportRestApiInput) SetBody(v []byte) *ImportRestApiInput {
+	s.Body = v
+	return s
+}
+
+// SetFailOnWarnings sets the FailOnWarnings field's value.
+func (s *ImportRestApiInput) SetFailOnWarnings(v bool) *ImportRestApiInput {
+	s.FailOnWarnings = &v
+	return s
+}
+
+// SetParameters sets the Parameters field's value.
+func (s *ImportRestApiInput) SetParameters(v map[string]*string) *ImportRestApiInput {
+	s.Parameters = v
+	return s
+}
+
+// Represents an HTTP, HTTP_PROXY, AWS, AWS_PROXY, or Mock integration.
 //
 // In the API Gateway console, the built-in Lambda integration is an AWS integration.
 //
@@ -10731,6 +14142,20 @@ type Integration struct {
 
 	// Specifies the integration's cache namespace.
 	CacheNamespace *string `locationName:"cacheNamespace" type:"string"`
+
+	// Specifies how to handle request payload content type conversions. Supported
+	// values are CONVERT_TO_BINARY and CONVERT_TO_TEXT, with the following behaviors:
+	//
+	//    * CONVERT_TO_BINARY: Converts a request payload from a Base64-encoded
+	//    string to the corresponding binary blob.
+	//
+	//    * CONVERT_TO_TEXT: Converts a request payload from a binary blob to a
+	//    Base64-encoded string.
+	//
+	// If this property is not defined, the request payload will be passed through
+	// from the method request to integration request without modification, provided
+	// that the passthroughBehaviors is configured to support payload pass-through.
+	ContentHandling *string `locationName:"contentHandling" type:"string" enum:"ContentHandlingStrategy"`
 
 	// Specifies the credentials required for the integration, if any. For AWS integrations,
 	// three options are available. To specify an IAM Role for Amazon API Gateway
@@ -10813,8 +14238,8 @@ type Integration struct {
 
 	// Specifies the integration's Uniform Resource Identifier (URI). For HTTP integrations,
 	// the URI must be a fully formed, encoded HTTP(S) URL according to the RFC-3986
-	// specification (https://www.ietf.org/rfc/rfc3986.txt). For AWS integrations,
-	// the URI should be of the form arn:aws:apigateway:{region}:{subdomain.service|service}:{path|action}/{service_api}.
+	// specification (https://en.wikipedia.org/wiki/Uniform_Resource_Identifier).
+	// For AWS integrations, the URI should be of the form arn:aws:apigateway:{region}:{subdomain.service|service}:{path|action}/{service_api}.
 	// Region, subdomain and service are used to determine the right endpoint. For
 	// AWS services that use the Action= query string parameter, service_api should
 	// be a valid action for the desired service. For RESTful AWS service APIs,
@@ -10833,6 +14258,72 @@ func (s Integration) GoString() string {
 	return s.String()
 }
 
+// SetCacheKeyParameters sets the CacheKeyParameters field's value.
+func (s *Integration) SetCacheKeyParameters(v []*string) *Integration {
+	s.CacheKeyParameters = v
+	return s
+}
+
+// SetCacheNamespace sets the CacheNamespace field's value.
+func (s *Integration) SetCacheNamespace(v string) *Integration {
+	s.CacheNamespace = &v
+	return s
+}
+
+// SetContentHandling sets the ContentHandling field's value.
+func (s *Integration) SetContentHandling(v string) *Integration {
+	s.ContentHandling = &v
+	return s
+}
+
+// SetCredentials sets the Credentials field's value.
+func (s *Integration) SetCredentials(v string) *Integration {
+	s.Credentials = &v
+	return s
+}
+
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *Integration) SetHttpMethod(v string) *Integration {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetIntegrationResponses sets the IntegrationResponses field's value.
+func (s *Integration) SetIntegrationResponses(v map[string]*IntegrationResponse) *Integration {
+	s.IntegrationResponses = v
+	return s
+}
+
+// SetPassthroughBehavior sets the PassthroughBehavior field's value.
+func (s *Integration) SetPassthroughBehavior(v string) *Integration {
+	s.PassthroughBehavior = &v
+	return s
+}
+
+// SetRequestParameters sets the RequestParameters field's value.
+func (s *Integration) SetRequestParameters(v map[string]*string) *Integration {
+	s.RequestParameters = v
+	return s
+}
+
+// SetRequestTemplates sets the RequestTemplates field's value.
+func (s *Integration) SetRequestTemplates(v map[string]*string) *Integration {
+	s.RequestTemplates = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *Integration) SetType(v string) *Integration {
+	s.Type = &v
+	return s
+}
+
+// SetUri sets the Uri field's value.
+func (s *Integration) SetUri(v string) *Integration {
+	s.Uri = &v
+	return s
+}
+
 // Represents an integration response. The status code must map to an existing
 // MethodResponse, and parameters and templates can be used to transform the
 // back-end response.
@@ -10840,6 +14331,19 @@ func (s Integration) GoString() string {
 // Creating an API (http://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-create-api.html)
 type IntegrationResponse struct {
 	_ struct{} `type:"structure"`
+
+	// Specifies how to handle response payload content type conversions. Supported
+	// values are CONVERT_TO_BINARY and CONVERT_TO_TEXT, with the following behaviors:
+	//
+	//    * CONVERT_TO_BINARY: Converts a response payload from a Base64-encoded
+	//    string to the corresponding binary blob.
+	//
+	//    * CONVERT_TO_TEXT: Converts a response payload from a binary blob to a
+	//    Base64-encoded string.
+	//
+	// If this property is not defined, the response payload will be passed through
+	// from the integration response to the method response without modification.
+	ContentHandling *string `locationName:"contentHandling" type:"string" enum:"ContentHandlingStrategy"`
 
 	// A key-value map specifying response parameters that are passed to the method
 	// response from the back end. The key is a method response header parameter
@@ -10881,6 +14385,36 @@ func (s IntegrationResponse) String() string {
 // GoString returns the string representation
 func (s IntegrationResponse) GoString() string {
 	return s.String()
+}
+
+// SetContentHandling sets the ContentHandling field's value.
+func (s *IntegrationResponse) SetContentHandling(v string) *IntegrationResponse {
+	s.ContentHandling = &v
+	return s
+}
+
+// SetResponseParameters sets the ResponseParameters field's value.
+func (s *IntegrationResponse) SetResponseParameters(v map[string]*string) *IntegrationResponse {
+	s.ResponseParameters = v
+	return s
+}
+
+// SetResponseTemplates sets the ResponseTemplates field's value.
+func (s *IntegrationResponse) SetResponseTemplates(v map[string]*string) *IntegrationResponse {
+	s.ResponseTemplates = v
+	return s
+}
+
+// SetSelectionPattern sets the SelectionPattern field's value.
+func (s *IntegrationResponse) SetSelectionPattern(v string) *IntegrationResponse {
+	s.SelectionPattern = &v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *IntegrationResponse) SetStatusCode(v string) *IntegrationResponse {
+	s.StatusCode = &v
+	return s
 }
 
 // Represents a client-facing interface by which the client calls the API to
@@ -11043,6 +14577,11 @@ type Method struct {
 	//    }
 	MethodResponses map[string]*MethodResponse `locationName:"methodResponses" type:"map"`
 
+	// A human-friendly operation identifier for the method. For example, you can
+	// assign the operationName of ListPets for the GET /pets method in PetStore
+	// (http://petstore-demo-endpoint.execute-api.com/petstore/pets) example.
+	OperationName *string `locationName:"operationName" type:"string"`
+
 	// A key-value map specifying data schemas, represented by Model resources,
 	// (as the mapped value) of the request payloads of given content types (as
 	// the mapping key).
@@ -11067,6 +14606,60 @@ func (s Method) String() string {
 // GoString returns the string representation
 func (s Method) GoString() string {
 	return s.String()
+}
+
+// SetApiKeyRequired sets the ApiKeyRequired field's value.
+func (s *Method) SetApiKeyRequired(v bool) *Method {
+	s.ApiKeyRequired = &v
+	return s
+}
+
+// SetAuthorizationType sets the AuthorizationType field's value.
+func (s *Method) SetAuthorizationType(v string) *Method {
+	s.AuthorizationType = &v
+	return s
+}
+
+// SetAuthorizerId sets the AuthorizerId field's value.
+func (s *Method) SetAuthorizerId(v string) *Method {
+	s.AuthorizerId = &v
+	return s
+}
+
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *Method) SetHttpMethod(v string) *Method {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetMethodIntegration sets the MethodIntegration field's value.
+func (s *Method) SetMethodIntegration(v *Integration) *Method {
+	s.MethodIntegration = v
+	return s
+}
+
+// SetMethodResponses sets the MethodResponses field's value.
+func (s *Method) SetMethodResponses(v map[string]*MethodResponse) *Method {
+	s.MethodResponses = v
+	return s
+}
+
+// SetOperationName sets the OperationName field's value.
+func (s *Method) SetOperationName(v string) *Method {
+	s.OperationName = &v
+	return s
+}
+
+// SetRequestModels sets the RequestModels field's value.
+func (s *Method) SetRequestModels(v map[string]*string) *Method {
+	s.RequestModels = v
+	return s
+}
+
+// SetRequestParameters sets the RequestParameters field's value.
+func (s *Method) SetRequestParameters(v map[string]*bool) *Method {
+	s.RequestParameters = v
+	return s
 }
 
 // Represents a method response of a given HTTP status code returned to the
@@ -11128,6 +14721,24 @@ func (s MethodResponse) String() string {
 // GoString returns the string representation
 func (s MethodResponse) GoString() string {
 	return s.String()
+}
+
+// SetResponseModels sets the ResponseModels field's value.
+func (s *MethodResponse) SetResponseModels(v map[string]*string) *MethodResponse {
+	s.ResponseModels = v
+	return s
+}
+
+// SetResponseParameters sets the ResponseParameters field's value.
+func (s *MethodResponse) SetResponseParameters(v map[string]*bool) *MethodResponse {
+	s.ResponseParameters = v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *MethodResponse) SetStatusCode(v string) *MethodResponse {
+	s.StatusCode = &v
+	return s
 }
 
 // Specifies the method setting properties.
@@ -11196,6 +14807,66 @@ func (s MethodSetting) GoString() string {
 	return s.String()
 }
 
+// SetCacheDataEncrypted sets the CacheDataEncrypted field's value.
+func (s *MethodSetting) SetCacheDataEncrypted(v bool) *MethodSetting {
+	s.CacheDataEncrypted = &v
+	return s
+}
+
+// SetCacheTtlInSeconds sets the CacheTtlInSeconds field's value.
+func (s *MethodSetting) SetCacheTtlInSeconds(v int64) *MethodSetting {
+	s.CacheTtlInSeconds = &v
+	return s
+}
+
+// SetCachingEnabled sets the CachingEnabled field's value.
+func (s *MethodSetting) SetCachingEnabled(v bool) *MethodSetting {
+	s.CachingEnabled = &v
+	return s
+}
+
+// SetDataTraceEnabled sets the DataTraceEnabled field's value.
+func (s *MethodSetting) SetDataTraceEnabled(v bool) *MethodSetting {
+	s.DataTraceEnabled = &v
+	return s
+}
+
+// SetLoggingLevel sets the LoggingLevel field's value.
+func (s *MethodSetting) SetLoggingLevel(v string) *MethodSetting {
+	s.LoggingLevel = &v
+	return s
+}
+
+// SetMetricsEnabled sets the MetricsEnabled field's value.
+func (s *MethodSetting) SetMetricsEnabled(v bool) *MethodSetting {
+	s.MetricsEnabled = &v
+	return s
+}
+
+// SetRequireAuthorizationForCacheControl sets the RequireAuthorizationForCacheControl field's value.
+func (s *MethodSetting) SetRequireAuthorizationForCacheControl(v bool) *MethodSetting {
+	s.RequireAuthorizationForCacheControl = &v
+	return s
+}
+
+// SetThrottlingBurstLimit sets the ThrottlingBurstLimit field's value.
+func (s *MethodSetting) SetThrottlingBurstLimit(v int64) *MethodSetting {
+	s.ThrottlingBurstLimit = &v
+	return s
+}
+
+// SetThrottlingRateLimit sets the ThrottlingRateLimit field's value.
+func (s *MethodSetting) SetThrottlingRateLimit(v float64) *MethodSetting {
+	s.ThrottlingRateLimit = &v
+	return s
+}
+
+// SetUnauthorizedCacheControlHeaderStrategy sets the UnauthorizedCacheControlHeaderStrategy field's value.
+func (s *MethodSetting) SetUnauthorizedCacheControlHeaderStrategy(v string) *MethodSetting {
+	s.UnauthorizedCacheControlHeaderStrategy = &v
+	return s
+}
+
 // Represents a summary of a Method resource, given a particular date and time.
 type MethodSnapshot struct {
 	_ struct{} `type:"structure"`
@@ -11215,6 +14886,18 @@ func (s MethodSnapshot) String() string {
 // GoString returns the string representation
 func (s MethodSnapshot) GoString() string {
 	return s.String()
+}
+
+// SetApiKeyRequired sets the ApiKeyRequired field's value.
+func (s *MethodSnapshot) SetApiKeyRequired(v bool) *MethodSnapshot {
+	s.ApiKeyRequired = &v
+	return s
+}
+
+// SetAuthorizationType sets the AuthorizationType field's value.
+func (s *MethodSnapshot) SetAuthorizationType(v string) *MethodSnapshot {
+	s.AuthorizationType = &v
+	return s
 }
 
 // Represents the data structure of a method's request or response payload.
@@ -11262,6 +14945,36 @@ func (s Model) GoString() string {
 	return s.String()
 }
 
+// SetContentType sets the ContentType field's value.
+func (s *Model) SetContentType(v string) *Model {
+	s.ContentType = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Model) SetDescription(v string) *Model {
+	s.Description = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Model) SetId(v string) *Model {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Model) SetName(v string) *Model {
+	s.Name = &v
+	return s
+}
+
+// SetSchema sets the Schema field's value.
+func (s *Model) SetSchema(v string) *Model {
+	s.Schema = &v
+	return s
+}
+
 // A single patch operation to apply to the specified resource. Please refer
 // to http://tools.ietf.org/html/rfc6902#section-4 for an explanation of how
 // each operation is used.
@@ -11302,6 +15015,30 @@ func (s PatchOperation) GoString() string {
 	return s.String()
 }
 
+// SetFrom sets the From field's value.
+func (s *PatchOperation) SetFrom(v string) *PatchOperation {
+	s.From = &v
+	return s
+}
+
+// SetOp sets the Op field's value.
+func (s *PatchOperation) SetOp(v string) *PatchOperation {
+	s.Op = &v
+	return s
+}
+
+// SetPath sets the Path field's value.
+func (s *PatchOperation) SetPath(v string) *PatchOperation {
+	s.Path = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *PatchOperation) SetValue(v string) *PatchOperation {
+	s.Value = &v
+	return s
+}
+
 // Represents a put integration request.
 type PutIntegrationInput struct {
 	_ struct{} `type:"structure"`
@@ -11311,6 +15048,20 @@ type PutIntegrationInput struct {
 
 	// Specifies a put integration input's cache namespace.
 	CacheNamespace *string `locationName:"cacheNamespace" type:"string"`
+
+	// Specifies how to handle request payload content type conversions. Supported
+	// values are CONVERT_TO_BINARY and CONVERT_TO_TEXT, with the following behaviors:
+	//
+	//    * CONVERT_TO_BINARY: Converts a request payload from a Base64-encoded
+	//    string to the corresponding binary blob.
+	//
+	//    * CONVERT_TO_TEXT: Converts a request payload from a binary blob to a
+	//    Base64-encoded string.
+	//
+	// If this property is not defined, the request payload will be passed through
+	// from the method request to integration request without modification, provided
+	// that the passthroughBehaviors is configured to support payload pass-through.
+	ContentHandling *string `locationName:"contentHandling" type:"string" enum:"ContentHandlingStrategy"`
 
 	// Specifies whether credentials are required for a put integration.
 	Credentials *string `locationName:"credentials" type:"string"`
@@ -11409,9 +15160,100 @@ func (s *PutIntegrationInput) Validate() error {
 	return nil
 }
 
+// SetCacheKeyParameters sets the CacheKeyParameters field's value.
+func (s *PutIntegrationInput) SetCacheKeyParameters(v []*string) *PutIntegrationInput {
+	s.CacheKeyParameters = v
+	return s
+}
+
+// SetCacheNamespace sets the CacheNamespace field's value.
+func (s *PutIntegrationInput) SetCacheNamespace(v string) *PutIntegrationInput {
+	s.CacheNamespace = &v
+	return s
+}
+
+// SetContentHandling sets the ContentHandling field's value.
+func (s *PutIntegrationInput) SetContentHandling(v string) *PutIntegrationInput {
+	s.ContentHandling = &v
+	return s
+}
+
+// SetCredentials sets the Credentials field's value.
+func (s *PutIntegrationInput) SetCredentials(v string) *PutIntegrationInput {
+	s.Credentials = &v
+	return s
+}
+
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *PutIntegrationInput) SetHttpMethod(v string) *PutIntegrationInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetIntegrationHttpMethod sets the IntegrationHttpMethod field's value.
+func (s *PutIntegrationInput) SetIntegrationHttpMethod(v string) *PutIntegrationInput {
+	s.IntegrationHttpMethod = &v
+	return s
+}
+
+// SetPassthroughBehavior sets the PassthroughBehavior field's value.
+func (s *PutIntegrationInput) SetPassthroughBehavior(v string) *PutIntegrationInput {
+	s.PassthroughBehavior = &v
+	return s
+}
+
+// SetRequestParameters sets the RequestParameters field's value.
+func (s *PutIntegrationInput) SetRequestParameters(v map[string]*string) *PutIntegrationInput {
+	s.RequestParameters = v
+	return s
+}
+
+// SetRequestTemplates sets the RequestTemplates field's value.
+func (s *PutIntegrationInput) SetRequestTemplates(v map[string]*string) *PutIntegrationInput {
+	s.RequestTemplates = v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *PutIntegrationInput) SetResourceId(v string) *PutIntegrationInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *PutIntegrationInput) SetRestApiId(v string) *PutIntegrationInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *PutIntegrationInput) SetType(v string) *PutIntegrationInput {
+	s.Type = &v
+	return s
+}
+
+// SetUri sets the Uri field's value.
+func (s *PutIntegrationInput) SetUri(v string) *PutIntegrationInput {
+	s.Uri = &v
+	return s
+}
+
 // Represents a put integration response request.
 type PutIntegrationResponseInput struct {
 	_ struct{} `type:"structure"`
+
+	// Specifies how to handle response payload content type conversions. Supported
+	// values are CONVERT_TO_BINARY and CONVERT_TO_TEXT, with the following behaviors:
+	//
+	//    * CONVERT_TO_BINARY: Converts a response payload from a Base64-encoded
+	//    string to the corresponding binary blob.
+	//
+	//    * CONVERT_TO_TEXT: Converts a response payload from a binary blob to a
+	//    Base64-encoded string.
+	//
+	// If this property is not defined, the response payload will be passed through
+	// from the integration response to the method response without modification.
+	ContentHandling *string `locationName:"contentHandling" type:"string" enum:"ContentHandlingStrategy"`
 
 	// Specifies a put integration response request's HTTP method.
 	//
@@ -11485,6 +15327,54 @@ func (s *PutIntegrationResponseInput) Validate() error {
 	return nil
 }
 
+// SetContentHandling sets the ContentHandling field's value.
+func (s *PutIntegrationResponseInput) SetContentHandling(v string) *PutIntegrationResponseInput {
+	s.ContentHandling = &v
+	return s
+}
+
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *PutIntegrationResponseInput) SetHttpMethod(v string) *PutIntegrationResponseInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *PutIntegrationResponseInput) SetResourceId(v string) *PutIntegrationResponseInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResponseParameters sets the ResponseParameters field's value.
+func (s *PutIntegrationResponseInput) SetResponseParameters(v map[string]*string) *PutIntegrationResponseInput {
+	s.ResponseParameters = v
+	return s
+}
+
+// SetResponseTemplates sets the ResponseTemplates field's value.
+func (s *PutIntegrationResponseInput) SetResponseTemplates(v map[string]*string) *PutIntegrationResponseInput {
+	s.ResponseTemplates = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *PutIntegrationResponseInput) SetRestApiId(v string) *PutIntegrationResponseInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetSelectionPattern sets the SelectionPattern field's value.
+func (s *PutIntegrationResponseInput) SetSelectionPattern(v string) *PutIntegrationResponseInput {
+	s.SelectionPattern = &v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *PutIntegrationResponseInput) SetStatusCode(v string) *PutIntegrationResponseInput {
+	s.StatusCode = &v
+	return s
+}
+
 // Request to add a method to an existing Resource resource.
 type PutMethodInput struct {
 	_ struct{} `type:"structure"`
@@ -11505,6 +15395,11 @@ type PutMethodInput struct {
 	//
 	// HttpMethod is a required field
 	HttpMethod *string `location:"uri" locationName:"http_method" type:"string" required:"true"`
+
+	// A human-friendly operation identifier for the method. For example, you can
+	// assign the operationName of ListPets for the GET /pets method in PetStore
+	// (http://petstore-demo-endpoint.execute-api.com/petstore/pets) example.
+	OperationName *string `locationName:"operationName" type:"string"`
 
 	// Specifies the Model resources used for the request's content type. Request
 	// models are represented as a key/value map, with a content type as the key
@@ -11562,6 +15457,60 @@ func (s *PutMethodInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetApiKeyRequired sets the ApiKeyRequired field's value.
+func (s *PutMethodInput) SetApiKeyRequired(v bool) *PutMethodInput {
+	s.ApiKeyRequired = &v
+	return s
+}
+
+// SetAuthorizationType sets the AuthorizationType field's value.
+func (s *PutMethodInput) SetAuthorizationType(v string) *PutMethodInput {
+	s.AuthorizationType = &v
+	return s
+}
+
+// SetAuthorizerId sets the AuthorizerId field's value.
+func (s *PutMethodInput) SetAuthorizerId(v string) *PutMethodInput {
+	s.AuthorizerId = &v
+	return s
+}
+
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *PutMethodInput) SetHttpMethod(v string) *PutMethodInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetOperationName sets the OperationName field's value.
+func (s *PutMethodInput) SetOperationName(v string) *PutMethodInput {
+	s.OperationName = &v
+	return s
+}
+
+// SetRequestModels sets the RequestModels field's value.
+func (s *PutMethodInput) SetRequestModels(v map[string]*string) *PutMethodInput {
+	s.RequestModels = v
+	return s
+}
+
+// SetRequestParameters sets the RequestParameters field's value.
+func (s *PutMethodInput) SetRequestParameters(v map[string]*bool) *PutMethodInput {
+	s.RequestParameters = v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *PutMethodInput) SetResourceId(v string) *PutMethodInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *PutMethodInput) SetRestApiId(v string) *PutMethodInput {
+	s.RestApiId = &v
+	return s
 }
 
 // Request to add a MethodResponse to an existing Method resource.
@@ -11639,6 +15588,42 @@ func (s *PutMethodResponseInput) Validate() error {
 	return nil
 }
 
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *PutMethodResponseInput) SetHttpMethod(v string) *PutMethodResponseInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *PutMethodResponseInput) SetResourceId(v string) *PutMethodResponseInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResponseModels sets the ResponseModels field's value.
+func (s *PutMethodResponseInput) SetResponseModels(v map[string]*string) *PutMethodResponseInput {
+	s.ResponseModels = v
+	return s
+}
+
+// SetResponseParameters sets the ResponseParameters field's value.
+func (s *PutMethodResponseInput) SetResponseParameters(v map[string]*bool) *PutMethodResponseInput {
+	s.ResponseParameters = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *PutMethodResponseInput) SetRestApiId(v string) *PutMethodResponseInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *PutMethodResponseInput) SetStatusCode(v string) *PutMethodResponseInput {
+	s.StatusCode = &v
+	return s
+}
+
 // A PUT request to update an existing API, with external API definitions specified
 // as the request body.
 type PutRestApiInput struct {
@@ -11693,6 +15678,36 @@ func (s *PutRestApiInput) Validate() error {
 	return nil
 }
 
+// SetBody sets the Body field's value.
+func (s *PutRestApiInput) SetBody(v []byte) *PutRestApiInput {
+	s.Body = v
+	return s
+}
+
+// SetFailOnWarnings sets the FailOnWarnings field's value.
+func (s *PutRestApiInput) SetFailOnWarnings(v bool) *PutRestApiInput {
+	s.FailOnWarnings = &v
+	return s
+}
+
+// SetMode sets the Mode field's value.
+func (s *PutRestApiInput) SetMode(v string) *PutRestApiInput {
+	s.Mode = &v
+	return s
+}
+
+// SetParameters sets the Parameters field's value.
+func (s *PutRestApiInput) SetParameters(v map[string]*string) *PutRestApiInput {
+	s.Parameters = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *PutRestApiInput) SetRestApiId(v string) *PutRestApiInput {
+	s.RestApiId = &v
+	return s
+}
+
 // Quotas configured for a usage plan.
 type QuotaSettings struct {
 	_ struct{} `type:"structure"`
@@ -11717,6 +15732,24 @@ func (s QuotaSettings) String() string {
 // GoString returns the string representation
 func (s QuotaSettings) GoString() string {
 	return s.String()
+}
+
+// SetLimit sets the Limit field's value.
+func (s *QuotaSettings) SetLimit(v int64) *QuotaSettings {
+	s.Limit = &v
+	return s
+}
+
+// SetOffset sets the Offset field's value.
+func (s *QuotaSettings) SetOffset(v int64) *QuotaSettings {
+	s.Offset = &v
+	return s
+}
+
+// SetPeriod sets the Period field's value.
+func (s *QuotaSettings) SetPeriod(v string) *QuotaSettings {
+	s.Period = &v
+	return s
 }
 
 // Represents an API resource.
@@ -11807,11 +15840,45 @@ func (s Resource) GoString() string {
 	return s.String()
 }
 
+// SetId sets the Id field's value.
+func (s *Resource) SetId(v string) *Resource {
+	s.Id = &v
+	return s
+}
+
+// SetParentId sets the ParentId field's value.
+func (s *Resource) SetParentId(v string) *Resource {
+	s.ParentId = &v
+	return s
+}
+
+// SetPath sets the Path field's value.
+func (s *Resource) SetPath(v string) *Resource {
+	s.Path = &v
+	return s
+}
+
+// SetPathPart sets the PathPart field's value.
+func (s *Resource) SetPathPart(v string) *Resource {
+	s.PathPart = &v
+	return s
+}
+
+// SetResourceMethods sets the ResourceMethods field's value.
+func (s *Resource) SetResourceMethods(v map[string]*Method) *Resource {
+	s.ResourceMethods = v
+	return s
+}
+
 // Represents a REST API.
 //
 // Create an API (http://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-create-api.html)
 type RestApi struct {
 	_ struct{} `type:"structure"`
+
+	// The list of binary media types supported by the RestApi. By default, the
+	// RestApi supports only UTF-8-encoded text payloads.
+	BinaryMediaTypes []*string `locationName:"binaryMediaTypes" type:"list"`
 
 	// The date when the API was created, in ISO 8601 format (http://www.iso.org/iso/home/standards/iso8601.htm).
 	CreatedDate *time.Time `locationName:"createdDate" type:"timestamp" timestampFormat:"unix"`
@@ -11826,6 +15893,9 @@ type RestApi struct {
 	// The API's name.
 	Name *string `locationName:"name" type:"string"`
 
+	// A version identifier for the API.
+	Version *string `locationName:"version" type:"string"`
+
 	// The warning messages reported when failonwarnings is turned on during API
 	// import.
 	Warnings []*string `locationName:"warnings" type:"list"`
@@ -11839,6 +15909,160 @@ func (s RestApi) String() string {
 // GoString returns the string representation
 func (s RestApi) GoString() string {
 	return s.String()
+}
+
+// SetBinaryMediaTypes sets the BinaryMediaTypes field's value.
+func (s *RestApi) SetBinaryMediaTypes(v []*string) *RestApi {
+	s.BinaryMediaTypes = v
+	return s
+}
+
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *RestApi) SetCreatedDate(v time.Time) *RestApi {
+	s.CreatedDate = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *RestApi) SetDescription(v string) *RestApi {
+	s.Description = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *RestApi) SetId(v string) *RestApi {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *RestApi) SetName(v string) *RestApi {
+	s.Name = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *RestApi) SetVersion(v string) *RestApi {
+	s.Version = &v
+	return s
+}
+
+// SetWarnings sets the Warnings field's value.
+func (s *RestApi) SetWarnings(v []*string) *RestApi {
+	s.Warnings = v
+	return s
+}
+
+// A configuration property of an SDK type.
+type SdkConfigurationProperty struct {
+	_ struct{} `type:"structure"`
+
+	// The default value of an SdkType configuration property.
+	DefaultValue *string `locationName:"defaultValue" type:"string"`
+
+	// The description of an SdkType configuration property.
+	Description *string `locationName:"description" type:"string"`
+
+	// The user-friendly name of an SdkType configuration property.
+	FriendlyName *string `locationName:"friendlyName" type:"string"`
+
+	// The name of a an SdkType configuration property.
+	Name *string `locationName:"name" type:"string"`
+
+	// A boolean flag of an SdkType configuration property to indicate if the associated
+	// SDK configuration property is required (true) or not (false).
+	Required *bool `locationName:"required" type:"boolean"`
+}
+
+// String returns the string representation
+func (s SdkConfigurationProperty) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SdkConfigurationProperty) GoString() string {
+	return s.String()
+}
+
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *SdkConfigurationProperty) SetDefaultValue(v string) *SdkConfigurationProperty {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *SdkConfigurationProperty) SetDescription(v string) *SdkConfigurationProperty {
+	s.Description = &v
+	return s
+}
+
+// SetFriendlyName sets the FriendlyName field's value.
+func (s *SdkConfigurationProperty) SetFriendlyName(v string) *SdkConfigurationProperty {
+	s.FriendlyName = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *SdkConfigurationProperty) SetName(v string) *SdkConfigurationProperty {
+	s.Name = &v
+	return s
+}
+
+// SetRequired sets the Required field's value.
+func (s *SdkConfigurationProperty) SetRequired(v bool) *SdkConfigurationProperty {
+	s.Required = &v
+	return s
+}
+
+// A type of SDK that API Gateway can generate.
+type SdkType struct {
+	_ struct{} `type:"structure"`
+
+	// A list of configuration properties of an SdkType.
+	ConfigurationProperties []*SdkConfigurationProperty `locationName:"configurationProperties" type:"list"`
+
+	// The description of an SdkType.
+	Description *string `locationName:"description" type:"string"`
+
+	// The user-friendly name of an SdkType instance.
+	FriendlyName *string `locationName:"friendlyName" type:"string"`
+
+	// The identifier of an SdkType instance.
+	Id *string `locationName:"id" type:"string"`
+}
+
+// String returns the string representation
+func (s SdkType) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SdkType) GoString() string {
+	return s.String()
+}
+
+// SetConfigurationProperties sets the ConfigurationProperties field's value.
+func (s *SdkType) SetConfigurationProperties(v []*SdkConfigurationProperty) *SdkType {
+	s.ConfigurationProperties = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *SdkType) SetDescription(v string) *SdkType {
+	s.Description = &v
+	return s
+}
+
+// SetFriendlyName sets the FriendlyName field's value.
+func (s *SdkType) SetFriendlyName(v string) *SdkType {
+	s.FriendlyName = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *SdkType) SetId(v string) *SdkType {
+	s.Id = &v
+	return s
 }
 
 // Represents a unique identifier for a version of a deployed RestApi that is
@@ -11868,6 +16092,9 @@ type Stage struct {
 
 	// The stage's description.
 	Description *string `locationName:"description" type:"string"`
+
+	// The version of the associated API documentation.
+	DocumentationVersion *string `locationName:"documentationVersion" type:"string"`
 
 	// The date and time that information about the stage was last updated, in ISO
 	// 8601 format (http://www.iso.org/iso/home/standards/iso8601.htm).
@@ -11899,6 +16126,78 @@ func (s Stage) GoString() string {
 	return s.String()
 }
 
+// SetCacheClusterEnabled sets the CacheClusterEnabled field's value.
+func (s *Stage) SetCacheClusterEnabled(v bool) *Stage {
+	s.CacheClusterEnabled = &v
+	return s
+}
+
+// SetCacheClusterSize sets the CacheClusterSize field's value.
+func (s *Stage) SetCacheClusterSize(v string) *Stage {
+	s.CacheClusterSize = &v
+	return s
+}
+
+// SetCacheClusterStatus sets the CacheClusterStatus field's value.
+func (s *Stage) SetCacheClusterStatus(v string) *Stage {
+	s.CacheClusterStatus = &v
+	return s
+}
+
+// SetClientCertificateId sets the ClientCertificateId field's value.
+func (s *Stage) SetClientCertificateId(v string) *Stage {
+	s.ClientCertificateId = &v
+	return s
+}
+
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *Stage) SetCreatedDate(v time.Time) *Stage {
+	s.CreatedDate = &v
+	return s
+}
+
+// SetDeploymentId sets the DeploymentId field's value.
+func (s *Stage) SetDeploymentId(v string) *Stage {
+	s.DeploymentId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Stage) SetDescription(v string) *Stage {
+	s.Description = &v
+	return s
+}
+
+// SetDocumentationVersion sets the DocumentationVersion field's value.
+func (s *Stage) SetDocumentationVersion(v string) *Stage {
+	s.DocumentationVersion = &v
+	return s
+}
+
+// SetLastUpdatedDate sets the LastUpdatedDate field's value.
+func (s *Stage) SetLastUpdatedDate(v time.Time) *Stage {
+	s.LastUpdatedDate = &v
+	return s
+}
+
+// SetMethodSettings sets the MethodSettings field's value.
+func (s *Stage) SetMethodSettings(v map[string]*MethodSetting) *Stage {
+	s.MethodSettings = v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *Stage) SetStageName(v string) *Stage {
+	s.StageName = &v
+	return s
+}
+
+// SetVariables sets the Variables field's value.
+func (s *Stage) SetVariables(v map[string]*string) *Stage {
+	s.Variables = v
+	return s
+}
+
 // A reference to a unique stage identified in the format {restApiId}/{stage}.
 type StageKey struct {
 	_ struct{} `type:"structure"`
@@ -11918,6 +16217,18 @@ func (s StageKey) String() string {
 // GoString returns the string representation
 func (s StageKey) GoString() string {
 	return s.String()
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *StageKey) SetRestApiId(v string) *StageKey {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *StageKey) SetStageName(v string) *StageKey {
+	s.StageName = &v
+	return s
 }
 
 // Make a request to simulate the execution of an Authorizer.
@@ -11980,6 +16291,48 @@ func (s *TestInvokeAuthorizerInput) Validate() error {
 	return nil
 }
 
+// SetAdditionalContext sets the AdditionalContext field's value.
+func (s *TestInvokeAuthorizerInput) SetAdditionalContext(v map[string]*string) *TestInvokeAuthorizerInput {
+	s.AdditionalContext = v
+	return s
+}
+
+// SetAuthorizerId sets the AuthorizerId field's value.
+func (s *TestInvokeAuthorizerInput) SetAuthorizerId(v string) *TestInvokeAuthorizerInput {
+	s.AuthorizerId = &v
+	return s
+}
+
+// SetBody sets the Body field's value.
+func (s *TestInvokeAuthorizerInput) SetBody(v string) *TestInvokeAuthorizerInput {
+	s.Body = &v
+	return s
+}
+
+// SetHeaders sets the Headers field's value.
+func (s *TestInvokeAuthorizerInput) SetHeaders(v map[string]*string) *TestInvokeAuthorizerInput {
+	s.Headers = v
+	return s
+}
+
+// SetPathWithQueryString sets the PathWithQueryString field's value.
+func (s *TestInvokeAuthorizerInput) SetPathWithQueryString(v string) *TestInvokeAuthorizerInput {
+	s.PathWithQueryString = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *TestInvokeAuthorizerInput) SetRestApiId(v string) *TestInvokeAuthorizerInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStageVariables sets the StageVariables field's value.
+func (s *TestInvokeAuthorizerInput) SetStageVariables(v map[string]*string) *TestInvokeAuthorizerInput {
+	s.StageVariables = v
+	return s
+}
+
 // Represents the response of the test invoke request for a custom Authorizer
 type TestInvokeAuthorizerOutput struct {
 	_ struct{} `type:"structure"`
@@ -12016,6 +16369,48 @@ func (s TestInvokeAuthorizerOutput) String() string {
 // GoString returns the string representation
 func (s TestInvokeAuthorizerOutput) GoString() string {
 	return s.String()
+}
+
+// SetAuthorization sets the Authorization field's value.
+func (s *TestInvokeAuthorizerOutput) SetAuthorization(v map[string][]*string) *TestInvokeAuthorizerOutput {
+	s.Authorization = v
+	return s
+}
+
+// SetClaims sets the Claims field's value.
+func (s *TestInvokeAuthorizerOutput) SetClaims(v map[string]*string) *TestInvokeAuthorizerOutput {
+	s.Claims = v
+	return s
+}
+
+// SetClientStatus sets the ClientStatus field's value.
+func (s *TestInvokeAuthorizerOutput) SetClientStatus(v int64) *TestInvokeAuthorizerOutput {
+	s.ClientStatus = &v
+	return s
+}
+
+// SetLatency sets the Latency field's value.
+func (s *TestInvokeAuthorizerOutput) SetLatency(v int64) *TestInvokeAuthorizerOutput {
+	s.Latency = &v
+	return s
+}
+
+// SetLog sets the Log field's value.
+func (s *TestInvokeAuthorizerOutput) SetLog(v string) *TestInvokeAuthorizerOutput {
+	s.Log = &v
+	return s
+}
+
+// SetPolicy sets the Policy field's value.
+func (s *TestInvokeAuthorizerOutput) SetPolicy(v string) *TestInvokeAuthorizerOutput {
+	s.Policy = &v
+	return s
+}
+
+// SetPrincipalId sets the PrincipalId field's value.
+func (s *TestInvokeAuthorizerOutput) SetPrincipalId(v string) *TestInvokeAuthorizerOutput {
+	s.PrincipalId = &v
+	return s
 }
 
 // Make a request to simulate the execution of a Method.
@@ -12086,6 +16481,54 @@ func (s *TestInvokeMethodInput) Validate() error {
 	return nil
 }
 
+// SetBody sets the Body field's value.
+func (s *TestInvokeMethodInput) SetBody(v string) *TestInvokeMethodInput {
+	s.Body = &v
+	return s
+}
+
+// SetClientCertificateId sets the ClientCertificateId field's value.
+func (s *TestInvokeMethodInput) SetClientCertificateId(v string) *TestInvokeMethodInput {
+	s.ClientCertificateId = &v
+	return s
+}
+
+// SetHeaders sets the Headers field's value.
+func (s *TestInvokeMethodInput) SetHeaders(v map[string]*string) *TestInvokeMethodInput {
+	s.Headers = v
+	return s
+}
+
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *TestInvokeMethodInput) SetHttpMethod(v string) *TestInvokeMethodInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetPathWithQueryString sets the PathWithQueryString field's value.
+func (s *TestInvokeMethodInput) SetPathWithQueryString(v string) *TestInvokeMethodInput {
+	s.PathWithQueryString = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *TestInvokeMethodInput) SetResourceId(v string) *TestInvokeMethodInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *TestInvokeMethodInput) SetRestApiId(v string) *TestInvokeMethodInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStageVariables sets the StageVariables field's value.
+func (s *TestInvokeMethodInput) SetStageVariables(v map[string]*string) *TestInvokeMethodInput {
+	s.StageVariables = v
+	return s
+}
+
 // Represents the response of the test invoke request in the HTTP method.
 //
 // Test API using the API Gateway console (http://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-test-method.html#how-to-test-method-console)
@@ -12118,6 +16561,36 @@ func (s TestInvokeMethodOutput) GoString() string {
 	return s.String()
 }
 
+// SetBody sets the Body field's value.
+func (s *TestInvokeMethodOutput) SetBody(v string) *TestInvokeMethodOutput {
+	s.Body = &v
+	return s
+}
+
+// SetHeaders sets the Headers field's value.
+func (s *TestInvokeMethodOutput) SetHeaders(v map[string]*string) *TestInvokeMethodOutput {
+	s.Headers = v
+	return s
+}
+
+// SetLatency sets the Latency field's value.
+func (s *TestInvokeMethodOutput) SetLatency(v int64) *TestInvokeMethodOutput {
+	s.Latency = &v
+	return s
+}
+
+// SetLog sets the Log field's value.
+func (s *TestInvokeMethodOutput) SetLog(v string) *TestInvokeMethodOutput {
+	s.Log = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *TestInvokeMethodOutput) SetStatus(v int64) *TestInvokeMethodOutput {
+	s.Status = &v
+	return s
+}
+
 // The API request rate limits.
 type ThrottleSettings struct {
 	_ struct{} `type:"structure"`
@@ -12141,6 +16614,18 @@ func (s ThrottleSettings) GoString() string {
 	return s.String()
 }
 
+// SetBurstLimit sets the BurstLimit field's value.
+func (s *ThrottleSettings) SetBurstLimit(v int64) *ThrottleSettings {
+	s.BurstLimit = &v
+	return s
+}
+
+// SetRateLimit sets the RateLimit field's value.
+func (s *ThrottleSettings) SetRateLimit(v float64) *ThrottleSettings {
+	s.RateLimit = &v
+	return s
+}
+
 // Requests Amazon API Gateway to change information about the current Account
 // resource.
 type UpdateAccountInput struct {
@@ -12159,6 +16644,12 @@ func (s UpdateAccountInput) String() string {
 // GoString returns the string representation
 func (s UpdateAccountInput) GoString() string {
 	return s.String()
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateAccountInput) SetPatchOperations(v []*PatchOperation) *UpdateAccountInput {
+	s.PatchOperations = v
+	return s
 }
 
 // A request to change information about an ApiKey resource.
@@ -12196,6 +16687,18 @@ func (s *UpdateApiKeyInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetApiKey sets the ApiKey field's value.
+func (s *UpdateApiKeyInput) SetApiKey(v string) *UpdateApiKeyInput {
+	s.ApiKey = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateApiKeyInput) SetPatchOperations(v []*PatchOperation) *UpdateApiKeyInput {
+	s.PatchOperations = v
+	return s
 }
 
 // Request to update an existing Authorizer resource.
@@ -12243,6 +16746,24 @@ func (s *UpdateAuthorizerInput) Validate() error {
 	return nil
 }
 
+// SetAuthorizerId sets the AuthorizerId field's value.
+func (s *UpdateAuthorizerInput) SetAuthorizerId(v string) *UpdateAuthorizerInput {
+	s.AuthorizerId = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateAuthorizerInput) SetPatchOperations(v []*PatchOperation) *UpdateAuthorizerInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *UpdateAuthorizerInput) SetRestApiId(v string) *UpdateAuthorizerInput {
+	s.RestApiId = &v
+	return s
+}
+
 // A request to change information about the BasePathMapping resource.
 type UpdateBasePathMappingInput struct {
 	_ struct{} `type:"structure"`
@@ -12288,6 +16809,24 @@ func (s *UpdateBasePathMappingInput) Validate() error {
 	return nil
 }
 
+// SetBasePath sets the BasePath field's value.
+func (s *UpdateBasePathMappingInput) SetBasePath(v string) *UpdateBasePathMappingInput {
+	s.BasePath = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *UpdateBasePathMappingInput) SetDomainName(v string) *UpdateBasePathMappingInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateBasePathMappingInput) SetPatchOperations(v []*PatchOperation) *UpdateBasePathMappingInput {
+	s.PatchOperations = v
+	return s
+}
+
 // A request to change information about an ClientCertificate resource.
 type UpdateClientCertificateInput struct {
 	_ struct{} `type:"structure"`
@@ -12323,6 +16862,18 @@ func (s *UpdateClientCertificateInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetClientCertificateId sets the ClientCertificateId field's value.
+func (s *UpdateClientCertificateInput) SetClientCertificateId(v string) *UpdateClientCertificateInput {
+	s.ClientCertificateId = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateClientCertificateInput) SetPatchOperations(v []*PatchOperation) *UpdateClientCertificateInput {
+	s.PatchOperations = v
+	return s
 }
 
 // Requests Amazon API Gateway to change information about a Deployment resource.
@@ -12372,6 +16923,150 @@ func (s *UpdateDeploymentInput) Validate() error {
 	return nil
 }
 
+// SetDeploymentId sets the DeploymentId field's value.
+func (s *UpdateDeploymentInput) SetDeploymentId(v string) *UpdateDeploymentInput {
+	s.DeploymentId = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateDeploymentInput) SetPatchOperations(v []*PatchOperation) *UpdateDeploymentInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *UpdateDeploymentInput) SetRestApiId(v string) *UpdateDeploymentInput {
+	s.RestApiId = &v
+	return s
+}
+
+// Updates an existing documentation part of a given API.
+type UpdateDocumentationPartInput struct {
+	_ struct{} `type:"structure"`
+
+	// [Required] The identifier of the to-be-updated documentation part.
+	//
+	// DocumentationPartId is a required field
+	DocumentationPartId *string `location:"uri" locationName:"part_id" type:"string" required:"true"`
+
+	// A list of update operations to be applied to the specified resource and in
+	// the order specified in this list.
+	PatchOperations []*PatchOperation `locationName:"patchOperations" type:"list"`
+
+	// [Required] The identifier of an API of the to-be-updated documentation part.
+	//
+	// RestApiId is a required field
+	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s UpdateDocumentationPartInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UpdateDocumentationPartInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateDocumentationPartInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateDocumentationPartInput"}
+	if s.DocumentationPartId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DocumentationPartId"))
+	}
+	if s.RestApiId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDocumentationPartId sets the DocumentationPartId field's value.
+func (s *UpdateDocumentationPartInput) SetDocumentationPartId(v string) *UpdateDocumentationPartInput {
+	s.DocumentationPartId = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateDocumentationPartInput) SetPatchOperations(v []*PatchOperation) *UpdateDocumentationPartInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *UpdateDocumentationPartInput) SetRestApiId(v string) *UpdateDocumentationPartInput {
+	s.RestApiId = &v
+	return s
+}
+
+// Updates an existing documentation version of an API.
+type UpdateDocumentationVersionInput struct {
+	_ struct{} `type:"structure"`
+
+	// [Required] The version identifier of the to-be-updated documentation version.
+	//
+	// DocumentationVersion is a required field
+	DocumentationVersion *string `location:"uri" locationName:"doc_version" type:"string" required:"true"`
+
+	// A list of update operations to be applied to the specified resource and in
+	// the order specified in this list.
+	PatchOperations []*PatchOperation `locationName:"patchOperations" type:"list"`
+
+	// [Required] The identifier of an API of the to-be-updated documentation version.
+	//
+	// RestApiId is a required field
+	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s UpdateDocumentationVersionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UpdateDocumentationVersionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateDocumentationVersionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateDocumentationVersionInput"}
+	if s.DocumentationVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("DocumentationVersion"))
+	}
+	if s.RestApiId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RestApiId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDocumentationVersion sets the DocumentationVersion field's value.
+func (s *UpdateDocumentationVersionInput) SetDocumentationVersion(v string) *UpdateDocumentationVersionInput {
+	s.DocumentationVersion = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateDocumentationVersionInput) SetPatchOperations(v []*PatchOperation) *UpdateDocumentationVersionInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *UpdateDocumentationVersionInput) SetRestApiId(v string) *UpdateDocumentationVersionInput {
+	s.RestApiId = &v
+	return s
+}
+
 // A request to change information about the DomainName resource.
 type UpdateDomainNameInput struct {
 	_ struct{} `type:"structure"`
@@ -12407,6 +17102,18 @@ func (s *UpdateDomainNameInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *UpdateDomainNameInput) SetDomainName(v string) *UpdateDomainNameInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateDomainNameInput) SetPatchOperations(v []*PatchOperation) *UpdateDomainNameInput {
+	s.PatchOperations = v
+	return s
 }
 
 // Represents an update integration request.
@@ -12460,6 +17167,30 @@ func (s *UpdateIntegrationInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *UpdateIntegrationInput) SetHttpMethod(v string) *UpdateIntegrationInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateIntegrationInput) SetPatchOperations(v []*PatchOperation) *UpdateIntegrationInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *UpdateIntegrationInput) SetResourceId(v string) *UpdateIntegrationInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *UpdateIntegrationInput) SetRestApiId(v string) *UpdateIntegrationInput {
+	s.RestApiId = &v
+	return s
 }
 
 // Represents an update integration response request.
@@ -12523,6 +17254,36 @@ func (s *UpdateIntegrationResponseInput) Validate() error {
 	return nil
 }
 
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *UpdateIntegrationResponseInput) SetHttpMethod(v string) *UpdateIntegrationResponseInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateIntegrationResponseInput) SetPatchOperations(v []*PatchOperation) *UpdateIntegrationResponseInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *UpdateIntegrationResponseInput) SetResourceId(v string) *UpdateIntegrationResponseInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *UpdateIntegrationResponseInput) SetRestApiId(v string) *UpdateIntegrationResponseInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *UpdateIntegrationResponseInput) SetStatusCode(v string) *UpdateIntegrationResponseInput {
+	s.StatusCode = &v
+	return s
+}
+
 // Request to update an existing Method resource.
 type UpdateMethodInput struct {
 	_ struct{} `type:"structure"`
@@ -12574,6 +17335,30 @@ func (s *UpdateMethodInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *UpdateMethodInput) SetHttpMethod(v string) *UpdateMethodInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateMethodInput) SetPatchOperations(v []*PatchOperation) *UpdateMethodInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *UpdateMethodInput) SetResourceId(v string) *UpdateMethodInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *UpdateMethodInput) SetRestApiId(v string) *UpdateMethodInput {
+	s.RestApiId = &v
+	return s
 }
 
 // A request to update an existing MethodResponse resource.
@@ -12637,6 +17422,36 @@ func (s *UpdateMethodResponseInput) Validate() error {
 	return nil
 }
 
+// SetHttpMethod sets the HttpMethod field's value.
+func (s *UpdateMethodResponseInput) SetHttpMethod(v string) *UpdateMethodResponseInput {
+	s.HttpMethod = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateMethodResponseInput) SetPatchOperations(v []*PatchOperation) *UpdateMethodResponseInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *UpdateMethodResponseInput) SetResourceId(v string) *UpdateMethodResponseInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *UpdateMethodResponseInput) SetRestApiId(v string) *UpdateMethodResponseInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *UpdateMethodResponseInput) SetStatusCode(v string) *UpdateMethodResponseInput {
+	s.StatusCode = &v
+	return s
+}
+
 // Request to update an existing model in an existing RestApi resource.
 type UpdateModelInput struct {
 	_ struct{} `type:"structure"`
@@ -12680,6 +17495,24 @@ func (s *UpdateModelInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetModelName sets the ModelName field's value.
+func (s *UpdateModelInput) SetModelName(v string) *UpdateModelInput {
+	s.ModelName = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateModelInput) SetPatchOperations(v []*PatchOperation) *UpdateModelInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *UpdateModelInput) SetRestApiId(v string) *UpdateModelInput {
+	s.RestApiId = &v
+	return s
 }
 
 // Request to change information about a Resource resource.
@@ -12727,6 +17560,24 @@ func (s *UpdateResourceInput) Validate() error {
 	return nil
 }
 
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateResourceInput) SetPatchOperations(v []*PatchOperation) *UpdateResourceInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *UpdateResourceInput) SetResourceId(v string) *UpdateResourceInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *UpdateResourceInput) SetRestApiId(v string) *UpdateResourceInput {
+	s.RestApiId = &v
+	return s
+}
+
 // Request to update an existing RestApi resource in your collection.
 type UpdateRestApiInput struct {
 	_ struct{} `type:"structure"`
@@ -12762,6 +17613,18 @@ func (s *UpdateRestApiInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateRestApiInput) SetPatchOperations(v []*PatchOperation) *UpdateRestApiInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *UpdateRestApiInput) SetRestApiId(v string) *UpdateRestApiInput {
+	s.RestApiId = &v
+	return s
 }
 
 // Requests Amazon API Gateway to change information about a Stage resource.
@@ -12808,6 +17671,24 @@ func (s *UpdateStageInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateStageInput) SetPatchOperations(v []*PatchOperation) *UpdateStageInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetRestApiId sets the RestApiId field's value.
+func (s *UpdateStageInput) SetRestApiId(v string) *UpdateStageInput {
+	s.RestApiId = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *UpdateStageInput) SetStageName(v string) *UpdateStageInput {
+	s.StageName = &v
+	return s
 }
 
 // The PATCH request to grant a temporary extension to the reamining quota of
@@ -12857,6 +17738,24 @@ func (s *UpdateUsageInput) Validate() error {
 	return nil
 }
 
+// SetKeyId sets the KeyId field's value.
+func (s *UpdateUsageInput) SetKeyId(v string) *UpdateUsageInput {
+	s.KeyId = &v
+	return s
+}
+
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateUsageInput) SetPatchOperations(v []*PatchOperation) *UpdateUsageInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetUsagePlanId sets the UsagePlanId field's value.
+func (s *UpdateUsageInput) SetUsagePlanId(v string) *UpdateUsageInput {
+	s.UsagePlanId = &v
+	return s
+}
+
 // The PATCH request to update a usage plan of a given plan Id.
 type UpdateUsagePlanInput struct {
 	_ struct{} `type:"structure"`
@@ -12894,6 +17793,18 @@ func (s *UpdateUsagePlanInput) Validate() error {
 	return nil
 }
 
+// SetPatchOperations sets the PatchOperations field's value.
+func (s *UpdateUsagePlanInput) SetPatchOperations(v []*PatchOperation) *UpdateUsagePlanInput {
+	s.PatchOperations = v
+	return s
+}
+
+// SetUsagePlanId sets the UsagePlanId field's value.
+func (s *UpdateUsagePlanInput) SetUsagePlanId(v string) *UpdateUsagePlanInput {
+	s.UsagePlanId = &v
+	return s
+}
+
 // Represents the usage data of a usage plan.
 //
 // Create and Use Usage Plans (http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html), Manage Usage in a Usage Plan (http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-create-usage-plans-with-console.html#api-gateway-usage-plan-manage-usage)
@@ -12929,6 +17840,36 @@ func (s Usage) GoString() string {
 	return s.String()
 }
 
+// SetEndDate sets the EndDate field's value.
+func (s *Usage) SetEndDate(v string) *Usage {
+	s.EndDate = &v
+	return s
+}
+
+// SetItems sets the Items field's value.
+func (s *Usage) SetItems(v map[string][][]*int64) *Usage {
+	s.Items = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *Usage) SetPosition(v string) *Usage {
+	s.Position = &v
+	return s
+}
+
+// SetStartDate sets the StartDate field's value.
+func (s *Usage) SetStartDate(v string) *Usage {
+	s.StartDate = &v
+	return s
+}
+
+// SetUsagePlanId sets the UsagePlanId field's value.
+func (s *Usage) SetUsagePlanId(v string) *Usage {
+	s.UsagePlanId = &v
+	return s
+}
+
 // Represents a usage plan than can specify who can assess associated API stages
 // with specified request limits and quotas.
 //
@@ -12952,6 +17893,10 @@ type UsagePlan struct {
 	// The name of a usage plan.
 	Name *string `locationName:"name" type:"string"`
 
+	// The AWS Markeplace product identifier to associate with the usage plan as
+	// a SaaS product on AWS Marketplace.
+	ProductCode *string `locationName:"productCode" type:"string"`
+
 	// The maximum number of permitted requests per a given unit time interval.
 	Quota *QuotaSettings `locationName:"quota" type:"structure"`
 
@@ -12967,6 +17912,48 @@ func (s UsagePlan) String() string {
 // GoString returns the string representation
 func (s UsagePlan) GoString() string {
 	return s.String()
+}
+
+// SetApiStages sets the ApiStages field's value.
+func (s *UsagePlan) SetApiStages(v []*ApiStage) *UsagePlan {
+	s.ApiStages = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UsagePlan) SetDescription(v string) *UsagePlan {
+	s.Description = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *UsagePlan) SetId(v string) *UsagePlan {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UsagePlan) SetName(v string) *UsagePlan {
+	s.Name = &v
+	return s
+}
+
+// SetProductCode sets the ProductCode field's value.
+func (s *UsagePlan) SetProductCode(v string) *UsagePlan {
+	s.ProductCode = &v
+	return s
+}
+
+// SetQuota sets the Quota field's value.
+func (s *UsagePlan) SetQuota(v *QuotaSettings) *UsagePlan {
+	s.Quota = v
+	return s
+}
+
+// SetThrottle sets the Throttle field's value.
+func (s *UsagePlan) SetThrottle(v *ThrottleSettings) *UsagePlan {
+	s.Throttle = v
+	return s
 }
 
 // Represents a usage plan key to identify a plan customer.
@@ -13001,12 +17988,37 @@ func (s UsagePlanKey) GoString() string {
 	return s.String()
 }
 
+// SetId sets the Id field's value.
+func (s *UsagePlanKey) SetId(v string) *UsagePlanKey {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UsagePlanKey) SetName(v string) *UsagePlanKey {
+	s.Name = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *UsagePlanKey) SetType(v string) *UsagePlanKey {
+	s.Type = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *UsagePlanKey) SetValue(v string) *UsagePlanKey {
+	s.Value = &v
+	return s
+}
+
 const (
 	// ApiKeysFormatCsv is a ApiKeysFormat enum value
 	ApiKeysFormatCsv = "csv"
 )
 
-// The authorizer type. the only current value is TOKEN.
+// The authorizer type. the current value is TOKEN for a Lambda function or
+// COGNITO_USER_POOLS for an Amazon Cognito Your User Pool.
 const (
 	// AuthorizerTypeToken is a AuthorizerType enum value
 	AuthorizerTypeToken = "TOKEN"
@@ -13058,6 +18070,52 @@ const (
 
 	// CacheClusterStatusFlushInProgress is a CacheClusterStatus enum value
 	CacheClusterStatusFlushInProgress = "FLUSH_IN_PROGRESS"
+)
+
+const (
+	// ContentHandlingStrategyConvertToBinary is a ContentHandlingStrategy enum value
+	ContentHandlingStrategyConvertToBinary = "CONVERT_TO_BINARY"
+
+	// ContentHandlingStrategyConvertToText is a ContentHandlingStrategy enum value
+	ContentHandlingStrategyConvertToText = "CONVERT_TO_TEXT"
+)
+
+const (
+	// DocumentationPartTypeApi is a DocumentationPartType enum value
+	DocumentationPartTypeApi = "API"
+
+	// DocumentationPartTypeAuthorizer is a DocumentationPartType enum value
+	DocumentationPartTypeAuthorizer = "AUTHORIZER"
+
+	// DocumentationPartTypeModel is a DocumentationPartType enum value
+	DocumentationPartTypeModel = "MODEL"
+
+	// DocumentationPartTypeResource is a DocumentationPartType enum value
+	DocumentationPartTypeResource = "RESOURCE"
+
+	// DocumentationPartTypeMethod is a DocumentationPartType enum value
+	DocumentationPartTypeMethod = "METHOD"
+
+	// DocumentationPartTypePathParameter is a DocumentationPartType enum value
+	DocumentationPartTypePathParameter = "PATH_PARAMETER"
+
+	// DocumentationPartTypeQueryParameter is a DocumentationPartType enum value
+	DocumentationPartTypeQueryParameter = "QUERY_PARAMETER"
+
+	// DocumentationPartTypeRequestHeader is a DocumentationPartType enum value
+	DocumentationPartTypeRequestHeader = "REQUEST_HEADER"
+
+	// DocumentationPartTypeRequestBody is a DocumentationPartType enum value
+	DocumentationPartTypeRequestBody = "REQUEST_BODY"
+
+	// DocumentationPartTypeResponse is a DocumentationPartType enum value
+	DocumentationPartTypeResponse = "RESPONSE"
+
+	// DocumentationPartTypeResponseHeader is a DocumentationPartType enum value
+	DocumentationPartTypeResponseHeader = "RESPONSE_HEADER"
+
+	// DocumentationPartTypeResponseBody is a DocumentationPartType enum value
+	DocumentationPartTypeResponseBody = "RESPONSE_BODY"
 )
 
 // The integration type. The valid value is HTTP for integrating with an HTTP

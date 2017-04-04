@@ -28,12 +28,13 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/network"
-	"github.com/coreos/flannel/remote"
 	"github.com/coreos/flannel/subnet"
+	"github.com/coreos/flannel/subnet/etcdv2"
 	"github.com/coreos/flannel/subnet/kube"
 	"github.com/coreos/flannel/version"
 
 	// Backends need to be imported for their init() to get executed and them to register
+	_ "github.com/coreos/flannel/backend/alivpc"
 	_ "github.com/coreos/flannel/backend/alloc"
 	_ "github.com/coreos/flannel/backend/awsvpc"
 	_ "github.com/coreos/flannel/backend/gce"
@@ -43,21 +44,16 @@ import (
 )
 
 type CmdLineOpts struct {
-	etcdEndpoints  string
-	etcdPrefix     string
-	etcdKeyfile    string
-	etcdCertfile   string
-	etcdCAFile     string
-	etcdUsername   string
-	etcdPassword   string
-	help           bool
-	version        bool
-	listen         string
-	remote         string
-	remoteKeyfile  string
-	remoteCertfile string
-	remoteCAFile   string
-	kubeSubnetMgr  bool
+	etcdEndpoints string
+	etcdPrefix    string
+	etcdKeyfile   string
+	etcdCertfile  string
+	etcdCAFile    string
+	etcdUsername  string
+	etcdPassword  string
+	help          bool
+	version       bool
+	kubeSubnetMgr bool
 }
 
 var opts CmdLineOpts
@@ -70,25 +66,17 @@ func init() {
 	flag.StringVar(&opts.etcdCAFile, "etcd-cafile", "", "SSL Certificate Authority file used to secure etcd communication")
 	flag.StringVar(&opts.etcdUsername, "etcd-username", "", "Username for BasicAuth to etcd")
 	flag.StringVar(&opts.etcdPassword, "etcd-password", "", "Password for BasicAuth to etcd")
-	flag.StringVar(&opts.listen, "listen", "", "run as server and listen on specified address (e.g. ':8080')")
-	flag.StringVar(&opts.remote, "remote", "", "run as client and connect to server on specified address (e.g. '10.1.2.3:8080')")
-	flag.StringVar(&opts.remoteKeyfile, "remote-keyfile", "", "SSL key file used to secure client/server communication")
-	flag.StringVar(&opts.remoteCertfile, "remote-certfile", "", "SSL certification file used to secure client/server communication")
-	flag.StringVar(&opts.remoteCAFile, "remote-cafile", "", "SSL Certificate Authority file used to secure client/server communication")
 	flag.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "Contact the Kubernetes API for subnet assignement instead of etcd or flannel-server.")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
 }
 
 func newSubnetManager() (subnet.Manager, error) {
-	if opts.remote != "" {
-		return remote.NewRemoteManager(opts.remote, opts.remoteCAFile, opts.remoteCertfile, opts.remoteKeyfile)
-	}
 	if opts.kubeSubnetMgr {
 		return kube.NewSubnetManager()
 	}
 
-	cfg := &subnet.EtcdConfig{
+	cfg := &etcdv2.EtcdConfig{
 		Endpoints: strings.Split(opts.etcdEndpoints, ","),
 		Keyfile:   opts.etcdKeyfile,
 		Certfile:  opts.etcdCertfile,
@@ -98,7 +86,7 @@ func newSubnetManager() (subnet.Manager, error) {
 		Password:  opts.etcdPassword,
 	}
 
-	return subnet.NewLocalManager(cfg)
+	return etcdv2.NewLocalManager(cfg)
 }
 
 func main() {
@@ -137,25 +125,14 @@ func main() {
 
 	var runFunc func(ctx context.Context)
 
-	if opts.listen != "" {
-		if opts.remote != "" {
-			log.Error("--listen and --remote are mutually exclusive")
-			os.Exit(1)
-		}
-		log.Info("running as server")
-		runFunc = func(ctx context.Context) {
-			remote.RunServer(ctx, sm, opts.listen, opts.remoteCAFile, opts.remoteCertfile, opts.remoteKeyfile)
-		}
-	} else {
-		nm, err := network.NewNetworkManager(ctx, sm)
-		if err != nil {
-			log.Error("Failed to create NetworkManager: ", err)
-			os.Exit(1)
-		}
+	nm, err := network.NewNetworkManager(ctx, sm)
+	if err != nil {
+		log.Error("Failed to create NetworkManager: ", err)
+		os.Exit(1)
+	}
 
-		runFunc = func(ctx context.Context) {
-			nm.Run(ctx)
-		}
+	runFunc = func(ctx context.Context) {
+		nm.Run(ctx)
 	}
 
 	wg := sync.WaitGroup{}

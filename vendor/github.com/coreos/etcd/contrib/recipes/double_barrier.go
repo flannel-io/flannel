@@ -1,4 +1,4 @@
-// Copyright 2016 CoreOS, Inc.
+// Copyright 2016 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,39 +16,41 @@ package recipe
 
 import (
 	"github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/storage/storagepb"
+	"github.com/coreos/etcd/clientv3/concurrency"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 	"golang.org/x/net/context"
 )
 
 // DoubleBarrier blocks processes on Enter until an expected count enters, then
 // blocks again on Leave until all processes have left.
 type DoubleBarrier struct {
-	client *clientv3.Client
-	ctx    context.Context
+	s   *concurrency.Session
+	ctx context.Context
 
 	key   string // key for the collective barrier
 	count int
 	myKey *EphemeralKV // current key for this process on the barrier
 }
 
-func NewDoubleBarrier(client *clientv3.Client, key string, count int) *DoubleBarrier {
+func NewDoubleBarrier(s *concurrency.Session, key string, count int) *DoubleBarrier {
 	return &DoubleBarrier{
-		client: client,
-		ctx:    context.TODO(),
-		key:    key,
-		count:  count,
+		s:     s,
+		ctx:   context.TODO(),
+		key:   key,
+		count: count,
 	}
 }
 
 // Enter waits for "count" processes to enter the barrier then returns
 func (b *DoubleBarrier) Enter() error {
-	ek, err := NewUniqueEphemeralKey(b.client, b.key+"/waiters")
+	client := b.s.Client()
+	ek, err := newUniqueEphemeralKey(b.s, b.key+"/waiters")
 	if err != nil {
 		return err
 	}
 	b.myKey = ek
 
-	resp, err := b.client.Get(b.ctx, b.key+"/waiters", clientv3.WithPrefix())
+	resp, err := client.Get(b.ctx, b.key+"/waiters", clientv3.WithPrefix())
 	if err != nil {
 		return err
 	}
@@ -59,21 +61,22 @@ func (b *DoubleBarrier) Enter() error {
 
 	if len(resp.Kvs) == b.count {
 		// unblock waiters
-		_, err = b.client.Put(b.ctx, b.key+"/ready", "")
+		_, err = client.Put(b.ctx, b.key+"/ready", "")
 		return err
 	}
 
 	_, err = WaitEvents(
-		b.client,
+		client,
 		b.key+"/ready",
 		ek.Revision(),
-		[]storagepb.Event_EventType{storagepb.PUT})
+		[]mvccpb.Event_EventType{mvccpb.PUT})
 	return err
 }
 
 // Leave waits for "count" processes to leave the barrier then returns
 func (b *DoubleBarrier) Leave() error {
-	resp, err := b.client.Get(b.ctx, b.key+"/waiters", clientv3.WithPrefix())
+	client := b.s.Client()
+	resp, err := client.Get(b.ctx, b.key+"/waiters", clientv3.WithPrefix())
 	if err != nil {
 		return err
 	}
@@ -94,7 +97,7 @@ func (b *DoubleBarrier) Leave() error {
 
 	if len(resp.Kvs) == 1 {
 		// this is the only node in the barrier; finish up
-		if _, err = b.client.Delete(b.ctx, b.key+"/ready"); err != nil {
+		if _, err = client.Delete(b.ctx, b.key+"/ready"); err != nil {
 			return err
 		}
 		return b.myKey.Delete()
@@ -106,10 +109,10 @@ func (b *DoubleBarrier) Leave() error {
 	// lowest process in node => wait on highest process
 	if isLowest {
 		_, err = WaitEvents(
-			b.client,
+			client,
 			string(highest.Key),
 			highest.ModRevision,
-			[]storagepb.Event_EventType{storagepb.DELETE})
+			[]mvccpb.Event_EventType{mvccpb.DELETE})
 		if err != nil {
 			return err
 		}
@@ -117,16 +120,16 @@ func (b *DoubleBarrier) Leave() error {
 	}
 
 	// delete self and wait on lowest process
-	if err := b.myKey.Delete(); err != nil {
+	if err = b.myKey.Delete(); err != nil {
 		return err
 	}
 
 	key := string(lowest.Key)
 	_, err = WaitEvents(
-		b.client,
+		client,
 		key,
 		lowest.ModRevision,
-		[]storagepb.Event_EventType{storagepb.DELETE})
+		[]mvccpb.Event_EventType{mvccpb.DELETE})
 	if err != nil {
 		return err
 	}

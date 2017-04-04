@@ -41,6 +41,80 @@ func ExampleSES_CloneReceiptRuleSet() {
 	fmt.Println(resp)
 }
 
+func ExampleSES_CreateConfigurationSet() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.CreateConfigurationSetInput{
+		ConfigurationSet: &ses.ConfigurationSet{ // Required
+			Name: aws.String("ConfigurationSetName"), // Required
+		},
+	}
+	resp, err := svc.CreateConfigurationSet(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleSES_CreateConfigurationSetEventDestination() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.CreateConfigurationSetEventDestinationInput{
+		ConfigurationSetName: aws.String("ConfigurationSetName"), // Required
+		EventDestination: &ses.EventDestination{ // Required
+			MatchingEventTypes: []*string{ // Required
+				aws.String("EventType"), // Required
+				// More values...
+			},
+			Name: aws.String("EventDestinationName"), // Required
+			CloudWatchDestination: &ses.CloudWatchDestination{
+				DimensionConfigurations: []*ses.CloudWatchDimensionConfiguration{ // Required
+					{ // Required
+						DefaultDimensionValue: aws.String("DefaultDimensionValue"), // Required
+						DimensionName:         aws.String("DimensionName"),         // Required
+						DimensionValueSource:  aws.String("DimensionValueSource"),  // Required
+					},
+					// More values...
+				},
+			},
+			Enabled: aws.Bool(true),
+			KinesisFirehoseDestination: &ses.KinesisFirehoseDestination{
+				DeliveryStreamARN: aws.String("AmazonResourceName"), // Required
+				IAMRoleARN:        aws.String("AmazonResourceName"), // Required
+			},
+		},
+	}
+	resp, err := svc.CreateConfigurationSetEventDestination(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleSES_CreateReceiptFilter() {
 	sess, err := session.NewSession()
 	if err != nil {
@@ -160,6 +234,57 @@ func ExampleSES_CreateReceiptRuleSet() {
 		RuleSetName: aws.String("ReceiptRuleSetName"), // Required
 	}
 	resp, err := svc.CreateReceiptRuleSet(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleSES_DeleteConfigurationSet() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.DeleteConfigurationSetInput{
+		ConfigurationSetName: aws.String("ConfigurationSetName"), // Required
+	}
+	resp, err := svc.DeleteConfigurationSet(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleSES_DeleteConfigurationSetEventDestination() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.DeleteConfigurationSetEventDestinationInput{
+		ConfigurationSetName: aws.String("ConfigurationSetName"), // Required
+		EventDestinationName: aws.String("EventDestinationName"), // Required
+	}
+	resp, err := svc.DeleteConfigurationSetEventDestination(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
@@ -335,6 +460,35 @@ func ExampleSES_DescribeActiveReceiptRuleSet() {
 
 	var params *ses.DescribeActiveReceiptRuleSetInput
 	resp, err := svc.DescribeActiveReceiptRuleSet(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleSES_DescribeConfigurationSet() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.DescribeConfigurationSetInput{
+		ConfigurationSetName: aws.String("ConfigurationSetName"), // Required
+		ConfigurationSetAttributeNames: []*string{
+			aws.String("ConfigurationSetAttribute"), // Required
+			// More values...
+		},
+	}
+	resp, err := svc.DescribeConfigurationSet(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
@@ -573,6 +727,32 @@ func ExampleSES_GetSendStatistics() {
 
 	var params *ses.GetSendStatisticsInput
 	resp, err := svc.GetSendStatistics(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleSES_ListConfigurationSets() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.ListConfigurationSetsInput{
+		MaxItems:  aws.Int64(1),
+		NextToken: aws.String("NextToken"),
+	}
+	resp, err := svc.ListConfigurationSets(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
@@ -866,7 +1046,8 @@ func ExampleSES_SendEmail() {
 				Charset: aws.String("Charset"),
 			},
 		},
-		Source: aws.String("Address"), // Required
+		Source:               aws.String("Address"), // Required
+		ConfigurationSetName: aws.String("ConfigurationSetName"),
 		ReplyToAddresses: []*string{
 			aws.String("Address"), // Required
 			// More values...
@@ -874,6 +1055,13 @@ func ExampleSES_SendEmail() {
 		ReturnPath:    aws.String("Address"),
 		ReturnPathArn: aws.String("AmazonResourceName"),
 		SourceArn:     aws.String("AmazonResourceName"),
+		Tags: []*ses.MessageTag{
+			{ // Required
+				Name:  aws.String("MessageTagName"),  // Required
+				Value: aws.String("MessageTagValue"), // Required
+			},
+			// More values...
+		},
 	}
 	resp, err := svc.SendEmail(params)
 
@@ -901,6 +1089,7 @@ func ExampleSES_SendRawEmail() {
 		RawMessage: &ses.RawMessage{ // Required
 			Data: []byte("PAYLOAD"), // Required
 		},
+		ConfigurationSetName: aws.String("ConfigurationSetName"),
 		Destinations: []*string{
 			aws.String("Address"), // Required
 			// More values...
@@ -909,6 +1098,13 @@ func ExampleSES_SendRawEmail() {
 		ReturnPathArn: aws.String("AmazonResourceName"),
 		Source:        aws.String("Address"),
 		SourceArn:     aws.String("AmazonResourceName"),
+		Tags: []*ses.MessageTag{
+			{ // Required
+				Name:  aws.String("MessageTagName"),  // Required
+				Value: aws.String("MessageTagValue"), // Required
+			},
+			// More values...
+		},
 	}
 	resp, err := svc.SendRawEmail(params)
 
@@ -1096,6 +1292,53 @@ func ExampleSES_SetReceiptRulePosition() {
 		After:       aws.String("ReceiptRuleName"),
 	}
 	resp, err := svc.SetReceiptRulePosition(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleSES_UpdateConfigurationSetEventDestination() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.UpdateConfigurationSetEventDestinationInput{
+		ConfigurationSetName: aws.String("ConfigurationSetName"), // Required
+		EventDestination: &ses.EventDestination{ // Required
+			MatchingEventTypes: []*string{ // Required
+				aws.String("EventType"), // Required
+				// More values...
+			},
+			Name: aws.String("EventDestinationName"), // Required
+			CloudWatchDestination: &ses.CloudWatchDestination{
+				DimensionConfigurations: []*ses.CloudWatchDimensionConfiguration{ // Required
+					{ // Required
+						DefaultDimensionValue: aws.String("DefaultDimensionValue"), // Required
+						DimensionName:         aws.String("DimensionName"),         // Required
+						DimensionValueSource:  aws.String("DimensionValueSource"),  // Required
+					},
+					// More values...
+				},
+			},
+			Enabled: aws.Bool(true),
+			KinesisFirehoseDestination: &ses.KinesisFirehoseDestination{
+				DeliveryStreamARN: aws.String("AmazonResourceName"), // Required
+				IAMRoleARN:        aws.String("AmazonResourceName"), // Required
+			},
+		},
+	}
+	resp, err := svc.UpdateConfigurationSetEventDestination(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and

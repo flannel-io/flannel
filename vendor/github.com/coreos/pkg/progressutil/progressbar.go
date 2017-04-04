@@ -140,6 +140,10 @@ type ProgressBarPrinter struct {
 	progressBars        []*ProgressBar
 	maxBefore           int
 	maxAfter            int
+
+	// printToTTYAlways forces this ProgressBarPrinter to always behave as if
+	// in a tty. Used for tests.
+	printToTTYAlways bool
 }
 
 // AddProgressBar will create a new ProgressBar, register it with this
@@ -176,7 +180,7 @@ func (pbp *ProgressBarPrinter) Print(printTo io.Writer) (bool, error) {
 		numColumns = 80
 	}
 
-	if isTerminal(printTo) {
+	if pbp.isTerminal(printTo) {
 		moveCursorUp(printTo, pbp.numLinesInLastPrint)
 	}
 
@@ -193,7 +197,7 @@ func (pbp *ProgressBarPrinter) Print(printTo io.Writer) (bool, error) {
 
 	allDone := true
 	for _, bar := range bars {
-		if isTerminal(printTo) {
+		if pbp.isTerminal(printTo) {
 			bar.printToTerminal(printTo, numColumns, pbp.PadToBeEven, pbp.maxBefore, pbp.maxAfter)
 		} else {
 			bar.printToNonTerminal(printTo)
@@ -248,7 +252,10 @@ func (pb *ProgressBar) printToNonTerminal(printTo io.Writer) {
 }
 
 // isTerminal returns True when w is going to a tty, and false otherwise.
-func isTerminal(w io.Writer) bool {
+func (pbp *ProgressBarPrinter) isTerminal(w io.Writer) bool {
+	if pbp.printToTTYAlways {
+		return true
+	}
 	if f, ok := w.(*os.File); ok {
 		return terminal.IsTerminal(int(f.Fd()))
 	}

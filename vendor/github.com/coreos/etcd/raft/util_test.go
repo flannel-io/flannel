@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -67,6 +67,40 @@ func TestLimitSize(t *testing.T) {
 	for i, tt := range tests {
 		if !reflect.DeepEqual(limitSize(ents, tt.maxsize), tt.wentries) {
 			t.Errorf("#%d: entries = %v, want %v", i, limitSize(ents, tt.maxsize), tt.wentries)
+		}
+	}
+}
+
+func TestIsLocalMsg(t *testing.T) {
+	tests := []struct {
+		msgt    pb.MessageType
+		isLocal bool
+	}{
+		{pb.MsgHup, true},
+		{pb.MsgBeat, true},
+		{pb.MsgUnreachable, true},
+		{pb.MsgSnapStatus, true},
+		{pb.MsgCheckQuorum, true},
+		{pb.MsgTransferLeader, false},
+		{pb.MsgProp, false},
+		{pb.MsgApp, false},
+		{pb.MsgAppResp, false},
+		{pb.MsgVote, false},
+		{pb.MsgVoteResp, false},
+		{pb.MsgSnap, false},
+		{pb.MsgHeartbeat, false},
+		{pb.MsgHeartbeatResp, false},
+		{pb.MsgTimeoutNow, false},
+		{pb.MsgReadIndex, false},
+		{pb.MsgReadIndexResp, false},
+		{pb.MsgPreVote, false},
+		{pb.MsgPreVoteResp, false},
+	}
+
+	for i, tt := range tests {
+		got := IsLocalMsg(tt.msgt)
+		if got != tt.isLocal {
+			t.Errorf("#%d: got %v, want %v", i, got, tt.isLocal)
 		}
 	}
 }

@@ -41,7 +41,6 @@ import (
 
 var (
 	ErrUnimplemented = errors.New("unimplemented")
-	kubeSubnetCfg    *subnet.Config
 )
 
 const (

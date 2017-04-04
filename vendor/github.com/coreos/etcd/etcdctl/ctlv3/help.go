@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -67,6 +67,12 @@ VERSION:
 {{printf "\t%s" .Version}}
 {{end}}\
 {{if .Cmd.HasSubCommands}}\
+
+API VERSION:
+{{printf "\t%s" .APIVersion}}
+{{end}}\
+{{if .Cmd.HasSubCommands}}\
+
 
 COMMANDS:
 {{range .SubCommands}}\
@@ -148,12 +154,14 @@ func usageFunc(cmd *cobra.Command) error {
 		GlobalFlags string
 		SubCommands []*cobra.Command
 		Version     string
+		APIVersion  string
 	}{
 		cmd,
 		etcdFlagUsages(cmd.LocalFlags()),
 		etcdFlagUsages(cmd.InheritedFlags()),
 		subCommands,
 		version.Version,
+		version.APIVersion,
 	})
 	tabOut.Flush()
 	return nil

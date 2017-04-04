@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/codegangsta/cli"
 	"github.com/coreos/etcd/client"
+	"github.com/urfave/cli"
 	"golang.org/x/net/context"
 )
 
@@ -36,8 +36,9 @@ func NewWatchCommand() cli.Command {
 			cli.IntFlag{Name: "after-index", Value: 0, Usage: "watch after the given index"},
 			cli.BoolFlag{Name: "recursive, r", Usage: "returns all values for key and child keys"},
 		},
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			watchCommandFunc(c, mustNewKeyAPI(c))
+			return nil
 		},
 	}
 }
@@ -45,7 +46,7 @@ func NewWatchCommand() cli.Command {
 // watchCommandFunc executes the "watch" command.
 func watchCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	if len(c.Args()) == 0 {
-		handleError(ExitBadArgs, errors.New("key required"))
+		handleError(c, ExitBadArgs, errors.New("key required"))
 	}
 	key := c.Args()[0]
 	recursive := c.Bool("recursive")
@@ -66,7 +67,7 @@ func watchCommandFunc(c *cli.Context, ki client.KeysAPI) {
 	for !stop {
 		resp, err := w.Next(context.TODO())
 		if err != nil {
-			handleError(ExitServerError, err)
+			handleError(c, ExitServerError, err)
 		}
 		if resp.Node.Dir {
 			continue

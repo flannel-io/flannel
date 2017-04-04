@@ -38,7 +38,6 @@ const opAcceptCertificateTransfer = "AcceptCertificateTransfer"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) AcceptCertificateTransferRequest(input *AcceptCertificateTransferInput) (req *request.Request, output *AcceptCertificateTransferOutput) {
 	op := &request.Operation{
 		Name:       opAcceptCertificateTransfer,
@@ -50,11 +49,10 @@ func (c *IoT) AcceptCertificateTransferRequest(input *AcceptCertificateTransferI
 		input = &AcceptCertificateTransferInput{}
 	}
 
+	output = &AcceptCertificateTransferOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AcceptCertificateTransferOutput{}
-	req.Data = output
 	return
 }
 
@@ -127,7 +125,6 @@ const opAttachPrincipalPolicy = "AttachPrincipalPolicy"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) AttachPrincipalPolicyRequest(input *AttachPrincipalPolicyInput) (req *request.Request, output *AttachPrincipalPolicyOutput) {
 	op := &request.Operation{
 		Name:       opAttachPrincipalPolicy,
@@ -139,11 +136,10 @@ func (c *IoT) AttachPrincipalPolicyRequest(input *AttachPrincipalPolicyInput) (r
 		input = &AttachPrincipalPolicyInput{}
 	}
 
+	output = &AttachPrincipalPolicyOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AttachPrincipalPolicyOutput{}
-	req.Data = output
 	return
 }
 
@@ -212,7 +208,6 @@ const opAttachThingPrincipal = "AttachThingPrincipal"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) AttachThingPrincipalRequest(input *AttachThingPrincipalInput) (req *request.Request, output *AttachThingPrincipalOutput) {
 	op := &request.Operation{
 		Name:       opAttachThingPrincipal,
@@ -224,9 +219,8 @@ func (c *IoT) AttachThingPrincipalRequest(input *AttachThingPrincipalInput) (req
 		input = &AttachThingPrincipalInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AttachThingPrincipalOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -291,7 +285,6 @@ const opCancelCertificateTransfer = "CancelCertificateTransfer"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CancelCertificateTransferRequest(input *CancelCertificateTransferInput) (req *request.Request, output *CancelCertificateTransferOutput) {
 	op := &request.Operation{
 		Name:       opCancelCertificateTransfer,
@@ -303,11 +296,10 @@ func (c *IoT) CancelCertificateTransferRequest(input *CancelCertificateTransferI
 		input = &CancelCertificateTransferInput{}
 	}
 
+	output = &CancelCertificateTransferOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &CancelCertificateTransferOutput{}
-	req.Data = output
 	return
 }
 
@@ -385,7 +377,6 @@ const opCreateCertificateFromCsr = "CreateCertificateFromCsr"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreateCertificateFromCsrRequest(input *CreateCertificateFromCsrInput) (req *request.Request, output *CreateCertificateFromCsrOutput) {
 	op := &request.Operation{
 		Name:       opCreateCertificateFromCsr,
@@ -397,9 +388,8 @@ func (c *IoT) CreateCertificateFromCsrRequest(input *CreateCertificateFromCsrInp
 		input = &CreateCertificateFromCsrInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateCertificateFromCsrOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -498,7 +488,6 @@ const opCreateKeysAndCertificate = "CreateKeysAndCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreateKeysAndCertificateRequest(input *CreateKeysAndCertificateInput) (req *request.Request, output *CreateKeysAndCertificateOutput) {
 	op := &request.Operation{
 		Name:       opCreateKeysAndCertificate,
@@ -510,9 +499,8 @@ func (c *IoT) CreateKeysAndCertificateRequest(input *CreateKeysAndCertificateInp
 		input = &CreateKeysAndCertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateKeysAndCertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -578,7 +566,6 @@ const opCreatePolicy = "CreatePolicy"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreatePolicyRequest(input *CreatePolicyInput) (req *request.Request, output *CreatePolicyOutput) {
 	op := &request.Operation{
 		Name:       opCreatePolicy,
@@ -590,9 +577,8 @@ func (c *IoT) CreatePolicyRequest(input *CreatePolicyInput) (req *request.Reques
 		input = &CreatePolicyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreatePolicyOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -664,7 +650,6 @@ const opCreatePolicyVersion = "CreatePolicyVersion"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreatePolicyVersionRequest(input *CreatePolicyVersionInput) (req *request.Request, output *CreatePolicyVersionOutput) {
 	op := &request.Operation{
 		Name:       opCreatePolicyVersion,
@@ -676,9 +661,8 @@ func (c *IoT) CreatePolicyVersionRequest(input *CreatePolicyVersionInput) (req *
 		input = &CreatePolicyVersionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreatePolicyVersionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -756,7 +740,6 @@ const opCreateThing = "CreateThing"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreateThingRequest(input *CreateThingInput) (req *request.Request, output *CreateThingOutput) {
 	op := &request.Operation{
 		Name:       opCreateThing,
@@ -768,9 +751,8 @@ func (c *IoT) CreateThingRequest(input *CreateThingInput) (req *request.Request,
 		input = &CreateThingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateThingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -838,7 +820,6 @@ const opCreateThingType = "CreateThingType"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreateThingTypeRequest(input *CreateThingTypeInput) (req *request.Request, output *CreateThingTypeOutput) {
 	op := &request.Operation{
 		Name:       opCreateThingType,
@@ -850,9 +831,8 @@ func (c *IoT) CreateThingTypeRequest(input *CreateThingTypeInput) (req *request.
 		input = &CreateThingTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateThingTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -917,7 +897,6 @@ const opCreateTopicRule = "CreateTopicRule"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreateTopicRuleRequest(input *CreateTopicRuleInput) (req *request.Request, output *CreateTopicRuleOutput) {
 	op := &request.Operation{
 		Name:       opCreateTopicRule,
@@ -929,11 +908,10 @@ func (c *IoT) CreateTopicRuleRequest(input *CreateTopicRuleInput) (req *request.
 		input = &CreateTopicRuleInput{}
 	}
 
+	output = &CreateTopicRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &CreateTopicRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -997,7 +975,6 @@ const opDeleteCACertificate = "DeleteCACertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeleteCACertificateRequest(input *DeleteCACertificateInput) (req *request.Request, output *DeleteCACertificateOutput) {
 	op := &request.Operation{
 		Name:       opDeleteCACertificate,
@@ -1009,9 +986,8 @@ func (c *IoT) DeleteCACertificateRequest(input *DeleteCACertificateInput) (req *
 		input = &DeleteCACertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteCACertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1079,7 +1055,6 @@ const opDeleteCertificate = "DeleteCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeleteCertificateRequest(input *DeleteCertificateInput) (req *request.Request, output *DeleteCertificateOutput) {
 	op := &request.Operation{
 		Name:       opDeleteCertificate,
@@ -1091,11 +1066,10 @@ func (c *IoT) DeleteCertificateRequest(input *DeleteCertificateInput) (req *requ
 		input = &DeleteCertificateInput{}
 	}
 
+	output = &DeleteCertificateOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteCertificateOutput{}
-	req.Data = output
 	return
 }
 
@@ -1171,7 +1145,6 @@ const opDeletePolicy = "DeletePolicy"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Request, output *DeletePolicyOutput) {
 	op := &request.Operation{
 		Name:       opDeletePolicy,
@@ -1183,11 +1156,10 @@ func (c *IoT) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Reques
 		input = &DeletePolicyInput{}
 	}
 
+	output = &DeletePolicyOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeletePolicyOutput{}
-	req.Data = output
 	return
 }
 
@@ -1265,7 +1237,6 @@ const opDeletePolicyVersion = "DeletePolicyVersion"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeletePolicyVersionRequest(input *DeletePolicyVersionInput) (req *request.Request, output *DeletePolicyVersionOutput) {
 	op := &request.Operation{
 		Name:       opDeletePolicyVersion,
@@ -1277,11 +1248,10 @@ func (c *IoT) DeletePolicyVersionRequest(input *DeletePolicyVersionInput) (req *
 		input = &DeletePolicyVersionInput{}
 	}
 
+	output = &DeletePolicyVersionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeletePolicyVersionOutput{}
-	req.Data = output
 	return
 }
 
@@ -1352,7 +1322,6 @@ const opDeleteRegistrationCode = "DeleteRegistrationCode"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeleteRegistrationCodeRequest(input *DeleteRegistrationCodeInput) (req *request.Request, output *DeleteRegistrationCodeOutput) {
 	op := &request.Operation{
 		Name:       opDeleteRegistrationCode,
@@ -1364,9 +1333,8 @@ func (c *IoT) DeleteRegistrationCodeRequest(input *DeleteRegistrationCodeInput) 
 		input = &DeleteRegistrationCodeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteRegistrationCodeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1428,7 +1396,6 @@ const opDeleteThing = "DeleteThing"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeleteThingRequest(input *DeleteThingInput) (req *request.Request, output *DeleteThingOutput) {
 	op := &request.Operation{
 		Name:       opDeleteThing,
@@ -1440,9 +1407,8 @@ func (c *IoT) DeleteThingRequest(input *DeleteThingInput) (req *request.Request,
 		input = &DeleteThingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteThingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1511,7 +1477,6 @@ const opDeleteThingType = "DeleteThingType"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeleteThingTypeRequest(input *DeleteThingTypeInput) (req *request.Request, output *DeleteThingTypeOutput) {
 	op := &request.Operation{
 		Name:       opDeleteThingType,
@@ -1523,9 +1488,8 @@ func (c *IoT) DeleteThingTypeRequest(input *DeleteThingTypeInput) (req *request.
 		input = &DeleteThingTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteThingTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1594,7 +1558,6 @@ const opDeleteTopicRule = "DeleteTopicRule"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeleteTopicRuleRequest(input *DeleteTopicRuleInput) (req *request.Request, output *DeleteTopicRuleOutput) {
 	op := &request.Operation{
 		Name:       opDeleteTopicRule,
@@ -1606,11 +1569,10 @@ func (c *IoT) DeleteTopicRuleRequest(input *DeleteTopicRuleInput) (req *request.
 		input = &DeleteTopicRuleInput{}
 	}
 
+	output = &DeleteTopicRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteTopicRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -1669,7 +1631,6 @@ const opDeprecateThingType = "DeprecateThingType"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeprecateThingTypeRequest(input *DeprecateThingTypeInput) (req *request.Request, output *DeprecateThingTypeOutput) {
 	op := &request.Operation{
 		Name:       opDeprecateThingType,
@@ -1681,9 +1642,8 @@ func (c *IoT) DeprecateThingTypeRequest(input *DeprecateThingTypeInput) (req *re
 		input = &DeprecateThingTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeprecateThingTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1749,7 +1709,6 @@ const opDescribeCACertificate = "DescribeCACertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DescribeCACertificateRequest(input *DescribeCACertificateInput) (req *request.Request, output *DescribeCACertificateOutput) {
 	op := &request.Operation{
 		Name:       opDescribeCACertificate,
@@ -1761,9 +1720,8 @@ func (c *IoT) DescribeCACertificateRequest(input *DescribeCACertificateInput) (r
 		input = &DescribeCACertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeCACertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1828,7 +1786,6 @@ const opDescribeCertificate = "DescribeCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DescribeCertificateRequest(input *DescribeCertificateInput) (req *request.Request, output *DescribeCertificateOutput) {
 	op := &request.Operation{
 		Name:       opDescribeCertificate,
@@ -1840,9 +1797,8 @@ func (c *IoT) DescribeCertificateRequest(input *DescribeCertificateInput) (req *
 		input = &DescribeCertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeCertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1907,7 +1863,6 @@ const opDescribeEndpoint = "DescribeEndpoint"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DescribeEndpointRequest(input *DescribeEndpointInput) (req *request.Request, output *DescribeEndpointOutput) {
 	op := &request.Operation{
 		Name:       opDescribeEndpoint,
@@ -1919,9 +1874,8 @@ func (c *IoT) DescribeEndpointRequest(input *DescribeEndpointInput) (req *reques
 		input = &DescribeEndpointInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeEndpointOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1977,7 +1931,6 @@ const opDescribeThing = "DescribeThing"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DescribeThingRequest(input *DescribeThingInput) (req *request.Request, output *DescribeThingOutput) {
 	op := &request.Operation{
 		Name:       opDescribeThing,
@@ -1989,9 +1942,8 @@ func (c *IoT) DescribeThingRequest(input *DescribeThingInput) (req *request.Requ
 		input = &DescribeThingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeThingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2056,7 +2008,6 @@ const opDescribeThingType = "DescribeThingType"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DescribeThingTypeRequest(input *DescribeThingTypeInput) (req *request.Request, output *DescribeThingTypeOutput) {
 	op := &request.Operation{
 		Name:       opDescribeThingType,
@@ -2068,9 +2019,8 @@ func (c *IoT) DescribeThingTypeRequest(input *DescribeThingTypeInput) (req *requ
 		input = &DescribeThingTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeThingTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2135,7 +2085,6 @@ const opDetachPrincipalPolicy = "DetachPrincipalPolicy"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DetachPrincipalPolicyRequest(input *DetachPrincipalPolicyInput) (req *request.Request, output *DetachPrincipalPolicyOutput) {
 	op := &request.Operation{
 		Name:       opDetachPrincipalPolicy,
@@ -2147,11 +2096,10 @@ func (c *IoT) DetachPrincipalPolicyRequest(input *DetachPrincipalPolicyInput) (r
 		input = &DetachPrincipalPolicyInput{}
 	}
 
+	output = &DetachPrincipalPolicyOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DetachPrincipalPolicyOutput{}
-	req.Data = output
 	return
 }
 
@@ -2216,7 +2164,6 @@ const opDetachThingPrincipal = "DetachThingPrincipal"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DetachThingPrincipalRequest(input *DetachThingPrincipalInput) (req *request.Request, output *DetachThingPrincipalOutput) {
 	op := &request.Operation{
 		Name:       opDetachThingPrincipal,
@@ -2228,9 +2175,8 @@ func (c *IoT) DetachThingPrincipalRequest(input *DetachThingPrincipalInput) (req
 		input = &DetachThingPrincipalInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DetachThingPrincipalOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2295,7 +2241,6 @@ const opDisableTopicRule = "DisableTopicRule"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DisableTopicRuleRequest(input *DisableTopicRuleInput) (req *request.Request, output *DisableTopicRuleOutput) {
 	op := &request.Operation{
 		Name:       opDisableTopicRule,
@@ -2307,11 +2252,10 @@ func (c *IoT) DisableTopicRuleRequest(input *DisableTopicRuleInput) (req *reques
 		input = &DisableTopicRuleInput{}
 	}
 
+	output = &DisableTopicRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DisableTopicRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -2370,7 +2314,6 @@ const opEnableTopicRule = "EnableTopicRule"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) EnableTopicRuleRequest(input *EnableTopicRuleInput) (req *request.Request, output *EnableTopicRuleOutput) {
 	op := &request.Operation{
 		Name:       opEnableTopicRule,
@@ -2382,11 +2325,10 @@ func (c *IoT) EnableTopicRuleRequest(input *EnableTopicRuleInput) (req *request.
 		input = &EnableTopicRuleInput{}
 	}
 
+	output = &EnableTopicRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &EnableTopicRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -2445,7 +2387,6 @@ const opGetLoggingOptions = "GetLoggingOptions"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) GetLoggingOptionsRequest(input *GetLoggingOptionsInput) (req *request.Request, output *GetLoggingOptionsOutput) {
 	op := &request.Operation{
 		Name:       opGetLoggingOptions,
@@ -2457,9 +2398,8 @@ func (c *IoT) GetLoggingOptionsRequest(input *GetLoggingOptionsInput) (req *requ
 		input = &GetLoggingOptionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetLoggingOptionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2515,7 +2455,6 @@ const opGetPolicy = "GetPolicy"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, output *GetPolicyOutput) {
 	op := &request.Operation{
 		Name:       opGetPolicy,
@@ -2527,9 +2466,8 @@ func (c *IoT) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, out
 		input = &GetPolicyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetPolicyOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2595,7 +2533,6 @@ const opGetPolicyVersion = "GetPolicyVersion"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) GetPolicyVersionRequest(input *GetPolicyVersionInput) (req *request.Request, output *GetPolicyVersionOutput) {
 	op := &request.Operation{
 		Name:       opGetPolicyVersion,
@@ -2607,9 +2544,8 @@ func (c *IoT) GetPolicyVersionRequest(input *GetPolicyVersionInput) (req *reques
 		input = &GetPolicyVersionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetPolicyVersionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2674,7 +2610,6 @@ const opGetRegistrationCode = "GetRegistrationCode"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) GetRegistrationCodeRequest(input *GetRegistrationCodeInput) (req *request.Request, output *GetRegistrationCodeOutput) {
 	op := &request.Operation{
 		Name:       opGetRegistrationCode,
@@ -2686,9 +2621,8 @@ func (c *IoT) GetRegistrationCodeRequest(input *GetRegistrationCodeInput) (req *
 		input = &GetRegistrationCodeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetRegistrationCodeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2750,7 +2684,6 @@ const opGetTopicRule = "GetTopicRule"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) GetTopicRuleRequest(input *GetTopicRuleInput) (req *request.Request, output *GetTopicRuleOutput) {
 	op := &request.Operation{
 		Name:       opGetTopicRule,
@@ -2762,9 +2695,8 @@ func (c *IoT) GetTopicRuleRequest(input *GetTopicRuleInput) (req *request.Reques
 		input = &GetTopicRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetTopicRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2823,7 +2755,6 @@ const opListCACertificates = "ListCACertificates"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListCACertificatesRequest(input *ListCACertificatesInput) (req *request.Request, output *ListCACertificatesOutput) {
 	op := &request.Operation{
 		Name:       opListCACertificates,
@@ -2835,9 +2766,8 @@ func (c *IoT) ListCACertificatesRequest(input *ListCACertificatesInput) (req *re
 		input = &ListCACertificatesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListCACertificatesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2902,7 +2832,6 @@ const opListCertificates = "ListCertificates"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListCertificatesRequest(input *ListCertificatesInput) (req *request.Request, output *ListCertificatesOutput) {
 	op := &request.Operation{
 		Name:       opListCertificates,
@@ -2914,9 +2843,8 @@ func (c *IoT) ListCertificatesRequest(input *ListCertificatesInput) (req *reques
 		input = &ListCertificatesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListCertificatesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2981,7 +2909,6 @@ const opListCertificatesByCA = "ListCertificatesByCA"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListCertificatesByCARequest(input *ListCertificatesByCAInput) (req *request.Request, output *ListCertificatesByCAOutput) {
 	op := &request.Operation{
 		Name:       opListCertificatesByCA,
@@ -2993,9 +2920,8 @@ func (c *IoT) ListCertificatesByCARequest(input *ListCertificatesByCAInput) (req
 		input = &ListCertificatesByCAInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListCertificatesByCAOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3057,7 +2983,6 @@ const opListOutgoingCertificates = "ListOutgoingCertificates"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListOutgoingCertificatesRequest(input *ListOutgoingCertificatesInput) (req *request.Request, output *ListOutgoingCertificatesOutput) {
 	op := &request.Operation{
 		Name:       opListOutgoingCertificates,
@@ -3069,9 +2994,8 @@ func (c *IoT) ListOutgoingCertificatesRequest(input *ListOutgoingCertificatesInp
 		input = &ListOutgoingCertificatesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListOutgoingCertificatesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3133,7 +3057,6 @@ const opListPolicies = "ListPolicies"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListPoliciesRequest(input *ListPoliciesInput) (req *request.Request, output *ListPoliciesOutput) {
 	op := &request.Operation{
 		Name:       opListPolicies,
@@ -3145,9 +3068,8 @@ func (c *IoT) ListPoliciesRequest(input *ListPoliciesInput) (req *request.Reques
 		input = &ListPoliciesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPoliciesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3209,7 +3131,6 @@ const opListPolicyPrincipals = "ListPolicyPrincipals"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListPolicyPrincipalsRequest(input *ListPolicyPrincipalsInput) (req *request.Request, output *ListPolicyPrincipalsOutput) {
 	op := &request.Operation{
 		Name:       opListPolicyPrincipals,
@@ -3221,9 +3142,8 @@ func (c *IoT) ListPolicyPrincipalsRequest(input *ListPolicyPrincipalsInput) (req
 		input = &ListPolicyPrincipalsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPolicyPrincipalsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3288,7 +3208,6 @@ const opListPolicyVersions = "ListPolicyVersions"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListPolicyVersionsRequest(input *ListPolicyVersionsInput) (req *request.Request, output *ListPolicyVersionsOutput) {
 	op := &request.Operation{
 		Name:       opListPolicyVersions,
@@ -3300,9 +3219,8 @@ func (c *IoT) ListPolicyVersionsRequest(input *ListPolicyVersionsInput) (req *re
 		input = &ListPolicyVersionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPolicyVersionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3367,7 +3285,6 @@ const opListPrincipalPolicies = "ListPrincipalPolicies"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListPrincipalPoliciesRequest(input *ListPrincipalPoliciesInput) (req *request.Request, output *ListPrincipalPoliciesOutput) {
 	op := &request.Operation{
 		Name:       opListPrincipalPolicies,
@@ -3379,9 +3296,8 @@ func (c *IoT) ListPrincipalPoliciesRequest(input *ListPrincipalPoliciesInput) (r
 		input = &ListPrincipalPoliciesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPrincipalPoliciesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3447,7 +3363,6 @@ const opListPrincipalThings = "ListPrincipalThings"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListPrincipalThingsRequest(input *ListPrincipalThingsInput) (req *request.Request, output *ListPrincipalThingsOutput) {
 	op := &request.Operation{
 		Name:       opListPrincipalThings,
@@ -3459,9 +3374,8 @@ func (c *IoT) ListPrincipalThingsRequest(input *ListPrincipalThingsInput) (req *
 		input = &ListPrincipalThingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPrincipalThingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3526,7 +3440,6 @@ const opListThingPrincipals = "ListThingPrincipals"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListThingPrincipalsRequest(input *ListThingPrincipalsInput) (req *request.Request, output *ListThingPrincipalsOutput) {
 	op := &request.Operation{
 		Name:       opListThingPrincipals,
@@ -3538,9 +3451,8 @@ func (c *IoT) ListThingPrincipalsRequest(input *ListThingPrincipalsInput) (req *
 		input = &ListThingPrincipalsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListThingPrincipalsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3605,7 +3517,6 @@ const opListThingTypes = "ListThingTypes"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListThingTypesRequest(input *ListThingTypesInput) (req *request.Request, output *ListThingTypesOutput) {
 	op := &request.Operation{
 		Name:       opListThingTypes,
@@ -3617,9 +3528,8 @@ func (c *IoT) ListThingTypesRequest(input *ListThingTypesInput) (req *request.Re
 		input = &ListThingTypesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListThingTypesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3681,7 +3591,6 @@ const opListThings = "ListThings"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListThingsRequest(input *ListThingsInput) (req *request.Request, output *ListThingsOutput) {
 	op := &request.Operation{
 		Name:       opListThings,
@@ -3693,9 +3602,8 @@ func (c *IoT) ListThingsRequest(input *ListThingsInput) (req *request.Request, o
 		input = &ListThingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListThingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3760,7 +3668,6 @@ const opListTopicRules = "ListTopicRules"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListTopicRulesRequest(input *ListTopicRulesInput) (req *request.Request, output *ListTopicRulesOutput) {
 	op := &request.Operation{
 		Name:       opListTopicRules,
@@ -3772,9 +3679,8 @@ func (c *IoT) ListTopicRulesRequest(input *ListTopicRulesInput) (req *request.Re
 		input = &ListTopicRulesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTopicRulesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3830,7 +3736,6 @@ const opRegisterCACertificate = "RegisterCACertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) RegisterCACertificateRequest(input *RegisterCACertificateInput) (req *request.Request, output *RegisterCACertificateOutput) {
 	op := &request.Operation{
 		Name:       opRegisterCACertificate,
@@ -3842,9 +3747,8 @@ func (c *IoT) RegisterCACertificateRequest(input *RegisterCACertificateInput) (r
 		input = &RegisterCACertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterCACertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3924,7 +3828,6 @@ const opRegisterCertificate = "RegisterCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) RegisterCertificateRequest(input *RegisterCertificateInput) (req *request.Request, output *RegisterCertificateOutput) {
 	op := &request.Operation{
 		Name:       opRegisterCertificate,
@@ -3936,9 +3839,8 @@ func (c *IoT) RegisterCertificateRequest(input *RegisterCertificateInput) (req *
 		input = &RegisterCertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterCertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4016,7 +3918,6 @@ const opRejectCertificateTransfer = "RejectCertificateTransfer"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) RejectCertificateTransferRequest(input *RejectCertificateTransferInput) (req *request.Request, output *RejectCertificateTransferOutput) {
 	op := &request.Operation{
 		Name:       opRejectCertificateTransfer,
@@ -4028,11 +3929,10 @@ func (c *IoT) RejectCertificateTransferRequest(input *RejectCertificateTransferI
 		input = &RejectCertificateTransferInput{}
 	}
 
+	output = &RejectCertificateTransferOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RejectCertificateTransferOutput{}
-	req.Data = output
 	return
 }
 
@@ -4109,7 +4009,6 @@ const opReplaceTopicRule = "ReplaceTopicRule"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ReplaceTopicRuleRequest(input *ReplaceTopicRuleInput) (req *request.Request, output *ReplaceTopicRuleOutput) {
 	op := &request.Operation{
 		Name:       opReplaceTopicRule,
@@ -4121,11 +4020,10 @@ func (c *IoT) ReplaceTopicRuleRequest(input *ReplaceTopicRuleInput) (req *reques
 		input = &ReplaceTopicRuleInput{}
 	}
 
+	output = &ReplaceTopicRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &ReplaceTopicRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -4189,7 +4087,6 @@ const opSetDefaultPolicyVersion = "SetDefaultPolicyVersion"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) SetDefaultPolicyVersionRequest(input *SetDefaultPolicyVersionInput) (req *request.Request, output *SetDefaultPolicyVersionOutput) {
 	op := &request.Operation{
 		Name:       opSetDefaultPolicyVersion,
@@ -4201,11 +4098,10 @@ func (c *IoT) SetDefaultPolicyVersionRequest(input *SetDefaultPolicyVersionInput
 		input = &SetDefaultPolicyVersionInput{}
 	}
 
+	output = &SetDefaultPolicyVersionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetDefaultPolicyVersionOutput{}
-	req.Data = output
 	return
 }
 
@@ -4273,7 +4169,6 @@ const opSetLoggingOptions = "SetLoggingOptions"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) SetLoggingOptionsRequest(input *SetLoggingOptionsInput) (req *request.Request, output *SetLoggingOptionsOutput) {
 	op := &request.Operation{
 		Name:       opSetLoggingOptions,
@@ -4285,11 +4180,10 @@ func (c *IoT) SetLoggingOptionsRequest(input *SetLoggingOptionsInput) (req *requ
 		input = &SetLoggingOptionsInput{}
 	}
 
+	output = &SetLoggingOptionsOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetLoggingOptionsOutput{}
-	req.Data = output
 	return
 }
 
@@ -4345,7 +4239,6 @@ const opTransferCertificate = "TransferCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) TransferCertificateRequest(input *TransferCertificateInput) (req *request.Request, output *TransferCertificateOutput) {
 	op := &request.Operation{
 		Name:       opTransferCertificate,
@@ -4357,9 +4250,8 @@ func (c *IoT) TransferCertificateRequest(input *TransferCertificateInput) (req *
 		input = &TransferCertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &TransferCertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4442,7 +4334,6 @@ const opUpdateCACertificate = "UpdateCACertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) UpdateCACertificateRequest(input *UpdateCACertificateInput) (req *request.Request, output *UpdateCACertificateOutput) {
 	op := &request.Operation{
 		Name:       opUpdateCACertificate,
@@ -4454,11 +4345,10 @@ func (c *IoT) UpdateCACertificateRequest(input *UpdateCACertificateInput) (req *
 		input = &UpdateCACertificateInput{}
 	}
 
+	output = &UpdateCACertificateOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateCACertificateOutput{}
-	req.Data = output
 	return
 }
 
@@ -4523,7 +4413,6 @@ const opUpdateCertificate = "UpdateCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) UpdateCertificateRequest(input *UpdateCertificateInput) (req *request.Request, output *UpdateCertificateOutput) {
 	op := &request.Operation{
 		Name:       opUpdateCertificate,
@@ -4535,11 +4424,10 @@ func (c *IoT) UpdateCertificateRequest(input *UpdateCertificateInput) (req *requ
 		input = &UpdateCertificateInput{}
 	}
 
+	output = &UpdateCertificateOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateCertificateOutput{}
-	req.Data = output
 	return
 }
 
@@ -4613,7 +4501,6 @@ const opUpdateThing = "UpdateThing"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) UpdateThingRequest(input *UpdateThingInput) (req *request.Request, output *UpdateThingOutput) {
 	op := &request.Operation{
 		Name:       opUpdateThing,
@@ -4625,9 +4512,8 @@ func (c *IoT) UpdateThingRequest(input *UpdateThingInput) (req *request.Request,
 		input = &UpdateThingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateThingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4708,6 +4594,18 @@ func (s *AcceptCertificateTransferInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *AcceptCertificateTransferInput) SetCertificateId(v string) *AcceptCertificateTransferInput {
+	s.CertificateId = &v
+	return s
+}
+
+// SetSetAsActive sets the SetAsActive field's value.
+func (s *AcceptCertificateTransferInput) SetSetAsActive(v bool) *AcceptCertificateTransferInput {
+	s.SetAsActive = &v
+	return s
 }
 
 type AcceptCertificateTransferOutput struct {
@@ -4847,6 +4745,78 @@ func (s *Action) Validate() error {
 	return nil
 }
 
+// SetCloudwatchAlarm sets the CloudwatchAlarm field's value.
+func (s *Action) SetCloudwatchAlarm(v *CloudwatchAlarmAction) *Action {
+	s.CloudwatchAlarm = v
+	return s
+}
+
+// SetCloudwatchMetric sets the CloudwatchMetric field's value.
+func (s *Action) SetCloudwatchMetric(v *CloudwatchMetricAction) *Action {
+	s.CloudwatchMetric = v
+	return s
+}
+
+// SetDynamoDB sets the DynamoDB field's value.
+func (s *Action) SetDynamoDB(v *DynamoDBAction) *Action {
+	s.DynamoDB = v
+	return s
+}
+
+// SetDynamoDBv2 sets the DynamoDBv2 field's value.
+func (s *Action) SetDynamoDBv2(v *DynamoDBv2Action) *Action {
+	s.DynamoDBv2 = v
+	return s
+}
+
+// SetElasticsearch sets the Elasticsearch field's value.
+func (s *Action) SetElasticsearch(v *ElasticsearchAction) *Action {
+	s.Elasticsearch = v
+	return s
+}
+
+// SetFirehose sets the Firehose field's value.
+func (s *Action) SetFirehose(v *FirehoseAction) *Action {
+	s.Firehose = v
+	return s
+}
+
+// SetKinesis sets the Kinesis field's value.
+func (s *Action) SetKinesis(v *KinesisAction) *Action {
+	s.Kinesis = v
+	return s
+}
+
+// SetLambda sets the Lambda field's value.
+func (s *Action) SetLambda(v *LambdaAction) *Action {
+	s.Lambda = v
+	return s
+}
+
+// SetRepublish sets the Republish field's value.
+func (s *Action) SetRepublish(v *RepublishAction) *Action {
+	s.Republish = v
+	return s
+}
+
+// SetS3 sets the S3 field's value.
+func (s *Action) SetS3(v *S3Action) *Action {
+	s.S3 = v
+	return s
+}
+
+// SetSns sets the Sns field's value.
+func (s *Action) SetSns(v *SnsAction) *Action {
+	s.Sns = v
+	return s
+}
+
+// SetSqs sets the Sqs field's value.
+func (s *Action) SetSqs(v *SqsAction) *Action {
+	s.Sqs = v
+	return s
+}
+
 // The input for the AttachPrincipalPolicy operation.
 type AttachPrincipalPolicyInput struct {
 	_ struct{} `type:"structure"`
@@ -4890,6 +4860,18 @@ func (s *AttachPrincipalPolicyInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *AttachPrincipalPolicyInput) SetPolicyName(v string) *AttachPrincipalPolicyInput {
+	s.PolicyName = &v
+	return s
+}
+
+// SetPrincipal sets the Principal field's value.
+func (s *AttachPrincipalPolicyInput) SetPrincipal(v string) *AttachPrincipalPolicyInput {
+	s.Principal = &v
+	return s
 }
 
 type AttachPrincipalPolicyOutput struct {
@@ -4950,6 +4932,18 @@ func (s *AttachThingPrincipalInput) Validate() error {
 	return nil
 }
 
+// SetPrincipal sets the Principal field's value.
+func (s *AttachThingPrincipalInput) SetPrincipal(v string) *AttachThingPrincipalInput {
+	s.Principal = &v
+	return s
+}
+
+// SetThingName sets the ThingName field's value.
+func (s *AttachThingPrincipalInput) SetThingName(v string) *AttachThingPrincipalInput {
+	s.ThingName = &v
+	return s
+}
+
 // The output from the AttachThingPrincipal operation.
 type AttachThingPrincipalOutput struct {
 	_ struct{} `type:"structure"`
@@ -4994,6 +4988,18 @@ func (s AttributePayload) GoString() string {
 	return s.String()
 }
 
+// SetAttributes sets the Attributes field's value.
+func (s *AttributePayload) SetAttributes(v map[string]*string) *AttributePayload {
+	s.Attributes = v
+	return s
+}
+
+// SetMerge sets the Merge field's value.
+func (s *AttributePayload) SetMerge(v bool) *AttributePayload {
+	s.Merge = &v
+	return s
+}
+
 // A CA certificate.
 type CACertificate struct {
 	_ struct{} `type:"structure"`
@@ -5021,6 +5027,30 @@ func (s CACertificate) String() string {
 // GoString returns the string representation
 func (s CACertificate) GoString() string {
 	return s.String()
+}
+
+// SetCertificateArn sets the CertificateArn field's value.
+func (s *CACertificate) SetCertificateArn(v string) *CACertificate {
+	s.CertificateArn = &v
+	return s
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *CACertificate) SetCertificateId(v string) *CACertificate {
+	s.CertificateId = &v
+	return s
+}
+
+// SetCreationDate sets the CreationDate field's value.
+func (s *CACertificate) SetCreationDate(v time.Time) *CACertificate {
+	s.CreationDate = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CACertificate) SetStatus(v string) *CACertificate {
+	s.Status = &v
+	return s
 }
 
 // Describes a CA certificate.
@@ -5060,6 +5090,48 @@ func (s CACertificateDescription) GoString() string {
 	return s.String()
 }
 
+// SetAutoRegistrationStatus sets the AutoRegistrationStatus field's value.
+func (s *CACertificateDescription) SetAutoRegistrationStatus(v string) *CACertificateDescription {
+	s.AutoRegistrationStatus = &v
+	return s
+}
+
+// SetCertificateArn sets the CertificateArn field's value.
+func (s *CACertificateDescription) SetCertificateArn(v string) *CACertificateDescription {
+	s.CertificateArn = &v
+	return s
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *CACertificateDescription) SetCertificateId(v string) *CACertificateDescription {
+	s.CertificateId = &v
+	return s
+}
+
+// SetCertificatePem sets the CertificatePem field's value.
+func (s *CACertificateDescription) SetCertificatePem(v string) *CACertificateDescription {
+	s.CertificatePem = &v
+	return s
+}
+
+// SetCreationDate sets the CreationDate field's value.
+func (s *CACertificateDescription) SetCreationDate(v time.Time) *CACertificateDescription {
+	s.CreationDate = &v
+	return s
+}
+
+// SetOwnedBy sets the OwnedBy field's value.
+func (s *CACertificateDescription) SetOwnedBy(v string) *CACertificateDescription {
+	s.OwnedBy = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CACertificateDescription) SetStatus(v string) *CACertificateDescription {
+	s.Status = &v
+	return s
+}
+
 // The input for the CancelCertificateTransfer operation.
 type CancelCertificateTransferInput struct {
 	_ struct{} `type:"structure"`
@@ -5094,6 +5166,12 @@ func (s *CancelCertificateTransferInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *CancelCertificateTransferInput) SetCertificateId(v string) *CancelCertificateTransferInput {
+	s.CertificateId = &v
+	return s
 }
 
 type CancelCertificateTransferOutput struct {
@@ -5139,6 +5217,30 @@ func (s Certificate) GoString() string {
 	return s.String()
 }
 
+// SetCertificateArn sets the CertificateArn field's value.
+func (s *Certificate) SetCertificateArn(v string) *Certificate {
+	s.CertificateArn = &v
+	return s
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *Certificate) SetCertificateId(v string) *Certificate {
+	s.CertificateId = &v
+	return s
+}
+
+// SetCreationDate sets the CreationDate field's value.
+func (s *Certificate) SetCreationDate(v time.Time) *Certificate {
+	s.CreationDate = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Certificate) SetStatus(v string) *Certificate {
+	s.Status = &v
+	return s
+}
+
 // Describes a certificate.
 type CertificateDescription struct {
 	_ struct{} `type:"structure"`
@@ -5182,6 +5284,66 @@ func (s CertificateDescription) String() string {
 // GoString returns the string representation
 func (s CertificateDescription) GoString() string {
 	return s.String()
+}
+
+// SetCaCertificateId sets the CaCertificateId field's value.
+func (s *CertificateDescription) SetCaCertificateId(v string) *CertificateDescription {
+	s.CaCertificateId = &v
+	return s
+}
+
+// SetCertificateArn sets the CertificateArn field's value.
+func (s *CertificateDescription) SetCertificateArn(v string) *CertificateDescription {
+	s.CertificateArn = &v
+	return s
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *CertificateDescription) SetCertificateId(v string) *CertificateDescription {
+	s.CertificateId = &v
+	return s
+}
+
+// SetCertificatePem sets the CertificatePem field's value.
+func (s *CertificateDescription) SetCertificatePem(v string) *CertificateDescription {
+	s.CertificatePem = &v
+	return s
+}
+
+// SetCreationDate sets the CreationDate field's value.
+func (s *CertificateDescription) SetCreationDate(v time.Time) *CertificateDescription {
+	s.CreationDate = &v
+	return s
+}
+
+// SetLastModifiedDate sets the LastModifiedDate field's value.
+func (s *CertificateDescription) SetLastModifiedDate(v time.Time) *CertificateDescription {
+	s.LastModifiedDate = &v
+	return s
+}
+
+// SetOwnedBy sets the OwnedBy field's value.
+func (s *CertificateDescription) SetOwnedBy(v string) *CertificateDescription {
+	s.OwnedBy = &v
+	return s
+}
+
+// SetPreviousOwnedBy sets the PreviousOwnedBy field's value.
+func (s *CertificateDescription) SetPreviousOwnedBy(v string) *CertificateDescription {
+	s.PreviousOwnedBy = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CertificateDescription) SetStatus(v string) *CertificateDescription {
+	s.Status = &v
+	return s
+}
+
+// SetTransferData sets the TransferData field's value.
+func (s *CertificateDescription) SetTransferData(v *TransferData) *CertificateDescription {
+	s.TransferData = v
+	return s
 }
 
 // Describes an action that updates a CloudWatch alarm.
@@ -5239,6 +5401,30 @@ func (s *CloudwatchAlarmAction) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAlarmName sets the AlarmName field's value.
+func (s *CloudwatchAlarmAction) SetAlarmName(v string) *CloudwatchAlarmAction {
+	s.AlarmName = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *CloudwatchAlarmAction) SetRoleArn(v string) *CloudwatchAlarmAction {
+	s.RoleArn = &v
+	return s
+}
+
+// SetStateReason sets the StateReason field's value.
+func (s *CloudwatchAlarmAction) SetStateReason(v string) *CloudwatchAlarmAction {
+	s.StateReason = &v
+	return s
+}
+
+// SetStateValue sets the StateValue field's value.
+func (s *CloudwatchAlarmAction) SetStateValue(v string) *CloudwatchAlarmAction {
+	s.StateValue = &v
+	return s
 }
 
 // Describes an action that captures a CloudWatch metric.
@@ -5310,6 +5496,42 @@ func (s *CloudwatchMetricAction) Validate() error {
 	return nil
 }
 
+// SetMetricName sets the MetricName field's value.
+func (s *CloudwatchMetricAction) SetMetricName(v string) *CloudwatchMetricAction {
+	s.MetricName = &v
+	return s
+}
+
+// SetMetricNamespace sets the MetricNamespace field's value.
+func (s *CloudwatchMetricAction) SetMetricNamespace(v string) *CloudwatchMetricAction {
+	s.MetricNamespace = &v
+	return s
+}
+
+// SetMetricTimestamp sets the MetricTimestamp field's value.
+func (s *CloudwatchMetricAction) SetMetricTimestamp(v string) *CloudwatchMetricAction {
+	s.MetricTimestamp = &v
+	return s
+}
+
+// SetMetricUnit sets the MetricUnit field's value.
+func (s *CloudwatchMetricAction) SetMetricUnit(v string) *CloudwatchMetricAction {
+	s.MetricUnit = &v
+	return s
+}
+
+// SetMetricValue sets the MetricValue field's value.
+func (s *CloudwatchMetricAction) SetMetricValue(v string) *CloudwatchMetricAction {
+	s.MetricValue = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *CloudwatchMetricAction) SetRoleArn(v string) *CloudwatchMetricAction {
+	s.RoleArn = &v
+	return s
+}
+
 // The input for the CreateCertificateFromCsr operation.
 type CreateCertificateFromCsrInput struct {
 	_ struct{} `type:"structure"`
@@ -5349,6 +5571,18 @@ func (s *CreateCertificateFromCsrInput) Validate() error {
 	return nil
 }
 
+// SetCertificateSigningRequest sets the CertificateSigningRequest field's value.
+func (s *CreateCertificateFromCsrInput) SetCertificateSigningRequest(v string) *CreateCertificateFromCsrInput {
+	s.CertificateSigningRequest = &v
+	return s
+}
+
+// SetSetAsActive sets the SetAsActive field's value.
+func (s *CreateCertificateFromCsrInput) SetSetAsActive(v bool) *CreateCertificateFromCsrInput {
+	s.SetAsActive = &v
+	return s
+}
+
 // The output from the CreateCertificateFromCsr operation.
 type CreateCertificateFromCsrOutput struct {
 	_ struct{} `type:"structure"`
@@ -5375,6 +5609,24 @@ func (s CreateCertificateFromCsrOutput) GoString() string {
 	return s.String()
 }
 
+// SetCertificateArn sets the CertificateArn field's value.
+func (s *CreateCertificateFromCsrOutput) SetCertificateArn(v string) *CreateCertificateFromCsrOutput {
+	s.CertificateArn = &v
+	return s
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *CreateCertificateFromCsrOutput) SetCertificateId(v string) *CreateCertificateFromCsrOutput {
+	s.CertificateId = &v
+	return s
+}
+
+// SetCertificatePem sets the CertificatePem field's value.
+func (s *CreateCertificateFromCsrOutput) SetCertificatePem(v string) *CreateCertificateFromCsrOutput {
+	s.CertificatePem = &v
+	return s
+}
+
 // The input for the CreateKeysAndCertificate operation.
 type CreateKeysAndCertificateInput struct {
 	_ struct{} `type:"structure"`
@@ -5391,6 +5643,12 @@ func (s CreateKeysAndCertificateInput) String() string {
 // GoString returns the string representation
 func (s CreateKeysAndCertificateInput) GoString() string {
 	return s.String()
+}
+
+// SetSetAsActive sets the SetAsActive field's value.
+func (s *CreateKeysAndCertificateInput) SetSetAsActive(v bool) *CreateKeysAndCertificateInput {
+	s.SetAsActive = &v
+	return s
 }
 
 // The output of the CreateKeysAndCertificate operation.
@@ -5419,6 +5677,30 @@ func (s CreateKeysAndCertificateOutput) String() string {
 // GoString returns the string representation
 func (s CreateKeysAndCertificateOutput) GoString() string {
 	return s.String()
+}
+
+// SetCertificateArn sets the CertificateArn field's value.
+func (s *CreateKeysAndCertificateOutput) SetCertificateArn(v string) *CreateKeysAndCertificateOutput {
+	s.CertificateArn = &v
+	return s
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *CreateKeysAndCertificateOutput) SetCertificateId(v string) *CreateKeysAndCertificateOutput {
+	s.CertificateId = &v
+	return s
+}
+
+// SetCertificatePem sets the CertificatePem field's value.
+func (s *CreateKeysAndCertificateOutput) SetCertificatePem(v string) *CreateKeysAndCertificateOutput {
+	s.CertificatePem = &v
+	return s
+}
+
+// SetKeyPair sets the KeyPair field's value.
+func (s *CreateKeysAndCertificateOutput) SetKeyPair(v *KeyPair) *CreateKeysAndCertificateOutput {
+	s.KeyPair = v
+	return s
 }
 
 // The input for the CreatePolicy operation.
@@ -5466,6 +5748,18 @@ func (s *CreatePolicyInput) Validate() error {
 	return nil
 }
 
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *CreatePolicyInput) SetPolicyDocument(v string) *CreatePolicyInput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *CreatePolicyInput) SetPolicyName(v string) *CreatePolicyInput {
+	s.PolicyName = &v
+	return s
+}
+
 // The output from the CreatePolicy operation.
 type CreatePolicyOutput struct {
 	_ struct{} `type:"structure"`
@@ -5491,6 +5785,30 @@ func (s CreatePolicyOutput) String() string {
 // GoString returns the string representation
 func (s CreatePolicyOutput) GoString() string {
 	return s.String()
+}
+
+// SetPolicyArn sets the PolicyArn field's value.
+func (s *CreatePolicyOutput) SetPolicyArn(v string) *CreatePolicyOutput {
+	s.PolicyArn = &v
+	return s
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *CreatePolicyOutput) SetPolicyDocument(v string) *CreatePolicyOutput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *CreatePolicyOutput) SetPolicyName(v string) *CreatePolicyOutput {
+	s.PolicyName = &v
+	return s
+}
+
+// SetPolicyVersionId sets the PolicyVersionId field's value.
+func (s *CreatePolicyOutput) SetPolicyVersionId(v string) *CreatePolicyOutput {
+	s.PolicyVersionId = &v
+	return s
 }
 
 // The input for the CreatePolicyVersion operation.
@@ -5543,6 +5861,24 @@ func (s *CreatePolicyVersionInput) Validate() error {
 	return nil
 }
 
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *CreatePolicyVersionInput) SetPolicyDocument(v string) *CreatePolicyVersionInput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *CreatePolicyVersionInput) SetPolicyName(v string) *CreatePolicyVersionInput {
+	s.PolicyName = &v
+	return s
+}
+
+// SetSetAsDefault sets the SetAsDefault field's value.
+func (s *CreatePolicyVersionInput) SetSetAsDefault(v bool) *CreatePolicyVersionInput {
+	s.SetAsDefault = &v
+	return s
+}
+
 // The output of the CreatePolicyVersion operation.
 type CreatePolicyVersionOutput struct {
 	_ struct{} `type:"structure"`
@@ -5568,6 +5904,30 @@ func (s CreatePolicyVersionOutput) String() string {
 // GoString returns the string representation
 func (s CreatePolicyVersionOutput) GoString() string {
 	return s.String()
+}
+
+// SetIsDefaultVersion sets the IsDefaultVersion field's value.
+func (s *CreatePolicyVersionOutput) SetIsDefaultVersion(v bool) *CreatePolicyVersionOutput {
+	s.IsDefaultVersion = &v
+	return s
+}
+
+// SetPolicyArn sets the PolicyArn field's value.
+func (s *CreatePolicyVersionOutput) SetPolicyArn(v string) *CreatePolicyVersionOutput {
+	s.PolicyArn = &v
+	return s
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *CreatePolicyVersionOutput) SetPolicyDocument(v string) *CreatePolicyVersionOutput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyVersionId sets the PolicyVersionId field's value.
+func (s *CreatePolicyVersionOutput) SetPolicyVersionId(v string) *CreatePolicyVersionOutput {
+	s.PolicyVersionId = &v
+	return s
 }
 
 // The input for the CreateThing operation.
@@ -5618,6 +5978,24 @@ func (s *CreateThingInput) Validate() error {
 	return nil
 }
 
+// SetAttributePayload sets the AttributePayload field's value.
+func (s *CreateThingInput) SetAttributePayload(v *AttributePayload) *CreateThingInput {
+	s.AttributePayload = v
+	return s
+}
+
+// SetThingName sets the ThingName field's value.
+func (s *CreateThingInput) SetThingName(v string) *CreateThingInput {
+	s.ThingName = &v
+	return s
+}
+
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *CreateThingInput) SetThingTypeName(v string) *CreateThingInput {
+	s.ThingTypeName = &v
+	return s
+}
+
 // The output of the CreateThing operation.
 type CreateThingOutput struct {
 	_ struct{} `type:"structure"`
@@ -5637,6 +6015,18 @@ func (s CreateThingOutput) String() string {
 // GoString returns the string representation
 func (s CreateThingOutput) GoString() string {
 	return s.String()
+}
+
+// SetThingArn sets the ThingArn field's value.
+func (s *CreateThingOutput) SetThingArn(v string) *CreateThingOutput {
+	s.ThingArn = &v
+	return s
+}
+
+// SetThingName sets the ThingName field's value.
+func (s *CreateThingOutput) SetThingName(v string) *CreateThingOutput {
+	s.ThingName = &v
+	return s
 }
 
 // The input for the CreateThingType operation.
@@ -5680,6 +6070,18 @@ func (s *CreateThingTypeInput) Validate() error {
 	return nil
 }
 
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *CreateThingTypeInput) SetThingTypeName(v string) *CreateThingTypeInput {
+	s.ThingTypeName = &v
+	return s
+}
+
+// SetThingTypeProperties sets the ThingTypeProperties field's value.
+func (s *CreateThingTypeInput) SetThingTypeProperties(v *ThingTypeProperties) *CreateThingTypeInput {
+	s.ThingTypeProperties = v
+	return s
+}
+
 // The output of the CreateThingType operation.
 type CreateThingTypeOutput struct {
 	_ struct{} `type:"structure"`
@@ -5699,6 +6101,18 @@ func (s CreateThingTypeOutput) String() string {
 // GoString returns the string representation
 func (s CreateThingTypeOutput) GoString() string {
 	return s.String()
+}
+
+// SetThingTypeArn sets the ThingTypeArn field's value.
+func (s *CreateThingTypeOutput) SetThingTypeArn(v string) *CreateThingTypeOutput {
+	s.ThingTypeArn = &v
+	return s
+}
+
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *CreateThingTypeOutput) SetThingTypeName(v string) *CreateThingTypeOutput {
+	s.ThingTypeName = &v
+	return s
 }
 
 // The input for the CreateTopicRule operation.
@@ -5750,6 +6164,18 @@ func (s *CreateTopicRuleInput) Validate() error {
 	return nil
 }
 
+// SetRuleName sets the RuleName field's value.
+func (s *CreateTopicRuleInput) SetRuleName(v string) *CreateTopicRuleInput {
+	s.RuleName = &v
+	return s
+}
+
+// SetTopicRulePayload sets the TopicRulePayload field's value.
+func (s *CreateTopicRuleInput) SetTopicRulePayload(v *TopicRulePayload) *CreateTopicRuleInput {
+	s.TopicRulePayload = v
+	return s
+}
+
 type CreateTopicRuleOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5798,6 +6224,12 @@ func (s *DeleteCACertificateInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *DeleteCACertificateInput) SetCertificateId(v string) *DeleteCACertificateInput {
+	s.CertificateId = &v
+	return s
 }
 
 // The output for the DeleteCACertificate operation.
@@ -5851,6 +6283,12 @@ func (s *DeleteCertificateInput) Validate() error {
 	return nil
 }
 
+// SetCertificateId sets the CertificateId field's value.
+func (s *DeleteCertificateInput) SetCertificateId(v string) *DeleteCertificateInput {
+	s.CertificateId = &v
+	return s
+}
+
 type DeleteCertificateOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5899,6 +6337,12 @@ func (s *DeletePolicyInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *DeletePolicyInput) SetPolicyName(v string) *DeletePolicyInput {
+	s.PolicyName = &v
+	return s
 }
 
 type DeletePolicyOutput struct {
@@ -5957,6 +6401,18 @@ func (s *DeletePolicyVersionInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *DeletePolicyVersionInput) SetPolicyName(v string) *DeletePolicyVersionInput {
+	s.PolicyName = &v
+	return s
+}
+
+// SetPolicyVersionId sets the PolicyVersionId field's value.
+func (s *DeletePolicyVersionInput) SetPolicyVersionId(v string) *DeletePolicyVersionInput {
+	s.PolicyVersionId = &v
+	return s
 }
 
 type DeletePolicyVersionOutput struct {
@@ -6044,6 +6500,18 @@ func (s *DeleteThingInput) Validate() error {
 	return nil
 }
 
+// SetExpectedVersion sets the ExpectedVersion field's value.
+func (s *DeleteThingInput) SetExpectedVersion(v int64) *DeleteThingInput {
+	s.ExpectedVersion = &v
+	return s
+}
+
+// SetThingName sets the ThingName field's value.
+func (s *DeleteThingInput) SetThingName(v string) *DeleteThingInput {
+	s.ThingName = &v
+	return s
+}
+
 // The output of the DeleteThing operation.
 type DeleteThingOutput struct {
 	_ struct{} `type:"structure"`
@@ -6095,6 +6563,12 @@ func (s *DeleteThingTypeInput) Validate() error {
 	return nil
 }
 
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *DeleteThingTypeInput) SetThingTypeName(v string) *DeleteThingTypeInput {
+	s.ThingTypeName = &v
+	return s
+}
+
 // The output for the DeleteThingType operation.
 type DeleteThingTypeOutput struct {
 	_ struct{} `type:"structure"`
@@ -6144,6 +6618,12 @@ func (s *DeleteTopicRuleInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetRuleName sets the RuleName field's value.
+func (s *DeleteTopicRuleInput) SetRuleName(v string) *DeleteTopicRuleInput {
+	s.RuleName = &v
+	return s
 }
 
 type DeleteTopicRuleOutput struct {
@@ -6200,6 +6680,18 @@ func (s *DeprecateThingTypeInput) Validate() error {
 	return nil
 }
 
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *DeprecateThingTypeInput) SetThingTypeName(v string) *DeprecateThingTypeInput {
+	s.ThingTypeName = &v
+	return s
+}
+
+// SetUndoDeprecate sets the UndoDeprecate field's value.
+func (s *DeprecateThingTypeInput) SetUndoDeprecate(v bool) *DeprecateThingTypeInput {
+	s.UndoDeprecate = &v
+	return s
+}
+
 // The output for the DeprecateThingType operation.
 type DeprecateThingTypeOutput struct {
 	_ struct{} `type:"structure"`
@@ -6251,6 +6743,12 @@ func (s *DescribeCACertificateInput) Validate() error {
 	return nil
 }
 
+// SetCertificateId sets the CertificateId field's value.
+func (s *DescribeCACertificateInput) SetCertificateId(v string) *DescribeCACertificateInput {
+	s.CertificateId = &v
+	return s
+}
+
 // The output from the DescribeCACertificate operation.
 type DescribeCACertificateOutput struct {
 	_ struct{} `type:"structure"`
@@ -6267,6 +6765,12 @@ func (s DescribeCACertificateOutput) String() string {
 // GoString returns the string representation
 func (s DescribeCACertificateOutput) GoString() string {
 	return s.String()
+}
+
+// SetCertificateDescription sets the CertificateDescription field's value.
+func (s *DescribeCACertificateOutput) SetCertificateDescription(v *CACertificateDescription) *DescribeCACertificateOutput {
+	s.CertificateDescription = v
+	return s
 }
 
 // The input for the DescribeCertificate operation.
@@ -6305,6 +6809,12 @@ func (s *DescribeCertificateInput) Validate() error {
 	return nil
 }
 
+// SetCertificateId sets the CertificateId field's value.
+func (s *DescribeCertificateInput) SetCertificateId(v string) *DescribeCertificateInput {
+	s.CertificateId = &v
+	return s
+}
+
 // The output of the DescribeCertificate operation.
 type DescribeCertificateOutput struct {
 	_ struct{} `type:"structure"`
@@ -6321,6 +6831,12 @@ func (s DescribeCertificateOutput) String() string {
 // GoString returns the string representation
 func (s DescribeCertificateOutput) GoString() string {
 	return s.String()
+}
+
+// SetCertificateDescription sets the CertificateDescription field's value.
+func (s *DescribeCertificateOutput) SetCertificateDescription(v *CertificateDescription) *DescribeCertificateOutput {
+	s.CertificateDescription = v
+	return s
 }
 
 // The input for the DescribeEndpoint operation.
@@ -6354,6 +6870,12 @@ func (s DescribeEndpointOutput) String() string {
 // GoString returns the string representation
 func (s DescribeEndpointOutput) GoString() string {
 	return s.String()
+}
+
+// SetEndpointAddress sets the EndpointAddress field's value.
+func (s *DescribeEndpointOutput) SetEndpointAddress(v string) *DescribeEndpointOutput {
+	s.EndpointAddress = &v
+	return s
 }
 
 // The input for the DescribeThing operation.
@@ -6392,6 +6914,12 @@ func (s *DescribeThingInput) Validate() error {
 	return nil
 }
 
+// SetThingName sets the ThingName field's value.
+func (s *DescribeThingInput) SetThingName(v string) *DescribeThingInput {
+	s.ThingName = &v
+	return s
+}
+
 // The output from the DescribeThing operation.
 type DescribeThingOutput struct {
 	_ struct{} `type:"structure"`
@@ -6424,6 +6952,36 @@ func (s DescribeThingOutput) String() string {
 // GoString returns the string representation
 func (s DescribeThingOutput) GoString() string {
 	return s.String()
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *DescribeThingOutput) SetAttributes(v map[string]*string) *DescribeThingOutput {
+	s.Attributes = v
+	return s
+}
+
+// SetDefaultClientId sets the DefaultClientId field's value.
+func (s *DescribeThingOutput) SetDefaultClientId(v string) *DescribeThingOutput {
+	s.DefaultClientId = &v
+	return s
+}
+
+// SetThingName sets the ThingName field's value.
+func (s *DescribeThingOutput) SetThingName(v string) *DescribeThingOutput {
+	s.ThingName = &v
+	return s
+}
+
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *DescribeThingOutput) SetThingTypeName(v string) *DescribeThingOutput {
+	s.ThingTypeName = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *DescribeThingOutput) SetVersion(v int64) *DescribeThingOutput {
+	s.Version = &v
+	return s
 }
 
 // The input for the DescribeThingType operation.
@@ -6462,6 +7020,12 @@ func (s *DescribeThingTypeInput) Validate() error {
 	return nil
 }
 
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *DescribeThingTypeInput) SetThingTypeName(v string) *DescribeThingTypeInput {
+	s.ThingTypeName = &v
+	return s
+}
+
 // The output for the DescribeThingType operation.
 type DescribeThingTypeOutput struct {
 	_ struct{} `type:"structure"`
@@ -6487,6 +7051,24 @@ func (s DescribeThingTypeOutput) String() string {
 // GoString returns the string representation
 func (s DescribeThingTypeOutput) GoString() string {
 	return s.String()
+}
+
+// SetThingTypeMetadata sets the ThingTypeMetadata field's value.
+func (s *DescribeThingTypeOutput) SetThingTypeMetadata(v *ThingTypeMetadata) *DescribeThingTypeOutput {
+	s.ThingTypeMetadata = v
+	return s
+}
+
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *DescribeThingTypeOutput) SetThingTypeName(v string) *DescribeThingTypeOutput {
+	s.ThingTypeName = &v
+	return s
+}
+
+// SetThingTypeProperties sets the ThingTypeProperties field's value.
+func (s *DescribeThingTypeOutput) SetThingTypeProperties(v *ThingTypeProperties) *DescribeThingTypeOutput {
+	s.ThingTypeProperties = v
+	return s
 }
 
 // The input for the DetachPrincipalPolicy operation.
@@ -6534,6 +7116,18 @@ func (s *DetachPrincipalPolicyInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *DetachPrincipalPolicyInput) SetPolicyName(v string) *DetachPrincipalPolicyInput {
+	s.PolicyName = &v
+	return s
+}
+
+// SetPrincipal sets the Principal field's value.
+func (s *DetachPrincipalPolicyInput) SetPrincipal(v string) *DetachPrincipalPolicyInput {
+	s.Principal = &v
+	return s
 }
 
 type DetachPrincipalPolicyOutput struct {
@@ -6596,6 +7190,18 @@ func (s *DetachThingPrincipalInput) Validate() error {
 	return nil
 }
 
+// SetPrincipal sets the Principal field's value.
+func (s *DetachThingPrincipalInput) SetPrincipal(v string) *DetachThingPrincipalInput {
+	s.Principal = &v
+	return s
+}
+
+// SetThingName sets the ThingName field's value.
+func (s *DetachThingPrincipalInput) SetThingName(v string) *DetachThingPrincipalInput {
+	s.ThingName = &v
+	return s
+}
+
 // The output from the DetachThingPrincipal operation.
 type DetachThingPrincipalOutput struct {
 	_ struct{} `type:"structure"`
@@ -6645,6 +7251,12 @@ func (s *DisableTopicRuleInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetRuleName sets the RuleName field's value.
+func (s *DisableTopicRuleInput) SetRuleName(v string) *DisableTopicRuleInput {
+	s.RuleName = &v
+	return s
 }
 
 type DisableTopicRuleOutput struct {
@@ -6754,6 +7366,66 @@ func (s *DynamoDBAction) Validate() error {
 	return nil
 }
 
+// SetHashKeyField sets the HashKeyField field's value.
+func (s *DynamoDBAction) SetHashKeyField(v string) *DynamoDBAction {
+	s.HashKeyField = &v
+	return s
+}
+
+// SetHashKeyType sets the HashKeyType field's value.
+func (s *DynamoDBAction) SetHashKeyType(v string) *DynamoDBAction {
+	s.HashKeyType = &v
+	return s
+}
+
+// SetHashKeyValue sets the HashKeyValue field's value.
+func (s *DynamoDBAction) SetHashKeyValue(v string) *DynamoDBAction {
+	s.HashKeyValue = &v
+	return s
+}
+
+// SetOperation sets the Operation field's value.
+func (s *DynamoDBAction) SetOperation(v string) *DynamoDBAction {
+	s.Operation = &v
+	return s
+}
+
+// SetPayloadField sets the PayloadField field's value.
+func (s *DynamoDBAction) SetPayloadField(v string) *DynamoDBAction {
+	s.PayloadField = &v
+	return s
+}
+
+// SetRangeKeyField sets the RangeKeyField field's value.
+func (s *DynamoDBAction) SetRangeKeyField(v string) *DynamoDBAction {
+	s.RangeKeyField = &v
+	return s
+}
+
+// SetRangeKeyType sets the RangeKeyType field's value.
+func (s *DynamoDBAction) SetRangeKeyType(v string) *DynamoDBAction {
+	s.RangeKeyType = &v
+	return s
+}
+
+// SetRangeKeyValue sets the RangeKeyValue field's value.
+func (s *DynamoDBAction) SetRangeKeyValue(v string) *DynamoDBAction {
+	s.RangeKeyValue = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *DynamoDBAction) SetRoleArn(v string) *DynamoDBAction {
+	s.RoleArn = &v
+	return s
+}
+
+// SetTableName sets the TableName field's value.
+func (s *DynamoDBAction) SetTableName(v string) *DynamoDBAction {
+	s.TableName = &v
+	return s
+}
+
 // Describes an action to write to a DynamoDB table.
 //
 // This DynamoDB action writes each attribute in the message payload into it's
@@ -6798,6 +7470,18 @@ func (s *DynamoDBv2Action) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetPutItem sets the PutItem field's value.
+func (s *DynamoDBv2Action) SetPutItem(v *PutItemInput) *DynamoDBv2Action {
+	s.PutItem = v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *DynamoDBv2Action) SetRoleArn(v string) *DynamoDBv2Action {
+	s.RoleArn = &v
+	return s
 }
 
 // Describes an action that writes data to an Amazon Elasticsearch Service domain.
@@ -6865,6 +7549,36 @@ func (s *ElasticsearchAction) Validate() error {
 	return nil
 }
 
+// SetEndpoint sets the Endpoint field's value.
+func (s *ElasticsearchAction) SetEndpoint(v string) *ElasticsearchAction {
+	s.Endpoint = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *ElasticsearchAction) SetId(v string) *ElasticsearchAction {
+	s.Id = &v
+	return s
+}
+
+// SetIndex sets the Index field's value.
+func (s *ElasticsearchAction) SetIndex(v string) *ElasticsearchAction {
+	s.Index = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *ElasticsearchAction) SetRoleArn(v string) *ElasticsearchAction {
+	s.RoleArn = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ElasticsearchAction) SetType(v string) *ElasticsearchAction {
+	s.Type = &v
+	return s
+}
+
 // The input for the EnableTopicRuleRequest operation.
 type EnableTopicRuleInput struct {
 	_ struct{} `type:"structure"`
@@ -6899,6 +7613,12 @@ func (s *EnableTopicRuleInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetRuleName sets the RuleName field's value.
+func (s *EnableTopicRuleInput) SetRuleName(v string) *EnableTopicRuleInput {
+	s.RuleName = &v
+	return s
 }
 
 type EnableTopicRuleOutput struct {
@@ -6961,6 +7681,24 @@ func (s *FirehoseAction) Validate() error {
 	return nil
 }
 
+// SetDeliveryStreamName sets the DeliveryStreamName field's value.
+func (s *FirehoseAction) SetDeliveryStreamName(v string) *FirehoseAction {
+	s.DeliveryStreamName = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *FirehoseAction) SetRoleArn(v string) *FirehoseAction {
+	s.RoleArn = &v
+	return s
+}
+
+// SetSeparator sets the Separator field's value.
+func (s *FirehoseAction) SetSeparator(v string) *FirehoseAction {
+	s.Separator = &v
+	return s
+}
+
 // The input for the GetLoggingOptions operation.
 type GetLoggingOptionsInput struct {
 	_ struct{} `type:"structure"`
@@ -6995,6 +7733,18 @@ func (s GetLoggingOptionsOutput) String() string {
 // GoString returns the string representation
 func (s GetLoggingOptionsOutput) GoString() string {
 	return s.String()
+}
+
+// SetLogLevel sets the LogLevel field's value.
+func (s *GetLoggingOptionsOutput) SetLogLevel(v string) *GetLoggingOptionsOutput {
+	s.LogLevel = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *GetLoggingOptionsOutput) SetRoleArn(v string) *GetLoggingOptionsOutput {
+	s.RoleArn = &v
+	return s
 }
 
 // The input for the GetPolicy operation.
@@ -7033,6 +7783,12 @@ func (s *GetPolicyInput) Validate() error {
 	return nil
 }
 
+// SetPolicyName sets the PolicyName field's value.
+func (s *GetPolicyInput) SetPolicyName(v string) *GetPolicyInput {
+	s.PolicyName = &v
+	return s
+}
+
 // The output from the GetPolicy operation.
 type GetPolicyOutput struct {
 	_ struct{} `type:"structure"`
@@ -7058,6 +7814,30 @@ func (s GetPolicyOutput) String() string {
 // GoString returns the string representation
 func (s GetPolicyOutput) GoString() string {
 	return s.String()
+}
+
+// SetDefaultVersionId sets the DefaultVersionId field's value.
+func (s *GetPolicyOutput) SetDefaultVersionId(v string) *GetPolicyOutput {
+	s.DefaultVersionId = &v
+	return s
+}
+
+// SetPolicyArn sets the PolicyArn field's value.
+func (s *GetPolicyOutput) SetPolicyArn(v string) *GetPolicyOutput {
+	s.PolicyArn = &v
+	return s
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *GetPolicyOutput) SetPolicyDocument(v string) *GetPolicyOutput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *GetPolicyOutput) SetPolicyName(v string) *GetPolicyOutput {
+	s.PolicyName = &v
+	return s
 }
 
 // The input for the GetPolicyVersion operation.
@@ -7104,6 +7884,18 @@ func (s *GetPolicyVersionInput) Validate() error {
 	return nil
 }
 
+// SetPolicyName sets the PolicyName field's value.
+func (s *GetPolicyVersionInput) SetPolicyName(v string) *GetPolicyVersionInput {
+	s.PolicyName = &v
+	return s
+}
+
+// SetPolicyVersionId sets the PolicyVersionId field's value.
+func (s *GetPolicyVersionInput) SetPolicyVersionId(v string) *GetPolicyVersionInput {
+	s.PolicyVersionId = &v
+	return s
+}
+
 // The output from the GetPolicyVersion operation.
 type GetPolicyVersionOutput struct {
 	_ struct{} `type:"structure"`
@@ -7132,6 +7924,36 @@ func (s GetPolicyVersionOutput) String() string {
 // GoString returns the string representation
 func (s GetPolicyVersionOutput) GoString() string {
 	return s.String()
+}
+
+// SetIsDefaultVersion sets the IsDefaultVersion field's value.
+func (s *GetPolicyVersionOutput) SetIsDefaultVersion(v bool) *GetPolicyVersionOutput {
+	s.IsDefaultVersion = &v
+	return s
+}
+
+// SetPolicyArn sets the PolicyArn field's value.
+func (s *GetPolicyVersionOutput) SetPolicyArn(v string) *GetPolicyVersionOutput {
+	s.PolicyArn = &v
+	return s
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *GetPolicyVersionOutput) SetPolicyDocument(v string) *GetPolicyVersionOutput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *GetPolicyVersionOutput) SetPolicyName(v string) *GetPolicyVersionOutput {
+	s.PolicyName = &v
+	return s
+}
+
+// SetPolicyVersionId sets the PolicyVersionId field's value.
+func (s *GetPolicyVersionOutput) SetPolicyVersionId(v string) *GetPolicyVersionOutput {
+	s.PolicyVersionId = &v
+	return s
 }
 
 // The input to the GetRegistrationCode operation.
@@ -7165,6 +7987,12 @@ func (s GetRegistrationCodeOutput) String() string {
 // GoString returns the string representation
 func (s GetRegistrationCodeOutput) GoString() string {
 	return s.String()
+}
+
+// SetRegistrationCode sets the RegistrationCode field's value.
+func (s *GetRegistrationCodeOutput) SetRegistrationCode(v string) *GetRegistrationCodeOutput {
+	s.RegistrationCode = &v
+	return s
 }
 
 // The input for the GetTopicRule operation.
@@ -7203,6 +8031,12 @@ func (s *GetTopicRuleInput) Validate() error {
 	return nil
 }
 
+// SetRuleName sets the RuleName field's value.
+func (s *GetTopicRuleInput) SetRuleName(v string) *GetTopicRuleInput {
+	s.RuleName = &v
+	return s
+}
+
 // The output from the GetTopicRule operation.
 type GetTopicRuleOutput struct {
 	_ struct{} `type:"structure"`
@@ -7224,6 +8058,18 @@ func (s GetTopicRuleOutput) GoString() string {
 	return s.String()
 }
 
+// SetRule sets the Rule field's value.
+func (s *GetTopicRuleOutput) SetRule(v *TopicRule) *GetTopicRuleOutput {
+	s.Rule = v
+	return s
+}
+
+// SetRuleArn sets the RuleArn field's value.
+func (s *GetTopicRuleOutput) SetRuleArn(v string) *GetTopicRuleOutput {
+	s.RuleArn = &v
+	return s
+}
+
 // Describes a key pair.
 type KeyPair struct {
 	_ struct{} `type:"structure"`
@@ -7243,6 +8089,18 @@ func (s KeyPair) String() string {
 // GoString returns the string representation
 func (s KeyPair) GoString() string {
 	return s.String()
+}
+
+// SetPrivateKey sets the PrivateKey field's value.
+func (s *KeyPair) SetPrivateKey(v string) *KeyPair {
+	s.PrivateKey = &v
+	return s
+}
+
+// SetPublicKey sets the PublicKey field's value.
+func (s *KeyPair) SetPublicKey(v string) *KeyPair {
+	s.PublicKey = &v
+	return s
 }
 
 // Describes an action to write data to an Amazon Kinesis stream.
@@ -7289,6 +8147,24 @@ func (s *KinesisAction) Validate() error {
 	return nil
 }
 
+// SetPartitionKey sets the PartitionKey field's value.
+func (s *KinesisAction) SetPartitionKey(v string) *KinesisAction {
+	s.PartitionKey = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *KinesisAction) SetRoleArn(v string) *KinesisAction {
+	s.RoleArn = &v
+	return s
+}
+
+// SetStreamName sets the StreamName field's value.
+func (s *KinesisAction) SetStreamName(v string) *KinesisAction {
+	s.StreamName = &v
+	return s
+}
+
 // Describes an action to invoke a Lambda function.
 type LambdaAction struct {
 	_ struct{} `type:"structure"`
@@ -7320,6 +8196,12 @@ func (s *LambdaAction) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetFunctionArn sets the FunctionArn field's value.
+func (s *LambdaAction) SetFunctionArn(v string) *LambdaAction {
+	s.FunctionArn = &v
+	return s
 }
 
 // Input for the ListCACertificates operation.
@@ -7359,6 +8241,24 @@ func (s *ListCACertificatesInput) Validate() error {
 	return nil
 }
 
+// SetAscendingOrder sets the AscendingOrder field's value.
+func (s *ListCACertificatesInput) SetAscendingOrder(v bool) *ListCACertificatesInput {
+	s.AscendingOrder = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *ListCACertificatesInput) SetMarker(v string) *ListCACertificatesInput {
+	s.Marker = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *ListCACertificatesInput) SetPageSize(v int64) *ListCACertificatesInput {
+	s.PageSize = &v
+	return s
+}
+
 // The output from the ListCACertificates operation.
 type ListCACertificatesOutput struct {
 	_ struct{} `type:"structure"`
@@ -7378,6 +8278,18 @@ func (s ListCACertificatesOutput) String() string {
 // GoString returns the string representation
 func (s ListCACertificatesOutput) GoString() string {
 	return s.String()
+}
+
+// SetCertificates sets the Certificates field's value.
+func (s *ListCACertificatesOutput) SetCertificates(v []*CACertificate) *ListCACertificatesOutput {
+	s.Certificates = v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *ListCACertificatesOutput) SetNextMarker(v string) *ListCACertificatesOutput {
+	s.NextMarker = &v
+	return s
 }
 
 // The input to the ListCertificatesByCA operation.
@@ -7430,6 +8342,30 @@ func (s *ListCertificatesByCAInput) Validate() error {
 	return nil
 }
 
+// SetAscendingOrder sets the AscendingOrder field's value.
+func (s *ListCertificatesByCAInput) SetAscendingOrder(v bool) *ListCertificatesByCAInput {
+	s.AscendingOrder = &v
+	return s
+}
+
+// SetCaCertificateId sets the CaCertificateId field's value.
+func (s *ListCertificatesByCAInput) SetCaCertificateId(v string) *ListCertificatesByCAInput {
+	s.CaCertificateId = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *ListCertificatesByCAInput) SetMarker(v string) *ListCertificatesByCAInput {
+	s.Marker = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *ListCertificatesByCAInput) SetPageSize(v int64) *ListCertificatesByCAInput {
+	s.PageSize = &v
+	return s
+}
+
 // The output of the ListCertificatesByCA operation.
 type ListCertificatesByCAOutput struct {
 	_ struct{} `type:"structure"`
@@ -7450,6 +8386,18 @@ func (s ListCertificatesByCAOutput) String() string {
 // GoString returns the string representation
 func (s ListCertificatesByCAOutput) GoString() string {
 	return s.String()
+}
+
+// SetCertificates sets the Certificates field's value.
+func (s *ListCertificatesByCAOutput) SetCertificates(v []*Certificate) *ListCertificatesByCAOutput {
+	s.Certificates = v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *ListCertificatesByCAOutput) SetNextMarker(v string) *ListCertificatesByCAOutput {
+	s.NextMarker = &v
+	return s
 }
 
 // The input for the ListCertificates operation.
@@ -7490,6 +8438,24 @@ func (s *ListCertificatesInput) Validate() error {
 	return nil
 }
 
+// SetAscendingOrder sets the AscendingOrder field's value.
+func (s *ListCertificatesInput) SetAscendingOrder(v bool) *ListCertificatesInput {
+	s.AscendingOrder = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *ListCertificatesInput) SetMarker(v string) *ListCertificatesInput {
+	s.Marker = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *ListCertificatesInput) SetPageSize(v int64) *ListCertificatesInput {
+	s.PageSize = &v
+	return s
+}
+
 // The output of the ListCertificates operation.
 type ListCertificatesOutput struct {
 	_ struct{} `type:"structure"`
@@ -7510,6 +8476,18 @@ func (s ListCertificatesOutput) String() string {
 // GoString returns the string representation
 func (s ListCertificatesOutput) GoString() string {
 	return s.String()
+}
+
+// SetCertificates sets the Certificates field's value.
+func (s *ListCertificatesOutput) SetCertificates(v []*Certificate) *ListCertificatesOutput {
+	s.Certificates = v
+	return s
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *ListCertificatesOutput) SetNextMarker(v string) *ListCertificatesOutput {
+	s.NextMarker = &v
+	return s
 }
 
 // The input to the ListOutgoingCertificates operation.
@@ -7550,6 +8528,24 @@ func (s *ListOutgoingCertificatesInput) Validate() error {
 	return nil
 }
 
+// SetAscendingOrder sets the AscendingOrder field's value.
+func (s *ListOutgoingCertificatesInput) SetAscendingOrder(v bool) *ListOutgoingCertificatesInput {
+	s.AscendingOrder = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *ListOutgoingCertificatesInput) SetMarker(v string) *ListOutgoingCertificatesInput {
+	s.Marker = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *ListOutgoingCertificatesInput) SetPageSize(v int64) *ListOutgoingCertificatesInput {
+	s.PageSize = &v
+	return s
+}
+
 // The output from the ListOutgoingCertificates operation.
 type ListOutgoingCertificatesOutput struct {
 	_ struct{} `type:"structure"`
@@ -7569,6 +8565,18 @@ func (s ListOutgoingCertificatesOutput) String() string {
 // GoString returns the string representation
 func (s ListOutgoingCertificatesOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *ListOutgoingCertificatesOutput) SetNextMarker(v string) *ListOutgoingCertificatesOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetOutgoingCertificates sets the OutgoingCertificates field's value.
+func (s *ListOutgoingCertificatesOutput) SetOutgoingCertificates(v []*OutgoingCertificate) *ListOutgoingCertificatesOutput {
+	s.OutgoingCertificates = v
+	return s
 }
 
 // The input for the ListPolicies operation.
@@ -7609,6 +8617,24 @@ func (s *ListPoliciesInput) Validate() error {
 	return nil
 }
 
+// SetAscendingOrder sets the AscendingOrder field's value.
+func (s *ListPoliciesInput) SetAscendingOrder(v bool) *ListPoliciesInput {
+	s.AscendingOrder = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *ListPoliciesInput) SetMarker(v string) *ListPoliciesInput {
+	s.Marker = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *ListPoliciesInput) SetPageSize(v int64) *ListPoliciesInput {
+	s.PageSize = &v
+	return s
+}
+
 // The output from the ListPolicies operation.
 type ListPoliciesOutput struct {
 	_ struct{} `type:"structure"`
@@ -7629,6 +8655,18 @@ func (s ListPoliciesOutput) String() string {
 // GoString returns the string representation
 func (s ListPoliciesOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *ListPoliciesOutput) SetNextMarker(v string) *ListPoliciesOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetPolicies sets the Policies field's value.
+func (s *ListPoliciesOutput) SetPolicies(v []*Policy) *ListPoliciesOutput {
+	s.Policies = v
+	return s
 }
 
 // The input for the ListPolicyPrincipals operation.
@@ -7680,6 +8718,30 @@ func (s *ListPolicyPrincipalsInput) Validate() error {
 	return nil
 }
 
+// SetAscendingOrder sets the AscendingOrder field's value.
+func (s *ListPolicyPrincipalsInput) SetAscendingOrder(v bool) *ListPolicyPrincipalsInput {
+	s.AscendingOrder = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *ListPolicyPrincipalsInput) SetMarker(v string) *ListPolicyPrincipalsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *ListPolicyPrincipalsInput) SetPageSize(v int64) *ListPolicyPrincipalsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *ListPolicyPrincipalsInput) SetPolicyName(v string) *ListPolicyPrincipalsInput {
+	s.PolicyName = &v
+	return s
+}
+
 // The output from the ListPolicyPrincipals operation.
 type ListPolicyPrincipalsOutput struct {
 	_ struct{} `type:"structure"`
@@ -7700,6 +8762,18 @@ func (s ListPolicyPrincipalsOutput) String() string {
 // GoString returns the string representation
 func (s ListPolicyPrincipalsOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *ListPolicyPrincipalsOutput) SetNextMarker(v string) *ListPolicyPrincipalsOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetPrincipals sets the Principals field's value.
+func (s *ListPolicyPrincipalsOutput) SetPrincipals(v []*string) *ListPolicyPrincipalsOutput {
+	s.Principals = v
+	return s
 }
 
 // The input for the ListPolicyVersions operation.
@@ -7738,6 +8812,12 @@ func (s *ListPolicyVersionsInput) Validate() error {
 	return nil
 }
 
+// SetPolicyName sets the PolicyName field's value.
+func (s *ListPolicyVersionsInput) SetPolicyName(v string) *ListPolicyVersionsInput {
+	s.PolicyName = &v
+	return s
+}
+
 // The output from the ListPolicyVersions operation.
 type ListPolicyVersionsOutput struct {
 	_ struct{} `type:"structure"`
@@ -7754,6 +8834,12 @@ func (s ListPolicyVersionsOutput) String() string {
 // GoString returns the string representation
 func (s ListPolicyVersionsOutput) GoString() string {
 	return s.String()
+}
+
+// SetPolicyVersions sets the PolicyVersions field's value.
+func (s *ListPolicyVersionsOutput) SetPolicyVersions(v []*PolicyVersion) *ListPolicyVersionsOutput {
+	s.PolicyVersions = v
+	return s
 }
 
 // The input for the ListPrincipalPolicies operation.
@@ -7802,6 +8888,30 @@ func (s *ListPrincipalPoliciesInput) Validate() error {
 	return nil
 }
 
+// SetAscendingOrder sets the AscendingOrder field's value.
+func (s *ListPrincipalPoliciesInput) SetAscendingOrder(v bool) *ListPrincipalPoliciesInput {
+	s.AscendingOrder = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *ListPrincipalPoliciesInput) SetMarker(v string) *ListPrincipalPoliciesInput {
+	s.Marker = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *ListPrincipalPoliciesInput) SetPageSize(v int64) *ListPrincipalPoliciesInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetPrincipal sets the Principal field's value.
+func (s *ListPrincipalPoliciesInput) SetPrincipal(v string) *ListPrincipalPoliciesInput {
+	s.Principal = &v
+	return s
+}
+
 // The output from the ListPrincipalPolicies operation.
 type ListPrincipalPoliciesOutput struct {
 	_ struct{} `type:"structure"`
@@ -7822,6 +8932,18 @@ func (s ListPrincipalPoliciesOutput) String() string {
 // GoString returns the string representation
 func (s ListPrincipalPoliciesOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *ListPrincipalPoliciesOutput) SetNextMarker(v string) *ListPrincipalPoliciesOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetPolicies sets the Policies field's value.
+func (s *ListPrincipalPoliciesOutput) SetPolicies(v []*Policy) *ListPrincipalPoliciesOutput {
+	s.Policies = v
+	return s
 }
 
 // The input for the ListPrincipalThings operation.
@@ -7867,6 +8989,24 @@ func (s *ListPrincipalThingsInput) Validate() error {
 	return nil
 }
 
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListPrincipalThingsInput) SetMaxResults(v int64) *ListPrincipalThingsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPrincipalThingsInput) SetNextToken(v string) *ListPrincipalThingsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPrincipal sets the Principal field's value.
+func (s *ListPrincipalThingsInput) SetPrincipal(v string) *ListPrincipalThingsInput {
+	s.Principal = &v
+	return s
+}
+
 // The output from the ListPrincipalThings operation.
 type ListPrincipalThingsOutput struct {
 	_ struct{} `type:"structure"`
@@ -7887,6 +9027,18 @@ func (s ListPrincipalThingsOutput) String() string {
 // GoString returns the string representation
 func (s ListPrincipalThingsOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPrincipalThingsOutput) SetNextToken(v string) *ListPrincipalThingsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetThings sets the Things field's value.
+func (s *ListPrincipalThingsOutput) SetThings(v []*string) *ListPrincipalThingsOutput {
+	s.Things = v
+	return s
 }
 
 // The input for the ListThingPrincipal operation.
@@ -7925,6 +9077,12 @@ func (s *ListThingPrincipalsInput) Validate() error {
 	return nil
 }
 
+// SetThingName sets the ThingName field's value.
+func (s *ListThingPrincipalsInput) SetThingName(v string) *ListThingPrincipalsInput {
+	s.ThingName = &v
+	return s
+}
+
 // The output from the ListThingPrincipals operation.
 type ListThingPrincipalsOutput struct {
 	_ struct{} `type:"structure"`
@@ -7941,6 +9099,12 @@ func (s ListThingPrincipalsOutput) String() string {
 // GoString returns the string representation
 func (s ListThingPrincipalsOutput) GoString() string {
 	return s.String()
+}
+
+// SetPrincipals sets the Principals field's value.
+func (s *ListThingPrincipalsOutput) SetPrincipals(v []*string) *ListThingPrincipalsOutput {
+	s.Principals = v
+	return s
 }
 
 // The input for the ListThingTypes operation.
@@ -7984,6 +9148,24 @@ func (s *ListThingTypesInput) Validate() error {
 	return nil
 }
 
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListThingTypesInput) SetMaxResults(v int64) *ListThingTypesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListThingTypesInput) SetNextToken(v string) *ListThingTypesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *ListThingTypesInput) SetThingTypeName(v string) *ListThingTypesInput {
+	s.ThingTypeName = &v
+	return s
+}
+
 // The output for the ListThingTypes operation.
 type ListThingTypesOutput struct {
 	_ struct{} `type:"structure"`
@@ -8004,6 +9186,18 @@ func (s ListThingTypesOutput) String() string {
 // GoString returns the string representation
 func (s ListThingTypesOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListThingTypesOutput) SetNextToken(v string) *ListThingTypesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetThingTypes sets the ThingTypes field's value.
+func (s *ListThingTypesOutput) SetThingTypes(v []*ThingTypeDefinition) *ListThingTypesOutput {
+	s.ThingTypes = v
+	return s
 }
 
 // The input for the ListThings operation.
@@ -8053,6 +9247,36 @@ func (s *ListThingsInput) Validate() error {
 	return nil
 }
 
+// SetAttributeName sets the AttributeName field's value.
+func (s *ListThingsInput) SetAttributeName(v string) *ListThingsInput {
+	s.AttributeName = &v
+	return s
+}
+
+// SetAttributeValue sets the AttributeValue field's value.
+func (s *ListThingsInput) SetAttributeValue(v string) *ListThingsInput {
+	s.AttributeValue = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListThingsInput) SetMaxResults(v int64) *ListThingsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListThingsInput) SetNextToken(v string) *ListThingsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *ListThingsInput) SetThingTypeName(v string) *ListThingsInput {
+	s.ThingTypeName = &v
+	return s
+}
+
 // The output from the ListThings operation.
 type ListThingsOutput struct {
 	_ struct{} `type:"structure"`
@@ -8073,6 +9297,18 @@ func (s ListThingsOutput) String() string {
 // GoString returns the string representation
 func (s ListThingsOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListThingsOutput) SetNextToken(v string) *ListThingsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetThings sets the Things field's value.
+func (s *ListThingsOutput) SetThings(v []*ThingAttribute) *ListThingsOutput {
+	s.Things = v
+	return s
 }
 
 // The input for the ListTopicRules operation.
@@ -8115,6 +9351,30 @@ func (s *ListTopicRulesInput) Validate() error {
 	return nil
 }
 
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListTopicRulesInput) SetMaxResults(v int64) *ListTopicRulesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListTopicRulesInput) SetNextToken(v string) *ListTopicRulesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRuleDisabled sets the RuleDisabled field's value.
+func (s *ListTopicRulesInput) SetRuleDisabled(v bool) *ListTopicRulesInput {
+	s.RuleDisabled = &v
+	return s
+}
+
+// SetTopic sets the Topic field's value.
+func (s *ListTopicRulesInput) SetTopic(v string) *ListTopicRulesInput {
+	s.Topic = &v
+	return s
+}
+
 // The output from the ListTopicRules operation.
 type ListTopicRulesOutput struct {
 	_ struct{} `type:"structure"`
@@ -8134,6 +9394,18 @@ func (s ListTopicRulesOutput) String() string {
 // GoString returns the string representation
 func (s ListTopicRulesOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListTopicRulesOutput) SetNextToken(v string) *ListTopicRulesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRules sets the Rules field's value.
+func (s *ListTopicRulesOutput) SetRules(v []*TopicRuleListItem) *ListTopicRulesOutput {
+	s.Rules = v
+	return s
 }
 
 // Describes the logging options payload.
@@ -8172,6 +9444,18 @@ func (s *LoggingOptionsPayload) Validate() error {
 	return nil
 }
 
+// SetLogLevel sets the LogLevel field's value.
+func (s *LoggingOptionsPayload) SetLogLevel(v string) *LoggingOptionsPayload {
+	s.LogLevel = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *LoggingOptionsPayload) SetRoleArn(v string) *LoggingOptionsPayload {
+	s.RoleArn = &v
+	return s
+}
+
 // A certificate that has been transfered but not yet accepted.
 type OutgoingCertificate struct {
 	_ struct{} `type:"structure"`
@@ -8205,6 +9489,42 @@ func (s OutgoingCertificate) GoString() string {
 	return s.String()
 }
 
+// SetCertificateArn sets the CertificateArn field's value.
+func (s *OutgoingCertificate) SetCertificateArn(v string) *OutgoingCertificate {
+	s.CertificateArn = &v
+	return s
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *OutgoingCertificate) SetCertificateId(v string) *OutgoingCertificate {
+	s.CertificateId = &v
+	return s
+}
+
+// SetCreationDate sets the CreationDate field's value.
+func (s *OutgoingCertificate) SetCreationDate(v time.Time) *OutgoingCertificate {
+	s.CreationDate = &v
+	return s
+}
+
+// SetTransferDate sets the TransferDate field's value.
+func (s *OutgoingCertificate) SetTransferDate(v time.Time) *OutgoingCertificate {
+	s.TransferDate = &v
+	return s
+}
+
+// SetTransferMessage sets the TransferMessage field's value.
+func (s *OutgoingCertificate) SetTransferMessage(v string) *OutgoingCertificate {
+	s.TransferMessage = &v
+	return s
+}
+
+// SetTransferredTo sets the TransferredTo field's value.
+func (s *OutgoingCertificate) SetTransferredTo(v string) *OutgoingCertificate {
+	s.TransferredTo = &v
+	return s
+}
+
 // Describes an AWS IoT policy.
 type Policy struct {
 	_ struct{} `type:"structure"`
@@ -8224,6 +9544,18 @@ func (s Policy) String() string {
 // GoString returns the string representation
 func (s Policy) GoString() string {
 	return s.String()
+}
+
+// SetPolicyArn sets the PolicyArn field's value.
+func (s *Policy) SetPolicyArn(v string) *Policy {
+	s.PolicyArn = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *Policy) SetPolicyName(v string) *Policy {
+	s.PolicyName = &v
+	return s
 }
 
 // Describes a policy version.
@@ -8248,6 +9580,24 @@ func (s PolicyVersion) String() string {
 // GoString returns the string representation
 func (s PolicyVersion) GoString() string {
 	return s.String()
+}
+
+// SetCreateDate sets the CreateDate field's value.
+func (s *PolicyVersion) SetCreateDate(v time.Time) *PolicyVersion {
+	s.CreateDate = &v
+	return s
+}
+
+// SetIsDefaultVersion sets the IsDefaultVersion field's value.
+func (s *PolicyVersion) SetIsDefaultVersion(v bool) *PolicyVersion {
+	s.IsDefaultVersion = &v
+	return s
+}
+
+// SetVersionId sets the VersionId field's value.
+func (s *PolicyVersion) SetVersionId(v string) *PolicyVersion {
+	s.VersionId = &v
+	return s
 }
 
 // The input for the DynamoActionVS action that specifies the DynamoDB table
@@ -8282,6 +9632,12 @@ func (s *PutItemInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetTableName sets the TableName field's value.
+func (s *PutItemInput) SetTableName(v string) *PutItemInput {
+	s.TableName = &v
+	return s
 }
 
 // The input to the RegisterCACertificate operation.
@@ -8337,6 +9693,30 @@ func (s *RegisterCACertificateInput) Validate() error {
 	return nil
 }
 
+// SetAllowAutoRegistration sets the AllowAutoRegistration field's value.
+func (s *RegisterCACertificateInput) SetAllowAutoRegistration(v bool) *RegisterCACertificateInput {
+	s.AllowAutoRegistration = &v
+	return s
+}
+
+// SetCaCertificate sets the CaCertificate field's value.
+func (s *RegisterCACertificateInput) SetCaCertificate(v string) *RegisterCACertificateInput {
+	s.CaCertificate = &v
+	return s
+}
+
+// SetSetAsActive sets the SetAsActive field's value.
+func (s *RegisterCACertificateInput) SetSetAsActive(v bool) *RegisterCACertificateInput {
+	s.SetAsActive = &v
+	return s
+}
+
+// SetVerificationCertificate sets the VerificationCertificate field's value.
+func (s *RegisterCACertificateInput) SetVerificationCertificate(v string) *RegisterCACertificateInput {
+	s.VerificationCertificate = &v
+	return s
+}
+
 // The output from the RegisterCACertificateResponse operation.
 type RegisterCACertificateOutput struct {
 	_ struct{} `type:"structure"`
@@ -8356,6 +9736,18 @@ func (s RegisterCACertificateOutput) String() string {
 // GoString returns the string representation
 func (s RegisterCACertificateOutput) GoString() string {
 	return s.String()
+}
+
+// SetCertificateArn sets the CertificateArn field's value.
+func (s *RegisterCACertificateOutput) SetCertificateArn(v string) *RegisterCACertificateOutput {
+	s.CertificateArn = &v
+	return s
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *RegisterCACertificateOutput) SetCertificateId(v string) *RegisterCACertificateOutput {
+	s.CertificateId = &v
+	return s
 }
 
 // The input to the RegisterCertificate operation.
@@ -8405,6 +9797,30 @@ func (s *RegisterCertificateInput) Validate() error {
 	return nil
 }
 
+// SetCaCertificatePem sets the CaCertificatePem field's value.
+func (s *RegisterCertificateInput) SetCaCertificatePem(v string) *RegisterCertificateInput {
+	s.CaCertificatePem = &v
+	return s
+}
+
+// SetCertificatePem sets the CertificatePem field's value.
+func (s *RegisterCertificateInput) SetCertificatePem(v string) *RegisterCertificateInput {
+	s.CertificatePem = &v
+	return s
+}
+
+// SetSetAsActive sets the SetAsActive field's value.
+func (s *RegisterCertificateInput) SetSetAsActive(v bool) *RegisterCertificateInput {
+	s.SetAsActive = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *RegisterCertificateInput) SetStatus(v string) *RegisterCertificateInput {
+	s.Status = &v
+	return s
+}
+
 // The output from the RegisterCertificate operation.
 type RegisterCertificateOutput struct {
 	_ struct{} `type:"structure"`
@@ -8424,6 +9840,18 @@ func (s RegisterCertificateOutput) String() string {
 // GoString returns the string representation
 func (s RegisterCertificateOutput) GoString() string {
 	return s.String()
+}
+
+// SetCertificateArn sets the CertificateArn field's value.
+func (s *RegisterCertificateOutput) SetCertificateArn(v string) *RegisterCertificateOutput {
+	s.CertificateArn = &v
+	return s
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *RegisterCertificateOutput) SetCertificateId(v string) *RegisterCertificateOutput {
+	s.CertificateId = &v
+	return s
 }
 
 // The input for the RejectCertificateTransfer operation.
@@ -8463,6 +9891,18 @@ func (s *RejectCertificateTransferInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *RejectCertificateTransferInput) SetCertificateId(v string) *RejectCertificateTransferInput {
+	s.CertificateId = &v
+	return s
+}
+
+// SetRejectReason sets the RejectReason field's value.
+func (s *RejectCertificateTransferInput) SetRejectReason(v string) *RejectCertificateTransferInput {
+	s.RejectReason = &v
+	return s
 }
 
 type RejectCertificateTransferOutput struct {
@@ -8528,6 +9968,18 @@ func (s *ReplaceTopicRuleInput) Validate() error {
 	return nil
 }
 
+// SetRuleName sets the RuleName field's value.
+func (s *ReplaceTopicRuleInput) SetRuleName(v string) *ReplaceTopicRuleInput {
+	s.RuleName = &v
+	return s
+}
+
+// SetTopicRulePayload sets the TopicRulePayload field's value.
+func (s *ReplaceTopicRuleInput) SetTopicRulePayload(v *TopicRulePayload) *ReplaceTopicRuleInput {
+	s.TopicRulePayload = v
+	return s
+}
+
 type ReplaceTopicRuleOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8583,6 +10035,18 @@ func (s *RepublishAction) Validate() error {
 	return nil
 }
 
+// SetRoleArn sets the RoleArn field's value.
+func (s *RepublishAction) SetRoleArn(v string) *RepublishAction {
+	s.RoleArn = &v
+	return s
+}
+
+// SetTopic sets the Topic field's value.
+func (s *RepublishAction) SetTopic(v string) *RepublishAction {
+	s.Topic = &v
+	return s
+}
+
 // Describes an action to write data to an Amazon S3 bucket.
 type S3Action struct {
 	_ struct{} `type:"structure"`
@@ -8636,6 +10100,30 @@ func (s *S3Action) Validate() error {
 	return nil
 }
 
+// SetBucketName sets the BucketName field's value.
+func (s *S3Action) SetBucketName(v string) *S3Action {
+	s.BucketName = &v
+	return s
+}
+
+// SetCannedAcl sets the CannedAcl field's value.
+func (s *S3Action) SetCannedAcl(v string) *S3Action {
+	s.CannedAcl = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *S3Action) SetKey(v string) *S3Action {
+	s.Key = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *S3Action) SetRoleArn(v string) *S3Action {
+	s.RoleArn = &v
+	return s
+}
+
 // The input for the SetDefaultPolicyVersion operation.
 type SetDefaultPolicyVersionInput struct {
 	_ struct{} `type:"structure"`
@@ -8678,6 +10166,18 @@ func (s *SetDefaultPolicyVersionInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *SetDefaultPolicyVersionInput) SetPolicyName(v string) *SetDefaultPolicyVersionInput {
+	s.PolicyName = &v
+	return s
+}
+
+// SetPolicyVersionId sets the PolicyVersionId field's value.
+func (s *SetDefaultPolicyVersionInput) SetPolicyVersionId(v string) *SetDefaultPolicyVersionInput {
+	s.PolicyVersionId = &v
+	return s
 }
 
 type SetDefaultPolicyVersionOutput struct {
@@ -8730,6 +10230,12 @@ func (s *SetLoggingOptionsInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetLoggingOptionsPayload sets the LoggingOptionsPayload field's value.
+func (s *SetLoggingOptionsInput) SetLoggingOptionsPayload(v *LoggingOptionsPayload) *SetLoggingOptionsInput {
+	s.LoggingOptionsPayload = v
+	return s
 }
 
 type SetLoggingOptionsOutput struct {
@@ -8794,6 +10300,24 @@ func (s *SnsAction) Validate() error {
 	return nil
 }
 
+// SetMessageFormat sets the MessageFormat field's value.
+func (s *SnsAction) SetMessageFormat(v string) *SnsAction {
+	s.MessageFormat = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *SnsAction) SetRoleArn(v string) *SnsAction {
+	s.RoleArn = &v
+	return s
+}
+
+// SetTargetArn sets the TargetArn field's value.
+func (s *SnsAction) SetTargetArn(v string) *SnsAction {
+	s.TargetArn = &v
+	return s
+}
+
 // Describes an action to publish data to an Amazon SQS queue.
 type SqsAction struct {
 	_ struct{} `type:"structure"`
@@ -8838,6 +10362,24 @@ func (s *SqsAction) Validate() error {
 	return nil
 }
 
+// SetQueueUrl sets the QueueUrl field's value.
+func (s *SqsAction) SetQueueUrl(v string) *SqsAction {
+	s.QueueUrl = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *SqsAction) SetRoleArn(v string) *SqsAction {
+	s.RoleArn = &v
+	return s
+}
+
+// SetUseBase64 sets the UseBase64 field's value.
+func (s *SqsAction) SetUseBase64(v bool) *SqsAction {
+	s.UseBase64 = &v
+	return s
+}
+
 // The properties of the thing, including thing name, thing type name, and a
 // list of thing attributes.
 type ThingAttribute struct {
@@ -8866,6 +10408,30 @@ func (s ThingAttribute) GoString() string {
 	return s.String()
 }
 
+// SetAttributes sets the Attributes field's value.
+func (s *ThingAttribute) SetAttributes(v map[string]*string) *ThingAttribute {
+	s.Attributes = v
+	return s
+}
+
+// SetThingName sets the ThingName field's value.
+func (s *ThingAttribute) SetThingName(v string) *ThingAttribute {
+	s.ThingName = &v
+	return s
+}
+
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *ThingAttribute) SetThingTypeName(v string) *ThingAttribute {
+	s.ThingTypeName = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *ThingAttribute) SetVersion(v int64) *ThingAttribute {
+	s.Version = &v
+	return s
+}
+
 // The definition of the thing type, including thing type name and description.
 type ThingTypeDefinition struct {
 	_ struct{} `type:"structure"`
@@ -8890,6 +10456,24 @@ func (s ThingTypeDefinition) String() string {
 // GoString returns the string representation
 func (s ThingTypeDefinition) GoString() string {
 	return s.String()
+}
+
+// SetThingTypeMetadata sets the ThingTypeMetadata field's value.
+func (s *ThingTypeDefinition) SetThingTypeMetadata(v *ThingTypeMetadata) *ThingTypeDefinition {
+	s.ThingTypeMetadata = v
+	return s
+}
+
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *ThingTypeDefinition) SetThingTypeName(v string) *ThingTypeDefinition {
+	s.ThingTypeName = &v
+	return s
+}
+
+// SetThingTypeProperties sets the ThingTypeProperties field's value.
+func (s *ThingTypeDefinition) SetThingTypeProperties(v *ThingTypeProperties) *ThingTypeDefinition {
+	s.ThingTypeProperties = v
+	return s
 }
 
 // The ThingTypeMetadata contains additional information about the thing type
@@ -8919,6 +10503,24 @@ func (s ThingTypeMetadata) GoString() string {
 	return s.String()
 }
 
+// SetCreationDate sets the CreationDate field's value.
+func (s *ThingTypeMetadata) SetCreationDate(v time.Time) *ThingTypeMetadata {
+	s.CreationDate = &v
+	return s
+}
+
+// SetDeprecated sets the Deprecated field's value.
+func (s *ThingTypeMetadata) SetDeprecated(v bool) *ThingTypeMetadata {
+	s.Deprecated = &v
+	return s
+}
+
+// SetDeprecationDate sets the DeprecationDate field's value.
+func (s *ThingTypeMetadata) SetDeprecationDate(v time.Time) *ThingTypeMetadata {
+	s.DeprecationDate = &v
+	return s
+}
+
 // The ThingTypeProperties contains information about the thing type including:
 // a thing type description, and a list of searchable thing attribute names.
 type ThingTypeProperties struct {
@@ -8939,6 +10541,18 @@ func (s ThingTypeProperties) String() string {
 // GoString returns the string representation
 func (s ThingTypeProperties) GoString() string {
 	return s.String()
+}
+
+// SetSearchableAttributes sets the SearchableAttributes field's value.
+func (s *ThingTypeProperties) SetSearchableAttributes(v []*string) *ThingTypeProperties {
+	s.SearchableAttributes = v
+	return s
+}
+
+// SetThingTypeDescription sets the ThingTypeDescription field's value.
+func (s *ThingTypeProperties) SetThingTypeDescription(v string) *ThingTypeProperties {
+	s.ThingTypeDescription = &v
+	return s
 }
 
 // Describes a rule.
@@ -8978,6 +10592,48 @@ func (s TopicRule) GoString() string {
 	return s.String()
 }
 
+// SetActions sets the Actions field's value.
+func (s *TopicRule) SetActions(v []*Action) *TopicRule {
+	s.Actions = v
+	return s
+}
+
+// SetAwsIotSqlVersion sets the AwsIotSqlVersion field's value.
+func (s *TopicRule) SetAwsIotSqlVersion(v string) *TopicRule {
+	s.AwsIotSqlVersion = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *TopicRule) SetCreatedAt(v time.Time) *TopicRule {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *TopicRule) SetDescription(v string) *TopicRule {
+	s.Description = &v
+	return s
+}
+
+// SetRuleDisabled sets the RuleDisabled field's value.
+func (s *TopicRule) SetRuleDisabled(v bool) *TopicRule {
+	s.RuleDisabled = &v
+	return s
+}
+
+// SetRuleName sets the RuleName field's value.
+func (s *TopicRule) SetRuleName(v string) *TopicRule {
+	s.RuleName = &v
+	return s
+}
+
+// SetSql sets the Sql field's value.
+func (s *TopicRule) SetSql(v string) *TopicRule {
+	s.Sql = &v
+	return s
+}
+
 // Describes a rule.
 type TopicRuleListItem struct {
 	_ struct{} `type:"structure"`
@@ -9006,6 +10662,36 @@ func (s TopicRuleListItem) String() string {
 // GoString returns the string representation
 func (s TopicRuleListItem) GoString() string {
 	return s.String()
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *TopicRuleListItem) SetCreatedAt(v time.Time) *TopicRuleListItem {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetRuleArn sets the RuleArn field's value.
+func (s *TopicRuleListItem) SetRuleArn(v string) *TopicRuleListItem {
+	s.RuleArn = &v
+	return s
+}
+
+// SetRuleDisabled sets the RuleDisabled field's value.
+func (s *TopicRuleListItem) SetRuleDisabled(v bool) *TopicRuleListItem {
+	s.RuleDisabled = &v
+	return s
+}
+
+// SetRuleName sets the RuleName field's value.
+func (s *TopicRuleListItem) SetRuleName(v string) *TopicRuleListItem {
+	s.RuleName = &v
+	return s
+}
+
+// SetTopicPattern sets the TopicPattern field's value.
+func (s *TopicRuleListItem) SetTopicPattern(v string) *TopicRuleListItem {
+	s.TopicPattern = &v
+	return s
 }
 
 // Describes a rule.
@@ -9070,6 +10756,36 @@ func (s *TopicRulePayload) Validate() error {
 	return nil
 }
 
+// SetActions sets the Actions field's value.
+func (s *TopicRulePayload) SetActions(v []*Action) *TopicRulePayload {
+	s.Actions = v
+	return s
+}
+
+// SetAwsIotSqlVersion sets the AwsIotSqlVersion field's value.
+func (s *TopicRulePayload) SetAwsIotSqlVersion(v string) *TopicRulePayload {
+	s.AwsIotSqlVersion = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *TopicRulePayload) SetDescription(v string) *TopicRulePayload {
+	s.Description = &v
+	return s
+}
+
+// SetRuleDisabled sets the RuleDisabled field's value.
+func (s *TopicRulePayload) SetRuleDisabled(v bool) *TopicRulePayload {
+	s.RuleDisabled = &v
+	return s
+}
+
+// SetSql sets the Sql field's value.
+func (s *TopicRulePayload) SetSql(v string) *TopicRulePayload {
+	s.Sql = &v
+	return s
+}
+
 // The input for the TransferCertificate operation.
 type TransferCertificateInput struct {
 	_ struct{} `type:"structure"`
@@ -9117,6 +10833,24 @@ func (s *TransferCertificateInput) Validate() error {
 	return nil
 }
 
+// SetCertificateId sets the CertificateId field's value.
+func (s *TransferCertificateInput) SetCertificateId(v string) *TransferCertificateInput {
+	s.CertificateId = &v
+	return s
+}
+
+// SetTargetAwsAccount sets the TargetAwsAccount field's value.
+func (s *TransferCertificateInput) SetTargetAwsAccount(v string) *TransferCertificateInput {
+	s.TargetAwsAccount = &v
+	return s
+}
+
+// SetTransferMessage sets the TransferMessage field's value.
+func (s *TransferCertificateInput) SetTransferMessage(v string) *TransferCertificateInput {
+	s.TransferMessage = &v
+	return s
+}
+
 // The output from the TransferCertificate operation.
 type TransferCertificateOutput struct {
 	_ struct{} `type:"structure"`
@@ -9133,6 +10867,12 @@ func (s TransferCertificateOutput) String() string {
 // GoString returns the string representation
 func (s TransferCertificateOutput) GoString() string {
 	return s.String()
+}
+
+// SetTransferredCertificateArn sets the TransferredCertificateArn field's value.
+func (s *TransferCertificateOutput) SetTransferredCertificateArn(v string) *TransferCertificateOutput {
+	s.TransferredCertificateArn = &v
+	return s
 }
 
 // Data used to transfer a certificate to an AWS account.
@@ -9163,6 +10903,36 @@ func (s TransferData) String() string {
 // GoString returns the string representation
 func (s TransferData) GoString() string {
 	return s.String()
+}
+
+// SetAcceptDate sets the AcceptDate field's value.
+func (s *TransferData) SetAcceptDate(v time.Time) *TransferData {
+	s.AcceptDate = &v
+	return s
+}
+
+// SetRejectDate sets the RejectDate field's value.
+func (s *TransferData) SetRejectDate(v time.Time) *TransferData {
+	s.RejectDate = &v
+	return s
+}
+
+// SetRejectReason sets the RejectReason field's value.
+func (s *TransferData) SetRejectReason(v string) *TransferData {
+	s.RejectReason = &v
+	return s
+}
+
+// SetTransferDate sets the TransferDate field's value.
+func (s *TransferData) SetTransferDate(v time.Time) *TransferData {
+	s.TransferDate = &v
+	return s
+}
+
+// SetTransferMessage sets the TransferMessage field's value.
+func (s *TransferData) SetTransferMessage(v string) *TransferData {
+	s.TransferMessage = &v
+	return s
 }
 
 // The input to the UpdateCACertificate operation.
@@ -9209,6 +10979,24 @@ func (s *UpdateCACertificateInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *UpdateCACertificateInput) SetCertificateId(v string) *UpdateCACertificateInput {
+	s.CertificateId = &v
+	return s
+}
+
+// SetNewAutoRegistrationStatus sets the NewAutoRegistrationStatus field's value.
+func (s *UpdateCACertificateInput) SetNewAutoRegistrationStatus(v string) *UpdateCACertificateInput {
+	s.NewAutoRegistrationStatus = &v
+	return s
+}
+
+// SetNewStatus sets the NewStatus field's value.
+func (s *UpdateCACertificateInput) SetNewStatus(v string) *UpdateCACertificateInput {
+	s.NewStatus = &v
+	return s
 }
 
 type UpdateCACertificateOutput struct {
@@ -9274,6 +11062,18 @@ func (s *UpdateCertificateInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCertificateId sets the CertificateId field's value.
+func (s *UpdateCertificateInput) SetCertificateId(v string) *UpdateCertificateInput {
+	s.CertificateId = &v
+	return s
+}
+
+// SetNewStatus sets the NewStatus field's value.
+func (s *UpdateCertificateInput) SetNewStatus(v string) *UpdateCertificateInput {
+	s.NewStatus = &v
+	return s
 }
 
 type UpdateCertificateOutput struct {
@@ -9346,6 +11146,36 @@ func (s *UpdateThingInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAttributePayload sets the AttributePayload field's value.
+func (s *UpdateThingInput) SetAttributePayload(v *AttributePayload) *UpdateThingInput {
+	s.AttributePayload = v
+	return s
+}
+
+// SetExpectedVersion sets the ExpectedVersion field's value.
+func (s *UpdateThingInput) SetExpectedVersion(v int64) *UpdateThingInput {
+	s.ExpectedVersion = &v
+	return s
+}
+
+// SetRemoveThingType sets the RemoveThingType field's value.
+func (s *UpdateThingInput) SetRemoveThingType(v bool) *UpdateThingInput {
+	s.RemoveThingType = &v
+	return s
+}
+
+// SetThingName sets the ThingName field's value.
+func (s *UpdateThingInput) SetThingName(v string) *UpdateThingInput {
+	s.ThingName = &v
+	return s
+}
+
+// SetThingTypeName sets the ThingTypeName field's value.
+func (s *UpdateThingInput) SetThingTypeName(v string) *UpdateThingInput {
+	s.ThingTypeName = &v
+	return s
 }
 
 // The output from the UpdateThing operation.

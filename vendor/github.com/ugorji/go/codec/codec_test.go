@@ -172,6 +172,11 @@ func (r *TestRpcInt) Echo123(args []string, res *string) error {
 	return nil
 }
 
+type TestRawValue struct {
+	R Raw
+	I int
+}
+
 type testUnixNanoTimeExt struct {
 	// keep timestamp here, so that do not incur interface-conversion costs
 	ts int64
@@ -1132,6 +1137,42 @@ func doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8) {
 	}
 }
 
+func doTestRawValue(t *testing.T, name string, h Handle) {
+	bh := h.getBasicHandle()
+	if !bh.Raw {
+		bh.Raw = true
+		defer func() { bh.Raw = false }()
+	}
+
+	var i, i2 int
+	var v, v2 TestRawValue
+	var bs, bs2 []byte
+
+	i = 1234 //1234567890
+	v = TestRawValue{I: i}
+	e := NewEncoderBytes(&bs, h)
+	e.MustEncode(v.I)
+	logT(t, ">>> raw: %v\n", bs)
+
+	v.R = Raw(bs)
+	e.ResetBytes(&bs2)
+	e.MustEncode(v)
+
+	logT(t, ">>> bs2: %v\n", bs2)
+	d := NewDecoderBytes(bs2, h)
+	d.MustDecode(&v2)
+	d.ResetBytes(v2.R)
+	logT(t, ">>> v2.R: %v\n", ([]byte)(v2.R))
+	d.MustDecode(&i2)
+
+	logT(t, ">>> Encoded %v, decoded %v\n", i, i2)
+	// logT(t, "Encoded %v, decoded %v", i, i2)
+	if i != i2 {
+		logT(t, "Error: encoded %v, decoded %v", i, i2)
+		t.FailNow()
+	}
+}
+
 // Comprehensive testing that generates data encoded from python handle (cbor, msgpack),
 // and validates that our code can read and write it out accordingly.
 // We keep this unexported here, and put actual test in ext_dep_test.go.
@@ -1369,6 +1410,23 @@ func TestJsonCodecChan(t *testing.T) {
 
 func TestJsonStdEncIntf(t *testing.T) {
 	doTestStdEncIntf(t, "json", testJsonH)
+}
+
+// ----- Raw ---------
+func TestJsonRaw(t *testing.T) {
+	doTestRawValue(t, "json", testJsonH)
+}
+func TestBincRaw(t *testing.T) {
+	doTestRawValue(t, "binc", testBincH)
+}
+func TestMsgpackRaw(t *testing.T) {
+	doTestRawValue(t, "msgpack", testMsgpackH)
+}
+func TestSimpleRaw(t *testing.T) {
+	doTestRawValue(t, "simple", testSimpleH)
+}
+func TestCborRaw(t *testing.T) {
+	doTestRawValue(t, "cbor", testCborH)
 }
 
 // ----- ALL (framework based) -----

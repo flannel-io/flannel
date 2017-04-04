@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import (
 	"time"
 
 	"github.com/bgentry/speakeasy"
-	"github.com/codegangsta/cli"
 	"github.com/coreos/etcd/client"
 	"github.com/coreos/etcd/pkg/transport"
+	"github.com/urfave/cli"
 	"golang.org/x/net/context"
 )
 
@@ -41,18 +41,6 @@ var (
 	// 30s is long enough for most of the network conditions.
 	defaultDialTimeout = 30 * time.Second
 )
-
-// trimsplit slices s into all substrings separated by sep and returns a
-// slice of the substrings between the separator with all leading and trailing
-// white space removed, as defined by Unicode.
-func trimsplit(s, sep string) []string {
-	raw := strings.Split(s, ",")
-	trimmed := make([]string, 0)
-	for _, r := range raw {
-		trimmed = append(trimmed, strings.TrimSpace(r))
-	}
-	return trimmed
-}
 
 func argOrStdin(args []string, stdin io.Reader, i int) (string, error) {
 	if i < len(args) {
@@ -97,13 +85,7 @@ func getPeersFlagValue(c *cli.Context) []string {
 }
 
 func getDomainDiscoveryFlagValue(c *cli.Context) ([]string, error) {
-	domainstr := c.GlobalString("discovery-srv")
-
-	// Use an environment variable if nothing was supplied on the
-	// command line
-	if domainstr == "" {
-		domainstr = os.Getenv("ETCDCTL_DISCOVERY_SRV")
-	}
+	domainstr, insecure := getDiscoveryDomain(c)
 
 	// If we still don't have domain discovery, return nothing
 	if domainstr == "" {
@@ -115,8 +97,30 @@ func getDomainDiscoveryFlagValue(c *cli.Context) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	if insecure {
+		return eps, err
+	}
+	// strip insecure connections
+	ret := []string{}
+	for _, ep := range eps {
+		if strings.HasPrefix("http://", ep) {
+			fmt.Fprintf(os.Stderr, "ignoring discovered insecure endpoint %q\n", ep)
+			continue
+		}
+		ret = append(ret, ep)
+	}
+	return ret, err
+}
 
-	return eps, err
+func getDiscoveryDomain(c *cli.Context) (domainstr string, insecure bool) {
+	domainstr = c.GlobalString("discovery-srv")
+	// Use an environment variable if nothing was supplied on the
+	// command line
+	if domainstr == "" {
+		domainstr = os.Getenv("ETCDCTL_DISCOVERY_SRV")
+	}
+	insecure = c.GlobalBool("insecure-discovery") || (os.Getenv("ETCDCTL_INSECURE_DISCOVERY") != "")
+	return domainstr, insecure
 }
 
 func getEndpoints(c *cli.Context) ([]string, error) {
@@ -163,12 +167,23 @@ func getTransport(c *cli.Context) (*http.Transport, error) {
 		keyfile = os.Getenv("ETCDCTL_KEY_FILE")
 	}
 
-	tls := transport.TLSInfo{
-		CAFile:   cafile,
-		CertFile: certfile,
-		KeyFile:  keyfile,
+	discoveryDomain, insecure := getDiscoveryDomain(c)
+	if insecure {
+		discoveryDomain = ""
 	}
-	return transport.NewTransport(tls, defaultDialTimeout)
+	tls := transport.TLSInfo{
+		CAFile:     cafile,
+		CertFile:   certfile,
+		KeyFile:    keyfile,
+		ServerName: discoveryDomain,
+	}
+
+	dialTimeout := defaultDialTimeout
+	totalTimeout := c.GlobalDuration("total-timeout")
+	if totalTimeout != 0 && totalTimeout < dialTimeout {
+		dialTimeout = totalTimeout
+	}
+	return transport.NewTransport(tls, dialTimeout)
 }
 
 func getUsernamePasswordFromFlag(usernameFlag string) (username string, password string, err error) {
@@ -215,33 +230,17 @@ func mustNewClient(c *cli.Context) client.Client {
 		if debug {
 			fmt.Fprintf(os.Stderr, "start to sync cluster using endpoints(%s)\n", strings.Join(hc.Endpoints(), ","))
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), client.DefaultRequestTimeout)
+		ctx, cancel := contextWithTotalTimeout(c)
 		err := hc.Sync(ctx)
 		cancel()
 		if err != nil {
 			if err == client.ErrNoEndpoints {
 				fmt.Fprintf(os.Stderr, "etcd cluster has no published client endpoints.\n")
 				fmt.Fprintf(os.Stderr, "Try '--no-sync' if you want to access non-published client endpoints(%s).\n", strings.Join(hc.Endpoints(), ","))
-				handleError(ExitServerError, err)
+				handleError(c, ExitServerError, err)
 			}
-
 			if isConnectionError(err) {
-				handleError(ExitBadConnection, err)
-			}
-
-			// fail-back to try sync cluster with peer API. this is for making etcdctl work with etcd 0.4.x.
-			// TODO: remove this when we deprecate the support for etcd 0.4.
-			eps, serr := syncWithPeerAPI(c, ctx, hc.Endpoints())
-			if serr != nil {
-				if isConnectionError(serr) {
-					handleError(ExitBadConnection, serr)
-				} else {
-					handleError(ExitServerError, serr)
-				}
-			}
-			err = hc.SetEndpoints(eps)
-			if err != nil {
-				handleError(ExitServerError, err)
+				handleError(c, ExitBadConnection, err)
 			}
 		}
 		if debug {
@@ -334,45 +333,4 @@ func newClient(c *cli.Context) (client.Client, error) {
 
 func contextWithTotalTimeout(c *cli.Context) (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), c.GlobalDuration("total-timeout"))
-}
-
-// syncWithPeerAPI syncs cluster with peer API defined at
-// https://github.com/coreos/etcd/blob/v0.4.9/server/server.go#L311.
-// This exists for backward compatibility with etcd 0.4.x.
-func syncWithPeerAPI(c *cli.Context, ctx context.Context, knownPeers []string) ([]string, error) {
-	tr, err := getTransport(c)
-	if err != nil {
-		return nil, err
-	}
-
-	var (
-		body []byte
-		resp *http.Response
-	)
-	for _, p := range knownPeers {
-		var req *http.Request
-		req, err = http.NewRequest("GET", p+"/v2/peers", nil)
-		if err != nil {
-			continue
-		}
-		resp, err = tr.RoundTrip(req)
-		if err != nil {
-			continue
-		}
-		if resp.StatusCode != http.StatusOK {
-			resp.Body.Close()
-			continue
-		}
-		body, err = ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err == nil {
-			break
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	// Parse the peers API format: https://github.com/coreos/etcd/blob/v0.4.9/server/server.go#L311
-	return strings.Split(string(body), ", "), nil
 }

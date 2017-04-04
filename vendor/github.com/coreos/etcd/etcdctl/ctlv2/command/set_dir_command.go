@@ -1,4 +1,4 @@
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 The etcd Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 package command
 
 import (
-	"github.com/codegangsta/cli"
 	"github.com/coreos/etcd/client"
+	"github.com/urfave/cli"
 )
 
 // NewSetDirCommand returns the CLI command for "setDir".
@@ -26,10 +26,11 @@ func NewSetDirCommand() cli.Command {
 		Usage:     "create a new directory or update an existing directory TTL",
 		ArgsUsage: "<key>",
 		Flags: []cli.Flag{
-			cli.IntFlag{Name: "ttl", Value: 0, Usage: "key time-to-live"},
+			cli.IntFlag{Name: "ttl", Value: 0, Usage: "key time-to-live in seconds"},
 		},
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			mkdirCommandFunc(c, mustNewKeyAPI(c), client.PrevIgnore)
+			return nil
 		},
 	}
 }

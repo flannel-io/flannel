@@ -22,11 +22,10 @@ package pubsub // import "google.golang.org/cloud/pubsub"
 
 import (
 	"fmt"
-	"net/http"
+	"os"
 
 	raw "google.golang.org/api/pubsub/v1"
 	"google.golang.org/cloud"
-	"google.golang.org/cloud/internal"
 	"google.golang.org/cloud/internal/transport"
 
 	"golang.org/x/net/context"
@@ -46,17 +45,16 @@ const prodAddr = "https://pubsub.googleapis.com/"
 const userAgent = "gcloud-golang-pubsub/20151008"
 
 // Client is a Google Pub/Sub client, which may be used to perform Pub/Sub operations with a project.
-// Note: Some operations are not yet available via Client, and must be performed via the legacy standalone functions.
 // It must be constructed via NewClient.
 type Client struct {
 	projectID string
 	s         service
 }
 
-// NewClient create a new PubSub client.
+// NewClient creates a new PubSub client.
 func NewClient(ctx context.Context, projectID string, opts ...cloud.ClientOption) (*Client, error) {
 	o := []cloud.ClientOption{
-		cloud.WithEndpoint(prodAddr),
+		cloud.WithEndpoint(baseAddr()),
 		cloud.WithScopes(raw.PubsubScope, raw.CloudPlatformScope),
 		cloud.WithUserAgent(userAgent),
 	}
@@ -80,27 +78,11 @@ func (c *Client) fullyQualifiedProjectName() string {
 	return fmt.Sprintf("projects/%s", c.projectID)
 }
 
-// ModifyPushEndpoint modifies the URL endpoint to modify the resource
-// to handle push notifications coming from the Pub/Sub backend
-// for the specified subscription.
-func ModifyPushEndpoint(ctx context.Context, sub, endpoint string) error {
-	_, err := rawService(ctx).Projects.Subscriptions.ModifyPushConfig(fullSubName(internal.ProjID(ctx), sub), &raw.ModifyPushConfigRequest{
-		PushConfig: &raw.PushConfig{
-			PushEndpoint: endpoint,
-		},
-	}).Do()
-	return err
-}
-
-// fullSubName returns the fully qualified name for a subscription.
-// E.g. /subscriptions/project-id/subscription-name.
-func fullSubName(proj, name string) string {
-	return fmt.Sprintf("projects/%s/subscriptions/%s", proj, name)
-}
-
-func rawService(ctx context.Context) *raw.Service {
-	return internal.Service(ctx, "pubsub", func(hc *http.Client) interface{} {
-		svc, _ := raw.New(hc)
-		return svc
-	}).(*raw.Service)
+func baseAddr() string {
+	// Environment variables for gcloud emulator:
+	// https://cloud.google.com/sdk/gcloud/reference/beta/emulators/pubsub/
+	if host := os.Getenv("PUBSUB_EMULATOR_HOST"); host != "" {
+		return "http://" + host + "/"
+	}
+	return prodAddr
 }

@@ -24,7 +24,7 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
-var backendCtors map[string]BackendCtor = make(map[string]BackendCtor)
+var constructors = make(map[string]BackendCtor)
 
 type Manager interface {
 	GetBackend(backendType string) (Backend, error)
@@ -60,7 +60,7 @@ func (bm *manager) GetBackend(backendType string) (Backend, error) {
 	}
 
 	// first request, need to create and run it
-	befunc, ok := backendCtors[betype]
+	befunc, ok := constructors[betype]
 	if !ok {
 		return nil, fmt.Errorf("unknown backend type: %v", betype)
 	}
@@ -95,5 +95,5 @@ func (bm *manager) Wait() {
 }
 
 func Register(name string, ctor BackendCtor) {
-	backendCtors[name] = ctor
+	constructors[name] = ctor
 }

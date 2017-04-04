@@ -38,6 +38,7 @@ const opAssignInstance = "AssignInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssignInstance
 func (c *OpsWorks) AssignInstanceRequest(input *AssignInstanceInput) (req *request.Request, output *AssignInstanceOutput) {
 	op := &request.Operation{
 		Name:       opAssignInstance,
@@ -49,11 +50,10 @@ func (c *OpsWorks) AssignInstanceRequest(input *AssignInstanceInput) (req *reque
 		input = &AssignInstanceInput{}
 	}
 
+	output = &AssignInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AssignInstanceOutput{}
-	req.Data = output
 	return
 }
 
@@ -87,6 +87,7 @@ func (c *OpsWorks) AssignInstanceRequest(input *AssignInstanceInput) (req *reque
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssignInstance
 func (c *OpsWorks) AssignInstance(input *AssignInstanceInput) (*AssignInstanceOutput, error) {
 	req, out := c.AssignInstanceRequest(input)
 	err := req.Send()
@@ -119,6 +120,7 @@ const opAssignVolume = "AssignVolume"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssignVolume
 func (c *OpsWorks) AssignVolumeRequest(input *AssignVolumeInput) (req *request.Request, output *AssignVolumeOutput) {
 	op := &request.Operation{
 		Name:       opAssignVolume,
@@ -130,11 +132,10 @@ func (c *OpsWorks) AssignVolumeRequest(input *AssignVolumeInput) (req *request.R
 		input = &AssignVolumeInput{}
 	}
 
+	output = &AssignVolumeOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AssignVolumeOutput{}
-	req.Data = output
 	return
 }
 
@@ -165,6 +166,7 @@ func (c *OpsWorks) AssignVolumeRequest(input *AssignVolumeInput) (req *request.R
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssignVolume
 func (c *OpsWorks) AssignVolume(input *AssignVolumeInput) (*AssignVolumeOutput, error) {
 	req, out := c.AssignVolumeRequest(input)
 	err := req.Send()
@@ -197,6 +199,7 @@ const opAssociateElasticIp = "AssociateElasticIp"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssociateElasticIp
 func (c *OpsWorks) AssociateElasticIpRequest(input *AssociateElasticIpInput) (req *request.Request, output *AssociateElasticIpOutput) {
 	op := &request.Operation{
 		Name:       opAssociateElasticIp,
@@ -208,11 +211,10 @@ func (c *OpsWorks) AssociateElasticIpRequest(input *AssociateElasticIpInput) (re
 		input = &AssociateElasticIpInput{}
 	}
 
+	output = &AssociateElasticIpOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AssociateElasticIpOutput{}
-	req.Data = output
 	return
 }
 
@@ -241,6 +243,7 @@ func (c *OpsWorks) AssociateElasticIpRequest(input *AssociateElasticIpInput) (re
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssociateElasticIp
 func (c *OpsWorks) AssociateElasticIp(input *AssociateElasticIpInput) (*AssociateElasticIpOutput, error) {
 	req, out := c.AssociateElasticIpRequest(input)
 	err := req.Send()
@@ -273,6 +276,7 @@ const opAttachElasticLoadBalancer = "AttachElasticLoadBalancer"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AttachElasticLoadBalancer
 func (c *OpsWorks) AttachElasticLoadBalancerRequest(input *AttachElasticLoadBalancerInput) (req *request.Request, output *AttachElasticLoadBalancerOutput) {
 	op := &request.Operation{
 		Name:       opAttachElasticLoadBalancer,
@@ -284,11 +288,10 @@ func (c *OpsWorks) AttachElasticLoadBalancerRequest(input *AttachElasticLoadBala
 		input = &AttachElasticLoadBalancerInput{}
 	}
 
+	output = &AttachElasticLoadBalancerOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AttachElasticLoadBalancerOutput{}
-	req.Data = output
 	return
 }
 
@@ -320,6 +323,7 @@ func (c *OpsWorks) AttachElasticLoadBalancerRequest(input *AttachElasticLoadBala
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AttachElasticLoadBalancer
 func (c *OpsWorks) AttachElasticLoadBalancer(input *AttachElasticLoadBalancerInput) (*AttachElasticLoadBalancerOutput, error) {
 	req, out := c.AttachElasticLoadBalancerRequest(input)
 	err := req.Send()
@@ -352,6 +356,7 @@ const opCloneStack = "CloneStack"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CloneStack
 func (c *OpsWorks) CloneStackRequest(input *CloneStackInput) (req *request.Request, output *CloneStackOutput) {
 	op := &request.Operation{
 		Name:       opCloneStack,
@@ -363,9 +368,8 @@ func (c *OpsWorks) CloneStackRequest(input *CloneStackInput) (req *request.Reque
 		input = &CloneStackInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CloneStackOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -393,6 +397,7 @@ func (c *OpsWorks) CloneStackRequest(input *CloneStackInput) (req *request.Reque
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CloneStack
 func (c *OpsWorks) CloneStack(input *CloneStackInput) (*CloneStackOutput, error) {
 	req, out := c.CloneStackRequest(input)
 	err := req.Send()
@@ -425,6 +430,7 @@ const opCreateApp = "CreateApp"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateApp
 func (c *OpsWorks) CreateAppRequest(input *CreateAppInput) (req *request.Request, output *CreateAppOutput) {
 	op := &request.Operation{
 		Name:       opCreateApp,
@@ -436,9 +442,8 @@ func (c *OpsWorks) CreateAppRequest(input *CreateAppInput) (req *request.Request
 		input = &CreateAppInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateAppOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -466,6 +471,7 @@ func (c *OpsWorks) CreateAppRequest(input *CreateAppInput) (req *request.Request
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateApp
 func (c *OpsWorks) CreateApp(input *CreateAppInput) (*CreateAppOutput, error) {
 	req, out := c.CreateAppRequest(input)
 	err := req.Send()
@@ -498,6 +504,7 @@ const opCreateDeployment = "CreateDeployment"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateDeployment
 func (c *OpsWorks) CreateDeploymentRequest(input *CreateDeploymentInput) (req *request.Request, output *CreateDeploymentOutput) {
 	op := &request.Operation{
 		Name:       opCreateDeployment,
@@ -509,9 +516,8 @@ func (c *OpsWorks) CreateDeploymentRequest(input *CreateDeploymentInput) (req *r
 		input = &CreateDeploymentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDeploymentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -540,6 +546,7 @@ func (c *OpsWorks) CreateDeploymentRequest(input *CreateDeploymentInput) (req *r
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateDeployment
 func (c *OpsWorks) CreateDeployment(input *CreateDeploymentInput) (*CreateDeploymentOutput, error) {
 	req, out := c.CreateDeploymentRequest(input)
 	err := req.Send()
@@ -572,6 +579,7 @@ const opCreateInstance = "CreateInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateInstance
 func (c *OpsWorks) CreateInstanceRequest(input *CreateInstanceInput) (req *request.Request, output *CreateInstanceOutput) {
 	op := &request.Operation{
 		Name:       opCreateInstance,
@@ -583,9 +591,8 @@ func (c *OpsWorks) CreateInstanceRequest(input *CreateInstanceInput) (req *reque
 		input = &CreateInstanceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateInstanceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -613,6 +620,7 @@ func (c *OpsWorks) CreateInstanceRequest(input *CreateInstanceInput) (req *reque
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateInstance
 func (c *OpsWorks) CreateInstance(input *CreateInstanceInput) (*CreateInstanceOutput, error) {
 	req, out := c.CreateInstanceRequest(input)
 	err := req.Send()
@@ -645,6 +653,7 @@ const opCreateLayer = "CreateLayer"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateLayer
 func (c *OpsWorks) CreateLayerRequest(input *CreateLayerInput) (req *request.Request, output *CreateLayerOutput) {
 	op := &request.Operation{
 		Name:       opCreateLayer,
@@ -656,9 +665,8 @@ func (c *OpsWorks) CreateLayerRequest(input *CreateLayerInput) (req *request.Req
 		input = &CreateLayerInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateLayerOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -692,6 +700,7 @@ func (c *OpsWorks) CreateLayerRequest(input *CreateLayerInput) (req *request.Req
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateLayer
 func (c *OpsWorks) CreateLayer(input *CreateLayerInput) (*CreateLayerOutput, error) {
 	req, out := c.CreateLayerRequest(input)
 	err := req.Send()
@@ -724,6 +733,7 @@ const opCreateStack = "CreateStack"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateStack
 func (c *OpsWorks) CreateStackRequest(input *CreateStackInput) (req *request.Request, output *CreateStackOutput) {
 	op := &request.Operation{
 		Name:       opCreateStack,
@@ -735,9 +745,8 @@ func (c *OpsWorks) CreateStackRequest(input *CreateStackInput) (req *request.Req
 		input = &CreateStackInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateStackOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -760,6 +769,7 @@ func (c *OpsWorks) CreateStackRequest(input *CreateStackInput) (req *request.Req
 //   * ValidationException
 //   Indicates that a request was not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateStack
 func (c *OpsWorks) CreateStack(input *CreateStackInput) (*CreateStackOutput, error) {
 	req, out := c.CreateStackRequest(input)
 	err := req.Send()
@@ -792,6 +802,7 @@ const opCreateUserProfile = "CreateUserProfile"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateUserProfile
 func (c *OpsWorks) CreateUserProfileRequest(input *CreateUserProfileInput) (req *request.Request, output *CreateUserProfileOutput) {
 	op := &request.Operation{
 		Name:       opCreateUserProfile,
@@ -803,9 +814,8 @@ func (c *OpsWorks) CreateUserProfileRequest(input *CreateUserProfileInput) (req 
 		input = &CreateUserProfileInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateUserProfileOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -828,6 +838,7 @@ func (c *OpsWorks) CreateUserProfileRequest(input *CreateUserProfileInput) (req 
 //   * ValidationException
 //   Indicates that a request was not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateUserProfile
 func (c *OpsWorks) CreateUserProfile(input *CreateUserProfileInput) (*CreateUserProfileOutput, error) {
 	req, out := c.CreateUserProfileRequest(input)
 	err := req.Send()
@@ -860,6 +871,7 @@ const opDeleteApp = "DeleteApp"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteApp
 func (c *OpsWorks) DeleteAppRequest(input *DeleteAppInput) (req *request.Request, output *DeleteAppOutput) {
 	op := &request.Operation{
 		Name:       opDeleteApp,
@@ -871,11 +883,10 @@ func (c *OpsWorks) DeleteAppRequest(input *DeleteAppInput) (req *request.Request
 		input = &DeleteAppInput{}
 	}
 
+	output = &DeleteAppOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteAppOutput{}
-	req.Data = output
 	return
 }
 
@@ -902,6 +913,7 @@ func (c *OpsWorks) DeleteAppRequest(input *DeleteAppInput) (req *request.Request
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteApp
 func (c *OpsWorks) DeleteApp(input *DeleteAppInput) (*DeleteAppOutput, error) {
 	req, out := c.DeleteAppRequest(input)
 	err := req.Send()
@@ -934,6 +946,7 @@ const opDeleteInstance = "DeleteInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteInstance
 func (c *OpsWorks) DeleteInstanceRequest(input *DeleteInstanceInput) (req *request.Request, output *DeleteInstanceOutput) {
 	op := &request.Operation{
 		Name:       opDeleteInstance,
@@ -945,11 +958,10 @@ func (c *OpsWorks) DeleteInstanceRequest(input *DeleteInstanceInput) (req *reque
 		input = &DeleteInstanceInput{}
 	}
 
+	output = &DeleteInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteInstanceOutput{}
-	req.Data = output
 	return
 }
 
@@ -979,6 +991,7 @@ func (c *OpsWorks) DeleteInstanceRequest(input *DeleteInstanceInput) (req *reque
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteInstance
 func (c *OpsWorks) DeleteInstance(input *DeleteInstanceInput) (*DeleteInstanceOutput, error) {
 	req, out := c.DeleteInstanceRequest(input)
 	err := req.Send()
@@ -1011,6 +1024,7 @@ const opDeleteLayer = "DeleteLayer"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteLayer
 func (c *OpsWorks) DeleteLayerRequest(input *DeleteLayerInput) (req *request.Request, output *DeleteLayerOutput) {
 	op := &request.Operation{
 		Name:       opDeleteLayer,
@@ -1022,11 +1036,10 @@ func (c *OpsWorks) DeleteLayerRequest(input *DeleteLayerInput) (req *request.Req
 		input = &DeleteLayerInput{}
 	}
 
+	output = &DeleteLayerOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteLayerOutput{}
-	req.Data = output
 	return
 }
 
@@ -1055,6 +1068,7 @@ func (c *OpsWorks) DeleteLayerRequest(input *DeleteLayerInput) (req *request.Req
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteLayer
 func (c *OpsWorks) DeleteLayer(input *DeleteLayerInput) (*DeleteLayerOutput, error) {
 	req, out := c.DeleteLayerRequest(input)
 	err := req.Send()
@@ -1087,6 +1101,7 @@ const opDeleteStack = "DeleteStack"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteStack
 func (c *OpsWorks) DeleteStackRequest(input *DeleteStackInput) (req *request.Request, output *DeleteStackOutput) {
 	op := &request.Operation{
 		Name:       opDeleteStack,
@@ -1098,11 +1113,10 @@ func (c *OpsWorks) DeleteStackRequest(input *DeleteStackInput) (req *request.Req
 		input = &DeleteStackInput{}
 	}
 
+	output = &DeleteStackOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteStackOutput{}
-	req.Data = output
 	return
 }
 
@@ -1131,6 +1145,7 @@ func (c *OpsWorks) DeleteStackRequest(input *DeleteStackInput) (req *request.Req
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteStack
 func (c *OpsWorks) DeleteStack(input *DeleteStackInput) (*DeleteStackOutput, error) {
 	req, out := c.DeleteStackRequest(input)
 	err := req.Send()
@@ -1163,6 +1178,7 @@ const opDeleteUserProfile = "DeleteUserProfile"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteUserProfile
 func (c *OpsWorks) DeleteUserProfileRequest(input *DeleteUserProfileInput) (req *request.Request, output *DeleteUserProfileOutput) {
 	op := &request.Operation{
 		Name:       opDeleteUserProfile,
@@ -1174,11 +1190,10 @@ func (c *OpsWorks) DeleteUserProfileRequest(input *DeleteUserProfileInput) (req 
 		input = &DeleteUserProfileInput{}
 	}
 
+	output = &DeleteUserProfileOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteUserProfileOutput{}
-	req.Data = output
 	return
 }
 
@@ -1204,6 +1219,7 @@ func (c *OpsWorks) DeleteUserProfileRequest(input *DeleteUserProfileInput) (req 
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteUserProfile
 func (c *OpsWorks) DeleteUserProfile(input *DeleteUserProfileInput) (*DeleteUserProfileOutput, error) {
 	req, out := c.DeleteUserProfileRequest(input)
 	err := req.Send()
@@ -1236,6 +1252,7 @@ const opDeregisterEcsCluster = "DeregisterEcsCluster"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterEcsCluster
 func (c *OpsWorks) DeregisterEcsClusterRequest(input *DeregisterEcsClusterInput) (req *request.Request, output *DeregisterEcsClusterOutput) {
 	op := &request.Operation{
 		Name:       opDeregisterEcsCluster,
@@ -1247,11 +1264,10 @@ func (c *OpsWorks) DeregisterEcsClusterRequest(input *DeregisterEcsClusterInput)
 		input = &DeregisterEcsClusterInput{}
 	}
 
+	output = &DeregisterEcsClusterOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeregisterEcsClusterOutput{}
-	req.Data = output
 	return
 }
 
@@ -1279,6 +1295,7 @@ func (c *OpsWorks) DeregisterEcsClusterRequest(input *DeregisterEcsClusterInput)
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterEcsCluster
 func (c *OpsWorks) DeregisterEcsCluster(input *DeregisterEcsClusterInput) (*DeregisterEcsClusterOutput, error) {
 	req, out := c.DeregisterEcsClusterRequest(input)
 	err := req.Send()
@@ -1311,6 +1328,7 @@ const opDeregisterElasticIp = "DeregisterElasticIp"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterElasticIp
 func (c *OpsWorks) DeregisterElasticIpRequest(input *DeregisterElasticIpInput) (req *request.Request, output *DeregisterElasticIpOutput) {
 	op := &request.Operation{
 		Name:       opDeregisterElasticIp,
@@ -1322,11 +1340,10 @@ func (c *OpsWorks) DeregisterElasticIpRequest(input *DeregisterElasticIpInput) (
 		input = &DeregisterElasticIpInput{}
 	}
 
+	output = &DeregisterElasticIpOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeregisterElasticIpOutput{}
-	req.Data = output
 	return
 }
 
@@ -1354,6 +1371,7 @@ func (c *OpsWorks) DeregisterElasticIpRequest(input *DeregisterElasticIpInput) (
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterElasticIp
 func (c *OpsWorks) DeregisterElasticIp(input *DeregisterElasticIpInput) (*DeregisterElasticIpOutput, error) {
 	req, out := c.DeregisterElasticIpRequest(input)
 	err := req.Send()
@@ -1386,6 +1404,7 @@ const opDeregisterInstance = "DeregisterInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterInstance
 func (c *OpsWorks) DeregisterInstanceRequest(input *DeregisterInstanceInput) (req *request.Request, output *DeregisterInstanceOutput) {
 	op := &request.Operation{
 		Name:       opDeregisterInstance,
@@ -1397,11 +1416,10 @@ func (c *OpsWorks) DeregisterInstanceRequest(input *DeregisterInstanceInput) (re
 		input = &DeregisterInstanceInput{}
 	}
 
+	output = &DeregisterInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeregisterInstanceOutput{}
-	req.Data = output
 	return
 }
 
@@ -1430,6 +1448,7 @@ func (c *OpsWorks) DeregisterInstanceRequest(input *DeregisterInstanceInput) (re
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterInstance
 func (c *OpsWorks) DeregisterInstance(input *DeregisterInstanceInput) (*DeregisterInstanceOutput, error) {
 	req, out := c.DeregisterInstanceRequest(input)
 	err := req.Send()
@@ -1462,6 +1481,7 @@ const opDeregisterRdsDbInstance = "DeregisterRdsDbInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterRdsDbInstance
 func (c *OpsWorks) DeregisterRdsDbInstanceRequest(input *DeregisterRdsDbInstanceInput) (req *request.Request, output *DeregisterRdsDbInstanceOutput) {
 	op := &request.Operation{
 		Name:       opDeregisterRdsDbInstance,
@@ -1473,11 +1493,10 @@ func (c *OpsWorks) DeregisterRdsDbInstanceRequest(input *DeregisterRdsDbInstance
 		input = &DeregisterRdsDbInstanceInput{}
 	}
 
+	output = &DeregisterRdsDbInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeregisterRdsDbInstanceOutput{}
-	req.Data = output
 	return
 }
 
@@ -1504,6 +1523,7 @@ func (c *OpsWorks) DeregisterRdsDbInstanceRequest(input *DeregisterRdsDbInstance
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterRdsDbInstance
 func (c *OpsWorks) DeregisterRdsDbInstance(input *DeregisterRdsDbInstanceInput) (*DeregisterRdsDbInstanceOutput, error) {
 	req, out := c.DeregisterRdsDbInstanceRequest(input)
 	err := req.Send()
@@ -1536,6 +1556,7 @@ const opDeregisterVolume = "DeregisterVolume"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterVolume
 func (c *OpsWorks) DeregisterVolumeRequest(input *DeregisterVolumeInput) (req *request.Request, output *DeregisterVolumeOutput) {
 	op := &request.Operation{
 		Name:       opDeregisterVolume,
@@ -1547,11 +1568,10 @@ func (c *OpsWorks) DeregisterVolumeRequest(input *DeregisterVolumeInput) (req *r
 		input = &DeregisterVolumeInput{}
 	}
 
+	output = &DeregisterVolumeOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeregisterVolumeOutput{}
-	req.Data = output
 	return
 }
 
@@ -1579,6 +1599,7 @@ func (c *OpsWorks) DeregisterVolumeRequest(input *DeregisterVolumeInput) (req *r
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterVolume
 func (c *OpsWorks) DeregisterVolume(input *DeregisterVolumeInput) (*DeregisterVolumeOutput, error) {
 	req, out := c.DeregisterVolumeRequest(input)
 	err := req.Send()
@@ -1611,6 +1632,7 @@ const opDescribeAgentVersions = "DescribeAgentVersions"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeAgentVersions
 func (c *OpsWorks) DescribeAgentVersionsRequest(input *DescribeAgentVersionsInput) (req *request.Request, output *DescribeAgentVersionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeAgentVersions,
@@ -1622,9 +1644,8 @@ func (c *OpsWorks) DescribeAgentVersionsRequest(input *DescribeAgentVersionsInpu
 		input = &DescribeAgentVersionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAgentVersionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1648,6 +1669,7 @@ func (c *OpsWorks) DescribeAgentVersionsRequest(input *DescribeAgentVersionsInpu
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeAgentVersions
 func (c *OpsWorks) DescribeAgentVersions(input *DescribeAgentVersionsInput) (*DescribeAgentVersionsOutput, error) {
 	req, out := c.DescribeAgentVersionsRequest(input)
 	err := req.Send()
@@ -1680,6 +1702,7 @@ const opDescribeApps = "DescribeApps"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeApps
 func (c *OpsWorks) DescribeAppsRequest(input *DescribeAppsInput) (req *request.Request, output *DescribeAppsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeApps,
@@ -1691,9 +1714,8 @@ func (c *OpsWorks) DescribeAppsRequest(input *DescribeAppsInput) (req *request.R
 		input = &DescribeAppsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAppsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1722,6 +1744,7 @@ func (c *OpsWorks) DescribeAppsRequest(input *DescribeAppsInput) (req *request.R
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeApps
 func (c *OpsWorks) DescribeApps(input *DescribeAppsInput) (*DescribeAppsOutput, error) {
 	req, out := c.DescribeAppsRequest(input)
 	err := req.Send()
@@ -1754,6 +1777,7 @@ const opDescribeCommands = "DescribeCommands"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeCommands
 func (c *OpsWorks) DescribeCommandsRequest(input *DescribeCommandsInput) (req *request.Request, output *DescribeCommandsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeCommands,
@@ -1765,9 +1789,8 @@ func (c *OpsWorks) DescribeCommandsRequest(input *DescribeCommandsInput) (req *r
 		input = &DescribeCommandsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeCommandsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1796,6 +1819,7 @@ func (c *OpsWorks) DescribeCommandsRequest(input *DescribeCommandsInput) (req *r
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeCommands
 func (c *OpsWorks) DescribeCommands(input *DescribeCommandsInput) (*DescribeCommandsOutput, error) {
 	req, out := c.DescribeCommandsRequest(input)
 	err := req.Send()
@@ -1828,6 +1852,7 @@ const opDescribeDeployments = "DescribeDeployments"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeDeployments
 func (c *OpsWorks) DescribeDeploymentsRequest(input *DescribeDeploymentsInput) (req *request.Request, output *DescribeDeploymentsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeDeployments,
@@ -1839,9 +1864,8 @@ func (c *OpsWorks) DescribeDeploymentsRequest(input *DescribeDeploymentsInput) (
 		input = &DescribeDeploymentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeDeploymentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1870,6 +1894,7 @@ func (c *OpsWorks) DescribeDeploymentsRequest(input *DescribeDeploymentsInput) (
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeDeployments
 func (c *OpsWorks) DescribeDeployments(input *DescribeDeploymentsInput) (*DescribeDeploymentsOutput, error) {
 	req, out := c.DescribeDeploymentsRequest(input)
 	err := req.Send()
@@ -1902,6 +1927,7 @@ const opDescribeEcsClusters = "DescribeEcsClusters"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeEcsClusters
 func (c *OpsWorks) DescribeEcsClustersRequest(input *DescribeEcsClustersInput) (req *request.Request, output *DescribeEcsClustersOutput) {
 	op := &request.Operation{
 		Name:       opDescribeEcsClusters,
@@ -1919,9 +1945,8 @@ func (c *OpsWorks) DescribeEcsClustersRequest(input *DescribeEcsClustersInput) (
 		input = &DescribeEcsClustersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeEcsClustersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1951,6 +1976,7 @@ func (c *OpsWorks) DescribeEcsClustersRequest(input *DescribeEcsClustersInput) (
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeEcsClusters
 func (c *OpsWorks) DescribeEcsClusters(input *DescribeEcsClustersInput) (*DescribeEcsClustersOutput, error) {
 	req, out := c.DescribeEcsClustersRequest(input)
 	err := req.Send()
@@ -2008,6 +2034,7 @@ const opDescribeElasticIps = "DescribeElasticIps"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeElasticIps
 func (c *OpsWorks) DescribeElasticIpsRequest(input *DescribeElasticIpsInput) (req *request.Request, output *DescribeElasticIpsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeElasticIps,
@@ -2019,9 +2046,8 @@ func (c *OpsWorks) DescribeElasticIpsRequest(input *DescribeElasticIpsInput) (re
 		input = &DescribeElasticIpsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeElasticIpsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2050,6 +2076,7 @@ func (c *OpsWorks) DescribeElasticIpsRequest(input *DescribeElasticIpsInput) (re
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeElasticIps
 func (c *OpsWorks) DescribeElasticIps(input *DescribeElasticIpsInput) (*DescribeElasticIpsOutput, error) {
 	req, out := c.DescribeElasticIpsRequest(input)
 	err := req.Send()
@@ -2082,6 +2109,7 @@ const opDescribeElasticLoadBalancers = "DescribeElasticLoadBalancers"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeElasticLoadBalancers
 func (c *OpsWorks) DescribeElasticLoadBalancersRequest(input *DescribeElasticLoadBalancersInput) (req *request.Request, output *DescribeElasticLoadBalancersOutput) {
 	op := &request.Operation{
 		Name:       opDescribeElasticLoadBalancers,
@@ -2093,9 +2121,8 @@ func (c *OpsWorks) DescribeElasticLoadBalancersRequest(input *DescribeElasticLoa
 		input = &DescribeElasticLoadBalancersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeElasticLoadBalancersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2124,6 +2151,7 @@ func (c *OpsWorks) DescribeElasticLoadBalancersRequest(input *DescribeElasticLoa
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeElasticLoadBalancers
 func (c *OpsWorks) DescribeElasticLoadBalancers(input *DescribeElasticLoadBalancersInput) (*DescribeElasticLoadBalancersOutput, error) {
 	req, out := c.DescribeElasticLoadBalancersRequest(input)
 	err := req.Send()
@@ -2156,6 +2184,7 @@ const opDescribeInstances = "DescribeInstances"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeInstances
 func (c *OpsWorks) DescribeInstancesRequest(input *DescribeInstancesInput) (req *request.Request, output *DescribeInstancesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeInstances,
@@ -2167,9 +2196,8 @@ func (c *OpsWorks) DescribeInstancesRequest(input *DescribeInstancesInput) (req 
 		input = &DescribeInstancesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeInstancesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2198,6 +2226,7 @@ func (c *OpsWorks) DescribeInstancesRequest(input *DescribeInstancesInput) (req 
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeInstances
 func (c *OpsWorks) DescribeInstances(input *DescribeInstancesInput) (*DescribeInstancesOutput, error) {
 	req, out := c.DescribeInstancesRequest(input)
 	err := req.Send()
@@ -2230,6 +2259,7 @@ const opDescribeLayers = "DescribeLayers"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeLayers
 func (c *OpsWorks) DescribeLayersRequest(input *DescribeLayersInput) (req *request.Request, output *DescribeLayersOutput) {
 	op := &request.Operation{
 		Name:       opDescribeLayers,
@@ -2241,9 +2271,8 @@ func (c *OpsWorks) DescribeLayersRequest(input *DescribeLayersInput) (req *reque
 		input = &DescribeLayersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeLayersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2272,6 +2301,7 @@ func (c *OpsWorks) DescribeLayersRequest(input *DescribeLayersInput) (req *reque
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeLayers
 func (c *OpsWorks) DescribeLayers(input *DescribeLayersInput) (*DescribeLayersOutput, error) {
 	req, out := c.DescribeLayersRequest(input)
 	err := req.Send()
@@ -2304,6 +2334,7 @@ const opDescribeLoadBasedAutoScaling = "DescribeLoadBasedAutoScaling"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeLoadBasedAutoScaling
 func (c *OpsWorks) DescribeLoadBasedAutoScalingRequest(input *DescribeLoadBasedAutoScalingInput) (req *request.Request, output *DescribeLoadBasedAutoScalingOutput) {
 	op := &request.Operation{
 		Name:       opDescribeLoadBasedAutoScaling,
@@ -2315,9 +2346,8 @@ func (c *OpsWorks) DescribeLoadBasedAutoScalingRequest(input *DescribeLoadBasedA
 		input = &DescribeLoadBasedAutoScalingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeLoadBasedAutoScalingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2346,6 +2376,7 @@ func (c *OpsWorks) DescribeLoadBasedAutoScalingRequest(input *DescribeLoadBasedA
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeLoadBasedAutoScaling
 func (c *OpsWorks) DescribeLoadBasedAutoScaling(input *DescribeLoadBasedAutoScalingInput) (*DescribeLoadBasedAutoScalingOutput, error) {
 	req, out := c.DescribeLoadBasedAutoScalingRequest(input)
 	err := req.Send()
@@ -2378,6 +2409,7 @@ const opDescribeMyUserProfile = "DescribeMyUserProfile"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeMyUserProfile
 func (c *OpsWorks) DescribeMyUserProfileRequest(input *DescribeMyUserProfileInput) (req *request.Request, output *DescribeMyUserProfileOutput) {
 	op := &request.Operation{
 		Name:       opDescribeMyUserProfile,
@@ -2389,9 +2421,8 @@ func (c *OpsWorks) DescribeMyUserProfileRequest(input *DescribeMyUserProfileInpu
 		input = &DescribeMyUserProfileInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeMyUserProfileOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2409,6 +2440,7 @@ func (c *OpsWorks) DescribeMyUserProfileRequest(input *DescribeMyUserProfileInpu
 //
 // See the AWS API reference guide for AWS OpsWorks's
 // API operation DescribeMyUserProfile for usage and error information.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeMyUserProfile
 func (c *OpsWorks) DescribeMyUserProfile(input *DescribeMyUserProfileInput) (*DescribeMyUserProfileOutput, error) {
 	req, out := c.DescribeMyUserProfileRequest(input)
 	err := req.Send()
@@ -2441,6 +2473,7 @@ const opDescribePermissions = "DescribePermissions"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribePermissions
 func (c *OpsWorks) DescribePermissionsRequest(input *DescribePermissionsInput) (req *request.Request, output *DescribePermissionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribePermissions,
@@ -2452,9 +2485,8 @@ func (c *OpsWorks) DescribePermissionsRequest(input *DescribePermissionsInput) (
 		input = &DescribePermissionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribePermissionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2481,6 +2513,7 @@ func (c *OpsWorks) DescribePermissionsRequest(input *DescribePermissionsInput) (
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribePermissions
 func (c *OpsWorks) DescribePermissions(input *DescribePermissionsInput) (*DescribePermissionsOutput, error) {
 	req, out := c.DescribePermissionsRequest(input)
 	err := req.Send()
@@ -2513,6 +2546,7 @@ const opDescribeRaidArrays = "DescribeRaidArrays"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeRaidArrays
 func (c *OpsWorks) DescribeRaidArraysRequest(input *DescribeRaidArraysInput) (req *request.Request, output *DescribeRaidArraysOutput) {
 	op := &request.Operation{
 		Name:       opDescribeRaidArrays,
@@ -2524,9 +2558,8 @@ func (c *OpsWorks) DescribeRaidArraysRequest(input *DescribeRaidArraysInput) (re
 		input = &DescribeRaidArraysInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeRaidArraysOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2555,6 +2588,7 @@ func (c *OpsWorks) DescribeRaidArraysRequest(input *DescribeRaidArraysInput) (re
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeRaidArrays
 func (c *OpsWorks) DescribeRaidArrays(input *DescribeRaidArraysInput) (*DescribeRaidArraysOutput, error) {
 	req, out := c.DescribeRaidArraysRequest(input)
 	err := req.Send()
@@ -2587,6 +2621,7 @@ const opDescribeRdsDbInstances = "DescribeRdsDbInstances"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeRdsDbInstances
 func (c *OpsWorks) DescribeRdsDbInstancesRequest(input *DescribeRdsDbInstancesInput) (req *request.Request, output *DescribeRdsDbInstancesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeRdsDbInstances,
@@ -2598,9 +2633,8 @@ func (c *OpsWorks) DescribeRdsDbInstancesRequest(input *DescribeRdsDbInstancesIn
 		input = &DescribeRdsDbInstancesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeRdsDbInstancesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2627,6 +2661,7 @@ func (c *OpsWorks) DescribeRdsDbInstancesRequest(input *DescribeRdsDbInstancesIn
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeRdsDbInstances
 func (c *OpsWorks) DescribeRdsDbInstances(input *DescribeRdsDbInstancesInput) (*DescribeRdsDbInstancesOutput, error) {
 	req, out := c.DescribeRdsDbInstancesRequest(input)
 	err := req.Send()
@@ -2659,6 +2694,7 @@ const opDescribeServiceErrors = "DescribeServiceErrors"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeServiceErrors
 func (c *OpsWorks) DescribeServiceErrorsRequest(input *DescribeServiceErrorsInput) (req *request.Request, output *DescribeServiceErrorsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeServiceErrors,
@@ -2670,9 +2706,8 @@ func (c *OpsWorks) DescribeServiceErrorsRequest(input *DescribeServiceErrorsInpu
 		input = &DescribeServiceErrorsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeServiceErrorsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2699,6 +2734,7 @@ func (c *OpsWorks) DescribeServiceErrorsRequest(input *DescribeServiceErrorsInpu
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeServiceErrors
 func (c *OpsWorks) DescribeServiceErrors(input *DescribeServiceErrorsInput) (*DescribeServiceErrorsOutput, error) {
 	req, out := c.DescribeServiceErrorsRequest(input)
 	err := req.Send()
@@ -2731,6 +2767,7 @@ const opDescribeStackProvisioningParameters = "DescribeStackProvisioningParamete
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStackProvisioningParameters
 func (c *OpsWorks) DescribeStackProvisioningParametersRequest(input *DescribeStackProvisioningParametersInput) (req *request.Request, output *DescribeStackProvisioningParametersOutput) {
 	op := &request.Operation{
 		Name:       opDescribeStackProvisioningParameters,
@@ -2742,9 +2779,8 @@ func (c *OpsWorks) DescribeStackProvisioningParametersRequest(input *DescribeSta
 		input = &DescribeStackProvisioningParametersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeStackProvisioningParametersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2771,6 +2807,7 @@ func (c *OpsWorks) DescribeStackProvisioningParametersRequest(input *DescribeSta
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStackProvisioningParameters
 func (c *OpsWorks) DescribeStackProvisioningParameters(input *DescribeStackProvisioningParametersInput) (*DescribeStackProvisioningParametersOutput, error) {
 	req, out := c.DescribeStackProvisioningParametersRequest(input)
 	err := req.Send()
@@ -2803,6 +2840,7 @@ const opDescribeStackSummary = "DescribeStackSummary"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStackSummary
 func (c *OpsWorks) DescribeStackSummaryRequest(input *DescribeStackSummaryInput) (req *request.Request, output *DescribeStackSummaryOutput) {
 	op := &request.Operation{
 		Name:       opDescribeStackSummary,
@@ -2814,9 +2852,8 @@ func (c *OpsWorks) DescribeStackSummaryRequest(input *DescribeStackSummaryInput)
 		input = &DescribeStackSummaryInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeStackSummaryOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2844,6 +2881,7 @@ func (c *OpsWorks) DescribeStackSummaryRequest(input *DescribeStackSummaryInput)
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStackSummary
 func (c *OpsWorks) DescribeStackSummary(input *DescribeStackSummaryInput) (*DescribeStackSummaryOutput, error) {
 	req, out := c.DescribeStackSummaryRequest(input)
 	err := req.Send()
@@ -2876,6 +2914,7 @@ const opDescribeStacks = "DescribeStacks"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStacks
 func (c *OpsWorks) DescribeStacksRequest(input *DescribeStacksInput) (req *request.Request, output *DescribeStacksOutput) {
 	op := &request.Operation{
 		Name:       opDescribeStacks,
@@ -2887,9 +2926,8 @@ func (c *OpsWorks) DescribeStacksRequest(input *DescribeStacksInput) (req *reque
 		input = &DescribeStacksInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeStacksOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2916,6 +2954,7 @@ func (c *OpsWorks) DescribeStacksRequest(input *DescribeStacksInput) (req *reque
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStacks
 func (c *OpsWorks) DescribeStacks(input *DescribeStacksInput) (*DescribeStacksOutput, error) {
 	req, out := c.DescribeStacksRequest(input)
 	err := req.Send()
@@ -2948,6 +2987,7 @@ const opDescribeTimeBasedAutoScaling = "DescribeTimeBasedAutoScaling"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeTimeBasedAutoScaling
 func (c *OpsWorks) DescribeTimeBasedAutoScalingRequest(input *DescribeTimeBasedAutoScalingInput) (req *request.Request, output *DescribeTimeBasedAutoScalingOutput) {
 	op := &request.Operation{
 		Name:       opDescribeTimeBasedAutoScaling,
@@ -2959,9 +2999,8 @@ func (c *OpsWorks) DescribeTimeBasedAutoScalingRequest(input *DescribeTimeBasedA
 		input = &DescribeTimeBasedAutoScalingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTimeBasedAutoScalingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2990,6 +3029,7 @@ func (c *OpsWorks) DescribeTimeBasedAutoScalingRequest(input *DescribeTimeBasedA
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeTimeBasedAutoScaling
 func (c *OpsWorks) DescribeTimeBasedAutoScaling(input *DescribeTimeBasedAutoScalingInput) (*DescribeTimeBasedAutoScalingOutput, error) {
 	req, out := c.DescribeTimeBasedAutoScalingRequest(input)
 	err := req.Send()
@@ -3022,6 +3062,7 @@ const opDescribeUserProfiles = "DescribeUserProfiles"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeUserProfiles
 func (c *OpsWorks) DescribeUserProfilesRequest(input *DescribeUserProfilesInput) (req *request.Request, output *DescribeUserProfilesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeUserProfiles,
@@ -3033,9 +3074,8 @@ func (c *OpsWorks) DescribeUserProfilesRequest(input *DescribeUserProfilesInput)
 		input = &DescribeUserProfilesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeUserProfilesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3061,6 +3101,7 @@ func (c *OpsWorks) DescribeUserProfilesRequest(input *DescribeUserProfilesInput)
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeUserProfiles
 func (c *OpsWorks) DescribeUserProfiles(input *DescribeUserProfilesInput) (*DescribeUserProfilesOutput, error) {
 	req, out := c.DescribeUserProfilesRequest(input)
 	err := req.Send()
@@ -3093,6 +3134,7 @@ const opDescribeVolumes = "DescribeVolumes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeVolumes
 func (c *OpsWorks) DescribeVolumesRequest(input *DescribeVolumesInput) (req *request.Request, output *DescribeVolumesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeVolumes,
@@ -3104,9 +3146,8 @@ func (c *OpsWorks) DescribeVolumesRequest(input *DescribeVolumesInput) (req *req
 		input = &DescribeVolumesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeVolumesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3135,6 +3176,7 @@ func (c *OpsWorks) DescribeVolumesRequest(input *DescribeVolumesInput) (req *req
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeVolumes
 func (c *OpsWorks) DescribeVolumes(input *DescribeVolumesInput) (*DescribeVolumesOutput, error) {
 	req, out := c.DescribeVolumesRequest(input)
 	err := req.Send()
@@ -3167,6 +3209,7 @@ const opDetachElasticLoadBalancer = "DetachElasticLoadBalancer"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DetachElasticLoadBalancer
 func (c *OpsWorks) DetachElasticLoadBalancerRequest(input *DetachElasticLoadBalancerInput) (req *request.Request, output *DetachElasticLoadBalancerOutput) {
 	op := &request.Operation{
 		Name:       opDetachElasticLoadBalancer,
@@ -3178,11 +3221,10 @@ func (c *OpsWorks) DetachElasticLoadBalancerRequest(input *DetachElasticLoadBala
 		input = &DetachElasticLoadBalancerInput{}
 	}
 
+	output = &DetachElasticLoadBalancerOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DetachElasticLoadBalancerOutput{}
-	req.Data = output
 	return
 }
 
@@ -3206,6 +3248,7 @@ func (c *OpsWorks) DetachElasticLoadBalancerRequest(input *DetachElasticLoadBala
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DetachElasticLoadBalancer
 func (c *OpsWorks) DetachElasticLoadBalancer(input *DetachElasticLoadBalancerInput) (*DetachElasticLoadBalancerOutput, error) {
 	req, out := c.DetachElasticLoadBalancerRequest(input)
 	err := req.Send()
@@ -3238,6 +3281,7 @@ const opDisassociateElasticIp = "DisassociateElasticIp"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DisassociateElasticIp
 func (c *OpsWorks) DisassociateElasticIpRequest(input *DisassociateElasticIpInput) (req *request.Request, output *DisassociateElasticIpOutput) {
 	op := &request.Operation{
 		Name:       opDisassociateElasticIp,
@@ -3249,11 +3293,10 @@ func (c *OpsWorks) DisassociateElasticIpRequest(input *DisassociateElasticIpInpu
 		input = &DisassociateElasticIpInput{}
 	}
 
+	output = &DisassociateElasticIpOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DisassociateElasticIpOutput{}
-	req.Data = output
 	return
 }
 
@@ -3282,6 +3325,7 @@ func (c *OpsWorks) DisassociateElasticIpRequest(input *DisassociateElasticIpInpu
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DisassociateElasticIp
 func (c *OpsWorks) DisassociateElasticIp(input *DisassociateElasticIpInput) (*DisassociateElasticIpOutput, error) {
 	req, out := c.DisassociateElasticIpRequest(input)
 	err := req.Send()
@@ -3314,6 +3358,7 @@ const opGetHostnameSuggestion = "GetHostnameSuggestion"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/GetHostnameSuggestion
 func (c *OpsWorks) GetHostnameSuggestionRequest(input *GetHostnameSuggestionInput) (req *request.Request, output *GetHostnameSuggestionOutput) {
 	op := &request.Operation{
 		Name:       opGetHostnameSuggestion,
@@ -3325,9 +3370,8 @@ func (c *OpsWorks) GetHostnameSuggestionRequest(input *GetHostnameSuggestionInpu
 		input = &GetHostnameSuggestionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetHostnameSuggestionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3355,6 +3399,7 @@ func (c *OpsWorks) GetHostnameSuggestionRequest(input *GetHostnameSuggestionInpu
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/GetHostnameSuggestion
 func (c *OpsWorks) GetHostnameSuggestion(input *GetHostnameSuggestionInput) (*GetHostnameSuggestionOutput, error) {
 	req, out := c.GetHostnameSuggestionRequest(input)
 	err := req.Send()
@@ -3387,6 +3432,7 @@ const opGrantAccess = "GrantAccess"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/GrantAccess
 func (c *OpsWorks) GrantAccessRequest(input *GrantAccessInput) (req *request.Request, output *GrantAccessOutput) {
 	op := &request.Operation{
 		Name:       opGrantAccess,
@@ -3398,9 +3444,8 @@ func (c *OpsWorks) GrantAccessRequest(input *GrantAccessInput) (req *request.Req
 		input = &GrantAccessInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GrantAccessOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3424,6 +3469,7 @@ func (c *OpsWorks) GrantAccessRequest(input *GrantAccessInput) (req *request.Req
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/GrantAccess
 func (c *OpsWorks) GrantAccess(input *GrantAccessInput) (*GrantAccessOutput, error) {
 	req, out := c.GrantAccessRequest(input)
 	err := req.Send()
@@ -3456,6 +3502,7 @@ const opRebootInstance = "RebootInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RebootInstance
 func (c *OpsWorks) RebootInstanceRequest(input *RebootInstanceInput) (req *request.Request, output *RebootInstanceOutput) {
 	op := &request.Operation{
 		Name:       opRebootInstance,
@@ -3467,11 +3514,10 @@ func (c *OpsWorks) RebootInstanceRequest(input *RebootInstanceInput) (req *reque
 		input = &RebootInstanceInput{}
 	}
 
+	output = &RebootInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RebootInstanceOutput{}
-	req.Data = output
 	return
 }
 
@@ -3499,6 +3545,7 @@ func (c *OpsWorks) RebootInstanceRequest(input *RebootInstanceInput) (req *reque
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RebootInstance
 func (c *OpsWorks) RebootInstance(input *RebootInstanceInput) (*RebootInstanceOutput, error) {
 	req, out := c.RebootInstanceRequest(input)
 	err := req.Send()
@@ -3531,6 +3578,7 @@ const opRegisterEcsCluster = "RegisterEcsCluster"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterEcsCluster
 func (c *OpsWorks) RegisterEcsClusterRequest(input *RegisterEcsClusterInput) (req *request.Request, output *RegisterEcsClusterOutput) {
 	op := &request.Operation{
 		Name:       opRegisterEcsCluster,
@@ -3542,9 +3590,8 @@ func (c *OpsWorks) RegisterEcsClusterRequest(input *RegisterEcsClusterInput) (re
 		input = &RegisterEcsClusterInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterEcsClusterOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3573,6 +3620,7 @@ func (c *OpsWorks) RegisterEcsClusterRequest(input *RegisterEcsClusterInput) (re
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterEcsCluster
 func (c *OpsWorks) RegisterEcsCluster(input *RegisterEcsClusterInput) (*RegisterEcsClusterOutput, error) {
 	req, out := c.RegisterEcsClusterRequest(input)
 	err := req.Send()
@@ -3605,6 +3653,7 @@ const opRegisterElasticIp = "RegisterElasticIp"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterElasticIp
 func (c *OpsWorks) RegisterElasticIpRequest(input *RegisterElasticIpInput) (req *request.Request, output *RegisterElasticIpOutput) {
 	op := &request.Operation{
 		Name:       opRegisterElasticIp,
@@ -3616,9 +3665,8 @@ func (c *OpsWorks) RegisterElasticIpRequest(input *RegisterElasticIpInput) (req 
 		input = &RegisterElasticIpInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterElasticIpOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3648,6 +3696,7 @@ func (c *OpsWorks) RegisterElasticIpRequest(input *RegisterElasticIpInput) (req 
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterElasticIp
 func (c *OpsWorks) RegisterElasticIp(input *RegisterElasticIpInput) (*RegisterElasticIpOutput, error) {
 	req, out := c.RegisterElasticIpRequest(input)
 	err := req.Send()
@@ -3680,6 +3729,7 @@ const opRegisterInstance = "RegisterInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterInstance
 func (c *OpsWorks) RegisterInstanceRequest(input *RegisterInstanceInput) (req *request.Request, output *RegisterInstanceOutput) {
 	op := &request.Operation{
 		Name:       opRegisterInstance,
@@ -3691,9 +3741,8 @@ func (c *OpsWorks) RegisterInstanceRequest(input *RegisterInstanceInput) (req *r
 		input = &RegisterInstanceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterInstanceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3728,6 +3777,7 @@ func (c *OpsWorks) RegisterInstanceRequest(input *RegisterInstanceInput) (req *r
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterInstance
 func (c *OpsWorks) RegisterInstance(input *RegisterInstanceInput) (*RegisterInstanceOutput, error) {
 	req, out := c.RegisterInstanceRequest(input)
 	err := req.Send()
@@ -3760,6 +3810,7 @@ const opRegisterRdsDbInstance = "RegisterRdsDbInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterRdsDbInstance
 func (c *OpsWorks) RegisterRdsDbInstanceRequest(input *RegisterRdsDbInstanceInput) (req *request.Request, output *RegisterRdsDbInstanceOutput) {
 	op := &request.Operation{
 		Name:       opRegisterRdsDbInstance,
@@ -3771,11 +3822,10 @@ func (c *OpsWorks) RegisterRdsDbInstanceRequest(input *RegisterRdsDbInstanceInpu
 		input = &RegisterRdsDbInstanceInput{}
 	}
 
+	output = &RegisterRdsDbInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RegisterRdsDbInstanceOutput{}
-	req.Data = output
 	return
 }
 
@@ -3802,6 +3852,7 @@ func (c *OpsWorks) RegisterRdsDbInstanceRequest(input *RegisterRdsDbInstanceInpu
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterRdsDbInstance
 func (c *OpsWorks) RegisterRdsDbInstance(input *RegisterRdsDbInstanceInput) (*RegisterRdsDbInstanceOutput, error) {
 	req, out := c.RegisterRdsDbInstanceRequest(input)
 	err := req.Send()
@@ -3834,6 +3885,7 @@ const opRegisterVolume = "RegisterVolume"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterVolume
 func (c *OpsWorks) RegisterVolumeRequest(input *RegisterVolumeInput) (req *request.Request, output *RegisterVolumeOutput) {
 	op := &request.Operation{
 		Name:       opRegisterVolume,
@@ -3845,9 +3897,8 @@ func (c *OpsWorks) RegisterVolumeRequest(input *RegisterVolumeInput) (req *reque
 		input = &RegisterVolumeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterVolumeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3877,6 +3928,7 @@ func (c *OpsWorks) RegisterVolumeRequest(input *RegisterVolumeInput) (req *reque
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterVolume
 func (c *OpsWorks) RegisterVolume(input *RegisterVolumeInput) (*RegisterVolumeOutput, error) {
 	req, out := c.RegisterVolumeRequest(input)
 	err := req.Send()
@@ -3909,6 +3961,7 @@ const opSetLoadBasedAutoScaling = "SetLoadBasedAutoScaling"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetLoadBasedAutoScaling
 func (c *OpsWorks) SetLoadBasedAutoScalingRequest(input *SetLoadBasedAutoScalingInput) (req *request.Request, output *SetLoadBasedAutoScalingOutput) {
 	op := &request.Operation{
 		Name:       opSetLoadBasedAutoScaling,
@@ -3920,11 +3973,10 @@ func (c *OpsWorks) SetLoadBasedAutoScalingRequest(input *SetLoadBasedAutoScaling
 		input = &SetLoadBasedAutoScalingInput{}
 	}
 
+	output = &SetLoadBasedAutoScalingOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetLoadBasedAutoScalingOutput{}
-	req.Data = output
 	return
 }
 
@@ -3958,6 +4010,7 @@ func (c *OpsWorks) SetLoadBasedAutoScalingRequest(input *SetLoadBasedAutoScaling
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetLoadBasedAutoScaling
 func (c *OpsWorks) SetLoadBasedAutoScaling(input *SetLoadBasedAutoScalingInput) (*SetLoadBasedAutoScalingOutput, error) {
 	req, out := c.SetLoadBasedAutoScalingRequest(input)
 	err := req.Send()
@@ -3990,6 +4043,7 @@ const opSetPermission = "SetPermission"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetPermission
 func (c *OpsWorks) SetPermissionRequest(input *SetPermissionInput) (req *request.Request, output *SetPermissionOutput) {
 	op := &request.Operation{
 		Name:       opSetPermission,
@@ -4001,11 +4055,10 @@ func (c *OpsWorks) SetPermissionRequest(input *SetPermissionInput) (req *request
 		input = &SetPermissionInput{}
 	}
 
+	output = &SetPermissionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetPermissionOutput{}
-	req.Data = output
 	return
 }
 
@@ -4033,6 +4086,7 @@ func (c *OpsWorks) SetPermissionRequest(input *SetPermissionInput) (req *request
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetPermission
 func (c *OpsWorks) SetPermission(input *SetPermissionInput) (*SetPermissionOutput, error) {
 	req, out := c.SetPermissionRequest(input)
 	err := req.Send()
@@ -4065,6 +4119,7 @@ const opSetTimeBasedAutoScaling = "SetTimeBasedAutoScaling"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetTimeBasedAutoScaling
 func (c *OpsWorks) SetTimeBasedAutoScalingRequest(input *SetTimeBasedAutoScalingInput) (req *request.Request, output *SetTimeBasedAutoScalingOutput) {
 	op := &request.Operation{
 		Name:       opSetTimeBasedAutoScaling,
@@ -4076,11 +4131,10 @@ func (c *OpsWorks) SetTimeBasedAutoScalingRequest(input *SetTimeBasedAutoScaling
 		input = &SetTimeBasedAutoScalingInput{}
 	}
 
+	output = &SetTimeBasedAutoScalingOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetTimeBasedAutoScalingOutput{}
-	req.Data = output
 	return
 }
 
@@ -4109,6 +4163,7 @@ func (c *OpsWorks) SetTimeBasedAutoScalingRequest(input *SetTimeBasedAutoScaling
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetTimeBasedAutoScaling
 func (c *OpsWorks) SetTimeBasedAutoScaling(input *SetTimeBasedAutoScalingInput) (*SetTimeBasedAutoScalingOutput, error) {
 	req, out := c.SetTimeBasedAutoScalingRequest(input)
 	err := req.Send()
@@ -4141,6 +4196,7 @@ const opStartInstance = "StartInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StartInstance
 func (c *OpsWorks) StartInstanceRequest(input *StartInstanceInput) (req *request.Request, output *StartInstanceOutput) {
 	op := &request.Operation{
 		Name:       opStartInstance,
@@ -4152,11 +4208,10 @@ func (c *OpsWorks) StartInstanceRequest(input *StartInstanceInput) (req *request
 		input = &StartInstanceInput{}
 	}
 
+	output = &StartInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &StartInstanceOutput{}
-	req.Data = output
 	return
 }
 
@@ -4184,6 +4239,7 @@ func (c *OpsWorks) StartInstanceRequest(input *StartInstanceInput) (req *request
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StartInstance
 func (c *OpsWorks) StartInstance(input *StartInstanceInput) (*StartInstanceOutput, error) {
 	req, out := c.StartInstanceRequest(input)
 	err := req.Send()
@@ -4216,6 +4272,7 @@ const opStartStack = "StartStack"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StartStack
 func (c *OpsWorks) StartStackRequest(input *StartStackInput) (req *request.Request, output *StartStackOutput) {
 	op := &request.Operation{
 		Name:       opStartStack,
@@ -4227,11 +4284,10 @@ func (c *OpsWorks) StartStackRequest(input *StartStackInput) (req *request.Reque
 		input = &StartStackInput{}
 	}
 
+	output = &StartStackOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &StartStackOutput{}
-	req.Data = output
 	return
 }
 
@@ -4258,6 +4314,7 @@ func (c *OpsWorks) StartStackRequest(input *StartStackInput) (req *request.Reque
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StartStack
 func (c *OpsWorks) StartStack(input *StartStackInput) (*StartStackOutput, error) {
 	req, out := c.StartStackRequest(input)
 	err := req.Send()
@@ -4290,6 +4347,7 @@ const opStopInstance = "StopInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StopInstance
 func (c *OpsWorks) StopInstanceRequest(input *StopInstanceInput) (req *request.Request, output *StopInstanceOutput) {
 	op := &request.Operation{
 		Name:       opStopInstance,
@@ -4301,11 +4359,10 @@ func (c *OpsWorks) StopInstanceRequest(input *StopInstanceInput) (req *request.R
 		input = &StopInstanceInput{}
 	}
 
+	output = &StopInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &StopInstanceOutput{}
-	req.Data = output
 	return
 }
 
@@ -4335,6 +4392,7 @@ func (c *OpsWorks) StopInstanceRequest(input *StopInstanceInput) (req *request.R
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StopInstance
 func (c *OpsWorks) StopInstance(input *StopInstanceInput) (*StopInstanceOutput, error) {
 	req, out := c.StopInstanceRequest(input)
 	err := req.Send()
@@ -4367,6 +4425,7 @@ const opStopStack = "StopStack"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StopStack
 func (c *OpsWorks) StopStackRequest(input *StopStackInput) (req *request.Request, output *StopStackOutput) {
 	op := &request.Operation{
 		Name:       opStopStack,
@@ -4378,11 +4437,10 @@ func (c *OpsWorks) StopStackRequest(input *StopStackInput) (req *request.Request
 		input = &StopStackInput{}
 	}
 
+	output = &StopStackOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &StopStackOutput{}
-	req.Data = output
 	return
 }
 
@@ -4409,6 +4467,7 @@ func (c *OpsWorks) StopStackRequest(input *StopStackInput) (req *request.Request
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StopStack
 func (c *OpsWorks) StopStack(input *StopStackInput) (*StopStackOutput, error) {
 	req, out := c.StopStackRequest(input)
 	err := req.Send()
@@ -4441,6 +4500,7 @@ const opUnassignInstance = "UnassignInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UnassignInstance
 func (c *OpsWorks) UnassignInstanceRequest(input *UnassignInstanceInput) (req *request.Request, output *UnassignInstanceOutput) {
 	op := &request.Operation{
 		Name:       opUnassignInstance,
@@ -4452,11 +4512,10 @@ func (c *OpsWorks) UnassignInstanceRequest(input *UnassignInstanceInput) (req *r
 		input = &UnassignInstanceInput{}
 	}
 
+	output = &UnassignInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UnassignInstanceOutput{}
-	req.Data = output
 	return
 }
 
@@ -4486,6 +4545,7 @@ func (c *OpsWorks) UnassignInstanceRequest(input *UnassignInstanceInput) (req *r
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UnassignInstance
 func (c *OpsWorks) UnassignInstance(input *UnassignInstanceInput) (*UnassignInstanceOutput, error) {
 	req, out := c.UnassignInstanceRequest(input)
 	err := req.Send()
@@ -4518,6 +4578,7 @@ const opUnassignVolume = "UnassignVolume"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UnassignVolume
 func (c *OpsWorks) UnassignVolumeRequest(input *UnassignVolumeInput) (req *request.Request, output *UnassignVolumeOutput) {
 	op := &request.Operation{
 		Name:       opUnassignVolume,
@@ -4529,11 +4590,10 @@ func (c *OpsWorks) UnassignVolumeRequest(input *UnassignVolumeInput) (req *reque
 		input = &UnassignVolumeInput{}
 	}
 
+	output = &UnassignVolumeOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UnassignVolumeOutput{}
-	req.Data = output
 	return
 }
 
@@ -4561,6 +4621,7 @@ func (c *OpsWorks) UnassignVolumeRequest(input *UnassignVolumeInput) (req *reque
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UnassignVolume
 func (c *OpsWorks) UnassignVolume(input *UnassignVolumeInput) (*UnassignVolumeOutput, error) {
 	req, out := c.UnassignVolumeRequest(input)
 	err := req.Send()
@@ -4593,6 +4654,7 @@ const opUpdateApp = "UpdateApp"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateApp
 func (c *OpsWorks) UpdateAppRequest(input *UpdateAppInput) (req *request.Request, output *UpdateAppOutput) {
 	op := &request.Operation{
 		Name:       opUpdateApp,
@@ -4604,11 +4666,10 @@ func (c *OpsWorks) UpdateAppRequest(input *UpdateAppInput) (req *request.Request
 		input = &UpdateAppInput{}
 	}
 
+	output = &UpdateAppOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateAppOutput{}
-	req.Data = output
 	return
 }
 
@@ -4635,6 +4696,7 @@ func (c *OpsWorks) UpdateAppRequest(input *UpdateAppInput) (req *request.Request
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateApp
 func (c *OpsWorks) UpdateApp(input *UpdateAppInput) (*UpdateAppOutput, error) {
 	req, out := c.UpdateAppRequest(input)
 	err := req.Send()
@@ -4667,6 +4729,7 @@ const opUpdateElasticIp = "UpdateElasticIp"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateElasticIp
 func (c *OpsWorks) UpdateElasticIpRequest(input *UpdateElasticIpInput) (req *request.Request, output *UpdateElasticIpOutput) {
 	op := &request.Operation{
 		Name:       opUpdateElasticIp,
@@ -4678,11 +4741,10 @@ func (c *OpsWorks) UpdateElasticIpRequest(input *UpdateElasticIpInput) (req *req
 		input = &UpdateElasticIpInput{}
 	}
 
+	output = &UpdateElasticIpOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateElasticIpOutput{}
-	req.Data = output
 	return
 }
 
@@ -4710,6 +4772,7 @@ func (c *OpsWorks) UpdateElasticIpRequest(input *UpdateElasticIpInput) (req *req
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateElasticIp
 func (c *OpsWorks) UpdateElasticIp(input *UpdateElasticIpInput) (*UpdateElasticIpOutput, error) {
 	req, out := c.UpdateElasticIpRequest(input)
 	err := req.Send()
@@ -4742,6 +4805,7 @@ const opUpdateInstance = "UpdateInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateInstance
 func (c *OpsWorks) UpdateInstanceRequest(input *UpdateInstanceInput) (req *request.Request, output *UpdateInstanceOutput) {
 	op := &request.Operation{
 		Name:       opUpdateInstance,
@@ -4753,11 +4817,10 @@ func (c *OpsWorks) UpdateInstanceRequest(input *UpdateInstanceInput) (req *reque
 		input = &UpdateInstanceInput{}
 	}
 
+	output = &UpdateInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateInstanceOutput{}
-	req.Data = output
 	return
 }
 
@@ -4784,6 +4847,7 @@ func (c *OpsWorks) UpdateInstanceRequest(input *UpdateInstanceInput) (req *reque
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateInstance
 func (c *OpsWorks) UpdateInstance(input *UpdateInstanceInput) (*UpdateInstanceOutput, error) {
 	req, out := c.UpdateInstanceRequest(input)
 	err := req.Send()
@@ -4816,6 +4880,7 @@ const opUpdateLayer = "UpdateLayer"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateLayer
 func (c *OpsWorks) UpdateLayerRequest(input *UpdateLayerInput) (req *request.Request, output *UpdateLayerOutput) {
 	op := &request.Operation{
 		Name:       opUpdateLayer,
@@ -4827,11 +4892,10 @@ func (c *OpsWorks) UpdateLayerRequest(input *UpdateLayerInput) (req *request.Req
 		input = &UpdateLayerInput{}
 	}
 
+	output = &UpdateLayerOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateLayerOutput{}
-	req.Data = output
 	return
 }
 
@@ -4858,6 +4922,7 @@ func (c *OpsWorks) UpdateLayerRequest(input *UpdateLayerInput) (req *request.Req
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateLayer
 func (c *OpsWorks) UpdateLayer(input *UpdateLayerInput) (*UpdateLayerOutput, error) {
 	req, out := c.UpdateLayerRequest(input)
 	err := req.Send()
@@ -4890,6 +4955,7 @@ const opUpdateMyUserProfile = "UpdateMyUserProfile"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateMyUserProfile
 func (c *OpsWorks) UpdateMyUserProfileRequest(input *UpdateMyUserProfileInput) (req *request.Request, output *UpdateMyUserProfileOutput) {
 	op := &request.Operation{
 		Name:       opUpdateMyUserProfile,
@@ -4901,11 +4967,10 @@ func (c *OpsWorks) UpdateMyUserProfileRequest(input *UpdateMyUserProfileInput) (
 		input = &UpdateMyUserProfileInput{}
 	}
 
+	output = &UpdateMyUserProfileOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateMyUserProfileOutput{}
-	req.Data = output
 	return
 }
 
@@ -4928,6 +4993,7 @@ func (c *OpsWorks) UpdateMyUserProfileRequest(input *UpdateMyUserProfileInput) (
 //   * ValidationException
 //   Indicates that a request was not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateMyUserProfile
 func (c *OpsWorks) UpdateMyUserProfile(input *UpdateMyUserProfileInput) (*UpdateMyUserProfileOutput, error) {
 	req, out := c.UpdateMyUserProfileRequest(input)
 	err := req.Send()
@@ -4960,6 +5026,7 @@ const opUpdateRdsDbInstance = "UpdateRdsDbInstance"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateRdsDbInstance
 func (c *OpsWorks) UpdateRdsDbInstanceRequest(input *UpdateRdsDbInstanceInput) (req *request.Request, output *UpdateRdsDbInstanceOutput) {
 	op := &request.Operation{
 		Name:       opUpdateRdsDbInstance,
@@ -4971,11 +5038,10 @@ func (c *OpsWorks) UpdateRdsDbInstanceRequest(input *UpdateRdsDbInstanceInput) (
 		input = &UpdateRdsDbInstanceInput{}
 	}
 
+	output = &UpdateRdsDbInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateRdsDbInstanceOutput{}
-	req.Data = output
 	return
 }
 
@@ -5002,6 +5068,7 @@ func (c *OpsWorks) UpdateRdsDbInstanceRequest(input *UpdateRdsDbInstanceInput) (
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateRdsDbInstance
 func (c *OpsWorks) UpdateRdsDbInstance(input *UpdateRdsDbInstanceInput) (*UpdateRdsDbInstanceOutput, error) {
 	req, out := c.UpdateRdsDbInstanceRequest(input)
 	err := req.Send()
@@ -5034,6 +5101,7 @@ const opUpdateStack = "UpdateStack"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateStack
 func (c *OpsWorks) UpdateStackRequest(input *UpdateStackInput) (req *request.Request, output *UpdateStackOutput) {
 	op := &request.Operation{
 		Name:       opUpdateStack,
@@ -5045,11 +5113,10 @@ func (c *OpsWorks) UpdateStackRequest(input *UpdateStackInput) (req *request.Req
 		input = &UpdateStackInput{}
 	}
 
+	output = &UpdateStackOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateStackOutput{}
-	req.Data = output
 	return
 }
 
@@ -5076,6 +5143,7 @@ func (c *OpsWorks) UpdateStackRequest(input *UpdateStackInput) (req *request.Req
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateStack
 func (c *OpsWorks) UpdateStack(input *UpdateStackInput) (*UpdateStackOutput, error) {
 	req, out := c.UpdateStackRequest(input)
 	err := req.Send()
@@ -5108,6 +5176,7 @@ const opUpdateUserProfile = "UpdateUserProfile"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateUserProfile
 func (c *OpsWorks) UpdateUserProfileRequest(input *UpdateUserProfileInput) (req *request.Request, output *UpdateUserProfileOutput) {
 	op := &request.Operation{
 		Name:       opUpdateUserProfile,
@@ -5119,11 +5188,10 @@ func (c *OpsWorks) UpdateUserProfileRequest(input *UpdateUserProfileInput) (req 
 		input = &UpdateUserProfileInput{}
 	}
 
+	output = &UpdateUserProfileOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateUserProfileOutput{}
-	req.Data = output
 	return
 }
 
@@ -5149,6 +5217,7 @@ func (c *OpsWorks) UpdateUserProfileRequest(input *UpdateUserProfileInput) (req 
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateUserProfile
 func (c *OpsWorks) UpdateUserProfile(input *UpdateUserProfileInput) (*UpdateUserProfileOutput, error) {
 	req, out := c.UpdateUserProfileRequest(input)
 	err := req.Send()
@@ -5181,6 +5250,7 @@ const opUpdateVolume = "UpdateVolume"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateVolume
 func (c *OpsWorks) UpdateVolumeRequest(input *UpdateVolumeInput) (req *request.Request, output *UpdateVolumeOutput) {
 	op := &request.Operation{
 		Name:       opUpdateVolume,
@@ -5192,11 +5262,10 @@ func (c *OpsWorks) UpdateVolumeRequest(input *UpdateVolumeInput) (req *request.R
 		input = &UpdateVolumeInput{}
 	}
 
+	output = &UpdateVolumeOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateVolumeOutput{}
-	req.Data = output
 	return
 }
 
@@ -5224,6 +5293,7 @@ func (c *OpsWorks) UpdateVolumeRequest(input *UpdateVolumeInput) (req *request.R
 //   * ResourceNotFoundException
 //   Indicates that a resource was not found.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateVolume
 func (c *OpsWorks) UpdateVolume(input *UpdateVolumeInput) (*UpdateVolumeOutput, error) {
 	req, out := c.UpdateVolumeRequest(input)
 	err := req.Send()
@@ -5231,6 +5301,7 @@ func (c *OpsWorks) UpdateVolume(input *UpdateVolumeInput) (*UpdateVolumeOutput, 
 }
 
 // Describes an agent version.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AgentVersion
 type AgentVersion struct {
 	_ struct{} `type:"structure"`
 
@@ -5251,7 +5322,20 @@ func (s AgentVersion) GoString() string {
 	return s.String()
 }
 
+// SetConfigurationManager sets the ConfigurationManager field's value.
+func (s *AgentVersion) SetConfigurationManager(v *StackConfigurationManager) *AgentVersion {
+	s.ConfigurationManager = v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *AgentVersion) SetVersion(v string) *AgentVersion {
+	s.Version = &v
+	return s
+}
+
 // A description of the app.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/App
 type App struct {
 	_ struct{} `type:"structure"`
 
@@ -5319,6 +5403,91 @@ func (s App) GoString() string {
 	return s.String()
 }
 
+// SetAppId sets the AppId field's value.
+func (s *App) SetAppId(v string) *App {
+	s.AppId = &v
+	return s
+}
+
+// SetAppSource sets the AppSource field's value.
+func (s *App) SetAppSource(v *Source) *App {
+	s.AppSource = v
+	return s
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *App) SetAttributes(v map[string]*string) *App {
+	s.Attributes = v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *App) SetCreatedAt(v string) *App {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetDataSources sets the DataSources field's value.
+func (s *App) SetDataSources(v []*DataSource) *App {
+	s.DataSources = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *App) SetDescription(v string) *App {
+	s.Description = &v
+	return s
+}
+
+// SetDomains sets the Domains field's value.
+func (s *App) SetDomains(v []*string) *App {
+	s.Domains = v
+	return s
+}
+
+// SetEnableSsl sets the EnableSsl field's value.
+func (s *App) SetEnableSsl(v bool) *App {
+	s.EnableSsl = &v
+	return s
+}
+
+// SetEnvironment sets the Environment field's value.
+func (s *App) SetEnvironment(v []*EnvironmentVariable) *App {
+	s.Environment = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *App) SetName(v string) *App {
+	s.Name = &v
+	return s
+}
+
+// SetShortname sets the Shortname field's value.
+func (s *App) SetShortname(v string) *App {
+	s.Shortname = &v
+	return s
+}
+
+// SetSslConfiguration sets the SslConfiguration field's value.
+func (s *App) SetSslConfiguration(v *SslConfiguration) *App {
+	s.SslConfiguration = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *App) SetStackId(v string) *App {
+	s.StackId = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *App) SetType(v string) *App {
+	s.Type = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssignInstanceRequest
 type AssignInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5360,6 +5529,19 @@ func (s *AssignInstanceInput) Validate() error {
 	return nil
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *AssignInstanceInput) SetInstanceId(v string) *AssignInstanceInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetLayerIds sets the LayerIds field's value.
+func (s *AssignInstanceInput) SetLayerIds(v []*string) *AssignInstanceInput {
+	s.LayerIds = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssignInstanceOutput
 type AssignInstanceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5374,6 +5556,7 @@ func (s AssignInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssignVolumeRequest
 type AssignVolumeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5409,6 +5592,19 @@ func (s *AssignVolumeInput) Validate() error {
 	return nil
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *AssignVolumeInput) SetInstanceId(v string) *AssignVolumeInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *AssignVolumeInput) SetVolumeId(v string) *AssignVolumeInput {
+	s.VolumeId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssignVolumeOutput
 type AssignVolumeOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5423,6 +5619,7 @@ func (s AssignVolumeOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssociateElasticIpRequest
 type AssociateElasticIpInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5458,6 +5655,19 @@ func (s *AssociateElasticIpInput) Validate() error {
 	return nil
 }
 
+// SetElasticIp sets the ElasticIp field's value.
+func (s *AssociateElasticIpInput) SetElasticIp(v string) *AssociateElasticIpInput {
+	s.ElasticIp = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *AssociateElasticIpInput) SetInstanceId(v string) *AssociateElasticIpInput {
+	s.InstanceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssociateElasticIpOutput
 type AssociateElasticIpOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5472,6 +5682,7 @@ func (s AssociateElasticIpOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AttachElasticLoadBalancerRequest
 type AttachElasticLoadBalancerInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5513,6 +5724,19 @@ func (s *AttachElasticLoadBalancerInput) Validate() error {
 	return nil
 }
 
+// SetElasticLoadBalancerName sets the ElasticLoadBalancerName field's value.
+func (s *AttachElasticLoadBalancerInput) SetElasticLoadBalancerName(v string) *AttachElasticLoadBalancerInput {
+	s.ElasticLoadBalancerName = &v
+	return s
+}
+
+// SetLayerId sets the LayerId field's value.
+func (s *AttachElasticLoadBalancerInput) SetLayerId(v string) *AttachElasticLoadBalancerInput {
+	s.LayerId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AttachElasticLoadBalancerOutput
 type AttachElasticLoadBalancerOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5529,6 +5753,7 @@ func (s AttachElasticLoadBalancerOutput) GoString() string {
 
 // Describes a load-based auto scaling upscaling or downscaling threshold configuration,
 // which specifies when AWS OpsWorks starts or stops load-based instances.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AutoScalingThresholds
 type AutoScalingThresholds struct {
 	_ struct{} `type:"structure"`
 
@@ -5598,9 +5823,52 @@ func (s *AutoScalingThresholds) Validate() error {
 	return nil
 }
 
+// SetAlarms sets the Alarms field's value.
+func (s *AutoScalingThresholds) SetAlarms(v []*string) *AutoScalingThresholds {
+	s.Alarms = v
+	return s
+}
+
+// SetCpuThreshold sets the CpuThreshold field's value.
+func (s *AutoScalingThresholds) SetCpuThreshold(v float64) *AutoScalingThresholds {
+	s.CpuThreshold = &v
+	return s
+}
+
+// SetIgnoreMetricsTime sets the IgnoreMetricsTime field's value.
+func (s *AutoScalingThresholds) SetIgnoreMetricsTime(v int64) *AutoScalingThresholds {
+	s.IgnoreMetricsTime = &v
+	return s
+}
+
+// SetInstanceCount sets the InstanceCount field's value.
+func (s *AutoScalingThresholds) SetInstanceCount(v int64) *AutoScalingThresholds {
+	s.InstanceCount = &v
+	return s
+}
+
+// SetLoadThreshold sets the LoadThreshold field's value.
+func (s *AutoScalingThresholds) SetLoadThreshold(v float64) *AutoScalingThresholds {
+	s.LoadThreshold = &v
+	return s
+}
+
+// SetMemoryThreshold sets the MemoryThreshold field's value.
+func (s *AutoScalingThresholds) SetMemoryThreshold(v float64) *AutoScalingThresholds {
+	s.MemoryThreshold = &v
+	return s
+}
+
+// SetThresholdsWaitTime sets the ThresholdsWaitTime field's value.
+func (s *AutoScalingThresholds) SetThresholdsWaitTime(v int64) *AutoScalingThresholds {
+	s.ThresholdsWaitTime = &v
+	return s
+}
+
 // Describes a block device mapping. This data type maps directly to the Amazon
 // EC2 BlockDeviceMapping (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html)
 // data type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/BlockDeviceMapping
 type BlockDeviceMapping struct {
 	_ struct{} `type:"structure"`
 
@@ -5630,7 +5898,32 @@ func (s BlockDeviceMapping) GoString() string {
 	return s.String()
 }
 
+// SetDeviceName sets the DeviceName field's value.
+func (s *BlockDeviceMapping) SetDeviceName(v string) *BlockDeviceMapping {
+	s.DeviceName = &v
+	return s
+}
+
+// SetEbs sets the Ebs field's value.
+func (s *BlockDeviceMapping) SetEbs(v *EbsBlockDevice) *BlockDeviceMapping {
+	s.Ebs = v
+	return s
+}
+
+// SetNoDevice sets the NoDevice field's value.
+func (s *BlockDeviceMapping) SetNoDevice(v string) *BlockDeviceMapping {
+	s.NoDevice = &v
+	return s
+}
+
+// SetVirtualName sets the VirtualName field's value.
+func (s *BlockDeviceMapping) SetVirtualName(v string) *BlockDeviceMapping {
+	s.VirtualName = &v
+	return s
+}
+
 // Describes the Chef configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/ChefConfiguration
 type ChefConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -5651,6 +5944,19 @@ func (s ChefConfiguration) GoString() string {
 	return s.String()
 }
 
+// SetBerkshelfVersion sets the BerkshelfVersion field's value.
+func (s *ChefConfiguration) SetBerkshelfVersion(v string) *ChefConfiguration {
+	s.BerkshelfVersion = &v
+	return s
+}
+
+// SetManageBerkshelf sets the ManageBerkshelf field's value.
+func (s *ChefConfiguration) SetManageBerkshelf(v bool) *ChefConfiguration {
+	s.ManageBerkshelf = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CloneStackRequest
 type CloneStackInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5906,7 +6212,140 @@ func (s *CloneStackInput) Validate() error {
 	return nil
 }
 
+// SetAgentVersion sets the AgentVersion field's value.
+func (s *CloneStackInput) SetAgentVersion(v string) *CloneStackInput {
+	s.AgentVersion = &v
+	return s
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *CloneStackInput) SetAttributes(v map[string]*string) *CloneStackInput {
+	s.Attributes = v
+	return s
+}
+
+// SetChefConfiguration sets the ChefConfiguration field's value.
+func (s *CloneStackInput) SetChefConfiguration(v *ChefConfiguration) *CloneStackInput {
+	s.ChefConfiguration = v
+	return s
+}
+
+// SetCloneAppIds sets the CloneAppIds field's value.
+func (s *CloneStackInput) SetCloneAppIds(v []*string) *CloneStackInput {
+	s.CloneAppIds = v
+	return s
+}
+
+// SetClonePermissions sets the ClonePermissions field's value.
+func (s *CloneStackInput) SetClonePermissions(v bool) *CloneStackInput {
+	s.ClonePermissions = &v
+	return s
+}
+
+// SetConfigurationManager sets the ConfigurationManager field's value.
+func (s *CloneStackInput) SetConfigurationManager(v *StackConfigurationManager) *CloneStackInput {
+	s.ConfigurationManager = v
+	return s
+}
+
+// SetCustomCookbooksSource sets the CustomCookbooksSource field's value.
+func (s *CloneStackInput) SetCustomCookbooksSource(v *Source) *CloneStackInput {
+	s.CustomCookbooksSource = v
+	return s
+}
+
+// SetCustomJson sets the CustomJson field's value.
+func (s *CloneStackInput) SetCustomJson(v string) *CloneStackInput {
+	s.CustomJson = &v
+	return s
+}
+
+// SetDefaultAvailabilityZone sets the DefaultAvailabilityZone field's value.
+func (s *CloneStackInput) SetDefaultAvailabilityZone(v string) *CloneStackInput {
+	s.DefaultAvailabilityZone = &v
+	return s
+}
+
+// SetDefaultInstanceProfileArn sets the DefaultInstanceProfileArn field's value.
+func (s *CloneStackInput) SetDefaultInstanceProfileArn(v string) *CloneStackInput {
+	s.DefaultInstanceProfileArn = &v
+	return s
+}
+
+// SetDefaultOs sets the DefaultOs field's value.
+func (s *CloneStackInput) SetDefaultOs(v string) *CloneStackInput {
+	s.DefaultOs = &v
+	return s
+}
+
+// SetDefaultRootDeviceType sets the DefaultRootDeviceType field's value.
+func (s *CloneStackInput) SetDefaultRootDeviceType(v string) *CloneStackInput {
+	s.DefaultRootDeviceType = &v
+	return s
+}
+
+// SetDefaultSshKeyName sets the DefaultSshKeyName field's value.
+func (s *CloneStackInput) SetDefaultSshKeyName(v string) *CloneStackInput {
+	s.DefaultSshKeyName = &v
+	return s
+}
+
+// SetDefaultSubnetId sets the DefaultSubnetId field's value.
+func (s *CloneStackInput) SetDefaultSubnetId(v string) *CloneStackInput {
+	s.DefaultSubnetId = &v
+	return s
+}
+
+// SetHostnameTheme sets the HostnameTheme field's value.
+func (s *CloneStackInput) SetHostnameTheme(v string) *CloneStackInput {
+	s.HostnameTheme = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CloneStackInput) SetName(v string) *CloneStackInput {
+	s.Name = &v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *CloneStackInput) SetRegion(v string) *CloneStackInput {
+	s.Region = &v
+	return s
+}
+
+// SetServiceRoleArn sets the ServiceRoleArn field's value.
+func (s *CloneStackInput) SetServiceRoleArn(v string) *CloneStackInput {
+	s.ServiceRoleArn = &v
+	return s
+}
+
+// SetSourceStackId sets the SourceStackId field's value.
+func (s *CloneStackInput) SetSourceStackId(v string) *CloneStackInput {
+	s.SourceStackId = &v
+	return s
+}
+
+// SetUseCustomCookbooks sets the UseCustomCookbooks field's value.
+func (s *CloneStackInput) SetUseCustomCookbooks(v bool) *CloneStackInput {
+	s.UseCustomCookbooks = &v
+	return s
+}
+
+// SetUseOpsworksSecurityGroups sets the UseOpsworksSecurityGroups field's value.
+func (s *CloneStackInput) SetUseOpsworksSecurityGroups(v bool) *CloneStackInput {
+	s.UseOpsworksSecurityGroups = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *CloneStackInput) SetVpcId(v string) *CloneStackInput {
+	s.VpcId = &v
+	return s
+}
+
 // Contains the response to a CloneStack request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CloneStackResult
 type CloneStackOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5924,7 +6363,14 @@ func (s CloneStackOutput) GoString() string {
 	return s.String()
 }
 
+// SetStackId sets the StackId field's value.
+func (s *CloneStackOutput) SetStackId(v string) *CloneStackOutput {
+	s.StackId = &v
+	return s
+}
+
 // Describes a command.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/Command
 type Command struct {
 	_ struct{} `type:"structure"`
 
@@ -5997,6 +6443,67 @@ func (s Command) GoString() string {
 	return s.String()
 }
 
+// SetAcknowledgedAt sets the AcknowledgedAt field's value.
+func (s *Command) SetAcknowledgedAt(v string) *Command {
+	s.AcknowledgedAt = &v
+	return s
+}
+
+// SetCommandId sets the CommandId field's value.
+func (s *Command) SetCommandId(v string) *Command {
+	s.CommandId = &v
+	return s
+}
+
+// SetCompletedAt sets the CompletedAt field's value.
+func (s *Command) SetCompletedAt(v string) *Command {
+	s.CompletedAt = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *Command) SetCreatedAt(v string) *Command {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetDeploymentId sets the DeploymentId field's value.
+func (s *Command) SetDeploymentId(v string) *Command {
+	s.DeploymentId = &v
+	return s
+}
+
+// SetExitCode sets the ExitCode field's value.
+func (s *Command) SetExitCode(v int64) *Command {
+	s.ExitCode = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *Command) SetInstanceId(v string) *Command {
+	s.InstanceId = &v
+	return s
+}
+
+// SetLogUrl sets the LogUrl field's value.
+func (s *Command) SetLogUrl(v string) *Command {
+	s.LogUrl = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Command) SetStatus(v string) *Command {
+	s.Status = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *Command) SetType(v string) *Command {
+	s.Type = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateAppRequest
 type CreateAppInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6105,7 +6612,80 @@ func (s *CreateAppInput) Validate() error {
 	return nil
 }
 
+// SetAppSource sets the AppSource field's value.
+func (s *CreateAppInput) SetAppSource(v *Source) *CreateAppInput {
+	s.AppSource = v
+	return s
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *CreateAppInput) SetAttributes(v map[string]*string) *CreateAppInput {
+	s.Attributes = v
+	return s
+}
+
+// SetDataSources sets the DataSources field's value.
+func (s *CreateAppInput) SetDataSources(v []*DataSource) *CreateAppInput {
+	s.DataSources = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateAppInput) SetDescription(v string) *CreateAppInput {
+	s.Description = &v
+	return s
+}
+
+// SetDomains sets the Domains field's value.
+func (s *CreateAppInput) SetDomains(v []*string) *CreateAppInput {
+	s.Domains = v
+	return s
+}
+
+// SetEnableSsl sets the EnableSsl field's value.
+func (s *CreateAppInput) SetEnableSsl(v bool) *CreateAppInput {
+	s.EnableSsl = &v
+	return s
+}
+
+// SetEnvironment sets the Environment field's value.
+func (s *CreateAppInput) SetEnvironment(v []*EnvironmentVariable) *CreateAppInput {
+	s.Environment = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateAppInput) SetName(v string) *CreateAppInput {
+	s.Name = &v
+	return s
+}
+
+// SetShortname sets the Shortname field's value.
+func (s *CreateAppInput) SetShortname(v string) *CreateAppInput {
+	s.Shortname = &v
+	return s
+}
+
+// SetSslConfiguration sets the SslConfiguration field's value.
+func (s *CreateAppInput) SetSslConfiguration(v *SslConfiguration) *CreateAppInput {
+	s.SslConfiguration = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *CreateAppInput) SetStackId(v string) *CreateAppInput {
+	s.StackId = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CreateAppInput) SetType(v string) *CreateAppInput {
+	s.Type = &v
+	return s
+}
+
 // Contains the response to a CreateApp request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateAppResult
 type CreateAppOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6123,6 +6703,13 @@ func (s CreateAppOutput) GoString() string {
 	return s.String()
 }
 
+// SetAppId sets the AppId field's value.
+func (s *CreateAppOutput) SetAppId(v string) *CreateAppOutput {
+	s.AppId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateDeploymentRequest
 type CreateDeploymentInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6192,7 +6779,50 @@ func (s *CreateDeploymentInput) Validate() error {
 	return nil
 }
 
+// SetAppId sets the AppId field's value.
+func (s *CreateDeploymentInput) SetAppId(v string) *CreateDeploymentInput {
+	s.AppId = &v
+	return s
+}
+
+// SetCommand sets the Command field's value.
+func (s *CreateDeploymentInput) SetCommand(v *DeploymentCommand) *CreateDeploymentInput {
+	s.Command = v
+	return s
+}
+
+// SetComment sets the Comment field's value.
+func (s *CreateDeploymentInput) SetComment(v string) *CreateDeploymentInput {
+	s.Comment = &v
+	return s
+}
+
+// SetCustomJson sets the CustomJson field's value.
+func (s *CreateDeploymentInput) SetCustomJson(v string) *CreateDeploymentInput {
+	s.CustomJson = &v
+	return s
+}
+
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *CreateDeploymentInput) SetInstanceIds(v []*string) *CreateDeploymentInput {
+	s.InstanceIds = v
+	return s
+}
+
+// SetLayerIds sets the LayerIds field's value.
+func (s *CreateDeploymentInput) SetLayerIds(v []*string) *CreateDeploymentInput {
+	s.LayerIds = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *CreateDeploymentInput) SetStackId(v string) *CreateDeploymentInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a CreateDeployment request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateDeploymentResult
 type CreateDeploymentOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6211,6 +6841,13 @@ func (s CreateDeploymentOutput) GoString() string {
 	return s.String()
 }
 
+// SetDeploymentId sets the DeploymentId field's value.
+func (s *CreateDeploymentOutput) SetDeploymentId(v string) *CreateDeploymentOutput {
+	s.DeploymentId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateInstanceRequest
 type CreateInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6378,7 +7015,116 @@ func (s *CreateInstanceInput) Validate() error {
 	return nil
 }
 
+// SetAgentVersion sets the AgentVersion field's value.
+func (s *CreateInstanceInput) SetAgentVersion(v string) *CreateInstanceInput {
+	s.AgentVersion = &v
+	return s
+}
+
+// SetAmiId sets the AmiId field's value.
+func (s *CreateInstanceInput) SetAmiId(v string) *CreateInstanceInput {
+	s.AmiId = &v
+	return s
+}
+
+// SetArchitecture sets the Architecture field's value.
+func (s *CreateInstanceInput) SetArchitecture(v string) *CreateInstanceInput {
+	s.Architecture = &v
+	return s
+}
+
+// SetAutoScalingType sets the AutoScalingType field's value.
+func (s *CreateInstanceInput) SetAutoScalingType(v string) *CreateInstanceInput {
+	s.AutoScalingType = &v
+	return s
+}
+
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *CreateInstanceInput) SetAvailabilityZone(v string) *CreateInstanceInput {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetBlockDeviceMappings sets the BlockDeviceMappings field's value.
+func (s *CreateInstanceInput) SetBlockDeviceMappings(v []*BlockDeviceMapping) *CreateInstanceInput {
+	s.BlockDeviceMappings = v
+	return s
+}
+
+// SetEbsOptimized sets the EbsOptimized field's value.
+func (s *CreateInstanceInput) SetEbsOptimized(v bool) *CreateInstanceInput {
+	s.EbsOptimized = &v
+	return s
+}
+
+// SetHostname sets the Hostname field's value.
+func (s *CreateInstanceInput) SetHostname(v string) *CreateInstanceInput {
+	s.Hostname = &v
+	return s
+}
+
+// SetInstallUpdatesOnBoot sets the InstallUpdatesOnBoot field's value.
+func (s *CreateInstanceInput) SetInstallUpdatesOnBoot(v bool) *CreateInstanceInput {
+	s.InstallUpdatesOnBoot = &v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *CreateInstanceInput) SetInstanceType(v string) *CreateInstanceInput {
+	s.InstanceType = &v
+	return s
+}
+
+// SetLayerIds sets the LayerIds field's value.
+func (s *CreateInstanceInput) SetLayerIds(v []*string) *CreateInstanceInput {
+	s.LayerIds = v
+	return s
+}
+
+// SetOs sets the Os field's value.
+func (s *CreateInstanceInput) SetOs(v string) *CreateInstanceInput {
+	s.Os = &v
+	return s
+}
+
+// SetRootDeviceType sets the RootDeviceType field's value.
+func (s *CreateInstanceInput) SetRootDeviceType(v string) *CreateInstanceInput {
+	s.RootDeviceType = &v
+	return s
+}
+
+// SetSshKeyName sets the SshKeyName field's value.
+func (s *CreateInstanceInput) SetSshKeyName(v string) *CreateInstanceInput {
+	s.SshKeyName = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *CreateInstanceInput) SetStackId(v string) *CreateInstanceInput {
+	s.StackId = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *CreateInstanceInput) SetSubnetId(v string) *CreateInstanceInput {
+	s.SubnetId = &v
+	return s
+}
+
+// SetTenancy sets the Tenancy field's value.
+func (s *CreateInstanceInput) SetTenancy(v string) *CreateInstanceInput {
+	s.Tenancy = &v
+	return s
+}
+
+// SetVirtualizationType sets the VirtualizationType field's value.
+func (s *CreateInstanceInput) SetVirtualizationType(v string) *CreateInstanceInput {
+	s.VirtualizationType = &v
+	return s
+}
+
 // Contains the response to a CreateInstance request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateInstanceResult
 type CreateInstanceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6396,6 +7142,13 @@ func (s CreateInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *CreateInstanceOutput) SetInstanceId(v string) *CreateInstanceOutput {
+	s.InstanceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateLayerRequest
 type CreateLayerInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6529,7 +7282,110 @@ func (s *CreateLayerInput) Validate() error {
 	return nil
 }
 
+// SetAttributes sets the Attributes field's value.
+func (s *CreateLayerInput) SetAttributes(v map[string]*string) *CreateLayerInput {
+	s.Attributes = v
+	return s
+}
+
+// SetAutoAssignElasticIps sets the AutoAssignElasticIps field's value.
+func (s *CreateLayerInput) SetAutoAssignElasticIps(v bool) *CreateLayerInput {
+	s.AutoAssignElasticIps = &v
+	return s
+}
+
+// SetAutoAssignPublicIps sets the AutoAssignPublicIps field's value.
+func (s *CreateLayerInput) SetAutoAssignPublicIps(v bool) *CreateLayerInput {
+	s.AutoAssignPublicIps = &v
+	return s
+}
+
+// SetCustomInstanceProfileArn sets the CustomInstanceProfileArn field's value.
+func (s *CreateLayerInput) SetCustomInstanceProfileArn(v string) *CreateLayerInput {
+	s.CustomInstanceProfileArn = &v
+	return s
+}
+
+// SetCustomJson sets the CustomJson field's value.
+func (s *CreateLayerInput) SetCustomJson(v string) *CreateLayerInput {
+	s.CustomJson = &v
+	return s
+}
+
+// SetCustomRecipes sets the CustomRecipes field's value.
+func (s *CreateLayerInput) SetCustomRecipes(v *Recipes) *CreateLayerInput {
+	s.CustomRecipes = v
+	return s
+}
+
+// SetCustomSecurityGroupIds sets the CustomSecurityGroupIds field's value.
+func (s *CreateLayerInput) SetCustomSecurityGroupIds(v []*string) *CreateLayerInput {
+	s.CustomSecurityGroupIds = v
+	return s
+}
+
+// SetEnableAutoHealing sets the EnableAutoHealing field's value.
+func (s *CreateLayerInput) SetEnableAutoHealing(v bool) *CreateLayerInput {
+	s.EnableAutoHealing = &v
+	return s
+}
+
+// SetInstallUpdatesOnBoot sets the InstallUpdatesOnBoot field's value.
+func (s *CreateLayerInput) SetInstallUpdatesOnBoot(v bool) *CreateLayerInput {
+	s.InstallUpdatesOnBoot = &v
+	return s
+}
+
+// SetLifecycleEventConfiguration sets the LifecycleEventConfiguration field's value.
+func (s *CreateLayerInput) SetLifecycleEventConfiguration(v *LifecycleEventConfiguration) *CreateLayerInput {
+	s.LifecycleEventConfiguration = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateLayerInput) SetName(v string) *CreateLayerInput {
+	s.Name = &v
+	return s
+}
+
+// SetPackages sets the Packages field's value.
+func (s *CreateLayerInput) SetPackages(v []*string) *CreateLayerInput {
+	s.Packages = v
+	return s
+}
+
+// SetShortname sets the Shortname field's value.
+func (s *CreateLayerInput) SetShortname(v string) *CreateLayerInput {
+	s.Shortname = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *CreateLayerInput) SetStackId(v string) *CreateLayerInput {
+	s.StackId = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CreateLayerInput) SetType(v string) *CreateLayerInput {
+	s.Type = &v
+	return s
+}
+
+// SetUseEbsOptimizedInstances sets the UseEbsOptimizedInstances field's value.
+func (s *CreateLayerInput) SetUseEbsOptimizedInstances(v bool) *CreateLayerInput {
+	s.UseEbsOptimizedInstances = &v
+	return s
+}
+
+// SetVolumeConfigurations sets the VolumeConfigurations field's value.
+func (s *CreateLayerInput) SetVolumeConfigurations(v []*VolumeConfiguration) *CreateLayerInput {
+	s.VolumeConfigurations = v
+	return s
+}
+
 // Contains the response to a CreateLayer request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateLayerResult
 type CreateLayerOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6547,6 +7403,13 @@ func (s CreateLayerOutput) GoString() string {
 	return s.String()
 }
 
+// SetLayerId sets the LayerId field's value.
+func (s *CreateLayerOutput) SetLayerId(v string) *CreateLayerOutput {
+	s.LayerId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateStackRequest
 type CreateStackInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6797,7 +7660,122 @@ func (s *CreateStackInput) Validate() error {
 	return nil
 }
 
+// SetAgentVersion sets the AgentVersion field's value.
+func (s *CreateStackInput) SetAgentVersion(v string) *CreateStackInput {
+	s.AgentVersion = &v
+	return s
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *CreateStackInput) SetAttributes(v map[string]*string) *CreateStackInput {
+	s.Attributes = v
+	return s
+}
+
+// SetChefConfiguration sets the ChefConfiguration field's value.
+func (s *CreateStackInput) SetChefConfiguration(v *ChefConfiguration) *CreateStackInput {
+	s.ChefConfiguration = v
+	return s
+}
+
+// SetConfigurationManager sets the ConfigurationManager field's value.
+func (s *CreateStackInput) SetConfigurationManager(v *StackConfigurationManager) *CreateStackInput {
+	s.ConfigurationManager = v
+	return s
+}
+
+// SetCustomCookbooksSource sets the CustomCookbooksSource field's value.
+func (s *CreateStackInput) SetCustomCookbooksSource(v *Source) *CreateStackInput {
+	s.CustomCookbooksSource = v
+	return s
+}
+
+// SetCustomJson sets the CustomJson field's value.
+func (s *CreateStackInput) SetCustomJson(v string) *CreateStackInput {
+	s.CustomJson = &v
+	return s
+}
+
+// SetDefaultAvailabilityZone sets the DefaultAvailabilityZone field's value.
+func (s *CreateStackInput) SetDefaultAvailabilityZone(v string) *CreateStackInput {
+	s.DefaultAvailabilityZone = &v
+	return s
+}
+
+// SetDefaultInstanceProfileArn sets the DefaultInstanceProfileArn field's value.
+func (s *CreateStackInput) SetDefaultInstanceProfileArn(v string) *CreateStackInput {
+	s.DefaultInstanceProfileArn = &v
+	return s
+}
+
+// SetDefaultOs sets the DefaultOs field's value.
+func (s *CreateStackInput) SetDefaultOs(v string) *CreateStackInput {
+	s.DefaultOs = &v
+	return s
+}
+
+// SetDefaultRootDeviceType sets the DefaultRootDeviceType field's value.
+func (s *CreateStackInput) SetDefaultRootDeviceType(v string) *CreateStackInput {
+	s.DefaultRootDeviceType = &v
+	return s
+}
+
+// SetDefaultSshKeyName sets the DefaultSshKeyName field's value.
+func (s *CreateStackInput) SetDefaultSshKeyName(v string) *CreateStackInput {
+	s.DefaultSshKeyName = &v
+	return s
+}
+
+// SetDefaultSubnetId sets the DefaultSubnetId field's value.
+func (s *CreateStackInput) SetDefaultSubnetId(v string) *CreateStackInput {
+	s.DefaultSubnetId = &v
+	return s
+}
+
+// SetHostnameTheme sets the HostnameTheme field's value.
+func (s *CreateStackInput) SetHostnameTheme(v string) *CreateStackInput {
+	s.HostnameTheme = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateStackInput) SetName(v string) *CreateStackInput {
+	s.Name = &v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *CreateStackInput) SetRegion(v string) *CreateStackInput {
+	s.Region = &v
+	return s
+}
+
+// SetServiceRoleArn sets the ServiceRoleArn field's value.
+func (s *CreateStackInput) SetServiceRoleArn(v string) *CreateStackInput {
+	s.ServiceRoleArn = &v
+	return s
+}
+
+// SetUseCustomCookbooks sets the UseCustomCookbooks field's value.
+func (s *CreateStackInput) SetUseCustomCookbooks(v bool) *CreateStackInput {
+	s.UseCustomCookbooks = &v
+	return s
+}
+
+// SetUseOpsworksSecurityGroups sets the UseOpsworksSecurityGroups field's value.
+func (s *CreateStackInput) SetUseOpsworksSecurityGroups(v bool) *CreateStackInput {
+	s.UseOpsworksSecurityGroups = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *CreateStackInput) SetVpcId(v string) *CreateStackInput {
+	s.VpcId = &v
+	return s
+}
+
 // Contains the response to a CreateStack request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateStackResult
 type CreateStackOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6816,6 +7794,13 @@ func (s CreateStackOutput) GoString() string {
 	return s.String()
 }
 
+// SetStackId sets the StackId field's value.
+func (s *CreateStackOutput) SetStackId(v string) *CreateStackOutput {
+	s.StackId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateUserProfileRequest
 type CreateUserProfileInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6862,7 +7847,32 @@ func (s *CreateUserProfileInput) Validate() error {
 	return nil
 }
 
+// SetAllowSelfManagement sets the AllowSelfManagement field's value.
+func (s *CreateUserProfileInput) SetAllowSelfManagement(v bool) *CreateUserProfileInput {
+	s.AllowSelfManagement = &v
+	return s
+}
+
+// SetIamUserArn sets the IamUserArn field's value.
+func (s *CreateUserProfileInput) SetIamUserArn(v string) *CreateUserProfileInput {
+	s.IamUserArn = &v
+	return s
+}
+
+// SetSshPublicKey sets the SshPublicKey field's value.
+func (s *CreateUserProfileInput) SetSshPublicKey(v string) *CreateUserProfileInput {
+	s.SshPublicKey = &v
+	return s
+}
+
+// SetSshUsername sets the SshUsername field's value.
+func (s *CreateUserProfileInput) SetSshUsername(v string) *CreateUserProfileInput {
+	s.SshUsername = &v
+	return s
+}
+
 // Contains the response to a CreateUserProfile request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateUserProfileResult
 type CreateUserProfileOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6880,7 +7890,14 @@ func (s CreateUserProfileOutput) GoString() string {
 	return s.String()
 }
 
+// SetIamUserArn sets the IamUserArn field's value.
+func (s *CreateUserProfileOutput) SetIamUserArn(v string) *CreateUserProfileOutput {
+	s.IamUserArn = &v
+	return s
+}
+
 // Describes an app's data source.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DataSource
 type DataSource struct {
 	_ struct{} `type:"structure"`
 
@@ -6905,6 +7922,25 @@ func (s DataSource) GoString() string {
 	return s.String()
 }
 
+// SetArn sets the Arn field's value.
+func (s *DataSource) SetArn(v string) *DataSource {
+	s.Arn = &v
+	return s
+}
+
+// SetDatabaseName sets the DatabaseName field's value.
+func (s *DataSource) SetDatabaseName(v string) *DataSource {
+	s.DatabaseName = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *DataSource) SetType(v string) *DataSource {
+	s.Type = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteAppRequest
 type DeleteAppInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6937,6 +7973,13 @@ func (s *DeleteAppInput) Validate() error {
 	return nil
 }
 
+// SetAppId sets the AppId field's value.
+func (s *DeleteAppInput) SetAppId(v string) *DeleteAppInput {
+	s.AppId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteAppOutput
 type DeleteAppOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6951,6 +7994,7 @@ func (s DeleteAppOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteInstanceRequest
 type DeleteInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6989,6 +8033,25 @@ func (s *DeleteInstanceInput) Validate() error {
 	return nil
 }
 
+// SetDeleteElasticIp sets the DeleteElasticIp field's value.
+func (s *DeleteInstanceInput) SetDeleteElasticIp(v bool) *DeleteInstanceInput {
+	s.DeleteElasticIp = &v
+	return s
+}
+
+// SetDeleteVolumes sets the DeleteVolumes field's value.
+func (s *DeleteInstanceInput) SetDeleteVolumes(v bool) *DeleteInstanceInput {
+	s.DeleteVolumes = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *DeleteInstanceInput) SetInstanceId(v string) *DeleteInstanceInput {
+	s.InstanceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteInstanceOutput
 type DeleteInstanceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7003,6 +8066,7 @@ func (s DeleteInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteLayerRequest
 type DeleteLayerInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7035,6 +8099,13 @@ func (s *DeleteLayerInput) Validate() error {
 	return nil
 }
 
+// SetLayerId sets the LayerId field's value.
+func (s *DeleteLayerInput) SetLayerId(v string) *DeleteLayerInput {
+	s.LayerId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteLayerOutput
 type DeleteLayerOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7049,6 +8120,7 @@ func (s DeleteLayerOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteStackRequest
 type DeleteStackInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7081,6 +8153,13 @@ func (s *DeleteStackInput) Validate() error {
 	return nil
 }
 
+// SetStackId sets the StackId field's value.
+func (s *DeleteStackInput) SetStackId(v string) *DeleteStackInput {
+	s.StackId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteStackOutput
 type DeleteStackOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7095,6 +8174,7 @@ func (s DeleteStackOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteUserProfileRequest
 type DeleteUserProfileInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7127,6 +8207,13 @@ func (s *DeleteUserProfileInput) Validate() error {
 	return nil
 }
 
+// SetIamUserArn sets the IamUserArn field's value.
+func (s *DeleteUserProfileInput) SetIamUserArn(v string) *DeleteUserProfileInput {
+	s.IamUserArn = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteUserProfileOutput
 type DeleteUserProfileOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7142,6 +8229,7 @@ func (s DeleteUserProfileOutput) GoString() string {
 }
 
 // Describes a deployment of a stack or app.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/Deployment
 type Deployment struct {
 	_ struct{} `type:"structure"`
 
@@ -7205,7 +8293,80 @@ func (s Deployment) GoString() string {
 	return s.String()
 }
 
+// SetAppId sets the AppId field's value.
+func (s *Deployment) SetAppId(v string) *Deployment {
+	s.AppId = &v
+	return s
+}
+
+// SetCommand sets the Command field's value.
+func (s *Deployment) SetCommand(v *DeploymentCommand) *Deployment {
+	s.Command = v
+	return s
+}
+
+// SetComment sets the Comment field's value.
+func (s *Deployment) SetComment(v string) *Deployment {
+	s.Comment = &v
+	return s
+}
+
+// SetCompletedAt sets the CompletedAt field's value.
+func (s *Deployment) SetCompletedAt(v string) *Deployment {
+	s.CompletedAt = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *Deployment) SetCreatedAt(v string) *Deployment {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetCustomJson sets the CustomJson field's value.
+func (s *Deployment) SetCustomJson(v string) *Deployment {
+	s.CustomJson = &v
+	return s
+}
+
+// SetDeploymentId sets the DeploymentId field's value.
+func (s *Deployment) SetDeploymentId(v string) *Deployment {
+	s.DeploymentId = &v
+	return s
+}
+
+// SetDuration sets the Duration field's value.
+func (s *Deployment) SetDuration(v int64) *Deployment {
+	s.Duration = &v
+	return s
+}
+
+// SetIamUserArn sets the IamUserArn field's value.
+func (s *Deployment) SetIamUserArn(v string) *Deployment {
+	s.IamUserArn = &v
+	return s
+}
+
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *Deployment) SetInstanceIds(v []*string) *Deployment {
+	s.InstanceIds = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *Deployment) SetStackId(v string) *Deployment {
+	s.StackId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Deployment) SetStatus(v string) *Deployment {
+	s.Status = &v
+	return s
+}
+
 // Used to specify a stack or deployment command.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeploymentCommand
 type DeploymentCommand struct {
 	_ struct{} `type:"structure"`
 
@@ -7295,6 +8456,19 @@ func (s *DeploymentCommand) Validate() error {
 	return nil
 }
 
+// SetArgs sets the Args field's value.
+func (s *DeploymentCommand) SetArgs(v map[string][]*string) *DeploymentCommand {
+	s.Args = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DeploymentCommand) SetName(v string) *DeploymentCommand {
+	s.Name = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterEcsClusterRequest
 type DeregisterEcsClusterInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7327,6 +8501,13 @@ func (s *DeregisterEcsClusterInput) Validate() error {
 	return nil
 }
 
+// SetEcsClusterArn sets the EcsClusterArn field's value.
+func (s *DeregisterEcsClusterInput) SetEcsClusterArn(v string) *DeregisterEcsClusterInput {
+	s.EcsClusterArn = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterEcsClusterOutput
 type DeregisterEcsClusterOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7341,6 +8522,7 @@ func (s DeregisterEcsClusterOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterElasticIpRequest
 type DeregisterElasticIpInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7373,6 +8555,13 @@ func (s *DeregisterElasticIpInput) Validate() error {
 	return nil
 }
 
+// SetElasticIp sets the ElasticIp field's value.
+func (s *DeregisterElasticIpInput) SetElasticIp(v string) *DeregisterElasticIpInput {
+	s.ElasticIp = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterElasticIpOutput
 type DeregisterElasticIpOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7387,6 +8576,7 @@ func (s DeregisterElasticIpOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterInstanceRequest
 type DeregisterInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7419,6 +8609,13 @@ func (s *DeregisterInstanceInput) Validate() error {
 	return nil
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *DeregisterInstanceInput) SetInstanceId(v string) *DeregisterInstanceInput {
+	s.InstanceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterInstanceOutput
 type DeregisterInstanceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7433,6 +8630,7 @@ func (s DeregisterInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterRdsDbInstanceRequest
 type DeregisterRdsDbInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7465,6 +8663,13 @@ func (s *DeregisterRdsDbInstanceInput) Validate() error {
 	return nil
 }
 
+// SetRdsDbInstanceArn sets the RdsDbInstanceArn field's value.
+func (s *DeregisterRdsDbInstanceInput) SetRdsDbInstanceArn(v string) *DeregisterRdsDbInstanceInput {
+	s.RdsDbInstanceArn = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterRdsDbInstanceOutput
 type DeregisterRdsDbInstanceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7479,6 +8684,7 @@ func (s DeregisterRdsDbInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterVolumeRequest
 type DeregisterVolumeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7513,6 +8719,13 @@ func (s *DeregisterVolumeInput) Validate() error {
 	return nil
 }
 
+// SetVolumeId sets the VolumeId field's value.
+func (s *DeregisterVolumeInput) SetVolumeId(v string) *DeregisterVolumeInput {
+	s.VolumeId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterVolumeOutput
 type DeregisterVolumeOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7527,6 +8740,7 @@ func (s DeregisterVolumeOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeAgentVersionsRequest
 type DescribeAgentVersionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7547,7 +8761,20 @@ func (s DescribeAgentVersionsInput) GoString() string {
 	return s.String()
 }
 
+// SetConfigurationManager sets the ConfigurationManager field's value.
+func (s *DescribeAgentVersionsInput) SetConfigurationManager(v *StackConfigurationManager) *DescribeAgentVersionsInput {
+	s.ConfigurationManager = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribeAgentVersionsInput) SetStackId(v string) *DescribeAgentVersionsInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeAgentVersions request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeAgentVersionsResult
 type DescribeAgentVersionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7567,6 +8794,13 @@ func (s DescribeAgentVersionsOutput) GoString() string {
 	return s.String()
 }
 
+// SetAgentVersions sets the AgentVersions field's value.
+func (s *DescribeAgentVersionsOutput) SetAgentVersions(v []*AgentVersion) *DescribeAgentVersionsOutput {
+	s.AgentVersions = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeAppsRequest
 type DescribeAppsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7590,7 +8824,20 @@ func (s DescribeAppsInput) GoString() string {
 	return s.String()
 }
 
+// SetAppIds sets the AppIds field's value.
+func (s *DescribeAppsInput) SetAppIds(v []*string) *DescribeAppsInput {
+	s.AppIds = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribeAppsInput) SetStackId(v string) *DescribeAppsInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeApps request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeAppsResult
 type DescribeAppsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7608,6 +8855,13 @@ func (s DescribeAppsOutput) GoString() string {
 	return s.String()
 }
 
+// SetApps sets the Apps field's value.
+func (s *DescribeAppsOutput) SetApps(v []*App) *DescribeAppsOutput {
+	s.Apps = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeCommandsRequest
 type DescribeCommandsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7635,7 +8889,26 @@ func (s DescribeCommandsInput) GoString() string {
 	return s.String()
 }
 
+// SetCommandIds sets the CommandIds field's value.
+func (s *DescribeCommandsInput) SetCommandIds(v []*string) *DescribeCommandsInput {
+	s.CommandIds = v
+	return s
+}
+
+// SetDeploymentId sets the DeploymentId field's value.
+func (s *DescribeCommandsInput) SetDeploymentId(v string) *DescribeCommandsInput {
+	s.DeploymentId = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *DescribeCommandsInput) SetInstanceId(v string) *DescribeCommandsInput {
+	s.InstanceId = &v
+	return s
+}
+
 // Contains the response to a DescribeCommands request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeCommandsResult
 type DescribeCommandsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7653,6 +8926,13 @@ func (s DescribeCommandsOutput) GoString() string {
 	return s.String()
 }
 
+// SetCommands sets the Commands field's value.
+func (s *DescribeCommandsOutput) SetCommands(v []*Command) *DescribeCommandsOutput {
+	s.Commands = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeDeploymentsRequest
 type DescribeDeploymentsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7680,7 +8960,26 @@ func (s DescribeDeploymentsInput) GoString() string {
 	return s.String()
 }
 
+// SetAppId sets the AppId field's value.
+func (s *DescribeDeploymentsInput) SetAppId(v string) *DescribeDeploymentsInput {
+	s.AppId = &v
+	return s
+}
+
+// SetDeploymentIds sets the DeploymentIds field's value.
+func (s *DescribeDeploymentsInput) SetDeploymentIds(v []*string) *DescribeDeploymentsInput {
+	s.DeploymentIds = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribeDeploymentsInput) SetStackId(v string) *DescribeDeploymentsInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeDeployments request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeDeploymentsResult
 type DescribeDeploymentsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7698,6 +8997,13 @@ func (s DescribeDeploymentsOutput) GoString() string {
 	return s.String()
 }
 
+// SetDeployments sets the Deployments field's value.
+func (s *DescribeDeploymentsOutput) SetDeployments(v []*Deployment) *DescribeDeploymentsOutput {
+	s.Deployments = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeEcsClustersRequest
 type DescribeEcsClustersInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7733,7 +9039,32 @@ func (s DescribeEcsClustersInput) GoString() string {
 	return s.String()
 }
 
+// SetEcsClusterArns sets the EcsClusterArns field's value.
+func (s *DescribeEcsClustersInput) SetEcsClusterArns(v []*string) *DescribeEcsClustersInput {
+	s.EcsClusterArns = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeEcsClustersInput) SetMaxResults(v int64) *DescribeEcsClustersInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeEcsClustersInput) SetNextToken(v string) *DescribeEcsClustersInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribeEcsClustersInput) SetStackId(v string) *DescribeEcsClustersInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeEcsClusters request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeEcsClustersResult
 type DescribeEcsClustersOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7757,6 +9088,19 @@ func (s DescribeEcsClustersOutput) GoString() string {
 	return s.String()
 }
 
+// SetEcsClusters sets the EcsClusters field's value.
+func (s *DescribeEcsClustersOutput) SetEcsClusters(v []*EcsCluster) *DescribeEcsClustersOutput {
+	s.EcsClusters = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeEcsClustersOutput) SetNextToken(v string) *DescribeEcsClustersOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeElasticIpsRequest
 type DescribeElasticIpsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7784,7 +9128,26 @@ func (s DescribeElasticIpsInput) GoString() string {
 	return s.String()
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *DescribeElasticIpsInput) SetInstanceId(v string) *DescribeElasticIpsInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetIps sets the Ips field's value.
+func (s *DescribeElasticIpsInput) SetIps(v []*string) *DescribeElasticIpsInput {
+	s.Ips = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribeElasticIpsInput) SetStackId(v string) *DescribeElasticIpsInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeElasticIps request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeElasticIpsResult
 type DescribeElasticIpsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7802,6 +9165,13 @@ func (s DescribeElasticIpsOutput) GoString() string {
 	return s.String()
 }
 
+// SetElasticIps sets the ElasticIps field's value.
+func (s *DescribeElasticIpsOutput) SetElasticIps(v []*ElasticIp) *DescribeElasticIpsOutput {
+	s.ElasticIps = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeElasticLoadBalancersRequest
 type DescribeElasticLoadBalancersInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7823,7 +9193,20 @@ func (s DescribeElasticLoadBalancersInput) GoString() string {
 	return s.String()
 }
 
+// SetLayerIds sets the LayerIds field's value.
+func (s *DescribeElasticLoadBalancersInput) SetLayerIds(v []*string) *DescribeElasticLoadBalancersInput {
+	s.LayerIds = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribeElasticLoadBalancersInput) SetStackId(v string) *DescribeElasticLoadBalancersInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeElasticLoadBalancers request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeElasticLoadBalancersResult
 type DescribeElasticLoadBalancersOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7842,6 +9225,13 @@ func (s DescribeElasticLoadBalancersOutput) GoString() string {
 	return s.String()
 }
 
+// SetElasticLoadBalancers sets the ElasticLoadBalancers field's value.
+func (s *DescribeElasticLoadBalancersOutput) SetElasticLoadBalancers(v []*ElasticLoadBalancer) *DescribeElasticLoadBalancersOutput {
+	s.ElasticLoadBalancers = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeInstancesRequest
 type DescribeInstancesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7869,7 +9259,26 @@ func (s DescribeInstancesInput) GoString() string {
 	return s.String()
 }
 
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *DescribeInstancesInput) SetInstanceIds(v []*string) *DescribeInstancesInput {
+	s.InstanceIds = v
+	return s
+}
+
+// SetLayerId sets the LayerId field's value.
+func (s *DescribeInstancesInput) SetLayerId(v string) *DescribeInstancesInput {
+	s.LayerId = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribeInstancesInput) SetStackId(v string) *DescribeInstancesInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeInstances request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeInstancesResult
 type DescribeInstancesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7887,6 +9296,13 @@ func (s DescribeInstancesOutput) GoString() string {
 	return s.String()
 }
 
+// SetInstances sets the Instances field's value.
+func (s *DescribeInstancesOutput) SetInstances(v []*Instance) *DescribeInstancesOutput {
+	s.Instances = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeLayersRequest
 type DescribeLayersInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7909,7 +9325,20 @@ func (s DescribeLayersInput) GoString() string {
 	return s.String()
 }
 
+// SetLayerIds sets the LayerIds field's value.
+func (s *DescribeLayersInput) SetLayerIds(v []*string) *DescribeLayersInput {
+	s.LayerIds = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribeLayersInput) SetStackId(v string) *DescribeLayersInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeLayers request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeLayersResult
 type DescribeLayersOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7927,6 +9356,13 @@ func (s DescribeLayersOutput) GoString() string {
 	return s.String()
 }
 
+// SetLayers sets the Layers field's value.
+func (s *DescribeLayersOutput) SetLayers(v []*Layer) *DescribeLayersOutput {
+	s.Layers = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeLoadBasedAutoScalingRequest
 type DescribeLoadBasedAutoScalingInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7959,7 +9395,14 @@ func (s *DescribeLoadBasedAutoScalingInput) Validate() error {
 	return nil
 }
 
+// SetLayerIds sets the LayerIds field's value.
+func (s *DescribeLoadBasedAutoScalingInput) SetLayerIds(v []*string) *DescribeLoadBasedAutoScalingInput {
+	s.LayerIds = v
+	return s
+}
+
 // Contains the response to a DescribeLoadBasedAutoScaling request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeLoadBasedAutoScalingResult
 type DescribeLoadBasedAutoScalingOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7978,6 +9421,13 @@ func (s DescribeLoadBasedAutoScalingOutput) GoString() string {
 	return s.String()
 }
 
+// SetLoadBasedAutoScalingConfigurations sets the LoadBasedAutoScalingConfigurations field's value.
+func (s *DescribeLoadBasedAutoScalingOutput) SetLoadBasedAutoScalingConfigurations(v []*LoadBasedAutoScalingConfiguration) *DescribeLoadBasedAutoScalingOutput {
+	s.LoadBasedAutoScalingConfigurations = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeMyUserProfileInput
 type DescribeMyUserProfileInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7993,6 +9443,7 @@ func (s DescribeMyUserProfileInput) GoString() string {
 }
 
 // Contains the response to a DescribeMyUserProfile request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeMyUserProfileResult
 type DescribeMyUserProfileOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8010,6 +9461,13 @@ func (s DescribeMyUserProfileOutput) GoString() string {
 	return s.String()
 }
 
+// SetUserProfile sets the UserProfile field's value.
+func (s *DescribeMyUserProfileOutput) SetUserProfile(v *SelfUserProfile) *DescribeMyUserProfileOutput {
+	s.UserProfile = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribePermissionsRequest
 type DescribePermissionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8031,7 +9489,20 @@ func (s DescribePermissionsInput) GoString() string {
 	return s.String()
 }
 
+// SetIamUserArn sets the IamUserArn field's value.
+func (s *DescribePermissionsInput) SetIamUserArn(v string) *DescribePermissionsInput {
+	s.IamUserArn = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribePermissionsInput) SetStackId(v string) *DescribePermissionsInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribePermissions request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribePermissionsResult
 type DescribePermissionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8059,6 +9530,13 @@ func (s DescribePermissionsOutput) GoString() string {
 	return s.String()
 }
 
+// SetPermissions sets the Permissions field's value.
+func (s *DescribePermissionsOutput) SetPermissions(v []*Permission) *DescribePermissionsOutput {
+	s.Permissions = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeRaidArraysRequest
 type DescribeRaidArraysInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8085,7 +9563,26 @@ func (s DescribeRaidArraysInput) GoString() string {
 	return s.String()
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *DescribeRaidArraysInput) SetInstanceId(v string) *DescribeRaidArraysInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetRaidArrayIds sets the RaidArrayIds field's value.
+func (s *DescribeRaidArraysInput) SetRaidArrayIds(v []*string) *DescribeRaidArraysInput {
+	s.RaidArrayIds = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribeRaidArraysInput) SetStackId(v string) *DescribeRaidArraysInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeRaidArrays request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeRaidArraysResult
 type DescribeRaidArraysOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8103,6 +9600,13 @@ func (s DescribeRaidArraysOutput) GoString() string {
 	return s.String()
 }
 
+// SetRaidArrays sets the RaidArrays field's value.
+func (s *DescribeRaidArraysOutput) SetRaidArrays(v []*RaidArray) *DescribeRaidArraysOutput {
+	s.RaidArrays = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeRdsDbInstancesRequest
 type DescribeRdsDbInstancesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8139,7 +9643,20 @@ func (s *DescribeRdsDbInstancesInput) Validate() error {
 	return nil
 }
 
+// SetRdsDbInstanceArns sets the RdsDbInstanceArns field's value.
+func (s *DescribeRdsDbInstancesInput) SetRdsDbInstanceArns(v []*string) *DescribeRdsDbInstancesInput {
+	s.RdsDbInstanceArns = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribeRdsDbInstancesInput) SetStackId(v string) *DescribeRdsDbInstancesInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeRdsDbInstances request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeRdsDbInstancesResult
 type DescribeRdsDbInstancesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8157,6 +9674,13 @@ func (s DescribeRdsDbInstancesOutput) GoString() string {
 	return s.String()
 }
 
+// SetRdsDbInstances sets the RdsDbInstances field's value.
+func (s *DescribeRdsDbInstancesOutput) SetRdsDbInstances(v []*RdsDbInstance) *DescribeRdsDbInstancesOutput {
+	s.RdsDbInstances = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeServiceErrorsRequest
 type DescribeServiceErrorsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8184,7 +9708,26 @@ func (s DescribeServiceErrorsInput) GoString() string {
 	return s.String()
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *DescribeServiceErrorsInput) SetInstanceId(v string) *DescribeServiceErrorsInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetServiceErrorIds sets the ServiceErrorIds field's value.
+func (s *DescribeServiceErrorsInput) SetServiceErrorIds(v []*string) *DescribeServiceErrorsInput {
+	s.ServiceErrorIds = v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribeServiceErrorsInput) SetStackId(v string) *DescribeServiceErrorsInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeServiceErrors request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeServiceErrorsResult
 type DescribeServiceErrorsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8202,6 +9745,13 @@ func (s DescribeServiceErrorsOutput) GoString() string {
 	return s.String()
 }
 
+// SetServiceErrors sets the ServiceErrors field's value.
+func (s *DescribeServiceErrorsOutput) SetServiceErrors(v []*ServiceError) *DescribeServiceErrorsOutput {
+	s.ServiceErrors = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStackProvisioningParametersRequest
 type DescribeStackProvisioningParametersInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8234,7 +9784,14 @@ func (s *DescribeStackProvisioningParametersInput) Validate() error {
 	return nil
 }
 
+// SetStackId sets the StackId field's value.
+func (s *DescribeStackProvisioningParametersInput) SetStackId(v string) *DescribeStackProvisioningParametersInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeStackProvisioningParameters request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStackProvisioningParametersResult
 type DescribeStackProvisioningParametersOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8255,6 +9812,19 @@ func (s DescribeStackProvisioningParametersOutput) GoString() string {
 	return s.String()
 }
 
+// SetAgentInstallerUrl sets the AgentInstallerUrl field's value.
+func (s *DescribeStackProvisioningParametersOutput) SetAgentInstallerUrl(v string) *DescribeStackProvisioningParametersOutput {
+	s.AgentInstallerUrl = &v
+	return s
+}
+
+// SetParameters sets the Parameters field's value.
+func (s *DescribeStackProvisioningParametersOutput) SetParameters(v map[string]*string) *DescribeStackProvisioningParametersOutput {
+	s.Parameters = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStackSummaryRequest
 type DescribeStackSummaryInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8287,7 +9857,14 @@ func (s *DescribeStackSummaryInput) Validate() error {
 	return nil
 }
 
+// SetStackId sets the StackId field's value.
+func (s *DescribeStackSummaryInput) SetStackId(v string) *DescribeStackSummaryInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a DescribeStackSummary request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStackSummaryResult
 type DescribeStackSummaryOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8305,6 +9882,13 @@ func (s DescribeStackSummaryOutput) GoString() string {
 	return s.String()
 }
 
+// SetStackSummary sets the StackSummary field's value.
+func (s *DescribeStackSummaryOutput) SetStackSummary(v *StackSummary) *DescribeStackSummaryOutput {
+	s.StackSummary = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStacksRequest
 type DescribeStacksInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8323,7 +9907,14 @@ func (s DescribeStacksInput) GoString() string {
 	return s.String()
 }
 
+// SetStackIds sets the StackIds field's value.
+func (s *DescribeStacksInput) SetStackIds(v []*string) *DescribeStacksInput {
+	s.StackIds = v
+	return s
+}
+
 // Contains the response to a DescribeStacks request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStacksResult
 type DescribeStacksOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8341,6 +9932,13 @@ func (s DescribeStacksOutput) GoString() string {
 	return s.String()
 }
 
+// SetStacks sets the Stacks field's value.
+func (s *DescribeStacksOutput) SetStacks(v []*Stack) *DescribeStacksOutput {
+	s.Stacks = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeTimeBasedAutoScalingRequest
 type DescribeTimeBasedAutoScalingInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8373,7 +9971,14 @@ func (s *DescribeTimeBasedAutoScalingInput) Validate() error {
 	return nil
 }
 
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *DescribeTimeBasedAutoScalingInput) SetInstanceIds(v []*string) *DescribeTimeBasedAutoScalingInput {
+	s.InstanceIds = v
+	return s
+}
+
 // Contains the response to a DescribeTimeBasedAutoScaling request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeTimeBasedAutoScalingResult
 type DescribeTimeBasedAutoScalingOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8392,6 +9997,13 @@ func (s DescribeTimeBasedAutoScalingOutput) GoString() string {
 	return s.String()
 }
 
+// SetTimeBasedAutoScalingConfigurations sets the TimeBasedAutoScalingConfigurations field's value.
+func (s *DescribeTimeBasedAutoScalingOutput) SetTimeBasedAutoScalingConfigurations(v []*TimeBasedAutoScalingConfiguration) *DescribeTimeBasedAutoScalingOutput {
+	s.TimeBasedAutoScalingConfigurations = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeUserProfilesRequest
 type DescribeUserProfilesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8409,7 +10021,14 @@ func (s DescribeUserProfilesInput) GoString() string {
 	return s.String()
 }
 
+// SetIamUserArns sets the IamUserArns field's value.
+func (s *DescribeUserProfilesInput) SetIamUserArns(v []*string) *DescribeUserProfilesInput {
+	s.IamUserArns = v
+	return s
+}
+
 // Contains the response to a DescribeUserProfiles request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeUserProfilesResult
 type DescribeUserProfilesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8427,6 +10046,13 @@ func (s DescribeUserProfilesOutput) GoString() string {
 	return s.String()
 }
 
+// SetUserProfiles sets the UserProfiles field's value.
+func (s *DescribeUserProfilesOutput) SetUserProfiles(v []*UserProfile) *DescribeUserProfilesOutput {
+	s.UserProfiles = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeVolumesRequest
 type DescribeVolumesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8457,7 +10083,32 @@ func (s DescribeVolumesInput) GoString() string {
 	return s.String()
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *DescribeVolumesInput) SetInstanceId(v string) *DescribeVolumesInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetRaidArrayId sets the RaidArrayId field's value.
+func (s *DescribeVolumesInput) SetRaidArrayId(v string) *DescribeVolumesInput {
+	s.RaidArrayId = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *DescribeVolumesInput) SetStackId(v string) *DescribeVolumesInput {
+	s.StackId = &v
+	return s
+}
+
+// SetVolumeIds sets the VolumeIds field's value.
+func (s *DescribeVolumesInput) SetVolumeIds(v []*string) *DescribeVolumesInput {
+	s.VolumeIds = v
+	return s
+}
+
 // Contains the response to a DescribeVolumes request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeVolumesResult
 type DescribeVolumesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8475,6 +10126,13 @@ func (s DescribeVolumesOutput) GoString() string {
 	return s.String()
 }
 
+// SetVolumes sets the Volumes field's value.
+func (s *DescribeVolumesOutput) SetVolumes(v []*Volume) *DescribeVolumesOutput {
+	s.Volumes = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DetachElasticLoadBalancerRequest
 type DetachElasticLoadBalancerInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8516,6 +10174,19 @@ func (s *DetachElasticLoadBalancerInput) Validate() error {
 	return nil
 }
 
+// SetElasticLoadBalancerName sets the ElasticLoadBalancerName field's value.
+func (s *DetachElasticLoadBalancerInput) SetElasticLoadBalancerName(v string) *DetachElasticLoadBalancerInput {
+	s.ElasticLoadBalancerName = &v
+	return s
+}
+
+// SetLayerId sets the LayerId field's value.
+func (s *DetachElasticLoadBalancerInput) SetLayerId(v string) *DetachElasticLoadBalancerInput {
+	s.LayerId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DetachElasticLoadBalancerOutput
 type DetachElasticLoadBalancerOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8530,6 +10201,7 @@ func (s DetachElasticLoadBalancerOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DisassociateElasticIpRequest
 type DisassociateElasticIpInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8562,6 +10234,13 @@ func (s *DisassociateElasticIpInput) Validate() error {
 	return nil
 }
 
+// SetElasticIp sets the ElasticIp field's value.
+func (s *DisassociateElasticIpInput) SetElasticIp(v string) *DisassociateElasticIpInput {
+	s.ElasticIp = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DisassociateElasticIpOutput
 type DisassociateElasticIpOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8579,6 +10258,7 @@ func (s DisassociateElasticIpOutput) GoString() string {
 // Describes an Amazon EBS volume. This data type maps directly to the Amazon
 // EC2 EbsBlockDevice (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_EbsBlockDevice.html)
 // data type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/EbsBlockDevice
 type EbsBlockDevice struct {
 	_ struct{} `type:"structure"`
 
@@ -8610,7 +10290,38 @@ func (s EbsBlockDevice) GoString() string {
 	return s.String()
 }
 
+// SetDeleteOnTermination sets the DeleteOnTermination field's value.
+func (s *EbsBlockDevice) SetDeleteOnTermination(v bool) *EbsBlockDevice {
+	s.DeleteOnTermination = &v
+	return s
+}
+
+// SetIops sets the Iops field's value.
+func (s *EbsBlockDevice) SetIops(v int64) *EbsBlockDevice {
+	s.Iops = &v
+	return s
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *EbsBlockDevice) SetSnapshotId(v string) *EbsBlockDevice {
+	s.SnapshotId = &v
+	return s
+}
+
+// SetVolumeSize sets the VolumeSize field's value.
+func (s *EbsBlockDevice) SetVolumeSize(v int64) *EbsBlockDevice {
+	s.VolumeSize = &v
+	return s
+}
+
+// SetVolumeType sets the VolumeType field's value.
+func (s *EbsBlockDevice) SetVolumeType(v string) *EbsBlockDevice {
+	s.VolumeType = &v
+	return s
+}
+
 // Describes a registered Amazon ECS cluster.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/EcsCluster
 type EcsCluster struct {
 	_ struct{} `type:"structure"`
 
@@ -8637,7 +10348,32 @@ func (s EcsCluster) GoString() string {
 	return s.String()
 }
 
+// SetEcsClusterArn sets the EcsClusterArn field's value.
+func (s *EcsCluster) SetEcsClusterArn(v string) *EcsCluster {
+	s.EcsClusterArn = &v
+	return s
+}
+
+// SetEcsClusterName sets the EcsClusterName field's value.
+func (s *EcsCluster) SetEcsClusterName(v string) *EcsCluster {
+	s.EcsClusterName = &v
+	return s
+}
+
+// SetRegisteredAt sets the RegisteredAt field's value.
+func (s *EcsCluster) SetRegisteredAt(v string) *EcsCluster {
+	s.RegisteredAt = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *EcsCluster) SetStackId(v string) *EcsCluster {
+	s.StackId = &v
+	return s
+}
+
 // Describes an Elastic IP address.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/ElasticIp
 type ElasticIp struct {
 	_ struct{} `type:"structure"`
 
@@ -8667,7 +10403,38 @@ func (s ElasticIp) GoString() string {
 	return s.String()
 }
 
+// SetDomain sets the Domain field's value.
+func (s *ElasticIp) SetDomain(v string) *ElasticIp {
+	s.Domain = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *ElasticIp) SetInstanceId(v string) *ElasticIp {
+	s.InstanceId = &v
+	return s
+}
+
+// SetIp sets the Ip field's value.
+func (s *ElasticIp) SetIp(v string) *ElasticIp {
+	s.Ip = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ElasticIp) SetName(v string) *ElasticIp {
+	s.Name = &v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *ElasticIp) SetRegion(v string) *ElasticIp {
+	s.Region = &v
+	return s
+}
+
 // Describes an Elastic Load Balancing instance.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/ElasticLoadBalancer
 type ElasticLoadBalancer struct {
 	_ struct{} `type:"structure"`
 
@@ -8710,7 +10477,62 @@ func (s ElasticLoadBalancer) GoString() string {
 	return s.String()
 }
 
+// SetAvailabilityZones sets the AvailabilityZones field's value.
+func (s *ElasticLoadBalancer) SetAvailabilityZones(v []*string) *ElasticLoadBalancer {
+	s.AvailabilityZones = v
+	return s
+}
+
+// SetDnsName sets the DnsName field's value.
+func (s *ElasticLoadBalancer) SetDnsName(v string) *ElasticLoadBalancer {
+	s.DnsName = &v
+	return s
+}
+
+// SetEc2InstanceIds sets the Ec2InstanceIds field's value.
+func (s *ElasticLoadBalancer) SetEc2InstanceIds(v []*string) *ElasticLoadBalancer {
+	s.Ec2InstanceIds = v
+	return s
+}
+
+// SetElasticLoadBalancerName sets the ElasticLoadBalancerName field's value.
+func (s *ElasticLoadBalancer) SetElasticLoadBalancerName(v string) *ElasticLoadBalancer {
+	s.ElasticLoadBalancerName = &v
+	return s
+}
+
+// SetLayerId sets the LayerId field's value.
+func (s *ElasticLoadBalancer) SetLayerId(v string) *ElasticLoadBalancer {
+	s.LayerId = &v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *ElasticLoadBalancer) SetRegion(v string) *ElasticLoadBalancer {
+	s.Region = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *ElasticLoadBalancer) SetStackId(v string) *ElasticLoadBalancer {
+	s.StackId = &v
+	return s
+}
+
+// SetSubnetIds sets the SubnetIds field's value.
+func (s *ElasticLoadBalancer) SetSubnetIds(v []*string) *ElasticLoadBalancer {
+	s.SubnetIds = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *ElasticLoadBalancer) SetVpcId(v string) *ElasticLoadBalancer {
+	s.VpcId = &v
+	return s
+}
+
 // Represents an app's environment variable.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/EnvironmentVariable
 type EnvironmentVariable struct {
 	_ struct{} `type:"structure"`
 
@@ -8762,6 +10584,25 @@ func (s *EnvironmentVariable) Validate() error {
 	return nil
 }
 
+// SetKey sets the Key field's value.
+func (s *EnvironmentVariable) SetKey(v string) *EnvironmentVariable {
+	s.Key = &v
+	return s
+}
+
+// SetSecure sets the Secure field's value.
+func (s *EnvironmentVariable) SetSecure(v bool) *EnvironmentVariable {
+	s.Secure = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *EnvironmentVariable) SetValue(v string) *EnvironmentVariable {
+	s.Value = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/GetHostnameSuggestionRequest
 type GetHostnameSuggestionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8794,7 +10635,14 @@ func (s *GetHostnameSuggestionInput) Validate() error {
 	return nil
 }
 
+// SetLayerId sets the LayerId field's value.
+func (s *GetHostnameSuggestionInput) SetLayerId(v string) *GetHostnameSuggestionInput {
+	s.LayerId = &v
+	return s
+}
+
 // Contains the response to a GetHostnameSuggestion request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/GetHostnameSuggestionResult
 type GetHostnameSuggestionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8815,6 +10663,19 @@ func (s GetHostnameSuggestionOutput) GoString() string {
 	return s.String()
 }
 
+// SetHostname sets the Hostname field's value.
+func (s *GetHostnameSuggestionOutput) SetHostname(v string) *GetHostnameSuggestionOutput {
+	s.Hostname = &v
+	return s
+}
+
+// SetLayerId sets the LayerId field's value.
+func (s *GetHostnameSuggestionOutput) SetLayerId(v string) *GetHostnameSuggestionOutput {
+	s.LayerId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/GrantAccessRequest
 type GrantAccessInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8856,7 +10717,20 @@ func (s *GrantAccessInput) Validate() error {
 	return nil
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *GrantAccessInput) SetInstanceId(v string) *GrantAccessInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetValidForInMinutes sets the ValidForInMinutes field's value.
+func (s *GrantAccessInput) SetValidForInMinutes(v int64) *GrantAccessInput {
+	s.ValidForInMinutes = &v
+	return s
+}
+
 // Contains the response to a GrantAccess request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/GrantAccessResult
 type GrantAccessOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8875,7 +10749,14 @@ func (s GrantAccessOutput) GoString() string {
 	return s.String()
 }
 
+// SetTemporaryCredential sets the TemporaryCredential field's value.
+func (s *GrantAccessOutput) SetTemporaryCredential(v *TemporaryCredential) *GrantAccessOutput {
+	s.TemporaryCredential = v
+	return s
+}
+
 // Describes an instance.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/Instance
 type Instance struct {
 	_ struct{} `type:"structure"`
 
@@ -9053,8 +10934,249 @@ func (s Instance) GoString() string {
 	return s.String()
 }
 
+// SetAgentVersion sets the AgentVersion field's value.
+func (s *Instance) SetAgentVersion(v string) *Instance {
+	s.AgentVersion = &v
+	return s
+}
+
+// SetAmiId sets the AmiId field's value.
+func (s *Instance) SetAmiId(v string) *Instance {
+	s.AmiId = &v
+	return s
+}
+
+// SetArchitecture sets the Architecture field's value.
+func (s *Instance) SetArchitecture(v string) *Instance {
+	s.Architecture = &v
+	return s
+}
+
+// SetAutoScalingType sets the AutoScalingType field's value.
+func (s *Instance) SetAutoScalingType(v string) *Instance {
+	s.AutoScalingType = &v
+	return s
+}
+
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *Instance) SetAvailabilityZone(v string) *Instance {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetBlockDeviceMappings sets the BlockDeviceMappings field's value.
+func (s *Instance) SetBlockDeviceMappings(v []*BlockDeviceMapping) *Instance {
+	s.BlockDeviceMappings = v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *Instance) SetCreatedAt(v string) *Instance {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetEbsOptimized sets the EbsOptimized field's value.
+func (s *Instance) SetEbsOptimized(v bool) *Instance {
+	s.EbsOptimized = &v
+	return s
+}
+
+// SetEc2InstanceId sets the Ec2InstanceId field's value.
+func (s *Instance) SetEc2InstanceId(v string) *Instance {
+	s.Ec2InstanceId = &v
+	return s
+}
+
+// SetEcsClusterArn sets the EcsClusterArn field's value.
+func (s *Instance) SetEcsClusterArn(v string) *Instance {
+	s.EcsClusterArn = &v
+	return s
+}
+
+// SetEcsContainerInstanceArn sets the EcsContainerInstanceArn field's value.
+func (s *Instance) SetEcsContainerInstanceArn(v string) *Instance {
+	s.EcsContainerInstanceArn = &v
+	return s
+}
+
+// SetElasticIp sets the ElasticIp field's value.
+func (s *Instance) SetElasticIp(v string) *Instance {
+	s.ElasticIp = &v
+	return s
+}
+
+// SetHostname sets the Hostname field's value.
+func (s *Instance) SetHostname(v string) *Instance {
+	s.Hostname = &v
+	return s
+}
+
+// SetInfrastructureClass sets the InfrastructureClass field's value.
+func (s *Instance) SetInfrastructureClass(v string) *Instance {
+	s.InfrastructureClass = &v
+	return s
+}
+
+// SetInstallUpdatesOnBoot sets the InstallUpdatesOnBoot field's value.
+func (s *Instance) SetInstallUpdatesOnBoot(v bool) *Instance {
+	s.InstallUpdatesOnBoot = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *Instance) SetInstanceId(v string) *Instance {
+	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceProfileArn sets the InstanceProfileArn field's value.
+func (s *Instance) SetInstanceProfileArn(v string) *Instance {
+	s.InstanceProfileArn = &v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *Instance) SetInstanceType(v string) *Instance {
+	s.InstanceType = &v
+	return s
+}
+
+// SetLastServiceErrorId sets the LastServiceErrorId field's value.
+func (s *Instance) SetLastServiceErrorId(v string) *Instance {
+	s.LastServiceErrorId = &v
+	return s
+}
+
+// SetLayerIds sets the LayerIds field's value.
+func (s *Instance) SetLayerIds(v []*string) *Instance {
+	s.LayerIds = v
+	return s
+}
+
+// SetOs sets the Os field's value.
+func (s *Instance) SetOs(v string) *Instance {
+	s.Os = &v
+	return s
+}
+
+// SetPlatform sets the Platform field's value.
+func (s *Instance) SetPlatform(v string) *Instance {
+	s.Platform = &v
+	return s
+}
+
+// SetPrivateDns sets the PrivateDns field's value.
+func (s *Instance) SetPrivateDns(v string) *Instance {
+	s.PrivateDns = &v
+	return s
+}
+
+// SetPrivateIp sets the PrivateIp field's value.
+func (s *Instance) SetPrivateIp(v string) *Instance {
+	s.PrivateIp = &v
+	return s
+}
+
+// SetPublicDns sets the PublicDns field's value.
+func (s *Instance) SetPublicDns(v string) *Instance {
+	s.PublicDns = &v
+	return s
+}
+
+// SetPublicIp sets the PublicIp field's value.
+func (s *Instance) SetPublicIp(v string) *Instance {
+	s.PublicIp = &v
+	return s
+}
+
+// SetRegisteredBy sets the RegisteredBy field's value.
+func (s *Instance) SetRegisteredBy(v string) *Instance {
+	s.RegisteredBy = &v
+	return s
+}
+
+// SetReportedAgentVersion sets the ReportedAgentVersion field's value.
+func (s *Instance) SetReportedAgentVersion(v string) *Instance {
+	s.ReportedAgentVersion = &v
+	return s
+}
+
+// SetReportedOs sets the ReportedOs field's value.
+func (s *Instance) SetReportedOs(v *ReportedOs) *Instance {
+	s.ReportedOs = v
+	return s
+}
+
+// SetRootDeviceType sets the RootDeviceType field's value.
+func (s *Instance) SetRootDeviceType(v string) *Instance {
+	s.RootDeviceType = &v
+	return s
+}
+
+// SetRootDeviceVolumeId sets the RootDeviceVolumeId field's value.
+func (s *Instance) SetRootDeviceVolumeId(v string) *Instance {
+	s.RootDeviceVolumeId = &v
+	return s
+}
+
+// SetSecurityGroupIds sets the SecurityGroupIds field's value.
+func (s *Instance) SetSecurityGroupIds(v []*string) *Instance {
+	s.SecurityGroupIds = v
+	return s
+}
+
+// SetSshHostDsaKeyFingerprint sets the SshHostDsaKeyFingerprint field's value.
+func (s *Instance) SetSshHostDsaKeyFingerprint(v string) *Instance {
+	s.SshHostDsaKeyFingerprint = &v
+	return s
+}
+
+// SetSshHostRsaKeyFingerprint sets the SshHostRsaKeyFingerprint field's value.
+func (s *Instance) SetSshHostRsaKeyFingerprint(v string) *Instance {
+	s.SshHostRsaKeyFingerprint = &v
+	return s
+}
+
+// SetSshKeyName sets the SshKeyName field's value.
+func (s *Instance) SetSshKeyName(v string) *Instance {
+	s.SshKeyName = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *Instance) SetStackId(v string) *Instance {
+	s.StackId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Instance) SetStatus(v string) *Instance {
+	s.Status = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *Instance) SetSubnetId(v string) *Instance {
+	s.SubnetId = &v
+	return s
+}
+
+// SetTenancy sets the Tenancy field's value.
+func (s *Instance) SetTenancy(v string) *Instance {
+	s.Tenancy = &v
+	return s
+}
+
+// SetVirtualizationType sets the VirtualizationType field's value.
+func (s *Instance) SetVirtualizationType(v string) *Instance {
+	s.VirtualizationType = &v
+	return s
+}
+
 // Contains a description of an Amazon EC2 instance from the Amazon EC2 metadata
 // service. For more information, see Instance Metadata and User Data (http://docs.aws.amazon.com/sdkfornet/latest/apidocs/Index.html).
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/InstanceIdentity
 type InstanceIdentity struct {
 	_ struct{} `type:"structure"`
 
@@ -9075,7 +11197,20 @@ func (s InstanceIdentity) GoString() string {
 	return s.String()
 }
 
+// SetDocument sets the Document field's value.
+func (s *InstanceIdentity) SetDocument(v string) *InstanceIdentity {
+	s.Document = &v
+	return s
+}
+
+// SetSignature sets the Signature field's value.
+func (s *InstanceIdentity) SetSignature(v string) *InstanceIdentity {
+	s.Signature = &v
+	return s
+}
+
 // Describes how many instances a stack has for each status.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/InstancesCount
 type InstancesCount struct {
 	_ struct{} `type:"structure"`
 
@@ -9147,7 +11282,122 @@ func (s InstancesCount) GoString() string {
 	return s.String()
 }
 
+// SetAssigning sets the Assigning field's value.
+func (s *InstancesCount) SetAssigning(v int64) *InstancesCount {
+	s.Assigning = &v
+	return s
+}
+
+// SetBooting sets the Booting field's value.
+func (s *InstancesCount) SetBooting(v int64) *InstancesCount {
+	s.Booting = &v
+	return s
+}
+
+// SetConnectionLost sets the ConnectionLost field's value.
+func (s *InstancesCount) SetConnectionLost(v int64) *InstancesCount {
+	s.ConnectionLost = &v
+	return s
+}
+
+// SetDeregistering sets the Deregistering field's value.
+func (s *InstancesCount) SetDeregistering(v int64) *InstancesCount {
+	s.Deregistering = &v
+	return s
+}
+
+// SetOnline sets the Online field's value.
+func (s *InstancesCount) SetOnline(v int64) *InstancesCount {
+	s.Online = &v
+	return s
+}
+
+// SetPending sets the Pending field's value.
+func (s *InstancesCount) SetPending(v int64) *InstancesCount {
+	s.Pending = &v
+	return s
+}
+
+// SetRebooting sets the Rebooting field's value.
+func (s *InstancesCount) SetRebooting(v int64) *InstancesCount {
+	s.Rebooting = &v
+	return s
+}
+
+// SetRegistered sets the Registered field's value.
+func (s *InstancesCount) SetRegistered(v int64) *InstancesCount {
+	s.Registered = &v
+	return s
+}
+
+// SetRegistering sets the Registering field's value.
+func (s *InstancesCount) SetRegistering(v int64) *InstancesCount {
+	s.Registering = &v
+	return s
+}
+
+// SetRequested sets the Requested field's value.
+func (s *InstancesCount) SetRequested(v int64) *InstancesCount {
+	s.Requested = &v
+	return s
+}
+
+// SetRunningSetup sets the RunningSetup field's value.
+func (s *InstancesCount) SetRunningSetup(v int64) *InstancesCount {
+	s.RunningSetup = &v
+	return s
+}
+
+// SetSetupFailed sets the SetupFailed field's value.
+func (s *InstancesCount) SetSetupFailed(v int64) *InstancesCount {
+	s.SetupFailed = &v
+	return s
+}
+
+// SetShuttingDown sets the ShuttingDown field's value.
+func (s *InstancesCount) SetShuttingDown(v int64) *InstancesCount {
+	s.ShuttingDown = &v
+	return s
+}
+
+// SetStartFailed sets the StartFailed field's value.
+func (s *InstancesCount) SetStartFailed(v int64) *InstancesCount {
+	s.StartFailed = &v
+	return s
+}
+
+// SetStopped sets the Stopped field's value.
+func (s *InstancesCount) SetStopped(v int64) *InstancesCount {
+	s.Stopped = &v
+	return s
+}
+
+// SetStopping sets the Stopping field's value.
+func (s *InstancesCount) SetStopping(v int64) *InstancesCount {
+	s.Stopping = &v
+	return s
+}
+
+// SetTerminated sets the Terminated field's value.
+func (s *InstancesCount) SetTerminated(v int64) *InstancesCount {
+	s.Terminated = &v
+	return s
+}
+
+// SetTerminating sets the Terminating field's value.
+func (s *InstancesCount) SetTerminating(v int64) *InstancesCount {
+	s.Terminating = &v
+	return s
+}
+
+// SetUnassigning sets the Unassigning field's value.
+func (s *InstancesCount) SetUnassigning(v int64) *InstancesCount {
+	s.Unassigning = &v
+	return s
+}
+
 // Describes a layer.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/Layer
 type Layer struct {
 	_ struct{} `type:"structure"`
 
@@ -9253,7 +11503,134 @@ func (s Layer) GoString() string {
 	return s.String()
 }
 
+// SetAttributes sets the Attributes field's value.
+func (s *Layer) SetAttributes(v map[string]*string) *Layer {
+	s.Attributes = v
+	return s
+}
+
+// SetAutoAssignElasticIps sets the AutoAssignElasticIps field's value.
+func (s *Layer) SetAutoAssignElasticIps(v bool) *Layer {
+	s.AutoAssignElasticIps = &v
+	return s
+}
+
+// SetAutoAssignPublicIps sets the AutoAssignPublicIps field's value.
+func (s *Layer) SetAutoAssignPublicIps(v bool) *Layer {
+	s.AutoAssignPublicIps = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *Layer) SetCreatedAt(v string) *Layer {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetCustomInstanceProfileArn sets the CustomInstanceProfileArn field's value.
+func (s *Layer) SetCustomInstanceProfileArn(v string) *Layer {
+	s.CustomInstanceProfileArn = &v
+	return s
+}
+
+// SetCustomJson sets the CustomJson field's value.
+func (s *Layer) SetCustomJson(v string) *Layer {
+	s.CustomJson = &v
+	return s
+}
+
+// SetCustomRecipes sets the CustomRecipes field's value.
+func (s *Layer) SetCustomRecipes(v *Recipes) *Layer {
+	s.CustomRecipes = v
+	return s
+}
+
+// SetCustomSecurityGroupIds sets the CustomSecurityGroupIds field's value.
+func (s *Layer) SetCustomSecurityGroupIds(v []*string) *Layer {
+	s.CustomSecurityGroupIds = v
+	return s
+}
+
+// SetDefaultRecipes sets the DefaultRecipes field's value.
+func (s *Layer) SetDefaultRecipes(v *Recipes) *Layer {
+	s.DefaultRecipes = v
+	return s
+}
+
+// SetDefaultSecurityGroupNames sets the DefaultSecurityGroupNames field's value.
+func (s *Layer) SetDefaultSecurityGroupNames(v []*string) *Layer {
+	s.DefaultSecurityGroupNames = v
+	return s
+}
+
+// SetEnableAutoHealing sets the EnableAutoHealing field's value.
+func (s *Layer) SetEnableAutoHealing(v bool) *Layer {
+	s.EnableAutoHealing = &v
+	return s
+}
+
+// SetInstallUpdatesOnBoot sets the InstallUpdatesOnBoot field's value.
+func (s *Layer) SetInstallUpdatesOnBoot(v bool) *Layer {
+	s.InstallUpdatesOnBoot = &v
+	return s
+}
+
+// SetLayerId sets the LayerId field's value.
+func (s *Layer) SetLayerId(v string) *Layer {
+	s.LayerId = &v
+	return s
+}
+
+// SetLifecycleEventConfiguration sets the LifecycleEventConfiguration field's value.
+func (s *Layer) SetLifecycleEventConfiguration(v *LifecycleEventConfiguration) *Layer {
+	s.LifecycleEventConfiguration = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Layer) SetName(v string) *Layer {
+	s.Name = &v
+	return s
+}
+
+// SetPackages sets the Packages field's value.
+func (s *Layer) SetPackages(v []*string) *Layer {
+	s.Packages = v
+	return s
+}
+
+// SetShortname sets the Shortname field's value.
+func (s *Layer) SetShortname(v string) *Layer {
+	s.Shortname = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *Layer) SetStackId(v string) *Layer {
+	s.StackId = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *Layer) SetType(v string) *Layer {
+	s.Type = &v
+	return s
+}
+
+// SetUseEbsOptimizedInstances sets the UseEbsOptimizedInstances field's value.
+func (s *Layer) SetUseEbsOptimizedInstances(v bool) *Layer {
+	s.UseEbsOptimizedInstances = &v
+	return s
+}
+
+// SetVolumeConfigurations sets the VolumeConfigurations field's value.
+func (s *Layer) SetVolumeConfigurations(v []*VolumeConfiguration) *Layer {
+	s.VolumeConfigurations = v
+	return s
+}
+
 // Specifies the lifecycle event configuration
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/LifecycleEventConfiguration
 type LifecycleEventConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -9271,7 +11648,14 @@ func (s LifecycleEventConfiguration) GoString() string {
 	return s.String()
 }
 
+// SetShutdown sets the Shutdown field's value.
+func (s *LifecycleEventConfiguration) SetShutdown(v *ShutdownEventConfiguration) *LifecycleEventConfiguration {
+	s.Shutdown = v
+	return s
+}
+
 // Describes a layer's load-based auto scaling configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/LoadBasedAutoScalingConfiguration
 type LoadBasedAutoScalingConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -9300,7 +11684,32 @@ func (s LoadBasedAutoScalingConfiguration) GoString() string {
 	return s.String()
 }
 
+// SetDownScaling sets the DownScaling field's value.
+func (s *LoadBasedAutoScalingConfiguration) SetDownScaling(v *AutoScalingThresholds) *LoadBasedAutoScalingConfiguration {
+	s.DownScaling = v
+	return s
+}
+
+// SetEnable sets the Enable field's value.
+func (s *LoadBasedAutoScalingConfiguration) SetEnable(v bool) *LoadBasedAutoScalingConfiguration {
+	s.Enable = &v
+	return s
+}
+
+// SetLayerId sets the LayerId field's value.
+func (s *LoadBasedAutoScalingConfiguration) SetLayerId(v string) *LoadBasedAutoScalingConfiguration {
+	s.LayerId = &v
+	return s
+}
+
+// SetUpScaling sets the UpScaling field's value.
+func (s *LoadBasedAutoScalingConfiguration) SetUpScaling(v *AutoScalingThresholds) *LoadBasedAutoScalingConfiguration {
+	s.UpScaling = v
+	return s
+}
+
 // Describes stack or user permissions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/Permission
 type Permission struct {
 	_ struct{} `type:"structure"`
 
@@ -9344,7 +11753,38 @@ func (s Permission) GoString() string {
 	return s.String()
 }
 
+// SetAllowSsh sets the AllowSsh field's value.
+func (s *Permission) SetAllowSsh(v bool) *Permission {
+	s.AllowSsh = &v
+	return s
+}
+
+// SetAllowSudo sets the AllowSudo field's value.
+func (s *Permission) SetAllowSudo(v bool) *Permission {
+	s.AllowSudo = &v
+	return s
+}
+
+// SetIamUserArn sets the IamUserArn field's value.
+func (s *Permission) SetIamUserArn(v string) *Permission {
+	s.IamUserArn = &v
+	return s
+}
+
+// SetLevel sets the Level field's value.
+func (s *Permission) SetLevel(v string) *Permission {
+	s.Level = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *Permission) SetStackId(v string) *Permission {
+	s.StackId = &v
+	return s
+}
+
 // Describes an instance's RAID array.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RaidArray
 type RaidArray struct {
 	_ struct{} `type:"structure"`
 
@@ -9399,7 +11839,86 @@ func (s RaidArray) GoString() string {
 	return s.String()
 }
 
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *RaidArray) SetAvailabilityZone(v string) *RaidArray {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *RaidArray) SetCreatedAt(v string) *RaidArray {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetDevice sets the Device field's value.
+func (s *RaidArray) SetDevice(v string) *RaidArray {
+	s.Device = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *RaidArray) SetInstanceId(v string) *RaidArray {
+	s.InstanceId = &v
+	return s
+}
+
+// SetIops sets the Iops field's value.
+func (s *RaidArray) SetIops(v int64) *RaidArray {
+	s.Iops = &v
+	return s
+}
+
+// SetMountPoint sets the MountPoint field's value.
+func (s *RaidArray) SetMountPoint(v string) *RaidArray {
+	s.MountPoint = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *RaidArray) SetName(v string) *RaidArray {
+	s.Name = &v
+	return s
+}
+
+// SetNumberOfDisks sets the NumberOfDisks field's value.
+func (s *RaidArray) SetNumberOfDisks(v int64) *RaidArray {
+	s.NumberOfDisks = &v
+	return s
+}
+
+// SetRaidArrayId sets the RaidArrayId field's value.
+func (s *RaidArray) SetRaidArrayId(v string) *RaidArray {
+	s.RaidArrayId = &v
+	return s
+}
+
+// SetRaidLevel sets the RaidLevel field's value.
+func (s *RaidArray) SetRaidLevel(v int64) *RaidArray {
+	s.RaidLevel = &v
+	return s
+}
+
+// SetSize sets the Size field's value.
+func (s *RaidArray) SetSize(v int64) *RaidArray {
+	s.Size = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *RaidArray) SetStackId(v string) *RaidArray {
+	s.StackId = &v
+	return s
+}
+
+// SetVolumeType sets the VolumeType field's value.
+func (s *RaidArray) SetVolumeType(v string) *RaidArray {
+	s.VolumeType = &v
+	return s
+}
+
 // Describes an Amazon RDS instance.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RdsDbInstance
 type RdsDbInstance struct {
 	_ struct{} `type:"structure"`
 
@@ -9443,6 +11962,61 @@ func (s RdsDbInstance) GoString() string {
 	return s.String()
 }
 
+// SetAddress sets the Address field's value.
+func (s *RdsDbInstance) SetAddress(v string) *RdsDbInstance {
+	s.Address = &v
+	return s
+}
+
+// SetDbInstanceIdentifier sets the DbInstanceIdentifier field's value.
+func (s *RdsDbInstance) SetDbInstanceIdentifier(v string) *RdsDbInstance {
+	s.DbInstanceIdentifier = &v
+	return s
+}
+
+// SetDbPassword sets the DbPassword field's value.
+func (s *RdsDbInstance) SetDbPassword(v string) *RdsDbInstance {
+	s.DbPassword = &v
+	return s
+}
+
+// SetDbUser sets the DbUser field's value.
+func (s *RdsDbInstance) SetDbUser(v string) *RdsDbInstance {
+	s.DbUser = &v
+	return s
+}
+
+// SetEngine sets the Engine field's value.
+func (s *RdsDbInstance) SetEngine(v string) *RdsDbInstance {
+	s.Engine = &v
+	return s
+}
+
+// SetMissingOnRds sets the MissingOnRds field's value.
+func (s *RdsDbInstance) SetMissingOnRds(v bool) *RdsDbInstance {
+	s.MissingOnRds = &v
+	return s
+}
+
+// SetRdsDbInstanceArn sets the RdsDbInstanceArn field's value.
+func (s *RdsDbInstance) SetRdsDbInstanceArn(v string) *RdsDbInstance {
+	s.RdsDbInstanceArn = &v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *RdsDbInstance) SetRegion(v string) *RdsDbInstance {
+	s.Region = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *RdsDbInstance) SetStackId(v string) *RdsDbInstance {
+	s.StackId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RebootInstanceRequest
 type RebootInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9475,6 +12049,13 @@ func (s *RebootInstanceInput) Validate() error {
 	return nil
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *RebootInstanceInput) SetInstanceId(v string) *RebootInstanceInput {
+	s.InstanceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RebootInstanceOutput
 type RebootInstanceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -9500,6 +12081,7 @@ func (s RebootInstanceOutput) GoString() string {
 // followed by two colons and the recipe name, which is the recipe's file name
 // without the .rb extension. For example: phpapp2::dbsetup specifies the dbsetup.rb
 // recipe in the repository's phpapp2 folder.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/Recipes
 type Recipes struct {
 	_ struct{} `type:"structure"`
 
@@ -9529,6 +12111,37 @@ func (s Recipes) GoString() string {
 	return s.String()
 }
 
+// SetConfigure sets the Configure field's value.
+func (s *Recipes) SetConfigure(v []*string) *Recipes {
+	s.Configure = v
+	return s
+}
+
+// SetDeploy sets the Deploy field's value.
+func (s *Recipes) SetDeploy(v []*string) *Recipes {
+	s.Deploy = v
+	return s
+}
+
+// SetSetup sets the Setup field's value.
+func (s *Recipes) SetSetup(v []*string) *Recipes {
+	s.Setup = v
+	return s
+}
+
+// SetShutdown sets the Shutdown field's value.
+func (s *Recipes) SetShutdown(v []*string) *Recipes {
+	s.Shutdown = v
+	return s
+}
+
+// SetUndeploy sets the Undeploy field's value.
+func (s *Recipes) SetUndeploy(v []*string) *Recipes {
+	s.Undeploy = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterEcsClusterRequest
 type RegisterEcsClusterInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9569,7 +12182,20 @@ func (s *RegisterEcsClusterInput) Validate() error {
 	return nil
 }
 
+// SetEcsClusterArn sets the EcsClusterArn field's value.
+func (s *RegisterEcsClusterInput) SetEcsClusterArn(v string) *RegisterEcsClusterInput {
+	s.EcsClusterArn = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *RegisterEcsClusterInput) SetStackId(v string) *RegisterEcsClusterInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a RegisterEcsCluster request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterEcsClusterResult
 type RegisterEcsClusterOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -9587,6 +12213,13 @@ func (s RegisterEcsClusterOutput) GoString() string {
 	return s.String()
 }
 
+// SetEcsClusterArn sets the EcsClusterArn field's value.
+func (s *RegisterEcsClusterOutput) SetEcsClusterArn(v string) *RegisterEcsClusterOutput {
+	s.EcsClusterArn = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterElasticIpRequest
 type RegisterElasticIpInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9627,7 +12260,20 @@ func (s *RegisterElasticIpInput) Validate() error {
 	return nil
 }
 
+// SetElasticIp sets the ElasticIp field's value.
+func (s *RegisterElasticIpInput) SetElasticIp(v string) *RegisterElasticIpInput {
+	s.ElasticIp = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *RegisterElasticIpInput) SetStackId(v string) *RegisterElasticIpInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a RegisterElasticIp request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterElasticIpResult
 type RegisterElasticIpOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -9645,6 +12291,13 @@ func (s RegisterElasticIpOutput) GoString() string {
 	return s.String()
 }
 
+// SetElasticIp sets the ElasticIp field's value.
+func (s *RegisterElasticIpOutput) SetElasticIp(v string) *RegisterElasticIpOutput {
+	s.ElasticIp = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterInstanceRequest
 type RegisterInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9696,7 +12349,50 @@ func (s *RegisterInstanceInput) Validate() error {
 	return nil
 }
 
+// SetHostname sets the Hostname field's value.
+func (s *RegisterInstanceInput) SetHostname(v string) *RegisterInstanceInput {
+	s.Hostname = &v
+	return s
+}
+
+// SetInstanceIdentity sets the InstanceIdentity field's value.
+func (s *RegisterInstanceInput) SetInstanceIdentity(v *InstanceIdentity) *RegisterInstanceInput {
+	s.InstanceIdentity = v
+	return s
+}
+
+// SetPrivateIp sets the PrivateIp field's value.
+func (s *RegisterInstanceInput) SetPrivateIp(v string) *RegisterInstanceInput {
+	s.PrivateIp = &v
+	return s
+}
+
+// SetPublicIp sets the PublicIp field's value.
+func (s *RegisterInstanceInput) SetPublicIp(v string) *RegisterInstanceInput {
+	s.PublicIp = &v
+	return s
+}
+
+// SetRsaPublicKey sets the RsaPublicKey field's value.
+func (s *RegisterInstanceInput) SetRsaPublicKey(v string) *RegisterInstanceInput {
+	s.RsaPublicKey = &v
+	return s
+}
+
+// SetRsaPublicKeyFingerprint sets the RsaPublicKeyFingerprint field's value.
+func (s *RegisterInstanceInput) SetRsaPublicKeyFingerprint(v string) *RegisterInstanceInput {
+	s.RsaPublicKeyFingerprint = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *RegisterInstanceInput) SetStackId(v string) *RegisterInstanceInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a RegisterInstanceResult request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterInstanceResult
 type RegisterInstanceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -9714,6 +12410,13 @@ func (s RegisterInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *RegisterInstanceOutput) SetInstanceId(v string) *RegisterInstanceOutput {
+	s.InstanceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterRdsDbInstanceRequest
 type RegisterRdsDbInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9770,6 +12473,31 @@ func (s *RegisterRdsDbInstanceInput) Validate() error {
 	return nil
 }
 
+// SetDbPassword sets the DbPassword field's value.
+func (s *RegisterRdsDbInstanceInput) SetDbPassword(v string) *RegisterRdsDbInstanceInput {
+	s.DbPassword = &v
+	return s
+}
+
+// SetDbUser sets the DbUser field's value.
+func (s *RegisterRdsDbInstanceInput) SetDbUser(v string) *RegisterRdsDbInstanceInput {
+	s.DbUser = &v
+	return s
+}
+
+// SetRdsDbInstanceArn sets the RdsDbInstanceArn field's value.
+func (s *RegisterRdsDbInstanceInput) SetRdsDbInstanceArn(v string) *RegisterRdsDbInstanceInput {
+	s.RdsDbInstanceArn = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *RegisterRdsDbInstanceInput) SetStackId(v string) *RegisterRdsDbInstanceInput {
+	s.StackId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterRdsDbInstanceOutput
 type RegisterRdsDbInstanceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -9784,6 +12512,7 @@ func (s RegisterRdsDbInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterVolumeRequest
 type RegisterVolumeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9819,7 +12548,20 @@ func (s *RegisterVolumeInput) Validate() error {
 	return nil
 }
 
+// SetEc2VolumeId sets the Ec2VolumeId field's value.
+func (s *RegisterVolumeInput) SetEc2VolumeId(v string) *RegisterVolumeInput {
+	s.Ec2VolumeId = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *RegisterVolumeInput) SetStackId(v string) *RegisterVolumeInput {
+	s.StackId = &v
+	return s
+}
+
 // Contains the response to a RegisterVolume request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterVolumeResult
 type RegisterVolumeOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -9837,7 +12579,14 @@ func (s RegisterVolumeOutput) GoString() string {
 	return s.String()
 }
 
+// SetVolumeId sets the VolumeId field's value.
+func (s *RegisterVolumeOutput) SetVolumeId(v string) *RegisterVolumeOutput {
+	s.VolumeId = &v
+	return s
+}
+
 // A registered instance's reported operating system.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/ReportedOs
 type ReportedOs struct {
 	_ struct{} `type:"structure"`
 
@@ -9861,7 +12610,26 @@ func (s ReportedOs) GoString() string {
 	return s.String()
 }
 
+// SetFamily sets the Family field's value.
+func (s *ReportedOs) SetFamily(v string) *ReportedOs {
+	s.Family = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ReportedOs) SetName(v string) *ReportedOs {
+	s.Name = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *ReportedOs) SetVersion(v string) *ReportedOs {
+	s.Version = &v
+	return s
+}
+
 // Describes a user's SSH information.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SelfUserProfile
 type SelfUserProfile struct {
 	_ struct{} `type:"structure"`
 
@@ -9888,7 +12656,32 @@ func (s SelfUserProfile) GoString() string {
 	return s.String()
 }
 
+// SetIamUserArn sets the IamUserArn field's value.
+func (s *SelfUserProfile) SetIamUserArn(v string) *SelfUserProfile {
+	s.IamUserArn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *SelfUserProfile) SetName(v string) *SelfUserProfile {
+	s.Name = &v
+	return s
+}
+
+// SetSshPublicKey sets the SshPublicKey field's value.
+func (s *SelfUserProfile) SetSshPublicKey(v string) *SelfUserProfile {
+	s.SshPublicKey = &v
+	return s
+}
+
+// SetSshUsername sets the SshUsername field's value.
+func (s *SelfUserProfile) SetSshUsername(v string) *SelfUserProfile {
+	s.SshUsername = &v
+	return s
+}
+
 // Describes an AWS OpsWorks service error.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/ServiceError
 type ServiceError struct {
 	_ struct{} `type:"structure"`
 
@@ -9921,6 +12714,43 @@ func (s ServiceError) GoString() string {
 	return s.String()
 }
 
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *ServiceError) SetCreatedAt(v string) *ServiceError {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *ServiceError) SetInstanceId(v string) *ServiceError {
+	s.InstanceId = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *ServiceError) SetMessage(v string) *ServiceError {
+	s.Message = &v
+	return s
+}
+
+// SetServiceErrorId sets the ServiceErrorId field's value.
+func (s *ServiceError) SetServiceErrorId(v string) *ServiceError {
+	s.ServiceErrorId = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *ServiceError) SetStackId(v string) *ServiceError {
+	s.StackId = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ServiceError) SetType(v string) *ServiceError {
+	s.Type = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetLoadBasedAutoScalingRequest
 type SetLoadBasedAutoScalingInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9976,6 +12806,31 @@ func (s *SetLoadBasedAutoScalingInput) Validate() error {
 	return nil
 }
 
+// SetDownScaling sets the DownScaling field's value.
+func (s *SetLoadBasedAutoScalingInput) SetDownScaling(v *AutoScalingThresholds) *SetLoadBasedAutoScalingInput {
+	s.DownScaling = v
+	return s
+}
+
+// SetEnable sets the Enable field's value.
+func (s *SetLoadBasedAutoScalingInput) SetEnable(v bool) *SetLoadBasedAutoScalingInput {
+	s.Enable = &v
+	return s
+}
+
+// SetLayerId sets the LayerId field's value.
+func (s *SetLoadBasedAutoScalingInput) SetLayerId(v string) *SetLoadBasedAutoScalingInput {
+	s.LayerId = &v
+	return s
+}
+
+// SetUpScaling sets the UpScaling field's value.
+func (s *SetLoadBasedAutoScalingInput) SetUpScaling(v *AutoScalingThresholds) *SetLoadBasedAutoScalingInput {
+	s.UpScaling = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetLoadBasedAutoScalingOutput
 type SetLoadBasedAutoScalingOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -9990,6 +12845,7 @@ func (s SetLoadBasedAutoScalingOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetPermissionRequest
 type SetPermissionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10053,6 +12909,37 @@ func (s *SetPermissionInput) Validate() error {
 	return nil
 }
 
+// SetAllowSsh sets the AllowSsh field's value.
+func (s *SetPermissionInput) SetAllowSsh(v bool) *SetPermissionInput {
+	s.AllowSsh = &v
+	return s
+}
+
+// SetAllowSudo sets the AllowSudo field's value.
+func (s *SetPermissionInput) SetAllowSudo(v bool) *SetPermissionInput {
+	s.AllowSudo = &v
+	return s
+}
+
+// SetIamUserArn sets the IamUserArn field's value.
+func (s *SetPermissionInput) SetIamUserArn(v string) *SetPermissionInput {
+	s.IamUserArn = &v
+	return s
+}
+
+// SetLevel sets the Level field's value.
+func (s *SetPermissionInput) SetLevel(v string) *SetPermissionInput {
+	s.Level = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *SetPermissionInput) SetStackId(v string) *SetPermissionInput {
+	s.StackId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetPermissionOutput
 type SetPermissionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -10067,6 +12954,7 @@ func (s SetPermissionOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetTimeBasedAutoScalingRequest
 type SetTimeBasedAutoScalingInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10102,6 +12990,19 @@ func (s *SetTimeBasedAutoScalingInput) Validate() error {
 	return nil
 }
 
+// SetAutoScalingSchedule sets the AutoScalingSchedule field's value.
+func (s *SetTimeBasedAutoScalingInput) SetAutoScalingSchedule(v *WeeklyAutoScalingSchedule) *SetTimeBasedAutoScalingInput {
+	s.AutoScalingSchedule = v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *SetTimeBasedAutoScalingInput) SetInstanceId(v string) *SetTimeBasedAutoScalingInput {
+	s.InstanceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetTimeBasedAutoScalingOutput
 type SetTimeBasedAutoScalingOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -10117,6 +13018,7 @@ func (s SetTimeBasedAutoScalingOutput) GoString() string {
 }
 
 // The Shutdown event configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/ShutdownEventConfiguration
 type ShutdownEventConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -10139,9 +13041,22 @@ func (s ShutdownEventConfiguration) GoString() string {
 	return s.String()
 }
 
+// SetDelayUntilElbConnectionsDrained sets the DelayUntilElbConnectionsDrained field's value.
+func (s *ShutdownEventConfiguration) SetDelayUntilElbConnectionsDrained(v bool) *ShutdownEventConfiguration {
+	s.DelayUntilElbConnectionsDrained = &v
+	return s
+}
+
+// SetExecutionTimeout sets the ExecutionTimeout field's value.
+func (s *ShutdownEventConfiguration) SetExecutionTimeout(v int64) *ShutdownEventConfiguration {
+	s.ExecutionTimeout = &v
+	return s
+}
+
 // Contains the information required to retrieve an app or cookbook from a repository.
 // For more information, see Creating Apps (http://docs.aws.amazon.com/opsworks/latest/userguide/workingapps-creating.html)
 // or Custom Recipes and Cookbooks (http://docs.aws.amazon.com/opsworks/latest/userguide/workingcookbook.html).
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/Source
 type Source struct {
 	_ struct{} `type:"structure"`
 
@@ -10197,7 +13112,44 @@ func (s Source) GoString() string {
 	return s.String()
 }
 
+// SetPassword sets the Password field's value.
+func (s *Source) SetPassword(v string) *Source {
+	s.Password = &v
+	return s
+}
+
+// SetRevision sets the Revision field's value.
+func (s *Source) SetRevision(v string) *Source {
+	s.Revision = &v
+	return s
+}
+
+// SetSshKey sets the SshKey field's value.
+func (s *Source) SetSshKey(v string) *Source {
+	s.SshKey = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *Source) SetType(v string) *Source {
+	s.Type = &v
+	return s
+}
+
+// SetUrl sets the Url field's value.
+func (s *Source) SetUrl(v string) *Source {
+	s.Url = &v
+	return s
+}
+
+// SetUsername sets the Username field's value.
+func (s *Source) SetUsername(v string) *Source {
+	s.Username = &v
+	return s
+}
+
 // Describes an app's SSL configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SslConfiguration
 type SslConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -10242,7 +13194,26 @@ func (s *SslConfiguration) Validate() error {
 	return nil
 }
 
+// SetCertificate sets the Certificate field's value.
+func (s *SslConfiguration) SetCertificate(v string) *SslConfiguration {
+	s.Certificate = &v
+	return s
+}
+
+// SetChain sets the Chain field's value.
+func (s *SslConfiguration) SetChain(v string) *SslConfiguration {
+	s.Chain = &v
+	return s
+}
+
+// SetPrivateKey sets the PrivateKey field's value.
+func (s *SslConfiguration) SetPrivateKey(v string) *SslConfiguration {
+	s.PrivateKey = &v
+	return s
+}
+
 // Describes a stack.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/Stack
 type Stack struct {
 	_ struct{} `type:"structure"`
 
@@ -10343,7 +13314,140 @@ func (s Stack) GoString() string {
 	return s.String()
 }
 
+// SetAgentVersion sets the AgentVersion field's value.
+func (s *Stack) SetAgentVersion(v string) *Stack {
+	s.AgentVersion = &v
+	return s
+}
+
+// SetArn sets the Arn field's value.
+func (s *Stack) SetArn(v string) *Stack {
+	s.Arn = &v
+	return s
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *Stack) SetAttributes(v map[string]*string) *Stack {
+	s.Attributes = v
+	return s
+}
+
+// SetChefConfiguration sets the ChefConfiguration field's value.
+func (s *Stack) SetChefConfiguration(v *ChefConfiguration) *Stack {
+	s.ChefConfiguration = v
+	return s
+}
+
+// SetConfigurationManager sets the ConfigurationManager field's value.
+func (s *Stack) SetConfigurationManager(v *StackConfigurationManager) *Stack {
+	s.ConfigurationManager = v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *Stack) SetCreatedAt(v string) *Stack {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetCustomCookbooksSource sets the CustomCookbooksSource field's value.
+func (s *Stack) SetCustomCookbooksSource(v *Source) *Stack {
+	s.CustomCookbooksSource = v
+	return s
+}
+
+// SetCustomJson sets the CustomJson field's value.
+func (s *Stack) SetCustomJson(v string) *Stack {
+	s.CustomJson = &v
+	return s
+}
+
+// SetDefaultAvailabilityZone sets the DefaultAvailabilityZone field's value.
+func (s *Stack) SetDefaultAvailabilityZone(v string) *Stack {
+	s.DefaultAvailabilityZone = &v
+	return s
+}
+
+// SetDefaultInstanceProfileArn sets the DefaultInstanceProfileArn field's value.
+func (s *Stack) SetDefaultInstanceProfileArn(v string) *Stack {
+	s.DefaultInstanceProfileArn = &v
+	return s
+}
+
+// SetDefaultOs sets the DefaultOs field's value.
+func (s *Stack) SetDefaultOs(v string) *Stack {
+	s.DefaultOs = &v
+	return s
+}
+
+// SetDefaultRootDeviceType sets the DefaultRootDeviceType field's value.
+func (s *Stack) SetDefaultRootDeviceType(v string) *Stack {
+	s.DefaultRootDeviceType = &v
+	return s
+}
+
+// SetDefaultSshKeyName sets the DefaultSshKeyName field's value.
+func (s *Stack) SetDefaultSshKeyName(v string) *Stack {
+	s.DefaultSshKeyName = &v
+	return s
+}
+
+// SetDefaultSubnetId sets the DefaultSubnetId field's value.
+func (s *Stack) SetDefaultSubnetId(v string) *Stack {
+	s.DefaultSubnetId = &v
+	return s
+}
+
+// SetHostnameTheme sets the HostnameTheme field's value.
+func (s *Stack) SetHostnameTheme(v string) *Stack {
+	s.HostnameTheme = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Stack) SetName(v string) *Stack {
+	s.Name = &v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *Stack) SetRegion(v string) *Stack {
+	s.Region = &v
+	return s
+}
+
+// SetServiceRoleArn sets the ServiceRoleArn field's value.
+func (s *Stack) SetServiceRoleArn(v string) *Stack {
+	s.ServiceRoleArn = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *Stack) SetStackId(v string) *Stack {
+	s.StackId = &v
+	return s
+}
+
+// SetUseCustomCookbooks sets the UseCustomCookbooks field's value.
+func (s *Stack) SetUseCustomCookbooks(v bool) *Stack {
+	s.UseCustomCookbooks = &v
+	return s
+}
+
+// SetUseOpsworksSecurityGroups sets the UseOpsworksSecurityGroups field's value.
+func (s *Stack) SetUseOpsworksSecurityGroups(v bool) *Stack {
+	s.UseOpsworksSecurityGroups = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *Stack) SetVpcId(v string) *Stack {
+	s.VpcId = &v
+	return s
+}
+
 // Describes the configuration manager.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StackConfigurationManager
 type StackConfigurationManager struct {
 	_ struct{} `type:"structure"`
 
@@ -10366,7 +13470,20 @@ func (s StackConfigurationManager) GoString() string {
 	return s.String()
 }
 
+// SetName sets the Name field's value.
+func (s *StackConfigurationManager) SetName(v string) *StackConfigurationManager {
+	s.Name = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *StackConfigurationManager) SetVersion(v string) *StackConfigurationManager {
+	s.Version = &v
+	return s
+}
+
 // Summarizes the number of layers, instances, and apps in a stack.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StackSummary
 type StackSummary struct {
 	_ struct{} `type:"structure"`
 
@@ -10399,6 +13516,43 @@ func (s StackSummary) GoString() string {
 	return s.String()
 }
 
+// SetAppsCount sets the AppsCount field's value.
+func (s *StackSummary) SetAppsCount(v int64) *StackSummary {
+	s.AppsCount = &v
+	return s
+}
+
+// SetArn sets the Arn field's value.
+func (s *StackSummary) SetArn(v string) *StackSummary {
+	s.Arn = &v
+	return s
+}
+
+// SetInstancesCount sets the InstancesCount field's value.
+func (s *StackSummary) SetInstancesCount(v *InstancesCount) *StackSummary {
+	s.InstancesCount = v
+	return s
+}
+
+// SetLayersCount sets the LayersCount field's value.
+func (s *StackSummary) SetLayersCount(v int64) *StackSummary {
+	s.LayersCount = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *StackSummary) SetName(v string) *StackSummary {
+	s.Name = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *StackSummary) SetStackId(v string) *StackSummary {
+	s.StackId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StartInstanceRequest
 type StartInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10431,6 +13585,13 @@ func (s *StartInstanceInput) Validate() error {
 	return nil
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *StartInstanceInput) SetInstanceId(v string) *StartInstanceInput {
+	s.InstanceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StartInstanceOutput
 type StartInstanceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -10445,6 +13606,7 @@ func (s StartInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StartStackRequest
 type StartStackInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10477,6 +13639,13 @@ func (s *StartStackInput) Validate() error {
 	return nil
 }
 
+// SetStackId sets the StackId field's value.
+func (s *StartStackInput) SetStackId(v string) *StartStackInput {
+	s.StackId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StartStackOutput
 type StartStackOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -10491,6 +13660,7 @@ func (s StartStackOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StopInstanceRequest
 type StopInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10523,6 +13693,13 @@ func (s *StopInstanceInput) Validate() error {
 	return nil
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *StopInstanceInput) SetInstanceId(v string) *StopInstanceInput {
+	s.InstanceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StopInstanceOutput
 type StopInstanceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -10537,6 +13714,7 @@ func (s StopInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StopStackRequest
 type StopStackInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10569,6 +13747,13 @@ func (s *StopStackInput) Validate() error {
 	return nil
 }
 
+// SetStackId sets the StackId field's value.
+func (s *StopStackInput) SetStackId(v string) *StopStackInput {
+	s.StackId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StopStackOutput
 type StopStackOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -10585,6 +13770,7 @@ func (s StopStackOutput) GoString() string {
 
 // Contains the data needed by RDP clients such as the Microsoft Remote Desktop
 // Connection to log in to the instance.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/TemporaryCredential
 type TemporaryCredential struct {
 	_ struct{} `type:"structure"`
 
@@ -10614,7 +13800,32 @@ func (s TemporaryCredential) GoString() string {
 	return s.String()
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *TemporaryCredential) SetInstanceId(v string) *TemporaryCredential {
+	s.InstanceId = &v
+	return s
+}
+
+// SetPassword sets the Password field's value.
+func (s *TemporaryCredential) SetPassword(v string) *TemporaryCredential {
+	s.Password = &v
+	return s
+}
+
+// SetUsername sets the Username field's value.
+func (s *TemporaryCredential) SetUsername(v string) *TemporaryCredential {
+	s.Username = &v
+	return s
+}
+
+// SetValidForInMinutes sets the ValidForInMinutes field's value.
+func (s *TemporaryCredential) SetValidForInMinutes(v int64) *TemporaryCredential {
+	s.ValidForInMinutes = &v
+	return s
+}
+
 // Describes an instance's time-based auto scaling configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/TimeBasedAutoScalingConfiguration
 type TimeBasedAutoScalingConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -10635,6 +13846,19 @@ func (s TimeBasedAutoScalingConfiguration) GoString() string {
 	return s.String()
 }
 
+// SetAutoScalingSchedule sets the AutoScalingSchedule field's value.
+func (s *TimeBasedAutoScalingConfiguration) SetAutoScalingSchedule(v *WeeklyAutoScalingSchedule) *TimeBasedAutoScalingConfiguration {
+	s.AutoScalingSchedule = v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *TimeBasedAutoScalingConfiguration) SetInstanceId(v string) *TimeBasedAutoScalingConfiguration {
+	s.InstanceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UnassignInstanceRequest
 type UnassignInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10667,6 +13891,13 @@ func (s *UnassignInstanceInput) Validate() error {
 	return nil
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *UnassignInstanceInput) SetInstanceId(v string) *UnassignInstanceInput {
+	s.InstanceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UnassignInstanceOutput
 type UnassignInstanceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -10681,6 +13912,7 @@ func (s UnassignInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UnassignVolumeRequest
 type UnassignVolumeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10713,6 +13945,13 @@ func (s *UnassignVolumeInput) Validate() error {
 	return nil
 }
 
+// SetVolumeId sets the VolumeId field's value.
+func (s *UnassignVolumeInput) SetVolumeId(v string) *UnassignVolumeInput {
+	s.VolumeId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UnassignVolumeOutput
 type UnassignVolumeOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -10727,6 +13966,7 @@ func (s UnassignVolumeOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateAppRequest
 type UpdateAppInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10818,6 +14058,73 @@ func (s *UpdateAppInput) Validate() error {
 	return nil
 }
 
+// SetAppId sets the AppId field's value.
+func (s *UpdateAppInput) SetAppId(v string) *UpdateAppInput {
+	s.AppId = &v
+	return s
+}
+
+// SetAppSource sets the AppSource field's value.
+func (s *UpdateAppInput) SetAppSource(v *Source) *UpdateAppInput {
+	s.AppSource = v
+	return s
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *UpdateAppInput) SetAttributes(v map[string]*string) *UpdateAppInput {
+	s.Attributes = v
+	return s
+}
+
+// SetDataSources sets the DataSources field's value.
+func (s *UpdateAppInput) SetDataSources(v []*DataSource) *UpdateAppInput {
+	s.DataSources = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateAppInput) SetDescription(v string) *UpdateAppInput {
+	s.Description = &v
+	return s
+}
+
+// SetDomains sets the Domains field's value.
+func (s *UpdateAppInput) SetDomains(v []*string) *UpdateAppInput {
+	s.Domains = v
+	return s
+}
+
+// SetEnableSsl sets the EnableSsl field's value.
+func (s *UpdateAppInput) SetEnableSsl(v bool) *UpdateAppInput {
+	s.EnableSsl = &v
+	return s
+}
+
+// SetEnvironment sets the Environment field's value.
+func (s *UpdateAppInput) SetEnvironment(v []*EnvironmentVariable) *UpdateAppInput {
+	s.Environment = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateAppInput) SetName(v string) *UpdateAppInput {
+	s.Name = &v
+	return s
+}
+
+// SetSslConfiguration sets the SslConfiguration field's value.
+func (s *UpdateAppInput) SetSslConfiguration(v *SslConfiguration) *UpdateAppInput {
+	s.SslConfiguration = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *UpdateAppInput) SetType(v string) *UpdateAppInput {
+	s.Type = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateAppOutput
 type UpdateAppOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -10832,6 +14139,7 @@ func (s UpdateAppOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateElasticIpRequest
 type UpdateElasticIpInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10867,6 +14175,19 @@ func (s *UpdateElasticIpInput) Validate() error {
 	return nil
 }
 
+// SetElasticIp sets the ElasticIp field's value.
+func (s *UpdateElasticIpInput) SetElasticIp(v string) *UpdateElasticIpInput {
+	s.ElasticIp = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateElasticIpInput) SetName(v string) *UpdateElasticIpInput {
+	s.Name = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateElasticIpOutput
 type UpdateElasticIpOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -10881,6 +14202,7 @@ func (s UpdateElasticIpOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateInstanceRequest
 type UpdateInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11004,6 +14326,79 @@ func (s *UpdateInstanceInput) Validate() error {
 	return nil
 }
 
+// SetAgentVersion sets the AgentVersion field's value.
+func (s *UpdateInstanceInput) SetAgentVersion(v string) *UpdateInstanceInput {
+	s.AgentVersion = &v
+	return s
+}
+
+// SetAmiId sets the AmiId field's value.
+func (s *UpdateInstanceInput) SetAmiId(v string) *UpdateInstanceInput {
+	s.AmiId = &v
+	return s
+}
+
+// SetArchitecture sets the Architecture field's value.
+func (s *UpdateInstanceInput) SetArchitecture(v string) *UpdateInstanceInput {
+	s.Architecture = &v
+	return s
+}
+
+// SetAutoScalingType sets the AutoScalingType field's value.
+func (s *UpdateInstanceInput) SetAutoScalingType(v string) *UpdateInstanceInput {
+	s.AutoScalingType = &v
+	return s
+}
+
+// SetEbsOptimized sets the EbsOptimized field's value.
+func (s *UpdateInstanceInput) SetEbsOptimized(v bool) *UpdateInstanceInput {
+	s.EbsOptimized = &v
+	return s
+}
+
+// SetHostname sets the Hostname field's value.
+func (s *UpdateInstanceInput) SetHostname(v string) *UpdateInstanceInput {
+	s.Hostname = &v
+	return s
+}
+
+// SetInstallUpdatesOnBoot sets the InstallUpdatesOnBoot field's value.
+func (s *UpdateInstanceInput) SetInstallUpdatesOnBoot(v bool) *UpdateInstanceInput {
+	s.InstallUpdatesOnBoot = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *UpdateInstanceInput) SetInstanceId(v string) *UpdateInstanceInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *UpdateInstanceInput) SetInstanceType(v string) *UpdateInstanceInput {
+	s.InstanceType = &v
+	return s
+}
+
+// SetLayerIds sets the LayerIds field's value.
+func (s *UpdateInstanceInput) SetLayerIds(v []*string) *UpdateInstanceInput {
+	s.LayerIds = v
+	return s
+}
+
+// SetOs sets the Os field's value.
+func (s *UpdateInstanceInput) SetOs(v string) *UpdateInstanceInput {
+	s.Os = &v
+	return s
+}
+
+// SetSshKeyName sets the SshKeyName field's value.
+func (s *UpdateInstanceInput) SetSshKeyName(v string) *UpdateInstanceInput {
+	s.SshKeyName = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateInstanceOutput
 type UpdateInstanceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -11018,6 +14413,7 @@ func (s UpdateInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateLayerRequest
 type UpdateLayerInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11124,6 +14520,103 @@ func (s *UpdateLayerInput) Validate() error {
 	return nil
 }
 
+// SetAttributes sets the Attributes field's value.
+func (s *UpdateLayerInput) SetAttributes(v map[string]*string) *UpdateLayerInput {
+	s.Attributes = v
+	return s
+}
+
+// SetAutoAssignElasticIps sets the AutoAssignElasticIps field's value.
+func (s *UpdateLayerInput) SetAutoAssignElasticIps(v bool) *UpdateLayerInput {
+	s.AutoAssignElasticIps = &v
+	return s
+}
+
+// SetAutoAssignPublicIps sets the AutoAssignPublicIps field's value.
+func (s *UpdateLayerInput) SetAutoAssignPublicIps(v bool) *UpdateLayerInput {
+	s.AutoAssignPublicIps = &v
+	return s
+}
+
+// SetCustomInstanceProfileArn sets the CustomInstanceProfileArn field's value.
+func (s *UpdateLayerInput) SetCustomInstanceProfileArn(v string) *UpdateLayerInput {
+	s.CustomInstanceProfileArn = &v
+	return s
+}
+
+// SetCustomJson sets the CustomJson field's value.
+func (s *UpdateLayerInput) SetCustomJson(v string) *UpdateLayerInput {
+	s.CustomJson = &v
+	return s
+}
+
+// SetCustomRecipes sets the CustomRecipes field's value.
+func (s *UpdateLayerInput) SetCustomRecipes(v *Recipes) *UpdateLayerInput {
+	s.CustomRecipes = v
+	return s
+}
+
+// SetCustomSecurityGroupIds sets the CustomSecurityGroupIds field's value.
+func (s *UpdateLayerInput) SetCustomSecurityGroupIds(v []*string) *UpdateLayerInput {
+	s.CustomSecurityGroupIds = v
+	return s
+}
+
+// SetEnableAutoHealing sets the EnableAutoHealing field's value.
+func (s *UpdateLayerInput) SetEnableAutoHealing(v bool) *UpdateLayerInput {
+	s.EnableAutoHealing = &v
+	return s
+}
+
+// SetInstallUpdatesOnBoot sets the InstallUpdatesOnBoot field's value.
+func (s *UpdateLayerInput) SetInstallUpdatesOnBoot(v bool) *UpdateLayerInput {
+	s.InstallUpdatesOnBoot = &v
+	return s
+}
+
+// SetLayerId sets the LayerId field's value.
+func (s *UpdateLayerInput) SetLayerId(v string) *UpdateLayerInput {
+	s.LayerId = &v
+	return s
+}
+
+// SetLifecycleEventConfiguration sets the LifecycleEventConfiguration field's value.
+func (s *UpdateLayerInput) SetLifecycleEventConfiguration(v *LifecycleEventConfiguration) *UpdateLayerInput {
+	s.LifecycleEventConfiguration = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateLayerInput) SetName(v string) *UpdateLayerInput {
+	s.Name = &v
+	return s
+}
+
+// SetPackages sets the Packages field's value.
+func (s *UpdateLayerInput) SetPackages(v []*string) *UpdateLayerInput {
+	s.Packages = v
+	return s
+}
+
+// SetShortname sets the Shortname field's value.
+func (s *UpdateLayerInput) SetShortname(v string) *UpdateLayerInput {
+	s.Shortname = &v
+	return s
+}
+
+// SetUseEbsOptimizedInstances sets the UseEbsOptimizedInstances field's value.
+func (s *UpdateLayerInput) SetUseEbsOptimizedInstances(v bool) *UpdateLayerInput {
+	s.UseEbsOptimizedInstances = &v
+	return s
+}
+
+// SetVolumeConfigurations sets the VolumeConfigurations field's value.
+func (s *UpdateLayerInput) SetVolumeConfigurations(v []*VolumeConfiguration) *UpdateLayerInput {
+	s.VolumeConfigurations = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateLayerOutput
 type UpdateLayerOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -11138,6 +14631,7 @@ func (s UpdateLayerOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateMyUserProfileRequest
 type UpdateMyUserProfileInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11155,6 +14649,13 @@ func (s UpdateMyUserProfileInput) GoString() string {
 	return s.String()
 }
 
+// SetSshPublicKey sets the SshPublicKey field's value.
+func (s *UpdateMyUserProfileInput) SetSshPublicKey(v string) *UpdateMyUserProfileInput {
+	s.SshPublicKey = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateMyUserProfileOutput
 type UpdateMyUserProfileOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -11169,6 +14670,7 @@ func (s UpdateMyUserProfileOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateRdsDbInstanceRequest
 type UpdateRdsDbInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11207,6 +14709,25 @@ func (s *UpdateRdsDbInstanceInput) Validate() error {
 	return nil
 }
 
+// SetDbPassword sets the DbPassword field's value.
+func (s *UpdateRdsDbInstanceInput) SetDbPassword(v string) *UpdateRdsDbInstanceInput {
+	s.DbPassword = &v
+	return s
+}
+
+// SetDbUser sets the DbUser field's value.
+func (s *UpdateRdsDbInstanceInput) SetDbUser(v string) *UpdateRdsDbInstanceInput {
+	s.DbUser = &v
+	return s
+}
+
+// SetRdsDbInstanceArn sets the RdsDbInstanceArn field's value.
+func (s *UpdateRdsDbInstanceInput) SetRdsDbInstanceArn(v string) *UpdateRdsDbInstanceInput {
+	s.RdsDbInstanceArn = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateRdsDbInstanceOutput
 type UpdateRdsDbInstanceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -11221,6 +14742,7 @@ func (s UpdateRdsDbInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateStackRequest
 type UpdateStackInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11421,6 +14943,115 @@ func (s *UpdateStackInput) Validate() error {
 	return nil
 }
 
+// SetAgentVersion sets the AgentVersion field's value.
+func (s *UpdateStackInput) SetAgentVersion(v string) *UpdateStackInput {
+	s.AgentVersion = &v
+	return s
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *UpdateStackInput) SetAttributes(v map[string]*string) *UpdateStackInput {
+	s.Attributes = v
+	return s
+}
+
+// SetChefConfiguration sets the ChefConfiguration field's value.
+func (s *UpdateStackInput) SetChefConfiguration(v *ChefConfiguration) *UpdateStackInput {
+	s.ChefConfiguration = v
+	return s
+}
+
+// SetConfigurationManager sets the ConfigurationManager field's value.
+func (s *UpdateStackInput) SetConfigurationManager(v *StackConfigurationManager) *UpdateStackInput {
+	s.ConfigurationManager = v
+	return s
+}
+
+// SetCustomCookbooksSource sets the CustomCookbooksSource field's value.
+func (s *UpdateStackInput) SetCustomCookbooksSource(v *Source) *UpdateStackInput {
+	s.CustomCookbooksSource = v
+	return s
+}
+
+// SetCustomJson sets the CustomJson field's value.
+func (s *UpdateStackInput) SetCustomJson(v string) *UpdateStackInput {
+	s.CustomJson = &v
+	return s
+}
+
+// SetDefaultAvailabilityZone sets the DefaultAvailabilityZone field's value.
+func (s *UpdateStackInput) SetDefaultAvailabilityZone(v string) *UpdateStackInput {
+	s.DefaultAvailabilityZone = &v
+	return s
+}
+
+// SetDefaultInstanceProfileArn sets the DefaultInstanceProfileArn field's value.
+func (s *UpdateStackInput) SetDefaultInstanceProfileArn(v string) *UpdateStackInput {
+	s.DefaultInstanceProfileArn = &v
+	return s
+}
+
+// SetDefaultOs sets the DefaultOs field's value.
+func (s *UpdateStackInput) SetDefaultOs(v string) *UpdateStackInput {
+	s.DefaultOs = &v
+	return s
+}
+
+// SetDefaultRootDeviceType sets the DefaultRootDeviceType field's value.
+func (s *UpdateStackInput) SetDefaultRootDeviceType(v string) *UpdateStackInput {
+	s.DefaultRootDeviceType = &v
+	return s
+}
+
+// SetDefaultSshKeyName sets the DefaultSshKeyName field's value.
+func (s *UpdateStackInput) SetDefaultSshKeyName(v string) *UpdateStackInput {
+	s.DefaultSshKeyName = &v
+	return s
+}
+
+// SetDefaultSubnetId sets the DefaultSubnetId field's value.
+func (s *UpdateStackInput) SetDefaultSubnetId(v string) *UpdateStackInput {
+	s.DefaultSubnetId = &v
+	return s
+}
+
+// SetHostnameTheme sets the HostnameTheme field's value.
+func (s *UpdateStackInput) SetHostnameTheme(v string) *UpdateStackInput {
+	s.HostnameTheme = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateStackInput) SetName(v string) *UpdateStackInput {
+	s.Name = &v
+	return s
+}
+
+// SetServiceRoleArn sets the ServiceRoleArn field's value.
+func (s *UpdateStackInput) SetServiceRoleArn(v string) *UpdateStackInput {
+	s.ServiceRoleArn = &v
+	return s
+}
+
+// SetStackId sets the StackId field's value.
+func (s *UpdateStackInput) SetStackId(v string) *UpdateStackInput {
+	s.StackId = &v
+	return s
+}
+
+// SetUseCustomCookbooks sets the UseCustomCookbooks field's value.
+func (s *UpdateStackInput) SetUseCustomCookbooks(v bool) *UpdateStackInput {
+	s.UseCustomCookbooks = &v
+	return s
+}
+
+// SetUseOpsworksSecurityGroups sets the UseOpsworksSecurityGroups field's value.
+func (s *UpdateStackInput) SetUseOpsworksSecurityGroups(v bool) *UpdateStackInput {
+	s.UseOpsworksSecurityGroups = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateStackOutput
 type UpdateStackOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -11435,6 +15066,7 @@ func (s UpdateStackOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateUserProfileRequest
 type UpdateUserProfileInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11481,6 +15113,31 @@ func (s *UpdateUserProfileInput) Validate() error {
 	return nil
 }
 
+// SetAllowSelfManagement sets the AllowSelfManagement field's value.
+func (s *UpdateUserProfileInput) SetAllowSelfManagement(v bool) *UpdateUserProfileInput {
+	s.AllowSelfManagement = &v
+	return s
+}
+
+// SetIamUserArn sets the IamUserArn field's value.
+func (s *UpdateUserProfileInput) SetIamUserArn(v string) *UpdateUserProfileInput {
+	s.IamUserArn = &v
+	return s
+}
+
+// SetSshPublicKey sets the SshPublicKey field's value.
+func (s *UpdateUserProfileInput) SetSshPublicKey(v string) *UpdateUserProfileInput {
+	s.SshPublicKey = &v
+	return s
+}
+
+// SetSshUsername sets the SshUsername field's value.
+func (s *UpdateUserProfileInput) SetSshUsername(v string) *UpdateUserProfileInput {
+	s.SshUsername = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateUserProfileOutput
 type UpdateUserProfileOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -11495,6 +15152,7 @@ func (s UpdateUserProfileOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateVolumeRequest
 type UpdateVolumeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11533,6 +15191,25 @@ func (s *UpdateVolumeInput) Validate() error {
 	return nil
 }
 
+// SetMountPoint sets the MountPoint field's value.
+func (s *UpdateVolumeInput) SetMountPoint(v string) *UpdateVolumeInput {
+	s.MountPoint = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateVolumeInput) SetName(v string) *UpdateVolumeInput {
+	s.Name = &v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *UpdateVolumeInput) SetVolumeId(v string) *UpdateVolumeInput {
+	s.VolumeId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateVolumeOutput
 type UpdateVolumeOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -11548,6 +15225,7 @@ func (s UpdateVolumeOutput) GoString() string {
 }
 
 // Describes a user's SSH information.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UserProfile
 type UserProfile struct {
 	_ struct{} `type:"structure"`
 
@@ -11578,7 +15256,38 @@ func (s UserProfile) GoString() string {
 	return s.String()
 }
 
+// SetAllowSelfManagement sets the AllowSelfManagement field's value.
+func (s *UserProfile) SetAllowSelfManagement(v bool) *UserProfile {
+	s.AllowSelfManagement = &v
+	return s
+}
+
+// SetIamUserArn sets the IamUserArn field's value.
+func (s *UserProfile) SetIamUserArn(v string) *UserProfile {
+	s.IamUserArn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UserProfile) SetName(v string) *UserProfile {
+	s.Name = &v
+	return s
+}
+
+// SetSshPublicKey sets the SshPublicKey field's value.
+func (s *UserProfile) SetSshPublicKey(v string) *UserProfile {
+	s.SshPublicKey = &v
+	return s
+}
+
+// SetSshUsername sets the SshUsername field's value.
+func (s *UserProfile) SetSshUsername(v string) *UserProfile {
+	s.SshUsername = &v
+	return s
+}
+
 // Describes an instance's Amazon EBS volume.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/Volume
 type Volume struct {
 	_ struct{} `type:"structure"`
 
@@ -11634,7 +15343,86 @@ func (s Volume) GoString() string {
 	return s.String()
 }
 
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *Volume) SetAvailabilityZone(v string) *Volume {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetDevice sets the Device field's value.
+func (s *Volume) SetDevice(v string) *Volume {
+	s.Device = &v
+	return s
+}
+
+// SetEc2VolumeId sets the Ec2VolumeId field's value.
+func (s *Volume) SetEc2VolumeId(v string) *Volume {
+	s.Ec2VolumeId = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *Volume) SetInstanceId(v string) *Volume {
+	s.InstanceId = &v
+	return s
+}
+
+// SetIops sets the Iops field's value.
+func (s *Volume) SetIops(v int64) *Volume {
+	s.Iops = &v
+	return s
+}
+
+// SetMountPoint sets the MountPoint field's value.
+func (s *Volume) SetMountPoint(v string) *Volume {
+	s.MountPoint = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Volume) SetName(v string) *Volume {
+	s.Name = &v
+	return s
+}
+
+// SetRaidArrayId sets the RaidArrayId field's value.
+func (s *Volume) SetRaidArrayId(v string) *Volume {
+	s.RaidArrayId = &v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *Volume) SetRegion(v string) *Volume {
+	s.Region = &v
+	return s
+}
+
+// SetSize sets the Size field's value.
+func (s *Volume) SetSize(v int64) *Volume {
+	s.Size = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Volume) SetStatus(v string) *Volume {
+	s.Status = &v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *Volume) SetVolumeId(v string) *Volume {
+	s.VolumeId = &v
+	return s
+}
+
+// SetVolumeType sets the VolumeType field's value.
+func (s *Volume) SetVolumeType(v string) *Volume {
+	s.VolumeType = &v
+	return s
+}
+
 // Describes an Amazon EBS volume configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/VolumeConfiguration
 type VolumeConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -11698,6 +15486,42 @@ func (s *VolumeConfiguration) Validate() error {
 	return nil
 }
 
+// SetIops sets the Iops field's value.
+func (s *VolumeConfiguration) SetIops(v int64) *VolumeConfiguration {
+	s.Iops = &v
+	return s
+}
+
+// SetMountPoint sets the MountPoint field's value.
+func (s *VolumeConfiguration) SetMountPoint(v string) *VolumeConfiguration {
+	s.MountPoint = &v
+	return s
+}
+
+// SetNumberOfDisks sets the NumberOfDisks field's value.
+func (s *VolumeConfiguration) SetNumberOfDisks(v int64) *VolumeConfiguration {
+	s.NumberOfDisks = &v
+	return s
+}
+
+// SetRaidLevel sets the RaidLevel field's value.
+func (s *VolumeConfiguration) SetRaidLevel(v int64) *VolumeConfiguration {
+	s.RaidLevel = &v
+	return s
+}
+
+// SetSize sets the Size field's value.
+func (s *VolumeConfiguration) SetSize(v int64) *VolumeConfiguration {
+	s.Size = &v
+	return s
+}
+
+// SetVolumeType sets the VolumeType field's value.
+func (s *VolumeConfiguration) SetVolumeType(v string) *VolumeConfiguration {
+	s.VolumeType = &v
+	return s
+}
+
 // Describes a time-based instance's auto scaling schedule. The schedule consists
 // of a set of key-value pairs.
 //
@@ -11716,6 +15540,7 @@ func (s *VolumeConfiguration) Validate() error {
 // hours, from UTC 1200 - 1600. It will be off for the remainder of the day.
 //
 // { "12":"on", "13":"on", "14":"on", "15":"on" }
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/WeeklyAutoScalingSchedule
 type WeeklyAutoScalingSchedule struct {
 	_ struct{} `type:"structure"`
 
@@ -11749,6 +15574,48 @@ func (s WeeklyAutoScalingSchedule) String() string {
 // GoString returns the string representation
 func (s WeeklyAutoScalingSchedule) GoString() string {
 	return s.String()
+}
+
+// SetFriday sets the Friday field's value.
+func (s *WeeklyAutoScalingSchedule) SetFriday(v map[string]*string) *WeeklyAutoScalingSchedule {
+	s.Friday = v
+	return s
+}
+
+// SetMonday sets the Monday field's value.
+func (s *WeeklyAutoScalingSchedule) SetMonday(v map[string]*string) *WeeklyAutoScalingSchedule {
+	s.Monday = v
+	return s
+}
+
+// SetSaturday sets the Saturday field's value.
+func (s *WeeklyAutoScalingSchedule) SetSaturday(v map[string]*string) *WeeklyAutoScalingSchedule {
+	s.Saturday = v
+	return s
+}
+
+// SetSunday sets the Sunday field's value.
+func (s *WeeklyAutoScalingSchedule) SetSunday(v map[string]*string) *WeeklyAutoScalingSchedule {
+	s.Sunday = v
+	return s
+}
+
+// SetThursday sets the Thursday field's value.
+func (s *WeeklyAutoScalingSchedule) SetThursday(v map[string]*string) *WeeklyAutoScalingSchedule {
+	s.Thursday = v
+	return s
+}
+
+// SetTuesday sets the Tuesday field's value.
+func (s *WeeklyAutoScalingSchedule) SetTuesday(v map[string]*string) *WeeklyAutoScalingSchedule {
+	s.Tuesday = v
+	return s
+}
+
+// SetWednesday sets the Wednesday field's value.
+func (s *WeeklyAutoScalingSchedule) SetWednesday(v map[string]*string) *WeeklyAutoScalingSchedule {
+	s.Wednesday = v
+	return s
 }
 
 const (

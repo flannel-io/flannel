@@ -83,6 +83,10 @@ type DirectConnectAPI interface {
 
 	ConfirmPublicVirtualInterface(*directconnect.ConfirmPublicVirtualInterfaceInput) (*directconnect.ConfirmPublicVirtualInterfaceOutput, error)
 
+	CreateBGPPeerRequest(*directconnect.CreateBGPPeerInput) (*request.Request, *directconnect.CreateBGPPeerOutput)
+
+	CreateBGPPeer(*directconnect.CreateBGPPeerInput) (*directconnect.CreateBGPPeerOutput, error)
+
 	CreateConnectionRequest(*directconnect.CreateConnectionInput) (*request.Request, *directconnect.Connection)
 
 	CreateConnection(*directconnect.CreateConnectionInput) (*directconnect.Connection, error)
@@ -98,6 +102,10 @@ type DirectConnectAPI interface {
 	CreatePublicVirtualInterfaceRequest(*directconnect.CreatePublicVirtualInterfaceInput) (*request.Request, *directconnect.VirtualInterface)
 
 	CreatePublicVirtualInterface(*directconnect.CreatePublicVirtualInterfaceInput) (*directconnect.VirtualInterface, error)
+
+	DeleteBGPPeerRequest(*directconnect.DeleteBGPPeerInput) (*request.Request, *directconnect.DeleteBGPPeerOutput)
+
+	DeleteBGPPeer(*directconnect.DeleteBGPPeerInput) (*directconnect.DeleteBGPPeerOutput, error)
 
 	DeleteConnectionRequest(*directconnect.DeleteConnectionInput) (*request.Request, *directconnect.Connection)
 
@@ -135,6 +143,10 @@ type DirectConnectAPI interface {
 
 	DescribeLocations(*directconnect.DescribeLocationsInput) (*directconnect.DescribeLocationsOutput, error)
 
+	DescribeTagsRequest(*directconnect.DescribeTagsInput) (*request.Request, *directconnect.DescribeTagsOutput)
+
+	DescribeTags(*directconnect.DescribeTagsInput) (*directconnect.DescribeTagsOutput, error)
+
 	DescribeVirtualGatewaysRequest(*directconnect.DescribeVirtualGatewaysInput) (*request.Request, *directconnect.DescribeVirtualGatewaysOutput)
 
 	DescribeVirtualGateways(*directconnect.DescribeVirtualGatewaysInput) (*directconnect.DescribeVirtualGatewaysOutput, error)
@@ -142,6 +154,14 @@ type DirectConnectAPI interface {
 	DescribeVirtualInterfacesRequest(*directconnect.DescribeVirtualInterfacesInput) (*request.Request, *directconnect.DescribeVirtualInterfacesOutput)
 
 	DescribeVirtualInterfaces(*directconnect.DescribeVirtualInterfacesInput) (*directconnect.DescribeVirtualInterfacesOutput, error)
+
+	TagResourceRequest(*directconnect.TagResourceInput) (*request.Request, *directconnect.TagResourceOutput)
+
+	TagResource(*directconnect.TagResourceInput) (*directconnect.TagResourceOutput, error)
+
+	UntagResourceRequest(*directconnect.UntagResourceInput) (*request.Request, *directconnect.UntagResourceOutput)
+
+	UntagResource(*directconnect.UntagResourceInput) (*directconnect.UntagResourceOutput, error)
 }
 
 var _ DirectConnectAPI = (*directconnect.DirectConnect)(nil)

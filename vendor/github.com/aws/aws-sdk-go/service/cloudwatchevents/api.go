@@ -39,6 +39,7 @@ const opDeleteRule = "DeleteRule"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteRule
 func (c *CloudWatchEvents) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Request, output *DeleteRuleOutput) {
 	op := &request.Operation{
 		Name:       opDeleteRule,
@@ -50,11 +51,10 @@ func (c *CloudWatchEvents) DeleteRuleRequest(input *DeleteRuleInput) (req *reque
 		input = &DeleteRuleInput{}
 	}
 
+	output = &DeleteRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -81,6 +81,7 @@ func (c *CloudWatchEvents) DeleteRuleRequest(input *DeleteRuleInput) (req *reque
 //   * InternalException
 //   This exception occurs due to unexpected causes.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteRule
 func (c *CloudWatchEvents) DeleteRule(input *DeleteRuleInput) (*DeleteRuleOutput, error) {
 	req, out := c.DeleteRuleRequest(input)
 	err := req.Send()
@@ -113,6 +114,7 @@ const opDescribeRule = "DescribeRule"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeRule
 func (c *CloudWatchEvents) DescribeRuleRequest(input *DescribeRuleInput) (req *request.Request, output *DescribeRuleOutput) {
 	op := &request.Operation{
 		Name:       opDescribeRule,
@@ -124,9 +126,8 @@ func (c *CloudWatchEvents) DescribeRuleRequest(input *DescribeRuleInput) (req *r
 		input = &DescribeRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -148,6 +149,7 @@ func (c *CloudWatchEvents) DescribeRuleRequest(input *DescribeRuleInput) (req *r
 //   * InternalException
 //   This exception occurs due to unexpected causes.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeRule
 func (c *CloudWatchEvents) DescribeRule(input *DescribeRuleInput) (*DescribeRuleOutput, error) {
 	req, out := c.DescribeRuleRequest(input)
 	err := req.Send()
@@ -180,6 +182,7 @@ const opDisableRule = "DisableRule"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DisableRule
 func (c *CloudWatchEvents) DisableRuleRequest(input *DisableRuleInput) (req *request.Request, output *DisableRuleOutput) {
 	op := &request.Operation{
 		Name:       opDisableRule,
@@ -191,11 +194,10 @@ func (c *CloudWatchEvents) DisableRuleRequest(input *DisableRuleInput) (req *req
 		input = &DisableRuleInput{}
 	}
 
+	output = &DisableRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DisableRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -225,6 +227,7 @@ func (c *CloudWatchEvents) DisableRuleRequest(input *DisableRuleInput) (req *req
 //   * InternalException
 //   This exception occurs due to unexpected causes.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DisableRule
 func (c *CloudWatchEvents) DisableRule(input *DisableRuleInput) (*DisableRuleOutput, error) {
 	req, out := c.DisableRuleRequest(input)
 	err := req.Send()
@@ -257,6 +260,7 @@ const opEnableRule = "EnableRule"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/EnableRule
 func (c *CloudWatchEvents) EnableRuleRequest(input *EnableRuleInput) (req *request.Request, output *EnableRuleOutput) {
 	op := &request.Operation{
 		Name:       opEnableRule,
@@ -268,11 +272,10 @@ func (c *CloudWatchEvents) EnableRuleRequest(input *EnableRuleInput) (req *reque
 		input = &EnableRuleInput{}
 	}
 
+	output = &EnableRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &EnableRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -301,6 +304,7 @@ func (c *CloudWatchEvents) EnableRuleRequest(input *EnableRuleInput) (req *reque
 //   * InternalException
 //   This exception occurs due to unexpected causes.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/EnableRule
 func (c *CloudWatchEvents) EnableRule(input *EnableRuleInput) (*EnableRuleOutput, error) {
 	req, out := c.EnableRuleRequest(input)
 	err := req.Send()
@@ -333,6 +337,7 @@ const opListRuleNamesByTarget = "ListRuleNamesByTarget"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListRuleNamesByTarget
 func (c *CloudWatchEvents) ListRuleNamesByTargetRequest(input *ListRuleNamesByTargetInput) (req *request.Request, output *ListRuleNamesByTargetOutput) {
 	op := &request.Operation{
 		Name:       opListRuleNamesByTarget,
@@ -344,9 +349,8 @@ func (c *CloudWatchEvents) ListRuleNamesByTargetRequest(input *ListRuleNamesByTa
 		input = &ListRuleNamesByTargetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListRuleNamesByTargetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -370,6 +374,7 @@ func (c *CloudWatchEvents) ListRuleNamesByTargetRequest(input *ListRuleNamesByTa
 //   * InternalException
 //   This exception occurs due to unexpected causes.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListRuleNamesByTarget
 func (c *CloudWatchEvents) ListRuleNamesByTarget(input *ListRuleNamesByTargetInput) (*ListRuleNamesByTargetOutput, error) {
 	req, out := c.ListRuleNamesByTargetRequest(input)
 	err := req.Send()
@@ -402,6 +407,7 @@ const opListRules = "ListRules"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListRules
 func (c *CloudWatchEvents) ListRulesRequest(input *ListRulesInput) (req *request.Request, output *ListRulesOutput) {
 	op := &request.Operation{
 		Name:       opListRules,
@@ -413,9 +419,8 @@ func (c *CloudWatchEvents) ListRulesRequest(input *ListRulesInput) (req *request
 		input = &ListRulesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListRulesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -438,6 +443,7 @@ func (c *CloudWatchEvents) ListRulesRequest(input *ListRulesInput) (req *request
 //   * InternalException
 //   This exception occurs due to unexpected causes.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListRules
 func (c *CloudWatchEvents) ListRules(input *ListRulesInput) (*ListRulesOutput, error) {
 	req, out := c.ListRulesRequest(input)
 	err := req.Send()
@@ -470,6 +476,7 @@ const opListTargetsByRule = "ListTargetsByRule"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListTargetsByRule
 func (c *CloudWatchEvents) ListTargetsByRuleRequest(input *ListTargetsByRuleInput) (req *request.Request, output *ListTargetsByRuleOutput) {
 	op := &request.Operation{
 		Name:       opListTargetsByRule,
@@ -481,9 +488,8 @@ func (c *CloudWatchEvents) ListTargetsByRuleRequest(input *ListTargetsByRuleInpu
 		input = &ListTargetsByRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTargetsByRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -505,6 +511,7 @@ func (c *CloudWatchEvents) ListTargetsByRuleRequest(input *ListTargetsByRuleInpu
 //   * InternalException
 //   This exception occurs due to unexpected causes.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListTargetsByRule
 func (c *CloudWatchEvents) ListTargetsByRule(input *ListTargetsByRuleInput) (*ListTargetsByRuleOutput, error) {
 	req, out := c.ListTargetsByRuleRequest(input)
 	err := req.Send()
@@ -537,6 +544,7 @@ const opPutEvents = "PutEvents"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutEvents
 func (c *CloudWatchEvents) PutEventsRequest(input *PutEventsInput) (req *request.Request, output *PutEventsOutput) {
 	op := &request.Operation{
 		Name:       opPutEvents,
@@ -548,9 +556,8 @@ func (c *CloudWatchEvents) PutEventsRequest(input *PutEventsInput) (req *request
 		input = &PutEventsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutEventsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -570,6 +577,7 @@ func (c *CloudWatchEvents) PutEventsRequest(input *PutEventsInput) (req *request
 //   * InternalException
 //   This exception occurs due to unexpected causes.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutEvents
 func (c *CloudWatchEvents) PutEvents(input *PutEventsInput) (*PutEventsOutput, error) {
 	req, out := c.PutEventsRequest(input)
 	err := req.Send()
@@ -602,6 +610,7 @@ const opPutRule = "PutRule"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutRule
 func (c *CloudWatchEvents) PutRuleRequest(input *PutRuleInput) (req *request.Request, output *PutRuleOutput) {
 	op := &request.Operation{
 		Name:       opPutRule,
@@ -613,9 +622,8 @@ func (c *CloudWatchEvents) PutRuleRequest(input *PutRuleInput) (req *request.Req
 		input = &PutRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -660,6 +668,7 @@ func (c *CloudWatchEvents) PutRuleRequest(input *PutRuleInput) (req *request.Req
 //   * InternalException
 //   This exception occurs due to unexpected causes.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutRule
 func (c *CloudWatchEvents) PutRule(input *PutRuleInput) (*PutRuleOutput, error) {
 	req, out := c.PutRuleRequest(input)
 	err := req.Send()
@@ -692,6 +701,7 @@ const opPutTargets = "PutTargets"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutTargets
 func (c *CloudWatchEvents) PutTargetsRequest(input *PutTargetsInput) (req *request.Request, output *PutTargetsOutput) {
 	op := &request.Operation{
 		Name:       opPutTargets,
@@ -703,9 +713,8 @@ func (c *CloudWatchEvents) PutTargetsRequest(input *PutTargetsInput) (req *reque
 		input = &PutTargetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutTargetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -759,6 +768,7 @@ func (c *CloudWatchEvents) PutTargetsRequest(input *PutTargetsInput) (req *reque
 //   * InternalException
 //   This exception occurs due to unexpected causes.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutTargets
 func (c *CloudWatchEvents) PutTargets(input *PutTargetsInput) (*PutTargetsOutput, error) {
 	req, out := c.PutTargetsRequest(input)
 	err := req.Send()
@@ -791,6 +801,7 @@ const opRemoveTargets = "RemoveTargets"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/RemoveTargets
 func (c *CloudWatchEvents) RemoveTargetsRequest(input *RemoveTargetsInput) (req *request.Request, output *RemoveTargetsOutput) {
 	op := &request.Operation{
 		Name:       opRemoveTargets,
@@ -802,9 +813,8 @@ func (c *CloudWatchEvents) RemoveTargetsRequest(input *RemoveTargetsInput) (req 
 		input = &RemoveTargetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RemoveTargetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -834,6 +844,7 @@ func (c *CloudWatchEvents) RemoveTargetsRequest(input *RemoveTargetsInput) (req 
 //   * InternalException
 //   This exception occurs due to unexpected causes.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/RemoveTargets
 func (c *CloudWatchEvents) RemoveTargets(input *RemoveTargetsInput) (*RemoveTargetsOutput, error) {
 	req, out := c.RemoveTargetsRequest(input)
 	err := req.Send()
@@ -866,6 +877,7 @@ const opTestEventPattern = "TestEventPattern"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/TestEventPattern
 func (c *CloudWatchEvents) TestEventPatternRequest(input *TestEventPatternInput) (req *request.Request, output *TestEventPatternOutput) {
 	op := &request.Operation{
 		Name:       opTestEventPattern,
@@ -877,9 +889,8 @@ func (c *CloudWatchEvents) TestEventPatternRequest(input *TestEventPatternInput)
 		input = &TestEventPatternInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &TestEventPatternOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -906,6 +917,7 @@ func (c *CloudWatchEvents) TestEventPatternRequest(input *TestEventPatternInput)
 //   * InternalException
 //   This exception occurs due to unexpected causes.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/TestEventPattern
 func (c *CloudWatchEvents) TestEventPattern(input *TestEventPatternInput) (*TestEventPatternOutput, error) {
 	req, out := c.TestEventPatternRequest(input)
 	err := req.Send()
@@ -913,6 +925,7 @@ func (c *CloudWatchEvents) TestEventPattern(input *TestEventPatternInput) (*Test
 }
 
 // Container for the parameters to the DeleteRule operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteRuleRequest
 type DeleteRuleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -948,6 +961,13 @@ func (s *DeleteRuleInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *DeleteRuleInput) SetName(v string) *DeleteRuleInput {
+	s.Name = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteRuleOutput
 type DeleteRuleOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -963,6 +983,7 @@ func (s DeleteRuleOutput) GoString() string {
 }
 
 // Container for the parameters to the DescribeRule operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeRuleRequest
 type DescribeRuleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -998,7 +1019,14 @@ func (s *DescribeRuleInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *DescribeRuleInput) SetName(v string) *DescribeRuleInput {
+	s.Name = &v
+	return s
+}
+
 // The result of the DescribeRule operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeRuleResponse
 type DescribeRuleOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1034,7 +1062,50 @@ func (s DescribeRuleOutput) GoString() string {
 	return s.String()
 }
 
+// SetArn sets the Arn field's value.
+func (s *DescribeRuleOutput) SetArn(v string) *DescribeRuleOutput {
+	s.Arn = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *DescribeRuleOutput) SetDescription(v string) *DescribeRuleOutput {
+	s.Description = &v
+	return s
+}
+
+// SetEventPattern sets the EventPattern field's value.
+func (s *DescribeRuleOutput) SetEventPattern(v string) *DescribeRuleOutput {
+	s.EventPattern = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DescribeRuleOutput) SetName(v string) *DescribeRuleOutput {
+	s.Name = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *DescribeRuleOutput) SetRoleArn(v string) *DescribeRuleOutput {
+	s.RoleArn = &v
+	return s
+}
+
+// SetScheduleExpression sets the ScheduleExpression field's value.
+func (s *DescribeRuleOutput) SetScheduleExpression(v string) *DescribeRuleOutput {
+	s.ScheduleExpression = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *DescribeRuleOutput) SetState(v string) *DescribeRuleOutput {
+	s.State = &v
+	return s
+}
+
 // Container for the parameters to the DisableRule operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DisableRuleRequest
 type DisableRuleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1070,6 +1141,13 @@ func (s *DisableRuleInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *DisableRuleInput) SetName(v string) *DisableRuleInput {
+	s.Name = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DisableRuleOutput
 type DisableRuleOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1085,6 +1163,7 @@ func (s DisableRuleOutput) GoString() string {
 }
 
 // Container for the parameters to the EnableRule operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/EnableRuleRequest
 type EnableRuleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1120,6 +1199,13 @@ func (s *EnableRuleInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *EnableRuleInput) SetName(v string) *EnableRuleInput {
+	s.Name = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/EnableRuleOutput
 type EnableRuleOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1135,6 +1221,7 @@ func (s EnableRuleOutput) GoString() string {
 }
 
 // Container for the parameters to the ListRuleNamesByTarget operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListRuleNamesByTargetRequest
 type ListRuleNamesByTargetInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1184,7 +1271,26 @@ func (s *ListRuleNamesByTargetInput) Validate() error {
 	return nil
 }
 
+// SetLimit sets the Limit field's value.
+func (s *ListRuleNamesByTargetInput) SetLimit(v int64) *ListRuleNamesByTargetInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListRuleNamesByTargetInput) SetNextToken(v string) *ListRuleNamesByTargetInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTargetArn sets the TargetArn field's value.
+func (s *ListRuleNamesByTargetInput) SetTargetArn(v string) *ListRuleNamesByTargetInput {
+	s.TargetArn = &v
+	return s
+}
+
 // The result of the ListRuleNamesByTarget operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListRuleNamesByTargetResponse
 type ListRuleNamesByTargetOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1205,7 +1311,20 @@ func (s ListRuleNamesByTargetOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *ListRuleNamesByTargetOutput) SetNextToken(v string) *ListRuleNamesByTargetOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRuleNames sets the RuleNames field's value.
+func (s *ListRuleNamesByTargetOutput) SetRuleNames(v []*string) *ListRuleNamesByTargetOutput {
+	s.RuleNames = v
+	return s
+}
+
 // Container for the parameters to the ListRules operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListRulesRequest
 type ListRulesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1249,7 +1368,26 @@ func (s *ListRulesInput) Validate() error {
 	return nil
 }
 
+// SetLimit sets the Limit field's value.
+func (s *ListRulesInput) SetLimit(v int64) *ListRulesInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNamePrefix sets the NamePrefix field's value.
+func (s *ListRulesInput) SetNamePrefix(v string) *ListRulesInput {
+	s.NamePrefix = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListRulesInput) SetNextToken(v string) *ListRulesInput {
+	s.NextToken = &v
+	return s
+}
+
 // The result of the ListRules operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListRulesResponse
 type ListRulesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1270,7 +1408,20 @@ func (s ListRulesOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *ListRulesOutput) SetNextToken(v string) *ListRulesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRules sets the Rules field's value.
+func (s *ListRulesOutput) SetRules(v []*Rule) *ListRulesOutput {
+	s.Rules = v
+	return s
+}
+
 // Container for the parameters to the ListTargetsByRule operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListTargetsByRuleRequest
 type ListTargetsByRuleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1319,7 +1470,26 @@ func (s *ListTargetsByRuleInput) Validate() error {
 	return nil
 }
 
+// SetLimit sets the Limit field's value.
+func (s *ListTargetsByRuleInput) SetLimit(v int64) *ListTargetsByRuleInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListTargetsByRuleInput) SetNextToken(v string) *ListTargetsByRuleInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRule sets the Rule field's value.
+func (s *ListTargetsByRuleInput) SetRule(v string) *ListTargetsByRuleInput {
+	s.Rule = &v
+	return s
+}
+
 // The result of the ListTargetsByRule operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListTargetsByRuleResponse
 type ListTargetsByRuleOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1340,7 +1510,20 @@ func (s ListTargetsByRuleOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *ListTargetsByRuleOutput) SetNextToken(v string) *ListTargetsByRuleOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTargets sets the Targets field's value.
+func (s *ListTargetsByRuleOutput) SetTargets(v []*Target) *ListTargetsByRuleOutput {
+	s.Targets = v
+	return s
+}
+
 // Container for the parameters to the PutEvents operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutEventsRequest
 type PutEventsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1378,7 +1561,14 @@ func (s *PutEventsInput) Validate() error {
 	return nil
 }
 
+// SetEntries sets the Entries field's value.
+func (s *PutEventsInput) SetEntries(v []*PutEventsRequestEntry) *PutEventsInput {
+	s.Entries = v
+	return s
+}
+
 // The result of the PutEvents operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutEventsResponse
 type PutEventsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1402,7 +1592,20 @@ func (s PutEventsOutput) GoString() string {
 	return s.String()
 }
 
+// SetEntries sets the Entries field's value.
+func (s *PutEventsOutput) SetEntries(v []*PutEventsResultEntry) *PutEventsOutput {
+	s.Entries = v
+	return s
+}
+
+// SetFailedEntryCount sets the FailedEntryCount field's value.
+func (s *PutEventsOutput) SetFailedEntryCount(v int64) *PutEventsOutput {
+	s.FailedEntryCount = &v
+	return s
+}
+
 // Contains information about the event to be used in PutEvents.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutEventsRequestEntry
 type PutEventsRequestEntry struct {
 	_ struct{} `type:"structure"`
 
@@ -1436,7 +1639,38 @@ func (s PutEventsRequestEntry) GoString() string {
 	return s.String()
 }
 
+// SetDetail sets the Detail field's value.
+func (s *PutEventsRequestEntry) SetDetail(v string) *PutEventsRequestEntry {
+	s.Detail = &v
+	return s
+}
+
+// SetDetailType sets the DetailType field's value.
+func (s *PutEventsRequestEntry) SetDetailType(v string) *PutEventsRequestEntry {
+	s.DetailType = &v
+	return s
+}
+
+// SetResources sets the Resources field's value.
+func (s *PutEventsRequestEntry) SetResources(v []*string) *PutEventsRequestEntry {
+	s.Resources = v
+	return s
+}
+
+// SetSource sets the Source field's value.
+func (s *PutEventsRequestEntry) SetSource(v string) *PutEventsRequestEntry {
+	s.Source = &v
+	return s
+}
+
+// SetTime sets the Time field's value.
+func (s *PutEventsRequestEntry) SetTime(v time.Time) *PutEventsRequestEntry {
+	s.Time = &v
+	return s
+}
+
 // A PutEventsResult contains a list of PutEventsResultEntry.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutEventsResultEntry
 type PutEventsResultEntry struct {
 	_ struct{} `type:"structure"`
 
@@ -1460,7 +1694,26 @@ func (s PutEventsResultEntry) GoString() string {
 	return s.String()
 }
 
+// SetErrorCode sets the ErrorCode field's value.
+func (s *PutEventsResultEntry) SetErrorCode(v string) *PutEventsResultEntry {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *PutEventsResultEntry) SetErrorMessage(v string) *PutEventsResultEntry {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetEventId sets the EventId field's value.
+func (s *PutEventsResultEntry) SetEventId(v string) *PutEventsResultEntry {
+	s.EventId = &v
+	return s
+}
+
 // Container for the parameters to the PutRule operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutRuleRequest
 type PutRuleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1514,7 +1767,44 @@ func (s *PutRuleInput) Validate() error {
 	return nil
 }
 
+// SetDescription sets the Description field's value.
+func (s *PutRuleInput) SetDescription(v string) *PutRuleInput {
+	s.Description = &v
+	return s
+}
+
+// SetEventPattern sets the EventPattern field's value.
+func (s *PutRuleInput) SetEventPattern(v string) *PutRuleInput {
+	s.EventPattern = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *PutRuleInput) SetName(v string) *PutRuleInput {
+	s.Name = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *PutRuleInput) SetRoleArn(v string) *PutRuleInput {
+	s.RoleArn = &v
+	return s
+}
+
+// SetScheduleExpression sets the ScheduleExpression field's value.
+func (s *PutRuleInput) SetScheduleExpression(v string) *PutRuleInput {
+	s.ScheduleExpression = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *PutRuleInput) SetState(v string) *PutRuleInput {
+	s.State = &v
+	return s
+}
+
 // The result of the PutRule operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutRuleResponse
 type PutRuleOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1532,7 +1822,14 @@ func (s PutRuleOutput) GoString() string {
 	return s.String()
 }
 
+// SetRuleArn sets the RuleArn field's value.
+func (s *PutRuleOutput) SetRuleArn(v string) *PutRuleOutput {
+	s.RuleArn = &v
+	return s
+}
+
 // Container for the parameters to the PutTargets operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutTargetsRequest
 type PutTargetsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1586,7 +1883,20 @@ func (s *PutTargetsInput) Validate() error {
 	return nil
 }
 
+// SetRule sets the Rule field's value.
+func (s *PutTargetsInput) SetRule(v string) *PutTargetsInput {
+	s.Rule = &v
+	return s
+}
+
+// SetTargets sets the Targets field's value.
+func (s *PutTargetsInput) SetTargets(v []*Target) *PutTargetsInput {
+	s.Targets = v
+	return s
+}
+
 // The result of the PutTargets operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutTargetsResponse
 type PutTargetsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1607,7 +1917,20 @@ func (s PutTargetsOutput) GoString() string {
 	return s.String()
 }
 
+// SetFailedEntries sets the FailedEntries field's value.
+func (s *PutTargetsOutput) SetFailedEntries(v []*PutTargetsResultEntry) *PutTargetsOutput {
+	s.FailedEntries = v
+	return s
+}
+
+// SetFailedEntryCount sets the FailedEntryCount field's value.
+func (s *PutTargetsOutput) SetFailedEntryCount(v int64) *PutTargetsOutput {
+	s.FailedEntryCount = &v
+	return s
+}
+
 // A PutTargetsResult contains a list of PutTargetsResultEntry.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutTargetsResultEntry
 type PutTargetsResultEntry struct {
 	_ struct{} `type:"structure"`
 
@@ -1631,7 +1954,26 @@ func (s PutTargetsResultEntry) GoString() string {
 	return s.String()
 }
 
+// SetErrorCode sets the ErrorCode field's value.
+func (s *PutTargetsResultEntry) SetErrorCode(v string) *PutTargetsResultEntry {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *PutTargetsResultEntry) SetErrorMessage(v string) *PutTargetsResultEntry {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetTargetId sets the TargetId field's value.
+func (s *PutTargetsResultEntry) SetTargetId(v string) *PutTargetsResultEntry {
+	s.TargetId = &v
+	return s
+}
+
 // Container for the parameters to the RemoveTargets operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/RemoveTargetsRequest
 type RemoveTargetsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1678,7 +2020,20 @@ func (s *RemoveTargetsInput) Validate() error {
 	return nil
 }
 
+// SetIds sets the Ids field's value.
+func (s *RemoveTargetsInput) SetIds(v []*string) *RemoveTargetsInput {
+	s.Ids = v
+	return s
+}
+
+// SetRule sets the Rule field's value.
+func (s *RemoveTargetsInput) SetRule(v string) *RemoveTargetsInput {
+	s.Rule = &v
+	return s
+}
+
 // The result of the RemoveTargets operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/RemoveTargetsResponse
 type RemoveTargetsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1699,8 +2054,21 @@ func (s RemoveTargetsOutput) GoString() string {
 	return s.String()
 }
 
+// SetFailedEntries sets the FailedEntries field's value.
+func (s *RemoveTargetsOutput) SetFailedEntries(v []*RemoveTargetsResultEntry) *RemoveTargetsOutput {
+	s.FailedEntries = v
+	return s
+}
+
+// SetFailedEntryCount sets the FailedEntryCount field's value.
+func (s *RemoveTargetsOutput) SetFailedEntryCount(v int64) *RemoveTargetsOutput {
+	s.FailedEntryCount = &v
+	return s
+}
+
 // The ID of the target requested to be removed from the rule by Amazon CloudWatch
 // Events.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/RemoveTargetsResultEntry
 type RemoveTargetsResultEntry struct {
 	_ struct{} `type:"structure"`
 
@@ -1724,8 +2092,27 @@ func (s RemoveTargetsResultEntry) GoString() string {
 	return s.String()
 }
 
+// SetErrorCode sets the ErrorCode field's value.
+func (s *RemoveTargetsResultEntry) SetErrorCode(v string) *RemoveTargetsResultEntry {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *RemoveTargetsResultEntry) SetErrorMessage(v string) *RemoveTargetsResultEntry {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetTargetId sets the TargetId field's value.
+func (s *RemoveTargetsResultEntry) SetTargetId(v string) *RemoveTargetsResultEntry {
+	s.TargetId = &v
+	return s
+}
+
 // Contains information about a rule in Amazon CloudWatch Events. A ListRulesResult
 // contains a list of Rules.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/Rule
 type Rule struct {
 	_ struct{} `type:"structure"`
 
@@ -1762,6 +2149,48 @@ func (s Rule) GoString() string {
 	return s.String()
 }
 
+// SetArn sets the Arn field's value.
+func (s *Rule) SetArn(v string) *Rule {
+	s.Arn = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Rule) SetDescription(v string) *Rule {
+	s.Description = &v
+	return s
+}
+
+// SetEventPattern sets the EventPattern field's value.
+func (s *Rule) SetEventPattern(v string) *Rule {
+	s.EventPattern = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Rule) SetName(v string) *Rule {
+	s.Name = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *Rule) SetRoleArn(v string) *Rule {
+	s.RoleArn = &v
+	return s
+}
+
+// SetScheduleExpression sets the ScheduleExpression field's value.
+func (s *Rule) SetScheduleExpression(v string) *Rule {
+	s.ScheduleExpression = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *Rule) SetState(v string) *Rule {
+	s.State = &v
+	return s
+}
+
 // Targets are the resources that can be invoked when a rule is triggered. For
 // example, AWS Lambda functions, Amazon Kinesis streams, and built-in targets.
 //
@@ -1775,6 +2204,7 @@ func (s Rule) GoString() string {
 //    (e.g. only the detail part of the event is passed).
 //    * Input is specified in the form of a valid JSON, then the matched event
 //    is overridden with this constant.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/Target
 type Target struct {
 	_ struct{} `type:"structure"`
 
@@ -1830,7 +2260,32 @@ func (s *Target) Validate() error {
 	return nil
 }
 
+// SetArn sets the Arn field's value.
+func (s *Target) SetArn(v string) *Target {
+	s.Arn = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Target) SetId(v string) *Target {
+	s.Id = &v
+	return s
+}
+
+// SetInput sets the Input field's value.
+func (s *Target) SetInput(v string) *Target {
+	s.Input = &v
+	return s
+}
+
+// SetInputPath sets the InputPath field's value.
+func (s *Target) SetInputPath(v string) *Target {
+	s.InputPath = &v
+	return s
+}
+
 // Container for the parameters to the TestEventPattern operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/TestEventPatternRequest
 type TestEventPatternInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1871,7 +2326,20 @@ func (s *TestEventPatternInput) Validate() error {
 	return nil
 }
 
+// SetEvent sets the Event field's value.
+func (s *TestEventPatternInput) SetEvent(v string) *TestEventPatternInput {
+	s.Event = &v
+	return s
+}
+
+// SetEventPattern sets the EventPattern field's value.
+func (s *TestEventPatternInput) SetEventPattern(v string) *TestEventPatternInput {
+	s.EventPattern = &v
+	return s
+}
+
 // The result of the TestEventPattern operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/TestEventPatternResponse
 type TestEventPatternOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1887,6 +2355,12 @@ func (s TestEventPatternOutput) String() string {
 // GoString returns the string representation
 func (s TestEventPatternOutput) GoString() string {
 	return s.String()
+}
+
+// SetResult sets the Result field's value.
+func (s *TestEventPatternOutput) SetResult(v bool) *TestEventPatternOutput {
+	s.Result = &v
+	return s
 }
 
 const (
