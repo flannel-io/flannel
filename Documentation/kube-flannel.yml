@@ -50,6 +50,7 @@ spec:
         beta.kubernetes.io/arch: amd64
       tolerations:
       - key: node-role.kubernetes.io/master
+        operator: Exists
         effect: NoSchedule
       serviceAccountName: flannel
       containers:
