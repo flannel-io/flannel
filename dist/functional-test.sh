@@ -86,6 +86,13 @@ run_test() {
 
 	echo "Test for backend=$backend: exit=$exit_code"
 
+	# Perf test - run iperf server on flannel1 and client on flannel2
+	if [ $exit_code -eq 0 ]; then
+        docker rm -f flannel-e2e-test-flannel1-iperf 2>/dev/null
+        docker run -d --name flannel-e2e-test-flannel1-iperf --net=container:flannel-e2e-test-flannel1 mlabbe/iperf3
+        docker run --rm --net=container:flannel-e2e-test-flannel2 mlabbe/iperf3 -c $ping_dest
+ fi
+
 	docker stop flannel-e2e-test-flannel1 flannel-e2e-test-flannel2 >/dev/null
 
 	if [ $exit_code -ne 0 ]; then
