@@ -4,7 +4,7 @@ When running on Google Compute Engine, we recommend using the GCE backend which,
 
 From the Developers Console, we start by creating a new network.
 
-Configure the network name and address range. Then add firewall rules to allow etcd traffic (tcp/2379), SSH, and ICMP. 
+Configure the network name and address range. Then add firewall rules to allow etcd traffic (tcp/2379), SSH, and ICMP.
 That's it for the network configuration.
 Now it’s time to create an instance.
 Let's call it `demo-instance-1`.
@@ -30,15 +30,15 @@ Under the "Management, disk, networking, access & security options" make the fol
   </div>
 </div>
 
-With the permissions set, we can launch the instance! 
+With the permissions set, we can launch the instance!
 
-The only remaining steps now are to start etcd, publish the network configuration and lastly, run the flannel daemon. 
+The only remaining steps now are to start etcd, publish the network configuration and lastly, run the flannel daemon.
 SSH into `demo-instance-1` and execute the following steps:
 
 - Start etcd:
 
 ```
-$ etcd2 -advertise-client-urls http://$INTERNAL_IP:2379 -listen-client-urls http://0.0.0.0:2379
+$ etcd --advertise-client-urls http://$INTERNAL_IP:2379 --listen-client-urls http://0.0.0.0:2379
 ```
 
 - Publish configuration in etcd (ensure that the network range does not overlap with the one configured for the GCE network)
