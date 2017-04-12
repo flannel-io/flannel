@@ -150,7 +150,7 @@ tar.gz:
 	tar -tvf dist/flannel-$(TAG)-linux-arm64.tar.gz
 
 ## Make a release after creating a tag
-release: dist/flannel-$(TAG)-linux-amd64.tar.gz
+release: tar.gz
 	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.aci
 	ARCH=arm make dist/flanneld-$(TAG)-arm.aci
 	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.aci
