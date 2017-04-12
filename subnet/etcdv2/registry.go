@@ -397,7 +397,7 @@ func (esr *etcdSubnetRegistry) parseNetworkKey(s string) (string, bool) {
 func nodeToLease(node *etcd.Node) (*Lease, error) {
 	sn := ParseSubnetKey(node.Key)
 	if sn == nil {
-		return nil, fmt.Errorf("failed to parse subnet key %q", *sn)
+		return nil, fmt.Errorf("failed to parse subnet key %s", node.Key)
 	}
 
 	attrs := &LeaseAttrs{}
