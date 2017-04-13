@@ -15,32 +15,30 @@ PACKAGES_EXPANDED=$(PACKAGES:%=github.com/coreos/flannel/%)
 
 # Set the (cross) compiler to use for different architectures
 ifeq ($(ARCH),amd64)
-	LIB_DIR=x86_64-linux-gnu
+	LIB_DIR=/lib/x86_64-linux-gnu
 	CC=gcc
 endif
 ifeq ($(ARCH),arm)
-	LIB_DIR=arm-linux-gnueabi
-	CC=arm-linux-gnueabi-gcc
+	LIB_DIR=/usr/arm-linux-gnueabihf/lib
+	CC=arm-linux-gnueabihf-gcc
 endif
 ifeq ($(ARCH),arm64)
-	LIB_DIR=aarch64-linux-gnu
+	LIB_DIR=/usr/aarch64-linux-gnu/lib
 	CC=aarch64-linux-gnu-gcc
 endif
 ifeq ($(ARCH),ppc64le)
-	LIB_DIR=powerpc64le-linux-gnu
+	LIB_DIR=/usr/powerpc64le-linux-gnu/lib
 	CC=powerpc64le-linux-gnu-gcc
 endif
 ifeq ($(ARCH),s390x)
 	LIB_DIR=s390x-linux-gnu
 	CC=s390x-linux-gnu-gcc
 endif
-GOARM=6
-ifeq ($(ARCH),s390x)
-	# kube-cross:v1.7.4-1 supports s390x
-	KUBE_CROSS_TAG=v1.7.4-1
-else
-	KUBE_CROSS_TAG=v1.6.2-2
-endif
+
+GOARM=7
+
+# List images with gcloud alpha container images list-tags gcr.io/google_containers/kube-cross
+KUBE_CROSS_TAG=v1.7.5-3
 IPTABLES_VERSION=1.4.21
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
@@ -117,16 +115,11 @@ dist/flanneld-$(ARCH):
 		mv dist/flanneld dist/flanneld-$(ARCH) && \
 		file dist/flanneld-$(ARCH)'
 
-## Busybox images are missing pthread. Pull it out of the kube-cross image
-dist/libpthread.so.0-$(ARCH):
-ifeq ($(ARCH),s390x)
-	# Busybox images are having older version of libc.so.6 and ld64.so.1. Pull it out of the kube-cross image
-	docker run --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp /usr/$(LIB_DIR)/lib/libpthread.so.0 /host/dist/libpthread.so.0-$(ARCH)
-	docker run --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp /usr/$(LIB_DIR)/lib/libc-2.23.so /host/dist/libc.so.6
-	docker run --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp /usr/$(LIB_DIR)/lib/ld-2.23.so /host/dist/ld64.so.1
-else
-	docker run --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp /lib/$(LIB_DIR)/libpthread.so.0 /host/dist/libpthread.so.0-$(ARCH)
-endif
+## Busybox images need updated libs. Pull them out of the kube-cross image
+dist/libpthread.so.0-$(ARCH) dist/libc.so.6-$(ARCH) dist/ld64.so.1-$(ARCH):
+	docker run --rm -v $(CURDIR):/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp $(LIB_DIR)/libc-2.23.so /host/dist/libc.so.6-$(ARCH)
+	docker run --rm -v $(CURDIR):/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp $(LIB_DIR)/ld-2.23.so /host/dist/ld64.so.1-$(ARCH)
+	docker run --rm -v $(CURDIR):/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp $(LIB_DIR)/libpthread.so.0 /host/dist/libpthread.so.0-$(ARCH)
 
 ## Build an architecture specific iptables binary
 dist/iptables-$(ARCH):

@@ -2,10 +2,13 @@ FROM s390x/busybox:glibc
 
 MAINTAINER Tom Denham <tom@tigera.io>
 
-COPY dist/flanneld-s390x /opt/bin/flanneld
-COPY dist/iptables-s390x /usr/local/bin/iptables
+ENV FLANNEL_ARCH=s390x
+
+COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld
+COPY dist/iptables-$FLANNEL_ARCH /usr/local/bin/iptables
 COPY dist/mk-docker-opts.sh /opt/bin/
-COPY dist/libpthread.so.0-s390x /lib/libpthread.so.0
-COPY dist/ld64.so.1 /lib/ld64.so.1
-COPY dist/libc.so.6 /lib/libc.so.6
+COPY dist/libpthread.so.0-$FLANNEL_ARCH /lib/libpthread.so.0
+COPY dist/ld64.so.1-$FLANNEL_ARCH /lib/ld64.so.1
+COPY dist/libc.so.6-$FLANNEL_ARCH /lib/libc.so.6
+
 CMD ["/opt/bin/flanneld"]

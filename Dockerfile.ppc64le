@@ -2,9 +2,11 @@ FROM ppc64le/busybox:glibc
 
 MAINTAINER Tom Denham <tom@tigera.io>
 
-COPY dist/flanneld-ppc64le /opt/bin/flanneld
-COPY dist/iptables-ppc64le /usr/local/bin/iptables
-COPY dist/mk-docker-opts.sh /opt/bin/
-COPY dist/libpthread.so.0-ppc64le /lib/libpthread.so.0
-CMD ["/opt/bin/flanneld"]
+ENV FLANNEL_ARCH=ppc64le
 
+COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld
+COPY dist/iptables-$FLANNEL_ARCH /usr/local/bin/iptables
+COPY dist/mk-docker-opts.sh /opt/bin/
+COPY dist/libpthread.so.0-$FLANNEL_ARCH /lib/libpthread.so.0
+COPY dist/ld64.so.1-$FLANNEL_ARCH /lib/ld64.so.1
+COPY dist/libc.so.6-$FLANNEL_ARCH /lib/libc.so.6
