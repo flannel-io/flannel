@@ -20,8 +20,13 @@ rules:
       - nodes
     verbs:
       - list
-      - update
       - watch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/status
+    verbs:
+      - patch
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
