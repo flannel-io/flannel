@@ -167,6 +167,11 @@ func (be *AliVpcBackend) recreateRoute(c *ecs.Client, table ecs.RouteTableSetTyp
 				log.Infof("Keep target entry: rtableid=%s, CIDR=%s, NextHop=%s \n", e.RouteTableId, e.DestinationCidrBlock, e.InstanceId)
 				continue
 			}
+			// 0.0.0.0/0 => ECS1 this kind of route is used for DNAT. so we keep it
+			if e.DestinationCidrBlock == "0.0.0.0/0" {
+				log.Infof("Keep route entry: rtableid=%s, CIDR=%s, NextHop=%s For DNAT\n", e.RouteTableId, e.DestinationCidrBlock, e.InstanceId)
+				continue
+			}
 			// Fix: here we delete all the route which targeted to us(instance) except the specified route.
 			// That means only one CIDR was allowed to target to the instance. Think if We need to change this
 			// to adapt to multi CIDR and deal with unavailable route entry.
