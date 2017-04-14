@@ -29,12 +29,14 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/controller/framework"
 	"k8s.io/kubernetes/pkg/runtime"
 	utilruntime "k8s.io/kubernetes/pkg/util/runtime"
+	"k8s.io/kubernetes/pkg/util/strategicpatch"
 	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/pkg/watch"
 )
@@ -231,7 +233,31 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, network string, 
 		n.Annotations[backendDataAnnotation] = string(bd)
 		n.Annotations[backendPublicIPAnnotation] = attrs.PublicIP.String()
 		n.Annotations[subnetKubeManagedAnnotation] = "true"
-		n, err = ksm.client.Core().Nodes().Update(n)
+
+		var oldNode, newNode v1.Node
+		if err := api.Scheme.Convert(cacheNode, &oldNode, nil); err != nil {
+			return nil, err
+		}
+		if err := api.Scheme.Convert(n, &newNode, nil); err != nil {
+			return nil, err
+		}
+
+		oldData, err := json.Marshal(oldNode)
+		if err != nil {
+			return nil, err
+		}
+
+		newData, err := json.Marshal(newNode)
+		if err != nil {
+			return nil, err
+		}
+
+		patchBytes, err := strategicpatch.CreateTwoWayMergePatch(oldData, newData, v1.Node{})
+		if err != nil {
+			return nil, fmt.Errorf("failed to create patch for node %q: %v", ksm.nodeName, err)
+		}
+
+		_, err = ksm.client.Core().Nodes().Patch(ksm.nodeName, api.StrategicMergePatchType, patchBytes, "status")
 		if err != nil {
 			return nil, err
 		}
