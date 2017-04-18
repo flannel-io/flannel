@@ -16,6 +16,7 @@ package hostgw
 
 import (
 	"bytes"
+	"fmt"
 	"net"
 	"sync"
 	"time"
@@ -35,6 +36,7 @@ type network struct {
 	rl        []netlink.Route
 	lease     *subnet.Lease
 	sm        subnet.Manager
+	cfg       hostGwBackendConfig
 }
 
 func (n *network) Lease() *subnet.Lease {
@@ -76,6 +78,51 @@ func (n *network) Run(ctx context.Context) {
 	}
 }
 
+func (n *network) determineRoute() (netlink.Route, error) {
+	route := netlink.Route{
+		Dst: n.lease.Subnet.ToIPNet(),
+	}
+
+	switch {
+	case n.cfg.DefaultGw && n.cfg.Gw != nil:
+		log.Warning("defaultGw and Gw set at the same time, preferring DefaultGw..")
+		fallthrough
+
+	// determine and use DefaultGw as route
+	case n.cfg.DefaultGw:
+		routesToDstIP, err := netlink.RouteGet(n.lease.Subnet.IP.ToIP())
+		if err != nil {
+			return route, err
+		}
+		routeToDstIP := routesToDstIP[0]
+		route.LinkIndex = routeToDstIP.LinkIndex
+		route.Gw = routeToDstIP.Gw
+		route.Src = routeToDstIP.Src
+
+	// use requested Gw
+	case n.cfg.Gw != nil:
+		route.Gw = n.cfg.Gw
+
+		routesToGwIP, err := netlink.RouteGet(route.Gw)
+		if err != nil {
+			return route, err
+		}
+		routeToGwIP := routesToGwIP[0]
+		route.LinkIndex = routeToGwIP.LinkIndex
+		route.Src = routeToGwIP.Src
+
+	// default behavior. use external IP/interface as route
+	case !n.cfg.DefaultGw && n.cfg.Gw == nil:
+		route.Gw = n.lease.Attrs.PublicIP.ToIP()
+		route.LinkIndex = n.linkIndex
+
+	default:
+		return route, fmt.Errorf("matched none of the expectec gateway configurations")
+	}
+	log.Infof("Route: %+v", route)
+	return route, nil
+}
+
 func (n *network) handleSubnetEvents(batch []subnet.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
@@ -87,10 +134,12 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				continue
 			}
 
-			route := netlink.Route{
-				Dst:       evt.Lease.Subnet.ToIPNet(),
-				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
-				LinkIndex: n.linkIndex,
+			log.Info(n.cfg)
+
+			route, err := n.determineRoute()
+			if err != nil {
+				log.Errorf("Error determining route to %v", evt.Lease.Subnet, err)
+				continue
 			}
 
 			// Check if route exists before attempting to add it
@@ -126,10 +175,10 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				continue
 			}
 
-			route := netlink.Route{
-				Dst:       evt.Lease.Subnet.ToIPNet(),
-				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
-				LinkIndex: n.linkIndex,
+			route, err := n.determineRoute()
+			if err != nil {
+				log.Errorf("Error determining route to %v", evt.Lease.Subnet, err)
+				continue
 			}
 			if err := netlink.RouteDel(&route); err != nil {
 				log.Errorf("Error deleting route to %v: %v", evt.Lease.Subnet, err)

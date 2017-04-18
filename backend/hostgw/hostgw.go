@@ -15,7 +15,9 @@
 package hostgw
 
 import (
+	"encoding/json"
 	"fmt"
+	"net"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
@@ -30,6 +32,11 @@ func init() {
 const (
 	routeCheckRetries = 10
 )
+
+type hostGwBackendConfig struct {
+	Gw        net.IP `json:",omitempty"`
+	DefaultGw bool   `json:",omitempty"`
+}
 
 type HostgwBackend struct {
 	sm       subnet.Manager
@@ -56,10 +63,17 @@ func (_ *HostgwBackend) Run(ctx context.Context) {
 }
 
 func (be *HostgwBackend) RegisterNetwork(ctx context.Context, netname string, config *subnet.Config) (backend.Network, error) {
+
+	var cfg hostGwBackendConfig
+	if err := json.Unmarshal(config.Backend, &cfg); err != nil {
+		return nil, fmt.Errorf("error decoding hostgw backend config: %v", err)
+	}
+
 	n := &network{
 		name:     netname,
 		extIface: be.extIface,
 		sm:       be.sm,
+		cfg:      cfg,
 	}
 
 	attrs := subnet.LeaseAttrs{
