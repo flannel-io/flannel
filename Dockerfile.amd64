@@ -1,10 +1,12 @@
-FROM busybox:1.25.0-glibc
+FROM frolvlad/alpine-glibc
 
 MAINTAINER Tom Denham <tom@tigera.io>
 
-COPY dist/flanneld-amd64 /opt/bin/flanneld
-COPY dist/iptables-amd64 /usr/local/bin/iptables
+ENV FLANNEL_ARCH=amd64
+
+COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld
+COPY dist/iptables-$FLANNEL_ARCH /usr/local/bin/iptables
 COPY dist/mk-docker-opts.sh /opt/bin/
-COPY dist/libpthread.so.0-amd64 /lib/libpthread.so.0
+
 CMD ["/opt/bin/flanneld"]
 
