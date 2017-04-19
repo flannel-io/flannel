@@ -71,6 +71,7 @@ license-check:
 clean:
 	rm -f dist/flanneld*
 	rm -f dist/iptables*
+	rm -f dist/libpthread*
 	rm -f dist/*.aci
 	rm -f dist/*.docker
 	rm -f dist/*.tar.gz
