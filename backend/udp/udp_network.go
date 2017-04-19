@@ -46,13 +46,12 @@ type network struct {
 	sm     subnet.Manager
 }
 
-func newNetwork(name string, sm subnet.Manager, extIface *backend.ExternalInterface, port int, nw ip.IP4Net, l *subnet.Lease) (*network, error) {
+func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, port int, nw ip.IP4Net, l *subnet.Lease) (*network, error) {
 	n := &network{
 		SimpleNetwork: backend.SimpleNetwork{
 			SubnetLease: l,
 			ExtIface:    extIface,
 		},
-		name: name,
 		port: port,
 		sm:   sm,
 	}
@@ -101,7 +100,7 @@ func (n *network) Run(ctx context.Context) {
 
 	wg.Add(1)
 	go func() {
-		subnet.WatchLeases(ctx, n.sm, n.name, n.SubnetLease, evts)
+		subnet.WatchLeases(ctx, n.sm, n.SubnetLease, evts)
 		wg.Done()
 	}()
 

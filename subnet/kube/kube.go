@@ -161,9 +161,9 @@ func (ksm *kubeSubnetManager) handleAddLeaseEvent(et subnet.EventType, obj inter
 		glog.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.events <- subnet.Event{et, l, ""}
+	ksm.events <- subnet.Event{et, l}
 	if n.ObjectMeta.Name == ksm.nodeName {
-		ksm.selfEvents <- subnet.Event{et, l, ""}
+		ksm.selfEvents <- subnet.Event{et, l}
 	}
 }
 
@@ -184,17 +184,17 @@ func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{})
 		glog.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.events <- subnet.Event{subnet.EventAdded, l, ""}
+	ksm.events <- subnet.Event{subnet.EventAdded, l}
 	if n.ObjectMeta.Name == ksm.nodeName {
-		ksm.selfEvents <- subnet.Event{subnet.EventAdded, l, ""}
+		ksm.selfEvents <- subnet.Event{subnet.EventAdded, l}
 	}
 }
 
-func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context, network string) (*subnet.Config, error) {
+func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {
 	return ksm.subnetConf, nil
 }
 
-func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, network string, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
+func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
 	nobj, found, err := ksm.nodeStore.Store.GetByKey(ksm.nodeName)
 	if err != nil {
 		return nil, err
@@ -269,8 +269,8 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, network string, 
 	}, nil
 }
 
-func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, network string, lease *subnet.Lease) error {
-	l, err := ksm.AcquireLease(ctx, network, &lease.Attrs)
+func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, lease *subnet.Lease) error {
+	l, err := ksm.AcquireLease(ctx, &lease.Attrs)
 	if err != nil {
 		return err
 	}
@@ -280,7 +280,7 @@ func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, network string, le
 	return nil
 }
 
-func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, network string, sn ip.IP4Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
+func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
 	select {
 	case event := <-ksm.selfEvents:
 		return subnet.LeaseWatchResult{
@@ -291,7 +291,7 @@ func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, network string, sn
 	}
 }
 
-func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, network string, cursor interface{}) (subnet.LeaseWatchResult, error) {
+func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, cursor interface{}) (subnet.LeaseWatchResult, error) {
 	select {
 	case event := <-ksm.events:
 		return subnet.LeaseWatchResult{
@@ -300,13 +300,6 @@ func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, network string, c
 	case <-ctx.Done():
 		return subnet.LeaseWatchResult{}, nil
 	}
-}
-
-func (ksm *kubeSubnetManager) WatchNetworks(ctx context.Context, cursor interface{}) (subnet.NetworkWatchResult, error) {
-	time.Sleep(time.Second)
-	return subnet.NetworkWatchResult{
-		Snapshot: []string{""},
-	}, nil
 }
 
 func (ksm *kubeSubnetManager) Run(ctx context.Context) {
@@ -332,18 +325,18 @@ func nodeToLease(n api.Node) (l subnet.Lease, err error) {
 }
 
 // unimplemented
-func (ksm *kubeSubnetManager) RevokeLease(ctx context.Context, network string, sn ip.IP4Net) error {
+func (ksm *kubeSubnetManager) RevokeLease(ctx context.Context, sn ip.IP4Net) error {
 	return ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) AddReservation(ctx context.Context, network string, r *subnet.Reservation) error {
+func (ksm *kubeSubnetManager) AddReservation(ctx context.Context, r *subnet.Reservation) error {
 	return ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) RemoveReservation(ctx context.Context, network string, subnet ip.IP4Net) error {
+func (ksm *kubeSubnetManager) RemoveReservation(ctx context.Context, subnet ip.IP4Net) error {
 	return ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) ListReservations(ctx context.Context, network string) ([]subnet.Reservation, error) {
+func (ksm *kubeSubnetManager) ListReservations(ctx context.Context) ([]subnet.Reservation, error) {
 	return nil, ErrUnimplemented
 }

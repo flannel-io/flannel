@@ -60,9 +60,8 @@ type (
 	EventType int
 
 	Event struct {
-		Type    EventType `json:"type"`
-		Lease   Lease     `json:"lease,omitempty"`
-		Network string    `json:"network,omitempty"`
+		Type  EventType `json:"type"`
+		Lease Lease     `json:"lease,omitempty"`
 	}
 )
 
@@ -78,15 +77,6 @@ type LeaseWatchResult struct {
 	Events   []Event     `json:"events"`
 	Snapshot []Lease     `json:"snapshot"`
 	Cursor   interface{} `json:"cursor"`
-}
-
-type NetworkWatchResult struct {
-	// Either Events or Snapshot will be set.  If Events is empty, it means
-	// the cursor was out of range and Snapshot contains the current list
-	// of items, even if empty.
-	Events   []Event     `json:"events"`
-	Snapshot []string    `json:"snapshot"`
-	Cursor   interface{} `json:"cursor,omitempty"`
 }
 
 func (et EventType) MarshalJSON() ([]byte, error) {
@@ -134,15 +124,14 @@ func MakeSubnetKey(sn ip.IP4Net) string {
 }
 
 type Manager interface {
-	GetNetworkConfig(ctx context.Context, network string) (*Config, error)
-	AcquireLease(ctx context.Context, network string, attrs *LeaseAttrs) (*Lease, error)
-	RenewLease(ctx context.Context, network string, lease *Lease) error
-	RevokeLease(ctx context.Context, network string, sn ip.IP4Net) error
-	WatchLease(ctx context.Context, network string, sn ip.IP4Net, cursor interface{}) (LeaseWatchResult, error)
-	WatchLeases(ctx context.Context, network string, cursor interface{}) (LeaseWatchResult, error)
-	WatchNetworks(ctx context.Context, cursor interface{}) (NetworkWatchResult, error)
+	GetNetworkConfig(ctx context.Context) (*Config, error)
+	AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Lease, error)
+	RenewLease(ctx context.Context, lease *Lease) error
+	RevokeLease(ctx context.Context, sn ip.IP4Net) error
+	WatchLease(ctx context.Context, sn ip.IP4Net, cursor interface{}) (LeaseWatchResult, error)
+	WatchLeases(ctx context.Context, cursor interface{}) (LeaseWatchResult, error)
 
-	AddReservation(ctx context.Context, network string, r *Reservation) error
-	RemoveReservation(ctx context.Context, network string, subnet ip.IP4Net) error
-	ListReservations(ctx context.Context, network string) ([]Reservation, error)
+	AddReservation(ctx context.Context, r *Reservation) error
+	RemoveReservation(ctx context.Context, subnet ip.IP4Net) error
+	ListReservations(ctx context.Context) ([]Reservation, error)
 }

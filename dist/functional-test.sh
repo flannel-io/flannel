@@ -1,5 +1,6 @@
 #!/bin/bash
-
+# Uncomment to see what commands are being executed
+#set -x
 
 ETCD_IMG="quay.io/coreos/etcd:v3.0.3"
 FLANNEL_NET="10.10.0.0/16"
@@ -41,8 +42,7 @@ run_test() {
 	flannel_conf="{ \"Network\": \"$FLANNEL_NET\", \"Backend\": { \"Type\": \"${backend}\" } }"
 
 	# etcd might take a bit to come up
-	while ! docker run --rm -it --entrypoint=/usr/local/bin/etcdctl $ETCD_IMG \
-			--endpoints=$etcd_endpt set /coreos.com/network/config "$flannel_conf"
+	while ! docker run --rm -it $ETCD_IMG etcdctl --endpoints=$etcd_endpt set /coreos.com/network/config "$flannel_conf"
 	do
 		sleep 1
 	done
@@ -51,14 +51,14 @@ run_test() {
 
 	# rm any old flannel container that maybe running, ignore error as it might not exist
 	docker rm -f flannel-e2e-test-flannel1 2>/dev/null
-	docker run --name=flannel-e2e-test-flannel1 -d --privileged --entrypoint=/opt/bin/flanneld $flannel_img --etcd-endpoints=$etcd_endpt
+	docker run --name=flannel-e2e-test-flannel1 -d --privileged $flannel_img --etcd-endpoints=$etcd_endpt
 	if [ $? -ne 0 ]; then
 		exit 1
 	fi
 
 	# rm any old flannel container that maybe running, ignore error as it might not exist
 	docker rm -f flannel-e2e-test-flannel2 2>/dev/null
-	docker run --name=flannel-e2e-test-flannel2 -d --privileged --entrypoint=/opt/bin/flanneld $flannel_img --etcd-endpoints=$etcd_endpt
+	docker run --name=flannel-e2e-test-flannel2 -d --privileged $flannel_img --etcd-endpoints=$etcd_endpt
 	if [ $? -ne 0 ]; then
 		exit 1
 	fi
@@ -111,6 +111,89 @@ run_test() {
 	return $exit_code
 }
 
+multi_test() {
+	flannel_conf_vxlan='{"Network": "10.11.0.0/16", "Backend": {"Type": "vxlan"}}'
+	flannel_conf_host_gw='{"Network": "10.12.0.0/16", "Backend": {"Type": "host-gw"}}'
+
+	# etcd might take a bit to come up
+	while ! docker run --rm -it $ETCD_IMG etcdctl --endpoints=$etcd_endpt set /vxlan/network/config "$flannel_conf_vxlan"
+	do
+		sleep 1
+	done
+
+	while ! docker run --rm -it $ETCD_IMG etcdctl --endpoints=$etcd_endpt set /hostgw/network/config "$flannel_conf_host_gw"
+	do
+		sleep 1
+	done
+
+	echo flannel config written
+
+	for host in 1 2; do
+    	echo "=== Creating Host: $host ==============================================="
+
+        # rm any old flannel container that maybe running, ignore error as it might not exist
+        docker rm -f flannel-host$host 2>/dev/null
+
+        # Start the hosts
+        docker run --name=flannel-host$host -d -it --privileged --entrypoint /bin/sh $flannel_img
+
+        # Start two flanneld instances
+        docker exec -d flannel-host$host sh -c "/opt/bin/flanneld -subnet-file /vxlan.env -etcd-prefix=/vxlan/network --etcd-endpoints=$etcd_endpt 2>vxlan.log"
+        docker exec -d flannel-host$host sh -c "/opt/bin/flanneld -subnet-file /hostgw.env -etcd-prefix=/hostgw/network --etcd-endpoints=$etcd_endpt 2>hostgw.log"
+    done
+
+	echo flannels running
+
+	# wait an arbitrary amount to have flannels come up
+	sleep 1
+
+	# add dummy interface on host1 only so we have a known working IP to ping then ping it from host2
+	vxlan_ping_dest=$(docker exec flannel-host1 /bin/sh -c '\
+		source /vxlan.env &&
+		ip link add name dummy_vxlan type dummy && \
+		ip addr add $FLANNEL_SUBNET dev dummy_vxlan && \
+	       	ip link set dummy_vxlan up && \
+		echo $FLANNEL_SUBNET | cut -f 1 -d "/" ')
+
+    hostgw_ping_dest=$(docker exec flannel-host1 /bin/sh -c '\
+		source /hostgw.env &&
+		ip link add name dummy_hostgw type dummy && \
+		ip addr add $FLANNEL_SUBNET dev dummy_hostgw && \
+	       	ip link set dummy_hostgw up && \
+		echo $FLANNEL_SUBNET | cut -f 1 -d "/" ')
+
+    # Send some pings from host2. Make sure we can send traffic over vxlan or directly.
+    # If a particular (wrong) interface is forced then pings should fail
+	docker exec -it flannel-host2 ping -c 3 $hostgw_ping_dest && \
+	docker exec -it flannel-host2 ping -c 3 $vxlan_ping_dest && \
+	! docker exec -it flannel-host2 ping -W 1 -c 1 -I flannel.1 $hostgw_ping_dest && \
+	! docker exec -it flannel-host2 ping -W 1 -c 1 -I eth0 $vxlan_ping_dest
+	exit_code=$?
+
+	# Uncomment to debug (you can nsenter)
+	#if [ $exit_code -eq "1" ]; then
+	#	sleep 10000
+	#fi
+
+	echo "Test for multi-backend: exit=$exit_code"
+
+
+	if [ $exit_code -ne 0 ]; then
+		# Print flannel logs to help debug
+		echo "------ flannel server (one being pinged) log -------"
+		docker exec flannel-host1 sh -c 'cat *.log'
+		echo
+
+		echo "------ flannel client (one doing the ping) log -------"
+		docker exec flannel-host2 sh -c 'cat *.log'
+		echo
+	fi
+
+	docker rm -f flannel-host1 flannel-host2 >/dev/null
+
+	return $exit_code
+}
+
 if [ $# -ne 1 ]; then
 	usage
 fi
@@ -124,7 +207,7 @@ docker0=$(ip -o -f inet addr show docker0 | grep -Po 'inet \K[\d.]+')
 etcd_endpt="http://$docker0:2379"
 
 docker rm -f flannel-e2e-test-etcd 2>/dev/null
-docker run --name=flannel-e2e-test-etcd -d -p 2379:2379 --entrypoint /usr/local/bin/etcd $ETCD_IMG --listen-client-urls http://0.0.0.0:2379 --advertise-client-urls $etcd_endpt
+docker run --name=flannel-e2e-test-etcd -d -p 2379:2379 $ETCD_IMG etcd --listen-client-urls http://0.0.0.0:2379 --advertise-client-urls $etcd_endpt
 if [ $? -ne 0 ]; then
 	exit 1
 fi
@@ -133,7 +216,7 @@ echo etcd launched
 
 global_exit_code=0
 
-backends=${BACKEND:-"udp vxlan host-gw"} 
+backends=${BACKEND:-"udp vxlan host-gw"}
 for backend in $backends; do
 	echo
 	echo "=== BACKEND: $backend ==============================================="
@@ -142,6 +225,11 @@ for backend in $backends; do
 		global_exit_code=1
 	fi
 done
+
+echo "=== MULTI BACKEND ==============================================="
+if ! multi_test; then
+    global_exit_code=1
+fi
 
 docker stop flannel-e2e-test-etcd >/dev/null
 

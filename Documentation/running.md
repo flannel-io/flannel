@@ -7,6 +7,15 @@ Additionally it will monitor etcd for new members of the network and adjust the 
 
 After flannel has acquired the subnet and configured backend, it will write out an environment variable file (`/run/flannel/subnet.env` by default) with subnet address and MTU that it supports.
 
+## Multiple networks
+
+Flanneld does not support multiple from a single daemon (it did previously as an experimental feature).
+However, it does support running multiple daemons on the same host with different configuration. The `-subnet-file` and `-etcd-prefix` options should be used to "namespace" the different daemons.
+For example
+```
+flanneld -subnet-file /vxlan.env -etcd-prefix=/vxlan/network
+```
+
 ## Zero-downtime restarts
 
 When running with a backend other than `udp`, the kernel is providing the data path with flanneld acting as the control plane.

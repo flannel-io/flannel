@@ -65,7 +65,7 @@ func (be *VXLANBackend) Run(ctx context.Context) {
 	<-ctx.Done()
 }
 
-func (be *VXLANBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (backend.Network, error) {
+func (be *VXLANBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
 	// Parse our configuration
 	cfg := struct {
 		VNI  int
@@ -100,7 +100,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, network string, con
 		return nil, err
 	}
 
-	lease, err := be.subnetMgr.AcquireLease(ctx, network, subnetAttrs)
+	lease, err := be.subnetMgr.AcquireLease(ctx, subnetAttrs)
 	switch err {
 	case nil:
 
@@ -121,7 +121,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, network string, con
 		return nil, err
 	}
 
-	return newNetwork(network, be.subnetMgr, be.extIface, dev, vxlanNet, lease)
+	return newNetwork(be.subnetMgr, be.extIface, dev, vxlanNet, lease)
 }
 
 // So we can make it JSON (un)marshalable

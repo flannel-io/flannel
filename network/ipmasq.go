@@ -37,7 +37,7 @@ func rules(ipn ip.IP4Net) [][]string {
 	}
 }
 
-func setupIPMasq(ipn ip.IP4Net) error {
+func SetupIPMasq(ipn ip.IP4Net) error {
 	ipt, err := iptables.New()
 	if err != nil {
 		return fmt.Errorf("failed to set up IP Masquerade. iptables was not found")
@@ -54,7 +54,7 @@ func setupIPMasq(ipn ip.IP4Net) error {
 	return nil
 }
 
-func teardownIPMasq(ipn ip.IP4Net) error {
+func TeardownIPMasq(ipn ip.IP4Net) error {
 	ipt, err := iptables.New()
 	if err != nil {
 		return fmt.Errorf("failed to teardown IP Masquerade. iptables was not found")
