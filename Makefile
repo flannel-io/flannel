@@ -68,6 +68,12 @@ gofmt-fix:
 license-check:
 	./license-check.sh
 
+update-glide:
+	# go get -d -u github.com/Masterminds/glide
+	glide update --strip-vendor
+	# go get -d -u github.com/sgotti/glide-vc
+	glide vc --only-code --no-tests
+
 clean:
 	rm -f dist/flanneld*
 	rm -f dist/iptables*
