@@ -51,7 +51,7 @@ func (be *AliVpcBackend) Run(ctx context.Context) {
 	<-ctx.Done()
 }
 
-func (be *AliVpcBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (backend.Network, error) {
+func (be *AliVpcBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
 	// 1. Parse our configuration
 	cfg := struct {
 		AccessKeyID     string
@@ -70,7 +70,7 @@ func (be *AliVpcBackend) RegisterNetwork(ctx context.Context, network string, co
 		PublicIP: ip.FromIP(be.extIface.ExtAddr),
 	}
 
-	l, err := be.sm.AcquireLease(ctx, network, &attrs)
+	l, err := be.sm.AcquireLease(ctx, &attrs)
 	switch err {
 	case nil:
 

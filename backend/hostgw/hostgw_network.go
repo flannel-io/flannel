@@ -52,7 +52,7 @@ func (n *network) Run(ctx context.Context) {
 	evts := make(chan []subnet.Event)
 	wg.Add(1)
 	go func() {
-		subnet.WatchLeases(ctx, n.sm, n.name, n.lease, evts)
+		subnet.WatchLeases(ctx, n.sm, n.lease, evts)
 		wg.Done()
 	}()
 

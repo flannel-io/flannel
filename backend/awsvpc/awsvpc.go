@@ -53,7 +53,7 @@ func (be *AwsVpcBackend) Run(ctx context.Context) {
 	<-ctx.Done()
 }
 
-func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (backend.Network, error) {
+func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
 	// Parse our configuration
 	cfg := struct {
 		RouteTableID string
@@ -70,7 +70,7 @@ func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, co
 		PublicIP: ip.FromIP(be.extIface.ExtAddr),
 	}
 
-	l, err := be.sm.AcquireLease(ctx, network, &attrs)
+	l, err := be.sm.AcquireLease(ctx, &attrs)
 	switch err {
 	case nil:
 
@@ -115,7 +115,7 @@ func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, co
 		log.Infof("Found route table %s.\n", cfg.RouteTableID)
 	}
 
-	networkConfig, err := be.sm.GetNetworkConfig(ctx, network)
+	networkConfig, err := be.sm.GetNetworkConfig(ctx)
 	if err != nil {
 		log.Errorf("Error fetching network config: %v", err)
 	}

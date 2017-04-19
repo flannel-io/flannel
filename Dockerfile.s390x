@@ -11,4 +11,4 @@ COPY dist/libpthread.so.0-$FLANNEL_ARCH /lib/libpthread.so.0
 COPY dist/ld64.so.1-$FLANNEL_ARCH /lib/ld64.so.1
 COPY dist/libc.so.6-$FLANNEL_ARCH /lib/libc.so.6
 
-CMD ["/opt/bin/flanneld"]
+ENTRYPOINT ["/opt/bin/flanneld"]

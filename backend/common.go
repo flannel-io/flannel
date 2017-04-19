@@ -43,7 +43,7 @@ type Backend interface {
 	// Called first to start the necessary event loops and such
 	Run(ctx context.Context)
 	// Called when the backend should create or begin managing a new network
-	RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (Network, error)
+	RegisterNetwork(ctx context.Context, config *subnet.Config) (Network, error)
 }
 
 type Network interface {

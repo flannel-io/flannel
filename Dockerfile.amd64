@@ -8,5 +8,5 @@ COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld
 COPY dist/iptables-$FLANNEL_ARCH /usr/local/bin/iptables
 COPY dist/mk-docker-opts.sh /opt/bin/
 
-CMD ["/opt/bin/flanneld"]
+ENTRYPOINT ["/opt/bin/flanneld"]
 
