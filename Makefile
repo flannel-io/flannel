@@ -31,7 +31,7 @@ ifeq ($(ARCH),ppc64le)
 	CC=powerpc64le-linux-gnu-gcc
 endif
 ifeq ($(ARCH),s390x)
-	LIB_DIR=s390x-linux-gnu
+	LIB_DIR=/usr/s390x-linux-gnu/lib
 	CC=s390x-linux-gnu-gcc
 endif
 
