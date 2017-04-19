@@ -43,14 +43,18 @@ import:
   subpackages:
   - compute/v1
   - googleapi
-- package: k8s.io/kubernetes
+- package: k8s.io/client-go
+  version: release-3.0
   subpackages:
-  - pkg/api
-  - pkg/client/cache
-  - pkg/client/clientset_generated/internalclientset
-  - pkg/client/restclient
-  - pkg/controller/framework
+  - kubernetes
+  - listers/core/v1
+  - pkg/api/v1
+  - rest
+  - tools/cache
+- package: k8s.io/apimachinery
+  version: 72e51762028fdf72f1a20e59bedceece02a425c6
+  subpackages:
+  - pkg/apis/meta/v1
   - pkg/runtime
-  - pkg/util/runtime
   - pkg/util/wait
   - pkg/watch
