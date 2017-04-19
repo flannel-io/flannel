@@ -53,13 +53,42 @@ func (be *AwsVpcBackend) Run(ctx context.Context) {
 	<-ctx.Done()
 }
 
+type backendConfig struct {
+	RouteTableID interface{} `json:"RouteTableID"`
+}
+
+func (conf *backendConfig) routeTables() ([]string, error) {
+	if table, ok := conf.RouteTableID.(string); ok {
+		log.Info(fmt.Sprintf("RouteTableID configured as string: %s", table))
+		return []string{table}, nil
+	}
+	if rawTables, ok := conf.RouteTableID.([]interface{}); ok {
+		log.Info(fmt.Sprintf("RouteTableID configured as slice: %+v", rawTables))
+		tables := make([]string, len(rawTables))
+		for idx, t := range rawTables {
+			table, ok := t.(string)
+			if !ok {
+				return nil, fmt.Errorf("Unexpected type in RouteTableID slice. Must be strings.")
+			}
+			tables[idx] = table
+		}
+		return tables, nil
+	}
+	return nil, fmt.Errorf("Unexpected RouteTableID type. Must be string or array of strings.")
+}
+
+func (conf *backendConfig) routeTableConfigured() bool {
+	configured := conf.RouteTableID != nil
+	log.Info(fmt.Sprintf("Route table configured: %t", configured))
+	return configured
+}
+
 func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (backend.Network, error) {
 	// Parse our configuration
-	cfg := struct {
-		RouteTableID string
-	}{}
+	var cfg backendConfig
 
 	if len(config.Backend) > 0 {
+		log.Info("Backend configured as: %s", string(config.Backend))
 		if err := json.Unmarshal(config.Backend, &cfg); err != nil {
 			return nil, fmt.Errorf("error decoding VPC backend config: %v", err)
 		}
@@ -108,7 +137,7 @@ func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, co
 		log.Warningf("failed to disable SourceDestCheck on %s: %s.\n", *eni.NetworkInterfaceId, err)
 	}
 
-	if cfg.RouteTableID == "" {
+	if !cfg.routeTableConfigured() {
 		if cfg.RouteTableID, err = be.detectRouteTableID(eni, ec2c); err != nil {
 			return nil, err
 		}
@@ -120,29 +149,36 @@ func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, network string, co
 		log.Errorf("Error fetching network config: %v", err)
 	}
 
-	err = be.cleanupBlackholeRoutes(cfg.RouteTableID, networkConfig.Network, ec2c)
+	tables, err := cfg.routeTables()
 	if err != nil {
-		log.Errorf("Error cleaning up blackhole routes: %v", err)
+		return nil, err
 	}
 
-	matchingRouteFound, err := be.checkMatchingRoutes(cfg.RouteTableID, l.Subnet.String(), eni.NetworkInterfaceId, ec2c)
-	if err != nil {
-		log.Errorf("Error describing route tables: %v", err)
-	}
-
-	if !matchingRouteFound {
-		cidrBlock := l.Subnet.String()
-		deleteRouteInput := &ec2.DeleteRouteInput{RouteTableId: &cfg.RouteTableID, DestinationCidrBlock: &cidrBlock}
-		if _, err := ec2c.DeleteRoute(deleteRouteInput); err != nil {
-			if ec2err, ok := err.(awserr.Error); !ok || ec2err.Code() != "InvalidRoute.NotFound" {
-				// an error other than the route not already existing occurred
-				return nil, fmt.Errorf("error deleting existing route for %s: %v", l.Subnet.String(), err)
-			}
+	for _, routeTableID := range tables {
+		err = be.cleanupBlackholeRoutes(routeTableID, networkConfig.Network, ec2c)
+		if err != nil {
+			log.Errorf("Error cleaning up blackhole routes: %v", err)
 		}
 
-		// Add the route for this machine's subnet
-		if err := be.createRoute(cfg.RouteTableID, l.Subnet.String(), eni.NetworkInterfaceId, ec2c); err != nil {
-			return nil, fmt.Errorf("unable to add route %s: %v", l.Subnet.String(), err)
+		matchingRouteFound, err := be.checkMatchingRoutes(routeTableID, l.Subnet.String(), eni.NetworkInterfaceId, ec2c)
+		if err != nil {
+			log.Errorf("Error describing route tables: %v", err)
+		}
+
+		if !matchingRouteFound {
+			cidrBlock := l.Subnet.String()
+			deleteRouteInput := &ec2.DeleteRouteInput{RouteTableId: &routeTableID, DestinationCidrBlock: &cidrBlock}
+			if _, err := ec2c.DeleteRoute(deleteRouteInput); err != nil {
+				if ec2err, ok := err.(awserr.Error); !ok || ec2err.Code() != "InvalidRoute.NotFound" {
+					// an error other than the route not already existing occurred
+					return nil, fmt.Errorf("error deleting existing route for %s: %v", l.Subnet.String(), err)
+				}
+			}
+
+			// Add the route for this machine's subnet
+			if err := be.createRoute(routeTableID, l.Subnet.String(), eni.NetworkInterfaceId, ec2c); err != nil {
+				return nil, fmt.Errorf("unable to add route %s: %v", l.Subnet.String(), err)
+			}
 		}
 	}
 
@@ -220,7 +256,7 @@ func (be *AwsVpcBackend) createRoute(routeTableID, subnet string, eniID *string,
 	if _, err := ec2c.CreateRoute(route); err != nil {
 		return err
 	}
-	log.Infof("Route added %s - %s.\n", subnet, *eniID)
+	log.Infof("Route added to table %s: %s - %s.\n", routeTableID, subnet, *eniID)
 	return nil
 }
 

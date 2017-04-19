@@ -115,6 +115,7 @@ func main() {
 		log.Error("Failed to create SubnetManager: ", err)
 		os.Exit(1)
 	}
+	log.Info(fmt.Sprintf("Created subnet manager: %+v", sm))
 
 	// Register for SIGINT and SIGTERM
 	log.Info("Installing signal handlers")
