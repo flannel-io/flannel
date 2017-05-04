@@ -19,7 +19,7 @@ The following diagram demonstrates the path a packet takes as it traverses the o
 
 ![Life of a packet](./packet-01.png)
 
-## Documenation
+## Documentation
 - [Running](Documentation/running.md)
 - [Configuration](Documentation/configuration.md)
 - [Backends](Documentation/backends.md)
