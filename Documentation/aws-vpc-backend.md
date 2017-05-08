@@ -114,11 +114,20 @@ First, SSH into `demo-instance-1`:
 ```
 $ etcd --advertise-client-urls http://$INTERNAL_IP:2379 --listen-client-urls http://0.0.0.0:2379
 ```
-- Publish configuration in etcd (ensure that the network range does not overlap with the one configured for the VPC)
+- Publish configuration in etcd (ensure that the network range does not overlap with the one configured for the VPC).  This will
+  attempt to automatically determine your route table.
 
 ```
 $ etcdctl set /coreos.com/network/config '{"Network":"10.20.0.0/16", "Backend": {"Type": "aws-vpc"}}'
 ```
+
+- If you want to manually specify your route table ID or if you want to update multiple route tables, e.g. for a deployment across multiple availability zones, use either a string for one or an array for one or more route tables like this.
+
+```
+$ etcdctl set /coreos.com/network/config '{"Network":"10.20.0.0/16", "Backend": {"Type": "aws-vpc", "RouteTableID": ["rtb-abc00001","rtb-abc00002","rtb-abc00003"]} }'}}'
+```
+
+
 - Fetch the latest release using wget from [here](https://github.com/coreos/flannel/releases/download/v0.7.0/flannel-v0.7.0-linux-amd64.tar.gz)
 - Run flannel daemon:
 
