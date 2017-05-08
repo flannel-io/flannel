@@ -28,6 +28,8 @@ import (
 	"github.com/coreos/flannel/pkg/ip"
 )
 
+const RTN_BROADCAST = 3
+
 type vxlanDeviceAttrs struct {
 	vni       uint32
 	name      string
@@ -127,6 +129,30 @@ func (dev *vxlanDevice) Configure(ipn ip.IP4Net) error {
 
 	if err := netlink.LinkSetUp(dev.link); err != nil {
 		return fmt.Errorf("failed to set interface %s to UP state: %s", dev.link.Attrs().Name, err)
+	}
+
+	// Drop the local route table entry for broadcast to the flannel network address
+	// See: https://github.com/coreos/flannel/issues/533
+	broadcastFilter := &netlink.Route{
+		LinkIndex: dev.link.Attrs().Index,
+		Table:     syscall.RT_TABLE_LOCAL,
+		Type:      RTN_BROADCAST,
+	}
+
+	filterMask := netlink.RT_FILTER_OIF|netlink.RT_FILTER_TABLE|netlink.RT_FILTER_TYPE
+	filterRoutes, err := netlink.RouteListFiltered(netlink.FAMILY_V4, broadcastFilter, filterMask)
+	if err != nil {
+		return fmt.Errorf("Failed to list routes: %v", err)
+	}
+
+	for _, r := range filterRoutes {
+		// Remove broadcast route for network address
+		if r.Dst.IP.Equal(ipn.Network().ToIPNet().IP) {
+			log.Infof("Removing broadcast route: %s", r.String())
+			if err := netlink.RouteDel(&r); err != nil {
+				return fmt.Errorf("Failed to delete route: %v", err)
+			}
+		}
 	}
 
 	// explicitly add a route since there might be a route for a subnet already
