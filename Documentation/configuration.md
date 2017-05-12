@@ -61,6 +61,8 @@ The following configuration illustrates the use of most options with `udp` backe
 --version: print version and exit
 ```
 
+MTU is calculated and set automatically by flannel. It then reports that value in `subnet.env`. This value cannot be changed.
+
 ## Environment variables
 
 The command line options outlined above can also be specified via environment variables.
