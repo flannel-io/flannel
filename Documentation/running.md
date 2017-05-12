@@ -1,4 +1,4 @@
-## Running
+# Running flannel
 
 Once you have pushed configuration JSON to `etcd`, you can start `flanneld`. If you published your config at the default location, you can start `flanneld` with no arguments.
 
@@ -8,16 +8,18 @@ It will also monitor `etcd` for new members of the network and adjust the routes
 
 After flannel has acquired the subnet and configured backend, it will write out an environment variable file (`/run/flannel/subnet.env` by default) with subnet address and MTU that it supports.
 
+For more information on checking the IP range for a specific host, see [Leases and Reservations][leases].
+
 ## Multiple networks
 
-Flanneld does not support multiple from a single daemon (it did previously as an experimental feature).
-However, it does support running multiple daemons on the same host with different configuration. The `-subnet-file` and `-etcd-prefix` options should be used to "namespace" the different daemons.
+Flanneld does not support running multiple networks from a single daemon (it did previously as an experimental feature).
+However, it does support running multiple daemons on the same host with different configurations. The `-subnet-file` and `-etcd-prefix` options should be used to "namespace" the different daemons.
 For example
 ```
 flanneld -subnet-file /vxlan.env -etcd-prefix=/vxlan/network
 ```
 
-### Running manually
+## Running manually
 
 1. Download a `flannel` binary.
 ```bash
@@ -45,7 +47,7 @@ FLANNEL_MTU=1450
 FLANNEL_IPMASQ=false
 ```
 
-### Interface selection
+## Interface selection
 
 Flannel uses the interface selected to register itself in the datastore.
 
@@ -58,7 +60,7 @@ The combination of the defaults, the autodetection and these two flags ultimatel
 * An IP address for that interface.
 * A public IP that can be used for reaching this node. In `host-gw` it should match the interface address.
 
-### Making changes at runtime
+## Making changes at runtime
 
 Please be aware of the following flannel runtime limitations.
 * The datastore type cannot be changed.
@@ -107,3 +109,4 @@ Also, to avoid interruptions during restart, the configuration must not be chang
 
 [coreos-etcd]: https://github.com/coreos/etcd/blob/master/Documentation/dev-guide/local_cluster.md
 [configuring-flannel]: https://coreos.com/docs/cluster-management/setup/flannel-config/
+[leases]: reservations.md
