@@ -20,7 +20,7 @@ The following diagram demonstrates the path a packet takes as it traverses the o
 
 The easiest way to deploy flannel with Kubernetes is to use one of several deployment tools and distributions that network clusters with flannel by default. CoreOS's [Tectonic][tectonic] sets up flannel in the Kubernetes clusters it creates using the open source [Tectonic Installer][tectonic-installer] to drive the setup process.
 
-It's easy to use flannel with Kubernetes. Flannel can use the Kubernetes API as its backing store, meaning there's no need to deploy a discrete `etcd` cluster for `flannel`. This `flannel` mode is known as the *kube subnet manager* and is demonstrated below.
+Flannel can use the Kubernetes API as its backing store, meaning there's no need to deploy a discrete `etcd` cluster for `flannel`. This `flannel` mode is known as the *kube subnet manager*.
 
 ### Adding flannel
 
@@ -37,6 +37,7 @@ Once applied, the `flannel` manifest defines three things:
 
 When you run pods, they will be allocated IP addresses from the pod network CIDR. No matter which node those pods end up on, they will be able to communicate with each other.
 
+Kubernetes 1.6 requires CNI plugin version 0.5.1 or later.
 
 ## Documentation
 - [Building (and releasing)](Documentation/building.md)
