@@ -85,7 +85,3 @@ func (be *UdpBackend) RegisterNetwork(ctx context.Context, config *subnet.Config
 
 	return newNetwork(be.sm, be.extIface, cfg.Port, tunNet, l)
 }
-
-func (_ *UdpBackend) Run(ctx context.Context) {
-	<-ctx.Done()
-}

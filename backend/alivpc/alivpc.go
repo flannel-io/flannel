@@ -47,10 +47,6 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return &be, nil
 }
 
-func (be *AliVpcBackend) Run(ctx context.Context) {
-	<-ctx.Done()
-}
-
 func (be *AliVpcBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
 	// 1. Parse our configuration
 	cfg := struct {
