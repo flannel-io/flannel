@@ -19,11 +19,13 @@ import (
 	"flag"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"strings"
 	"syscall"
+	"strconv"
 
 	"github.com/coreos/pkg/flagutil"
 	log "github.com/golang/glog"
@@ -67,6 +69,8 @@ type CmdLineOpts struct {
 	subnetDir              string
 	publicIP               string
 	subnetLeaseRenewMargin int
+	healthzIP              string
+	healthzPort            int
 }
 
 var (
@@ -91,6 +95,8 @@ func init() {
 	flag.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "Contact the Kubernetes API for subnet assignement instead of etcd.")
 	flag.BoolVar(&opts.help, "help", false, "print this message")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
+	flag.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "The IP address for healthz server to listen")
+	flag.IntVar(&opts.healthzPort, "healthz-port", 0, "The port for healthz server to listen(0 to disable)")
 }
 
 func newSubnetManager() (subnet.Manager, error) {
@@ -153,6 +159,10 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go shutdown(sigs, cancel)
+
+	if opts.healthzPort > 0 {
+		go mustRunHealthz()
+	}
 
 	// Fetch the network config (i.e. what backend to use etc..).
 	config, err := getConfig(ctx, sm)
@@ -377,4 +387,19 @@ func WriteSubnetFile(path string, nw ip.IP4Net, ipMasq bool, bn backend.Network)
 	// atomically visible with the contents
 	return os.Rename(tempFile, path)
 	//TODO - is this safe? What if it's not on the same FS?
+}
+
+func mustRunHealthz() {
+	address := net.JoinHostPort(opts.healthzIP, strconv.Itoa(opts.healthzPort))
+	log.Infof("Start healthz server on %s", address)
+
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("flanneld is running"))
+	})
+
+	if err := http.ListenAndServe(address, nil); err != nil {
+		log.Errorf("Start healthz server error. %v", err)
+		panic(err)
+	}
 }
