@@ -43,6 +43,7 @@ import (
 	_ "github.com/coreos/flannel/backend/alivpc"
 	_ "github.com/coreos/flannel/backend/alloc"
 	_ "github.com/coreos/flannel/backend/awsvpc"
+	_ "github.com/coreos/flannel/backend/extension"
 	_ "github.com/coreos/flannel/backend/gce"
 	_ "github.com/coreos/flannel/backend/hostgw"
 	_ "github.com/coreos/flannel/backend/udp"

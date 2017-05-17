@@ -39,7 +39,12 @@ docker_version_check() {
 run_test() {
 	backend=$1
 
-	flannel_conf="{ \"Network\": \"$FLANNEL_NET\", \"Backend\": { \"Type\": \"${backend}\" } }"
+    if [ -e "$backend" ]; then
+        echo "Reading custom conf from $backend"
+        flannel_conf=`cat "$backend"`
+    else
+	    flannel_conf="{ \"Network\": \"$FLANNEL_NET\", \"Backend\": { \"Type\": \"${backend}\" } }"
+    fi
 
 	# etcd might take a bit to come up
 	while ! docker run --rm -it $ETCD_IMG etcdctl --endpoints=$etcd_endpt set /coreos.com/network/config "$flannel_conf"
