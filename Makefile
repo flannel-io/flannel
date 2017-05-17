@@ -76,7 +76,6 @@ update-glide:
 
 clean:
 	rm -f dist/flanneld*
-	rm -f dist/iptables*
 	rm -f dist/libpthread*
 	rm -f dist/*.aci
 	rm -f dist/*.docker
