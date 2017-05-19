@@ -203,8 +203,14 @@ func main() {
 
 	daemon.SdNotify(false, "READY=1")
 
-	// Block waiting to renew the lease
-	_ = MonitorLease(ctx, sm, bn)
+	// Kube subnet mgr doesn't lease the subnet for this node - it just uses the podCidr that's already assigned.
+	if opts.kubeSubnetMgr {
+		// Wait for the shutdown to be signalled
+		<-ctx.Done()
+	} else {
+		// Block waiting to renew the lease
+		_ = MonitorLease(ctx, sm, bn)
+	}
 
 	// To get to here, the Cancel signal must have been received or the lease has been revoked.
 	exit()

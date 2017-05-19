@@ -65,7 +65,6 @@ type kubeSubnetManager struct {
 	nodeController cache.Controller
 	subnetConf     *subnet.Config
 	events         chan subnet.Event
-	selfEvents     chan subnet.Event
 }
 
 func NewSubnetManager() (subnet.Manager, error) {
@@ -127,14 +126,13 @@ func newKubeSubnetManager(c clientset.Interface, sc *subnet.Config, nodeName str
 	ksm.nodeName = nodeName
 	ksm.subnetConf = sc
 	ksm.events = make(chan subnet.Event, 100)
-	ksm.selfEvents = make(chan subnet.Event, 100)
 	indexer, controller := cache.NewIndexerInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return ksm.client.Core().Nodes().List(options)
+				return ksm.client.CoreV1().Nodes().List(options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return ksm.client.Core().Nodes().Watch(options)
+				return ksm.client.CoreV1().Nodes().Watch(options)
 			},
 		},
 		&v1.Node{},
@@ -167,9 +165,6 @@ func (ksm *kubeSubnetManager) handleAddLeaseEvent(et subnet.EventType, obj inter
 		return
 	}
 	ksm.events <- subnet.Event{et, l}
-	if n.ObjectMeta.Name == ksm.nodeName {
-		ksm.selfEvents <- subnet.Event{et, l}
-	}
 }
 
 func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{}) {
@@ -190,9 +185,6 @@ func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{})
 		return
 	}
 	ksm.events <- subnet.Event{subnet.EventAdded, l}
-	if n.ObjectMeta.Name == ksm.nodeName {
-		ksm.selfEvents <- subnet.Event{subnet.EventAdded, l}
-	}
 }
 
 func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {
@@ -245,7 +237,7 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 			return nil, fmt.Errorf("failed to create patch for node %q: %v", ksm.nodeName, err)
 		}
 
-		_, err = ksm.client.Core().Nodes().Patch(ksm.nodeName, types.StrategicMergePatchType, patchBytes, "status")
+		_, err = ksm.client.CoreV1().Nodes().Patch(ksm.nodeName, types.StrategicMergePatchType, patchBytes, "status")
 		if err != nil {
 			return nil, err
 		}
@@ -255,28 +247,6 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		Attrs:      *attrs,
 		Expiration: time.Now().Add(24 * time.Hour),
 	}, nil
-}
-
-func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, lease *subnet.Lease) error {
-	l, err := ksm.AcquireLease(ctx, &lease.Attrs)
-	if err != nil {
-		return err
-	}
-	lease.Subnet = l.Subnet
-	lease.Attrs = l.Attrs
-	lease.Expiration = l.Expiration
-	return nil
-}
-
-func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
-	select {
-	case event := <-ksm.selfEvents:
-		return subnet.LeaseWatchResult{
-			Events: []subnet.Event{event},
-		}, nil
-	case <-ctx.Done():
-		return subnet.LeaseWatchResult{}, nil
-	}
 }
 
 func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, cursor interface{}) (subnet.LeaseWatchResult, error) {
@@ -291,7 +261,7 @@ func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, cursor interface{
 }
 
 func (ksm *kubeSubnetManager) Run(ctx context.Context) {
-	glog.Infof("starting kube subnet manager")
+	glog.Infof("Starting kube subnet manager")
 	ksm.nodeController.Run(ctx.Done())
 }
 
@@ -300,18 +270,28 @@ func nodeToLease(n v1.Node) (l subnet.Lease, err error) {
 	if err != nil {
 		return l, err
 	}
+
 	l.Attrs.BackendType = n.Annotations[backendTypeAnnotation]
 	l.Attrs.BackendData = json.RawMessage(n.Annotations[backendDataAnnotation])
+
 	_, cidr, err := net.ParseCIDR(n.Spec.PodCIDR)
 	if err != nil {
 		return l, err
 	}
+
 	l.Subnet = ip.FromIPNet(cidr)
-	l.Expiration = time.Now().Add(24 * time.Hour)
 	return l, nil
 }
 
 // unimplemented
+func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, lease *subnet.Lease) error {
+	return ErrUnimplemented
+}
+
+func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
+	return subnet.LeaseWatchResult{}, ErrUnimplemented
+}
+
 func (ksm *kubeSubnetManager) RevokeLease(ctx context.Context, sn ip.IP4Net) error {
 	return ErrUnimplemented
 }
