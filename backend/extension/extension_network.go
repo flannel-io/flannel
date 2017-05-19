@@ -82,22 +82,25 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 			}
 
 			if len(n.subnetAddCommand) > 0 {
-				var dat interface{}
-				if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &dat); err != nil {
-					log.Errorf("failed to unmarshal BackendData: %v", err)
-				} else {
-					backendData := dat.(string)
-					cmd_output, err := runCmd([]string{
-						fmt.Sprintf("SUBNET=%s", evt.Lease.Subnet),
-						fmt.Sprintf("PUBLIC_IP=%s", evt.Lease.Attrs.PublicIP)},
-						backendData,
-						"sh", "-c", n.subnetAddCommand)
+				backendData := ""
 
-					if err != nil {
-						log.Errorf("failed to run command: %s Err: %v Output: %s", n.subnetAddCommand, err, cmd_output)
-					} else {
-						log.Infof("Ran command: %s\n Output: %s", n.subnetAddCommand, cmd_output)
+				if len(evt.Lease.Attrs.BackendData) > 0 {
+					if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &backendData); err != nil {
+						log.Errorf("failed to unmarshal BackendData: %v", err)
+						continue
 					}
+				}
+
+				cmd_output, err := runCmd([]string{
+					fmt.Sprintf("SUBNET=%s", evt.Lease.Subnet),
+					fmt.Sprintf("PUBLIC_IP=%s", evt.Lease.Attrs.PublicIP)},
+					backendData,
+					"sh", "-c", n.subnetAddCommand)
+
+				if err != nil {
+					log.Errorf("failed to run command: %s Err: %v Output: %s", n.subnetAddCommand, err, cmd_output)
+				} else {
+					log.Infof("Ran command: %s\n Output: %s", n.subnetAddCommand, cmd_output)
 				}
 			}
 
@@ -110,22 +113,24 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 			}
 
 			if len(n.subnetRemoveCommand) > 0 {
-				var dat interface{}
-				if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &dat); err != nil {
-					log.Errorf("failed to unmarshal BackendData: %v", err)
-				} else {
-					backendData := dat.(string)
-					cmd_output, err := runCmd([]string{
-						fmt.Sprintf("SUBNET=%s", evt.Lease.Subnet),
-						fmt.Sprintf("PUBLIC_IP=%s", evt.Lease.Attrs.PublicIP)},
-						backendData,
-						"sh", "-c", n.subnetRemoveCommand)
+				backendData := ""
 
-					if err != nil {
-						log.Errorf("failed to run command: %s Err: %v Output: %s", n.subnetRemoveCommand, err, cmd_output)
-					} else {
-						log.Infof("Ran command: %s\n Output: %s", n.subnetRemoveCommand, cmd_output)
+				if len(evt.Lease.Attrs.BackendData) > 0 {
+					if err := json.Unmarshal(evt.Lease.Attrs.BackendData, &backendData); err != nil {
+						log.Errorf("failed to unmarshal BackendData: %v", err)
+						continue
 					}
+				}
+				cmd_output, err := runCmd([]string{
+					fmt.Sprintf("SUBNET=%s", evt.Lease.Subnet),
+					fmt.Sprintf("PUBLIC_IP=%s", evt.Lease.Attrs.PublicIP)},
+					backendData,
+					"sh", "-c", n.subnetRemoveCommand)
+
+				if err != nil {
+					log.Errorf("failed to run command: %s Err: %v Output: %s", n.subnetRemoveCommand, err, cmd_output)
+				} else {
+					log.Infof("Ran command: %s\n Output: %s", n.subnetRemoveCommand, cmd_output)
 				}
 			}
 
