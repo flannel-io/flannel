@@ -125,7 +125,7 @@ func newKubeSubnetManager(c clientset.Interface, sc *subnet.Config, nodeName str
 	ksm.client = c
 	ksm.nodeName = nodeName
 	ksm.subnetConf = sc
-	ksm.events = make(chan subnet.Event, 100)
+	ksm.events = make(chan subnet.Event, 5000)
 	indexer, controller := cache.NewIndexerInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
