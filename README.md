@@ -52,6 +52,7 @@ Kubernetes 1.6 requires CNI plugin version 0.5.1 or later.
 
 * Mailing list: coreos-dev
 * IRC: #coreos on freenode.org
+* Slack: #flannel on [Calico Users Slack](https://slack.projectcalico.org)
 * Planning/Roadmap: [milestones][milestones], [roadmap][roadmap]
 * Bugs: [issues][flannel-issues]
 
