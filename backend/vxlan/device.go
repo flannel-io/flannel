@@ -60,7 +60,7 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 		VxlanId:      int(devAttrs.vni),
 		VtepDevIndex: devAttrs.vtepIndex,
 		SrcAddr:      devAttrs.vtepAddr,
-		Port:         devAttrs.vtepPort,
+		Port:         int(nl.Swap16(uint16(devAttrs.vtepPort))), //network endian order
 		Learning:     false,
 		GBP:          devAttrs.gbp,
 	}
