@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -50,7 +51,31 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 }
 
 type backendConfig struct {
-	RouteTableID interface{} `json:"RouteTableID"`
+	RouteTableID     interface{} `json:"RouteTableID"`
+	RouteTableFilter []string    `json:"RouteTableFilter"`
+}
+
+func (conf *backendConfig) routeTablesByFilter(ec2c *ec2.EC2) ([]string, error) {
+	filter := newFilter()
+	for _, v := range conf.RouteTableFilter {
+		chunks := strings.SplitN(v, "=", 2)
+		if len(chunks) != 2 {
+			return nil, fmt.Errorf("Error parsing filter: %v", v)
+		}
+		filter.Add(chunks[0], chunks[1])
+	}
+	input := ec2.DescribeRouteTablesInput{
+		Filters: filter,
+	}
+	resp, err := ec2c.DescribeRouteTables(&input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve route tables: %v", err)
+	}
+	rtables := make([]string, 0)
+	for _, rtable := range resp.RouteTables {
+		rtables = append(rtables, *rtable.RouteTableId)
+	}
+	return rtables, nil
 }
 
 func (conf *backendConfig) routeTables() ([]string, error) {
@@ -145,9 +170,19 @@ func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, config *subnet.Con
 		log.Errorf("Error fetching network config: %v", err)
 	}
 
-	tables, err := cfg.routeTables()
-	if err != nil {
-		return nil, err
+	var tables []string
+	if len(cfg.RouteTableFilter) > 0 {
+		tables, err = cfg.routeTablesByFilter(ec2c)
+		if err != nil {
+			return nil, err
+		}
+		cfg.RouteTableID = tables
+		log.Infof("Found route tables using filter %v.\n", tables)
+	} else {
+		tables, err = cfg.routeTables()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	for _, routeTableID := range tables {
