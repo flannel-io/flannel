@@ -78,7 +78,7 @@ func ParseConfig(s string) (*Config, error) {
 	}
 
 	if cfg.SubnetMax == ip.IP4(0) {
-		cfg.SubnetMax = cfg.Network.Next().IP - subnetSize
+		cfg.SubnetMax = cfg.SubnetMin + subnetSize
 	} else if !cfg.Network.Contains(cfg.SubnetMax) {
 		return nil, errors.New("SubnetMax is not in the range of the Network")
 	}

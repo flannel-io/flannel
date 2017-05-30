@@ -35,8 +35,8 @@ func TestConfigDefaults(t *testing.T) {
 		t.Errorf("SubnetMin mismatch, expected 10.3.1.0, got %s", cfg.SubnetMin)
 	}
 
-	if cfg.SubnetMax.String() != "10.3.255.0" {
-		t.Errorf("SubnetMax mismatch, expected 10.3.255.0, got %s", cfg.SubnetMax)
+	if cfg.SubnetMax.String() != "10.3.2.0" {
+		t.Errorf("SubnetMax mismatch, expected 10.3.2.0, got %s", cfg.SubnetMax)
 	}
 
 	if cfg.SubnetLen != 24 {
