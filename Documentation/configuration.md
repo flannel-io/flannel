@@ -58,6 +58,8 @@ The following configuration illustrates the use of most options with `udp` backe
 --subnet-lease-renew-margin=60: subnet lease renewal margin, in minutes.
 --ip-masq=false: setup IP masquerade for traffic destined for outside the flannel network. Flannel assumes that the default policy is ACCEPT in the NAT POSTROUTING chain.
 -v=0: log level for V logs. Set to 1 to see messages related to data path.
+--healthz-ip="0.0.0.0": The IP address for healthz server to listen (default "0.0.0.0")
+--healthz-port=0: The port for healthz server to listen(0 to disable)
 --version: print version and exit
 ```
 
@@ -68,3 +70,9 @@ MTU is calculated and set automatically by flannel. It then reports that value i
 The command line options outlined above can also be specified via environment variables.
 For example `--etcd-endpoints=http://10.0.0.2:2379` is equivalent to `FLANNELD_ETCD_ENDPOINTS=http://10.0.0.2:2379` environment variable.
 Any command line option can be turned into an environment variable by prefixing it with `FLANNELD_`, stripping leading dashes, converting to uppercase and replacing all other dashes to underscores.
+
+## Health Check
+
+Flannel provides a health check http endpoint `healthz`. Currently this endpoint will blindly
+return http status ok(i.e. 200) when flannel is running. This feature is by default disabled.
+Set `healthz-port` to a non-zero value will enable a healthz server for flannel.
