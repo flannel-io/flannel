@@ -38,12 +38,12 @@ endif
 GOARM=7
 
 # List images with gcloud alpha container images list-tags gcr.io/google_containers/kube-cross
-KUBE_CROSS_TAG=v1.7.5-3
+KUBE_CROSS_TAG=v1.8.3-1
 IPTABLES_VERSION=1.4.21
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
 	go build -o dist/flanneld \
-	  -ldflags "-X github.com/coreos/flannel/version.Version=$(TAG)"
+	  -ldflags "-s -w -X github.com/coreos/flannel/version.Version=$(TAG)"
 
 test: license-check gofmt
 	go test -cover $(TEST_PACKAGES_EXPANDED)
