@@ -291,6 +291,10 @@ func vxlanLinksIncompat(l1, l2 netlink.Link) string {
 		return fmt.Sprintf("port: %v vs %v", v1.Port, v2.Port)
 	}
 
+	if v1.GBP != v2.GBP {
+		return fmt.Sprintf("gbp: %v vs %v", v1.GBP, v2.GBP)
+	}
+
 	return ""
 }
 
