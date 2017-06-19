@@ -40,6 +40,8 @@ import (
 
 	"time"
 
+	"github.com/joho/godotenv"
+
 	// Backends need to be imported for their init() to get executed and them to register
 	"github.com/coreos/flannel/backend"
 	_ "github.com/coreos/flannel/backend/alivpc"
@@ -115,7 +117,10 @@ func newSubnetManager() (subnet.Manager, error) {
 		Password:  opts.etcdPassword,
 	}
 
-	return etcdv2.NewLocalManager(cfg)
+	// Attempt to renew the lease for the subnet specified in the subnetFile
+	prevSubnet := ReadSubnetFromSubnetFile(opts.subnetFile)
+
+	return etcdv2.NewLocalManager(cfg, prevSubnet)
 }
 
 func main() {
@@ -409,4 +414,20 @@ func mustRunHealthz() {
 		log.Errorf("Start healthz server error. %v", err)
 		panic(err)
 	}
+}
+
+func ReadSubnetFromSubnetFile(path string) ip.IP4Net {
+	var prevSubnet ip.IP4Net
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		prevSubnetVals, err := godotenv.Read(path)
+		if err != nil {
+			log.Errorf("Couldn't fetch previous subnet from subnet file at %s: %s", path, err)
+		} else if prevSubnetString, ok := prevSubnetVals["FLANNEL_SUBNET"]; ok {
+			err = prevSubnet.UnmarshalJSON([]byte(prevSubnetString))
+			if err != nil {
+				log.Errorf("Couldn't parse previous subnet from subnet file at %s: %s", path, err)
+			}
+		}
+	}
+	return prevSubnet
 }

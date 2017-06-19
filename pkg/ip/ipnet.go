@@ -159,6 +159,10 @@ func (n IP4Net) Contains(ip IP4) bool {
 	return (uint32(n.IP) & n.Mask()) == (uint32(ip) & n.Mask())
 }
 
+func (n IP4Net) Empty() bool {
+	return n.IP == IP4(0) && n.PrefixLen == uint(0)
+}
+
 // json.Marshaler impl
 func (n IP4Net) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, n)), nil

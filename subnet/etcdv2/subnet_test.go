@@ -76,6 +76,30 @@ func TestAcquireLease(t *testing.T) {
 	if !l.Subnet.Equal(l2.Subnet) {
 		t.Fatalf("AcquireLease did not reuse subnet; expected %v, got %v", l.Subnet, l2.Subnet)
 	}
+
+	// Test if a previous subnet will be used
+	msr2 := newDummyRegistry()
+	prevSubnet := ip.IP4Net{ip.MustParseIP4("10.3.6.0"), 24}
+	sm2 := NewMockManagerWithSubnet(msr2, prevSubnet)
+	prev, err := sm2.AcquireLease(context.Background(), &attrs)
+	if err != nil {
+		t.Fatal("AcquireLease failed: ", err)
+	}
+	if !prev.Subnet.Equal(prevSubnet) {
+		t.Fatalf("AcquireLease did not reuse subnet from previous run; expected %v, got %v", prevSubnet, prev.Subnet)
+	}
+
+	// Test that a previous subnet will not be used if it does not match the registry config
+	msr3 := newDummyRegistry()
+	invalidSubnet := ip.IP4Net{ip.MustParseIP4("10.4.1.0"), 24}
+	sm3 := NewMockManagerWithSubnet(msr3, invalidSubnet)
+	l3, err := sm3.AcquireLease(context.Background(), &attrs)
+	if err != nil {
+		t.Fatal("AcquireLease failed: ", err)
+	}
+	if l3.Subnet.Equal(invalidSubnet) {
+		t.Fatalf("AcquireLease reused invalid subnet from previous run; reused %v", l3.Subnet)
+	}
 }
 
 func TestConfigChanged(t *testing.T) {

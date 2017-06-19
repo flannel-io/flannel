@@ -33,7 +33,8 @@ const (
 )
 
 type LocalManager struct {
-	registry Registry
+	registry       Registry
+	previousSubnet ip.IP4Net
 }
 
 type watchCursor struct {
@@ -68,17 +69,18 @@ func (c watchCursor) String() string {
 	return strconv.FormatUint(c.index, 10)
 }
 
-func NewLocalManager(config *EtcdConfig) (Manager, error) {
+func NewLocalManager(config *EtcdConfig, prevSubnet ip.IP4Net) (Manager, error) {
 	r, err := newEtcdSubnetRegistry(config, nil)
 	if err != nil {
 		return nil, err
 	}
-	return newLocalManager(r), nil
+	return newLocalManager(r, prevSubnet), nil
 }
 
-func newLocalManager(r Registry) Manager {
+func newLocalManager(r Registry, prevSubnet ip.IP4Net) Manager {
 	return &LocalManager{
-		registry: r,
+		registry:       r,
+		previousSubnet: prevSubnet,
 	}
 }
 
@@ -155,10 +157,24 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 		}
 	}
 
-	// no existing match, grab a new one
-	sn, err := m.allocateSubnet(config, leases)
-	if err != nil {
-		return nil, err
+	// no existing match, check if there was a previous subnet to use
+	var sn ip.IP4Net
+	// Check if the previous subnet is a part of the network and of the right subnet length
+	if !m.previousSubnet.Empty() && isSubnetConfigCompat(config, m.previousSubnet) {
+		// use previous subnet
+		log.Infof("Found previously leased subnet (%v), reusing", m.previousSubnet)
+		sn = m.previousSubnet
+	} else {
+		// Create error message for info
+		if !m.previousSubnet.Empty() {
+			log.Errorf("Found previously leased subnet (%v) that is not compatible with the Etcd network config, ignoring", m.previousSubnet)
+		}
+
+		// no existing match, grab a new one
+		sn, err = m.allocateSubnet(config, leases)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	exp, err := m.registry.createSubnet(ctx, sn, attrs, subnetTTL)
