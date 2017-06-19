@@ -23,9 +23,9 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
-	"strconv"
 
 	"github.com/coreos/pkg/flagutil"
 	log "github.com/golang/glog"
@@ -187,14 +187,14 @@ func main() {
 
 	// Set up ipMasq if needed
 	if opts.ipMasq {
-		err = network.SetupIPMasq(config.Network)
+		err = network.SetupIPMasq(config.Network, bn.Lease())
 		if err != nil {
 			// Continue, even though it failed.
 			log.Errorf("Failed to set up IP Masquerade: %v", err)
 		}
 
 		defer func() {
-			if err := network.TeardownIPMasq(config.Network); err != nil {
+			if err := network.TeardownIPMasq(config.Network, bn.Lease()); err != nil {
 				log.Errorf("Failed to tear down IP Masquerade: %v", err)
 			}
 		}()
