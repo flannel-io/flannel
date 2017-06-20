@@ -54,6 +54,7 @@ The following configuration illustrates the use of most options with `udp` backe
 --etcd-cafile="": SSL Certificate Authority file used to secure etcd communication.
 --kube-subnet-mgr: Contact the Kubernetes API for subnet assignment instead of etcd.
 --iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine.
+--iface-regex="": regex expression to match the first interface to use (IP or name) for inter-host communication. If unspecified, will default to the interface for the default route on the machine. This option is superseded by the iface option and will not be used if the iface option is also specified.
 --subnet-file=/run/flannel/subnet.env: filename where env variables (subnet and MTU values) will be written to.
 --subnet-lease-renew-margin=60: subnet lease renewal margin, in minutes.
 --ip-masq=false: setup IP masquerade for traffic destined for outside the flannel network. Flannel assumes that the default policy is ACCEPT in the NAT POSTROUTING chain.
