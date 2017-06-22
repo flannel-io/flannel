@@ -58,3 +58,5 @@ import:
   - pkg/runtime
   - pkg/util/wait
   - pkg/watch
+- package: github.com/joho/godotenv
+  version: v1.1
