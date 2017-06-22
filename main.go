@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
@@ -65,6 +66,7 @@ type CmdLineOpts struct {
 	version                bool
 	kubeSubnetMgr          bool
 	iface                  string
+	ifaceRegex             string
 	ipMasq                 bool
 	subnetFile             string
 	subnetDir              string
@@ -89,6 +91,7 @@ func init() {
 	flag.StringVar(&opts.etcdUsername, "etcd-username", "", "Username for BasicAuth to etcd")
 	flag.StringVar(&opts.etcdPassword, "etcd-password", "", "Password for BasicAuth to etcd")
 	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
+	flag.StringVar(&opts.ifaceRegex, "iface-regex", "", "regex expression to match the first interface to use (IP or name) for inter-host communication. Skipped if the iface option is also specified")
 	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/flannel/subnet.env", "filename where env variables (subnet, MTU, ... ) will be written to")
 	flag.StringVar(&opts.publicIP, "public-ip", "", "IP accessible by other nodes for inter-host communication")
 	flag.IntVar(&opts.subnetLeaseRenewMargin, "subnet-lease-renew-margin", 60, "Subnet lease renewal margin, in minutes.")
@@ -140,7 +143,7 @@ func main() {
 	flagutil.SetFlagsFromEnv(flag.CommandLine, "FLANNELD")
 
 	// Work out which interface to use
-	extIface, err := LookupExtIface(opts.iface)
+	extIface, err := LookupExtIface(opts.iface, opts.ifaceRegex)
 	if err != nil {
 		log.Error("Failed to find interface to use: ", err)
 		os.Exit(1)
@@ -306,7 +309,7 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network) er
 	}
 }
 
-func LookupExtIface(ifname string) (*backend.ExternalInterface, error) {
+func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, error) {
 	var iface *net.Interface
 	var ifaceAddr net.IP
 	var err error
@@ -324,6 +327,49 @@ func LookupExtIface(ifname string) (*backend.ExternalInterface, error) {
 				return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
 			}
 		}
+	} else if len(ifregex) > 0 {
+		// Use the regex if specified and the iface option for matching a specific ip or name is not used
+		ifaces, err := net.Interfaces()
+		if err != nil {
+			return nil, fmt.Errorf("error listing all interfaces: %s", err)
+		}
+
+		// Check IP
+		for _, ifaceToMatch := range ifaces {
+			ifaceIP, err := ip.GetIfaceIP4Addr(&ifaceToMatch)
+			if err != nil {
+				// Skip if there is no IPv4 address
+				continue
+			}
+
+			matched, err := regexp.MatchString(ifregex, ifaceIP.String())
+			if err != nil {
+				return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregex, ifaceIP.String())
+			}
+
+			if matched {
+				ifaceAddr = ifaceIP
+				iface = &ifaceToMatch
+				break
+			}
+		}
+
+		// Check Name
+		if iface == nil && ifaceAddr == nil {
+			for _, ifaceToMatch := range ifaces {
+				matched, err := regexp.MatchString(ifregex, ifaceToMatch.Name)
+				if err != nil {
+					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregex, ifaceToMatch.Name)
+				}
+
+				if matched {
+					iface = &ifaceToMatch
+					break
+				}
+			}
+		}
+
+		return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces", ifregex)
 	} else {
 		log.Info("Determining IP address of default interface")
 		if iface, err = ip.GetDefaultGatewayIface(); err != nil {
