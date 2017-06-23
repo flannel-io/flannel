@@ -374,7 +374,10 @@ func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, 
 			}
 		}
 
-		return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces", ifregex)
+		// Check that nothing was matched
+		if iface == nil {
+			return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces", ifregex)
+		}
 	} else {
 		log.Info("Determining IP address of default interface")
 		if iface, err = ip.GetDefaultGatewayIface(); err != nil {
