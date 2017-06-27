@@ -40,6 +40,7 @@ import (
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 var (
@@ -67,29 +68,47 @@ type kubeSubnetManager struct {
 	events         chan subnet.Event
 }
 
-func NewSubnetManager() (subnet.Manager, error) {
-	cfg, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize inclusterconfig: %v", err)
+func NewSubnetManager(apiUrl, kubeconfig string) (subnet.Manager, error) {
+
+	var cfg *rest.Config
+	var err error
+	// Use out of cluster config if the URL or kubeconfig have been specified. Otherwise use incluster config.
+	if apiUrl != "" || kubeconfig != "" {
+		cfg, err = clientcmd.BuildConfigFromFlags(apiUrl, kubeconfig)
+		if err != nil {
+			return nil, fmt.Errorf("unable to create k8s config: %v", err)
+		}
+	} else {
+		cfg, err = rest.InClusterConfig()
+		if err != nil {
+			return nil, fmt.Errorf("unable to initialize inclusterconfig: %v", err)
+		}
 	}
+
 	c, err := clientset.NewForConfig(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize client: %v", err)
 	}
 
-	podName := os.Getenv("POD_NAME")
-	podNamespace := os.Getenv("POD_NAMESPACE")
-	if podName == "" || podNamespace == "" {
-		return nil, fmt.Errorf("env variables POD_NAME and POD_NAMESPACE must be set")
-	}
-
-	pod, err := c.Pods(podNamespace).Get(podName, metav1.GetOptions{})
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving pod spec for '%s/%s': %v", podNamespace, podName, err)
-	}
-	nodeName := pod.Spec.NodeName
+	// The kube subnet mgr needs to know the k8s node name that it's running on so it can annotate it.
+	// If we're running as a pod then the POD_NAME and POD_NAMESPACE will be populated and can be used to find the node
+	// name. Otherwise, the environment variable NODE_NAME can be passed in.
+	nodeName := os.Getenv("NODE_NAME")
 	if nodeName == "" {
-		return nil, fmt.Errorf("node name not present in pod spec '%s/%s'", podNamespace, podName)
+		podName := os.Getenv("POD_NAME")
+		podNamespace := os.Getenv("POD_NAMESPACE")
+		if podName == "" || podNamespace == "" {
+			return nil, fmt.Errorf("env variables POD_NAME and POD_NAMESPACE must be set")
+		}
+
+		pod, err := c.Pods(podNamespace).Get(podName, metav1.GetOptions{})
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving pod spec for '%s/%s': %v", podNamespace, podName, err)
+		}
+		nodeName = pod.Spec.NodeName
+		if nodeName == "" {
+			return nil, fmt.Errorf("node name not present in pod spec '%s/%s'", podNamespace, podName)
+		}
 	}
 
 	netConf, err := ioutil.ReadFile(netConfPath)

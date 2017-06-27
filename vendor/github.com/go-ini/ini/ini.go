@@ -37,7 +37,7 @@ const (
 
 	// Maximum allowed depth when recursively substituing variable names.
 	_DEPTH_VALUES = 99
-	_VERSION      = "1.24.0"
+	_VERSION      = "1.28.1"
 )
 
 // Version returns current package version literal.
@@ -60,6 +60,9 @@ var (
 
 	// Explicitly write DEFAULT section header
 	DefaultHeader = false
+
+	// Indicate whether to put a line between sections
+	PrettySection = true
 )
 
 func init() {
@@ -173,9 +176,13 @@ type LoadOptions struct {
 	Insensitive bool
 	// IgnoreContinuation indicates whether to ignore continuation lines while parsing.
 	IgnoreContinuation bool
+	// IgnoreInlineComment indicates whether to ignore comments at the end of value and treat it as part of value.
+	IgnoreInlineComment bool
 	// AllowBooleanKeys indicates whether to allow boolean type keys or treat as value is missing.
 	// This type of keys are mostly used in my.cnf.
 	AllowBooleanKeys bool
+	// AllowShadows indicates whether to keep track of keys with same name under same section.
+	AllowShadows bool
 	// Some INI formats allow group blocks that store a block of raw content that doesn't otherwise
 	// conform to key/value pairs. Specify the names of those blocks here.
 	UnparseableSections []string
@@ -217,6 +224,12 @@ func LooseLoad(source interface{}, others ...interface{}) (*File, error) {
 // except it forces all section and key names to be lowercased.
 func InsensitiveLoad(source interface{}, others ...interface{}) (*File, error) {
 	return LoadSources(LoadOptions{Insensitive: true}, source, others...)
+}
+
+// InsensitiveLoad has exactly same functionality as Load function
+// except it allows have shadow keys.
+func ShadowLoad(source interface{}, others ...interface{}) (*File, error) {
+	return LoadSources(LoadOptions{AllowShadows: true}, source, others...)
 }
 
 // Empty returns an empty file object.
@@ -309,6 +322,11 @@ func (f *File) Sections() []*Section {
 		sections[i] = f.Section(f.sectionList[i])
 	}
 	return sections
+}
+
+// ChildSections returns a list of child sections of given section name.
+func (f *File) ChildSections(name string) []*Section {
+	return f.Section(name).ChildSections()
 }
 
 // SectionStrings returns list of section names.
@@ -441,6 +459,7 @@ func (f *File) WriteToIndent(w io.Writer, indent string) (n int64, err error) {
 		}
 		alignSpaces := bytes.Repeat([]byte(" "), alignLength)
 
+	KEY_LIST:
 		for _, kname := range sec.keyList {
 			key := sec.Key(kname)
 			if len(key.Comment) > 0 {
@@ -467,37 +486,41 @@ func (f *File) WriteToIndent(w io.Writer, indent string) (n int64, err error) {
 			case strings.Contains(kname, "`"):
 				kname = `"""` + kname + `"""`
 			}
-			if _, err = buf.WriteString(kname); err != nil {
-				return 0, err
-			}
 
-			if key.isBooleanType {
-				if kname != sec.keyList[len(sec.keyList)-1] {
-					buf.WriteString(LineBreak)
+			for _, val := range key.ValueWithShadows() {
+				if _, err = buf.WriteString(kname); err != nil {
+					return 0, err
 				}
-				continue
-			}
 
-			// Write out alignment spaces before "=" sign
-			if PrettyFormat {
-				buf.Write(alignSpaces[:alignLength-len(kname)])
-			}
+				if key.isBooleanType {
+					if kname != sec.keyList[len(sec.keyList)-1] {
+						buf.WriteString(LineBreak)
+					}
+					continue KEY_LIST
+				}
 
-			val := key.value
-			// In case key value contains "\n", "`", "\"", "#" or ";"
-			if strings.ContainsAny(val, "\n`") {
-				val = `"""` + val + `"""`
-			} else if strings.ContainsAny(val, "#;") {
-				val = "`" + val + "`"
-			}
-			if _, err = buf.WriteString(equalSign + val + LineBreak); err != nil {
-				return 0, err
+				// Write out alignment spaces before "=" sign
+				if PrettyFormat {
+					buf.Write(alignSpaces[:alignLength-len(kname)])
+				}
+
+				// In case key value contains "\n", "`", "\"", "#" or ";"
+				if strings.ContainsAny(val, "\n`") {
+					val = `"""` + val + `"""`
+				} else if !f.options.IgnoreInlineComment && strings.ContainsAny(val, "#;") {
+					val = "`" + val + "`"
+				}
+				if _, err = buf.WriteString(equalSign + val + LineBreak); err != nil {
+					return 0, err
+				}
 			}
 		}
 
-		// Put a line between sections
-		if _, err = buf.WriteString(LineBreak); err != nil {
-			return 0, err
+		if PrettySection {
+			// Put a line between sections
+			if _, err = buf.WriteString(LineBreak); err != nil {
+				return 0, err
+			}
 		}
 	}
 

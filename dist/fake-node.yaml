@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Node
+metadata:
+  name: test
+  annotations:
+    flannel.alpha.coreos.com/backend-data: '{"VtepMAC":"96:59:b2:3f:04:ee"}' 
+    flannel.alpha.coreos.com/backend-type: vxlan
+    flannel.alpha.coreos.com/kube-subnet-manager: "true"
+    flannel.alpha.coreos.com/public-ip: 192.168.77.17
+spec:
+  podCIDR: 10.244.7.0/24

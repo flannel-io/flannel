@@ -91,7 +91,9 @@ func (e *expirationTime) UnmarshalJSON(b []byte) error {
 
 var brokenAuthHeaderProviders = []string{
 	"https://accounts.google.com/",
+	"https://api.codeswholesale.com/oauth/token",
 	"https://api.dropbox.com/",
+	"https://api.dropboxapi.com/",
 	"https://api.instagram.com/",
 	"https://api.netatmo.net/",
 	"https://api.odnoklassniki.ru/",
@@ -100,11 +102,14 @@ var brokenAuthHeaderProviders = []string{
 	"https://api.twitch.tv/",
 	"https://app.box.com/",
 	"https://connect.stripe.com/",
+	"https://graph.facebook.com", // see https://github.com/golang/oauth2/issues/214
+	"https://login.microsoft.net",
 	"https://login.microsoftonline.com/",
 	"https://login.salesforce.com/",
 	"https://oauth.sandbox.trainingpeaks.com/",
 	"https://oauth.trainingpeaks.com/",
 	"https://oauth.vk.com/",
+	"https://openapi.baidu.com/",
 	"https://slack.com/",
 	"https://test-sandbox.auth.corp.google.com",
 	"https://test.salesforce.com/",
@@ -113,6 +118,18 @@ var brokenAuthHeaderProviders = []string{
 	"https://www.googleapis.com/",
 	"https://www.linkedin.com/",
 	"https://www.strava.com/oauth/",
+	"https://www.wunderlist.com/oauth/",
+	"https://api.patreon.com/",
+	"https://sandbox.codeswholesale.com/oauth/token",
+	"https://api.sipgate.com/v1/authorization/oauth",
+}
+
+// brokenAuthHeaderDomains lists broken providers that issue dynamic endpoints.
+var brokenAuthHeaderDomains = []string{
+	".force.com",
+	".myshopify.com",
+	".okta.com",
+	".oktapreview.com",
 }
 
 func RegisterBrokenAuthHeaderProvider(tokenURL string) {
@@ -135,6 +152,14 @@ func providerAuthHeaderWorks(tokenURL string) bool {
 		}
 	}
 
+	if u, err := url.Parse(tokenURL); err == nil {
+		for _, s := range brokenAuthHeaderDomains {
+			if strings.HasSuffix(u.Host, s) {
+				return false
+			}
+		}
+	}
+
 	// Assume the provider implements the spec properly
 	// otherwise. We can add more exceptions as they're
 	// discovered. We will _not_ be adding configurable hooks
@@ -142,23 +167,27 @@ func providerAuthHeaderWorks(tokenURL string) bool {
 	return true
 }
 
-func RetrieveToken(ctx context.Context, ClientID, ClientSecret, TokenURL string, v url.Values) (*Token, error) {
+func RetrieveToken(ctx context.Context, clientID, clientSecret, tokenURL string, v url.Values) (*Token, error) {
 	hc, err := ContextClient(ctx)
 	if err != nil {
 		return nil, err
 	}
-	v.Set("client_id", ClientID)
-	bustedAuth := !providerAuthHeaderWorks(TokenURL)
-	if bustedAuth && ClientSecret != "" {
-		v.Set("client_secret", ClientSecret)
+	bustedAuth := !providerAuthHeaderWorks(tokenURL)
+	if bustedAuth {
+		if clientID != "" {
+			v.Set("client_id", clientID)
+		}
+		if clientSecret != "" {
+			v.Set("client_secret", clientSecret)
+		}
 	}
-	req, err := http.NewRequest("POST", TokenURL, strings.NewReader(v.Encode()))
+	req, err := http.NewRequest("POST", tokenURL, strings.NewReader(v.Encode()))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	if !bustedAuth {
-		req.SetBasicAuth(ClientID, ClientSecret)
+		req.SetBasicAuth(clientID, clientSecret)
 	}
 	r, err := hc.Do(req)
 	if err != nil {

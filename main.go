@@ -67,6 +67,8 @@ type CmdLineOpts struct {
 	help                   bool
 	version                bool
 	kubeSubnetMgr          bool
+	kubeApiUrl             string
+	kubeConfigFile         string
 	iface                  string
 	ifaceRegex             string
 	ipMasq                 bool
@@ -86,24 +88,25 @@ var (
 )
 
 func init() {
-
 	flannelFlags.StringVar(&opts.etcdEndpoints, "etcd-endpoints", "http://127.0.0.1:4001,http://127.0.0.1:2379", "a comma-delimited list of etcd endpoints")
 	flannelFlags.StringVar(&opts.etcdPrefix, "etcd-prefix", "/coreos.com/network", "etcd prefix")
 	flannelFlags.StringVar(&opts.etcdKeyfile, "etcd-keyfile", "", "SSL key file used to secure etcd communication")
 	flannelFlags.StringVar(&opts.etcdCertfile, "etcd-certfile", "", "SSL certification file used to secure etcd communication")
 	flannelFlags.StringVar(&opts.etcdCAFile, "etcd-cafile", "", "SSL Certificate Authority file used to secure etcd communication")
-	flannelFlags.StringVar(&opts.etcdUsername, "etcd-username", "", "Username for BasicAuth to etcd")
-	flannelFlags.StringVar(&opts.etcdPassword, "etcd-password", "", "Password for BasicAuth to etcd")
+	flannelFlags.StringVar(&opts.etcdUsername, "etcd-username", "", "username for BasicAuth to etcd")
+	flannelFlags.StringVar(&opts.etcdPassword, "etcd-password", "", "password for BasicAuth to etcd")
 	flannelFlags.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
 	flannelFlags.StringVar(&opts.ifaceRegex, "iface-regex", "", "regex expression to match the first interface to use (IP or name) for inter-host communication. Skipped if the iface option is also specified")
 	flannelFlags.StringVar(&opts.subnetFile, "subnet-file", "/run/flannel/subnet.env", "filename where env variables (subnet, MTU, ... ) will be written to")
 	flannelFlags.StringVar(&opts.publicIP, "public-ip", "", "IP accessible by other nodes for inter-host communication")
-	flannelFlags.IntVar(&opts.subnetLeaseRenewMargin, "subnet-lease-renew-margin", 60, "Subnet lease renewal margin, in minutes.")
+	flannelFlags.IntVar(&opts.subnetLeaseRenewMargin, "subnet-lease-renew-margin", 60, "subnet lease renewal margin, in minutes.")
 	flannelFlags.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
-	flannelFlags.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "Contact the Kubernetes API for subnet assignment instead of etcd.")
+	flannelFlags.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "contact the Kubernetes API for subnet assignment instead of etcd.")
+	flannelFlags.StringVar(&opts.kubeApiUrl, "kube-api-url", "", "Kubernetes API server URL. Does not need to be specified if flannel is running in a pod.")
+	flannelFlags.StringVar(&opts.kubeConfigFile, "kubeconfig-file", "", "kubeconfig file location. Does not need to be specified if flannel is running in a pod.")
 	flannelFlags.BoolVar(&opts.version, "version", false, "print version and exit")
-	flannelFlags.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "The IP address for healthz server to listen")
-	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "The port for healthz server to listen(0 to disable)")
+	flannelFlags.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "the IP address for healthz server to listen")
+	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "the port for healthz server to listen(0 to disable)")
 
 	// glog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
@@ -133,7 +136,7 @@ func usage() {
 
 func newSubnetManager() (subnet.Manager, error) {
 	if opts.kubeSubnetMgr {
-		return kube.NewSubnetManager()
+		return kube.NewSubnetManager(opts.kubeApiUrl, opts.kubeConfigFile)
 	}
 
 	cfg := &etcdv2.EtcdConfig{
