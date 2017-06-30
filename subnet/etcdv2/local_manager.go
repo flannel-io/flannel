@@ -124,15 +124,25 @@ func findLeaseByIP(leases []Lease, pubIP ip.IP4) *Lease {
 	return nil
 }
 
+func findLeaseBySubnet(leases []Lease, subnet ip.IP4Net) *Lease {
+	for _, l := range leases {
+		if subnet.Equal(l.Subnet) {
+			return &l
+		}
+	}
+
+	return nil
+}
+
 func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extIaddr ip.IP4, attrs *LeaseAttrs) (*Lease, error) {
 	leases, _, err := m.registry.getSubnets(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// try to reuse a subnet if there's one that matches our IP
+	// Try to reuse a subnet if there's one that matches our IP
 	if l := findLeaseByIP(leases, extIaddr); l != nil {
-		// make sure the existing subnet is still within the configured network
+		// Make sure the existing subnet is still within the configured network
 		if isSubnetConfigCompat(config, l.Subnet) {
 			log.Infof("Found lease (%v) for current IP (%v), reusing", l.Subnet, extIaddr)
 
@@ -159,17 +169,44 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 
 	// no existing match, check if there was a previous subnet to use
 	var sn ip.IP4Net
-	// Check if the previous subnet is a part of the network and of the right subnet length
-	if !m.previousSubnet.Empty() && isSubnetConfigCompat(config, m.previousSubnet) {
+	if !m.previousSubnet.Empty() {
 		// use previous subnet
-		log.Infof("Found previously leased subnet (%v), reusing", m.previousSubnet)
-		sn = m.previousSubnet
-	} else {
-		// Create error message for info
-		if !m.previousSubnet.Empty() {
-			log.Errorf("Found previously leased subnet (%v) that is not compatible with the Etcd network config, ignoring", m.previousSubnet)
-		}
+		if l := findLeaseBySubnet(leases, m.previousSubnet); l != nil {
+			// Make sure the existing subnet is still within the configured network
+			if isSubnetConfigCompat(config, l.Subnet) {
+				log.Infof("Found lease (%v) matching previously leased subnet, reusing", l.Subnet)
 
+				ttl := time.Duration(0)
+				if !l.Expiration.IsZero() {
+					// Not a reservation
+					ttl = subnetTTL
+				}
+				exp, err := m.registry.updateSubnet(ctx, l.Subnet, attrs, ttl, 0)
+				if err != nil {
+					return nil, err
+				}
+
+				l.Attrs = *attrs
+				l.Expiration = exp
+				return l, nil
+			} else {
+				log.Infof("Found lease (%v) matching previously leased subnet but not compatible with current config, deleting", l.Subnet)
+				if err := m.registry.deleteSubnet(ctx, l.Subnet); err != nil {
+					return nil, err
+				}
+			}
+		} else {
+			// Check if the previous subnet is a part of the network and of the right subnet length
+			if isSubnetConfigCompat(config, m.previousSubnet) {
+				log.Infof("Found previously leased subnet (%v), reusing", m.previousSubnet)
+				sn = m.previousSubnet
+			} else {
+				log.Errorf("Found previously leased subnet (%v) that is not compatible with the Etcd network config, ignoring", m.previousSubnet)
+			}
+		}
+	}
+
+	if sn.Empty() {
 		// no existing match, grab a new one
 		sn, err = m.allocateSubnet(config, leases)
 		if err != nil {
