@@ -1,8 +1,12 @@
-hash: e34384407e03d01da342b9dd4905efae99325ec4f742b6b104d60dcfa4bf197d
-updated: 2017-04-19T15:20:15.788350895-07:00
+hash: 2f18ae318a81ddf8a97889dd05c1d2cae675586788b641c8b2b1fec819177d69
+updated: 2017-06-29T10:56:36.891947592-07:00
 imports:
+- name: cloud.google.com/go
+  version: 7c205da84d8d024a8200be93ab042357c9a70177
+  subpackages:
+  - compute/metadata
 - name: github.com/aws/aws-sdk-go
-  version: 3981b48d0eca40d1ce35f20c605b3a153e64b4ad
+  version: 50762c1efc55dd2a05eac85fc170b0f65aeec28f
   subpackages:
   - aws
   - aws/awserr
@@ -20,6 +24,7 @@ imports:
   - aws/request
   - aws/session
   - aws/signer/v4
+  - internal/shareddefaults
   - private/protocol
   - private/protocol/ec2query
   - private/protocol/query
@@ -29,7 +34,7 @@ imports:
   - service/ec2
   - service/sts
 - name: github.com/coreos/etcd
-  version: e5b7ee2d03627ca33201da428b8110ef7c3e95f1
+  version: 0f4a535c2fb7a2920e13e2e19b9eaf6b2e9285e5
   subpackages:
   - client
   - clientv3
@@ -39,7 +44,7 @@ imports:
   - pkg/transport
   - pkg/types
 - name: github.com/coreos/go-iptables
-  version: fbb73372b87f6e89951c2b6b31470c2c9d5cfae3
+  version: 259c8e6a4275d497442c721fa52204d7a58bde8b
   subpackages:
   - iptables
 - name: github.com/coreos/go-systemd
@@ -58,7 +63,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/denverdino/aliyungo
-  version: 33365dab57be370c8462f0101b8e61fdf69af3fc
+  version: f6cab0c35083495bd138281f0b9ca40ae2f15e19
   subpackages:
   - common
   - ecs
@@ -77,7 +82,7 @@ imports:
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/go-ini/ini
-  version: e3c2d47c61e5333f9aa2974695dd94396eb69c75
+  version: 3d73f4b845efdf9989fffd4b4e562727744a34ba
 - name: github.com/go-openapi/jsonpointer
   version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
 - name: github.com/go-openapi/jsonreference
@@ -101,9 +106,13 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/gorilla/mux
-  version: 392c28fe23e1c45ddba891b0320b3b5df220beea
+  version: bcd8bc72b08df0f70df986b97f95590779502d31
+- name: github.com/howeyc/gopass
+  version: 3ca23474a7c7203e0a0a070fd33508f6efdb9b3d
+- name: github.com/imdario/mergo
+  version: 6633656539c1639d9d78127b7d47c622b5d7b6dc
 - name: github.com/jmespath/go-jmespath
-  version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
+  version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/joho/godotenv
   version: 726cc8b906e3d31c70a9671c90a13716a8d3f50d
 - name: github.com/jonboulle/clockwork
@@ -127,11 +136,17 @@ imports:
   subpackages:
   - codec
 - name: github.com/vishvananda/netlink
-  version: e73bad418fd727ed3a02830b1af1ad0283a1de6c
+  version: fe3b5664d23a11b52ba59bece4ff29c52772a56b
   subpackages:
   - nl
 - name: github.com/vishvananda/netns
-  version: 8ba1072b58e0c2a240eb5f6120165c7776c3e7b8
+  version: 54f0e4339ce73702a0607f49922aaa1e749b418d
+- name: golang.org/x/crypto
+  version: 1351f936d976c60a0a48d728281922cf63eafb8d
+  subpackages:
+  - bcrypt
+  - blowfish
+  - ssh/terminal
 - name: golang.org/x/net
   version: f2499483f923065a842d38eb4c7f1927e6fc6e6d
   subpackages:
@@ -142,12 +157,16 @@ imports:
   - idna
   - lex/httplex
 - name: golang.org/x/oauth2
-  version: 188fb45fbef6ffd967b3a8abcfe176fd473361df
+  version: 5432cc9688e6250a0dd8f5a5f4c781d92b398be6
   subpackages:
   - google
   - internal
   - jws
   - jwt
+- name: golang.org/x/sys
+  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
+  subpackages:
+  - unix
 - name: golang.org/x/text
   version: 2910a502d2bf9e43193af9d68ca516529614eed3
   subpackages:
@@ -162,7 +181,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: e6294e63a06b2be522ff3d328d8cacded0b1bd31
+  version: e6586c9293b9d514c7f5d5076731ec977cff1be6
   subpackages:
   - compute/v1
   - gensupport
@@ -180,17 +199,12 @@ imports:
   - internal/remote_api
   - internal/urlfetch
   - urlfetch
-- name: google.golang.org/cloud
-  version: eb47ba841d53d93506cfbfbc03927daf9cc48f88
-  subpackages:
-  - compute/metadata
-  - internal
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/apimachinery
-  version: 72e51762028fdf72f1a20e59bedceece02a425c6
+  version: 85ace5365f33b16fc735c866a12e3c765b9700f2
   subpackages:
   - pkg/api/errors
   - pkg/api/meta
@@ -235,7 +249,7 @@ imports:
   - third_party/forked/golang/json
   - third_party/forked/golang/reflect
 - name: k8s.io/client-go
-  version: d257309ce8cccf0cd65b6beb32baeb0c67a7cffb
+  version: 99c1992389642cae4f41b931eca21827f9cc35b7
   subpackages:
   - discovery
   - kubernetes
@@ -306,12 +320,17 @@ imports:
   - pkg/version
   - rest
   - rest/watch
+  - tools/auth
   - tools/cache
+  - tools/clientcmd
   - tools/clientcmd/api
+  - tools/clientcmd/api/latest
+  - tools/clientcmd/api/v1
   - tools/metrics
   - transport
   - util/cert
   - util/clock
   - util/flowcontrol
+  - util/homedir
   - util/integer
 testImports: []

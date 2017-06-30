@@ -37,7 +37,7 @@ const (
 	ImageUsageNone     = ImageUsage("none")
 )
 
-// DescribeImagesArgs repsents arguements to describe images
+// DescribeImagesArgs repsents arguments to describe images
 type DescribeImagesArgs struct {
 	RegionId        common.Region
 	ImageId         string
@@ -65,6 +65,10 @@ type DiskDeviceMapping struct {
 	//Why Size Field is string-type.
 	Size   string
 	Device string
+	//For import images
+	Format    string
+	OSSBucket string
+	OSSObject string
 }
 
 //
@@ -108,10 +112,11 @@ func (client *Client) DescribeImages(args *DescribeImagesArgs) (images []ImageTy
 	return response.Images.Image, &response.PaginationResult, nil
 }
 
-// CreateImageArgs repsents arguements to create image
+// CreateImageArgs repsents arguments to create image
 type CreateImageArgs struct {
 	RegionId     common.Region
 	SnapshotId   string
+	InstanceId   string
 	ImageName    string
 	ImageVersion string
 	Description  string
@@ -158,7 +163,7 @@ func (client *Client) DeleteImage(regionId common.Region, imageId string) error 
 	return client.Invoke("DeleteImage", &args, &response)
 }
 
-// ModifyImageSharePermission repsents arguements to share image
+// ModifyImageSharePermission repsents arguments to share image
 type ModifyImageSharePermissionArgs struct {
 	RegionId      common.Region
 	ImageId       string
@@ -225,6 +230,37 @@ func (client *Client) CopyImage(args *CopyImageArgs) (string, error) {
 		return "", err
 	}
 	return response.ImageId, nil
+}
+
+// ImportImageArgs repsents arguments to import image from oss
+type ImportImageArgs struct {
+	RegionId           common.Region
+	ImageName          string
+	ImageVersion       string
+	Description        string
+	ClientToken        string
+	Architecture       string
+	OSType             string
+	Platform           string
+	DiskDeviceMappings struct {
+		DiskDeviceMapping []DiskDeviceMapping
+	}
+}
+
+func (client *Client) ImportImage(args *ImportImageArgs) (string, error) {
+	response := &CopyImageResponse{}
+	err := client.Invoke("ImportImage", args, &response)
+	if err != nil {
+		return "", err
+	}
+	return response.ImageId, nil
+}
+
+type ImportImageResponse struct {
+	common.Response
+	RegionId     common.Region
+	ImageId      string
+	ImportTaskId string
 }
 
 // Default timeout value for WaitForImageReady method

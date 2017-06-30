@@ -231,3 +231,22 @@ run-etcd: stop-etcd
 
 stop-etcd:
 	@-docker rm -f flannel-etcd
+
+K8S_VERSION=v1.6.6
+run-k8s-apiserver: stop-k8s-apiserver
+	docker run --detach --net=host \
+	  --name calico-k8s-apiserver \
+  	gcr.io/google_containers/hyperkube-amd64:$(K8S_VERSION) \
+		  /hyperkube apiserver --etcd-servers=http://$(LOCAL_IP_ENV):2379 \
+		  --service-cluster-ip-range=10.101.0.0/16
+
+stop-k8s-apiserver:
+	@-docker rm -f calico-k8s-apiserver
+
+run-local-kube-flannel-with-prereqs: run-etcd run-k8s-apiserver dist/flanneld
+	while ! kubectl apply -f dist/fake-node.yaml; do sleep 1; done
+	$(MAKE) run-local-kube-flannel
+
+run-local-kube-flannel:
+	# Currently this requires the netconf to be in /etc/kube-flannel/net-conf.json
+	sudo NODE_NAME=test dist/flanneld --kube-subnet-mgr --kube-api-url http://127.0.0.1:8080
