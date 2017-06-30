@@ -56,6 +56,17 @@ import (
 	"github.com/coreos/go-systemd/daemon"
 )
 
+type flagSlice []string
+
+func (t *flagSlice) String() string {
+	return fmt.Sprintf("%v", *t)
+}
+
+func (t *flagSlice) Set(val string) error {
+	*t = append(*t, val)
+	return nil
+}
+
 type CmdLineOpts struct {
 	etcdEndpoints          string
 	etcdPrefix             string
@@ -69,8 +80,8 @@ type CmdLineOpts struct {
 	kubeSubnetMgr          bool
 	kubeApiUrl             string
 	kubeConfigFile         string
-	iface                  string
-	ifaceRegex             string
+	iface                  flagSlice
+	ifaceRegex             flagSlice
 	ipMasq                 bool
 	subnetFile             string
 	subnetDir              string
@@ -95,8 +106,8 @@ func init() {
 	flannelFlags.StringVar(&opts.etcdCAFile, "etcd-cafile", "", "SSL Certificate Authority file used to secure etcd communication")
 	flannelFlags.StringVar(&opts.etcdUsername, "etcd-username", "", "username for BasicAuth to etcd")
 	flannelFlags.StringVar(&opts.etcdPassword, "etcd-password", "", "password for BasicAuth to etcd")
-	flannelFlags.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
-	flannelFlags.StringVar(&opts.ifaceRegex, "iface-regex", "", "regex expression to match the first interface to use (IP or name) for inter-host communication. Skipped if the iface option is also specified")
+	flannelFlags.Var(&opts.iface, "iface", "interface to use (IP or name) for inter-host communication. Can be specified multiple times to check each option in order. Returns the first match found.")
+	flannelFlags.Var(&opts.ifaceRegex, "iface-regex", "regex expression to match the first interface to use (IP or name) for inter-host communication. Can be specified multiple times to check each regex in order. Returns the first match found. Regexes are checked after specific interfaces specified by the iface option have already been checked.")
 	flannelFlags.StringVar(&opts.subnetFile, "subnet-file", "/run/flannel/subnet.env", "filename where env variables (subnet, MTU, ... ) will be written to")
 	flannelFlags.StringVar(&opts.publicIP, "public-ip", "", "IP accessible by other nodes for inter-host communication")
 	flannelFlags.IntVar(&opts.subnetLeaseRenewMargin, "subnet-lease-renew-margin", 60, "subnet lease renewal margin, in minutes.")
@@ -164,10 +175,47 @@ func main() {
 	flagutil.SetFlagsFromEnv(flannelFlags, "FLANNELD")
 
 	// Work out which interface to use
-	extIface, err := LookupExtIface(opts.iface, opts.ifaceRegex)
-	if err != nil {
-		log.Error("Failed to find interface to use: ", err)
-		os.Exit(1)
+	var extIface *backend.ExternalInterface
+	var err error
+	// Check the default interface only if no interfaces are specified
+	if len(opts.iface) == 0 && len(opts.ifaceRegex) == 0 {
+		extIface, err = LookupExtIface("", "")
+		if err != nil {
+			log.Error("Failed to find any valid interface to use: ", err)
+			os.Exit(1)
+		}
+	} else {
+		// Check explicitly specified interfaces
+		for _, iface := range opts.iface {
+			extIface, err = LookupExtIface(iface, "")
+			if err != nil {
+				log.Infof("Could not find valid interface matching %s: %s", iface, err)
+			}
+
+			if extIface != nil {
+				break
+			}
+		}
+
+		// Check interfaces that match any specified regexes
+		if extIface == nil {
+			for _, ifaceRegex := range opts.ifaceRegex {
+				extIface, err = LookupExtIface("", ifaceRegex)
+				if err != nil {
+					log.Infof("Could not find valid interface matching %s: %s", ifaceRegex, err)
+				}
+
+				if extIface != nil {
+					break
+				}
+			}
+		}
+
+		if extIface == nil {
+			// Exit if any of the specified interfaces do not match
+			log.Error("Failed to find interface to use that matches the interfaces and/or regexes provided")
+			os.Exit(1)
+		}
 	}
 
 	sm, err := newSubnetManager()
@@ -175,7 +223,7 @@ func main() {
 		log.Error("Failed to create SubnetManager: ", err)
 		os.Exit(1)
 	}
-	log.Infof("Created subnet manager: %+v", sm)
+	log.Infof("Created subnet manager: %s", sm.Name())
 
 	// Register for SIGINT and SIGTERM
 	log.Info("Installing signal handlers")

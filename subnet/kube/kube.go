@@ -326,3 +326,7 @@ func (ksm *kubeSubnetManager) RemoveReservation(ctx context.Context, subnet ip.I
 func (ksm *kubeSubnetManager) ListReservations(ctx context.Context) ([]subnet.Reservation, error) {
 	return nil, ErrUnimplemented
 }
+
+func (ksm *kubeSubnetManager) Name() string {
+	return fmt.Sprintf("Kubernetes Subnet Manager - %s", ksm.nodeName)
+}

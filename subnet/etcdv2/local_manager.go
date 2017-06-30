@@ -504,3 +504,7 @@ func (m *LocalManager) ListReservations(ctx context.Context) ([]Reservation, err
 
 	return rsvs, nil
 }
+
+func (m *LocalManager) Name() string {
+	return fmt.Sprintf("Etcd Local Manager with Previous Subnet: %s", m.previousSubnet.String())
+}

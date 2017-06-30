@@ -134,4 +134,5 @@ type Manager interface {
 	AddReservation(ctx context.Context, r *Reservation) error
 	RemoveReservation(ctx context.Context, subnet ip.IP4Net) error
 	ListReservations(ctx context.Context) ([]Reservation, error)
+	Name() string
 }
