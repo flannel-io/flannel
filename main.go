@@ -82,27 +82,53 @@ var (
 	opts           CmdLineOpts
 	errInterrupted = errors.New("interrupted")
 	errCanceled    = errors.New("canceled")
+	flannelFlags   = flag.NewFlagSet("flannel", flag.ExitOnError)
 )
 
 func init() {
-	flag.StringVar(&opts.etcdEndpoints, "etcd-endpoints", "http://127.0.0.1:4001,http://127.0.0.1:2379", "a comma-delimited list of etcd endpoints")
-	flag.StringVar(&opts.etcdPrefix, "etcd-prefix", "/coreos.com/network", "etcd prefix")
-	flag.StringVar(&opts.etcdKeyfile, "etcd-keyfile", "", "SSL key file used to secure etcd communication")
-	flag.StringVar(&opts.etcdCertfile, "etcd-certfile", "", "SSL certification file used to secure etcd communication")
-	flag.StringVar(&opts.etcdCAFile, "etcd-cafile", "", "SSL Certificate Authority file used to secure etcd communication")
-	flag.StringVar(&opts.etcdUsername, "etcd-username", "", "Username for BasicAuth to etcd")
-	flag.StringVar(&opts.etcdPassword, "etcd-password", "", "Password for BasicAuth to etcd")
-	flag.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
-	flag.StringVar(&opts.ifaceRegex, "iface-regex", "", "regex expression to match the first interface to use (IP or name) for inter-host communication. Skipped if the iface option is also specified")
-	flag.StringVar(&opts.subnetFile, "subnet-file", "/run/flannel/subnet.env", "filename where env variables (subnet, MTU, ... ) will be written to")
-	flag.StringVar(&opts.publicIP, "public-ip", "", "IP accessible by other nodes for inter-host communication")
-	flag.IntVar(&opts.subnetLeaseRenewMargin, "subnet-lease-renew-margin", 60, "Subnet lease renewal margin, in minutes.")
-	flag.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
-	flag.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "Contact the Kubernetes API for subnet assignment instead of etcd.")
-	flag.BoolVar(&opts.help, "help", false, "print this message")
-	flag.BoolVar(&opts.version, "version", false, "print version and exit")
-	flag.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "The IP address for healthz server to listen")
-	flag.IntVar(&opts.healthzPort, "healthz-port", 0, "The port for healthz server to listen(0 to disable)")
+
+	flannelFlags.StringVar(&opts.etcdEndpoints, "etcd-endpoints", "http://127.0.0.1:4001,http://127.0.0.1:2379", "a comma-delimited list of etcd endpoints")
+	flannelFlags.StringVar(&opts.etcdPrefix, "etcd-prefix", "/coreos.com/network", "etcd prefix")
+	flannelFlags.StringVar(&opts.etcdKeyfile, "etcd-keyfile", "", "SSL key file used to secure etcd communication")
+	flannelFlags.StringVar(&opts.etcdCertfile, "etcd-certfile", "", "SSL certification file used to secure etcd communication")
+	flannelFlags.StringVar(&opts.etcdCAFile, "etcd-cafile", "", "SSL Certificate Authority file used to secure etcd communication")
+	flannelFlags.StringVar(&opts.etcdUsername, "etcd-username", "", "Username for BasicAuth to etcd")
+	flannelFlags.StringVar(&opts.etcdPassword, "etcd-password", "", "Password for BasicAuth to etcd")
+	flannelFlags.StringVar(&opts.iface, "iface", "", "interface to use (IP or name) for inter-host communication")
+	flannelFlags.StringVar(&opts.ifaceRegex, "iface-regex", "", "regex expression to match the first interface to use (IP or name) for inter-host communication. Skipped if the iface option is also specified")
+	flannelFlags.StringVar(&opts.subnetFile, "subnet-file", "/run/flannel/subnet.env", "filename where env variables (subnet, MTU, ... ) will be written to")
+	flannelFlags.StringVar(&opts.publicIP, "public-ip", "", "IP accessible by other nodes for inter-host communication")
+	flannelFlags.IntVar(&opts.subnetLeaseRenewMargin, "subnet-lease-renew-margin", 60, "Subnet lease renewal margin, in minutes.")
+	flannelFlags.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
+	flannelFlags.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "Contact the Kubernetes API for subnet assignment instead of etcd.")
+	flannelFlags.BoolVar(&opts.version, "version", false, "print version and exit")
+	flannelFlags.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "The IP address for healthz server to listen")
+	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "The port for healthz server to listen(0 to disable)")
+
+	// glog will log to tmp files by default. override so all entries
+	// can flow into journald (if running under systemd)
+	flag.Set("logtostderr", "true")
+
+	// Only copy the non file logging options from glog
+	copyFlag("v")
+	copyFlag("vmodule")
+	copyFlag("log_backtrace_at")
+
+	// Define the usage function
+	flannelFlags.Usage = usage
+
+	// now parse command line args
+	flannelFlags.Parse(os.Args[1:])
+}
+
+func copyFlag(name string) {
+	flannelFlags.Var(flag.Lookup(name).Value, flag.Lookup(name).Name, flag.Lookup(name).Usage)
+}
+
+func usage() {
+	fmt.Fprintf(os.Stderr, "Usage: %s [OPTION]...\n", os.Args[0])
+	flannelFlags.PrintDefaults()
+	os.Exit(0)
 }
 
 func newSubnetManager() (subnet.Manager, error) {
@@ -127,25 +153,12 @@ func newSubnetManager() (subnet.Manager, error) {
 }
 
 func main() {
-	// glog will log to tmp files by default. override so all entries
-	// can flow into journald (if running under systemd)
-	flag.Set("logtostderr", "true")
-
-	// now parse command line args
-	flag.Parse()
-
-	if flag.NArg() > 0 || opts.help {
-		fmt.Fprintf(os.Stderr, "Usage: %s [OPTION]...\n", os.Args[0])
-		flag.PrintDefaults()
-		os.Exit(0)
-	}
-
 	if opts.version {
 		fmt.Fprintln(os.Stderr, version.Version)
 		os.Exit(0)
 	}
 
-	flagutil.SetFlagsFromEnv(flag.CommandLine, "FLANNELD")
+	flagutil.SetFlagsFromEnv(flannelFlags, "FLANNELD")
 
 	// Work out which interface to use
 	extIface, err := LookupExtIface(opts.iface, opts.ifaceRegex)
