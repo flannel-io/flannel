@@ -4,40 +4,38 @@
 
 [![Build Status](https://travis-ci.org/coreos/flannel.png?branch=master)](https://travis-ci.org/coreos/flannel)
 
-Flannel is a virtual network that gives a subnet to each host for use with container runtimes.
-
-Platforms like Kubernetes assume that each container (pod) has a unique, routable IP inside the cluster. The advantage of this model is that it reduces the complexity of doing port mapping.
+Flannel is a simple and easy to configure layer 3 network fabric designed for Kubernetes.
 
 ## How it works
 
-Flannel runs an agent, `flanneld`, on each host and is responsible for allocating a subnet lease out of a preconfigured address space. Flannel uses either [etcd][etcd] or the Kubernetes API to store the network configuration, allocated subnets, and auxiliary data (such as host's IP). Packets are forwarded using one of several [backend mechanisms][backends].
+Flannel runs a small, single binary agent called `flanneld` on each host, and is responsible for allocating a subnet lease to each host out of a larger, preconfigured address space.
+Flannel uses either the Kubernetes API or [etcd][etcd] directly to store the network configuration, the allocated subnets, and any auxiliary data (such as the host's public IP).
+Packets are forwarded using one of several [backend mechanisms][backends] including VXLAN and various cloud integrations.
 
-The following diagram demonstrates the path a packet takes as it traverses the overlay network:
+### Networking details
 
-![Life of a packet](./packet-01.png)
+Platforms like Kubernetes assume that each container (pod) has a unique, routable IP inside the cluster.
+The advantage of this model is that it removes the port mapping complexities that come from sharing a single host IP.
 
-## Getting started
+Flannel is responsible for providing a layer 3 IPv4 network between multiple nodes in a cluster. Flannel does not control how containers are networked to the host, only how the traffic is transported between hosts. However, flannel does provide a CNI plugin for Kubernetes and a guidance on integrating with Docker.
 
-The easiest way to deploy flannel with Kubernetes is to use one of several deployment tools and distributions that network clusters with flannel by default. CoreOS's [Tectonic][tectonic] sets up flannel in the Kubernetes clusters it creates using the open source [Tectonic Installer][tectonic-installer] to drive the setup process.
+Flannel is focused on networking. For network policy, other projects such as [Calico][calico] can be used.
 
-Flannel can use the Kubernetes API as its backing store, meaning there's no need to deploy a discrete `etcd` cluster for `flannel`. This `flannel` mode is known as the *kube subnet manager*.
+## Getting started on Kubernetes
 
-### Adding flannel
+The easiest way to deploy flannel with Kubernetes is to use one of several deployment tools and distributions that network clusters with flannel by default. For example, CoreOS's [Tectonic][tectonic] sets up flannel in the Kubernetes clusters it creates using the open source [Tectonic Installer][tectonic-installer] to drive the setup process.
 
-Flannel can be added to any existing Kubernetes cluster. It's simplest to add `flannel` before any pods using the pod network have been started.
+Though not required, it's recommended that flannel uses the Kubernetes API as its backing store which avoids the need to deploy a discrete `etcd` cluster for `flannel`. This `flannel` mode is known as the *kube subnet manager*.
 
-For information on deploying flannel manually, using the (currently alpha) Kubernetes installer toolkit kubeadm, see [Installing Kubernetes on Linux with kubeadm][installing-with-kubeadm].
+### Deploying flannel manually
 
-### Using flannel
+Flannel can be added to any existing Kubernetes cluster though it's simplest to add `flannel` before any pods using the pod network have been started.
 
-Once applied, the `flannel` manifest defines three things:
-1. A service account for `flannel` to use.
-2. A ConfigMap containing both a CNI configuration and a `flannel` configuration. The network in the `flannel` configuration should match the pod network CIDR. The choice of `backend` is also made here and defaults to VXLAN.
-3. A DaemonSet to deploy the `flannel` pod on each Node. The pod has two containers 1) the `flannel` daemon itself, and 2) a container for deploying the CNI configuration to a location that the `kubelet` can read.
+See [Kubernetes](Documentation/Kubernetes.md) for more details.
 
-When you run pods, they will be allocated IP addresses from the pod network CIDR. No matter which node those pods end up on, they will be able to communicate with each other.
+## Getting started on Docker
 
-Kubernetes 1.6 requires CNI plugin version 0.5.1 or later.
+flannel is also widely used outside of kubernetes. When deployed outside of kubernetes, etcd is always used as the datastore. For more details integrating flannel with Docker see [Running](Documentation/running.md)
 
 ## Documentation
 - [Building (and releasing)](Documentation/building.md)
@@ -68,8 +66,7 @@ See [reporting bugs][reporting] for details about reporting any issues.
 
 Flannel is under the Apache 2.0 license. See the [LICENSE][license] file for details.
 
-
-[kubeadm]: https://kubernetes.io/docs/getting-started-guides/kubeadm/
+[calico]: http://www.projectcalico.org
 [pod-cidr]: https://kubernetes.io/docs/admin/kubelet/
 [etcd]: https://github.com/coreos/etcd
 [contributing]: CONTRIBUTING.md
