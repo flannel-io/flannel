@@ -28,7 +28,6 @@ var constructors = make(map[string]BackendCtor)
 
 type Manager interface {
 	GetBackend(backendType string) (Backend, error)
-	Wait()
 }
 
 type manager struct {
@@ -88,10 +87,6 @@ func (bm *manager) GetBackend(backendType string) (Backend, error) {
 	}()
 
 	return be, nil
-}
-
-func (bm *manager) Wait() {
-	bm.wg.Wait()
 }
 
 func Register(name string, ctor BackendCtor) {
