@@ -311,10 +311,6 @@ func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, curs
 	return subnet.LeaseWatchResult{}, ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) RevokeLease(ctx context.Context, sn ip.IP4Net) error {
-	return ErrUnimplemented
-}
-
 func (ksm *kubeSubnetManager) AddReservation(ctx context.Context, r *subnet.Reservation) error {
 	return ErrUnimplemented
 }

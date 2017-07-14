@@ -20,7 +20,6 @@ import (
 	"testing"
 	"time"
 
-	etcd "github.com/coreos/etcd/client"
 	"github.com/coreos/flannel/pkg/ip"
 	. "github.com/coreos/flannel/subnet"
 	"github.com/jonboulle/clockwork"
@@ -321,28 +320,6 @@ func TestRenewLease(t *testing.T) {
 	}
 
 	t.Fatal("Failed to find acquired lease")
-}
-
-func TestLeaseRevoked(t *testing.T) {
-	msr := newDummyRegistry()
-	sm := NewMockManager(msr)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	l := acquireLease(ctx, t, sm)
-
-	if err := sm.RevokeLease(ctx, l.Subnet); err != nil {
-		t.Fatalf("RevokeLease failed: %v", err)
-	}
-
-	_, _, err := msr.getSubnet(ctx, l.Subnet)
-	if err == nil {
-		t.Fatalf("Revoked lease still exists")
-	}
-	if etcdErr, ok := err.(etcd.Error); ok && etcdErr.Code != etcd.ErrorCodeKeyNotFound {
-		t.Fatalf("getSubnets after revoked lease returned unexpected error: %v", err)
-	}
 }
 
 func TestAddReservation(t *testing.T) {

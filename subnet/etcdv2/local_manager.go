@@ -254,10 +254,6 @@ OuterLoop:
 	}
 }
 
-func (m *LocalManager) RevokeLease(ctx context.Context, sn ip.IP4Net) error {
-	return m.registry.deleteSubnet(ctx, sn)
-}
-
 func (m *LocalManager) RenewLease(ctx context.Context, lease *Lease) error {
 	exp, err := m.registry.updateSubnet(ctx, lease.Subnet, &lease.Attrs, subnetTTL, 0)
 	if err != nil {

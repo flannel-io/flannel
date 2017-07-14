@@ -127,7 +127,6 @@ type Manager interface {
 	GetNetworkConfig(ctx context.Context) (*Config, error)
 	AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Lease, error)
 	RenewLease(ctx context.Context, lease *Lease) error
-	RevokeLease(ctx context.Context, sn ip.IP4Net) error
 	WatchLease(ctx context.Context, sn ip.IP4Net, cursor interface{}) (LeaseWatchResult, error)
 	WatchLeases(ctx context.Context, cursor interface{}) (LeaseWatchResult, error)
 
