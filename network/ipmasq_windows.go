@@ -1,4 +1,4 @@
-// +build linux
+// +build windows
 
 // Copyright 2015 flannel authors
 //
@@ -14,28 +14,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package awsvpc
+package network
 
-import "github.com/aws/aws-sdk-go/service/ec2"
+import (
+	"errors"
 
-type ecFilter []*ec2.Filter
+	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/subnet"
+)
 
-func (f *ecFilter) Add(key, value string) {
-	for _, fltr := range *f {
-		if fltr.Name != nil && *fltr.Name == key {
-			fltr.Values = append(fltr.Values, &value)
-			return
-		}
-	}
-
-	newFilter := &ec2.Filter{
-		Name:   &key,
-		Values: []*string{&value},
-	}
-
-	*f = append(*f, newFilter)
+func SetupIPMasq(ipn ip.IP4Net, lease *subnet.Lease) error {
+	// TODO: ignore for now, this is used by the ipmasq option to setup a POSTROUTING nat rule
+	// to use to reach addresses outside the flannel network
+	return errors.New("SetupIPMasq not implemented for this platform")
 }
 
-func newFilter() ecFilter {
-	return make(ecFilter, 0)
+func TeardownIPMasq(ipn ip.IP4Net, lease *subnet.Lease) error {
+	return errors.New("TeardownIPMasq not implemented for this platform")
 }

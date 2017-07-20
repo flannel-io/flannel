@@ -1,6 +1,6 @@
-// +build linux
+// +build !linux,!windows
 
-// Copyright 2015 CoreOS, Inc.
+// Copyright 2015 flannel authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,29 +14,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PROXY_H
-#define PROXY_H
+package network
 
-#include <netinet/in.h>
+import (
+	"errors"
 
-#ifdef CMD_DEFINE
-#	define cmdexport
-#else
-#	define cmdexport static
-#endif
+	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/subnet"
+)
 
-cmdexport const int CMD_SET_ROUTE = 1;
-cmdexport const int CMD_DEL_ROUTE = 2;
-cmdexport const int CMD_STOP      = 3;
+func SetupIPMasq(ipn ip.IP4Net, lease *subnet.Lease) error {
+	return errors.New("SetupIPMasq not implemented for this platform")
+}
 
-typedef struct command {
-	int       cmd;
-	in_addr_t dest_net;
-	int       dest_net_len;
-	in_addr_t next_hop_ip;
-	short     next_hop_port;
-} command;
-
-void run_proxy(int tun, int sock, int ctl, in_addr_t tun_ip, size_t tun_mtu, int log_errors);
-
-#endif
+func TeardownIPMasq(ipn ip.IP4Net, lease *subnet.Lease) error {
+	return errors.New("TeardownIPMasq not implemented for this platform")
+}
