@@ -1,3 +1,5 @@
+// +build linux
+
 // Copyright 2015 CoreOS, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
