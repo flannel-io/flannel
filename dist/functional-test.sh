@@ -143,8 +143,8 @@ multi_test() {
         docker run --name=flannel-host$host -d -it --privileged --entrypoint /bin/sh $flannel_img
 
         # Start two flanneld instances
-        docker exec -d flannel-host$host sh -c "/opt/bin/flanneld -subnet-file /vxlan.env -etcd-prefix=/vxlan/network --etcd-endpoints=$etcd_endpt 2>vxlan.log"
-        docker exec -d flannel-host$host sh -c "/opt/bin/flanneld -subnet-file /hostgw.env -etcd-prefix=/hostgw/network --etcd-endpoints=$etcd_endpt 2>hostgw.log"
+        docker exec -d flannel-host$host sh -c "/opt/bin/flanneld -v 10 -subnet-file /vxlan.env -etcd-prefix=/vxlan/network --etcd-endpoints=$etcd_endpt 2>vxlan.log"
+        docker exec -d flannel-host$host sh -c "/opt/bin/flanneld -v 10 -subnet-file /hostgw.env -etcd-prefix=/hostgw/network --etcd-endpoints=$etcd_endpt 2>hostgw.log"
     done
 
 	echo flannels running

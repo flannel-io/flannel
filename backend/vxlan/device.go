@@ -35,7 +35,8 @@ type vxlanDeviceAttrs struct {
 }
 
 type vxlanDevice struct {
-	link *netlink.Vxlan
+	link          *netlink.Vxlan
+	directRouting bool
 }
 
 func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
