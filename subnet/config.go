@@ -37,7 +37,7 @@ func parseBackendType(be json.RawMessage) (string, error) {
 	}
 
 	if len(be) == 0 {
-		return "udp", nil
+		return "", fmt.Errorf("Backend config must specify type: %v", be)
 	} else if err := json.Unmarshal(be, &bt); err != nil {
 		return "", fmt.Errorf("error decoding Backend property of config: %v", err)
 	}

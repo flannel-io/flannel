@@ -19,7 +19,7 @@ import (
 )
 
 func TestConfigDefaults(t *testing.T) {
-	s := `{ "network": "10.3.0.0/16" }`
+	s := `{ "network": "10.3.0.0/16", "Backend": { "Type": "vxlan" } }`
 
 	cfg, err := ParseConfig(s)
 	if err != nil {
@@ -45,7 +45,7 @@ func TestConfigDefaults(t *testing.T) {
 }
 
 func TestConfigOverrides(t *testing.T) {
-	s := `{ "Network": "10.3.0.0/16", "SubnetMin": "10.3.5.0", "SubnetMax": "10.3.8.0", "SubnetLen": 28 }`
+	s := `{ "Network": "10.3.0.0/16", "SubnetMin": "10.3.5.0", "SubnetMax": "10.3.8.0", "SubnetLen": 28, "Backend": { "Type": "vxlan" } }`
 
 	cfg, err := ParseConfig(s)
 	if err != nil {

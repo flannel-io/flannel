@@ -44,7 +44,7 @@ func newDummyRegistry() *MockSubnetRegistry {
 		{ip.IP4Net{ip.MustParseIP4("10.3.31.0"), 24}, attrs, exp, 13},
 	}
 
-	config := `{ "Network": "10.3.0.0/16", "SubnetMin": "10.3.1.0", "SubnetMax": "10.3.25.0" }`
+	config := `{ "Network": "10.3.0.0/16", "SubnetMin": "10.3.1.0", "SubnetMax": "10.3.25.0", "Backend": { "Type": "vxlan" }  }`
 	return NewMockRegistry(config, subnets)
 }
 
@@ -120,7 +120,7 @@ func TestConfigChanged(t *testing.T) {
 	}
 
 	// Change config
-	config := `{ "Network": "10.4.0.0/16" }`
+	config := `{ "Network": "10.4.0.0/16", "Backend": { "Type": "vxlan" }  }`
 	msr.setConfig(config)
 
 	// Acquire again, should not reuse
