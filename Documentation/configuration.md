@@ -24,7 +24,7 @@ The value of the config is a JSON dictionary with the following keys:
    Defaults to `udp` backend.
 
 Subnet leases have a duration of 24 hours. Leases are renewed within 1 hour of their expiration,
-unless a different renewal margin is set with the ``subnet-lease-renew-margin`` option.
+unless a different renewal margin is set with the ``--subnet-lease-renew-margin`` option.
 
 ## Example configuration JSON
 
