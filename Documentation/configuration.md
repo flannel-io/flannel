@@ -23,8 +23,8 @@ The value of the config is a JSON dictionary with the following keys:
    The list of available backends and the keys that can be put into the this dictionary are listed below.
    Defaults to `udp` backend.
 
-The lease on a subnet is hard-coded to 24h (see [`subnetTTL`](subnet/local_manager.go#L31)).
-Subnet lease are renewed within 1h of their expiration (can be overridden via `--subnet-lease-renew-margin`).
+Subnet leases have a duration of 24 hours. Leases are renewed within 1 hour of their expiration,
+unless a different renewal margin is set with the ``--subnet-lease-renew-margin`` option.
 
 ## Example configuration JSON
 
