@@ -37,26 +37,28 @@ const (
 type VXLANBackend struct {
 	subnetMgr subnet.Manager
 	extIface  *backend.ExternalInterface
+	backendType string
 }
 
 func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backend, error) {
 	backend := &VXLANBackend{
 		subnetMgr: sm,
 		extIface:  extIface,
+		backendType: "vxlan",
 	}
 
 	return backend, nil
 }
 
-func newSubnetAttrs(publicIP net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, error) {
+func (be *VXLANBackend) newSubnetAttrs(mac net.HardwareAddr) (*subnet.LeaseAttrs, error) {
 	data, err := json.Marshal(&vxlanLeaseAttrs{hardwareAddr(mac)})
 	if err != nil {
 		return nil, err
 	}
 
 	return &subnet.LeaseAttrs{
-		PublicIP:    ip.FromIP(publicIP),
-		BackendType: "vxlan",
+		PublicIP:    ip.FromIP(be.extIface.ExtAddr),
+		BackendType: be.backendType,
 		BackendData: json.RawMessage(data),
 	}, nil
 }
@@ -91,7 +93,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, config *subnet.Conf
 		return nil, err
 	}
 
-	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, dev.MACAddr())
+	subnetAttrs, err := be.newSubnetAttrs(dev.MACAddr())
 	if err != nil {
 		return nil, err
 	}

@@ -33,7 +33,6 @@ import (
 
 type network struct {
 	backend.SimpleNetwork
-	extIface  *backend.ExternalInterface
 	dev       *vxlanDevice
 	routes    routes
 	subnetMgr subnet.Manager
@@ -115,7 +114,7 @@ func (nw *network) handleSubnetEvents(batch []subnet.Event) {
 		case subnet.EventAdded:
 			log.V(1).Info("Subnet added: ", event.Lease.Subnet)
 
-			if event.Lease.Attrs.BackendType != "vxlan" {
+			if event.Lease.Attrs.BackendType != "vxlan" && event.Lease.Attrs.BackendType != "vxlan-over-hostgw" {
 				log.Warningf("Ignoring non-vxlan subnet: type=%v", event.Lease.Attrs.BackendType)
 				continue
 			}
@@ -131,7 +130,7 @@ func (nw *network) handleSubnetEvents(batch []subnet.Event) {
 		case subnet.EventRemoved:
 			log.V(1).Info("Subnet removed: ", event.Lease.Subnet)
 
-			if event.Lease.Attrs.BackendType != "vxlan" {
+			if event.Lease.Attrs.BackendType != "vxlan"  && event.Lease.Attrs.BackendType != "vxlan-over-hostgw" {
 				log.Warningf("Ignoring non-vxlan subnet: type=%v", event.Lease.Attrs.BackendType)
 				continue
 			}
@@ -172,7 +171,7 @@ func (nw *network) handleInitialSubnetEvents(batch []subnet.Event) error {
 
 	// Run through the events "marking" ones that should be skipped
 	for eventMarkerIndex, evt := range batch {
-		if evt.Lease.Attrs.BackendType != "vxlan" {
+		if evt.Lease.Attrs.BackendType != "vxlan"  && evt.Lease.Attrs.BackendType != "vxlan-over-hostgw" {
 			log.Warningf("Ignoring non-vxlan subnet(%s): type=%v", evt.Lease.Subnet, evt.Lease.Attrs.BackendType)
 			eventMarker[eventMarkerIndex] = true
 			continue

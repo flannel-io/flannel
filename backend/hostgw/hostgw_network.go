@@ -82,7 +82,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 		case subnet.EventAdded:
 			log.Infof("Subnet added: %v via %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
 
-			if evt.Lease.Attrs.BackendType != "host-gw" {
+			if evt.Lease.Attrs.BackendType != "host-gw" && evt.Lease.Attrs.BackendType != "vxlan-over-hostgw" {
 				log.Warningf("Ignoring non-host-gw subnet: type=%v", evt.Lease.Attrs.BackendType)
 				continue
 			}
@@ -121,7 +121,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 		case subnet.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
 
-			if evt.Lease.Attrs.BackendType != "host-gw" {
+			if evt.Lease.Attrs.BackendType != "host-gw"  && evt.Lease.Attrs.BackendType != "vxlan-over-hostgw" {
 				log.Warningf("Ignoring non-host-gw subnet: type=%v", evt.Lease.Attrs.BackendType)
 				continue
 			}
@@ -205,4 +205,34 @@ func routeEqual(x, y netlink.Route) bool {
 		return true
 	}
 	return false
+}
+
+
+// public interfaces
+type HostGWNetwork struct {
+	network
+}
+
+func (n *HostGWNetwork) SetupRun(ctx context.Context, wg sync.WaitGroup) {
+	wg.Add(1)
+	go func() {
+		n.network.routeCheck(ctx)
+		wg.Done()
+	}()
+}
+
+func NewHostGWNetwork(subnetMgr subnet.Manager, extIface *backend.ExternalInterface, lease *subnet.Lease) (*HostGWNetwork){
+	n := &HostGWNetwork{
+		network: network{
+			extIface: extIface,
+			sm: subnetMgr,
+			lease: lease,
+			rl: make([]netlink.Route, 0, 10),
+		},
+	}
+	return n
+}
+
+func (n *HostGWNetwork) HandleSubnetEvents(batch []subnet.Event) {
+	n.network.handleSubnetEvents(batch)
 }
