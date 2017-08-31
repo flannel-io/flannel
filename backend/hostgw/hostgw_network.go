@@ -29,12 +29,11 @@ import (
 )
 
 type network struct {
-	name      string
-	extIface  *backend.ExternalInterface
-	linkIndex int
-	rl        []netlink.Route
-	lease     *subnet.Lease
-	sm        subnet.Manager
+	name     string
+	extIface *backend.ExternalInterface
+	rl       []netlink.Route
+	lease    *subnet.Lease
+	sm       subnet.Manager
 }
 
 func (n *network) Lease() *subnet.Lease {
@@ -43,6 +42,10 @@ func (n *network) Lease() *subnet.Lease {
 
 func (n *network) MTU() int {
 	return n.extIface.Iface.MTU
+}
+
+func (n *network) LinkIndex() int {
+	return n.extIface.Iface.Index
 }
 
 func (n *network) Run(ctx context.Context) {
@@ -90,7 +93,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 			route := netlink.Route{
 				Dst:       evt.Lease.Subnet.ToIPNet(),
 				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
-				LinkIndex: n.linkIndex,
+				LinkIndex: n.LinkIndex(),
 			}
 
 			// Check if route exists before attempting to add it
@@ -129,7 +132,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 			route := netlink.Route{
 				Dst:       evt.Lease.Subnet.ToIPNet(),
 				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
-				LinkIndex: n.linkIndex,
+				LinkIndex: n.LinkIndex(),
 			}
 			if err := netlink.RouteDel(&route); err != nil {
 				log.Errorf("Error deleting route to %v: %v", evt.Lease.Subnet, err)
