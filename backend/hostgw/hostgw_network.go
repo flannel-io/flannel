@@ -107,7 +107,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 			if len(routeList) > 0 && !routeList[0].Gw.Equal(route.Gw) {
 				// Same Dst different Gw. Remove it, correct route will be added below.
 				log.Warningf("Replacing existing route to %v via %v with %v via %v.", evt.Lease.Subnet, routeList[0].Gw, evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
-				if err := netlink.RouteDel(&route); err != nil {
+				if err := netlink.RouteDel(&routeList[0]); err != nil {
 					log.Errorf("Error deleting route to %v: %v", evt.Lease.Subnet, err)
 					continue
 				}
