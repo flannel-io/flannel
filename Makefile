@@ -42,7 +42,7 @@ KUBE_CROSS_TAG=v1.8.3-1
 IPTABLES_VERSION=1.4.21
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
-	go build -o dist/flanneld \
+	CGO_ENABLED=0 go build -o dist/flanneld \
 	  -ldflags "-s -w -X github.com/coreos/flannel/version.Version=$(TAG)"
 
 test: license-check gofmt
@@ -76,13 +76,12 @@ update-glide:
 
 clean:
 	rm -f dist/flanneld*
-	rm -f dist/libpthread*
 	rm -f dist/*.aci
 	rm -f dist/*.docker
 	rm -f dist/*.tar.gz
 
 ## Create a docker image on disk for a specific arch and tag
-dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH) dist/libpthread.so.0-$(ARCH)
+dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH)
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
 	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY):$(TAG)-$(ARCH)
 
@@ -117,15 +116,14 @@ dist/flanneld-$(ARCH):
         -v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
 	    gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
 		cd /go/src/github.com/coreos/flannel && \
-		CGO_ENABLED=1 make -e dist/flanneld && \
+		CGO_ENABLED=0 make -e dist/flanneld && \
 		mv dist/flanneld dist/flanneld-$(ARCH) && \
 		file dist/flanneld-$(ARCH)'
 
 ## Busybox images need updated libs. Pull them out of the kube-cross image
-dist/libpthread.so.0-$(ARCH) dist/libc.so.6-$(ARCH) dist/ld64.so.1-$(ARCH):
+dist/libc.so.6-$(ARCH) dist/ld64.so.1-$(ARCH):
 	docker run --rm -v $(CURDIR):/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp $(LIB_DIR)/libc-2.23.so /host/dist/libc.so.6-$(ARCH)
 	docker run --rm -v $(CURDIR):/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp $(LIB_DIR)/ld-2.23.so /host/dist/ld64.so.1-$(ARCH)
-	docker run --rm -v $(CURDIR):/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) cp $(LIB_DIR)/libpthread.so.0 /host/dist/libpthread.so.0-$(ARCH)
 
 ## Build an architecture specific iptables binary
 dist/iptables-$(ARCH):
@@ -194,16 +192,11 @@ flannel-git:
 	ARCH=ppc64le REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-ppc64le.docker docker-push
 	ARCH=s390x REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-s390x.docker docker-push
 
-install:
-	# This is intended as just a developer convenience to help speed up non-containerized builds
-	# It is NOT how you install flannel
-	CGO_ENABLED=1 go install -v github.com/coreos/flannel
-
 minikube-start:
 	minikube start --network-plugin cni
 
-minikube-build-image: dist/iptables-amd64 dist/libpthread.so.0-amd64
-	CGO_ENABLED=1 go build -v -o dist/flanneld-amd64
+minikube-build-image: dist/iptables-amd64
+	CGO_ENABLED=0 go build -v -o dist/flanneld-amd64
 	# Make sure the minikube docker is being used "eval $(minikube docker-env)"
 	sh -c 'eval $$(minikube docker-env) && docker build -f Dockerfile.amd64 -t flannel/minikube .'
 

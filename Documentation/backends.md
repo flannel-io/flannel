@@ -33,13 +33,6 @@ host-gw provides good performance, with few dependencies, and easy set up.
 Type:
 * `Type` (string): `host-gw`
 
-### UDP
-
-Use UDP only for debugging if your network and kernel prevent you from using VXLAN or host-gw.
-
-Type and options:
-* `Type` (string): `udp`
-* `Port` (number): UDP port to use for sending encapsulated packets. Defaults to 8285.
 
 ## Experimental backends
 
