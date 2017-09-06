@@ -47,11 +47,16 @@ package vxlan
 // 3) Create an FDB entry with the VTEP MAC and the public IP of the remote flannel daemon.
 //
 // In this scheme the scaling of table entries is linear to the number of remote hosts - 1 route, 1 arp entry and 1 FDB entry per host
+//
+// In this newest scheme, there is also the option of skipping the use of vxlan for hosts that are on the same subnet,
+// this is called "directRouting"
 
 import (
 	"encoding/json"
 	"fmt"
 	"net"
+
+	log "github.com/golang/glog"
 
 	"golang.org/x/net/context"
 
@@ -98,9 +103,10 @@ func newSubnetAttrs(publicIP net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, 
 func (be *VXLANBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
 	// Parse our configuration
 	cfg := struct {
-		VNI  int
-		Port int
-		GBP  bool
+		VNI           int
+		Port          int
+		GBP           bool
+		DirectRouting bool
 	}{
 		VNI: defaultVNI,
 	}
@@ -110,6 +116,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, config *subnet.Conf
 			return nil, fmt.Errorf("error decoding VXLAN backend config: %v", err)
 		}
 	}
+	log.Infof("VXLAN config: VNI=%d Port=%d GBP=%v DirectRouting=%v", cfg.VNI, cfg.Port, cfg.GBP, cfg.DirectRouting)
 
 	devAttrs := vxlanDeviceAttrs{
 		vni:       uint32(cfg.VNI),
@@ -124,6 +131,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, config *subnet.Conf
 	if err != nil {
 		return nil, err
 	}
+	dev.directRouting = cfg.DirectRouting
 
 	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, dev.MACAddr())
 	if err != nil {

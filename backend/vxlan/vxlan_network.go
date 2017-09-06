@@ -85,78 +85,112 @@ type vxlanLeaseAttrs struct {
 
 func (nw *network) handleSubnetEvents(batch []subnet.Event) {
 	for _, event := range batch {
-		if event.Lease.Attrs.BackendType != "vxlan" {
-			log.Warningf("ignoring non-vxlan subnet(%s): type=%v", event.Lease.Subnet, event.Lease.Attrs.BackendType)
+		sn := event.Lease.Subnet
+		attrs := event.Lease.Attrs
+		if attrs.BackendType != "vxlan" {
+			log.Warningf("ignoring non-vxlan subnet(%s): type=%v", sn, attrs.BackendType)
 			continue
 		}
 
-		var attrs vxlanLeaseAttrs
-		if err := json.Unmarshal(event.Lease.Attrs.BackendData, &attrs); err != nil {
+		var vxlanAttrs vxlanLeaseAttrs
+		if err := json.Unmarshal(attrs.BackendData, &vxlanAttrs); err != nil {
 			log.Error("error decoding subnet lease JSON: ", err)
 			continue
 		}
 
-		route := netlink.Route{
+		// This route is used when traffic should be vxlan encapsulated
+		vxlanRoute := netlink.Route{
 			LinkIndex: nw.dev.link.Attrs().Index,
 			Scope:     netlink.SCOPE_UNIVERSE,
-			Dst:       event.Lease.Subnet.ToIPNet(),
-			Gw:        event.Lease.Subnet.IP.ToIP(),
+			Dst:       sn.ToIPNet(),
+			Gw:        sn.IP.ToIP(),
 		}
-		route.SetFlag(syscall.RTNH_F_ONLINK)
+		vxlanRoute.SetFlag(syscall.RTNH_F_ONLINK)
+
+		// directRouting is where the remote host is on the same subnet so vxlan isn't required.
+		directRoute := netlink.Route{
+			Dst: sn.ToIPNet(),
+			Gw:  attrs.PublicIP.ToIP(),
+		}
+		var directRoutingOK = false
+		if nw.dev.directRouting {
+			routes, err := netlink.RouteGet(attrs.PublicIP.ToIP())
+			if err != nil {
+				log.Errorf("Couldn't lookup route to %v: %v", attrs.PublicIP, err)
+				continue
+			}
+			if len(routes) == 1 && routes[0].Gw == nil {
+				// There is only a single route and there's no gateway (i.e. it's directly connected)
+				directRoutingOK = true
+			}
+		}
 
 		switch event.Type {
 		case subnet.EventAdded:
-			log.V(2).Infof("adding subnet: %s PublicIP: %s VtepMAC: %s", event.Lease.Subnet, event.Lease.Attrs.PublicIP, net.HardwareAddr(attrs.VtepMAC))
+			if directRoutingOK {
+				log.V(2).Infof("Adding direct route to subnet: %s PublicIP: %s", sn, attrs.PublicIP)
 
-			if err := nw.dev.AddARP(neighbor{IP: event.Lease.Subnet.IP, MAC: net.HardwareAddr(attrs.VtepMAC)}); err != nil {
-				log.Error("AddARP failed: ", err)
-				continue
+				if err := netlink.RouteReplace(&directRoute); err != nil {
+					log.Errorf("Error adding route to %v via %v: %v", sn, attrs.PublicIP, err)
+					continue
+				}
+			} else {
+				log.V(2).Infof("adding subnet: %s PublicIP: %s VtepMAC: %s", sn, attrs.PublicIP, net.HardwareAddr(vxlanAttrs.VtepMAC))
+				if err := nw.dev.AddARP(neighbor{IP: sn.IP, MAC: net.HardwareAddr(vxlanAttrs.VtepMAC)}); err != nil {
+					log.Error("AddARP failed: ", err)
+					continue
+				}
+
+				if err := nw.dev.AddFDB(neighbor{IP: attrs.PublicIP, MAC: net.HardwareAddr(vxlanAttrs.VtepMAC)}); err != nil {
+					log.Error("AddFDB failed: ", err)
+
+					// Try to clean up the ARP entry then continue
+					if err := nw.dev.DelARP(neighbor{IP: event.Lease.Subnet.IP, MAC: net.HardwareAddr(vxlanAttrs.VtepMAC)}); err != nil {
+						log.Error("DelARP failed: ", err)
+					}
+
+					continue
+				}
+
+				// Set the route - the kernel would ARP for the Gw IP address if it hadn't already been set above so make sure
+				// this is done last.
+				if err := netlink.RouteReplace(&vxlanRoute); err != nil {
+					log.Errorf("failed to add vxlanRoute (%s -> %s): %v", vxlanRoute.Dst, vxlanRoute.Gw, err)
+
+					// Try to clean up both the ARP and FDB entries then continue
+					if err := nw.dev.DelARP(neighbor{IP: event.Lease.Subnet.IP, MAC: net.HardwareAddr(vxlanAttrs.VtepMAC)}); err != nil {
+						log.Error("DelARP failed: ", err)
+					}
+
+					if err := nw.dev.DelFDB(neighbor{IP: event.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(vxlanAttrs.VtepMAC)}); err != nil {
+						log.Error("DelFDB failed: ", err)
+					}
+
+					continue
+				}
 			}
+		case subnet.EventRemoved:
+			if directRoutingOK {
+				log.V(2).Infof("Removing direct route to subnet: %s PublicIP: %s", sn, attrs.PublicIP)
+				if err := netlink.RouteDel(&directRoute); err != nil {
+					log.Errorf("Error deleting route to %v via %v: %v", sn, attrs.PublicIP, err)
+				}
+			} else {
+				log.V(2).Infof("removing subnet: %s PublicIP: %s VtepMAC: %s", sn, attrs.PublicIP, net.HardwareAddr(vxlanAttrs.VtepMAC))
 
-			if err := nw.dev.AddFDB(neighbor{IP: event.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)}); err != nil {
-				log.Error("AddFDB failed: ", err)
-
-				// Try to clean up the ARP entry then continue
-				if err := nw.dev.DelARP(neighbor{IP: event.Lease.Subnet.IP, MAC: net.HardwareAddr(attrs.VtepMAC)}); err != nil {
+				// Try to remove all entries - don't bail out if one of them fails.
+				if err := nw.dev.DelARP(neighbor{IP: sn.IP, MAC: net.HardwareAddr(vxlanAttrs.VtepMAC)}); err != nil {
 					log.Error("DelARP failed: ", err)
 				}
 
-				continue
-			}
-
-			// Set the route - the kernel would ARP for the Gw IP address if it hadn't already been set above so make sure
-			// this is done last.
-			if err := netlink.RouteReplace(&route); err != nil {
-				log.Errorf("failed to add route (%s -> %s): %v", route.Dst, route.Gw, err)
-
-				// Try to clean up both the ARP and FDB entries then continue
-				if err := nw.dev.DelARP(neighbor{IP: event.Lease.Subnet.IP, MAC: net.HardwareAddr(attrs.VtepMAC)}); err != nil {
-					log.Error("DelARP failed: ", err)
-				}
-
-				if err := nw.dev.DelFDB(neighbor{IP: event.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)}); err != nil {
+				if err := nw.dev.DelFDB(neighbor{IP: attrs.PublicIP, MAC: net.HardwareAddr(vxlanAttrs.VtepMAC)}); err != nil {
 					log.Error("DelFDB failed: ", err)
 				}
 
-				continue
+				if err := netlink.RouteDel(&vxlanRoute); err != nil {
+					log.Errorf("failed to delete vxlanRoute (%s -> %s): %v", vxlanRoute.Dst, vxlanRoute.Gw, err)
+				}
 			}
-
-		case subnet.EventRemoved:
-			log.V(2).Infof("removing subnet: %s PublicIP: %s VtepMAC: %s", event.Lease.Subnet, event.Lease.Attrs.PublicIP, net.HardwareAddr(attrs.VtepMAC))
-
-			// Try to remove all entries - don't bail out if one of them fails.
-			if err := nw.dev.DelARP(neighbor{IP: event.Lease.Subnet.IP, MAC: net.HardwareAddr(attrs.VtepMAC)}); err != nil {
-				log.Error("DelARP failed: ", err)
-			}
-
-			if err := nw.dev.DelFDB(neighbor{IP: event.Lease.Attrs.PublicIP, MAC: net.HardwareAddr(attrs.VtepMAC)}); err != nil {
-				log.Error("DelFDB failed: ", err)
-			}
-
-			if err := netlink.RouteDel(&route); err != nil {
-				log.Errorf("failed to delete route (%s -> %s): %v", route.Dst, route.Gw, err)
-			}
-
 		default:
 			log.Error("internal error: unknown event type: ", int(event.Type))
 		}
