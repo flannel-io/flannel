@@ -59,8 +59,11 @@ func (n *network) Run(ctx context.Context) {
 		wg.Done()
 	}()
 
+	// Store a list of routes, initialized to capacity of 10.
 	n.rl = make([]netlink.Route, 0, 10)
 	wg.Add(1)
+
+	// Start a goroutine which periodically checks that the right routes are created
 	go func() {
 		n.routeCheck(ctx)
 		wg.Done()
@@ -96,6 +99,9 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				LinkIndex: n.LinkIndex(),
 			}
 
+			// Always add the route to the route list.
+			n.addToRouteList(route)
+
 			// Check if route exists before attempting to add it
 			routeList, err := netlink.RouteListFiltered(netlink.FAMILY_V4, &netlink.Route{
 				Dst: route.Dst,
@@ -119,7 +125,6 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, err)
 				continue
 			}
-			n.addToRouteList(route)
 
 		case subnet.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
@@ -134,11 +139,14 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
 				LinkIndex: n.LinkIndex(),
 			}
+
+			// Always remove the route from the route list.
+			n.removeFromRouteList(route)
+
 			if err := netlink.RouteDel(&route); err != nil {
 				log.Errorf("Error deleting route to %v: %v", evt.Lease.Subnet, err)
 				continue
 			}
-			n.removeFromRouteList(route)
 
 		default:
 			log.Error("Internal error: unknown event type: ", int(evt.Type))
@@ -200,6 +208,8 @@ func (n *network) checkSubnetExistInRoutes() {
 				}
 			}
 		}
+	} else {
+		log.Errorf("Error fetching route list. Will automatically retry: %v", err)
 	}
 }
 
