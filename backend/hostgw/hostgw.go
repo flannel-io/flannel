@@ -74,7 +74,5 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, config *subnet.Con
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
-	/* NB: docker will create the local route to `sn` */
-
 	return n, nil
 }
