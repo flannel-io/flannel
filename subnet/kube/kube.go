@@ -311,18 +311,6 @@ func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, curs
 	return subnet.LeaseWatchResult{}, ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) AddReservation(ctx context.Context, r *subnet.Reservation) error {
-	return ErrUnimplemented
-}
-
-func (ksm *kubeSubnetManager) RemoveReservation(ctx context.Context, subnet ip.IP4Net) error {
-	return ErrUnimplemented
-}
-
-func (ksm *kubeSubnetManager) ListReservations(ctx context.Context) ([]subnet.Reservation, error) {
-	return nil, ErrUnimplemented
-}
-
 func (ksm *kubeSubnetManager) Name() string {
 	return fmt.Sprintf("Kubernetes Subnet Manager - %s", ksm.nodeName)
 }
