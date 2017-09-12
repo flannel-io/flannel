@@ -8,7 +8,7 @@ TAG?=$(shell git describe --tags --dirty)
 ARCH?=amd64
 
 # These variables can be overridden by setting an environment variable.
-TEST_PACKAGES?=pkg/ip subnet subnet/etcdv2
+TEST_PACKAGES?=pkg/ip subnet subnet/etcdv2 network
 TEST_PACKAGES_EXPANDED=$(TEST_PACKAGES:%=github.com/coreos/flannel/%)
 PACKAGES?=$(TEST_PACKAGES) network
 PACKAGES_EXPANDED=$(PACKAGES:%=github.com/coreos/flannel/%)
