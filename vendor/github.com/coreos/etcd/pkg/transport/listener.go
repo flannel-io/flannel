@@ -27,8 +27,7 @@ import (
 	"math/big"
 	"net"
 	"os"
-	"path"
-	"strings"
+	"path/filepath"
 	"time"
 
 	"github.com/coreos/etcd/pkg/fileutil"
@@ -91,8 +90,8 @@ func SelfCert(dirpath string, hosts []string) (info TLSInfo, err error) {
 		return
 	}
 
-	certPath := path.Join(dirpath, "cert.pem")
-	keyPath := path.Join(dirpath, "key.pem")
+	certPath := filepath.Join(dirpath, "cert.pem")
+	keyPath := filepath.Join(dirpath, "key.pem")
 	_, errcert := os.Stat(certPath)
 	_, errkey := os.Stat(keyPath)
 	if errcert == nil && errkey == nil {
@@ -120,10 +119,11 @@ func SelfCert(dirpath string, hosts []string) (info TLSInfo, err error) {
 	}
 
 	for _, host := range hosts {
-		if ip := net.ParseIP(host); ip != nil {
+		h, _, _ := net.SplitHostPort(host)
+		if ip := net.ParseIP(h); ip != nil {
 			tmpl.IPAddresses = append(tmpl.IPAddresses, ip)
 		} else {
-			tmpl.DNSNames = append(tmpl.DNSNames, strings.Split(host, ":")[0])
+			tmpl.DNSNames = append(tmpl.DNSNames, h)
 		}
 	}
 

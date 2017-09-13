@@ -24,11 +24,10 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
-var backendCtors map[string]BackendCtor = make(map[string]BackendCtor)
+var constructors = make(map[string]BackendCtor)
 
 type Manager interface {
 	GetBackend(backendType string) (Backend, error)
-	Wait()
 }
 
 type manager struct {
@@ -60,7 +59,7 @@ func (bm *manager) GetBackend(backendType string) (Backend, error) {
 	}
 
 	// first request, need to create and run it
-	befunc, ok := backendCtors[betype]
+	befunc, ok := constructors[betype]
 	if !ok {
 		return nil, fmt.Errorf("unknown backend type: %v", betype)
 	}
@@ -73,7 +72,7 @@ func (bm *manager) GetBackend(backendType string) (Backend, error) {
 
 	bm.wg.Add(1)
 	go func() {
-		be.Run(bm.ctx)
+		<-bm.ctx.Done()
 
 		// TODO(eyakubovich): this obviosly introduces a race.
 		// GetBackend() could get called while we are here.
@@ -90,10 +89,6 @@ func (bm *manager) GetBackend(backendType string) (Backend, error) {
 	return be, nil
 }
 
-func (bm *manager) Wait() {
-	bm.wg.Wait()
-}
-
 func Register(name string, ctor BackendCtor) {
-	backendCtors[name] = ctor
+	constructors[name] = ctor
 }

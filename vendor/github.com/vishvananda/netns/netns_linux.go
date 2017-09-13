@@ -19,6 +19,8 @@ var SYS_SETNS = map[string]uintptr{
 	"amd64":   308,
 	"arm64":   268,
 	"arm":     375,
+	"mips":    4344,
+	"mipsle":  4344,
 	"ppc64":   350,
 	"ppc64le": 350,
 	"s390x":   339,

@@ -2,15 +2,15 @@
 
 When running within an Amazon VPC, we recommend using the aws-vpc backend which, instead of using encapsulation, manipulates IP routes to achieve maximum performance. Because of this, a separate flannel interface is not created.
 
-The biggest advantage of using Flannel AWS-VPC backend is that the AWS knows about that IP. That makes it possible to setup ELB to route directly to that container.
+The biggest advantage of using flannel AWS-VPC backend is that the AWS knows about that IP. That makes it possible to set up ELB to route directly to that container.
 
-In order to run flannel on AWS we need to first create an [Amazon VPC](http://aws.amazon.com/vpc/).
-Amazon VPC enables us to launch EC2 instances into a virtual network, which we can configure via its route table.
+To run flannel on AWS, first create an [Amazon VPC](http://aws.amazon.com/vpc/).
+Amazon VPC enables us to launch EC2 instances into a virtual network, which may be configured via its route table.
 
-From the VPC dashboard start out by running the "VPC Wizard":
+From the VPC dashboard, run the "VPC Wizard":
 
 - Select "VPC with a Single Public Subnet"
-- Configure the network and the subnet address ranges 
+- Configure the network and the subnet address ranges
 
 <br/>
 <div class="row">
@@ -22,13 +22,13 @@ From the VPC dashboard start out by running the "VPC Wizard":
 </div>
 <div class="caption">Creating a new Amazon VPC</div>
 
-Now that we have set up our VPC and subnet, let’s create an Identity and Access Management ([IAM](http://aws.amazon.com/iam/)) role to grant the required permissions to our EC2 instances. 
+With a VPC and subnet set up, create an Identity and Access Management ([IAM](http://aws.amazon.com/iam/)) role to grant the required permissions to the EC2 instances.
 
-From the console, select Services -> Security & Identity -> IAM. 
+From the console, select Services > Security & Identity > IAM.
 
-We first need to create a [policy](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_overview.html) that we will later assign to an IAM role.
+Create a [policy](http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_overview.html) that will later be assigned to an IAM role.
 Under "Policies" on the left, select "Create Policy", then "Create Your Own Policy".
-The following permissions are required as shown below in the sample policy document.
+The following permissions are required in the sample policy document.
 
 - ec2:CreateRoute
 - ec2:DeleteRoute
@@ -64,19 +64,19 @@ The following permissions are required as shown below in the sample policy docum
 ```
 
 Note that although the first three permissions can be tied to the route table resource of our subnet, the ec2:Describe\* permissions can not be limited to a particular resource.
-For simplicity, we leave the "Resource" as wildcard in both. 
+For simplicity, leave the "Resource" as wildcard in both.
 
-With the policy added, let's attach it to a new IAM role by clicking the "Create New Role" button and setting the following options:
+With the policy added, attach it to a new IAM role by clicking "Create New Role" and setting the following options:
 Under "Roles" on the left, select "Create New Role".
 
 - Role Name: `demo-role`
 - Role Type: "Amazon EC2"
-- Attach the policy we created earlier
+- Attach the policy  created earlier
 
-We are now all set to launch an EC2 instance. 
+Now, launch an EC2 instance.
 In the launch wizard, choose the `CoreOS-stable-681.2.0` image and under "Configure Instance Details" perform the following steps:
 
-- Change the "Network" to the VPC we just created
+- Change the "Network" to the VPC just created
 - Enable "Auto-assign Public IP"
 - Select IAM `demo-role`
 
@@ -92,9 +92,9 @@ In the launch wizard, choose the `CoreOS-stable-681.2.0` image and under "Config
 
 Under the "Configure Security Group" tab add the rules to allow etcd traffic (tcp/2379), SSH and ICMP.
 
-Go ahead and launch the instance! 
+Go ahead and launch the instance!
 
-Since our instance will be sending and receiving traffic for IPs other than the one assigned by our subnet, we need to disable source/destination checks. 
+Because the instance will be sending and receiving traffic for IPs other than the one assigned by our subnet, we need to disable source/destination checks.
 
 <br/>
 <div class="row">
@@ -106,20 +106,29 @@ Since our instance will be sending and receiving traffic for IPs other than the 
 </div>
 <div class="caption">Disable AWS Source/Dest Check</div>
 
-All that’s left now is to start etcd, publish the network configuration and run the flannel daemon. 
+All that’s left now is to start etcd, publish the network configuration and run the flannel daemon.
 First, SSH into `demo-instance-1`:
 
 - Start etcd:
 
 ```
-$ etcd2 -advertise-client-urls http://$INTERNAL_IP:2379 -listen-client-urls http://0.0.0.0:2379
+$ etcd --advertise-client-urls http://$INTERNAL_IP:2379 --listen-client-urls http://0.0.0.0:2379
 ```
-- Publish configuration in etcd (ensure that the network range does not overlap with the one configured for the VPC)
+- Publish configuration in etcd (ensure that the network range does not overlap with the one configured for the VPC).  This will
+  attempt to automatically determine your route table.
 
 ```
 $ etcdctl set /coreos.com/network/config '{"Network":"10.20.0.0/16", "Backend": {"Type": "aws-vpc"}}'
 ```
-- Fetch the latest release using wget from [here](https://github.com/coreos/flannel/releases/download/v0.7.0/flannel-v0.7.0-linux-amd64.tar.gz)
+
+- If you want to manually specify your route table ID or if you want to update multiple route tables, e.g. for a deployment across multiple availability zones, use either a string for one or an array for one or more route tables like this.
+
+```
+$ etcdctl set /coreos.com/network/config '{"Network":"10.20.0.0/16", "Backend": {"Type": "aws-vpc", "RouteTableID": ["rtb-abc00001","rtb-abc00002","rtb-abc00003"]} }'}}'
+```
+
+
+- Fetch the latest release using wget from [here](https://github.com/coreos/flannel/releases/download/v0.8.0/flannel-v0.8.0-linux-amd64.tar.gz)
 - Run flannel daemon:
 
 ```

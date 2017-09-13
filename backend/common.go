@@ -32,18 +32,9 @@ type ExternalInterface struct {
 // function receives static network interface information (like internal and
 // external IP addresses, MTU, etc) which it should cache for later use if
 // needed.
-//
-// To implement a singleton backend which manages multiple networks, the
-// New() function should create the singleton backend object once, and return
-// that object on on further calls to New().  The backend is guaranteed that
-// the arguments passed via New() will not change across invocations.  Also,
-// since multiple RegisterNetwork() and Run() calls may be in-flight at any
-// given time for a singleton backend, it must protect these calls with a mutex.
 type Backend interface {
-	// Called first to start the necessary event loops and such
-	Run(ctx context.Context)
 	// Called when the backend should create or begin managing a new network
-	RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (Network, error)
+	RegisterNetwork(ctx context.Context, config *subnet.Config) (Network, error)
 }
 
 type Network interface {

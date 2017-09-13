@@ -1,0 +1,8 @@
+{
+  "Network": "10.50.0.0/16",
+  "Backend": {
+    "Type": "extension",
+    "SubnetAddCommand": "ip route add $SUBNET via $PUBLIC_IP",
+    "SubnetRemoveCommand": "ip route del $SUBNET via $PUBLIC_IP"
+  }
+}

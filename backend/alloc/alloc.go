@@ -17,10 +17,10 @@ package alloc
 import (
 	"fmt"
 
-	"golang.org/x/net/context"
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
+	"golang.org/x/net/context"
 )
 
 func init() {
@@ -40,16 +40,12 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return &be, nil
 }
 
-func (_ *AllocBackend) Run(ctx context.Context) {
-	<-ctx.Done()
-}
-
-func (be *AllocBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (backend.Network, error) {
+func (be *AllocBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
 	attrs := subnet.LeaseAttrs{
 		PublicIP: ip.FromIP(be.extIface.ExtAddr),
 	}
 
-	l, err := be.sm.AcquireLease(ctx, network, &attrs)
+	l, err := be.sm.AcquireLease(ctx, &attrs)
 	switch err {
 	case nil:
 		return &backend.SimpleNetwork{

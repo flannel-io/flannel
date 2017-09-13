@@ -82,16 +82,12 @@ func (g *GCEBackend) ensureAPI() error {
 	return err
 }
 
-func (g *GCEBackend) Run(ctx context.Context) {
-	<-ctx.Done()
-}
-
-func (g *GCEBackend) RegisterNetwork(ctx context.Context, network string, config *subnet.Config) (backend.Network, error) {
+func (g *GCEBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
 	attrs := subnet.LeaseAttrs{
 		PublicIP: ip.FromIP(g.extIface.ExtAddr),
 	}
 
-	l, err := g.sm.AcquireLease(ctx, network, &attrs)
+	l, err := g.sm.AcquireLease(ctx, &attrs)
 	switch err {
 	case nil:
 
@@ -119,7 +115,7 @@ func (g *GCEBackend) RegisterNetwork(ctx context.Context, network string, config
 
 		err = g.api.pollOperationStatus(operation.Name)
 		if err != nil {
-			return nil, fmt.Errorf("insert operaiton failed: ", err)
+			return nil, fmt.Errorf("insert operaiton failed: %v", err)
 		}
 	}
 

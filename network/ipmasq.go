@@ -22,28 +22,32 @@ import (
 	log "github.com/golang/glog"
 
 	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/subnet"
 )
 
-func rules(ipn ip.IP4Net) [][]string {
+func rules(ipn ip.IP4Net, lease *subnet.Lease) [][]string {
 	n := ipn.String()
+	sn := lease.Subnet.String()
 
 	return [][]string{
 		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
 		{"-s", n, "-d", n, "-j", "RETURN"},
 		// NAT if it's not multicast traffic
 		{"-s", n, "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE"},
+		// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
+		{"!", "-s", n, "-d", sn, "-j", "RETURN"},
 		// Masquerade anything headed towards flannel from the host
 		{"!", "-s", n, "-d", n, "-j", "MASQUERADE"},
 	}
 }
 
-func setupIPMasq(ipn ip.IP4Net) error {
+func SetupIPMasq(ipn ip.IP4Net, lease *subnet.Lease) error {
 	ipt, err := iptables.New()
 	if err != nil {
 		return fmt.Errorf("failed to set up IP Masquerade. iptables was not found")
 	}
 
-	for _, rule := range rules(ipn) {
+	for _, rule := range rules(ipn, lease) {
 		log.Info("Adding iptables rule: ", strings.Join(rule, " "))
 		err = ipt.AppendUnique("nat", "POSTROUTING", rule...)
 		if err != nil {
@@ -54,13 +58,13 @@ func setupIPMasq(ipn ip.IP4Net) error {
 	return nil
 }
 
-func teardownIPMasq(ipn ip.IP4Net) error {
+func TeardownIPMasq(ipn ip.IP4Net, lease *subnet.Lease) error {
 	ipt, err := iptables.New()
 	if err != nil {
 		return fmt.Errorf("failed to teardown IP Masquerade. iptables was not found")
 	}
 
-	for _, rule := range rules(ipn) {
+	for _, rule := range rules(ipn, lease) {
 		log.Info("Deleting iptables rule: ", strings.Join(rule, " "))
 		err = ipt.Delete("nat", "POSTROUTING", rule...)
 		if err != nil {

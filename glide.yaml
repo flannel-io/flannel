@@ -9,7 +9,7 @@ import:
   - aws/session
   - service/ec2
 - package: github.com/coreos/etcd
-  version: ^3.1.0
+  version: 3.1.x
   subpackages:
   - client
   - clientv3
@@ -43,14 +43,19 @@ import:
   subpackages:
   - compute/v1
   - googleapi
-- package: k8s.io/kubernetes
+- package: k8s.io/client-go
+  version: release-3.0
   subpackages:
-  - pkg/api
-  - pkg/client/cache
-  - pkg/client/clientset_generated/internalclientset
-  - pkg/client/restclient
-  - pkg/controller/framework
+  - kubernetes
+  - listers/core/v1
+  - pkg/api/v1
+  - rest
+  - tools/cache
+- package: k8s.io/apimachinery
+  subpackages:
+  - pkg/apis/meta/v1
   - pkg/runtime
-  - pkg/util/runtime
   - pkg/util/wait
   - pkg/watch
+- package: github.com/joho/godotenv
+  version: v1.1

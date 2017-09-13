@@ -28,20 +28,23 @@ import (
 
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/cache"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/controller/framework"
-	"k8s.io/kubernetes/pkg/runtime"
-	utilruntime "k8s.io/kubernetes/pkg/util/runtime"
-	"k8s.io/kubernetes/pkg/util/wait"
-	"k8s.io/kubernetes/pkg/watch"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/strategicpatch"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/watch"
+	clientset "k8s.io/client-go/kubernetes"
+	listers "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/pkg/api"
+	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 var (
 	ErrUnimplemented = errors.New("unimplemented")
-	kubeSubnetCfg    *subnet.Config
 )
 
 const (
@@ -59,36 +62,53 @@ const (
 type kubeSubnetManager struct {
 	client         clientset.Interface
 	nodeName       string
-	nodeStore      cache.StoreToNodeLister
-	nodeController *framework.Controller
+	nodeStore      listers.NodeLister
+	nodeController cache.Controller
 	subnetConf     *subnet.Config
 	events         chan subnet.Event
-	selfEvents     chan subnet.Event
 }
 
-func NewSubnetManager() (subnet.Manager, error) {
-	cfg, err := restclient.InClusterConfig()
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize inclusterconfig: %v", err)
+func NewSubnetManager(apiUrl, kubeconfig string) (subnet.Manager, error) {
+
+	var cfg *rest.Config
+	var err error
+	// Use out of cluster config if the URL or kubeconfig have been specified. Otherwise use incluster config.
+	if apiUrl != "" || kubeconfig != "" {
+		cfg, err = clientcmd.BuildConfigFromFlags(apiUrl, kubeconfig)
+		if err != nil {
+			return nil, fmt.Errorf("unable to create k8s config: %v", err)
+		}
+	} else {
+		cfg, err = rest.InClusterConfig()
+		if err != nil {
+			return nil, fmt.Errorf("unable to initialize inclusterconfig: %v", err)
+		}
 	}
+
 	c, err := clientset.NewForConfig(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize client: %v", err)
 	}
 
-	podName := os.Getenv("POD_NAME")
-	podNamespace := os.Getenv("POD_NAMESPACE")
-	if podName == "" || podNamespace == "" {
-		return nil, fmt.Errorf("env variables POD_NAME and POD_NAMESPACE must be set")
-	}
-
-	pod, err := c.Pods(podNamespace).Get(podName)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving pod spec for '%s/%s': %v", podNamespace, podName, err)
-	}
-	nodeName := pod.Spec.NodeName
+	// The kube subnet mgr needs to know the k8s node name that it's running on so it can annotate it.
+	// If we're running as a pod then the POD_NAME and POD_NAMESPACE will be populated and can be used to find the node
+	// name. Otherwise, the environment variable NODE_NAME can be passed in.
+	nodeName := os.Getenv("NODE_NAME")
 	if nodeName == "" {
-		return nil, fmt.Errorf("node name not present in pod spec '%s/%s'", podNamespace, podName)
+		podName := os.Getenv("POD_NAME")
+		podNamespace := os.Getenv("POD_NAMESPACE")
+		if podName == "" || podNamespace == "" {
+			return nil, fmt.Errorf("env variables POD_NAME and POD_NAMESPACE must be set")
+		}
+
+		pod, err := c.Pods(podNamespace).Get(podName, metav1.GetOptions{})
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving pod spec for '%s/%s': %v", podNamespace, podName, err)
+		}
+		nodeName = pod.Spec.NodeName
+		if nodeName == "" {
+			return nil, fmt.Errorf("node name not present in pod spec '%s/%s'", podNamespace, podName)
+		}
 	}
 
 	netConf, err := ioutil.ReadFile(netConfPath)
@@ -100,6 +120,7 @@ func NewSubnetManager() (subnet.Manager, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing subnet config: %s", err)
 	}
+
 	sm, err := newKubeSubnetManager(c, sc, nodeName)
 	if err != nil {
 		return nil, fmt.Errorf("error creating network manager: %s", err)
@@ -123,20 +144,19 @@ func newKubeSubnetManager(c clientset.Interface, sc *subnet.Config, nodeName str
 	ksm.client = c
 	ksm.nodeName = nodeName
 	ksm.subnetConf = sc
-	ksm.events = make(chan subnet.Event, 100)
-	ksm.selfEvents = make(chan subnet.Event, 100)
-	ksm.nodeStore.Store, ksm.nodeController = framework.NewInformer(
+	ksm.events = make(chan subnet.Event, 5000)
+	indexer, controller := cache.NewIndexerInformer(
 		&cache.ListWatch{
-			ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-				return ksm.client.Core().Nodes().List(options)
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				return ksm.client.CoreV1().Nodes().List(options)
 			},
-			WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-				return ksm.client.Core().Nodes().Watch(options)
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return ksm.client.CoreV1().Nodes().Watch(options)
 			},
 		},
-		&api.Node{},
+		&v1.Node{},
 		resyncPeriod,
-		framework.ResourceEventHandlerFuncs{
+		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				ksm.handleAddLeaseEvent(subnet.EventAdded, obj)
 			},
@@ -145,12 +165,15 @@ func newKubeSubnetManager(c clientset.Interface, sc *subnet.Config, nodeName str
 				ksm.handleAddLeaseEvent(subnet.EventRemoved, obj)
 			},
 		},
+		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	)
+	ksm.nodeController = controller
+	ksm.nodeStore = listers.NewNodeLister(indexer)
 	return &ksm, nil
 }
 
 func (ksm *kubeSubnetManager) handleAddLeaseEvent(et subnet.EventType, obj interface{}) {
-	n := obj.(*api.Node)
+	n := obj.(*v1.Node)
 	if s, ok := n.Annotations[subnetKubeManagedAnnotation]; !ok || s != "true" {
 		return
 	}
@@ -160,15 +183,12 @@ func (ksm *kubeSubnetManager) handleAddLeaseEvent(et subnet.EventType, obj inter
 		glog.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.events <- subnet.Event{et, l, ""}
-	if n.ObjectMeta.Name == ksm.nodeName {
-		ksm.selfEvents <- subnet.Event{et, l, ""}
-	}
+	ksm.events <- subnet.Event{et, l}
 }
 
 func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{}) {
-	o := oldObj.(*api.Node)
-	n := newObj.(*api.Node)
+	o := oldObj.(*v1.Node)
+	n := newObj.(*v1.Node)
 	if s, ok := n.Annotations[subnetKubeManagedAnnotation]; !ok || s != "true" {
 		return
 	}
@@ -183,35 +203,23 @@ func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{})
 		glog.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.events <- subnet.Event{subnet.EventAdded, l, ""}
-	if n.ObjectMeta.Name == ksm.nodeName {
-		ksm.selfEvents <- subnet.Event{subnet.EventAdded, l, ""}
-	}
+	ksm.events <- subnet.Event{subnet.EventAdded, l}
 }
 
-func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context, network string) (*subnet.Config, error) {
+func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {
 	return ksm.subnetConf, nil
 }
 
-func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, network string, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
-	nobj, found, err := ksm.nodeStore.Store.GetByKey(ksm.nodeName)
+func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
+	cachedNode, err := ksm.nodeStore.Get(ksm.nodeName)
 	if err != nil {
 		return nil, err
 	}
-	if !found {
-		return nil, fmt.Errorf("node %q not found", ksm.nodeName)
-	}
-	cacheNode, ok := nobj.(*api.Node)
-	if !ok {
-		return nil, fmt.Errorf("nobj was not a *api.Node")
-	}
-
-	// Make a copy so we're not modifying state of our cache
-	objCopy, err := api.Scheme.Copy(cacheNode)
+	nobj, err := api.Scheme.DeepCopy(cachedNode)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make copy of node: %v", err)
+		return nil, err
 	}
-	n := objCopy.(*api.Node)
+	n := nobj.(*v1.Node)
 
 	if n.Spec.PodCIDR == "" {
 		return nil, fmt.Errorf("node %q pod cidr not assigned", ksm.nodeName)
@@ -232,7 +240,23 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, network string, 
 		n.Annotations[backendDataAnnotation] = string(bd)
 		n.Annotations[backendPublicIPAnnotation] = attrs.PublicIP.String()
 		n.Annotations[subnetKubeManagedAnnotation] = "true"
-		n, err = ksm.client.Core().Nodes().Update(n)
+
+		oldData, err := json.Marshal(cachedNode)
+		if err != nil {
+			return nil, err
+		}
+
+		newData, err := json.Marshal(n)
+		if err != nil {
+			return nil, err
+		}
+
+		patchBytes, err := strategicpatch.CreateTwoWayMergePatch(oldData, newData, v1.Node{})
+		if err != nil {
+			return nil, fmt.Errorf("failed to create patch for node %q: %v", ksm.nodeName, err)
+		}
+
+		_, err = ksm.client.CoreV1().Nodes().Patch(ksm.nodeName, types.StrategicMergePatchType, patchBytes, "status")
 		if err != nil {
 			return nil, err
 		}
@@ -244,29 +268,7 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, network string, 
 	}, nil
 }
 
-func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, network string, lease *subnet.Lease) error {
-	l, err := ksm.AcquireLease(ctx, network, &lease.Attrs)
-	if err != nil {
-		return err
-	}
-	lease.Subnet = l.Subnet
-	lease.Attrs = l.Attrs
-	lease.Expiration = l.Expiration
-	return nil
-}
-
-func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, network string, sn ip.IP4Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
-	select {
-	case event := <-ksm.selfEvents:
-		return subnet.LeaseWatchResult{
-			Events: []subnet.Event{event},
-		}, nil
-	case <-ctx.Done():
-		return subnet.LeaseWatchResult{}, nil
-	}
-}
-
-func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, network string, cursor interface{}) (subnet.LeaseWatchResult, error) {
+func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, cursor interface{}) (subnet.LeaseWatchResult, error) {
 	select {
 	case event := <-ksm.events:
 		return subnet.LeaseWatchResult{
@@ -277,48 +279,50 @@ func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, network string, c
 	}
 }
 
-func (ksm *kubeSubnetManager) WatchNetworks(ctx context.Context, cursor interface{}) (subnet.NetworkWatchResult, error) {
-	time.Sleep(time.Second)
-	return subnet.NetworkWatchResult{
-		Snapshot: []string{""},
-	}, nil
-}
-
 func (ksm *kubeSubnetManager) Run(ctx context.Context) {
-	defer utilruntime.HandleCrash()
-	glog.Infof("starting kube subnet manager")
+	glog.Infof("Starting kube subnet manager")
 	ksm.nodeController.Run(ctx.Done())
 }
 
-func nodeToLease(n api.Node) (l subnet.Lease, err error) {
+func nodeToLease(n v1.Node) (l subnet.Lease, err error) {
 	l.Attrs.PublicIP, err = ip.ParseIP4(n.Annotations[backendPublicIPAnnotation])
 	if err != nil {
 		return l, err
 	}
+
 	l.Attrs.BackendType = n.Annotations[backendTypeAnnotation]
 	l.Attrs.BackendData = json.RawMessage(n.Annotations[backendDataAnnotation])
+
 	_, cidr, err := net.ParseCIDR(n.Spec.PodCIDR)
 	if err != nil {
 		return l, err
 	}
+
 	l.Subnet = ip.FromIPNet(cidr)
-	l.Expiration = time.Now().Add(24 * time.Hour)
 	return l, nil
 }
 
 // unimplemented
-func (ksm *kubeSubnetManager) RevokeLease(ctx context.Context, network string, sn ip.IP4Net) error {
+func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, lease *subnet.Lease) error {
 	return ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) AddReservation(ctx context.Context, network string, r *subnet.Reservation) error {
+func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
+	return subnet.LeaseWatchResult{}, ErrUnimplemented
+}
+
+func (ksm *kubeSubnetManager) AddReservation(ctx context.Context, r *subnet.Reservation) error {
 	return ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) RemoveReservation(ctx context.Context, network string, subnet ip.IP4Net) error {
+func (ksm *kubeSubnetManager) RemoveReservation(ctx context.Context, subnet ip.IP4Net) error {
 	return ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) ListReservations(ctx context.Context, network string) ([]subnet.Reservation, error) {
+func (ksm *kubeSubnetManager) ListReservations(ctx context.Context) ([]subnet.Reservation, error) {
 	return nil, ErrUnimplemented
+}
+
+func (ksm *kubeSubnetManager) Name() string {
+	return fmt.Sprintf("Kubernetes Subnet Manager - %s", ksm.nodeName)
 }

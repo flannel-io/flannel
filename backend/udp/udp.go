@@ -46,7 +46,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return &be, nil
 }
 
-func (be *UdpBackend) RegisterNetwork(ctx context.Context, netname string, config *subnet.Config) (backend.Network, error) {
+func (be *UdpBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
 	cfg := struct {
 		Port int
 	}{
@@ -65,7 +65,7 @@ func (be *UdpBackend) RegisterNetwork(ctx context.Context, netname string, confi
 		PublicIP: ip.FromIP(be.extIface.ExtAddr),
 	}
 
-	l, err := be.sm.AcquireLease(ctx, netname, &attrs)
+	l, err := be.sm.AcquireLease(ctx, &attrs)
 	switch err {
 	case nil:
 
@@ -83,9 +83,5 @@ func (be *UdpBackend) RegisterNetwork(ctx context.Context, netname string, confi
 		PrefixLen: config.Network.PrefixLen,
 	}
 
-	return newNetwork(netname, be.sm, be.extIface, cfg.Port, tunNet, l)
-}
-
-func (_ *UdpBackend) Run(ctx context.Context) {
-	<-ctx.Done()
+	return newNetwork(be.sm, be.extIface, cfg.Port, tunNet, l)
 }
