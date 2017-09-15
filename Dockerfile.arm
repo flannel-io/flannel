@@ -1,4 +1,4 @@
-FROM armel/busybox:glibc
+FROM arm32v7/busybox:glibc
 
 MAINTAINER Tom Denham <tom@tigera.io>
 
@@ -7,9 +7,5 @@ ENV FLANNEL_ARCH=arm
 COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld
 COPY dist/iptables-$FLANNEL_ARCH /usr/local/bin/iptables
 COPY dist/mk-docker-opts.sh /opt/bin/
-COPY dist/libpthread.so.0-$FLANNEL_ARCH /lib/libpthread.so.0
-COPY dist/ld64.so.1-$FLANNEL_ARCH /lib/ld64.so.1
-COPY dist/libc.so.6-$FLANNEL_ARCH /lib/libc.so.6
-
 
 ENTRYPOINT ["/opt/bin/flanneld"]
