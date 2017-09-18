@@ -1,8 +1,5 @@
 dist/*.tar.gz
 dist/flanneld*
-dist/libpthread*
-dist/ld64*
-dist/libc*
 dist/*.aci
 dist/*.docker
 cover.out
