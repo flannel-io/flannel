@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/coreos/flannel.png?branch=master)](https://travis-ci.org/coreos/flannel)
 
-Flannel is a simple and easy to configure layer 3 network fabric designed for Kubernetes.
+Flannel is a simple and easy way to configure layer 3 network fabric designed for Kubernetes.
 
 ## How it works
 
