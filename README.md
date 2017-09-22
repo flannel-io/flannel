@@ -31,6 +31,9 @@ Though not required, it's recommended that flannel uses the Kubernetes API as it
 
 Flannel can be added to any existing Kubernetes cluster though it's simplest to add `flannel` before any pods using the pod network have been started.
 
+For Kubernetes v1.6+
+`kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml`
+
 See [Kubernetes](Documentation/Kubernetes.md) for more details.
 
 ## Getting started on Docker
