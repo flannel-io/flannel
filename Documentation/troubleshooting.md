@@ -80,5 +80,3 @@ It's possible to manually set the `podCIDR` for each node.
 * `error parsing subnet config` - The net conf is malformed. Double check that it has the right content and is valid JSON.
 * `node <NODE_NAME> pod cidr not assigned` - The node doesn't have a `podCIDR` defined. See above for more info.
 * `Failed to create SubnetManager: error retrieving pod spec for 'kube-system/kube-flannel-ds-abc123': the server does not allow access to the requested resource` - The kubernetes cluster has RBAC enabled. Run `https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml`
-
-
