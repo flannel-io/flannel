@@ -114,7 +114,7 @@ func (dev *vxlanDevice) Configure(ipn ip.IP4Net) error {
 
 	// flannel will never make this happen. This situation can only be caused by a user, so get them to sort it out.
 	if len(existingAddrs) > 1 {
-		return fmt.Errorf("link has incompatible addresses. Remove additional addresses and try again. %s", dev.link)
+		return fmt.Errorf("link has incompatible addresses. Remove additional addresses and try again. %#v", dev.link)
 	}
 
 	// If the device has an incompatible address then delete it. This can happen if the lease changes for example.
