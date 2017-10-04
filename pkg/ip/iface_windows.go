@@ -18,11 +18,10 @@ package ip
 
 import (
 	"net"
-	"github.com/rakelkar/gonetsh"
+	netsh "github.com/rakelkar/gonetsh/netsh"
 )
 
 func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
-	// TODO: need to implement this
 	// get ip address for the interface
 	// prefer global unicast to link local addresses
 	netHelper := netsh.New(nil)
