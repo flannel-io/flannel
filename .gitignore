@@ -5,4 +5,4 @@ dist/*.docker
 cover.out
 .editorconfig
 .idea/
-
+bash_unit
