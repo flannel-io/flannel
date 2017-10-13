@@ -2,7 +2,13 @@
 # Uncomment to see what commands are being executed
 #set -x
 
-ETCD_IMG="quay.io/coreos/etcd:v3.0.3"
+ETCD_IMG="quay.io/coreos/etcd:v3.2.7"
+
+if [[ ${ARCH} == "ppc64le" ]]; then
+	ETCD_IMG+="-ppc64le"
+elif [[ ${ARCH} == "arm64" ]]; then
+	ETCD_IMG+="-arm64"
+fi
 FLANNEL_NET="10.10.0.0/16"
 
 usage() {
@@ -94,8 +100,8 @@ run_test() {
 	# Perf test - run iperf server on flannel1 and client on flannel2
 	if [ $exit_code -eq 0 ]; then
         docker rm -f flannel-e2e-test-flannel1-iperf 2>/dev/null
-        docker run -d --name flannel-e2e-test-flannel1-iperf --net=container:flannel-e2e-test-flannel1 mlabbe/iperf3
-        docker run --rm --net=container:flannel-e2e-test-flannel2 mlabbe/iperf3 -c $ping_dest
+        docker run -d --name flannel-e2e-test-flannel1-iperf --net=container:flannel-e2e-test-flannel1 iperf3:latest
+        docker run --rm --net=container:flannel-e2e-test-flannel2 iperf3:latest -c $ping_dest
     fi
 
 	docker stop flannel-e2e-test-flannel1 flannel-e2e-test-flannel2 >/dev/null

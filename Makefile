@@ -49,7 +49,8 @@ test: license-check gofmt
 	go test -cover $(TEST_PACKAGES_EXPANDED)
 	cd dist; ./mk-docker-opts_tests.sh
 
-e2e-test: dist/flanneld-$(TAG)-$(ARCH).docker
+e2e-test: dist/flanneld-e2e-$(TAG)-$(ARCH).docker
+	$(MAKE) -C images/iperf3 ARCH=$(ARCH)
 	cd dist; ./functional-test.sh $(REGISTRY):$(TAG)-$(ARCH)
 
 cover:
@@ -79,6 +80,18 @@ clean:
 	rm -f dist/*.aci
 	rm -f dist/*.docker
 	rm -f dist/*.tar.gz
+
+dist/flanneld-e2e-$(TAG)-$(ARCH).docker:
+        # valid values for $ARCH are [amd64 arm arm64 ppc64le s390x]
+	docker run -e GOARM=$(GOARM) \
+		-u $(shell id -u):$(shell id -g) \
+		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
+		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
+		golang:1.8.3 /bin/bash -c '\
+		cd /go/src/github.com/coreos/flannel && \
+		CGO_ENABLED=1 make -e dist/flanneld && \
+		mv dist/flanneld dist/flanneld-$(ARCH)'
+	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
 
 ## Create a docker image on disk for a specific arch and tag
 dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH)
