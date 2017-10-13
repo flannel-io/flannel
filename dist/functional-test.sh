@@ -244,7 +244,7 @@ if [ $global_exit_code -eq 0 ]; then
 else
 	# Print etcd logs to help debug
 	echo "------ etcd log -------"
-	docker logs $etcd
+	docker logs flannel-e2e-test-etcd
 	echo
 	echo "TEST(S) FAILED"
 fi
