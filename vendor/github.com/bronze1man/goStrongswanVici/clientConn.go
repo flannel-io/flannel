@@ -4,6 +4,11 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"time"
+)
+
+const (
+	DefaultReadTimeout = 15 * time.Second
 )
 
 // This object is not thread safe.
@@ -13,6 +18,10 @@ type ClientConn struct {
 	responseChan  chan segment
 	eventHandlers map[string]func(response map[string]interface{})
 	lastError     error
+
+	// ReadTimeout specifies a time limit for requests made
+	// by this client.
+	ReadTimeout time.Duration
 }
 
 func (c *ClientConn) Close() error {
@@ -26,6 +35,7 @@ func NewClientConn(conn net.Conn) (client *ClientConn) {
 		conn:          conn,
 		responseChan:  make(chan segment, 2),
 		eventHandlers: map[string]func(response map[string]interface{}){},
+		ReadTimeout:   DefaultReadTimeout,
 	}
 	go client.readThread()
 	return client
@@ -50,8 +60,8 @@ func (c *ClientConn) Request(apiname string, request map[string]interface{}) (re
 		fmt.Printf("error writing segment \n")
 		return
 	}
-	outMsg := <-c.responseChan
 
+	outMsg := c.readResponse()
 	if c.lastError != nil {
 		return nil, c.lastError
 	}
@@ -59,6 +69,18 @@ func (c *ClientConn) Request(apiname string, request map[string]interface{}) (re
 		return nil, fmt.Errorf("[%s] response error %d", apiname, outMsg.typ)
 	}
 	return outMsg.msg, nil
+}
+
+func (c *ClientConn) readResponse() segment {
+	select {
+	case outMsg := <-c.responseChan:
+		return outMsg
+	case <-time.After(c.ReadTimeout):
+		if c.lastError == nil {
+			c.lastError = fmt.Errorf("Timeout waiting for message response")
+		}
+		return segment{}
+	}
 }
 
 func (c *ClientConn) RegisterEvent(name string, handler func(response map[string]interface{})) (err error) {
@@ -74,7 +96,7 @@ func (c *ClientConn) RegisterEvent(name string, handler func(response map[string
 		delete(c.eventHandlers, name)
 		return
 	}
-	outMsg := <-c.responseChan
+	outMsg := c.readResponse()
 	//fmt.Printf("registerEvent %#v\n", outMsg)
 	if c.lastError != nil {
 		delete(c.eventHandlers, name)
@@ -96,7 +118,7 @@ func (c *ClientConn) UnregisterEvent(name string) (err error) {
 	if err != nil {
 		return
 	}
-	outMsg := <-c.responseChan
+	outMsg := c.readResponse()
 	//fmt.Printf("UnregisterEvent %#v\n", outMsg)
 	if c.lastError != nil {
 		return c.lastError

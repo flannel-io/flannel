@@ -27,35 +27,38 @@ type IkeSa struct {
 	Established     string               `json:"established"`
 	Rekey_time      string               `json:"rekey-time"`
 	Reauth_time     string               `json:"reauth-time"`
+	Remote_vips     []string             `json:"remote-vips"`
 	Child_sas       map[string]Child_sas `json:"child-sas"` //key means child-sa-name(conn name in ipsec.conf)
 }
 
 type Child_sas struct {
-	Reqid         string `json:"reqid"`
-	State         string `json:"state"` //had saw: INSTALLED
-	Mode          string `json:"mode"`  //had saw: TUNNEL
-	Protocol      string `json:"protocol"`
-	Encap         string `json:"encap"`
-	Spi_in        string `json:"spi-in"`
-	Spi_out       string `json:"spi-out"`
-	Cpi_in        string `json:"cpi-in"`
-	Cpi_out       string `json:"cpi-out"`
-	Encr_alg      string `json:"encr-alg"`
-	Encr_keysize  string `json:"encr-keysize"`
-	Integ_alg     string `json:"integ-alg"`
-	Integ_keysize string `json:"integ-keysize"`
-	Prf_alg       string `json:"prf-alg"`
-	Dh_group      string `json:"dh-group"`
-	Esn           string `json:"esn"`
-	Bytes_in      string `json:"bytes-in"` //bytes into this machine
-	Packets_in    string `json:"packets-in"`
-	Use_in        string `json:"use-in"`
-	Bytes_out     string `json:"bytes-out"` // bytes out of this machine
-	Packets_out   string `json:"packets-out"`
-	Use_out       string `json:"use-out"`
-	Rekey_time    string `json:"rekey-time"`
-	Life_time     string `json:"life-time"`
-	Install_time  string `json:"install-time"`
+	Reqid         string   `json:"reqid"`
+	State         string   `json:"state"` //had saw: INSTALLED
+	Mode          string   `json:"mode"`  //had saw: TUNNEL
+	Protocol      string   `json:"protocol"`
+	Encap         string   `json:"encap"`
+	Spi_in        string   `json:"spi-in"`
+	Spi_out       string   `json:"spi-out"`
+	Cpi_in        string   `json:"cpi-in"`
+	Cpi_out       string   `json:"cpi-out"`
+	Encr_alg      string   `json:"encr-alg"`
+	Encr_keysize  string   `json:"encr-keysize"`
+	Integ_alg     string   `json:"integ-alg"`
+	Integ_keysize string   `json:"integ-keysize"`
+	Prf_alg       string   `json:"prf-alg"`
+	Dh_group      string   `json:"dh-group"`
+	Esn           string   `json:"esn"`
+	Bytes_in      string   `json:"bytes-in"` //bytes into this machine
+	Packets_in    string   `json:"packets-in"`
+	Use_in        string   `json:"use-in"`
+	Bytes_out     string   `json:"bytes-out"` // bytes out of this machine
+	Packets_out   string   `json:"packets-out"`
+	Use_out       string   `json:"use-out"`
+	Rekey_time    string   `json:"rekey-time"`
+	Life_time     string   `json:"life-time"`
+	Install_time  string   `json:"install-time"`
+	Local_ts      []string `json:"local-ts"`
+	Remote_ts     []string `json:"remote-ts"`
 }
 
 func (s *Child_sas) GetBytesIn() uint64 {

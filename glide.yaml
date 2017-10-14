@@ -60,5 +60,5 @@ import:
 - package: github.com/joho/godotenv
   version: v1.1
 - package: github.com/bronze1man/goStrongswanVici
-  version: 385ce24ffa11c0831da96e3e28b603464eaaa1a7
+  version: 4d72634a2f113aa48347dbc7dcb14adb806b6534
 
