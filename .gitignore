@@ -5,6 +5,6 @@ dist/*.docker
 cover.out
 .editorconfig
 .idea/
-
 default.etcd/
 flannel.exe
+bash_unit

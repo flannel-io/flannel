@@ -46,11 +46,18 @@ dist/flanneld: $(shell find . -type f  -name '*.go')
 	  -ldflags "-s -w -X github.com/coreos/flannel/version.Version=$(TAG)"
 
 test: license-check gofmt
+	# Run the unit tests
 	go test -cover $(TEST_PACKAGES_EXPANDED)
+
+	# Test the docker-opts script
 	cd dist; ./mk-docker-opts_tests.sh
 
-e2e-test: dist/flanneld-$(TAG)-$(ARCH).docker
-	cd dist; ./functional-test.sh $(REGISTRY):$(TAG)-$(ARCH)
+	# Run the functional tests
+	make e2e-test
+
+e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
+	./bash_unit dist/functional-test.sh
+	./bash_unit dist/functional-test-k8s.sh
 
 cover:
 	# A single package must be given - e.g. 'PACKAGES=pkg/ip make cover'
@@ -73,6 +80,10 @@ update-glide:
 	glide update --strip-vendor
 	# go get -d -u github.com/sgotti/glide-vc
 	glide vc --only-code --no-tests
+
+bash_unit:
+	wget https://raw.githubusercontent.com/pgrange/bash_unit/v1.6.0/bash_unit
+	chmod +x bash_unit
 
 clean:
 	rm -f dist/flanneld*
@@ -161,7 +172,7 @@ tar.gz:
 	tar -tvf dist/flannel-$(TAG)-linux-s390x.tar.gz
 
 ## Make a release after creating a tag
-release: tar.gz
+release: tar.gz release-tests
 	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.aci
 	ARCH=arm make dist/flanneld-$(TAG)-arm.aci
 	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.aci
@@ -170,6 +181,23 @@ release: tar.gz
 	@echo "Everything should be built for $(TAG)"
 	@echo "Add all *.aci, flanneld-* and *.tar.gz files from dist/ to the Github release"
 	@echo "Use make docker-push-all to push the images to a registry"
+
+release-tests: bash_unit
+	# Run the functional tests with different etcd versions.
+	ETCD_IMG="quay.io/coreos/etcd:latest"  ./bash_unit dist/functional-test.sh
+	ETCD_IMG="quay.io/coreos/etcd:v3.2.7"  ./bash_unit dist/functional-test.sh
+	ETCD_IMG="quay.io/coreos/etcd:v3.1.10" ./bash_unit dist/functional-test.sh
+	ETCD_IMG="quay.io/coreos/etcd:v3.0.17" ./bash_unit dist/functional-test.sh
+	# Etcd v2 docker image format is different. Override the etcd binary location so it works.
+	ETCD_IMG="quay.io/coreos/etcd:v2.3.8"  ETCD_LOCATION=" " ./bash_unit dist/functional-test.sh
+
+	# Run the functional tests with different k8s versions. Currently these are the latest point releases.
+	# This list should be updated during the release process.
+	K8S_VERSION="1.7.6"  ./bash_unit dist/functional-test-k8s.sh
+	K8S_VERSION="1.6.10" ./bash_unit dist/functional-test-k8s.sh
+	# K8S_VERSION="1.5.7"  ./bash_unit dist/functional-test-k8s.sh   #kube-flannel.yml is incompatible
+	# K8S_VERSION="1.4.12" ./bash_unit dist/functional-test-k8s.sh   #kube-flannel.yml is incompatible
+	# K8S_VERSION="1.3.10" ./bash_unit dist/functional-test-k8s.sh   #kube-flannel.yml is incompatible
 
 docker-push-all:
 	ARCH=amd64 make docker-push

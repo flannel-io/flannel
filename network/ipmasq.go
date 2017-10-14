@@ -53,7 +53,7 @@ func ipMasqRulesExist(ipt IPTablesRules, ipn ip.IP4Net, lease *subnet.Lease) (bo
 		exists, err := ipt.Exists("nat", "POSTROUTING", rule...)
 		if err != nil {
 			// this shouldn't ever happen
-			return false, fmt.Errorf("failed to check rule existence", err)
+			return false, fmt.Errorf("failed to check rule existence: %v", err)
 		}
 		if !exists {
 			return false, nil
