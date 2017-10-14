@@ -24,6 +24,7 @@ import (
 
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
+	"github.com/coreos/go-iptables/iptables"
 )
 
 type IPTablesRules interface {
@@ -61,6 +62,24 @@ func ipMasqRulesExist(ipt IPTablesRules, ipn ip.IP4Net, lease *subnet.Lease) (bo
 	}
 
 	return true, nil
+}
+func SetupAndEnsureIPMasq(network ip.IP4Net, lease *subnet.Lease) {
+	ipt, err := iptables.New()
+	if err != nil {
+		// if we can't find iptables, give up and return
+		log.Errorf("Failed to set up IP Masquerade. iptables was not found: %v", err)
+		return
+	}
+	defer func() {
+		TeardownIPMasq(ipt, network, lease)
+	}()
+	for {
+		// Ensure that all the rules exist every 5 seconds
+		if err := EnsureIPMasq(ipt, network, lease); err != nil {
+			log.Errorf("Failed to ensure IP Masquerade: %v", err)
+		}
+		time.Sleep(5 * time.Second)
+	}
 }
 
 func EnsureIPMasq(ipt IPTablesRules, ipn ip.IP4Net, lease *subnet.Lease) error {

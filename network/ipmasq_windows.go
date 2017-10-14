@@ -17,18 +17,18 @@
 package network
 
 import (
-	"errors"
-
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
 )
 
 func SetupIPMasq(ipn ip.IP4Net, lease *subnet.Lease) error {
-	// TODO: ignore for now, this is used by the ipmasq option to setup a POSTROUTING nat rule
-	// to use to reach addresses outside the flannel network
-	return errors.New("SetupIPMasq not implemented for this platform")
+	return nil
 }
 
 func TeardownIPMasq(ipn ip.IP4Net, lease *subnet.Lease) error {
-	return errors.New("TeardownIPMasq not implemented for this platform")
+	return nil
+}
+
+func SetupAndEnsureIPMasq(network ip.IP4Net, lease *subnet.Lease) {
+
 }

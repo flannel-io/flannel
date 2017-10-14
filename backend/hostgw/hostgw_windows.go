@@ -43,10 +43,6 @@ type HostgwBackend struct {
 	networks map[string]*network
 }
 
-type cniConf struct {
-	WindowsDelegate map[string]interface{} `json:"windowsDelegate"`
-}
-
 func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backend, error) {
 	if !extIface.ExtAddr.Equal(extIface.IfaceAddr) {
 		return nil, fmt.Errorf("your PublicIP differs from interface IP, meaning that probably you're on a NAT, which is not supported by host-gw backend")
@@ -86,8 +82,6 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, config *subnet.Con
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
-	// for windows we need to create the HNS network here (as it resets the interface)
-	// so we need a name. Since it must match the CNI config name, we default to cbr0
 	backendConfig := struct {
 		networkName   string
 		dnsServerList string
