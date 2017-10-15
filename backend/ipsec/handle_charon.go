@@ -16,44 +16,76 @@ package ipsec
 
 import (
 	"fmt"
-	"os"
-	"os/exec"
-	"syscall"
-	"time"
-
 	"github.com/bronze1man/goStrongswanVici"
 	log "github.com/golang/glog"
+	"net"
+	"os"
+	"os/exec"
+	"strings"
+	"syscall"
+	"time"
 
 	"github.com/coreos/flannel/subnet"
 )
 
+const (
+	charonExecutablePath = "/opt/flannel/libexec/ipsec/charon"
+)
+
+var defaultViciUri = Uri{"unix", "/var/run/charon.vici"}
+
+type Uri struct {
+	network, address string
+}
+
 type CharonIKEDaemon struct {
-	path        string
+	viciUri     Uri
 	espProposal string
 }
 
-func NewCharonIKEDaemon(charonPath string, espProposal string) (*CharonIKEDaemon, error) {
-	path, err := exec.LookPath(charonPath)
-	if err != nil {
-		return nil, err
+func NewCharonIKEDaemon(charonViciUri string, espProposal string) (
+	*CharonIKEDaemon, error) {
+	charon := &CharonIKEDaemon{viciUri: defaultViciUri, espProposal: espProposal}
+	log.Info("Using ESP proposal: %s", espProposal)
+	if charonViciUri == "" {
+		path, err := exec.LookPath(charonExecutablePath)
+		if err != nil {
+			return nil, err
+		}
+		charon.runOwnInBackground(path)
+	} else {
+		log.Info("Using external charon at: %s", charonViciUri)
+		addr := strings.Split(charonViciUri, "://")
+		charon.viciUri = Uri{addr[0], addr[1]}
 	}
 
-	log.Info("Launching IKE charon path: ", path, " ESP proposal: ", espProposal)
-
-	return &CharonIKEDaemon{path, espProposal}, nil
+	return charon, nil
 }
 
-func (charon *CharonIKEDaemon) Run() error {
-	cmd := exec.Cmd{
-		Path: charon.path,
-		SysProcAttr: &syscall.SysProcAttr{
-			Pdeathsig: syscall.SIGTERM,
-		},
+func (charon *CharonIKEDaemon) getClient() (
+	client *goStrongswanVici.ClientConn, err error) {
+	conn, err := net.Dial(charon.viciUri.network, charon.viciUri.address)
+	if err != nil {
+		return
 	}
+	return goStrongswanVici.NewClientConn(conn), nil
+}
 
-	cmd.Stderr = os.Stderr
-
-	return cmd.Run()
+func (charon *CharonIKEDaemon) runOwnInBackground(path string) {
+	log.Info("Launching bundled charon daemon")
+	go func() {
+		cmd := exec.Cmd{
+			Path: path,
+			SysProcAttr: &syscall.SysProcAttr{
+				Pdeathsig: syscall.SIGTERM,
+			},
+		}
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+		if err != nil {
+			log.Errorf("Error launching bundled charon daemon: %v", err)
+		}
+	}()
 }
 
 func (charon *CharonIKEDaemon) LoadSharedKey(remotePublicIP, password string) error {
@@ -61,12 +93,12 @@ func (charon *CharonIKEDaemon) LoadSharedKey(remotePublicIP, password string) er
 	var client *goStrongswanVici.ClientConn
 
 	for {
-		client, err = goStrongswanVici.NewClientConnFromDefaultSocket()
+		client, err = charon.getClient()
 		if err == nil {
 			break
 		} else {
 			log.Error("ClientConnection failed: ", err)
-			log.Infof("Retrying in 1 second ...")
+			log.Info("Retrying in 1 second ...")
 			time.Sleep(1 * time.Second)
 		}
 	}
@@ -88,12 +120,13 @@ func (charon *CharonIKEDaemon) LoadSharedKey(remotePublicIP, password string) er
 	return nil
 }
 
-func (charon *CharonIKEDaemon) LoadConnection(localLease, remoteLease *subnet.Lease, reqID, encap string) error {
+func (charon *CharonIKEDaemon) LoadConnection(localLease, remoteLease *subnet.Lease,
+	reqID, encap string) error {
 	var err error
 	var client *goStrongswanVici.ClientConn
 
 	for {
-		client, err = goStrongswanVici.NewClientConnFromDefaultSocket()
+		client, err = charon.getClient()
 		if err == nil {
 			break
 		} else {
@@ -153,8 +186,9 @@ func (charon *CharonIKEDaemon) LoadConnection(localLease, remoteLease *subnet.Le
 	return nil
 }
 
-func (charon *CharonIKEDaemon) UnloadCharonConnection(localLease, remoteLease *subnet.Lease) error {
-	client, err := goStrongswanVici.NewClientConnFromDefaultSocket()
+func (charon *CharonIKEDaemon) UnloadCharonConnection(localLease,
+	remoteLease *subnet.Lease) error {
+	client, err := charon.getClient()
 	if err != nil {
 		return err
 	}
@@ -175,7 +209,8 @@ func (charon *CharonIKEDaemon) UnloadCharonConnection(localLease, remoteLease *s
 }
 
 func formatConnectionName(localLease, remoteLease *subnet.Lease) string {
-	return fmt.Sprintf("%s-%s-%s-%s", localLease.Attrs.PublicIP, localLease.Subnet, remoteLease.Subnet, remoteLease.Attrs.PublicIP)
+	return fmt.Sprintf("%s-%s-%s-%s", localLease.Attrs.PublicIP,
+		localLease.Subnet, remoteLease.Subnet, remoteLease.Attrs.PublicIP)
 }
 
 func formatChildSAConfName(localLease, remoteLease *subnet.Lease) string {
