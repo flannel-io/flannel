@@ -289,29 +289,3 @@ func (n *netwk) findSubnet(sn ip.IP4Net) (Lease, int, error) {
 	}
 	return Lease{}, 0, fmt.Errorf("subnet not found")
 }
-
-func (msr *MockSubnetRegistry) createBackendData(ctx context.Context, network, data string) error {
-	n, ok := msr.networks[network]
-	if !ok {
-		return fmt.Errorf("network %s not found", network)
-	}
-
-	if n.backendData == "" {
-		n.backendData = data
-	}
-
-	return nil
-}
-
-func (msr *MockSubnetRegistry) getBackendData(ctx context.Context, network string) (string, error) {
-	n, ok := msr.networks[network]
-	if !ok {
-		return "", fmt.Errorf("network %s not found", network)
-	}
-
-	if n.backendData == "" {
-		return "", fmt.Errorf("backendData not set for %s network", network)
-	}
-
-	return n.backendData, nil
-}

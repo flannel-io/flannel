@@ -45,8 +45,6 @@ type Registry interface {
 	deleteSubnet(ctx context.Context, sn ip.IP4Net) error
 	watchSubnets(ctx context.Context, since uint64) (Event, uint64, error)
 	watchSubnet(ctx context.Context, since uint64, sn ip.IP4Net) (Event, uint64, error)
-	createBackendData(ctx context.Context, network, data string) error
-	getBackendData(ctx context.Context, network string) (string, error)
 }
 
 type EtcdConfig struct {
