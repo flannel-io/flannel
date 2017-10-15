@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	charonExecutablePath = "/opt/flannel/libexec/ipsec/charon"
+	charonExecutablePath = "/opt/strongswan/libexec/ipsec/charon"
 )
 
 var defaultViciUri = Uri{"unix", "/var/run/charon.vici"}
