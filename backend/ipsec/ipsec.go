@@ -17,9 +17,9 @@ package ipsec
 import (
 	"encoding/json"
 	"fmt"
-
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
+	"sync"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
@@ -53,7 +53,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (
 }
 
 func (be *IPSECBackend) RegisterNetwork(
-	ctx context.Context, config *subnet.Config) (backend.Network, error) {
+	ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 
 	cfg := struct {
 		UDPEncap    bool
@@ -94,7 +94,7 @@ func (be *IPSECBackend) RegisterNetwork(
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
-	ikeDaemon, err := NewCharonIKEDaemon(CharonViciUri, cfg.ESPProposal)
+	ikeDaemon, err := NewCharonIKEDaemon(ctx, wg, CharonViciUri, cfg.ESPProposal)
 	if err != nil {
 		return nil, fmt.Errorf("error creating CharonIKEDaemon struct: %v", err)
 	}

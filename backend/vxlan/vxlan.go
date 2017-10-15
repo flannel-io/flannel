@@ -54,9 +54,9 @@ package vxlan
 import (
 	"encoding/json"
 	"fmt"
-	"net"
-
 	log "github.com/golang/glog"
+	"net"
+	"sync"
 
 	"golang.org/x/net/context"
 
@@ -100,7 +100,7 @@ func newSubnetAttrs(publicIP net.IP, mac net.HardwareAddr) (*subnet.LeaseAttrs, 
 	}, nil
 }
 
-func (be *VXLANBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
+func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 	// Parse our configuration
 	cfg := struct {
 		VNI           int

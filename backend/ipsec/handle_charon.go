@@ -17,15 +17,16 @@ package ipsec
 import (
 	"fmt"
 	"github.com/bronze1man/goStrongswanVici"
+	"github.com/coreos/flannel/subnet"
 	log "github.com/golang/glog"
+	"golang.org/x/net/context"
 	"net"
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
-
-	"github.com/coreos/flannel/subnet"
 )
 
 const (
@@ -43,18 +44,32 @@ type CharonIKEDaemon struct {
 	espProposal string
 }
 
-func NewCharonIKEDaemon(charonViciUri string, espProposal string) (
-	*CharonIKEDaemon, error) {
+func NewCharonIKEDaemon(ctx context.Context, wg sync.WaitGroup, charonViciUri string,
+	espProposal string) (*CharonIKEDaemon, error) {
+
 	charon := &CharonIKEDaemon{viciUri: defaultViciUri, espProposal: espProposal}
-	log.Info("Using ESP proposal: %s", espProposal)
+	log.Infof("Using ESP proposal: %s", espProposal)
 	if charonViciUri == "" {
-		path, err := exec.LookPath(charonExecutablePath)
+		cmd, err := charon.runBundled()
+
 		if err != nil {
+			log.Errorf("Error starting bundled charon daemon: %v", err)
 			return nil, err
+		} else {
+			log.Info("Bundled charon daemon started")
 		}
-		charon.runOwnInBackground(path)
+		wg.Add(1)
+		go func() {
+			select {
+			case <-ctx.Done():
+				cmd.Process.Signal(syscall.SIGTERM)
+				log.Infof("Stopped bundled charon daemon")
+				wg.Done()
+				return
+			}
+		}()
 	} else {
-		log.Info("Using external charon at: %s", charonViciUri)
+		log.Infof("Using external charon at: %s", charonViciUri)
 		addr := strings.Split(charonViciUri, "://")
 		charon.viciUri = Uri{addr[0], addr[1]}
 	}
@@ -71,21 +86,20 @@ func (charon *CharonIKEDaemon) getClient() (
 	return goStrongswanVici.NewClientConn(conn), nil
 }
 
-func (charon *CharonIKEDaemon) runOwnInBackground(path string) {
-	log.Info("Launching bundled charon daemon")
-	go func() {
-		cmd := exec.Cmd{
-			Path: path,
-			SysProcAttr: &syscall.SysProcAttr{
-				Pdeathsig: syscall.SIGTERM,
-			},
-		}
-		cmd.Stderr = os.Stderr
-		err := cmd.Run()
-		if err != nil {
-			log.Errorf("Error launching bundled charon daemon: %v", err)
-		}
-	}()
+func (charon *CharonIKEDaemon) runBundled() (cmd *exec.Cmd, err error) {
+	path, err := exec.LookPath(charonExecutablePath)
+	if err != nil {
+		return nil, err
+	}
+	cmd = &exec.Cmd{
+		Path: path,
+		SysProcAttr: &syscall.SysProcAttr{
+			Pdeathsig: syscall.SIGTERM,
+		},
+	}
+	cmd.Stderr = os.Stderr
+	err = cmd.Start()
+	return
 }
 
 func (charon *CharonIKEDaemon) LoadSharedKey(remotePublicIP, password string) error {
