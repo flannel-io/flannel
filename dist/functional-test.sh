@@ -1,9 +1,22 @@
 #!/bin/bash
+
+ARCH="${ARCH:-amd64}"
 ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.2.7}"
+# etcd might take a bit to come up - use a known etcd version so we know we have etcdctl available
+ETCDCTL_IMG="quay.io/coreos/etcd:v3.2.7"
 ETCD_LOCATION="${ETCD_LOCATION:-etcd}"
 FLANNEL_NET="${FLANNEL_NET:-10.10.0.0/16}"
 TAG=`git describe --tags --dirty`
 FLANNEL_DOCKER_IMAGE="${FLANNEL_DOCKER_IMAGE:-quay.io/coreos/flannel:$TAG}"
+
+# Set the proper imagename according to architecture
+if [[ ${ARCH} == "ppc64le" ]]; then
+    ETCD_IMG+="-ppc64le"
+    ETCDCTL_IMG+="-ppc64le"
+elif [[ ${ARCH} == "arm64" ]]; then
+    ETCD_IMG+="-arm64"
+    ETCDCTL_IMG+="-arm64"
+fi
 
 setup_suite() {
     # Run etcd, killing any existing one that was running
@@ -44,8 +57,7 @@ write_config_etcd() {
 	    flannel_conf="{ \"Network\": \"$FLANNEL_NET\", \"Backend\": { \"Type\": \"${backend}\" } }"
     fi
 
-	# etcd might take a bit to come up - use a known etcd version so we know we have etcdctl available
-	while ! docker run --rm -it quay.io/coreos/etcd:v3.2.7 etcdctl --endpoints=$etcd_endpt set /coreos.com/network/config "$flannel_conf" >/dev/null
+	while ! docker run --rm -it $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt set /coreos.com/network/config "$flannel_conf" >/dev/null
 	do
 		sleep 0.1
 	done
@@ -113,8 +125,8 @@ test_udp_perf() {
 perf() {
     # Perf test - run iperf server on flannel1 and client on flannel2
     docker rm -f flannel-e2e-test-flannel1-iperf 2>/dev/null
-    docker run -d --name flannel-e2e-test-flannel1-iperf --net=container:flannel-e2e-test-flannel1 mlabbe/iperf3
-    docker run --rm --net=container:flannel-e2e-test-flannel2 mlabbe/iperf3 -c $ping_dest1
+    docker run -d --name flannel-e2e-test-flannel1-iperf --net=container:flannel-e2e-test-flannel1 iperf3:latest
+    docker run --rm --net=container:flannel-e2e-test-flannel2 iperf3:latest -c $ping_dest1
 }
 
 test_multi() {

@@ -15,23 +15,18 @@ PACKAGES_EXPANDED=$(PACKAGES:%=github.com/coreos/flannel/%)
 
 # Set the (cross) compiler to use for different architectures
 ifeq ($(ARCH),amd64)
-	LIB_DIR=/lib/x86_64-linux-gnu
 	CC=gcc
 endif
 ifeq ($(ARCH),arm)
-	LIB_DIR=/usr/arm-linux-gnueabihf/lib
 	CC=arm-linux-gnueabihf-gcc
 endif
 ifeq ($(ARCH),arm64)
-	LIB_DIR=/usr/aarch64-linux-gnu/lib
 	CC=aarch64-linux-gnu-gcc
 endif
 ifeq ($(ARCH),ppc64le)
-	LIB_DIR=/usr/powerpc64le-linux-gnu/lib
 	CC=powerpc64le-linux-gnu-gcc
 endif
 ifeq ($(ARCH),s390x)
-	LIB_DIR=/usr/s390x-linux-gnu/lib
 	CC=s390x-linux-gnu-gcc
 endif
 
@@ -55,9 +50,10 @@ test: license-check gofmt
 	# Run the functional tests
 	make e2e-test
 
-e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
-	./bash_unit dist/functional-test.sh
-	./bash_unit dist/functional-test-k8s.sh
+e2e-test: bash_unit dist/flanneld-e2e-$(TAG)-$(ARCH).docker
+	$(MAKE) -C images/iperf3 ARCH=$(ARCH)
+	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test.sh
+	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test-k8s.sh
 
 cover:
 	# A single package must be given - e.g. 'PACKAGES=pkg/ip make cover'
@@ -100,6 +96,19 @@ dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH)
 ifeq ($(ARCH),amd64)
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG) .
 endif
+
+# This will build flannel natively using golang image
+dist/flanneld-e2e-$(TAG)-$(ARCH).docker:
+	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x]
+	docker run -e GOARM=$(GOARM) \
+		-u $(shell id -u):$(shell id -g) \
+		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
+		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
+		golang:1.8.3 /bin/bash -c '\
+		cd /go/src/github.com/coreos/flannel && \
+		CGO_ENABLED=1 make -e dist/flanneld && \
+		mv dist/flanneld dist/flanneld-$(ARCH)'
+	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
 
 ## Create an ACI on disk for a specific arch and tag
 dist/flanneld-$(TAG)-$(ARCH).aci: dist/flanneld-$(TAG)-$(ARCH).docker
