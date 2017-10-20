@@ -1,14 +1,24 @@
 #!/bin/bash
+
+ARCH="${ARCH:-amd64}"
 ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.2.7}"
 ETCD_LOCATION="${ETCD_LOCATION:-etcd}"
 FLANNEL_NET="${FLANNEL_NET:-10.10.0.0/16}"
 TAG=`git describe --tags --dirty`
 FLANNEL_DOCKER_IMAGE="${FLANNEL_DOCKER_IMAGE:-quay.io/coreos/flannel:$TAG}"
 K8S_VERSION="${K8S_VERSION:-1.7.6}"
+HYPERKUBE_IMG="gcr.io/google_containers/hyperkube-${ARCH}"
 
 docker_ip=$(ip -o -f inet addr show docker0 | grep -Po 'inet \K[\d.]+')
 etcd_endpt="http://$docker_ip:2379"
 k8s_endpt="http://$docker_ip:8080"
+
+# Set the proper imagename according to architecture
+if [[ ${ARCH} == "ppc64le" ]]; then
+    ETCD_IMG+="-ppc64le"
+elif [[ ${ARCH} == "arm64" ]]; then
+    ETCD_IMG+="-arm64"
+fi
 
 setup_suite() {
     # Run etcd, killing any existing one that was running
@@ -20,12 +30,12 @@ setup_suite() {
 
     # Start a kubernetes API server
     docker rm -f flannel-e2e-k8s-apiserver >/dev/null 2>/dev/null
-    docker run -d --net=host --name flannel-e2e-k8s-apiserver gcr.io/google_containers/hyperkube-amd64:v$K8S_VERSION \
+    docker run -d --net=host --name flannel-e2e-k8s-apiserver ${HYPERKUBE_IMG}:v$K8S_VERSION \
       /hyperkube apiserver --etcd-servers=$etcd_endpt \
       --service-cluster-ip-range=10.101.0.0/16 --insecure-bind-address=0.0.0.0 --allow-privileged >/dev/null
     sleep 1
 
-    while ! cat <<EOF |  docker run -i --rm --net=host gcr.io/google_containers/hyperkube-amd64:v$K8S_VERSION /hyperkube kubectl create -f - >/dev/null 2>/dev/null
+    while ! cat <<EOF |  docker run -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION /hyperkube kubectl create -f - >/dev/null 2>/dev/null
 apiVersion: v1
 kind: Node
 metadata:
@@ -39,7 +49,7 @@ do
     sleep 1
 done
 
-cat <<EOF |  docker run -i --rm --net=host gcr.io/google_containers/hyperkube-amd64:v$K8S_VERSION /hyperkube kubectl create -f - >/dev/null 2>/dev/null
+cat <<EOF |  docker run -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION /hyperkube kubectl create -f - >/dev/null 2>/dev/null
 apiVersion: v1
 kind: Node
 metadata:
@@ -117,5 +127,5 @@ pings() {
 
 test_manifest() {
     # This just tests that the API server accepts the manifest, not that it actually acts on it correctly.
-    assert "cat ../Documentation/kube-flannel.yml |  docker run -i --rm --net=host gcr.io/google_containers/hyperkube-amd64:v$K8S_VERSION /hyperkube kubectl create -f -"
+    assert "cat ../Documentation/kube-flannel.yml |  docker run -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION /hyperkube kubectl create -f -"
 }
