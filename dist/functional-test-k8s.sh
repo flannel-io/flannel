@@ -82,15 +82,15 @@ start_flannel() {
        docker exec flannel-e2e-test-flannel$host_num /bin/sh -c 'mkdir -p /etc/kube-flannel'
        echo $flannel_conf | docker exec -i flannel-e2e-test-flannel$host_num /bin/sh -c 'cat > /etc/kube-flannel/net-conf.json'
        docker exec -d flannel-e2e-test-flannel$host_num /opt/bin/flanneld --kube-subnet-mgr --kube-api-url $k8s_endpt
+       while ! docker exec flannel-e2e-test-flannel$host_num ls /run/flannel/subnet.env >/dev/null 2>&1; do
+         sleep 0.1
+       done
     done
 }
 
 create_ping_dest() {
     # add a dummy interface with $FLANNEL_SUBNET so we have a known working IP to ping
     for host_num in 1 2; do
-       while ! docker exec flannel-e2e-test-flannel$host_num ls /run/flannel/subnet.env >/dev/null 2>&1; do
-         sleep 0.1
-       done
 
        # Use declare to allow the host_num variable to be part of the ping_dest variable name. -g is needed to make it global
        declare -g ping_dest$host_num=$(docker "exec" --privileged flannel-e2e-test-flannel$host_num /bin/sh -c '\
@@ -117,6 +117,19 @@ test_host-gw() {
     start_flannel host-gw
     create_ping_dest # creates ping_dest1 and ping_dest2 variables
     pings
+}
+
+test_public-ip-overwrite(){
+  docker exec flannel-e2e-k8s-apiserver kubectl annotate node flannel1 \
+    flannel.alpha.coreos.com/public-ip-overwrite=172.18.0.2 >/dev/null 2>&1
+  start_flannel vxlan
+  assert_equals "172.18.0.2" \
+    "$(docker exec flannel-e2e-k8s-apiserver kubectl get node/flannel1 -o \
+    jsonpath='{.metadata.annotations.flannel\.alpha\.coreos\.com/public-ip}' 2>/dev/null)" \
+    "Overwriting public IP via annotation does not work"
+  # Remove annotation to not break all other tests
+  docker exec flannel-e2e-k8s-apiserver kubectl annotate node flannel1 \
+    flannel.alpha.coreos.com/public-ip-overwrite- >/dev/null 2>&1
 }
 
 pings() {
