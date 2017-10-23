@@ -57,7 +57,7 @@ write_config_etcd() {
 	    flannel_conf="{ \"Network\": \"$FLANNEL_NET\", \"Backend\": { \"Type\": \"${backend}\" } }"
     fi
 
-	while ! docker run --rm -it $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt set /coreos.com/network/config "$flannel_conf" >/dev/null
+	while ! docker run --rm $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt set /coreos.com/network/config "$flannel_conf" >/dev/null
 	do
 		sleep 0.1
 	done
@@ -99,8 +99,8 @@ test_host-gw_ping() {
 
 pings() {
     # ping in both directions
-	assert "docker exec -it --privileged flannel-e2e-test-flannel1 /bin/ping -c 3 $ping_dest2" "Host 1 cannot ping host 2"
-	assert "docker exec -it --privileged flannel-e2e-test-flannel2 /bin/ping -c 3 $ping_dest1" "Host 2 cannot ping host 1"
+	assert "docker exec --privileged flannel-e2e-test-flannel1 /bin/ping -c 3 $ping_dest2" "Host 1 cannot ping host 2"
+	assert "docker exec --privileged flannel-e2e-test-flannel2 /bin/ping -c 3 $ping_dest1" "Host 2 cannot ping host 1"
 }
 
 # These perf tests don't actually assert on anything
@@ -133,12 +133,12 @@ test_multi() {
 	flannel_conf_vxlan='{"Network": "10.11.0.0/16", "Backend": {"Type": "vxlan"}}'
 	flannel_conf_host_gw='{"Network": "10.12.0.0/16", "Backend": {"Type": "host-gw"}}'
 
-	while ! docker run --rm -it $ETCD_IMG etcdctl --endpoints=$etcd_endpt set /vxlan/network/config "$flannel_conf_vxlan" >/dev/null
+	while ! docker run --rm $ETCD_IMG etcdctl --endpoints=$etcd_endpt set /vxlan/network/config "$flannel_conf_vxlan" >/dev/null
 	do
 		sleep 0.1
 	done
 
-	while ! docker run --rm -it $ETCD_IMG etcdctl --endpoints=$etcd_endpt set /hostgw/network/config "$flannel_conf_host_gw" >/dev/null
+	while ! docker run --rm $ETCD_IMG etcdctl --endpoints=$etcd_endpt set /hostgw/network/config "$flannel_conf_host_gw" >/dev/null
 	do
 		sleep 0.1
 	done
@@ -148,7 +148,7 @@ test_multi() {
         docker rm -f flannel-host$host 2>/dev/null >/dev/null
 
         # Start the hosts
-        docker run --name=flannel-host$host -d -it --privileged --entrypoint /bin/sh $FLANNEL_DOCKER_IMAGE >/dev/null
+        docker run --name=flannel-host$host -id --privileged --entrypoint /bin/sh $FLANNEL_DOCKER_IMAGE   >/dev/null
 
         # Start two flanneld instances
         docker exec -d flannel-host$host sh -c "/opt/bin/flanneld -v 10 -subnet-file /vxlan.env -etcd-prefix=/vxlan/network --etcd-endpoints=$etcd_endpt 2>vxlan.log"
@@ -180,8 +180,8 @@ test_multi() {
 
     # Send some pings from host2. Make sure we can send traffic over vxlan or directly.
     # If a particular (wrong) interface is forced then pings should fail
-	assert "docker exec -it flannel-host2 ping -c 3 $hostgw_ping_dest"
-	assert "docker exec -it flannel-host2 ping -c 3 $vxlan_ping_dest"
-	assert_fails "docker exec -it flannel-host2 ping -W 1 -c 1 -I flannel.1 $hostgw_ping_dest"
-	assert_fails "docker exec -it flannel-host2 ping -W 1 -c 1 -I eth0 $vxlan_ping_dest"
+	assert "docker exec flannel-host2 ping -c 3 $hostgw_ping_dest"
+	assert "docker exec flannel-host2 ping -c 3 $vxlan_ping_dest"
+	assert_fails "docker exec flannel-host2 ping -W 1 -c 1 -I flannel.1 $hostgw_ping_dest"
+	assert_fails "docker exec flannel-host2 ping -W 1 -c 1 -I eth0 $vxlan_ping_dest"
 }

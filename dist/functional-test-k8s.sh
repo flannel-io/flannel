@@ -78,7 +78,7 @@ start_flannel() {
 	flannel_conf="{ \"Network\": \"$FLANNEL_NET\", \"Backend\": { \"Type\": \"${backend}\" } }"
     for host_num in 1 2; do
        docker rm -f flannel-e2e-test-flannel$host_num >/dev/null 2>/dev/null
-       docker run -e NODE_NAME=flannel$host_num --privileged --name flannel-e2e-test-flannel$host_num -tid --entrypoint /bin/sh $FLANNEL_DOCKER_IMAGE >/dev/null
+       docker run -e NODE_NAME=flannel$host_num --privileged --name flannel-e2e-test-flannel$host_num -id --entrypoint /bin/sh $FLANNEL_DOCKER_IMAGE >/dev/null
        docker exec flannel-e2e-test-flannel$host_num /bin/sh -c 'mkdir -p /etc/kube-flannel'
        echo $flannel_conf | docker exec -i flannel-e2e-test-flannel$host_num /bin/sh -c 'cat > /etc/kube-flannel/net-conf.json'
        docker exec -d flannel-e2e-test-flannel$host_num /opt/bin/flanneld --kube-subnet-mgr --kube-api-url $k8s_endpt
@@ -121,8 +121,8 @@ test_host-gw() {
 
 pings() {
     # ping in both directions
-	assert "docker exec -it --privileged flannel-e2e-test-flannel1 /bin/ping -c 5 $ping_dest2" "Host 1 cannot ping host 2"
-	assert "docker exec -it --privileged flannel-e2e-test-flannel2 /bin/ping -c 5 $ping_dest1" "Host 2 cannot ping host 1"
+	assert "docker exec --privileged flannel-e2e-test-flannel1 /bin/ping -c 5 $ping_dest2" "Host 1 cannot ping host 2"
+	assert "docker exec --privileged flannel-e2e-test-flannel2 /bin/ping -c 5 $ping_dest1" "Host 2 cannot ping host 1"
 }
 
 test_manifest() {
