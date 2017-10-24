@@ -22,6 +22,8 @@ import (
 
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
+	"github.com/coreos/go-iptables/iptables"
+	"time"
 )
 
 type IPTablesRules interface {
@@ -61,7 +63,29 @@ func ipMasqRulesExist(ipt IPTablesRules, ipn ip.IP4Net, lease *subnet.Lease) (bo
 	return true, nil
 }
 
-func EnsureIPMasq(ipt IPTablesRules, ipn ip.IP4Net, lease *subnet.Lease) error {
+func SetupAndEnsureIPMasq(network ip.IP4Net, lease *subnet.Lease) {
+	ipt, err := iptables.New()
+	if err != nil {
+		// if we can't find iptables, give up and return
+		log.Errorf("Failed to setup IP Masquerade.  IPTables was not found: %v", err)
+		return
+	}
+
+	defer func() {
+		teardownIPMasq(ipt, network, lease)
+	}()
+
+	for {
+		// Ensure that all the rules exist every 5 seconds
+		if err := ensureIPMasq(ipt, network, lease); err != nil {
+			log.Errorf("Failed to ensure IP Masquerade: %v", err)
+		}
+
+		time.Sleep(5 * time.Second)
+	}
+}
+
+func ensureIPMasq(ipt IPTablesRules, ipn ip.IP4Net, lease *subnet.Lease) error {
 	exists, err := ipMasqRulesExist(ipt, ipn, lease)
 	if err != nil {
 		return fmt.Errorf("Error checking rule existence: %v", err)
@@ -73,14 +97,14 @@ func EnsureIPMasq(ipt IPTablesRules, ipn ip.IP4Net, lease *subnet.Lease) error {
 	// Otherwise, teardown all the rules and set them up again
 	// We do this because the order of the rules is important
 	log.Info("Some iptables rules are missing; deleting and recreating rules")
-	TeardownIPMasq(ipt, ipn, lease)
-	if err = SetupIPMasq(ipt, ipn, lease); err != nil {
+	teardownIPMasq(ipt, ipn, lease)
+	if err = setupIPMasq(ipt, ipn, lease); err != nil {
 		return fmt.Errorf("Error setting up rules: %v", err)
 	}
 	return nil
 }
 
-func SetupIPMasq(ipt IPTablesRules, ipn ip.IP4Net, lease *subnet.Lease) error {
+func setupIPMasq(ipt IPTablesRules, ipn ip.IP4Net, lease *subnet.Lease) error {
 	for _, rule := range rules(ipn, lease) {
 		log.Info("Adding iptables rule: ", strings.Join(rule, " "))
 		err := ipt.AppendUnique("nat", "POSTROUTING", rule...)
@@ -92,7 +116,7 @@ func SetupIPMasq(ipt IPTablesRules, ipn ip.IP4Net, lease *subnet.Lease) error {
 	return nil
 }
 
-func TeardownIPMasq(ipt IPTablesRules, ipn ip.IP4Net, lease *subnet.Lease) {
+func teardownIPMasq(ipt IPTablesRules, ipn ip.IP4Net, lease *subnet.Lease) {
 	for _, rule := range rules(ipn, lease) {
 		log.Info("Deleting iptables rule: ", strings.Join(rule, " "))
 		// We ignore errors here because if there's an error it's almost certainly because the rule
