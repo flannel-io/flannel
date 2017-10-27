@@ -83,7 +83,6 @@ bash_unit:
 
 clean:
 	rm -f dist/flanneld*
-	rm -f dist/*.aci
 	rm -f dist/*.docker
 	rm -f dist/*.tar.gz
 
@@ -109,14 +108,6 @@ dist/flanneld-e2e-$(TAG)-$(ARCH).docker:
 		CGO_ENABLED=1 make -e dist/flanneld && \
 		mv dist/flanneld dist/flanneld-$(ARCH)'
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
-
-## Create an ACI on disk for a specific arch and tag
-dist/flanneld-$(TAG)-$(ARCH).aci: dist/flanneld-$(TAG)-$(ARCH).docker
-	docker2aci dist/flanneld-$(TAG)-$(ARCH).docker
-	mv quay.io-coreos-flannel-$(TAG)-$(ARCH).aci dist/flanneld-$(TAG)-$(ARCH).aci
-	actool patch-manifest --replace --capability=CAP_NET_ADMIN \
-      --mounts=run-flannel,path=/run/flannel,readOnly=false:etc-ssl-etcd,path=/etc/ssl/etcd,readOnly=true:dev-net,path=/dev/net,readOnly=false \
-      dist/flanneld-$(TAG)-$(ARCH).aci
 
 docker-push: dist/flanneld-$(TAG)-$(ARCH).docker
 	docker push $(REGISTRY):$(TAG)-$(ARCH)
@@ -182,13 +173,13 @@ tar.gz:
 
 ## Make a release after creating a tag
 release: tar.gz release-tests
-	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.aci
-	ARCH=arm make dist/flanneld-$(TAG)-arm.aci
-	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.aci
-	ARCH=ppc64le make dist/flanneld-$(TAG)-ppc64le.aci
-	ARCH=s390x make dist/flanneld-$(TAG)-s390x.aci
+	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.docker
+	ARCH=arm make dist/flanneld-$(TAG)-arm.docker
+	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.docker
+	ARCH=ppc64le make dist/flanneld-$(TAG)-ppc64le.docker
+	ARCH=s390x make dist/flanneld-$(TAG)-s390x.docker
 	@echo "Everything should be built for $(TAG)"
-	@echo "Add all *.aci, flanneld-* and *.tar.gz files from dist/ to the Github release"
+	@echo "Add all flanneld-* and *.tar.gz files from dist/ to the Github release"
 	@echo "Use make docker-push-all to push the images to a registry"
 
 release-tests: bash_unit

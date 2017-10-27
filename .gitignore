@@ -1,6 +1,5 @@
 dist/*.tar.gz
 dist/flanneld*
-dist/*.aci
 dist/*.docker
 cover.out
 .editorconfig
