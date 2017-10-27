@@ -7,6 +7,18 @@ The most reliable way to build flannel is by using Docker.
 To build flannel in a container run `make dist/flanneld-amd64`.
 You will now have a `flanneld-amd64` binary in the `dist` directory.
 
+## Building for other platforms
+
+If you're not running `amd64` then you need to manually set `ARCH` before running `make`. For example, to produce a 
+`flanneld-s390x` binary and image, run
+* ARCH=s390x make image
+
+If you want to cross-compile for a different platform (e.g. you're running `amd64` but you want to produce `arm` binaries) then you need the qemu-static binaries to be present in `/usr/bin`. They can be installed on Ubuntu with
+* `sudo apt-get install qemu-user-static`
+
+Then you should be able to set the ARCH as above
+* ARCH=arm make image
+
 ## Building manually
 
 1. Make sure you have required dependencies installed on your machine.
