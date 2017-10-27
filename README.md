@@ -34,7 +34,7 @@ Flannel can be added to any existing Kubernetes cluster though it's simplest to 
 For Kubernetes v1.6+
 `kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml`
 
-See [Kubernetes](Documentation/Kubernetes.md) for more details.
+See [Kubernetes](Documentation/kubernetes.md) for more details.
 
 ## Getting started on Docker
 
