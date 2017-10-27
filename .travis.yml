@@ -14,7 +14,7 @@ install:
  - go get ${TOOLS_CMD}/cover
 
 script:
- - make test e2e-test
+ - make test
 
 after_success:
   - if [ "$TRAVIS_BRANCH" = "master" ]; then
