@@ -47,11 +47,6 @@ type Lease struct {
 	Asof uint64
 }
 
-type BackendAttrs struct {
-	Password    string
-	BackendType string
-}
-
 func (l *Lease) Key() string {
 	return MakeSubnetKey(l.Subnet)
 }
