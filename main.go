@@ -93,6 +93,7 @@ type CmdLineOpts struct {
 	subnetLeaseRenewMargin int
 	healthzIP              string
 	healthzPort            int
+	charonExecutablePath   string
 	charonViciUri          string
 }
 
@@ -123,7 +124,8 @@ func init() {
 	flannelFlags.BoolVar(&opts.version, "version", false, "print version and exit")
 	flannelFlags.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "the IP address for healthz server to listen")
 	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "the port for healthz server to listen(0 to disable)")
-	flannelFlags.StringVar(&opts.charonViciUri, "vici-uri", "", "Charon vici URI (default: launch a bundled one)")
+	flannelFlags.StringVar(&opts.charonExecutablePath, "charon-exec-path", "", "Path to charon executable. Setting it will make flannel attempt to start charon.")
+	flannelFlags.StringVar(&opts.charonViciUri, "charon-vici-uri", "", "Charon vici URI (default: unix:///var/run/charon.vici")
 
 	// glog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
@@ -232,6 +234,9 @@ func main() {
 
 	if opts.charonViciUri != "" {
 		ipsec.CharonViciUri = opts.charonViciUri
+	}
+	if opts.charonExecutablePath != "" {
+		ipsec.CharonExecutablePath = opts.charonExecutablePath
 	}
 
 	sm, err := newSubnetManager()

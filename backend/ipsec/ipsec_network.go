@@ -71,6 +71,13 @@ func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface,
 }
 
 func (n *network) Run(ctx context.Context) {
+
+	err := n.iked.LoadSharedKey(n.SimpleNetwork.SubnetLease.Attrs.PublicIP.ToIP().String(), n.password)
+	if err != nil {
+		log.Errorf("Failed to load PSK: %v", err)
+		return
+	}
+
 	wg := sync.WaitGroup{}
 	defer wg.Wait()
 
@@ -84,15 +91,6 @@ func (n *network) Run(ctx context.Context) {
 		log.Info("WatchLeases exited")
 		wg.Done()
 	}()
-
-	for {
-		err := n.iked.LoadSharedKey(n.SimpleNetwork.SubnetLease.Attrs.PublicIP.ToIP().String(), n.password)
-		if err == nil {
-			break
-		}
-		log.Error(err, " Failed to load my key. Retrying")
-		time.Sleep(time.Second)
-	}
 
 	initialEvtsBatch := <-evts
 	for {
@@ -134,12 +132,16 @@ func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
 		}
 
 		for j, policy := range installedPolicies {
-			if (policy.Src.String() == n.SubnetLease.Subnet.ToIPNet().String()) && (policy.Dst.String() == evt.Lease.Subnet.ToIPNet().String()) {
+			if (policy.Src.String() == n.SubnetLease.Subnet.ToIPNet().String()) &&
+				(policy.Dst.String() == evt.Lease.Subnet.ToIPNet().String()) {
+
 				if policy.Dir != netlink.XFRM_DIR_OUT {
 					continue
 				}
 
-				if (policy.Tmpls[0].Src.Equal(n.SubnetLease.Attrs.PublicIP.ToIP())) && (policy.Tmpls[0].Dst.Equal(evt.Lease.Attrs.PublicIP.ToIP())) {
+				if (policy.Tmpls[0].Src.Equal(n.SubnetLease.Attrs.PublicIP.ToIP())) &&
+					(policy.Tmpls[0].Dst.Equal(evt.Lease.Attrs.PublicIP.ToIP())) {
+
 					evtMarker[k] = true
 					policyMarker[j] = true
 				}
@@ -160,7 +162,9 @@ func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
 			log.Errorf("error loading initial shared key: %v", err)
 		}
 
-		if err := n.iked.LoadConnection(n.SubnetLease, &evt.Lease, strconv.Itoa(defaultReqID), strconv.FormatBool(n.UDPEncap)); err != nil {
+		if err := n.iked.LoadConnection(n.SubnetLease, &evt.Lease, strconv.Itoa(defaultReqID),
+			strconv.FormatBool(n.UDPEncap)); err != nil {
+
 			log.Errorf("error loading initial connection into IKE daemon: %v", err)
 		}
 	}
@@ -171,7 +175,10 @@ func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
 				continue
 			}
 
-			if err := n.DeleteIPSECPolicies(installedPolicies[j].Src, installedPolicies[j].Dst, installedPolicies[j].Tmpls[0].Src, installedPolicies[j].Tmpls[0].Dst, installedPolicies[j].Tmpls[0].Reqid); err != nil {
+			if err := n.DeleteIPSECPolicies(installedPolicies[j].Src, installedPolicies[j].Dst,
+				installedPolicies[j].Tmpls[0].Src, installedPolicies[j].Tmpls[0].Dst,
+				installedPolicies[j].Tmpls[0].Reqid); err != nil {
+
 				log.Errorf("error deleting installed policy")
 			}
 		}
@@ -204,7 +211,8 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				log.Errorf("error loading shared key into IKE daemon: %v", err)
 			}
 
-			if err := n.iked.LoadConnection(n.SubnetLease, &evt.Lease, strconv.Itoa(defaultReqID), strconv.FormatBool(n.UDPEncap)); err != nil {
+			if err := n.iked.LoadConnection(n.SubnetLease, &evt.Lease, strconv.Itoa(defaultReqID),
+				strconv.FormatBool(n.UDPEncap)); err != nil {
 				log.Errorf("error loading connection into IKE daemon: %v", err)
 			}
 
@@ -224,7 +232,9 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				log.Errorf("error unloading charon connections: %v", err)
 			}
 
-			if err := n.DeleteIPSECPolicies(n.SubnetLease.Subnet.ToIPNet(), evt.Lease.Subnet.ToIPNet(), n.SubnetLease.Attrs.PublicIP.ToIP(), evt.Lease.Attrs.PublicIP.ToIP(), defaultReqID); err != nil {
+			if err := n.DeleteIPSECPolicies(n.SubnetLease.Subnet.ToIPNet(), evt.Lease.Subnet.ToIPNet(),
+				n.SubnetLease.Attrs.PublicIP.ToIP(), evt.Lease.Attrs.PublicIP.ToIP(), defaultReqID); err != nil {
+
 				log.Errorf("error deleting ipsec policies: %v", err)
 			}
 		}

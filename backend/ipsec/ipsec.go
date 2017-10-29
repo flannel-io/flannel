@@ -26,6 +26,7 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
+var CharonExecutablePath string
 var CharonViciUri string
 
 const (
@@ -94,7 +95,8 @@ func (be *IPSECBackend) RegisterNetwork(
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
-	ikeDaemon, err := NewCharonIKEDaemon(ctx, wg, CharonViciUri, cfg.ESPProposal)
+	ikeDaemon, err := NewCharonIKEDaemon(ctx, wg, CharonExecutablePath, CharonViciUri,
+		cfg.ESPProposal)
 	if err != nil {
 		return nil, fmt.Errorf("error creating CharonIKEDaemon struct: %v", err)
 	}

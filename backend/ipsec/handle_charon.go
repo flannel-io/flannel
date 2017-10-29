@@ -29,11 +29,7 @@ import (
 	"time"
 )
 
-const (
-	charonExecutablePath = "/opt/strongswan/libexec/ipsec/charon"
-)
-
-var defaultViciUri = Uri{"unix", "/var/run/charon.vici"}
+const defaultViciUri = "unix:///var/run/charon.vici"
 
 type Uri struct {
 	network, address string
@@ -42,52 +38,73 @@ type Uri struct {
 type CharonIKEDaemon struct {
 	viciUri     Uri
 	espProposal string
+	ctx         context.Context
 }
 
-func NewCharonIKEDaemon(ctx context.Context, wg sync.WaitGroup, charonViciUri string,
-	espProposal string) (*CharonIKEDaemon, error) {
+func NewCharonIKEDaemon(ctx context.Context, wg sync.WaitGroup, charonExecutablePath string,
+	charonViciUri string, espProposal string) (*CharonIKEDaemon, error) {
 
-	charon := &CharonIKEDaemon{viciUri: defaultViciUri, espProposal: espProposal}
-	log.Infof("Using ESP proposal: %s", espProposal)
+	charon := &CharonIKEDaemon{ctx: ctx, espProposal: espProposal}
+
 	if charonViciUri == "" {
-		cmd, err := charon.runBundled()
+		charonViciUri = defaultViciUri
+	}
+
+	log.Infof("Using charon at: %s", charonViciUri)
+	addr := strings.Split(charonViciUri, "://")
+	charon.viciUri = Uri{addr[0], addr[1]}
+
+	log.Infof("Using ESP proposal: %s", espProposal)
+	if charonExecutablePath != "" {
+		cmd, err := charon.runBundled(charonExecutablePath)
 
 		if err != nil {
-			log.Errorf("Error starting bundled charon daemon: %v", err)
+			log.Errorf("Error starting charon daemon: %v", err)
 			return nil, err
 		} else {
-			log.Info("Bundled charon daemon started")
+			log.Info("Charon daemon started")
 		}
 		wg.Add(1)
 		go func() {
 			select {
 			case <-ctx.Done():
 				cmd.Process.Signal(syscall.SIGTERM)
-				log.Infof("Stopped bundled charon daemon")
+				log.Infof("Stopped charon daemon")
 				wg.Done()
 				return
 			}
 		}()
-	} else {
-		log.Infof("Using external charon at: %s", charonViciUri)
-		addr := strings.Split(charonViciUri, "://")
-		charon.viciUri = Uri{addr[0], addr[1]}
 	}
-
 	return charon, nil
 }
 
-func (charon *CharonIKEDaemon) getClient() (
+func (charon *CharonIKEDaemon) getClient(wait bool) (
 	client *goStrongswanVici.ClientConn, err error) {
-	conn, err := net.Dial(charon.viciUri.network, charon.viciUri.address)
-	if err != nil {
-		return
+	for {
+		socket_conn, err := net.Dial(charon.viciUri.network, charon.viciUri.address)
+		if err == nil {
+			return goStrongswanVici.NewClientConn(socket_conn), nil
+		} else {
+			if wait {
+				select {
+				case <-charon.ctx.Done():
+					log.Error("Cancel waiting for charon")
+					return nil, err
+				default:
+					log.Errorf("ClientConnection failed: %v", err)
+				}
+
+				log.Info("Retrying in a second ...")
+				time.Sleep(time.Second)
+			} else {
+				return nil, err
+			}
+		}
 	}
-	return goStrongswanVici.NewClientConn(conn), nil
 }
 
-func (charon *CharonIKEDaemon) runBundled() (cmd *exec.Cmd, err error) {
-	path, err := exec.LookPath(charonExecutablePath)
+func (charon *CharonIKEDaemon) runBundled(execPath string) (cmd *exec.Cmd, err error) {
+	path, err := exec.LookPath(execPath)
 	if err != nil {
 		return nil, err
 	}
@@ -106,15 +123,10 @@ func (charon *CharonIKEDaemon) LoadSharedKey(remotePublicIP, password string) er
 	var err error
 	var client *goStrongswanVici.ClientConn
 
-	for {
-		client, err = charon.getClient()
-		if err == nil {
-			break
-		} else {
-			log.Error("ClientConnection failed: ", err)
-			log.Info("Retrying in 1 second ...")
-			time.Sleep(1 * time.Second)
-		}
+	client, err = charon.getClient(true)
+	if err != nil {
+		log.Errorf("Failed to acquire Vici client: %v", err)
+		return err
 	}
 
 	defer client.Close()
@@ -125,9 +137,14 @@ func (charon *CharonIKEDaemon) LoadSharedKey(remotePublicIP, password string) er
 		Owners: []string{remotePublicIP},
 	}
 
-	err = client.LoadShared(sharedKey)
-	if err != nil {
-		return err
+	for {
+		err = client.LoadShared(sharedKey)
+		if err != nil {
+			log.Errorf("Failed to load my key. Retrying. %v", err)
+			time.Sleep(time.Second)
+		} else {
+			break
+		}
 	}
 
 	log.Infof("Loaded shared key for: %v", remotePublicIP)
@@ -139,15 +156,10 @@ func (charon *CharonIKEDaemon) LoadConnection(localLease, remoteLease *subnet.Le
 	var err error
 	var client *goStrongswanVici.ClientConn
 
-	for {
-		client, err = charon.getClient()
-		if err == nil {
-			break
-		} else {
-			log.Info("ClientConnection failed: ", err)
-			log.Infof("Retying in 1 second ...")
-			time.Sleep(1 * time.Second)
-		}
+	client, err = charon.getClient(true)
+	if err != nil {
+		log.Errorf("Failed to acquire Vici client: %s", err)
+		return err
 	}
 	defer client.Close()
 
@@ -202,8 +214,9 @@ func (charon *CharonIKEDaemon) LoadConnection(localLease, remoteLease *subnet.Le
 
 func (charon *CharonIKEDaemon) UnloadCharonConnection(localLease,
 	remoteLease *subnet.Lease) error {
-	client, err := charon.getClient()
+	client, err := charon.getClient(false)
 	if err != nil {
+		log.Errorf("Failed to acquire Vici client: %s", err)
 		return err
 	}
 	defer client.Close()
