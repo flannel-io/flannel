@@ -39,7 +39,7 @@ IPTABLES_VERSION=1.4.21
 STRONGSWAN_VERSION=5.6.0
 STRONGSWAN_BUILD_IMAGE_NAME=flannel_strongswan_builder
 
-dist/all-$(ARCH): dist/flanneld-$(ARCH) dist/iptables-$(ARCH) dist/strongswan-$(ARCH) dist/libpthread.so.0-$(ARCH) dist/strongswanlibs-$(ARCH)
+dist/all-$(ARCH): dist/flanneld-$(ARCH) dist/iptables-$(ARCH) dist/strongswan-$(ARCH)
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
 	go build -o dist/flanneld \
@@ -98,7 +98,7 @@ clean:
 flannel-dev.docker: dist/flanneld-$(TAG)-$(ARCH).docker
 
 ## Create a docker image on disk for a specific arch and tag
-dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH) dist/libpthread.so.0-$(ARCH) dist/strongswan-$(ARCH)
+dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH)  dist/strongswan-$(ARCH)
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
 	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY):$(TAG)-$(ARCH)
 
@@ -142,17 +142,7 @@ dist/flanneld-$(ARCH):
 			mv dist/flanneld dist/flanneld-$(ARCH) && \
 			file dist/flanneld-$(ARCH)'
 
-## Busybox images need updated libs. Pull them out of the kube-cross image
-dist/libpthread.so.0-$(ARCH) dist/libc.so.6-$(ARCH) dist/ld64.so.1-$(ARCH):
-	docker run --rm -v $(CURDIR):/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) \
-		cp $(LIB_DIR)/libc-2.23.so /host/dist/libc.so.6-$(ARCH)
-	docker run --rm -v $(CURDIR):/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) \
-		cp $(LIB_DIR)/ld-2.23.so /host/dist/ld64.so.1-$(ARCH)
-	docker run --rm -v $(CURDIR):/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) \
-		cp $(LIB_DIR)/libpthread.so.0 /host/dist/libpthread.so.0-$(ARCH)
-
 ## Busybox images are missing libatomic/libdl. Pull it out of the kube-cross image
-# THIS WON'T WORK FOR NON-AMD64 ARCH
 dist/strongswanlibs-$(ARCH):
 	docker run -ti --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) \
 		cp /usr$(LIB_DIR)/libatomic.so.1 /host/dist/libatomic.so.1-$(ARCH)
@@ -191,8 +181,8 @@ create_strongswan_build_image:
 	docker rm $(STRONGSWAN_BUILD_IMAGE_NAME)
 	
 ## Build an architecture specific StrongSwan (we need charon daemon)
-##
-dist/strongswan-$(ARCH): create_strongswan_build_image dist/strongswanlibs-$(ARCH)
+## supports amd64 only
+dist/strongswan-$(ARCH): create_strongswan_build_image 
 	mkdir -p $(CURDIR)/dist/strongswan-$(ARCH)
 	docker run --rm -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) \
 		-u $(shell id -u):$(shell id -g) \
@@ -204,6 +194,7 @@ dist/strongswan-$(ARCH): create_strongswan_build_image dist/strongswanlibs-$(ARC
 					--prefix=/opt/strongswan \
 					--with-systemdsystemunitdir=/tmp \
 					--enable-static=no \
+					--host=amd64 \
 					--enable-vici \
 					--disable-swanctl \
 					--disable-attr \
@@ -239,7 +230,7 @@ tar.gz:
 	ARCH=ppc64le make dist/flanneld-ppc64le
 	tar --transform='flags=r;s|-ppc64le||' -zcvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz -C dist flanneld-ppc64le mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz
-	ARCH=arm make dist/flanneld-arm
+	ARCH=ca make dist/flanneld-arm
 	tar --transform='flags=r;s|-arm||' -zcvf dist/flannel-$(TAG)-linux-arm.tar.gz -C dist flanneld-arm mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-arm.tar.gz
 	ARCH=arm64 make dist/flanneld-arm64

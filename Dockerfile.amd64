@@ -5,13 +5,9 @@ MAINTAINER Tom Denham <tom@tigera.io>
 ENV FLANNEL_ARCH=amd64
 
 RUN apk add --no-cache iproute2 net-tools ca-certificates && update-ca-certificates
-
 COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld
 COPY dist/iptables-$FLANNEL_ARCH /usr/local/bin/iptables
 COPY dist/mk-docker-opts.sh /opt/bin/
 
-COPY dist/strongswan-$FLANNEL_ARCH  /opt/strongswan
-COPY dist/libatomic.so.1-$FLANNEL_ARCH /lib/libatomic.so.1
-COPY dist/libdl.so.2-$FLANNEL_ARCH /lib/libdl.so.2
-
 ENTRYPOINT ["/opt/bin/flanneld"]
+
