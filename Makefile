@@ -1,5 +1,6 @@
 .PHONY: test e2e-test cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all flannel-git \
-flannel-dev.docker
+flannel-dev.docker flanneld-dev.ipsec.docker
+# ~fixme
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
@@ -36,10 +37,6 @@ GOARM=7
 # List images with gcloud alpha container images list-tags gcr.io/google_containers/kube-cross
 KUBE_CROSS_TAG=v1.8.3-1
 IPTABLES_VERSION=1.4.21
-STRONGSWAN_VERSION=5.6.0
-STRONGSWAN_BUILD_IMAGE_NAME=flannel_strongswan_builder
-
-dist/all-$(ARCH): dist/flanneld-$(ARCH) dist/iptables-$(ARCH) dist/strongswan-$(ARCH)
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
 	go build -o dist/flanneld \
@@ -88,23 +85,33 @@ bash_unit:
 
 clean:
 	rm -f dist/flanneld*
-	rm -rf dist/strongswan*
 	rm -f dist/*.docker
 	rm -f dist/*.tar.gz
 	rm -f dist/*.so.*
-	docker rm $(STRONGSWAN_BUILD_IMAGE_NAME) || exit 0
-	docker image rm $(STRONGSWAN_BUILD_IMAGE_NAME) || exit 0
-	
+
+# DEV
 flannel-dev.docker: dist/flanneld-$(TAG)-$(ARCH).docker
+flanneld-dev.ipsec.docker: dist/flanneld-$(TAG)-$(ARCH).ipsec.docker
 
 ## Create a docker image on disk for a specific arch and tag
-dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH)  dist/strongswan-$(ARCH)
+dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) \
+		dist/iptables-$(ARCH) 
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
 	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY):$(TAG)-$(ARCH)
-
-# amd64 gets an image with the suffix too (i.e. it's the default)
+	# amd64 gets an image with the suffix too (i.e. it's the default)
 ifeq ($(ARCH),amd64)
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG) .
+endif
+
+dist/flanneld-$(TAG)-$(ARCH).ipsec.docker: dist/flanneld-$(ARCH) \
+		dist/iptables-$(ARCH) 
+	docker build -f Dockerfile.ipsec.$(ARCH) \
+		-t $(REGISTRY):$(TAG)-$(ARCH)-IPSEC .
+	docker save -o dist/flanneld-$(TAG)-$(ARCH)-IPSEC.docker \
+		$(REGISTRY):$(TAG)-$(ARCH)-IPSEC
+	# amd64 gets an image with the suffix too (i.e. it's the default)
+ifeq ($(ARCH),amd64)
+	docker build -f Dockerfile.ipsec.$(ARCH) -t $(REGISTRY):$(TAG)-IPSEC .
 endif
 
 # This will build flannel natively using golang image
@@ -128,6 +135,14 @@ ifeq ($(ARCH),amd64)
 	docker push $(REGISTRY):$(TAG)
 endif
 
+docker-push-ipsec: dist/flanneld-$(TAG)-$(ARCH).ipsec.docker
+	docker push $(REGISTRY):$(TAG)-$(ARCH)-IPSEC
+
+# amd64 gets an image with the suffix too (i.e. it's the default)
+ifeq ($(ARCH),amd64)
+	docker push $(REGISTRY):$(TAG)-IPSEC
+endif
+
 ## Build an architecture specific flanneld binary
 dist/flanneld-$(ARCH):
 	# Build for other platforms with 'ARCH=$$ARCH make dist/flanneld-$$ARCH'
@@ -142,13 +157,6 @@ dist/flanneld-$(ARCH):
 			mv dist/flanneld dist/flanneld-$(ARCH) && \
 			file dist/flanneld-$(ARCH)'
 
-## Busybox images are missing libatomic/libdl. Pull it out of the kube-cross image
-dist/strongswanlibs-$(ARCH):
-	docker run -ti --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) \
-		cp /usr$(LIB_DIR)/libatomic.so.1 /host/dist/libatomic.so.1-$(ARCH)
-	docker run -ti --rm -v `pwd`:/host gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) \
-		cp $(LIB_DIR)/libdl.so.2 /host/dist/libdl.so.2-$(ARCH)
-
 ## Build an architecture specific iptables binary
 dist/iptables-$(ARCH):
 	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) \
@@ -156,8 +164,8 @@ dist/iptables-$(ARCH):
 		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
 		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
 		gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
-			curl -sSL http://www.netfilter.org/projects/iptables/files/iptables-$(IPTABLES_VERSION).tar.bz2 | tar -jxv && \
-			cd iptables-$(IPTABLES_VERSION) && \
+			curl -sSL http://www.netfilter.org/projects/iptables/files/iptables-$(IPTABLES_VERSION).tar.bz2 | \
+			tar -jxv && cd iptables-$(IPTABLES_VERSION) && \
 			./configure \
 					--prefix=/usr \
 					--mandir=/usr/man \
@@ -171,78 +179,37 @@ dist/iptables-$(ARCH):
 			cd /go/src/github.com/coreos/flannel && \
 			file dist/iptables-$(ARCH)'
 
-## Build an image to build strongswan in
-create_strongswan_build_image:
-	docker image rm $(STRONGSWAN_BUILD_IMAGE_NAME) || exit 0
-	docker run --name $(STRONGSWAN_BUILD_IMAGE_NAME) \
-		gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
-			apt-get update && apt-get install -y libgmp3-dev'
-	docker commit $(STRONGSWAN_BUILD_IMAGE_NAME) $(STRONGSWAN_BUILD_IMAGE_NAME)
-	docker rm $(STRONGSWAN_BUILD_IMAGE_NAME)
-	
-## Build an architecture specific StrongSwan (we need charon daemon)
-## supports amd64 only
-dist/strongswan-$(ARCH): create_strongswan_build_image 
-	mkdir -p $(CURDIR)/dist/strongswan-$(ARCH)
-	docker run --rm -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) \
-		-u $(shell id -u):$(shell id -g) \
-		-v $(CURDIR)/dist/strongswan-$(ARCH):/opt/strongswan \
-		$(STRONGSWAN_BUILD_IMAGE_NAME) /bin/bash -c '\
-			curl --sSL https://download.strongswan.org/strongswan-$(STRONGSWAN_VERSION).tar.bz2 | tar -jxv && \
-			cd strongswan-$(STRONGSWAN_VERSION) && \
-			./configure \
-					--prefix=/opt/strongswan \
-					--with-systemdsystemunitdir=/tmp \
-					--enable-static=no \
-					--host=amd64 \
-					--enable-vici \
-					--disable-swanctl \
-					--disable-attr \
-					--disable-constraints \
-					--disable-dnskey \
-					--disable-fips-prf \
-					--disable-md5 \
-					--disable-pgp \
-					--disable-pem \
-					--disable-pkcs1 \
-					--disable-pkcs7 \
-					--disable-pkcs8 \
-					--disable-pkcs12 \
-					--disable-pki \
-					--disable-pubkey \
-					--disable-rc2 \
-					--disable-resolve \
-					--disable-revocation \
-					--disable-scepclient \
-					--disable-stroke \
-					--disable-updown \
-					--disable-x509 \
-					--disable-xauth-generic && \
-			make -j 4 && \
-			make install && \
-			cp /usr/lib/x86_64-linux-gnu/libgmp.so.10 /opt/strongswan/lib/ipsec'
-			
 ## Build a .tar.gz for the amd64 ppc64le arm arm64 flanneld binary
 tar.gz:
 	ARCH=amd64 make dist/flanneld-amd64
-	tar --transform='flags=r;s|-amd64||' -zcvf dist/flannel-$(TAG)-linux-amd64.tar.gz -C dist flanneld-amd64 mk-docker-opts.sh ../README.md
+	tar --transform='flags=r;s|-amd64||' -zcvf dist/flannel-$(TAG)-linux-amd64.tar.gz \
+		-C dist flanneld-amd64 mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-amd64.tar.gz
+
 	ARCH=ppc64le make dist/flanneld-ppc64le
-	tar --transform='flags=r;s|-ppc64le||' -zcvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz -C dist flanneld-ppc64le mk-docker-opts.sh ../README.md
+	tar --transform='flags=r;s|-ppc64le||' -zcvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz \
+		-C dist flanneld-ppc64le mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz
-	ARCH=ca make dist/flanneld-arm
-	tar --transform='flags=r;s|-arm||' -zcvf dist/flannel-$(TAG)-linux-arm.tar.gz -C dist flanneld-arm mk-docker-opts.sh ../README.md
+	
+	ARCH=arm make dist/flanneld-arm
+	tar --transform='flags=r;s|-arm||' -zcvf dist/flannel-$(TAG)-linux-arm.tar.gz \
+		-C dist flanneld-arm mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-arm.tar.gz
+	
 	ARCH=arm64 make dist/flanneld-arm64
-	tar --transform='flags=r;s|-arm64||' -zcvf dist/flannel-$(TAG)-linux-arm64.tar.gz -C dist flanneld-arm64 mk-docker-opts.sh ../README.md
+	tar --transform='flags=r;s|-arm64||' -zcvf dist/flannel-$(TAG)-linux-arm64.tar.gz \
+		-C dist flanneld-arm64 mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-arm64.tar.gz
+	
 	ARCH=s390x make dist/flanneld-s390x
-	tar --transform='flags=r;s|-s390x||' -zcvf dist/flannel-$(TAG)-linux-s390x.tar.gz -C dist flanneld-s390x mk-docker-opts.sh ../README.md
+	tar --transform='flags=r;s|-s390x||' -zcvf dist/flannel-$(TAG)-linux-s390x.tar.gz \
+		-C dist flanneld-s390x mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-s390x.tar.gz
 
 ## Make a release after creating a tag
 release: tar.gz release-tests
 	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.docker
+	ARCH=amd64 dist/flanneld-$(TAG)-amd64.ipsec.docker
 	ARCH=arm make dist/flanneld-$(TAG)-arm.docker
 	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.docker
 	ARCH=ppc64le make dist/flanneld-$(TAG)-ppc64le.docker
@@ -270,6 +237,7 @@ release-tests: bash_unit
 
 docker-push-all:
 	ARCH=amd64 make docker-push
+	ARCH=amd64 make docker-push-ipsec
 	ARCH=arm make docker-push
 	ARCH=arm64 make docker-push
 	ARCH=ppc64le make docker-push
