@@ -8,7 +8,7 @@ TAG?=$(shell git describe --tags --dirty)
 ARCH?=amd64
 
 # These variables can be overridden by setting an environment variable.
-TEST_PACKAGES?=pkg/ip subnet subnet/etcdv2 network
+TEST_PACKAGES?=pkg/ip subnet subnet/etcdv2 network backend/hostgw
 TEST_PACKAGES_EXPANDED=$(TEST_PACKAGES:%=github.com/coreos/flannel/%)
 PACKAGES?=$(TEST_PACKAGES) network
 PACKAGES_EXPANDED=$(PACKAGES:%=github.com/coreos/flannel/%)
@@ -42,7 +42,7 @@ dist/flanneld: $(shell find . -type f  -name '*.go')
 
 test: license-check gofmt
 	# Run the unit tests
-	go test -cover $(TEST_PACKAGES_EXPANDED)
+	docker run --cap-add=NET_ADMIN --rm -v $(shell pwd):/go/src/github.com/coreos/flannel golang:1.8.3 go test -v -cover $(TEST_PACKAGES_EXPANDED)
 
 	# Test the docker-opts script
 	cd dist; ./mk-docker-opts_tests.sh

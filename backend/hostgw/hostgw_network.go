@@ -117,6 +117,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 					log.Errorf("Error deleting route to %v: %v", evt.Lease.Subnet, err)
 					continue
 				}
+				n.removeFromRouteList(routeList[0])
 			}
 			if len(routeList) > 0 && routeList[0].Gw.Equal(route.Gw) {
 				// Same Dst and same Gw, keep it and do not attempt to add it.
