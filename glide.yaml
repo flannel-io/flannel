@@ -1,7 +1,7 @@
 package: github.com/coreos/flannel
 import:
 - package: github.com/aws/aws-sdk-go
-  version: ^1.6.14
+  version: 50762c1efc55dd2a05eac85fc170b0f65aeec28f
   subpackages:
   - aws
   - aws/awserr

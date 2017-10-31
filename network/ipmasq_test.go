@@ -15,11 +15,12 @@
 package network
 
 import (
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/subnet"
 	"net"
 	"reflect"
 	"testing"
+
+	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/subnet"
 )
 
 func lease() *subnet.Lease {

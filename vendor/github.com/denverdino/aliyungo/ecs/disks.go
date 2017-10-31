@@ -110,10 +110,7 @@ type DescribeDisksResponse struct {
 //
 // You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/disk&describedisks
 func (client *Client) DescribeDisks(args *DescribeDisksArgs) (disks []DiskItemType, pagination *common.PaginationResult, err error) {
-	response := DescribeDisksResponse{}
-
-	err = client.Invoke("DescribeDisks", args, &response)
-
+	response, err := client.DescribeDisksWithRaw(args)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -121,11 +118,24 @@ func (client *Client) DescribeDisks(args *DescribeDisksArgs) (disks []DiskItemTy
 	return response.Disks.Disk, &response.PaginationResult, err
 }
 
+func (client *Client) DescribeDisksWithRaw(args *DescribeDisksArgs) (response *DescribeDisksResponse, err error) {
+	response = &DescribeDisksResponse{}
+
+	err = client.Invoke("DescribeDisks", args, response)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return response, err
+}
+
 type CreateDiskArgs struct {
 	RegionId     common.Region
 	ZoneId       string
 	DiskName     string
 	Description  string
+	Encrypted    bool
 	DiskCategory DiskCategory
 	Size         int
 	SnapshotId   string

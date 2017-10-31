@@ -86,6 +86,7 @@ type CmdLineOpts struct {
 	iface                  flagSlice
 	ifaceRegex             flagSlice
 	ipMasq                 bool
+	ipForward              bool
 	subnetFile             string
 	subnetDir              string
 	publicIP               string
@@ -115,6 +116,7 @@ func init() {
 	flannelFlags.StringVar(&opts.publicIP, "public-ip", "", "IP accessible by other nodes for inter-host communication")
 	flannelFlags.IntVar(&opts.subnetLeaseRenewMargin, "subnet-lease-renew-margin", 60, "subnet lease renewal margin, in minutes, ranging from 1 to 1439")
 	flannelFlags.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
+	flannelFlags.BoolVar(&opts.ipForward, "ip-forward", false, "setup iptables to allow traffic to be forwarded between hosts. Required with Docker 1.13 and higher.")
 	flannelFlags.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "contact the Kubernetes API for subnet assignment instead of etcd.")
 	flannelFlags.StringVar(&opts.kubeApiUrl, "kube-api-url", "", "Kubernetes API server URL. Does not need to be specified if flannel is running in a pod.")
 	flannelFlags.StringVar(&opts.kubeConfigFile, "kubeconfig-file", "", "kubeconfig file location. Does not need to be specified if flannel is running in a pod.")
@@ -286,6 +288,11 @@ func main() {
 	// Set up ipMasq if needed
 	if opts.ipMasq {
 		go setupIPMasq(config, bn)
+	}
+
+	// Set up ipForward if needed
+	if opts.ipForward {
+		go setupIPForward()
 	}
 
 	if err := WriteSubnetFile(opts.subnetFile, config.Network, opts.ipMasq, bn); err != nil {
@@ -571,6 +578,25 @@ func setupIPMasq(config *subnet.Config, bn backend.Network) {
 		time.Sleep(5 * time.Second)
 	}
 
+}
+
+func setupIPForward() {
+	ipt, err := iptables.New()
+	if err != nil {
+		// if we can't find iptables, give up and return
+		log.Errorf("Failed to set up IP Forwarding. iptables was not found: %v", err)
+		return
+	}
+
+	log.Info("Setting iptables FORWARD policy to ACCEPT")
+
+	for {
+		// Ensure that ip forwarding is enabled every 5 seconds
+		if err := network.EnsureIPForward(ipt); err != nil {
+			log.Errorf("Failed to ensure IP Forwarding: %v", err)
+		}
+		time.Sleep(5 * time.Second)
+	}
 }
 
 func ReadSubnetFromSubnetFile(path string) ip.IP4Net {
