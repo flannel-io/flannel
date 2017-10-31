@@ -44,8 +44,7 @@ setup() {
 }
 
 teardown() {
-	docker rm -f flannel-e2e-test-flannel1 >/dev/null 2>/dev/null
-	docker rm -f flannel-e2e-test-flannel2 >/dev/null 2>/dev/null
+	docker rm -f flannel-e2e-test-flannel1 flannel-e2e-test-flannel2 flannel-e2e-test-flannel1-iperf flannel-host1 flannel-host2 > /dev/null 2>&1
 }
 
 write_config_etcd() {
