@@ -14,6 +14,10 @@ The `flannel` manifest defines four things:
 
 When you run pods, they will be allocated IP addresses from the pod network CIDR. No matter which node those pods end up on, they will be able to communicate with each other.
 
+# Annotations
+
+*  `flannel.alpha.coreos.com/public-ip-overwrite`: Allows to overwrite the public IP of a node. Useful if the public IP can not determined from the node, e.G. because it is behind a NAT
+
 ## Older versions of Kubernetes
 
 `kube-flannel.yaml` has some features that aren't compatible with older versions of Kubernetes, though flanneld itself should work with any version of Kubernetes.
