@@ -1,6 +1,6 @@
 FROM frolvlad/alpine-glibc
 
-MAINTAINER Tom Denham <tom@tigera.io>
+LABEL maintainer="Tom Denham <tom@tigera.io>"
 
 ENV FLANNEL_ARCH=amd64
 

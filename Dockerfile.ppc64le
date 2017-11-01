@@ -1,6 +1,6 @@
 FROM ppc64le/busybox:glibc
 
-MAINTAINER Tom Denham <tom@tigera.io>
+LABEL maintainer="Tom Denham <tom@tigera.io>"
 
 ENV FLANNEL_ARCH=ppc64le
 

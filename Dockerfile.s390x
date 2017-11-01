@@ -1,6 +1,6 @@
 FROM s390x/busybox:glibc
 
-MAINTAINER Tom Denham <tom@tigera.io>
+LABEL maintainer="Tom Denham <tom@tigera.io>"
 
 ENV FLANNEL_ARCH=s390x
 
