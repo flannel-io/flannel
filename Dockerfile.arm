@@ -1,6 +1,6 @@
 FROM arm32v7/busybox:glibc
 
-MAINTAINER Tom Denham <tom@tigera.io>
+LABEL maintainer="Tom Denham <tom@tigera.io>"
 
 ENV FLANNEL_ARCH=arm
 
