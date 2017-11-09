@@ -289,6 +289,11 @@ func (ipt *IPTables) DeleteChain(table, chain string) error {
 	return ipt.run("-t", table, "-X", chain)
 }
 
+// ChangePolicy changes policy on chain to target
+func (ipt *IPTables) ChangePolicy(table, chain, target string) error {
+	return ipt.run("-t", table, "-P", chain, target)
+}
+
 // run runs an iptables command with the given arguments, ignoring
 // any stdout output
 func (ipt *IPTables) run(args ...string) error {

@@ -3,7 +3,6 @@ package metadata
 import (
 	"errors"
 	"fmt"
-	"github.com/denverdino/aliyungo/util"
 	"io"
 	"io/ioutil"
 	"net"
@@ -11,6 +10,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/denverdino/aliyungo/util"
 )
 
 type Request struct {
@@ -41,6 +42,7 @@ const (
 	VPC_ID             = "vpc-id"
 	VSWITCH_CIDR_BLOCK = "vswitch-cidr-block"
 	VSWITCH_ID         = "vswitch-id"
+	ZONE               = "zone-id"
 )
 
 type IMetaDataClient interface {
@@ -216,6 +218,15 @@ func (m *MetaData) NTPConfigServers() ([]string, error) {
 		return []string{}, err
 	}
 	return data, nil
+}
+
+func (m *MetaData) Zone() (string, error) {
+
+	zone, err := m.c.Resource(ZONE).Go()
+	if err != nil {
+		return "", err
+	}
+	return zone[0], nil
 }
 
 //

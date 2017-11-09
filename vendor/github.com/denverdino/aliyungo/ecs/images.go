@@ -102,14 +102,21 @@ type ImageType struct {
 //
 // You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/image&describeimages
 func (client *Client) DescribeImages(args *DescribeImagesArgs) (images []ImageType, pagination *common.PaginationResult, err error) {
-
-	args.Validate()
-	response := DescribeImagesResponse{}
-	err = client.Invoke("DescribeImages", args, &response)
+	response, err := client.DescribeImagesWithRaw(args)
 	if err != nil {
 		return nil, nil, err
 	}
 	return response.Images.Image, &response.PaginationResult, nil
+}
+
+func (client *Client) DescribeImagesWithRaw(args *DescribeImagesArgs) (response *DescribeImagesResponse, err error) {
+	args.Validate()
+	response = &DescribeImagesResponse{}
+	err = client.Invoke("DescribeImages", args, response)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 }
 
 // CreateImageArgs repsents arguments to create image
