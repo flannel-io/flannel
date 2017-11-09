@@ -93,7 +93,7 @@ spec:
       serviceAccountName: flannel
       initContainers:
       - name: install-cni
-        image: registry.cn-hangzhou.aliyuncs.com/google-containers/flannel:0.9.0
+        image: registry.cn-hangzhou.aliyuncs.com/google-containers/flannel:v0.9.0
         command:
         - cp
         args:
@@ -107,7 +107,7 @@ spec:
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
-        image: registry.cn-hangzhou.aliyuncs.com/google-containers/flannel:0.9.0
+        image: registry.cn-hangzhou.aliyuncs.com/google-containers/flannel:v0.9.0
         command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
         securityContext:
           privileged: true
