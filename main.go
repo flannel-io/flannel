@@ -28,7 +28,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/coreos/go-iptables/iptables"
 	"github.com/coreos/pkg/flagutil"
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
@@ -285,7 +284,7 @@ func main() {
 
 	// Set up ipMasq if needed
 	if opts.ipMasq {
-		go setupIPMasq(config, bn)
+		go network.SetupAndEnsureIPMasq(config.Network, bn.Lease())
 	}
 
 	if err := WriteSubnetFile(opts.subnetFile, config.Network, opts.ipMasq, bn); err != nil {
@@ -551,26 +550,6 @@ func mustRunHealthz() {
 		log.Errorf("Start healthz server error. %v", err)
 		panic(err)
 	}
-}
-
-func setupIPMasq(config *subnet.Config, bn backend.Network) {
-	ipt, err := iptables.New()
-	if err != nil {
-		// if we can't find iptables, give up and return
-		log.Errorf("Failed to set up IP Masquerade. iptables was not found: %v", err)
-		return
-	}
-	defer func() {
-		network.TeardownIPMasq(ipt, config.Network, bn.Lease())
-	}()
-	for {
-		// Ensure that all the rules exist every 5 seconds
-		if err := network.EnsureIPMasq(ipt, config.Network, bn.Lease()); err != nil {
-			log.Errorf("Failed to ensure IP Masquerade: %v", err)
-		}
-		time.Sleep(5 * time.Second)
-	}
-
 }
 
 func ReadSubnetFromSubnetFile(path string) ip.IP4Net {
