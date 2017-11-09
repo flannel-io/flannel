@@ -16,11 +16,11 @@ package hostgw
 
 import (
 	"fmt"
-
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
 	"golang.org/x/net/context"
+	"sync"
 )
 
 func init() {
@@ -51,7 +51,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return be, nil
 }
 
-func (be *HostgwBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
+func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 	n := &network{
 		extIface: be.extIface,
 		sm:       be.sm,

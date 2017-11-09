@@ -1,4 +1,6 @@
-.PHONY: test e2e-test cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all flannel-git
+.PHONY: test e2e-test cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all flannel-git \
+flannel-dev.docker flanneld-dev.ipsec.docker
+# ~fixme
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
@@ -38,7 +40,7 @@ IPTABLES_VERSION=1.4.21
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
 	go build -o dist/flanneld \
-	  -ldflags "-s -w -X github.com/coreos/flannel/version.Version=$(TAG)"
+		-ldflags "-s -w -X github.com/coreos/flannel/version.Version=$(TAG)"
 
 test: license-check gofmt
 	# Run the unit tests
@@ -85,15 +87,31 @@ clean:
 	rm -f dist/flanneld*
 	rm -f dist/*.docker
 	rm -f dist/*.tar.gz
+	rm -f dist/*.so.*
+
+# DEV
+flannel-dev.docker: dist/flanneld-$(TAG)-$(ARCH).docker
+flanneld-dev.ipsec.docker: dist/flanneld-$(TAG)-$(ARCH).ipsec.docker
 
 ## Create a docker image on disk for a specific arch and tag
-dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH)
+dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) \
+		dist/iptables-$(ARCH) 
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
 	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY):$(TAG)-$(ARCH)
-
-# amd64 gets an image with the suffix too (i.e. it's the default)
+	# amd64 gets an image with the suffix too (i.e. it's the default)
 ifeq ($(ARCH),amd64)
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG) .
+endif
+
+dist/flanneld-$(TAG)-$(ARCH).ipsec.docker: dist/flanneld-$(ARCH) \
+		dist/iptables-$(ARCH) 
+	docker build -f Dockerfile.ipsec.$(ARCH) \
+		-t $(REGISTRY):$(TAG)-$(ARCH)-IPSEC .
+	docker save -o dist/flanneld-$(TAG)-$(ARCH)-IPSEC.docker \
+		$(REGISTRY):$(TAG)-$(ARCH)-IPSEC
+	# amd64 gets an image with the suffix too (i.e. it's the default)
+ifeq ($(ARCH),amd64)
+	docker build -f Dockerfile.ipsec.$(ARCH) -t $(REGISTRY):$(TAG)-IPSEC .
 endif
 
 # This will build flannel natively using golang image
@@ -117,63 +135,81 @@ ifeq ($(ARCH),amd64)
 	docker push $(REGISTRY):$(TAG)
 endif
 
+docker-push-ipsec: dist/flanneld-$(TAG)-$(ARCH).ipsec.docker
+	docker push $(REGISTRY):$(TAG)-$(ARCH)-IPSEC
+
+# amd64 gets an image with the suffix too (i.e. it's the default)
+ifeq ($(ARCH),amd64)
+	docker push $(REGISTRY):$(TAG)-IPSEC
+endif
+
 ## Build an architecture specific flanneld binary
 dist/flanneld-$(ARCH):
 	# Build for other platforms with 'ARCH=$$ARCH make dist/flanneld-$$ARCH'
 	# valid values for $$ARCH are [amd64 arm arm64 ppc64le s390x]
 	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) \
 		-u $(shell id -u):$(shell id -g) \
-	    -v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
-        -v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
-	    gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
-		cd /go/src/github.com/coreos/flannel && \
-		CGO_ENABLED=1 make -e dist/flanneld && \
-		mv dist/flanneld dist/flanneld-$(ARCH) && \
-		file dist/flanneld-$(ARCH)'
+		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
+		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
+		gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
+			cd /go/src/github.com/coreos/flannel && \
+			CGO_ENABLED=1 make -e dist/flanneld && \
+			mv dist/flanneld dist/flanneld-$(ARCH) && \
+			file dist/flanneld-$(ARCH)'
 
 ## Build an architecture specific iptables binary
 dist/iptables-$(ARCH):
 	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) \
-			-u $(shell id -u):$(shell id -g) \
-            -v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
-            -v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
-            gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
-            curl -sSL http://www.netfilter.org/projects/iptables/files/iptables-$(IPTABLES_VERSION).tar.bz2 | tar -jxv && \
-            cd iptables-$(IPTABLES_VERSION) && \
-            ./configure \
-                --prefix=/usr \
-                --mandir=/usr/man \
-                --disable-shared \
-                --disable-devel \
-                --disable-nftables \
-                --enable-static \
-                --host=amd64 && \
-            make && \
-            cp iptables/xtables-multi /go/src/github.com/coreos/flannel/dist/iptables-$(ARCH) && \
-            cd /go/src/github.com/coreos/flannel && \
-            file dist/iptables-$(ARCH)'
+		-u $(shell id -u):$(shell id -g) \
+		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
+		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
+		gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
+			curl -sSL http://www.netfilter.org/projects/iptables/files/iptables-$(IPTABLES_VERSION).tar.bz2 | \
+			tar -jxv && cd iptables-$(IPTABLES_VERSION) && \
+			./configure \
+					--prefix=/usr \
+					--mandir=/usr/man \
+					--disable-shared \
+					--disable-devel \
+					--disable-nftables \
+					--enable-static \
+					--host=amd64 && \
+			make && \
+			cp iptables/xtables-multi /go/src/github.com/coreos/flannel/dist/iptables-$(ARCH) && \
+			cd /go/src/github.com/coreos/flannel && \
+			file dist/iptables-$(ARCH)'
 
 ## Build a .tar.gz for the amd64 ppc64le arm arm64 flanneld binary
-tar.gz:	
+tar.gz:
 	ARCH=amd64 make dist/flanneld-amd64
-	tar --transform='flags=r;s|-amd64||' -zcvf dist/flannel-$(TAG)-linux-amd64.tar.gz -C dist flanneld-amd64 mk-docker-opts.sh ../README.md
+	tar --transform='flags=r;s|-amd64||' -zcvf dist/flannel-$(TAG)-linux-amd64.tar.gz \
+		-C dist flanneld-amd64 mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-amd64.tar.gz
+
 	ARCH=ppc64le make dist/flanneld-ppc64le
-	tar --transform='flags=r;s|-ppc64le||' -zcvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz -C dist flanneld-ppc64le mk-docker-opts.sh ../README.md
+	tar --transform='flags=r;s|-ppc64le||' -zcvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz \
+		-C dist flanneld-ppc64le mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz
+	
 	ARCH=arm make dist/flanneld-arm
-	tar --transform='flags=r;s|-arm||' -zcvf dist/flannel-$(TAG)-linux-arm.tar.gz -C dist flanneld-arm mk-docker-opts.sh ../README.md
+	tar --transform='flags=r;s|-arm||' -zcvf dist/flannel-$(TAG)-linux-arm.tar.gz \
+		-C dist flanneld-arm mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-arm.tar.gz
+	
 	ARCH=arm64 make dist/flanneld-arm64
-	tar --transform='flags=r;s|-arm64||' -zcvf dist/flannel-$(TAG)-linux-arm64.tar.gz -C dist flanneld-arm64 mk-docker-opts.sh ../README.md
+	tar --transform='flags=r;s|-arm64||' -zcvf dist/flannel-$(TAG)-linux-arm64.tar.gz \
+		-C dist flanneld-arm64 mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-arm64.tar.gz
+	
 	ARCH=s390x make dist/flanneld-s390x
-	tar --transform='flags=r;s|-s390x||' -zcvf dist/flannel-$(TAG)-linux-s390x.tar.gz -C dist flanneld-s390x mk-docker-opts.sh ../README.md
+	tar --transform='flags=r;s|-s390x||' -zcvf dist/flannel-$(TAG)-linux-s390x.tar.gz \
+		-C dist flanneld-s390x mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-s390x.tar.gz
 
 ## Make a release after creating a tag
 release: tar.gz release-tests
 	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.docker
+	ARCH=amd64 dist/flanneld-$(TAG)-amd64.ipsec.docker
 	ARCH=arm make dist/flanneld-$(TAG)-arm.docker
 	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.docker
 	ARCH=ppc64le make dist/flanneld-$(TAG)-ppc64le.docker
@@ -201,6 +237,7 @@ release-tests: bash_unit
 
 docker-push-all:
 	ARCH=amd64 make docker-push
+	ARCH=amd64 make docker-push-ipsec
 	ARCH=arm make docker-push
 	ARCH=arm64 make docker-push
 	ARCH=ppc64le make docker-push
@@ -256,10 +293,10 @@ stop-etcd:
 K8S_VERSION=v1.6.6
 run-k8s-apiserver: stop-k8s-apiserver
 	docker run --detach --net=host \
-	  --name calico-k8s-apiserver \
-  	gcr.io/google_containers/hyperkube-amd64:$(K8S_VERSION) \
-		  /hyperkube apiserver --etcd-servers=http://$(LOCAL_IP_ENV):2379 \
-		  --service-cluster-ip-range=10.101.0.0/16
+		--name calico-k8s-apiserver \
+		gcr.io/google_containers/hyperkube-amd64:$(K8S_VERSION) \
+			/hyperkube apiserver --etcd-servers=http://$(LOCAL_IP_ENV):2379 \
+			--service-cluster-ip-range=10.101.0.0/16
 
 stop-k8s-apiserver:
 	@-docker rm -f calico-k8s-apiserver

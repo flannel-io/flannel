@@ -33,6 +33,7 @@ import (
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
+	"github.com/coreos/flannel/backend/ipsec"
 	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
@@ -92,6 +93,8 @@ type CmdLineOpts struct {
 	subnetLeaseRenewMargin int
 	healthzIP              string
 	healthzPort            int
+	charonExecutablePath   string
+	charonViciUri          string
 }
 
 var (
@@ -121,6 +124,8 @@ func init() {
 	flannelFlags.BoolVar(&opts.version, "version", false, "print version and exit")
 	flannelFlags.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "the IP address for healthz server to listen")
 	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "the port for healthz server to listen(0 to disable)")
+	flannelFlags.StringVar(&opts.charonExecutablePath, "charon-exec-path", "", "Path to charon executable. Setting it will make flannel attempt to start charon.")
+	flannelFlags.StringVar(&opts.charonViciUri, "charon-vici-uri", "", "Charon vici URI (default: unix:///var/run/charon.vici")
 
 	// glog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
@@ -227,6 +232,13 @@ func main() {
 		}
 	}
 
+	if opts.charonViciUri != "" {
+		ipsec.CharonViciUri = opts.charonViciUri
+	}
+	if opts.charonExecutablePath != "" {
+		ipsec.CharonExecutablePath = opts.charonExecutablePath
+	}
+
 	sm, err := newSubnetManager()
 	if err != nil {
 		log.Error("Failed to create SubnetManager: ", err)
@@ -275,7 +287,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	bn, err := be.RegisterNetwork(ctx, config)
+	bn, err := be.RegisterNetwork(ctx, wg, config)
 	if err != nil {
 		log.Errorf("Error registering network: %s", err)
 		cancel()
