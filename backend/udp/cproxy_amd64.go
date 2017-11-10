@@ -14,7 +14,7 @@
 
 package udp
 
-//#include "proxy.h"
+//#include "proxy_amd64.h"
 import "C"
 
 import (

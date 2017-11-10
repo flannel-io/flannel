@@ -29,7 +29,7 @@
 #include <fcntl.h>
 
 #define CMD_DEFINE
-#include "proxy.h"
+#include "proxy_amd64.h"
 
 struct ip_net {
 	in_addr_t ip;

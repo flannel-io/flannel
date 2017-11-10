@@ -6,6 +6,18 @@ REGISTRY?=quay.io/coreos/flannel
 # Default tag and architecture. Can be overridden
 TAG?=$(shell git describe --tags --dirty)
 ARCH?=amd64
+# Only enable CGO (and build the UDP backend) on AMD64
+ifeq ($(ARCH),amd64)
+	CGO_ENABLED=1
+else
+	CGO_ENABLED=0
+endif
+
+# Go version to use for builds
+GO_VERSION=1.8.3
+
+# K8s version used for Makefile helpers
+K8S_VERSION=v1.6.6
 
 # These variables can be overridden by setting an environment variable.
 TEST_PACKAGES?=pkg/ip subnet subnet/etcdv2 network backend/hostgw
@@ -13,33 +25,42 @@ TEST_PACKAGES_EXPANDED=$(TEST_PACKAGES:%=github.com/coreos/flannel/%)
 PACKAGES?=$(TEST_PACKAGES) network
 PACKAGES_EXPANDED=$(PACKAGES:%=github.com/coreos/flannel/%)
 
-# Set the (cross) compiler to use for different architectures
-ifeq ($(ARCH),amd64)
-	CC=gcc
-endif
-ifeq ($(ARCH),arm)
-	CC=arm-linux-gnueabihf-gcc
-endif
-ifeq ($(ARCH),arm64)
-	CC=aarch64-linux-gnu-gcc
-endif
-ifeq ($(ARCH),ppc64le)
-	CC=powerpc64le-linux-gnu-gcc
-endif
-ifeq ($(ARCH),s390x)
-	CC=s390x-linux-gnu-gcc
-endif
-
-GOARM=7
-
-# List images with gcloud alpha container images list-tags gcr.io/google_containers/kube-cross
-KUBE_CROSS_TAG=v1.8.3-1
-IPTABLES_VERSION=1.4.21
+### BUILDING
+clean:
+	rm -f dist/flanneld*
+	rm -f dist/*.aci
+	rm -f dist/*.docker
+	rm -f dist/*.tar.gz
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
 	go build -o dist/flanneld \
-	  -ldflags "-s -w -X github.com/coreos/flannel/version.Version=$(TAG)"
+	  -ldflags '-s -w -X github.com/coreos/flannel/version.Version=$(TAG) -extldflags "-static"'
 
+# This will build flannel natively using golang image
+dist/flanneld-$(ARCH):
+	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x]
+	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
+		-u $(shell id -u):$(shell id -g) \
+		-v /usr/bin/qemu-$(ARCH)-static:/usr/bin/qemu-$(ARCH)-static \
+		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
+		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
+		golang:$(GO_VERSION) /bin/bash -c '\
+		cd /go/src/github.com/coreos/flannel && \
+		make -e dist/flanneld && \
+		mv dist/flanneld dist/flanneld-$(ARCH)'
+
+## Create a docker image on disk for a specific arch and tag
+image:	dist/flanneld-$(TAG)-$(ARCH).docker
+dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH)
+	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
+	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY):$(TAG)-$(ARCH)
+
+# amd64 gets an image with the suffix too (i.e. it's the default)
+ifeq ($(ARCH),amd64)
+	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG) .
+endif
+
+### TESTING
 test: license-check gofmt
 	# Run the unit tests
 	docker run --cap-add=NET_ADMIN --rm -v $(shell pwd):/go/src/github.com/coreos/flannel golang:1.8.3 go test -v -cover $(TEST_PACKAGES_EXPANDED)
@@ -60,6 +81,9 @@ cover:
 	go test -coverprofile cover.out $(PACKAGES_EXPANDED)
 	go tool cover -html=cover.out
 
+license-check:
+	./license-check.sh
+
 # Throw an error if gofmt finds problems.
 # "read" will return a failure return code if there is no output. This is inverted wth the "!"
 gofmt:
@@ -67,15 +91,6 @@ gofmt:
 
 gofmt-fix:
 	gofmt -w $(PACKAGES)
-
-license-check:
-	./license-check.sh
-
-update-glide:
-	# go get -d -u github.com/Masterminds/glide
-	glide update --strip-vendor
-	# go get -d -u github.com/sgotti/glide-vc
-	glide vc --only-code --no-tests
 
 bash_unit:
 	wget https://raw.githubusercontent.com/pgrange/bash_unit/v1.6.0/bash_unit
@@ -112,49 +127,23 @@ dist/flanneld-e2e-$(TAG)-$(ARCH).docker:
 docker-push: dist/flanneld-$(TAG)-$(ARCH).docker
 	docker push $(REGISTRY):$(TAG)-$(ARCH)
 
-# amd64 gets an image with the suffix too (i.e. it's the default)
-ifeq ($(ARCH),amd64)
-	docker push $(REGISTRY):$(TAG)
-endif
+# Make a release after creating a tag
+# To build cross platform Docker images, the qemu-static binaries are needed. On ubuntu "apt-get install  qemu-user-static"
+release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-aarch64-static dist/qemu-arm-static #release-tests
+	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.docker
+	ARCH=arm make dist/flanneld-$(TAG)-arm.docker
+	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.docker
+	ARCH=ppc64le make dist/flanneld-$(TAG)-ppc64le.docker
+	ARCH=s390x make dist/flanneld-$(TAG)-s390x.docker
+	@echo "Everything should be built for $(TAG)"
+	@echo "Add all flanneld-* and *.tar.gz files from dist/ to the Github release"
+	@echo "Use make docker-push-all to push the images to a registry"
 
-## Build an architecture specific flanneld binary
-dist/flanneld-$(ARCH):
-	# Build for other platforms with 'ARCH=$$ARCH make dist/flanneld-$$ARCH'
-	# valid values for $$ARCH are [amd64 arm arm64 ppc64le s390x]
-	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) \
-		-u $(shell id -u):$(shell id -g) \
-	    -v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
-        -v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
-	    gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
-		cd /go/src/github.com/coreos/flannel && \
-		CGO_ENABLED=1 make -e dist/flanneld && \
-		mv dist/flanneld dist/flanneld-$(ARCH) && \
-		file dist/flanneld-$(ARCH)'
-
-## Build an architecture specific iptables binary
-dist/iptables-$(ARCH):
-	docker run -e CC=$(CC) -e GOARM=$(GOARM) -e GOARCH=$(ARCH) \
-			-u $(shell id -u):$(shell id -g) \
-            -v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
-            -v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
-            gcr.io/google_containers/kube-cross:$(KUBE_CROSS_TAG) /bin/bash -c '\
-            curl -sSL http://www.netfilter.org/projects/iptables/files/iptables-$(IPTABLES_VERSION).tar.bz2 | tar -jxv && \
-            cd iptables-$(IPTABLES_VERSION) && \
-            ./configure \
-                --prefix=/usr \
-                --mandir=/usr/man \
-                --disable-shared \
-                --disable-devel \
-                --disable-nftables \
-                --enable-static \
-                --host=amd64 && \
-            make && \
-            cp iptables/xtables-multi /go/src/github.com/coreos/flannel/dist/iptables-$(ARCH) && \
-            cd /go/src/github.com/coreos/flannel && \
-            file dist/iptables-$(ARCH)'
+dist/qemu-%-static:
+	cp /usr/bin/$(@F) dist
 
 ## Build a .tar.gz for the amd64 ppc64le arm arm64 flanneld binary
-tar.gz:	
+tar.gz:
 	ARCH=amd64 make dist/flanneld-amd64
 	tar --transform='flags=r;s|-amd64||' -zcvf dist/flannel-$(TAG)-linux-amd64.tar.gz -C dist flanneld-amd64 mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-amd64.tar.gz
@@ -170,17 +159,6 @@ tar.gz:
 	ARCH=s390x make dist/flanneld-s390x
 	tar --transform='flags=r;s|-s390x||' -zcvf dist/flannel-$(TAG)-linux-s390x.tar.gz -C dist flanneld-s390x mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-s390x.tar.gz
-
-## Make a release after creating a tag
-release: tar.gz release-tests
-	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.docker
-	ARCH=arm make dist/flanneld-$(TAG)-arm.docker
-	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.docker
-	ARCH=ppc64le make dist/flanneld-$(TAG)-ppc64le.docker
-	ARCH=s390x make dist/flanneld-$(TAG)-s390x.docker
-	@echo "Everything should be built for $(TAG)"
-	@echo "Add all flanneld-* and *.tar.gz files from dist/ to the Github release"
-	@echo "Use make docker-push-all to push the images to a registry"
 
 release-tests: bash_unit
 	# Run the functional tests with different etcd versions.
@@ -199,6 +177,14 @@ release-tests: bash_unit
 	# K8S_VERSION="1.4.12" ./bash_unit dist/functional-test-k8s.sh   #kube-flannel.yml is incompatible
 	# K8S_VERSION="1.3.10" ./bash_unit dist/functional-test-k8s.sh   #kube-flannel.yml is incompatible
 
+docker-push: dist/flanneld-$(TAG)-$(ARCH).docker
+	docker push $(REGISTRY):$(TAG)-$(ARCH)
+
+# amd64 gets an image with the suffix too (i.e. it's the default)
+ifeq ($(ARCH),amd64)
+	docker push $(REGISTRY):$(TAG)
+endif
+
 docker-push-all:
 	ARCH=amd64 make docker-push
 	ARCH=arm make docker-push
@@ -215,6 +201,13 @@ flannel-git:
 	ARCH=ppc64le REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-ppc64le.docker docker-push
 	ARCH=s390x REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-s390x.docker docker-push
 
+### DEVELOPING
+update-glide:
+	# go get -d -u github.com/Masterminds/glide
+	glide update --strip-vendor
+	# go get -d -u github.com/sgotti/glide-vc
+	glide vc --only-code --no-tests
+
 install:
 	# This is intended as just a developer convenience to help speed up non-containerized builds
 	# It is NOT how you install flannel
@@ -223,7 +216,7 @@ install:
 minikube-start:
 	minikube start --network-plugin cni
 
-minikube-build-image: dist/iptables-amd64
+minikube-build-image:
 	CGO_ENABLED=1 go build -v -o dist/flanneld-amd64
 	# Make sure the minikube docker is being used "eval $(minikube docker-env)"
 	sh -c 'eval $$(minikube docker-env) && docker build -f Dockerfile.amd64 -t flannel/minikube .'
@@ -253,7 +246,6 @@ run-etcd: stop-etcd
 stop-etcd:
 	@-docker rm -f flannel-etcd
 
-K8S_VERSION=v1.6.6
 run-k8s-apiserver: stop-k8s-apiserver
 	docker run --detach --net=host \
 	  --name calico-k8s-apiserver \
