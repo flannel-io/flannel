@@ -74,11 +74,11 @@ func (mock *MockIPTables) AppendUnique(table string, chain string, rulespec ...s
 
 func TestDeleteRules(t *testing.T) {
 	ipt := &MockIPTables{}
-	SetupIPMasq(ipt, ip.IP4Net{}, lease())
+	setupIPMasq(ipt, ip.IP4Net{}, lease())
 	if len(ipt.rules) != 4 {
 		t.Errorf("Should be 4 rules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
 	}
-	TeardownIPMasq(ipt, ip.IP4Net{}, lease())
+	teardownIPMasq(ipt, ip.IP4Net{}, lease())
 	if len(ipt.rules) != 0 {
 		t.Errorf("Should be 0 rules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
 	}
@@ -87,13 +87,13 @@ func TestDeleteRules(t *testing.T) {
 func TestEnsureRules(t *testing.T) {
 	// If any rules are missing, they should be all deleted and recreated in the correct order
 	ipt_correct := &MockIPTables{}
-	SetupIPMasq(ipt_correct, ip.IP4Net{}, lease())
-	// setup a mock instance where we delete some rules and run `EnsureIPMasq`
+	setupIPMasq(ipt_correct, ip.IP4Net{}, lease())
+	// setup a mock instance where we delete some rules and run `ensureIPMasq`
 	ipt_recreate := &MockIPTables{}
-	SetupIPMasq(ipt_recreate, ip.IP4Net{}, lease())
+	setupIPMasq(ipt_recreate, ip.IP4Net{}, lease())
 	ipt_recreate.rules = ipt_recreate.rules[0:2]
-	EnsureIPMasq(ipt_recreate, ip.IP4Net{}, lease())
+	ensureIPMasq(ipt_recreate, ip.IP4Net{}, lease())
 	if !reflect.DeepEqual(ipt_recreate.rules, ipt_correct.rules) {
-		t.Errorf("iptables rules after EnsureIPMasq are incorrected. Expected: %#v, Actual: %#v", ipt_recreate.rules, ipt_correct.rules)
+		t.Errorf("iptables rules after ensureIPMasq are incorrected. Expected: %#v, Actual: %#v", ipt_recreate.rules, ipt_correct.rules)
 	}
 }
