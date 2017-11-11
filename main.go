@@ -28,7 +28,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/coreos/go-iptables/iptables"
 	"github.com/coreos/pkg/flagutil"
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
@@ -285,8 +284,13 @@ func main() {
 
 	// Set up ipMasq if needed
 	if opts.ipMasq {
-		go setupIPMasq(config, bn)
+		go network.SetupAndEnsureIPTables(network.MasqRules(config.Network, bn.Lease()))
 	}
+
+	// Always enables forwarding rules. This is needed for Docker versions >1.13 (https://docs.docker.com/engine/userguide/networking/default_network/container-communication/#container-communication-between-hosts)
+	// In Docker 1.12 and earlier, the default FORWARD chain policy was ACCEPT.
+	// In Docker 1.13 and later, Docker sets the default policy of the FORWARD chain to DROP.
+	go network.SetupAndEnsureIPTables(network.ForwardRules(config.Network.String()))
 
 	if err := WriteSubnetFile(opts.subnetFile, config.Network, opts.ipMasq, bn); err != nil {
 		// Continue, even though it failed.
@@ -551,26 +555,6 @@ func mustRunHealthz() {
 		log.Errorf("Start healthz server error. %v", err)
 		panic(err)
 	}
-}
-
-func setupIPMasq(config *subnet.Config, bn backend.Network) {
-	ipt, err := iptables.New()
-	if err != nil {
-		// if we can't find iptables, give up and return
-		log.Errorf("Failed to set up IP Masquerade. iptables was not found: %v", err)
-		return
-	}
-	defer func() {
-		network.TeardownIPMasq(ipt, config.Network, bn.Lease())
-	}()
-	for {
-		// Ensure that all the rules exist every 5 seconds
-		if err := network.EnsureIPMasq(ipt, config.Network, bn.Lease()); err != nil {
-			log.Errorf("Failed to ensure IP Masquerade: %v", err)
-		}
-		time.Sleep(5 * time.Second)
-	}
-
 }
 
 func ReadSubnetFromSubnetFile(path string) ip.IP4Net {
