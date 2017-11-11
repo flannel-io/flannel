@@ -2,6 +2,12 @@
 
 # General
 
+## Connectivity
+In Docker v1.13 and later, the default iptables forwarding policy was changed to `DROP`. For more detail on the Docker change, see the Docker [documentation](https://docs.docker.com/engine/userguide/networking/default_network/container-communication/#container-communication-between-hosts).
+
+This problems manifests itself as connectivity problems between containers running on different hosts. To resolve it upgrade to the lateset version of flannel.
+
+
 ## Logging
 Flannel uses the `glog` library but only supports logging to stderr. The severity level can't be changed but the verbosity can be changed with the `-v` option. Flannel does not make extensive use of the verbosity level but increasing th value from `0` (the default) will result in some additional logs. To get the most detailed logs, use `-v=10`
 
@@ -49,7 +55,7 @@ Flannel is known to scale to a very large number of hosts. A delay in contacting
 Flannel relies on the underlying network so that's the first thing to check if you're seeing poor data plane performance.
 
 There are two flannel specific choices that can have a big impact on performance
-1) T1) The type of backend. For example, if encapsulation is used, `vxlan` will always perform better than `udp`. For maximum data plane performance, avoid encapsulation.
+1) The type of backend. For example, if encapsulation is used, `vxlan` will always perform better than `udp`. For maximum data plane performance, avoid encapsulation.
 2) The size of the MTU can have a large impact. To achieve maximum raw bandwidth, a network supporting a large MTU should be used. Flannel writes an MTU setting to the `subnet.env` file. This file is read by either the Docker daemon or the CNI flannel plugin which does the networking for individual containers. To troubleshoot, first ensure that the network interface that flannel is using has the right MTU. Then check that the correct MTU is written to the `subnet.env`. Finally, check that the containers have the correct MTU on their virtual ethernet device.
 
 
