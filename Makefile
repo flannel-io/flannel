@@ -19,6 +19,8 @@ GO_VERSION=1.8.3
 # K8s version used for Makefile helpers
 K8S_VERSION=v1.6.6
 
+GOARM=7
+
 # These variables can be overridden by setting an environment variable.
 TEST_PACKAGES?=pkg/ip subnet subnet/etcdv2 network backend/hostgw
 TEST_PACKAGES_EXPANDED=$(TEST_PACKAGES:%=github.com/coreos/flannel/%)
@@ -96,23 +98,11 @@ bash_unit:
 	wget https://raw.githubusercontent.com/pgrange/bash_unit/v1.6.0/bash_unit
 	chmod +x bash_unit
 
-clean:
-	rm -f dist/flanneld*
-	rm -f dist/*.docker
-	rm -f dist/*.tar.gz
-
-## Create a docker image on disk for a specific arch and tag
-dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH) dist/iptables-$(ARCH)
-	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
-	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY):$(TAG)-$(ARCH)
-
-# amd64 gets an image with the suffix too (i.e. it's the default)
-ifeq ($(ARCH),amd64)
-	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG) .
-endif
-
 # This will build flannel natively using golang image
 dist/flanneld-e2e-$(TAG)-$(ARCH).docker:
+ifneq ($(ARCH),amd64)
+	$(MAKE) dist/qemu-$(ARCH)-static
+endif
 	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x]
 	docker run -e GOARM=$(GOARM) \
 		-u $(shell id -u):$(shell id -g) \
@@ -123,9 +113,6 @@ dist/flanneld-e2e-$(TAG)-$(ARCH).docker:
 		CGO_ENABLED=1 make -e dist/flanneld && \
 		mv dist/flanneld dist/flanneld-$(ARCH)'
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
-
-docker-push: dist/flanneld-$(TAG)-$(ARCH).docker
-	docker push $(REGISTRY):$(TAG)-$(ARCH)
 
 # Make a release after creating a tag
 # To build cross platform Docker images, the qemu-static binaries are needed. On ubuntu "apt-get install  qemu-user-static"

@@ -107,11 +107,13 @@ test_vxlan() {
     pings
 }
 
+if [[ ${ARCH} == "amd64" ]]; then
 test_udp() {
     start_flannel udp
     create_ping_dest # creates ping_dest1 and ping_dest2 variables
     pings
 }
+fi
 
 test_host-gw() {
     start_flannel host-gw
