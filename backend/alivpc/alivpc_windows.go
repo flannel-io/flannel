@@ -11,18 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// +build !amd64,!windows
 
-package udp
+package alivpc
 
 import (
-	"fmt"
-
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/subnet"
+	log "github.com/golang/glog"
 )
 
-func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, port int, nw ip.IP4Net, l *subnet.Lease) (*backend.SimpleNetwork, error) {
-	return nil, fmt.Errorf("UDP backend is not supported on this architecture")
+func init() {
+	log.Infof("AliVpc is not supported on this platform")
 }
