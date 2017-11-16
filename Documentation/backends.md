@@ -99,7 +99,7 @@ Command to create a compute instance with the correct permissions and IP forward
   $ gcloud compute instances create INSTANCE --can-ip-forward --scopes compute-rw
 ```
 
-Route Limits: GCE [limits](https://cloud.google.com/compute/docs/resource-quotas) the number of routes for every *project* to 100.
+Route Limits: GCE [limits](https://cloud.google.com/compute/docs/resource-quotas) the number of routes for every *project* to 100 by default.
 
 
 [alicloud-vpc]: https://github.com/coreos/flannel/blob/master/Documentation/alicloud-vpc-backend.md
