@@ -241,7 +241,12 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		n.Annotations[backendTypeAnnotation] = attrs.BackendType
 		n.Annotations[backendDataAnnotation] = string(bd)
 		if n.Annotations[backendPublicIPOverwriteAnnotation] != "" {
-			n.Annotations[backendPublicIPAnnotation] = n.Annotations[backendPublicIPOverwriteAnnotation]
+			if n.Annotations[backendPublicIPAnnotation] != n.Annotations[backendPublicIPOverwriteAnnotation] {
+				glog.Infof("Overriding public ip with '%s' from node annotation '%s'",
+					n.Annotations[backendPublicIPOverwriteAnnotation],
+					backendPublicIPOverwriteAnnotation)
+				n.Annotations[backendPublicIPAnnotation] = n.Annotations[backendPublicIPOverwriteAnnotation]
+			}
 		} else {
 			n.Annotations[backendPublicIPAnnotation] = attrs.PublicIP.String()
 		}
