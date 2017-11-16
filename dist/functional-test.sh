@@ -84,11 +84,13 @@ test_vxlan_ping() {
     pings
 }
 
+if [[ ${ARCH} == "amd64" ]]; then
 test_udp_ping() {
     write_config_etcd udp
     create_ping_dest # creates ping_dest1 and ping_dest2 variables
     pings
 }
+fi
 
 test_host-gw_ping() {
     write_config_etcd host-gw
@@ -115,11 +117,13 @@ test_vxlan_perf() {
     perf
 }
 
+if [[ ${ARCH} == "amd64" ]]; then
 test_udp_perf() {
     write_config_etcd udp
 	create_ping_dest
     perf
 }
+fi
 
 perf() {
     # Perf test - run iperf server on flannel1 and client on flannel2
