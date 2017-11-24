@@ -19,6 +19,7 @@ data:
       "name": "cbr0",
       "type": "flannel",
       "delegate": {
+        "hairpinMode": true,
         "isDefaultGateway": true
       }
     }
