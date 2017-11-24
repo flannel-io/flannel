@@ -22,6 +22,7 @@ data:
       "name": "cbr0",
       "type": "flannel",
       "delegate": {
+        "hairpinMode": true,
         "isDefaultGateway": true
       }
     }
@@ -53,7 +54,11 @@ spec:
       - name: kube-flannel
         image: flannel/minikube
         imagePullPolicy: Never
-        command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
+        command:
+        - /opt/bin/flanneld
+        args:
+        - --ip-masq
+        - --kube-subnet-mgr
         securityContext:
           privileged: true
         env:
