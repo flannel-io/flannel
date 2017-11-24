@@ -5,5 +5,6 @@ dist/here.txt
 cover.out
 .editorconfig
 .idea/
+flannel.exe
 bash_unit
 dist/qemu-*

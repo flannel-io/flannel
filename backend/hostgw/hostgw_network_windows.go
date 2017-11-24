@@ -11,18 +11,36 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// +build !amd64,!windows
+// +build windows
 
-package udp
+package hostgw
 
 import (
-	"fmt"
+	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
+
+	netroute "github.com/rakelkar/gonetsh/netroute"
 )
 
-func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, port int, nw ip.IP4Net, l *subnet.Lease) (*backend.SimpleNetwork, error) {
-	return nil, fmt.Errorf("UDP backend is not supported on this architecture")
+type network struct {
+	name      string
+	extIface  *backend.ExternalInterface
+	linkIndex int
+	rl        []netroute.Route
+	lease     *subnet.Lease
+	sm        subnet.Manager
+}
+
+func (n *network) Lease() *subnet.Lease {
+	return n.lease
+}
+
+func (n *network) MTU() int {
+	return n.extIface.Iface.MTU
+}
+
+func (n *network) Run(ctx context.Context) {
+
 }

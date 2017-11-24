@@ -11,18 +11,34 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// +build !amd64,!windows
 
-package udp
+package network
 
 import (
-	"fmt"
-
-	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
 )
 
-func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, port int, nw ip.IP4Net, l *subnet.Lease) (*backend.SimpleNetwork, error) {
-	return nil, fmt.Errorf("UDP backend is not supported on this architecture")
+type IPTables interface {
+	AppendUnique(table string, chain string, rulespec ...string) error
+	Delete(table string, chain string, rulespec ...string) error
+	Exists(table string, chain string, rulespec ...string) (bool, error)
+}
+
+type IPTablesRule struct {
+	table    string
+	chain    string
+	rulespec []string
+}
+
+func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
+	return nil
+}
+
+func ForwardRules(flannelNetwork string) []IPTablesRule {
+	return nil
+}
+
+func SetupAndEnsureIPTables(rules []IPTablesRule) {
+
 }
