@@ -108,7 +108,11 @@ spec:
       containers:
       - name: kube-flannel
         image: registry.cn-hangzhou.aliyuncs.com/google-containers/flannel:v0.9.0
-        command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
+        command:
+        - /opt/bin/flanneld
+        args:
+        - --ip-masq
+        - --kube-subnet-mgr
         securityContext:
           privileged: true
         env:
