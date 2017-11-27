@@ -55,11 +55,21 @@ data:
   cni-conf.json: |
     {
       "name": "cbr0",
-      "type": "flannel",
-      "delegate": {
-        "hairpinMode": true,
-        "isDefaultGateway": true
-      }
+      "plugins": [
+        {
+          "type": "flannel",
+          "delegate": {
+            "hairpinMode": true,
+            "isDefaultGateway": true
+          }
+        },
+        {
+          "type": "portmap",
+          "capabilities": {
+            "portMappings": true
+          }
+        }
+      ]
     }
   net-conf.json: |
     {
@@ -100,7 +110,7 @@ spec:
         args:
         - -f
         - /etc/kube-flannel/cni-conf.json
-        - /etc/cni/net.d/10-flannel.conf
+        - /etc/cni/net.d/10-flannel.conflist
         volumeMounts:
         - name: cni
           mountPath: /etc/cni/net.d
