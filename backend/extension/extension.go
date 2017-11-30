@@ -115,6 +115,7 @@ func (be *ExtensionBackend) RegisterNetwork(ctx context.Context, config *subnet.
 
 	if len(n.postStartupCommand) > 0 {
 		cmd_output, err := runCmd([]string{
+			fmt.Sprintf("NETWORK=%s", config.Network),
 			fmt.Sprintf("SUBNET=%s", lease.Subnet),
 			fmt.Sprintf("PUBLIC_IP=%s", attrs.PublicIP)},
 			"", "sh", "-c", n.postStartupCommand)
