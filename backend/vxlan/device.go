@@ -144,10 +144,6 @@ func (dev *vxlanDevice) MACAddr() net.HardwareAddr {
 	return dev.link.HardwareAddr
 }
 
-func (dev *vxlanDevice) MTU() int {
-	return dev.link.MTU
-}
-
 type neighbor struct {
 	MAC net.HardwareAddr
 	IP  ip.IP4
