@@ -378,5 +378,9 @@ func isSubnetConfigCompat(config *Config, sn ip.IP4Net) bool {
 }
 
 func (m *LocalManager) Name() string {
-	return fmt.Sprintf("Etcd Local Manager with Previous Subnet: %s", m.previousSubnet.String())
+	previousSubnet := m.previousSubnet.String()
+	if m.previousSubnet.Empty() {
+		previousSubnet = "None"
+	}
+	return fmt.Sprintf("Etcd Local Manager with Previous Subnet: %s", previousSubnet)
 }
