@@ -71,7 +71,7 @@ func ParseConfig(s string) (*Config, error) {
 	if cfg.SubnetMin == ip.IP4(0) {
 		// skip over the first subnet otherwise it causes problems. e.g.
 		// if Network is 10.100.0.0/16, having an interface with 10.0.0.0
-		// makes ping think it's a broadcast address (not sure why)
+		// conflicts with the broadcast address.
 		cfg.SubnetMin = cfg.Network.IP + subnetSize
 	} else if !cfg.Network.Contains(cfg.SubnetMin) {
 		return nil, errors.New("SubnetMin is not in the range of the Network")
@@ -81,6 +81,16 @@ func ParseConfig(s string) (*Config, error) {
 		cfg.SubnetMax = cfg.Network.Next().IP - subnetSize
 	} else if !cfg.Network.Contains(cfg.SubnetMax) {
 		return nil, errors.New("SubnetMax is not in the range of the Network")
+	}
+
+	// The SubnetMin and SubnetMax need to be aligned to a SubnetLen boundary
+	mask := ip.IP4(0xFFFFFFFF << (32 - cfg.SubnetLen))
+	if cfg.SubnetMin != cfg.SubnetMin&mask {
+		return nil, fmt.Errorf("SubnetMin is not on a SubnetLen boundary: %v", cfg.SubnetMin)
+	}
+
+	if cfg.SubnetMax != cfg.SubnetMax&mask {
+		return nil, fmt.Errorf("SubnetMax is not on a SubnetLen boundary: %v", cfg.SubnetMax)
 	}
 
 	bt, err := parseBackendType(cfg.Backend)
