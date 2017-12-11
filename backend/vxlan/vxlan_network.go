@@ -33,10 +33,13 @@ import (
 
 type network struct {
 	backend.SimpleNetwork
-	extIface  *backend.ExternalInterface
 	dev       *vxlanDevice
 	subnetMgr subnet.Manager
 }
+
+const (
+	encapOverhead = 50
+)
 
 func newNetwork(subnetMgr subnet.Manager, extIface *backend.ExternalInterface, dev *vxlanDevice, _ ip.IP4Net, lease *subnet.Lease) (*network, error) {
 	nw := &network{
@@ -77,7 +80,7 @@ func (nw *network) Run(ctx context.Context) {
 }
 
 func (nw *network) MTU() int {
-	return nw.dev.MTU()
+	return nw.ExtIface.Iface.MTU - encapOverhead
 }
 
 type vxlanLeaseAttrs struct {
