@@ -22,7 +22,7 @@ import (
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
-	"github.com/golang/glog"
+	log "github.com/golang/glog"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
 )
@@ -53,12 +53,14 @@ func (be *IPIPBackend) RegisterNetwork(ctx context.Context, config *subnet.Confi
 	cfg := struct {
 		DirectRouting bool
 	}{}
+
 	if len(config.Backend) > 0 {
 		if err := json.Unmarshal(config.Backend, &cfg); err != nil {
 			return nil, fmt.Errorf("error decoding IPIP backend config: %v", err)
 		}
 	}
-	glog.Infof("IPIP config: DirectRouting=%v", cfg.DirectRouting)
+
+	log.Infof("IPIP config: DirectRouting=%v", cfg.DirectRouting)
 
 	n := &backend.RouteNetwork{
 		SimpleNetwork: backend.SimpleNetwork{
@@ -82,10 +84,13 @@ func (be *IPIPBackend) RegisterNetwork(ctx context.Context, config *subnet.Confi
 	default:
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
+
 	link, err := be.configureIPIPDevice(n.SubnetLease)
+
 	if err != nil {
 		return nil, err
 	}
+
 	n.Mtu = link.MTU
 	n.LinkIndex = link.Index
 	n.GetRoute = func(lease *subnet.Lease) *netlink.Route {
@@ -95,16 +100,20 @@ func (be *IPIPBackend) RegisterNetwork(ctx context.Context, config *subnet.Confi
 			LinkIndex: n.LinkIndex,
 			Flags:     int(netlink.FLAG_ONLINK),
 		}
+
 		if cfg.DirectRouting {
 			dr, err := ip.DirectRouting(lease.Attrs.PublicIP.ToIP())
+
 			if err != nil {
-				glog.Error(err)
+				log.Error(err)
 			}
+
 			if dr {
-				glog.V(2).Infof("configure route to %v via direct routing", lease.Attrs.PublicIP.String())
+				log.V(2).Infof("configure route to %v via direct routing", lease.Attrs.PublicIP.String())
 				route.LinkIndex = n.ExtIface.Iface.Index
 			}
 		}
+
 		return &route
 	}
 
@@ -122,33 +131,39 @@ func (be *IPIPBackend) configureIPIPDevice(lease *subnet.Lease) (*netlink.Iptun,
 	// and set local attribute of flannel.ipip to distinguish these two devices.
 	// Considering tunl0 might be used by users, so choose the later option.
 	link := &netlink.Iptun{LinkAttrs: netlink.LinkAttrs{Name: tunnelName}, Local: be.extIface.IfaceAddr}
+
 	if err := netlink.LinkAdd(link); err != nil {
 		if err != syscall.EEXIST {
 			return nil, err
 		}
+
+		// The link already exists, so check existing link attributes.
 		existing, err := netlink.LinkByName(tunnelName)
 		if err != nil {
 			return nil, err
 		}
-		// flannel will never make the following situations happen. They can only be caused by a user, so get them to sort it out.
+
+		// If there's an exists device but it's not an ipip/IpTun device then get the user to fix it (flannel shouldn't
+		// delete a user's device)
 		if existing.Type() != "ipip" {
-			return nil, fmt.Errorf("%v isn't an ipip mode device, please fix it and try again", tunnelName)
+			return nil, fmt.Errorf("%v isn't an ipip mode device, please remove device and try again", tunnelName)
 		}
 		ipip, ok := existing.(*netlink.Iptun)
 		if !ok {
-			return nil, fmt.Errorf("%s isn't an iptun device %#v", tunnelName, link)
+			return nil, fmt.Errorf("%s isn't an iptun device (%#v), please remove device and try again", tunnelName, link)
 		}
-		// Don't set remote attribute making flannel.ipip an one to many tunnel device.
-		if ipip.Remote != nil && ipip.Remote.String() != "0.0.0.0" {
-			return nil, fmt.Errorf("remote address %v of tunnel %s is not 0.0.0.0, please fix it and try again", ipip.Remote, tunnelName)
-		}
-		// local attribute may change if a user changes iface configuration, we need to recreate the device to ensure local attribute is expected.
-		if ipip.Local == nil || !ipip.Local.Equal(be.extIface.IfaceAddr) {
-			glog.Warningf("%q already exists with incompatable local attribute: %v; recreating device", tunnelName, ipip.Local)
+
+		// local attribute may change if a user changes iface configuration, we need to recreate the device to ensure
+		// local and remote attribute is expected.
+		// local should be equal to the extIface.IfaceAddr and remote should be nil (or equal to 0.0.0.0)
+		if ipip.Local == nil || !ipip.Local.Equal(be.extIface.IfaceAddr) || (ipip.Remote != nil && ipip.Remote.String() != "0.0.0.0") {
+			log.Warningf("%q already exists with incompatable attributes: local=%v remote=%v; recreating device",
+				tunnelName, ipip.Local, ipip.Remote)
 
 			if err = netlink.LinkDel(existing); err != nil {
 				return nil, fmt.Errorf("failed to delete interface: %v", err)
 			}
+
 			if err = netlink.LinkAdd(link); err != nil {
 				return nil, fmt.Errorf("failed to create ipip interface: %v", err)
 			}
@@ -161,10 +176,12 @@ func (be *IPIPBackend) configureIPIPDevice(lease *subnet.Lease) (*netlink.Iptun,
 	if expectMTU <= 0 {
 		return nil, fmt.Errorf("MTU %d of iface %s is too small for ipip mode to work", be.extIface.Iface.MTU, be.extIface.Iface.Name)
 	}
+
 	oldMTU := link.Attrs().MTU
 	if oldMTU > expectMTU || oldMTU == 0 {
-		glog.Infof("current MTU of %s is %d, setting it to %d", tunnelName, oldMTU, expectMTU)
+		log.Infof("current MTU of %s is %d, setting it to %d", tunnelName, oldMTU, expectMTU)
 		err := netlink.LinkSetMTU(link, expectMTU)
+
 		if err != nil {
 			return nil, fmt.Errorf("failed to set %v MTU to %d: %v", tunnelName, expectMTU, err)
 		}
@@ -178,8 +195,10 @@ func (be *IPIPBackend) configureIPIPDevice(lease *subnet.Lease) (*netlink.Iptun,
 	if err := ip.EnsureV4AddressOnLink(ip.IP4Net{IP: lease.Subnet.IP, PrefixLen: 32}, link); err != nil {
 		return nil, fmt.Errorf("failed to ensure address of interface %s: %s", link.Attrs().Name, err)
 	}
+
 	if err := netlink.LinkSetUp(link); err != nil {
 		return nil, fmt.Errorf("failed to set %v UP: %v", tunnelName, err)
 	}
+
 	return link, nil
 }
