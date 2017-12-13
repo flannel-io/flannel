@@ -22,7 +22,7 @@ K8S_VERSION=v1.6.6
 GOARM=7
 
 # These variables can be overridden by setting an environment variable.
-TEST_PACKAGES?=pkg/ip subnet subnet/etcdv2 network backend/hostgw
+TEST_PACKAGES?=pkg/ip subnet subnet/etcdv2 network backend
 TEST_PACKAGES_EXPANDED=$(TEST_PACKAGES:%=github.com/coreos/flannel/%)
 PACKAGES?=$(TEST_PACKAGES) network
 PACKAGES_EXPANDED=$(PACKAGES:%=github.com/coreos/flannel/%)
@@ -65,7 +65,9 @@ endif
 ### TESTING
 test: license-check gofmt
 	# Run the unit tests
-	docker run --cap-add=NET_ADMIN --rm -v $(shell pwd):/go/src/github.com/coreos/flannel golang:1.8.3 go test -v -cover $(TEST_PACKAGES_EXPANDED)
+	# NET_ADMIN capacity is required to do some network operation
+	# SYS_ADMIN capacity is required to create network namespace
+	docker run --cap-add=NET_ADMIN --cap-add=SYS_ADMIN --rm -v $(shell pwd):/go/src/github.com/coreos/flannel golang:1.8.3 go test -v -cover $(TEST_PACKAGES_EXPANDED)
 
 	# Test the docker-opts script
 	cd dist; ./mk-docker-opts_tests.sh

@@ -98,6 +98,12 @@ test_host-gw_ping() {
     pings
 }
 
+test_ipip_ping() {
+    write_config_etcd ipip
+    create_ping_dest # creates ping_dest1 and ping_dest2 variables
+    pings
+}
+
 pings() {
     # ping in both directions
 	assert "docker exec --privileged flannel-e2e-test-flannel1 /bin/ping -c 3 $ping_dest2" "Host 1 cannot ping host 2"
@@ -124,6 +130,12 @@ test_udp_perf() {
     perf
 }
 fi
+
+test_ipip_perf() {
+    write_config_etcd ipip
+    create_ping_dest
+    perf
+}
 
 perf() {
     # Perf test - run iperf server on flannel1 and client on flannel2

@@ -1,4 +1,4 @@
-// Copyright 2015 flannel authors
+// Copyright 2017 flannel authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,9 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// +build !windows
 
-package hostgw
+package backend
 
 import (
 	"bytes"
@@ -22,49 +21,43 @@ import (
 	"time"
 
 	log "github.com/golang/glog"
-	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
 
-	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/subnet"
+	"github.com/vishvananda/netlink"
 )
 
-type network struct {
-	name     string
-	extIface *backend.ExternalInterface
-	rl       []netlink.Route
-	lease    *subnet.Lease
-	sm       subnet.Manager
+const (
+	routeCheckRetries = 10
+)
+
+type RouteNetwork struct {
+	SimpleNetwork
+	BackendType string
+	routes      []netlink.Route
+	SM          subnet.Manager
+	GetRoute    func(lease *subnet.Lease) *netlink.Route
+	Mtu         int
+	LinkIndex   int
 }
 
-func (n *network) Lease() *subnet.Lease {
-	return n.lease
+func (n *RouteNetwork) MTU() int {
+	return n.Mtu
 }
 
-func (n *network) MTU() int {
-	return n.extIface.Iface.MTU
-}
-
-func (n *network) LinkIndex() int {
-	return n.extIface.Iface.Index
-}
-
-func (n *network) Run(ctx context.Context) {
+func (n *RouteNetwork) Run(ctx context.Context) {
 	wg := sync.WaitGroup{}
 
 	log.Info("Watching for new subnet leases")
 	evts := make(chan []subnet.Event)
 	wg.Add(1)
 	go func() {
-		subnet.WatchLeases(ctx, n.sm, n.lease, evts)
+		subnet.WatchLeases(ctx, n.SM, n.SubnetLease, evts)
 		wg.Done()
 	}()
 
-	// Store a list of routes, initialized to capacity of 10.
-	n.rl = make([]netlink.Route, 0, 10)
+	n.routes = make([]netlink.Route, 0, 10)
 	wg.Add(1)
-
-	// Start a goroutine which periodically checks that the right routes are created
 	go func() {
 		n.routeCheck(ctx)
 		wg.Done()
@@ -83,69 +76,56 @@ func (n *network) Run(ctx context.Context) {
 	}
 }
 
-func (n *network) handleSubnetEvents(batch []subnet.Event) {
+func (n *RouteNetwork) handleSubnetEvents(batch []subnet.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
 		case subnet.EventAdded:
 			log.Infof("Subnet added: %v via %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
 
-			if evt.Lease.Attrs.BackendType != "host-gw" {
-				log.Warningf("Ignoring non-host-gw subnet: type=%v", evt.Lease.Attrs.BackendType)
+			if evt.Lease.Attrs.BackendType != n.BackendType {
+				log.Warningf("Ignoring non-%v subnet: type=%v", n.BackendType, evt.Lease.Attrs.BackendType)
 				continue
 			}
+			route := n.GetRoute(&evt.Lease)
 
-			route := netlink.Route{
-				Dst:       evt.Lease.Subnet.ToIPNet(),
-				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
-				LinkIndex: n.LinkIndex(),
-			}
-
-			// Always add the route to the route list.
-			n.addToRouteList(route)
-
+			n.addToRouteList(*route)
 			// Check if route exists before attempting to add it
-			routeList, err := netlink.RouteListFiltered(netlink.FAMILY_V4, &netlink.Route{
-				Dst: route.Dst,
-			}, netlink.RT_FILTER_DST)
+			routeList, err := netlink.RouteListFiltered(netlink.FAMILY_V4, &netlink.Route{Dst: route.Dst}, netlink.RT_FILTER_DST)
 			if err != nil {
 				log.Warningf("Unable to list routes: %v", err)
 			}
-			//   Check match on Dst for match on Gw
-			if len(routeList) > 0 && !routeList[0].Gw.Equal(route.Gw) {
-				// Same Dst different Gw. Remove it, correct route will be added below.
-				log.Warningf("Replacing existing route to %v via %v with %v via %v.", evt.Lease.Subnet, routeList[0].Gw, evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
+
+			if len(routeList) > 0 && !routeEqual(routeList[0], *route) {
+				// Same Dst different Gw or different link index. Remove it, correct route will be added below.
+				log.Warningf("Replacing existing route to %v via %v dev index %d with %v via %v dev index %d.", evt.Lease.Subnet, routeList[0].Gw, routeList[0].LinkIndex, evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, route.LinkIndex)
 				if err := netlink.RouteDel(&routeList[0]); err != nil {
 					log.Errorf("Error deleting route to %v: %v", evt.Lease.Subnet, err)
 					continue
 				}
 				n.removeFromRouteList(routeList[0])
 			}
-			if len(routeList) > 0 && routeList[0].Gw.Equal(route.Gw) {
+
+			if len(routeList) > 0 && routeEqual(routeList[0], *route) {
 				// Same Dst and same Gw, keep it and do not attempt to add it.
-				log.Infof("Route to %v via %v already exists, skipping.", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
-			} else if err := netlink.RouteAdd(&route); err != nil {
-				log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, err)
+				log.Infof("Route to %v via %v dev index %d already exists, skipping.", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, routeList[0].LinkIndex)
+			} else if err := netlink.RouteAdd(route); err != nil {
+				log.Errorf("Error adding route to %v via %v dev index %d: %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, route.LinkIndex, err)
 				continue
 			}
 
 		case subnet.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
 
-			if evt.Lease.Attrs.BackendType != "host-gw" {
-				log.Warningf("Ignoring non-host-gw subnet: type=%v", evt.Lease.Attrs.BackendType)
+			if evt.Lease.Attrs.BackendType != n.BackendType {
+				log.Warningf("Ignoring non-%v subnet: type=%v", n.BackendType, evt.Lease.Attrs.BackendType)
 				continue
 			}
 
-			route := netlink.Route{
-				Dst:       evt.Lease.Subnet.ToIPNet(),
-				Gw:        evt.Lease.Attrs.PublicIP.ToIP(),
-				LinkIndex: n.LinkIndex(),
-			}
-
+			route := n.GetRoute(&evt.Lease)
 			// Always remove the route from the route list.
-			n.removeFromRouteList(route)
+			n.removeFromRouteList(*route)
 
-			if err := netlink.RouteDel(&route); err != nil {
+			if err := netlink.RouteDel(route); err != nil {
 				log.Errorf("Error deleting route to %v: %v", evt.Lease.Subnet, err)
 				continue
 			}
@@ -156,25 +136,25 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 	}
 }
 
-func (n *network) addToRouteList(route netlink.Route) {
-	for _, r := range n.rl {
+func (n *RouteNetwork) addToRouteList(route netlink.Route) {
+	for _, r := range n.routes {
 		if routeEqual(r, route) {
 			return
 		}
 	}
-	n.rl = append(n.rl, route)
+	n.routes = append(n.routes, route)
 }
 
-func (n *network) removeFromRouteList(route netlink.Route) {
-	for index, r := range n.rl {
+func (n *RouteNetwork) removeFromRouteList(route netlink.Route) {
+	for index, r := range n.routes {
 		if routeEqual(r, route) {
-			n.rl = append(n.rl[:index], n.rl[index+1:]...)
+			n.routes = append(n.routes[:index], n.routes[index+1:]...)
 			return
 		}
 	}
 }
 
-func (n *network) routeCheck(ctx context.Context) {
+func (n *RouteNetwork) routeCheck(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -185,10 +165,10 @@ func (n *network) routeCheck(ctx context.Context) {
 	}
 }
 
-func (n *network) checkSubnetExistInRoutes() {
+func (n *RouteNetwork) checkSubnetExistInRoutes() {
 	routeList, err := netlink.RouteList(nil, netlink.FAMILY_V4)
 	if err == nil {
-		for _, route := range n.rl {
+		for _, route := range n.routes {
 			exist := false
 			for _, r := range routeList {
 				if r.Dst == nil {
@@ -199,6 +179,7 @@ func (n *network) checkSubnetExistInRoutes() {
 					break
 				}
 			}
+
 			if !exist {
 				if err := netlink.RouteAdd(&route); err != nil {
 					if nerr, ok := err.(net.Error); !ok {
@@ -216,7 +197,9 @@ func (n *network) checkSubnetExistInRoutes() {
 }
 
 func routeEqual(x, y netlink.Route) bool {
-	if x.Dst.IP.Equal(y.Dst.IP) && x.Gw.Equal(y.Gw) && bytes.Equal(x.Dst.Mask, y.Dst.Mask) {
+	// For ipip backend, when enabling directrouting, link index of some routes may change
+	// For both ipip and host-gw backend, link index may also change if updating ExtIface
+	if x.Dst.IP.Equal(y.Dst.IP) && x.Gw.Equal(y.Gw) && bytes.Equal(x.Dst.Mask, y.Dst.Mask) && x.LinkIndex == y.LinkIndex {
 		return true
 	}
 	return false

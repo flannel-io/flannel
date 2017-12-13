@@ -44,20 +44,3 @@ type Network interface {
 }
 
 type BackendCtor func(sm subnet.Manager, ei *ExternalInterface) (Backend, error)
-
-type SimpleNetwork struct {
-	SubnetLease *subnet.Lease
-	ExtIface    *ExternalInterface
-}
-
-func (n *SimpleNetwork) Lease() *subnet.Lease {
-	return n.SubnetLease
-}
-
-func (n *SimpleNetwork) MTU() int {
-	return n.ExtIface.Iface.MTU
-}
-
-func (_ *SimpleNetwork) Run(ctx context.Context) {
-	<-ctx.Done()
-}

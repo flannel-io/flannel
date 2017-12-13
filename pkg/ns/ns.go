@@ -1,4 +1,4 @@
-// Copyright 2015 flannel authors
+// Copyright 2017 flannel authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,36 +11,28 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// +build windows
 
-package hostgw
+package ns
 
 import (
-	"golang.org/x/net/context"
+	"runtime"
+	"testing"
 
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/subnet"
-
-	netroute "github.com/rakelkar/gonetsh/netroute"
+	"github.com/vishvananda/netns"
 )
 
-type network struct {
-	name      string
-	extIface  *backend.ExternalInterface
-	linkIndex int
-	rl        []netroute.Route
-	lease     *subnet.Lease
-	sm        subnet.Manager
-}
+func SetUpNetlinkTest(t *testing.T) func() {
+	// new temporary namespace so we don't pollute the host
+	// lock thread since the namespace is thread local
+	runtime.LockOSThread()
+	var err error
+	ns, err := netns.New()
+	if err != nil {
+		t.Fatalf("Failed to create newns: %v", err)
+	}
 
-func (n *network) Lease() *subnet.Lease {
-	return n.lease
-}
-
-func (n *network) MTU() int {
-	return n.extIface.Iface.MTU
-}
-
-func (n *network) Run(ctx context.Context) {
-
+	return func() {
+		ns.Close()
+		runtime.UnlockOSThread()
+	}
 }

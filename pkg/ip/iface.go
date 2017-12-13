@@ -17,6 +17,7 @@ package ip
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"syscall"
 
@@ -115,4 +116,48 @@ func GetInterfaceByIP(ip net.IP) (*net.Interface, error) {
 	}
 
 	return nil, errors.New("No interface with given IP found")
+}
+
+func DirectRouting(ip net.IP) (bool, error) {
+	routes, err := netlink.RouteGet(ip)
+	if err != nil {
+		return false, fmt.Errorf("couldn't lookup route to %v: %v", ip, err)
+	}
+	if len(routes) == 1 && routes[0].Gw == nil {
+		// There is only a single route and there's no gateway (i.e. it's directly connected)
+		return true, nil
+	}
+	return false, nil
+}
+
+// EnsureV4AddressOnLink ensures that there is only one v4 Addr on `link` and it equals `ipn`.
+// If there exist multiple addresses on link, it returns an error message to tell callers to remove additional address.
+func EnsureV4AddressOnLink(ipn IP4Net, link netlink.Link) error {
+	addr := netlink.Addr{IPNet: ipn.ToIPNet()}
+	existingAddrs, err := netlink.AddrList(link, netlink.FAMILY_V4)
+	if err != nil {
+		return err
+	}
+
+	// flannel will never make this happen. This situation can only be caused by a user, so get them to sort it out.
+	if len(existingAddrs) > 1 {
+		return fmt.Errorf("link has incompatible addresses. Remove additional addresses and try again. %#v", link)
+	}
+
+	// If the device has an incompatible address then delete it. This can happen if the lease changes for example.
+	if len(existingAddrs) == 1 && !existingAddrs[0].Equal(addr) {
+		if err := netlink.AddrDel(link, &existingAddrs[0]); err != nil {
+			return fmt.Errorf("failed to remove IP address %s from %s: %s", ipn.String(), link.Attrs().Name, err)
+		}
+		existingAddrs = []netlink.Addr{}
+	}
+
+	// Actually add the desired address to the interface if needed.
+	if len(existingAddrs) == 0 {
+		if err := netlink.AddrAdd(link, &addr); err != nil {
+			return fmt.Errorf("failed to add IP address %s to %s: %s", ipn.String(), link.Attrs().Name, err)
+		}
+	}
+
+	return nil
 }

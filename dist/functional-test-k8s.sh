@@ -121,6 +121,12 @@ test_host-gw() {
     pings
 }
 
+test_ipip() {
+    start_flannel ipip
+    create_ping_dest # creates ping_dest1 and ping_dest2 variables
+    pings
+}
+
 test_public-ip-overwrite(){
   docker exec flannel-e2e-k8s-apiserver kubectl annotate node flannel1 \
     flannel.alpha.coreos.com/public-ip-overwrite=172.18.0.2 >/dev/null 2>&1
