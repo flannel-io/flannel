@@ -5,7 +5,7 @@
 ## Connectivity
 In Docker v1.13 and later, the default iptables forwarding policy was changed to `DROP`. For more detail on the Docker change, see the Docker [documentation](https://docs.docker.com/engine/userguide/networking/default_network/container-communication/#container-communication-between-hosts).
 
-This problems manifests itself as connectivity problems between containers running on different hosts. To resolve it upgrade to the lateset version of flannel.
+This problems manifests itself as connectivity problems between containers running on different hosts. To resolve it upgrade to the latest version of flannel.
 
 
 ## Logging
