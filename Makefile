@@ -38,6 +38,10 @@ dist/flanneld: $(shell find . -type f  -name '*.go')
 	go build -o dist/flanneld \
 	  -ldflags '-s -w -X github.com/coreos/flannel/version.Version=$(TAG) -extldflags "-static"'
 
+dist/flanneld.exe: $(shell find . -type f  -name '*.go')
+	GOOS=windows go build -o dist/flanneld.exe \
+	  -ldflags '-s -w -X github.com/coreos/flannel/version.Version=$(TAG) -extldflags "-static"'
+
 # This will build flannel natively using golang image
 dist/flanneld-$(ARCH):
 	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x]
@@ -136,6 +140,9 @@ tar.gz:
 	ARCH=amd64 make dist/flanneld-amd64
 	tar --transform='flags=r;s|-amd64||' -zcvf dist/flannel-$(TAG)-linux-amd64.tar.gz -C dist flanneld-amd64 mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-amd64.tar.gz
+	ARCH=amd64 make dist/flanneld.exe
+	tar --transform='flags=r;s|-amd64||' -zcvf dist/flannel-$(TAG)-windows-amd64.tar.gz -C dist flanneld.exe mk-docker-opts.sh ../README.md
+	tar -tvf dist/flannel-$(TAG)-windows-amd64.tar.gz
 	ARCH=ppc64le make dist/flanneld-ppc64le
 	tar --transform='flags=r;s|-ppc64le||' -zcvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz -C dist flanneld-ppc64le mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-ppc64le.tar.gz
