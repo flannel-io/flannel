@@ -1,4 +1,4 @@
-// Copyright 2015 flannel authors
+// Copyright 2017 flannel authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,15 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// +build !windows
 
 package ipsec
 
 import (
 	"fmt"
-	"github.com/bronze1man/goStrongswanVici"
-	"github.com/coreos/flannel/subnet"
-	log "github.com/golang/glog"
-	"golang.org/x/net/context"
 	"net"
 	"os"
 	"os/exec"
@@ -27,9 +24,12 @@ import (
 	"sync"
 	"syscall"
 	"time"
-)
 
-const defaultViciUri = "unix:///var/run/charon.vici"
+	"github.com/bronze1man/goStrongswanVici"
+	"github.com/coreos/flannel/subnet"
+	log "github.com/golang/glog"
+	"golang.org/x/net/context"
+)
 
 type Uri struct {
 	network, address string
@@ -41,45 +41,35 @@ type CharonIKEDaemon struct {
 	ctx         context.Context
 }
 
-func NewCharonIKEDaemon(ctx context.Context, wg sync.WaitGroup, charonExecutablePath string,
-	charonViciUri string, espProposal string) (*CharonIKEDaemon, error) {
+func NewCharonIKEDaemon(ctx context.Context, wg sync.WaitGroup, espProposal string) (*CharonIKEDaemon, error) {
 
 	charon := &CharonIKEDaemon{ctx: ctx, espProposal: espProposal}
 
-	if charonViciUri == "" {
-		charonViciUri = defaultViciUri
-	}
-
-	log.Infof("Using charon at: %s", charonViciUri)
-	addr := strings.Split(charonViciUri, "://")
+	addr := strings.Split("unix:///var/run/charon.vici", "://")
 	charon.viciUri = Uri{addr[0], addr[1]}
 
-	log.Infof("Using ESP proposal: %s", espProposal)
-	if charonExecutablePath != "" {
-		cmd, err := charon.runBundled(charonExecutablePath)
+	cmd, err := charon.runBundled("/usr/lib/strongswan/charon")
 
-		if err != nil {
-			log.Errorf("Error starting charon daemon: %v", err)
-			return nil, err
-		} else {
-			log.Info("Charon daemon started")
-		}
-		wg.Add(1)
-		go func() {
-			select {
-			case <-ctx.Done():
-				cmd.Process.Signal(syscall.SIGTERM)
-				log.Infof("Stopped charon daemon")
-				wg.Done()
-				return
-			}
-		}()
+	if err != nil {
+		log.Errorf("Error starting charon daemon: %v", err)
+		return nil, err
+	} else {
+		log.Info("Charon daemon started")
 	}
+	wg.Add(1)
+	go func() {
+		select {
+		case <-ctx.Done():
+			cmd.Process.Signal(syscall.SIGTERM)
+			cmd.Wait()
+			log.Infof("Stopped charon daemon")
+			wg.Done()
+		}
+	}()
 	return charon, nil
 }
 
-func (charon *CharonIKEDaemon) getClient(wait bool) (
-	client *goStrongswanVici.ClientConn, err error) {
+func (charon *CharonIKEDaemon) getClient(wait bool) (client *goStrongswanVici.ClientConn, err error) {
 	for {
 		socket_conn, err := net.Dial(charon.viciUri.network, charon.viciUri.address)
 		if err == nil {
@@ -113,8 +103,9 @@ func (charon *CharonIKEDaemon) runBundled(execPath string) (cmd *exec.Cmd, err e
 		SysProcAttr: &syscall.SysProcAttr{
 			Pdeathsig: syscall.SIGTERM,
 		},
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
 	}
-	cmd.Stderr = os.Stderr
 	err = cmd.Start()
 	return
 }

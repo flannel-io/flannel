@@ -32,7 +32,6 @@ import (
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
-	"github.com/coreos/flannel/backend/ipsec"
 	"github.com/coreos/flannel/network"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
@@ -55,6 +54,7 @@ import (
 	_ "github.com/coreos/flannel/backend/gce"
 	_ "github.com/coreos/flannel/backend/hostgw"
 	_ "github.com/coreos/flannel/backend/ipip"
+	_ "github.com/coreos/flannel/backend/ipsec"
 	_ "github.com/coreos/flannel/backend/udp"
 	_ "github.com/coreos/flannel/backend/vxlan"
 	"github.com/coreos/go-systemd/daemon"
@@ -124,8 +124,6 @@ func init() {
 	flannelFlags.BoolVar(&opts.version, "version", false, "print version and exit")
 	flannelFlags.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "the IP address for healthz server to listen")
 	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "the port for healthz server to listen(0 to disable)")
-	flannelFlags.StringVar(&opts.charonExecutablePath, "charon-exec-path", "", "Path to charon executable. Setting it will make flannel attempt to start charon.")
-	flannelFlags.StringVar(&opts.charonViciUri, "charon-vici-uri", "", "Charon vici URI (default: unix:///var/run/charon.vici")
 
 	// glog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
@@ -230,13 +228,6 @@ func main() {
 			log.Error("Failed to find interface to use that matches the interfaces and/or regexes provided")
 			os.Exit(1)
 		}
-	}
-
-	if opts.charonViciUri != "" {
-		ipsec.CharonViciUri = opts.charonViciUri
-	}
-	if opts.charonExecutablePath != "" {
-		ipsec.CharonExecutablePath = opts.charonExecutablePath
 	}
 
 	sm, err := newSubnetManager()

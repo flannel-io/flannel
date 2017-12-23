@@ -1,4 +1,4 @@
-// Copyright 2015 flannel authors
+// Copyright 2017 flannel authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// +build !windows
 
 package ipsec
 
@@ -19,7 +20,6 @@ import (
 	"net"
 	"strconv"
 	"sync"
-	"time"
 
 	log "github.com/golang/glog"
 	"github.com/vishvananda/netlink"
@@ -42,7 +42,8 @@ const (
 	*/
 	ipsecOverhead    = 77
 	udpEncapOverhead = 8
-	defaultReqID     = 11
+
+	defaultReqID = 11
 )
 
 type network struct {
@@ -92,99 +93,16 @@ func (n *network) Run(ctx context.Context) {
 		wg.Done()
 	}()
 
-	initialEvtsBatch := <-evts
-	for {
-		err := n.handleInitialSubnetEvents(initialEvtsBatch)
-		if err == nil {
-			break
-		}
-
-		log.Error(err, " Retrying")
-		time.Sleep(time.Second)
-	}
-
 	for {
 		select {
 		case evtsBatch := <-evts:
+			log.Info("Handling event")
 			n.handleSubnetEvents(evtsBatch)
 		case <-ctx.Done():
+			log.Info("Received DONE")
 			return
 		}
 	}
-}
-
-func (n *network) handleInitialSubnetEvents(batch []subnet.Event) error {
-	log.Infof("Handling initial subnet events \n")
-
-	installedPolicies, err := GetIPSECPolicies()
-	if err != nil {
-		return fmt.Errorf("error getting ipsec policies: %v", err)
-	}
-
-	evtMarker := make([]bool, len(batch))
-	policyMarker := make([]bool, len(installedPolicies))
-
-	for k, evt := range batch {
-		if evt.Lease.Attrs.BackendType != "ipsec" {
-			log.Warningf("Ignoring non-ipsec subnet event type:%v", evt.Lease.Attrs.BackendType)
-			evtMarker[k] = true
-			continue
-		}
-
-		for j, policy := range installedPolicies {
-			if (policy.Src.String() == n.SubnetLease.Subnet.ToIPNet().String()) &&
-				(policy.Dst.String() == evt.Lease.Subnet.ToIPNet().String()) {
-
-				if policy.Dir != netlink.XFRM_DIR_OUT {
-					continue
-				}
-
-				if (policy.Tmpls[0].Src.Equal(n.SubnetLease.Attrs.PublicIP.ToIP())) &&
-					(policy.Tmpls[0].Dst.Equal(evt.Lease.Attrs.PublicIP.ToIP())) {
-
-					evtMarker[k] = true
-					policyMarker[j] = true
-				}
-			}
-		}
-	}
-
-	for k, marker := range evtMarker {
-		if !marker {
-			if err := n.AddIPSECPolicies(&batch[k].Lease, defaultReqID); err != nil {
-				log.Errorf("error adding initial ipsec policy: %v", err)
-			}
-		}
-	}
-
-	for _, evt := range batch {
-		if err := n.iked.LoadSharedKey(evt.Lease.Attrs.PublicIP.String(), n.password); err != nil {
-			log.Errorf("error loading initial shared key: %v", err)
-		}
-
-		if err := n.iked.LoadConnection(n.SubnetLease, &evt.Lease, strconv.Itoa(defaultReqID),
-			strconv.FormatBool(n.UDPEncap)); err != nil {
-
-			log.Errorf("error loading initial connection into IKE daemon: %v", err)
-		}
-	}
-
-	for j, marker := range policyMarker {
-		if !marker {
-			if installedPolicies[j].Dir != netlink.XFRM_DIR_OUT {
-				continue
-			}
-
-			if err := n.DeleteIPSECPolicies(installedPolicies[j].Src, installedPolicies[j].Dst,
-				installedPolicies[j].Tmpls[0].Src, installedPolicies[j].Tmpls[0].Dst,
-				installedPolicies[j].Tmpls[0].Reqid); err != nil {
-
-				log.Errorf("error deleting installed policy")
-			}
-		}
-	}
-
-	return nil
 }
 
 func (n *network) handleSubnetEvents(batch []subnet.Event) {
