@@ -18,6 +18,7 @@ package udp
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"golang.org/x/net/context"
 
@@ -47,7 +48,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return &be, nil
 }
 
-func (be *UdpBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
+func (be *UdpBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 	cfg := struct {
 		Port int
 	}{

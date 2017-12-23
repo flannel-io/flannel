@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"syscall"
 
+	"sync"
+
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
@@ -51,7 +53,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return be, nil
 }
 
-func (be *IPIPBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
+func (be *IPIPBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 	cfg := struct {
 		DirectRouting bool
 	}{}

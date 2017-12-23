@@ -5,16 +5,10 @@ LABEL maintainer="Tom Denham <tom@tigera.io>"
 ENV FLANNEL_ARCH=arm
 
 ADD dist/qemu-$FLANNEL_ARCH-static /usr/bin/qemu-$FLANNEL_ARCH-static
-RUN apk add --no-cache iproute2 net-tools ca-certificates iptables && update-ca-certificates
+RUN apk add --no-cache iproute2 net-tools ca-certificates iptables strongswan && update-ca-certificates
 RUN apk add wireguard-tools --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing
 COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld
 COPY dist/mk-docker-opts.sh /opt/bin/
-COPY dist/libpthread.so.0-$FLANNEL_ARCH /lib/libpthread.so.0
-COPY dist/ld64.so.1-$FLANNEL_ARCH /lib/ld64.so.1
-COPY dist/libc.so.6-$FLANNEL_ARCH /lib/libc.so.6
-
-COPY dist/strongswan-$FLANNEL_ARCH /usr/local/strongswan-arm
-COPY dist/libatomic.so.1-$FLANNEL_ARCH /lib/libatomic.so.1
-COPY dist/libdl.so.2-$FLANNEL_ARCH /lib/libdl.so.2
 
 ENTRYPOINT ["/opt/bin/flanneld"]
+
