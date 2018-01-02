@@ -53,16 +53,31 @@ func ParseConfig(s string) (*Config, error) {
 	}
 
 	if cfg.SubnetLen > 0 {
-		if cfg.SubnetLen < cfg.Network.PrefixLen {
-			return nil, errors.New("HostSubnet is larger network than Network")
+		// SubnetLen needs to allow for a tunnel and bridge device on each host.
+		if cfg.SubnetLen > 30 {
+			return nil, errors.New("SubnetLen must be less than /31")
+		}
+
+		// SubnetLen needs to fit _more_ than twice into the Network.
+		// the first subnet isn't used, so splitting into two one only provide one usable host.
+		if cfg.SubnetLen < cfg.Network.PrefixLen+2 {
+			return nil, errors.New("Network must be able to accommodate at least four subnets")
 		}
 	} else {
-		// try to give each host a /24 but if the whole network
-		// is /24 or smaller, half the network
-		if cfg.Network.PrefixLen < 24 {
+		// If the network is smaller than a /28 then the network isn't big enough for flannel so return an error.
+		// Default to giving each host at least a /24 (as long as the network is big enough to support at least four hosts)
+		// Otherwise, if the network is too small to give each host a /24 just split the network into four.
+		if cfg.Network.PrefixLen > 28 {
+			// Each subnet needs at least four addresses (/30) and the network needs to accommodate at least four
+			// since the first subnet isn't used, so splitting into two would only provide one usable host.
+			// So the min useful PrefixLen is /28
+			return nil, errors.New("Network is too small. Minimum useful network prefix is /28")
+		} else if cfg.Network.PrefixLen <= 22 {
+			// Network is big enough to give each host a /24
 			cfg.SubnetLen = 24
 		} else {
-			cfg.SubnetLen = cfg.Network.PrefixLen + 1
+			// Use +2 to provide four hosts per subnet.
+			cfg.SubnetLen = cfg.Network.PrefixLen + 2
 		}
 	}
 
