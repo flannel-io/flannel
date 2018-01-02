@@ -15,22 +15,52 @@
 package ip
 
 import (
-	"errors"
+	netsh "github.com/rakelkar/gonetsh/netsh"
 	"net"
 )
 
 func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
-	return nil, errors.New("GetIfaceIP4Addr not implemented for this platform")
-}
+	// get ip address for the interface
+	// prefer global unicast to link local addresses
+	netHelper := netsh.New(nil)
+	ifaceDetails, err := netHelper.GetInterfaceByName(iface.Name)
+	if err != nil {
+		return nil, err
+	}
 
-func GetIfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) error {
-	return errors.New("GetIfaceIP4AddrMatch not implemented for this platform")
+	ifAddr := net.ParseIP(ifaceDetails.IpAddress)
+
+	return ifAddr, nil
 }
 
 func GetDefaultGatewayIface() (*net.Interface, error) {
-	return nil, errors.New("GetDefaultGatewayIface not implemented for this platform")
+	netHelper := netsh.New(nil)
+
+	defaultIfaceName, err := netHelper.GetDefaultGatewayIfaceName()
+	if err != nil {
+		return nil, err
+	}
+
+	iface, err := net.InterfaceByName(defaultIfaceName)
+	if err != nil {
+		return nil, err
+	}
+
+	return iface, nil
 }
 
 func GetInterfaceByIP(ip net.IP) (*net.Interface, error) {
-	return nil, errors.New("GetInterfaceByIp not implemented for this platform")
+	netHelper := netsh.New(nil)
+
+	ifaceDetails, err := netHelper.GetInterfaceByIP(ip.String())
+	if err != nil {
+		return nil, err
+	}
+
+	iface, err := net.InterfaceByName(ifaceDetails.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return iface, nil
 }
