@@ -75,24 +75,24 @@ type CmdLineOpts struct {
 	etcdPrefix             string
 	etcdKeyfile            string
 	etcdCertfile           string
-	etcdCAFile                  string
-	etcdUsername                string
-	etcdPassword                string
-	help                        bool
-	version                     bool
-	kubeSubnetMgr               bool
-	kubeApiUrl                  string
-	kubeConfigFile              string
-	iface                       flagSlice
-	ifaceRegex                  flagSlice
-	ipMasq                      bool
-	subnetFile                  string
-	subnetDir                   string
-	publicIP                    string
-	subnetLeaseRenewMargin      int
-	healthzIP                   string
-	healthzPort                 int
-	checkBackendHealthzInterval int
+	etcdCAFile             string
+	etcdUsername           string
+	etcdPassword           string
+	help                   bool
+	version                bool
+	kubeSubnetMgr          bool
+	kubeApiUrl             string
+	kubeConfigFile         string
+	iface                  flagSlice
+	ifaceRegex             flagSlice
+	ipMasq                 bool
+	subnetFile             string
+	subnetDir              string
+	publicIP               string
+	subnetLeaseRenewMargin int
+	healthzIP              string
+	healthzPort            int
+	backendHealthzInterval int
 }
 
 var (
@@ -122,7 +122,7 @@ func init() {
 	flannelFlags.BoolVar(&opts.version, "version", false, "print version and exit")
 	flannelFlags.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "the IP address for healthz server to listen")
 	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "the port for healthz server to listen(0 to disable)")
-	flannelFlags.IntVar(&opts.checkBackendHealthzInterval, "check-backend-healthz", 0, "Interval between backend healthz checks in minutes (0 to disable).")
+	flannelFlags.IntVar(&opts.backendHealthzInterval, "check-backend-healthz", 0, "Interval between backend healthz checks in minutes (0 to disable).")
 
 	// glog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
@@ -312,8 +312,8 @@ func main() {
 
 	daemon.SdNotify(false, "READY=1")
 
-	if opts.checkBackendHealthzInterval > 0 {
-		MonitorBackendHealthz(ctx, be, opts.checkBackendHealthzInterval)
+	if opts.backendHealthzInterval > 0 {
+		MonitorBackendHealthz(ctx, be, opts.backendHealthzInterval)
 	}
 
 	// Kube subnet mgr doesn't lease the subnet for this node - it just uses the podCidr that's already assigned.
@@ -582,7 +582,7 @@ func ReadSubnetFromSubnetFile(path string) ip.IP4Net {
 
 func MonitorBackendHealthz(ctx context.Context, be backend.Backend, interval int) error {
 
-	checkInterval :=   time.Duration(interval) * time.Minute
+	checkInterval := time.Duration(interval) * time.Minute
 
 	for {
 		select {
