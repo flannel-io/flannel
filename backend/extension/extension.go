@@ -149,3 +149,7 @@ func runCmd(env []string, stdin string, name string, arg ...string) (string, err
 
 	return strings.TrimSpace(string(output)), err
 }
+
+func(be *ExtensionBackend) CheckHealthz() error {
+	return backend.HealthzNotImplemented
+}

@@ -326,3 +326,9 @@ func (be *AwsVpcBackend) findENI(instanceID string, ec2c *ec2.EC2) (*ec2.Instanc
 	}
 	return nil, err
 }
+
+
+
+func(be *AwsVpcBackend) CheckHealthz() error {
+	return backend.HealthzNotImplemented
+}

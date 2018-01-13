@@ -16,6 +16,7 @@ package backend
 
 import (
 	"net"
+	"errors"
 
 	"golang.org/x/net/context"
 
@@ -35,6 +36,7 @@ type ExternalInterface struct {
 type Backend interface {
 	// Called when the backend should create or begin managing a new network
 	RegisterNetwork(ctx context.Context, config *subnet.Config) (Network, error)
+	CheckHealthz() error
 }
 
 type Network interface {
@@ -42,5 +44,8 @@ type Network interface {
 	MTU() int
 	Run(ctx context.Context)
 }
+
+
+var HealthzNotImplemented = errors.New("notImplemented")
 
 type BackendCtor func(sm subnet.Manager, ei *ExternalInterface) (Backend, error)
