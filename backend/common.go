@@ -21,7 +21,6 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/subnet"
-
 )
 
 type ExternalInterface struct {
