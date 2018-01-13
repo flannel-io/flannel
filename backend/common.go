@@ -16,10 +16,12 @@ package backend
 
 import (
 	"net"
+	"errors"
 
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/subnet"
+
 )
 
 type ExternalInterface struct {
@@ -35,6 +37,7 @@ type ExternalInterface struct {
 type Backend interface {
 	// Called when the backend should create or begin managing a new network
 	RegisterNetwork(ctx context.Context, config *subnet.Config) (Network, error)
+	CheckHealth() error
 }
 
 type Network interface {
@@ -42,5 +45,8 @@ type Network interface {
 	MTU() int
 	Run(ctx context.Context)
 }
+
+
+var HCNotImplemented = errors.New("Health check not implemented")
 
 type BackendCtor func(sm subnet.Manager, ei *ExternalInterface) (Backend, error)

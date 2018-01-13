@@ -105,9 +105,7 @@ func (js jwtSource) Token() (*oauth2.Token, error) {
 	if t := js.conf.Expires; t > 0 {
 		claimSet.Exp = time.Now().Add(t).Unix()
 	}
-	h := *defaultHeader
-	h.KeyID = js.conf.PrivateKeyID
-	payload, err := jws.Encode(&h, claimSet, pk)
+	payload, err := jws.Encode(defaultHeader, claimSet, pk)
 	if err != nil {
 		return nil, err
 	}

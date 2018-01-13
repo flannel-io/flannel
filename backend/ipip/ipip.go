@@ -204,3 +204,8 @@ func (be *IPIPBackend) configureIPIPDevice(lease *subnet.Lease) (*netlink.Iptun,
 
 	return link, nil
 }
+
+func(be *IPIPBackend) CheckHealth() error {
+	return nil
+}
+

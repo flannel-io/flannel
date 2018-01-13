@@ -157,3 +157,7 @@ func (g *GCEBackend) handleMatchingRoute(subnet string) (bool, error) {
 
 	return false, nil
 }
+
+func(be *GCEBackend) CheckHealth() error {
+	return nil
+}

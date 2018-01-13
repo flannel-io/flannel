@@ -86,3 +86,8 @@ func (be *UdpBackend) RegisterNetwork(ctx context.Context, config *subnet.Config
 
 	return newNetwork(be.sm, be.extIface, cfg.Port, tunNet, l)
 }
+
+
+func(be *UdpBackend) CheckHealth() error {
+	return nil
+}

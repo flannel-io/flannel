@@ -85,3 +85,8 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, config *subnet.Con
 
 	return n, nil
 }
+
+func(be *HostgwBackend) CheckHealth() error {
+	return nil
+}
+
