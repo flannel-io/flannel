@@ -199,6 +199,6 @@ func getErrorString(e error) string {
 	return e.Error()
 }
 
-func(be *AliVpcBackend) CheckHealth() error {
-	return nil
+func(be *AliVpcBackend) CheckHealthz() error {
+	return backend.HealthzNotImplemented
 }

@@ -88,6 +88,6 @@ func (be *UdpBackend) RegisterNetwork(ctx context.Context, config *subnet.Config
 }
 
 
-func(be *UdpBackend) CheckHealth() error {
-	return nil
+func(be *UdpBackend) CheckHealthz() error {
+	return backend.HealthzNotImplemented
 }

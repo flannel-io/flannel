@@ -182,6 +182,6 @@ func (hw *hardwareAddr) UnmarshalJSON(bytes []byte) error {
 }
 
 
-func(be *VXLANBackend) CheckHealth() error {
-	return nil
+func(be *VXLANBackend) CheckHealthz() error {
+	return backend.HealthzNotImplemented
 }

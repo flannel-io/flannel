@@ -61,6 +61,6 @@ func (be *AllocBackend) RegisterNetwork(ctx context.Context, config *subnet.Conf
 	}
 }
 
-func(be *AllocBackend) CheckHealth() error {
-	return backend.HCNotImplemented
+func(be *AllocBackend) CheckHealthz() error {
+	return backend.HealthzNotImplemented
 }

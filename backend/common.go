@@ -37,7 +37,7 @@ type ExternalInterface struct {
 type Backend interface {
 	// Called when the backend should create or begin managing a new network
 	RegisterNetwork(ctx context.Context, config *subnet.Config) (Network, error)
-	CheckHealth() error
+	CheckHealthz() error
 }
 
 type Network interface {
@@ -47,6 +47,6 @@ type Network interface {
 }
 
 
-var HCNotImplemented = errors.New("Health check not implemented")
+var HealthzNotImplemented = errors.New("notImplemented")
 
 type BackendCtor func(sm subnet.Manager, ei *ExternalInterface) (Backend, error)

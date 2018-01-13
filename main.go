@@ -92,7 +92,7 @@ type CmdLineOpts struct {
 	subnetLeaseRenewMargin int
 	healthzIP              string
 	healthzPort            int
-	checkBackendHealth     bool
+	checkBackendHealthz    int
 }
 
 var (
@@ -122,7 +122,7 @@ func init() {
 	flannelFlags.BoolVar(&opts.version, "version", false, "print version and exit")
 	flannelFlags.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "the IP address for healthz server to listen")
 	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "the port for healthz server to listen(0 to disable)")
-	flannelFlags.BoolVar(&opts.checkBackendHealth, "check-backend-health", false, "Perform backend self checking test every minute. Implemented in backends: vxlan")
+	flannelFlags.IntVar(&opts.checkBackendHealthz, "check-backend-healthz", 0, "Interval between backend healthz checks in minutes (0 to disable).")
 
 	// glog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
@@ -312,8 +312,8 @@ func main() {
 
 	daemon.SdNotify(false, "READY=1")
 
-	if opts.checkBackendHealth {
-		MonitorBackendHealth(ctx, be)
+	if opts.checkBackendHealthz > 0 {
+		MonitorBackendHealthz(ctx, be, opts.checkBackendHealthz)
 	}
 
 	// Kube subnet mgr doesn't lease the subnet for this node - it just uses the podCidr that's already assigned.
@@ -580,16 +580,18 @@ func ReadSubnetFromSubnetFile(path string) ip.IP4Net {
 	return prevSubnet
 }
 
-func MonitorBackendHealth(ctx context.Context, be backend.Backend) error {
+func MonitorBackendHealthz(ctx context.Context, be backend.Backend, interval int) error {
 
-	// TODO - Get check interval by config
-	checkInterval := time.Minute;
+	checkInterval :=   time.Duration(interval) * time.Minute
 
 	for {
 		select {
 		case <-time.After(checkInterval):
-			err := be.CheckHealth()
-			if err != nil {
+			err := be.CheckHealthz()
+			if err == backend.HealthzNotImplemented {
+				log.Error("This backend does not implement healthz checking. Stopping backend healthz monitor.", err)
+				return nil;
+			} else if err != nil {
 				log.Error("Error checking backend health (trying again in 1 min): ", err)
 				continue
 			}
