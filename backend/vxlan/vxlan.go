@@ -180,3 +180,7 @@ func (hw *hardwareAddr) UnmarshalJSON(bytes []byte) error {
 	*hw = hardwareAddr(mac)
 	return nil
 }
+
+func (be *VXLANBackend) CheckHealthz() error {
+	return backend.HealthzCheckNotImplemented
+}

@@ -15,6 +15,7 @@
 package backend
 
 import (
+	"errors"
 	"net"
 
 	"golang.org/x/net/context"
@@ -28,6 +29,8 @@ type ExternalInterface struct {
 	ExtAddr   net.IP
 }
 
+var HealthzCheckNotImplemented = errors.New("notImplemented")
+
 // Besides the entry points in the Backend interface, the backend's New()
 // function receives static network interface information (like internal and
 // external IP addresses, MTU, etc) which it should cache for later use if
@@ -35,6 +38,7 @@ type ExternalInterface struct {
 type Backend interface {
 	// Called when the backend should create or begin managing a new network
 	RegisterNetwork(ctx context.Context, config *subnet.Config) (Network, error)
+	CheckHealthz() error
 }
 
 type Network interface {
