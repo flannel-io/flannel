@@ -100,6 +100,8 @@ var (
 	errInterrupted = errors.New("interrupted")
 	errCanceled    = errors.New("canceled")
 	flannelFlags   = flag.NewFlagSet("flannel", flag.ExitOnError)
+	restart        bool
+	httpHandlerReg bool
 )
 
 func init() {
@@ -185,6 +187,9 @@ func main() {
 		os.Exit(1)
 	}
 
+main:
+	restart = false
+
 	// Work out which interface to use
 	var extIface *backend.ExternalInterface
 	var err error
@@ -256,8 +261,13 @@ func main() {
 	}()
 
 	if opts.healthzPort > 0 {
-		// It's not super easy to shutdown the HTTP server so don't attempt to stop it cleanly
-		go mustRunHealthz()
+		wg.Add(1)
+		go func() {
+			srv := mustRunHealthz(wg)
+			<-ctx.Done()
+			srv.Shutdown(nil)
+			wg.Done()
+		}()
 	}
 
 	// Fetch the network config (i.e. what backend to use etc..).
@@ -313,7 +323,13 @@ func main() {
 	daemon.SdNotify(false, "READY=1")
 
 	if opts.backendHealthzInterval > 0 {
-		MonitorBackendHealthz(ctx, be, opts.backendHealthzInterval)
+		err = MonitorBackendHealthz(ctx, be, opts.backendHealthzInterval)
+		if err == backend.FlannelStop {
+			cancel()
+		} else if err == backend.FlannelRestart {
+			restart = true
+			cancel()
+		}
 	}
 
 	// Kube subnet mgr doesn't lease the subnet for this node - it just uses the podCidr that's already assigned.
@@ -328,8 +344,13 @@ func main() {
 	log.Info("Waiting for all goroutines to exit")
 	// Block waiting for all the goroutines to finish.
 	wg.Wait()
-	log.Info("Exiting cleanly...")
-	os.Exit(0)
+	if !restart {
+		log.Info("Exiting cleanly...")
+		os.Exit(0)
+	} else {
+		log.Info("Restarting flannel...")
+		goto main
+	}
 }
 
 func shutdownHandler(ctx context.Context, sigs chan os.Signal, cancel context.CancelFunc) {
@@ -549,19 +570,30 @@ func WriteSubnetFile(path string, nw ip.IP4Net, ipMasq bool, bn backend.Network)
 	//TODO - is this safe? What if it's not on the same FS?
 }
 
-func mustRunHealthz() {
-	address := net.JoinHostPort(opts.healthzIP, strconv.Itoa(opts.healthzPort))
-	log.Infof("Start healthz server on %s", address)
+func mustRunHealthz(wg sync.WaitGroup) *http.Server {
 
-	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("flanneld is running"))
-	})
+	srv := &http.Server{Addr: opts.healthzIP + ":8080"}
 
-	if err := http.ListenAndServe(address, nil); err != nil {
-		log.Errorf("Start healthz server error. %v", err)
-		panic(err)
+	if !httpHandlerReg {
+
+		http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("flanneld is running"))
+		})
+		httpHandlerReg = true
 	}
+
+	wg.Add(1)
+	go func() {
+		address := net.JoinHostPort(opts.healthzIP, strconv.Itoa(opts.healthzPort))
+		log.Infof("Start healthz server on %s", address)
+		if err := srv.ListenAndServe(); err != nil {
+			log.Infof("Httpserver: ListenAndServe(): %s", err)
+		}
+		wg.Done()
+	}()
+
+	return srv
 }
 
 func ReadSubnetFromSubnetFile(path string) ip.IP4Net {
@@ -582,18 +614,23 @@ func ReadSubnetFromSubnetFile(path string) ip.IP4Net {
 
 func MonitorBackendHealthz(ctx context.Context, be backend.Backend, interval int) error {
 
-	checkInterval := time.Duration(interval) * time.Minute
+	checkInterval := time.Duration(interval) * time.Second
 
 	for {
 		select {
 		case <-time.After(checkInterval):
 			err := be.CheckHealthz()
-
 			if err == backend.HealthzCheckNotImplemented {
-				log.Error("Backend does not implement healthz checks. Disabling backend healhz checks.")
-				return errCanceled
+				log.Errorf("Backend does not implement healthz checks. Stopped backend healthz monitor.")
+				return nil
+			} else if err == backend.FlannelRestart {
+				log.Errorf("Backend forced restarting of flannel. Stopped backend healthz monitor.")
+				return err
+			} else if err == backend.FlannelStop {
+				log.Errorf("Backend forced stop of flannel. Stopped backend healthz monitor.")
+				return err
 			} else if err != nil {
-				log.Error("Error checking backend healthz", err)
+				log.Errorf("Error checking backend healthz", err)
 				continue
 			}
 

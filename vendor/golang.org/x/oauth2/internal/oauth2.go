@@ -42,7 +42,7 @@ func ParseKey(key []byte) (*rsa.PrivateKey, error) {
 
 func ParseINI(ini io.Reader) (map[string]map[string]string, error) {
 	result := map[string]map[string]string{
-		"": {}, // root section
+		"": map[string]string{}, // root section
 	}
 	scanner := bufio.NewScanner(ini)
 	currentSection := ""

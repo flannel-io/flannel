@@ -30,6 +30,8 @@ type ExternalInterface struct {
 }
 
 var HealthzCheckNotImplemented = errors.New("notImplemented")
+var FlannelStop = errors.New("stop flannel")
+var FlannelRestart = errors.New("restart flannel")
 
 // Besides the entry points in the Backend interface, the backend's New()
 // function receives static network interface information (like internal and
