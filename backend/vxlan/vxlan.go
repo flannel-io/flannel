@@ -64,7 +64,8 @@ import (
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
-	//	"time"
+
+	"time"
 )
 
 func init() {
@@ -187,21 +188,20 @@ func (hw *hardwareAddr) UnmarshalJSON(bytes []byte) error {
 }
 
 func (be *VXLANBackend) CheckHealthz() error {
-	/*
-		_, err := net.InterfaceByName(be.extIface.Iface.Name)
-		if err != nil {
-			log.Errorf("Master interface %v disappeared. Waiting its return...", be.extIface.Iface.Name)
-			for err != nil {
-				time.Sleep(15 * time.Second)
-				_, err = net.InterfaceByName(be.extIface.Iface.Name)
-			}
-			log.Errorf("Master interface: %v reappeared", be.extIface.Iface.Name)
+	_, err := net.InterfaceByName(be.extIface.Iface.Name)
+	if err != nil {
+		log.Errorf("Master interface %v disappeared. Waiting its return...", be.extIface.Iface.Name)
+		for err != nil {
+			time.Sleep(15 * time.Second)
+			_, err = net.InterfaceByName(be.extIface.Iface.Name)
 		}
+		log.Errorf("Master interface: %v reappeared", be.extIface.Iface.Name)
+	}
 
-		_, err = net.InterfaceByName(be.network.dev.link.Name)
-		if err != nil {
-			log.Errorf("Flannel interface: %v not found - Requiring flannel restart ", be.network.dev.link.Name)
-			return backend.FlannelRestart
-		}*/
+	_, err = net.InterfaceByName(be.network.dev.link.Name)
+	if err != nil {
+		log.Errorf("Flannel interface: %v not found - Requiring flannel restart ", be.network.dev.link.Name)
+		return backend.FlannelRestart
+	}
 	return nil
 }
