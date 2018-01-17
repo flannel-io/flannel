@@ -64,6 +64,8 @@ import (
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
+
+	"time"
 )
 
 func init() {
@@ -77,6 +79,7 @@ const (
 type VXLANBackend struct {
 	subnetMgr subnet.Manager
 	extIface  *backend.ExternalInterface
+	network   *network
 }
 
 func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backend, error) {
@@ -155,7 +158,10 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, config *subnet.Conf
 		return nil, fmt.Errorf("failed to configure interface %s: %s", dev.link.Attrs().Name, err)
 	}
 
-	return newNetwork(be.subnetMgr, be.extIface, dev, ip.IP4Net{}, lease)
+	nw, err := newNetwork(be.subnetMgr, be.extIface, dev, ip.IP4Net{}, lease)
+	be.network = nw
+
+	return nw, err
 }
 
 // So we can make it JSON (un)marshalable
@@ -178,5 +184,24 @@ func (hw *hardwareAddr) UnmarshalJSON(bytes []byte) error {
 	}
 
 	*hw = hardwareAddr(mac)
+	return nil
+}
+
+func (be *VXLANBackend) CheckHealthz() error {
+	_, err := net.InterfaceByName(be.extIface.Iface.Name)
+	if err != nil {
+		log.Errorf("Master interface %v disappeared. Waiting its return...", be.extIface.Iface.Name)
+		for err != nil {
+			time.Sleep(15 * time.Second)
+			_, err = net.InterfaceByName(be.extIface.Iface.Name)
+		}
+		log.Errorf("Master interface: %v reappeared", be.extIface.Iface.Name)
+	}
+
+	_, err = net.InterfaceByName(be.network.dev.link.Name)
+	if err != nil {
+		log.Errorf("Flannel interface: %v not found - Requiring flannel restart ", be.network.dev.link.Name)
+		return backend.FlannelRestart
+	}
 	return nil
 }

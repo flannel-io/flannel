@@ -60,3 +60,7 @@ func (be *AllocBackend) RegisterNetwork(ctx context.Context, config *subnet.Conf
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 }
+
+func (be *AllocBackend) CheckHealthz() error {
+	return backend.HealthzCheckNotImplemented
+}

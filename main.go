@@ -92,6 +92,7 @@ type CmdLineOpts struct {
 	subnetLeaseRenewMargin int
 	healthzIP              string
 	healthzPort            int
+	backendHealthzInterval int
 }
 
 var (
@@ -99,6 +100,8 @@ var (
 	errInterrupted = errors.New("interrupted")
 	errCanceled    = errors.New("canceled")
 	flannelFlags   = flag.NewFlagSet("flannel", flag.ExitOnError)
+	restart        bool
+	httpHandlerReg bool
 )
 
 func init() {
@@ -121,6 +124,7 @@ func init() {
 	flannelFlags.BoolVar(&opts.version, "version", false, "print version and exit")
 	flannelFlags.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "the IP address for healthz server to listen")
 	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "the port for healthz server to listen(0 to disable)")
+	flannelFlags.IntVar(&opts.backendHealthzInterval, "backend-healthz-interval", 0, "Backend health check self test interval in minutes (0 disables).")
 
 	// glog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
@@ -182,6 +186,9 @@ func main() {
 		log.Error("Invalid subnet-lease-renew-margin option, out of acceptable range")
 		os.Exit(1)
 	}
+
+main:
+	restart = false
 
 	// Work out which interface to use
 	var extIface *backend.ExternalInterface
@@ -253,9 +260,15 @@ func main() {
 		wg.Done()
 	}()
 
+	// Open http server and wait for ctx cancel to shutdown it
 	if opts.healthzPort > 0 {
-		// It's not super easy to shutdown the HTTP server so don't attempt to stop it cleanly
-		go mustRunHealthz()
+		wg.Add(1)
+		go func() {
+			srv := mustRunHealthz(wg)
+			<-ctx.Done()
+			srv.Shutdown(nil)
+			wg.Done()
+		}()
 	}
 
 	// Fetch the network config (i.e. what backend to use etc..).
@@ -305,10 +318,21 @@ func main() {
 	wg.Add(1)
 	go func() {
 		bn.Run(ctx)
+		log.Info("Backend done.")
 		wg.Done()
 	}()
 
 	daemon.SdNotify(false, "READY=1")
+
+	if opts.backendHealthzInterval > 0 {
+		err = MonitorBackendHealthz(ctx, be, opts.backendHealthzInterval)
+		if err == backend.FlannelStop {
+			cancel()
+		} else if err == backend.FlannelRestart {
+			restart = true
+			cancel()
+		}
+	}
 
 	// Kube subnet mgr doesn't lease the subnet for this node - it just uses the podCidr that's already assigned.
 	if !opts.kubeSubnetMgr {
@@ -322,8 +346,13 @@ func main() {
 	log.Info("Waiting for all goroutines to exit")
 	// Block waiting for all the goroutines to finish.
 	wg.Wait()
-	log.Info("Exiting cleanly...")
-	os.Exit(0)
+	if !restart {
+		log.Info("Exiting cleanly...")
+		os.Exit(0)
+	} else {
+		log.Info("Restarting flannel...")
+		goto main
+	}
 }
 
 func shutdownHandler(ctx context.Context, sigs chan os.Signal, cancel context.CancelFunc) {
@@ -469,7 +498,7 @@ func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, 
 
 		// Check that nothing was matched
 		if iface == nil {
-			return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces", ifregex)
+			return nil, fmt.Errorf("could not match pattern %s to any of the available network interfaces", ifregex)
 		}
 	} else {
 		log.Info("Determining IP address of default interface")
@@ -543,19 +572,31 @@ func WriteSubnetFile(path string, nw ip.IP4Net, ipMasq bool, bn backend.Network)
 	//TODO - is this safe? What if it's not on the same FS?
 }
 
-func mustRunHealthz() {
-	address := net.JoinHostPort(opts.healthzIP, strconv.Itoa(opts.healthzPort))
-	log.Infof("Start healthz server on %s", address)
+func mustRunHealthz(wg sync.WaitGroup) *http.Server {
 
-	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("flanneld is running"))
-	})
+	srv := &http.Server{Addr: opts.healthzIP + ":" + strconv.Itoa(opts.healthzPort)}
 
-	if err := http.ListenAndServe(address, nil); err != nil {
-		log.Errorf("Start healthz server error. %v", err)
-		panic(err)
+	if !httpHandlerReg {
+
+		http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("flanneld is running"))
+		})
+		httpHandlerReg = true
 	}
+
+	wg.Add(1)
+	go func() {
+		err := srv.ListenAndServe()
+		if err == http.ErrServerClosed {
+			log.Infof("Httpserver closed gracefully")
+		} else if err != nil {
+			log.Errorf("Httpserver: ListenAndServe() error: %s (http server terminated)", err)
+		}
+		wg.Done()
+	}()
+
+	return srv
 }
 
 func ReadSubnetFromSubnetFile(path string) ip.IP4Net {
@@ -572,4 +613,34 @@ func ReadSubnetFromSubnetFile(path string) ip.IP4Net {
 		}
 	}
 	return prevSubnet
+}
+
+func MonitorBackendHealthz(ctx context.Context, be backend.Backend, interval int) error {
+
+	checkInterval := time.Duration(interval) * time.Minute
+	log.Infof("Monitor backend checker started at %v minutes interval.", interval)
+
+	for {
+		select {
+		case <-time.After(checkInterval):
+			err := be.CheckHealthz()
+			if err == backend.HealthzCheckNotImplemented {
+				log.Errorf("Backend does not implement healthz checks. Stopped backend healthz monitor.")
+				return nil
+			} else if err == backend.FlannelRestart {
+				log.Errorf("Backend forced restarting of flannel. Stopped backend healthz monitor.")
+				return err
+			} else if err == backend.FlannelStop {
+				log.Errorf("Backend forced stop of flannel. Stopped backend healthz monitor.")
+				return err
+			} else if err != nil {
+				log.Errorf("Error checking backend healthz", err)
+				continue
+			}
+
+		case <-ctx.Done():
+			log.Infof("Stopped backend healthz monitor")
+			return errCanceled
+		}
+	}
 }
