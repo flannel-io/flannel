@@ -317,6 +317,7 @@ main:
 	wg.Add(1)
 	go func() {
 		bn.Run(ctx)
+		log.Info("Backend done.")
 		wg.Done()
 	}()
 
@@ -496,7 +497,7 @@ func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, 
 
 		// Check that nothing was matched
 		if iface == nil {
-			return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces", ifregex)
+			return nil, fmt.Errorf("could not match pattern %s to any of the available network interfaces", ifregex)
 		}
 	} else {
 		log.Info("Determining IP address of default interface")
@@ -614,7 +615,8 @@ func ReadSubnetFromSubnetFile(path string) ip.IP4Net {
 
 func MonitorBackendHealthz(ctx context.Context, be backend.Backend, interval int) error {
 
-	checkInterval := time.Duration(interval) * time.Second
+	checkInterval := time.Duration(interval) * time.Minute
+	log.Infof("Monitor backend checker started at %v minutes interval.", interval)
 
 	for {
 		select {
