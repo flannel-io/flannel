@@ -260,6 +260,7 @@ main:
 		wg.Done()
 	}()
 
+	// Open http server and wait for ctx cancel to shutdown it
 	if opts.healthzPort > 0 {
 		wg.Add(1)
 		go func() {
@@ -573,7 +574,7 @@ func WriteSubnetFile(path string, nw ip.IP4Net, ipMasq bool, bn backend.Network)
 
 func mustRunHealthz(wg sync.WaitGroup) *http.Server {
 
-	srv := &http.Server{Addr: opts.healthzIP + ":8080"}
+	srv := &http.Server{Addr: opts.healthzIP + ":" + strconv.Itoa(opts.healthzPort)}
 
 	if !httpHandlerReg {
 
@@ -586,10 +587,11 @@ func mustRunHealthz(wg sync.WaitGroup) *http.Server {
 
 	wg.Add(1)
 	go func() {
-		address := net.JoinHostPort(opts.healthzIP, strconv.Itoa(opts.healthzPort))
-		log.Infof("Start healthz server on %s", address)
-		if err := srv.ListenAndServe(); err != nil {
-			log.Infof("Httpserver: ListenAndServe(): %s", err)
+		err := srv.ListenAndServe()
+		if err == http.ErrServerClosed {
+			log.Infof("Httpserver closed gracefully")
+		} else if err != nil {
+			log.Errorf("Httpserver: ListenAndServe() error: %s (http server terminated)", err)
 		}
 		wg.Done()
 	}()
