@@ -18,6 +18,7 @@ package hostgw
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Microsoft/hcsshim"
 	"github.com/coreos/flannel/backend"
@@ -145,10 +146,12 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, config *subnet.Con
 		}
 
 		glog.Infof("Attempting to create HNS network, request: %v", string(jsonRequest))
-		hnsNetwork, err := hcsshim.HNSNetworkRequest("POST", "", string(jsonRequest))
+		newHnsNetwork, err := hcsshim.HNSNetworkRequest("POST", "", string(jsonRequest))
 		if err != nil {
 			return nil, fmt.Errorf("unable to create network [%v], error: %v", backendConfig.networkName, err)
 		}
+
+		hnsNetwork = newHnsNetwork
 		networkId = hnsNetwork.Id
 		glog.Infof("Created HNS network [%v] as %+v", backendConfig.networkName, hnsNetwork)
 	}
@@ -187,7 +190,6 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, config *subnet.Con
 		endpointToAttach = hnsEndpoint
 		glog.Infof("Created bridge endpoint [%v] as %+v", bridgeEndpointName, hnsEndpoint)
 	}
-
 	if err = endpointToAttach.HostAttach(1); err != nil {
 		return nil, fmt.Errorf("unable to hot attach bridge endpoint [%v] to host compartment, error: %v", bridgeEndpointName, err)
 	}
@@ -195,17 +197,17 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, config *subnet.Con
 
 	// enable forwarding on the host interface and endpoint
 	netHelper := netsh.New(nil)
-	for _, interfaceIpAddress := range []string{hnsNetwork.ManagementIP, hnsEndpoint.IPAddress.String()} {
+	for _, interfaceIpAddress := range []string{hnsNetwork.ManagementIP, endpointToAttach.IPAddress.String()} {
 		netInterface, err := netHelper.GetInterfaceByIP(interfaceIpAddress)
 		if err != nil {
 			return nil, fmt.Errorf("unable to find interface for IP Addess [%v], error: %v", interfaceIpAddress, err)
 		}
 
-		interfaceName := netInterface.Name
-		if err := netHelper.EnableForwarding(interfaceName); err != nil {
-			return nil, fmt.Errorf("unable to enable forwarding on [%v], error: %v", interfaceName, err)
+		interfaceIdx := strconv.Itoa(netInterface.Idx)
+		if err := netHelper.EnableForwarding(interfaceIdx); err != nil {
+			return nil, fmt.Errorf("unable to enable forwarding on [%v] index [%v], error: %v", netInterface.Name, interfaceIdx, err)
 		}
-		glog.Infof("Enabled forwarding on [%v]", interfaceName)
+		glog.Infof("Enabled forwarding on [%v] index [%v]", netInterface.Name, interfaceIdx)
 	}
 
 	return n, nil
