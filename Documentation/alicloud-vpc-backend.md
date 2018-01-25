@@ -29,14 +29,19 @@ Create an instance whose network type is VPC and then add the instance to your p
 
 - Select the proper VPC network.
 
-### Get your own ACCESS_KEY_ID and ACCESS_KEY_SECRET.
+### Create RAM user
 
-Click [find key](https://ak-console.aliyun.com/#/accesskey)
+[Click](https://ram.console.aliyun.com/#/user/list?guide) to Create RAM user
 
-![create key](img/ali-create-key.png)
++ Set User Name
++ Grant permissions
++ Save AccessKey
 
-- If you have not yet created a key, click [create key secret] to create a new one.
-- take a note of AccessKeyId and AccessKeySecret for further use.
+
+
+![ali-create-ram-user](img/ali-create-ram-user.png)
+![ali-create-ram-user-grant-permissions](img/ali-create-ram-user-grant-permissions.png)
+![ali-create-ram-user-save-key](img/ali-create-ram-user-save-key.png)
 
 ### Launch the instance
 
@@ -54,7 +59,16 @@ $ etcd --advertise-client-urls http://$INTERNAL_IP:2379 --listen-client-urls htt
 $ etcdctl set /coreos.com/network/config '{"Network":"10.24.0.0/16", "Backend": {"Type": "ali-vpc"}}'
 ```
 - Fetch the latest release using wget from https://github.com/coreos/flannel/
+
 - make dist/flanneld
+
+- export ENV
+
+```
+export ACCESS_KEY_ID=YOUR_ACCESS_KEY_SECRET
+export ACCESS_KEY_SECRET=YOUR_ACCESS_KEY_SECRET
+```
+
 - Run flannel daemon:
 
 ```
