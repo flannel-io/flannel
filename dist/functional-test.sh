@@ -98,7 +98,7 @@ test_udp_ping() {
 }
 fi
 
-test_host-gw_ping() {
+test_hostgw_ping() {
     write_config_etcd host-gw
     create_ping_dest # creates ping_dest1 and ping_dest2 variables
     pings
@@ -110,14 +110,20 @@ test_ipip_ping() {
     pings
 }
 
+test_ipsec_ping() {
+    write_config_etcd ipsec
+    create_ping_dest # creates ping_dest1 and ping_dest2 variables
+    pings
+}
+
 pings() {
     # ping in both directions
-    assert "docker exec --privileged flannel-e2e-test-flannel1 /bin/ping -c 3 $ping_dest2" "Host 1 cannot ping host 2"
-    assert "docker exec --privileged flannel-e2e-test-flannel2 /bin/ping -c 3 $ping_dest1" "Host 2 cannot ping host 1"
+    assert "docker exec --privileged flannel-e2e-test-flannel1 /bin/ping -I $ping_dest1 -c 3 $ping_dest2" "Host 1 cannot ping host 2"
+    assert "docker exec --privileged flannel-e2e-test-flannel2 /bin/ping -I $ping_dest2 -c 3 $ping_dest1" "Host 2 cannot ping host 1"
 }
 
 # These perf tests don't actually assert on anything
-test_host-gw-perf() {
+test_hostgw_perf() {
     write_config_etcd host-gw
     create_ping_dest
     perf
@@ -143,6 +149,12 @@ test_ipip_perf() {
     perf
 }
 
+test_ipsec_perf() {
+    write_config_etcd ipsec
+    create_ping_dest
+    perf
+}
+
 #test_wireguard_perf() {
 #    write_config_etcd extension-wireguard
 #    create_ping_dest
@@ -152,8 +164,8 @@ test_ipip_perf() {
 perf() {
     # Perf test - run iperf server on flannel1 and client on flannel2
     docker rm -f flannel-e2e-test-flannel1-iperf 2>/dev/null
-    docker run -d --name flannel-e2e-test-flannel1-iperf --net=container:flannel-e2e-test-flannel1 iperf3:latest
-    docker run --rm --net=container:flannel-e2e-test-flannel2 iperf3:latest -c $ping_dest1
+    docker run -d --name flannel-e2e-test-flannel1-iperf --net=container:flannel-e2e-test-flannel1 iperf3:latest >/dev/null
+    docker run --rm --net=container:flannel-e2e-test-flannel2 iperf3:latest -c $ping_dest1 -B $ping_dest2
 }
 
 test_multi() {

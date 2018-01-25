@@ -33,6 +33,8 @@ imports:
   - private/protocol/xml/xmlutil
   - service/ec2
   - service/sts
+- name: github.com/bronze1man/goStrongswanVici
+  version: 4d72634a2f113aa48347dbc7dcb14adb806b6534
 - name: github.com/coreos/etcd
   version: 960f4604bc821241b94906da5fe7f66306a77472
   subpackages:

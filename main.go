@@ -54,6 +54,7 @@ import (
 	_ "github.com/coreos/flannel/backend/gce"
 	_ "github.com/coreos/flannel/backend/hostgw"
 	_ "github.com/coreos/flannel/backend/ipip"
+	_ "github.com/coreos/flannel/backend/ipsec"
 	_ "github.com/coreos/flannel/backend/udp"
 	_ "github.com/coreos/flannel/backend/vxlan"
 	"github.com/coreos/go-systemd/daemon"
@@ -92,6 +93,8 @@ type CmdLineOpts struct {
 	subnetLeaseRenewMargin int
 	healthzIP              string
 	healthzPort            int
+	charonExecutablePath   string
+	charonViciUri          string
 }
 
 var (
@@ -275,7 +278,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	bn, err := be.RegisterNetwork(ctx, config)
+	bn, err := be.RegisterNetwork(ctx, wg, config)
 	if err != nil {
 		log.Errorf("Error registering network: %s", err)
 		cancel()

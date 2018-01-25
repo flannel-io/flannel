@@ -40,12 +40,11 @@ package gce
 
 import (
 	"fmt"
-	"strings"
-	"sync"
-
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 	"google.golang.org/api/googleapi"
+	"strings"
+	"sync"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
@@ -83,7 +82,7 @@ func (g *GCEBackend) ensureAPI() error {
 	return err
 }
 
-func (g *GCEBackend) RegisterNetwork(ctx context.Context, config *subnet.Config) (backend.Network, error) {
+func (g *GCEBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 	attrs := subnet.LeaseAttrs{
 		PublicIP: ip.FromIP(g.extIface.ExtAddr),
 	}

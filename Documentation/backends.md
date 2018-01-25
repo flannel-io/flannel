@@ -121,3 +121,26 @@ Note that there may exist two ipip tunnel device `tunl0` and `flannel.ipip`, thi
 `tunl0` is automatically created per network namespace by ipip kernel module on modprobe ipip module. It is the namespace default IPIP device with attributes local=any and remote=any.
 When receiving IPIP protocol packets, kernel will forward them to tunl0 as a fallback device if it can't find an option whose local/remote attribute matches their src/dst ip address more precisely.
 `flannel.ipip` is created by flannel to achieve one to many ipip network.
+
+### IPSec
+
+Use in-kernel IPSec to encapsulate and encrypt the packets.
+
+[Strongswan](https://www.strongswan.org) is used at the IKEv2 daemon. A single pre-shared key is used for the initial key exchange between hosts and then Strongswan ensures that keys are rotated at regular intervals. 
+
+Type:
+* `Type` (string): `ipsec`
+* `PSK` (Boolean): Required. The pre shared key to use. It needs to be at least 96 characters long. One method for generating this key is to run `dd if=/dev/urandom count=48 bs=1 status=none | xxd -p -c 48`
+* `UDPEncap` (string): Optional, defaults to false. Forces the use UDP encapsulation of packets which can help with some NAT gateways.
+* `ESPProposal` (string): Optional, defaults to `aes128gcm16-sha256-prfsha256-ecp256`. Change this string to choose another ESP Proposal.
+
+#### Troubleshooting
+Logging
+* When flannel is run from a container, the Strongswan tools are installed. `swanctl` can be used for interacting with the charon and it provides a logs command.. 
+* Charon logs are also written to the stdout of the flannel process. 
+
+Troubleshooting
+* `ip xfrm state` can be used to interact with the kernel's security association database. This can be used to show the current security associations (SA) and whether a host is successfully establishing ipsec connections to other hosts.
+* `ip xfrm policy` can be used to show the installed polcies. Flannel installs three policies for each host it connects to. 
+
+Flannel will not restore policies that are manually deleted (unless flannel is restarted). It will also not delete stale policies on startup. They can be removed by rebooting your host or by removing all ipsec state with `ip xfrm state flush && ip xfrm policy flush` and restarting flannel.
