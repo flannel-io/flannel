@@ -95,6 +95,7 @@ type CmdLineOpts struct {
 	healthzPort            int
 	charonExecutablePath   string
 	charonViciUri          string
+	iptablesResyncSeconds  int
 }
 
 var (
@@ -124,6 +125,7 @@ func init() {
 	flannelFlags.BoolVar(&opts.version, "version", false, "print version and exit")
 	flannelFlags.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "the IP address for healthz server to listen")
 	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "the port for healthz server to listen(0 to disable)")
+	flannelFlags.IntVar(&opts.iptablesResyncSeconds, "iptables-resyc", 5, "resync period for iptables rules, in seconds")
 
 	// glog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
@@ -288,13 +290,13 @@ func main() {
 
 	// Set up ipMasq if needed
 	if opts.ipMasq {
-		go network.SetupAndEnsureIPTables(network.MasqRules(config.Network, bn.Lease()))
+		go network.SetupAndEnsureIPTables(network.MasqRules(config.Network, bn.Lease()), opts.iptablesResyncSeconds)
 	}
 
 	// Always enables forwarding rules. This is needed for Docker versions >1.13 (https://docs.docker.com/engine/userguide/networking/default_network/container-communication/#container-communication-between-hosts)
 	// In Docker 1.12 and earlier, the default FORWARD chain policy was ACCEPT.
 	// In Docker 1.13 and later, Docker sets the default policy of the FORWARD chain to DROP.
-	go network.SetupAndEnsureIPTables(network.ForwardRules(config.Network.String()))
+	go network.SetupAndEnsureIPTables(network.ForwardRules(config.Network.String()), opts.iptablesResyncSeconds)
 
 	if err := WriteSubnetFile(opts.subnetFile, config.Network, opts.ipMasq, bn); err != nil {
 		// Continue, even though it failed.
