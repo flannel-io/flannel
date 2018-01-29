@@ -79,7 +79,7 @@ func ipTablesRulesExist(ipt IPTables, rules []IPTablesRule) (bool, error) {
 	return true, nil
 }
 
-func SetupAndEnsureIPTables(rules []IPTablesRule) {
+func SetupAndEnsureIPTables(rules []IPTablesRule, resyncPeriod int) {
 	ipt, err := iptables.New()
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -97,7 +97,7 @@ func SetupAndEnsureIPTables(rules []IPTablesRule) {
 			log.Errorf("Failed to ensure iptables rules: %v", err)
 		}
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(time.Duration(resyncPeriod) * time.Second)
 	}
 }
 

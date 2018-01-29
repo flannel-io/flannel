@@ -39,6 +39,6 @@ func ForwardRules(flannelNetwork string) []IPTablesRule {
 	return nil
 }
 
-func SetupAndEnsureIPTables(rules []IPTablesRule) {
+func SetupAndEnsureIPTables(rules []IPTablesRule, resyncPeriod int) {
 
 }
