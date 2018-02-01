@@ -153,9 +153,15 @@ func configureIface(ifname string, ipn ip.IP4Net, mtu int) error {
 		return fmt.Errorf("failed to lookup interface %v", ifname)
 	}
 
-	err = netlink.AddrAdd(iface, &netlink.Addr{IPNet: ipn.ToIPNet(), Label: ""})
+	// Ensure that the device has a /32 address so that no broadcast routes are created.
+	// This IP is just used as a source address for host to workload traffic (so
+	// the return path for the traffic has an address on the flannel network to use as the destination)
+	ipnLocal := ipn
+	ipnLocal.PrefixLen = 32
+
+	err = netlink.AddrAdd(iface, &netlink.Addr{IPNet: ipnLocal.ToIPNet(), Label: ""})
 	if err != nil {
-		return fmt.Errorf("failed to add IP address %v to %v: %v", ipn.String(), ifname, err)
+		return fmt.Errorf("failed to add IP address %v to %v: %v", ipnLocal.String(), ifname, err)
 	}
 
 	err = netlink.LinkSetMTU(iface, mtu)
