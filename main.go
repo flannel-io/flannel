@@ -474,7 +474,13 @@ func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, 
 
 		// Check that nothing was matched
 		if iface == nil {
-			return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces", ifregex)
+			var availableFaces []string
+			for _, f := range ifaces {
+				ip, _ := ip.GetIfaceIP4Addr(&f) // We can safely ignore errors. We just won't log any ip
+				availableFaces = append(availableFaces, fmt.Sprintf("%s:%s", f.Name, ip))
+			}
+
+			return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces (%s)", ifregex, strings.Join(availableFaces, ", "))
 		}
 	} else {
 		log.Info("Determining IP address of default interface")
