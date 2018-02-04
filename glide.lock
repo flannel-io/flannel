@@ -139,7 +139,7 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/rakelkar/gonetsh
-  version: eabb4ee756f2688e8af92f0fd5a87dbafef4b5dd
+  version: 758b1f7c9d1ca5acaca0b909f06ff9ed9fe35de1
   subpackages:
   - netroute
   - netsh
