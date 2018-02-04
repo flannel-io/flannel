@@ -138,6 +138,8 @@ imports:
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
+- name: github.com/Microsoft/hcsshim
+  version: 216772e344403bb9fa8b04be64e6f64fa934b492
 - name: github.com/rakelkar/gonetsh
   version: 758b1f7c9d1ca5acaca0b909f06ff9ed9fe35de1
   subpackages:
