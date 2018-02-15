@@ -125,7 +125,7 @@ func init() {
 	flannelFlags.BoolVar(&opts.version, "version", false, "print version and exit")
 	flannelFlags.StringVar(&opts.healthzIP, "healthz-ip", "0.0.0.0", "the IP address for healthz server to listen")
 	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "the port for healthz server to listen(0 to disable)")
-	flannelFlags.IntVar(&opts.iptablesResyncSeconds, "iptables-resyc", 5, "resync period for iptables rules, in seconds")
+	flannelFlags.IntVar(&opts.iptablesResyncSeconds, "iptables-resync", 5, "resync period for iptables rules, in seconds")
 
 	// glog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
