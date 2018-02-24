@@ -33,7 +33,7 @@ If you didn't apply the `kube-flannel-rbac.yml` manifest and you need to, you'll
 
 ## The flannel CNI plugin
 
-The flannel CNI plugin can be found in the CNI plugins [reposistory](https://github.com/containernetworking/plugins). For additional details, see the [README](https://github.com/containernetworking/plugins/tree/master/plugins/meta/flannel)
+The flannel CNI plugin can be found in the CNI plugins [repository](https://github.com/containernetworking/plugins). For additional details, see the [README](https://github.com/containernetworking/plugins/tree/master/plugins/meta/flannel)
 
 Kubernetes 1.6 requires CNI plugin version 0.5.1 or later.
 
