@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/Microsoft/hcsshim"
 	"github.com/coreos/flannel/backend"
@@ -104,6 +105,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup,
 	// check if the network exists and has the expected settings?
 	var networkId string
 	createNetwork := true
+	netHelper := netsh.New(nil)
 	addressPrefix := n.lease.Subnet.String()
 	networkGatewayAddress := n.lease.Subnet.IP + 1
 	podGatewayAddress := n.lease.Subnet.IP + 2
@@ -155,6 +157,21 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup,
 		hnsNetwork = newHnsNetwork
 		networkId = hnsNetwork.Id
 		glog.Infof("Created HNS network [%v] as %+v", backendConfig.networkName, hnsNetwork)
+		//Wait for the network to populate Management IP
+		for len(hnsNetwork.ManagementIP) == 0 {
+			time.Sleep(1 * time.Second)
+			hnsNetwork, err = hcsshim.HNSNetworkRequest("GET", networkId, "")
+			glog.Infof("HnsNetwork[%v]", hnsNetwork)
+		}
+
+		//Wait for the interface with the management IP
+		for {
+			if _, err = netHelper.GetInterfaceByIP(hnsNetwork.ManagementIP); err != nil {
+				time.Sleep(1 * time.Second)
+				continue
+			}
+			break
+		}
 	}
 
 	// now ensure there is a 1.2 endpoint on this network in the host compartment
@@ -197,11 +214,17 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup,
 	glog.Infof("Attached bridge endpoint [%v] to host", bridgeEndpointName)
 
 	// enable forwarding on the host interface and endpoint
-	netHelper := netsh.New(nil)
 	for _, interfaceIpAddress := range []string{hnsNetwork.ManagementIP, endpointToAttach.IPAddress.String()} {
 		netInterface, err := netHelper.GetInterfaceByIP(interfaceIpAddress)
 		if err != nil {
 			return nil, fmt.Errorf("unable to find interface for IP Addess [%v], error: %v", interfaceIpAddress, err)
+		}
+		glog.Infof("Found Interface with IP[%s]: %v", interfaceIpAddress, netInterface)
+
+		// When a new hns network is created, the interface is modified, esp the name, index
+		if hnsNetwork.ManagementIP == netInterface.IpAddress {
+			n.linkIndex = netInterface.Idx
+			n.name = netInterface.Name
 		}
 
 		interfaceIdx := strconv.Itoa(netInterface.Idx)
