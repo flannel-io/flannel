@@ -139,8 +139,8 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, 
 	// check if the network exists and has the expected settings?
 	networkName := cfg.name
 	createNetwork := true
-	addressPrefix := config.Network
-	networkGatewayAddress := config.Network.IP + 1
+	addressPrefix := l.Subnet
+	networkGatewayAddress := l.Subnet.IP + 1
 	hnsNetwork, err := hcsshim.GetHNSNetworkByName(networkName)
 	if err == nil {
 		log.Infof("Found existing HNS network [%+v]", hnsNetwork)
