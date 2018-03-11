@@ -174,7 +174,19 @@ func newKubeSubnetManager(c clientset.Interface, sc *subnet.Config, nodeName str
 }
 
 func (ksm *kubeSubnetManager) handleAddLeaseEvent(et subnet.EventType, obj interface{}) {
-	n := obj.(*v1.Node)
+	n, ok := obj.(*v1.Node)
+	if !ok {
+		d, ok := obj.(cache.DeletedFinalStateUnknown)
+		if !ok {
+			glog.Errorf("Unexpected object type: %#v", obj)
+			return
+		}
+		n, ok = d.Obj.(*v1.Node)
+		if !ok {
+			glog.Errorf("Unexpected object type: %#v", obj)
+			return
+		}
+	}
 	if s, ok := n.Annotations[subnetKubeManagedAnnotation]; !ok || s != "true" {
 		return
 	}
