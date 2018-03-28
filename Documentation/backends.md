@@ -141,6 +141,6 @@ Logging
 
 Troubleshooting
 * `ip xfrm state` can be used to interact with the kernel's security association database. This can be used to show the current security associations (SA) and whether a host is successfully establishing ipsec connections to other hosts.
-* `ip xfrm policy` can be used to show the installed polcies. Flannel installs three policies for each host it connects to. 
+* `ip xfrm policy` can be used to show the installed policies. Flannel installs three policies for each host it connects to. 
 
 Flannel will not restore policies that are manually deleted (unless flannel is restarted). It will also not delete stale policies on startup. They can be removed by rebooting your host or by removing all ipsec state with `ip xfrm state flush && ip xfrm policy flush` and restarting flannel.
