@@ -122,7 +122,7 @@ static void send_net_unreachable(int tun, char *offender) {
 
 	/* Lower 3 bits (in network order) of frag_off is actually flags */
 	if( (off_iph->frag_off & htons(0x1FFF)) != 0 ) {
-		/* ICMP messages are only sent for first fragemnt */
+		/* ICMP messages are only sent for first fragment */
 		return;
 	}
 
