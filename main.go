@@ -169,7 +169,7 @@ func newSubnetManager() (subnet.Manager, error) {
 	}
 
 	// Attempt to renew the lease for the subnet specified in the subnetFile
-	prevSubnet := ReadSubnetFromSubnetFile(opts.subnetFile)
+	prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
 
 	return etcdv2.NewLocalManager(cfg, prevSubnet)
 }
@@ -290,6 +290,12 @@ func main() {
 
 	// Set up ipMasq if needed
 	if opts.ipMasq {
+		if err = recycleIPTables(config.Network, bn.Lease()); err != nil {
+			log.Errorf("Failed to recycle IPTables rules, %v", err)
+			cancel()
+			wg.Wait()
+			os.Exit(1)
+		}
 		go network.SetupAndEnsureIPTables(network.MasqRules(config.Network, bn.Lease()), opts.iptablesResyncSeconds)
 	}
 
@@ -329,6 +335,22 @@ func main() {
 	wg.Wait()
 	log.Info("Exiting cleanly...")
 	os.Exit(0)
+}
+
+func recycleIPTables(nw ip.IP4Net, lease *subnet.Lease) error {
+	prevNetwork := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_NETWORK")
+	prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
+	// recycle iptables rules only when network configured or subnet leased is not equal to current one.
+	if prevNetwork != nw && prevSubnet != lease.Subnet{
+		log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules", nw, lease.Subnet, prevNetwork, prevSubnet)
+		lease := &subnet.Lease{
+			Subnet: prevSubnet,
+		}
+		if err := network.DeleteIPTables(network.MasqRules(prevNetwork, lease)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func shutdownHandler(ctx context.Context, sigs chan os.Signal, cancel context.CancelFunc) {
@@ -569,18 +591,18 @@ func mustRunHealthz() {
 	}
 }
 
-func ReadSubnetFromSubnetFile(path string) ip.IP4Net {
-	var prevSubnet ip.IP4Net
+func ReadCIDRFromSubnetFile(path string, CIDRKey string) ip.IP4Net {
+	var prevCIDR ip.IP4Net
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		prevSubnetVals, err := godotenv.Read(path)
 		if err != nil {
-			log.Errorf("Couldn't fetch previous subnet from subnet file at %s: %s", path, err)
-		} else if prevSubnetString, ok := prevSubnetVals["FLANNEL_SUBNET"]; ok {
-			err = prevSubnet.UnmarshalJSON([]byte(prevSubnetString))
+			log.Errorf("Couldn't fetch previous %s from subnet file at %s: %s", CIDRKey, path, err)
+		} else if prevCIDRString, ok := prevSubnetVals[CIDRKey]; ok {
+			err = prevCIDR.UnmarshalJSON([]byte(prevCIDRString))
 			if err != nil {
-				log.Errorf("Couldn't parse previous subnet from subnet file at %s: %s", path, err)
+				log.Errorf("Couldn't parse previous %s from subnet file at %s: %s", CIDRKey, path, err)
 			}
 		}
 	}
-	return prevSubnet
+	return prevCIDR
 }

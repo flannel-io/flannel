@@ -101,6 +101,18 @@ func SetupAndEnsureIPTables(rules []IPTablesRule, resyncPeriod int) {
 	}
 }
 
+// DeleteIPTables delete specified iptables rules
+func DeleteIPTables(rules []IPTablesRule) error {
+	ipt, err := iptables.New()
+	if err != nil {
+		// if we can't find iptables, give up and return
+		log.Errorf("Failed to setup IPTables. iptables binary was not found: %v", err)
+		return err
+	}
+	teardownIPTables(ipt, rules)
+	return nil
+}
+
 func ensureIPTables(ipt IPTables, rules []IPTablesRule) error {
 	exists, err := ipTablesRulesExist(ipt, rules)
 	if err != nil {
