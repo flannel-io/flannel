@@ -163,6 +163,21 @@ func newKubeSubnetManager(c clientset.Interface, sc *subnet.Config, nodeName str
 			},
 			UpdateFunc: ksm.handleUpdateLeaseEvent,
 			DeleteFunc: func(obj interface{}) {
+				node, isNode := obj.(*v1.Node)
+				// We can get DeletedFinalStateUnknown instead of *api.Node here and we need to handle that correctly.
+				if !isNode {
+					deletedState, ok := obj.(cache.DeletedFinalStateUnknown)
+					if !ok {
+						glog.Infof("Error received unexpected object: %v", obj)
+						return
+					}
+					node, ok = deletedState.Obj.(*v1.Node)
+					if !ok {
+						glog.Infof("Error deletedFinalStateUnknown contained non-Node object: %v", deletedState.Obj)
+						return
+					}
+					obj = node
+				}
 				ksm.handleAddLeaseEvent(subnet.EventRemoved, obj)
 			},
 		},
