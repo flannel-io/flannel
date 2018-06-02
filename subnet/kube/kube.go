@@ -25,9 +25,9 @@ import (
 
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
-
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -36,8 +36,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	clientset "k8s.io/client-go/kubernetes"
 	listers "k8s.io/client-go/listers/core/v1"
-	"k8s.io/client-go/pkg/api"
-	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
@@ -90,7 +88,7 @@ func NewSubnetManager(apiUrl, kubeconfig, prefix, netConfPath string) (subnet.Ma
 			return nil, fmt.Errorf("env variables POD_NAME and POD_NAMESPACE must be set")
 		}
 
-		pod, err := c.Pods(podNamespace).Get(podName, metav1.GetOptions{})
+		pod, err := c.CoreV1().Pods(podNamespace).Get(podName, metav1.GetOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving pod spec for '%s/%s': %v", podNamespace, podName, err)
 		}
@@ -224,11 +222,7 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 	if err != nil {
 		return nil, err
 	}
-	nobj, err := api.Scheme.DeepCopy(cachedNode)
-	if err != nil {
-		return nil, err
-	}
-	n := nobj.(*v1.Node)
+	n := cachedNode.DeepCopy()
 
 	if n.Spec.PodCIDR == "" {
 		return nil, fmt.Errorf("node %q pod cidr not assigned", ksm.nodeName)

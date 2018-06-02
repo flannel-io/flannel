@@ -168,7 +168,7 @@ func WatchLease(ctx context.Context, sm Manager, sn ip.IP4Net, receiver chan Eve
 				return
 			}
 
-			log.Errorf("Subnet watch failed: %v", err)
+			//log.Errorf("Subnet watch failed: %v", err)
 			time.Sleep(time.Second)
 			continue
 		}
