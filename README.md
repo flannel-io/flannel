@@ -65,7 +65,7 @@ See [CONTRIBUTING][contributing] for details on submitting patches and the contr
 
 See [reporting bugs][reporting] for details about reporting any issues.
 
-## License
+## Licensing
 
 Flannel is under the Apache 2.0 license. See the [LICENSE][license] file for details.
 
