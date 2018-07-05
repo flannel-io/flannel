@@ -16,7 +16,8 @@ import:
   - pkg/transport
 - package: github.com/coreos/go-iptables
   subpackages:
-  - iptables
+    - iptables
+  version: ~0.4.0
 - package: github.com/coreos/go-systemd
   subpackages:
   - activation

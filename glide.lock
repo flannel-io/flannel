@@ -46,7 +46,7 @@ imports:
   - pkg/transport
   - pkg/types
 - name: github.com/coreos/go-iptables
-  version: 259c8e6a4275d497442c721fa52204d7a58bde8b
+  version: 47f22b0dd3355c0ba570ba12b0b8a36bf214c04b
   subpackages:
   - iptables
 - name: github.com/coreos/go-systemd
