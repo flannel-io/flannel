@@ -258,9 +258,15 @@ func main() {
 		wg.Done()
 	}()
 
+	// Open http server and wait for ctx cancel to shutdown it
 	if opts.healthzPort > 0 {
-		// It's not super easy to shutdown the HTTP server so don't attempt to stop it cleanly
-		go mustRunHealthz()
+		wg.Add(1)
+		go func() {
+			srv := mustRunHealthz(wg)
+			<-ctx.Done()
+			srv.Shutdown(nil)
+			wg.Done()
+		}()
 	}
 
 	// Fetch the network config (i.e. what backend to use etc..).
@@ -576,19 +582,27 @@ func WriteSubnetFile(path string, nw ip.IP4Net, ipMasq bool, bn backend.Network)
 	//TODO - is this safe? What if it's not on the same FS?
 }
 
-func mustRunHealthz() {
-	address := net.JoinHostPort(opts.healthzIP, strconv.Itoa(opts.healthzPort))
-	log.Infof("Start healthz server on %s", address)
+func mustRunHealthz(wg sync.WaitGroup) *http.Server {
+
+	srv := &http.Server{Addr: opts.healthzIP + ":" + strconv.Itoa(opts.healthzPort)}
 
 	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("flanneld is running"))
 	})
 
-	if err := http.ListenAndServe(address, nil); err != nil {
-		log.Errorf("Start healthz server error. %v", err)
-		panic(err)
-	}
+	wg.Add(1)
+	go func() {
+		err := srv.ListenAndServe()
+		if err == http.ErrServerClosed {
+			log.Infof("Httpserver closed gracefully")
+		} else if err != nil {
+			log.Errorf("Httpserver: ListenAndServe() error: %s (http server terminated)", err)
+		}
+		wg.Done()
+	}()
+
+	return srv
 }
 
 func ReadCIDRFromSubnetFile(path string, CIDRKey string) ip.IP4Net {
