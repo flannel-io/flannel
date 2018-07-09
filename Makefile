@@ -1,4 +1,4 @@
-.PHONY: test e2e-test cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all flannel-git
+.PHONY: test e2e-test cover gofmt gofmt-fix header-check clean tar.gz docker-push release docker-push-all flannel-git
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
@@ -67,7 +67,7 @@ ifeq ($(ARCH),amd64)
 endif
 
 ### TESTING
-test: license-check gofmt
+test: header-check gofmt
 	# Run the unit tests
 	# NET_ADMIN capacity is required to do some network operation
 	# SYS_ADMIN capacity is required to create network namespace
@@ -89,8 +89,8 @@ cover:
 	go test -coverprofile cover.out $(PACKAGES_EXPANDED)
 	go tool cover -html=cover.out
 
-license-check:
-	./license-check.sh
+header-check:
+	./header-check.sh
 
 # Throw an error if gofmt finds problems.
 # "read" will return a failure return code if there is no output. This is inverted wth the "!"
