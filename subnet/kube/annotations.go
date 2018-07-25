@@ -1,4 +1,4 @@
-// Copyright 2016 flannel authors
+// Copyright 2018 flannel authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,6 +40,12 @@ func newAnnotations(prefix string) (annotations, error) {
 		prefix += "-"
 	}
 
+	// matches is a regexp matching the format used by the kubernetes for
+	// annotations. Following rules apply:
+	//
+	//	- must start with FQDN - must contain at most one slash "/"
+	//	- must contain only lowercase letters, nubers, underscores,
+	//	  hyphens, dots and slash
 	matches, err := regexp.MatchString(`(?:[a-z0-9_-]+\.)+[a-z0-9_-]+/(?:[a-z0-9_-]+-)?$`, prefix)
 	if err != nil {
 		panic(err)
