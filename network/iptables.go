@@ -43,16 +43,34 @@ type IPTablesRule struct {
 func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 	n := ipn.String()
 	sn := lease.Subnet.String()
+	supports_random_fully := false
+	ipt, err := iptables.New()
+	if err == nil {
+		supports_random_fully = ipt.HasRandomFully()
+	}
 
-	return []IPTablesRule{
-		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-		{"nat", "POSTROUTING", []string{"-s", n, "-d", n, "-j", "RETURN"}},
-		// NAT if it's not multicast traffic
-		{"nat", "POSTROUTING", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE"}},
-		// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-		{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-j", "RETURN"}},
-		// Masquerade anything headed towards flannel from the host
-		{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-j", "MASQUERADE"}},
+	if supports_random_fully {
+		return []IPTablesRule{
+			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
+			{"nat", "POSTROUTING", []string{"-s", n, "-d", n, "-j", "RETURN"}},
+			// NAT if it's not multicast traffic
+			{"nat", "POSTROUTING", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
+			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
+			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-j", "RETURN"}},
+			// Masquerade anything headed towards flannel from the host
+			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-j", "MASQUERADE", "--random-fully"}},
+		}
+	} else {
+		return []IPTablesRule{
+			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
+			{"nat", "POSTROUTING", []string{"-s", n, "-d", n, "-j", "RETURN"}},
+			// NAT if it's not multicast traffic
+			{"nat", "POSTROUTING", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE"}},
+			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
+			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-j", "RETURN"}},
+			// Masquerade anything headed towards flannel from the host
+			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-j", "MASQUERADE"}},
+		}
 	}
 }
 
