@@ -42,3 +42,8 @@ func ForwardRules(flannelNetwork string) []IPTablesRule {
 func SetupAndEnsureIPTables(rules []IPTablesRule, resyncPeriod int) {
 
 }
+
+// DeleteIPTables delete specified iptables rules
+func DeleteIPTables(rules []IPTablesRule) error {
+	return nil
+}
