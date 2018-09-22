@@ -1,7 +1,8 @@
 # Configuration
 
-flannel reads its configuration from etcd.
+If the --kube-subnet-mgr argument is true, flannel reads its configuration from `/etc/kube-flannel/net-conf.json`.
 
+If the --kube-subnet-mgr argument is false, flannel reads its configuration from etcd.
 By default, it will read the configuration from `/coreos.com/network/config` (which can be overridden using `--etcd-prefix`).
 
 Use the `etcdctl` utility to set values in etcd.
