@@ -1,0 +1,11 @@
+{
+    "ociVersion": "1.0.1",
+    "process": {
+        "args": null,
+        "env": [],
+        "cwd": "c:\\"
+    },
+    "windows": {
+        "layerFolders": null
+    }
+}
