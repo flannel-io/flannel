@@ -98,8 +98,7 @@ spec:
       nodeSelector:
         beta.kubernetes.io/arch: amd64
       tolerations:
-      - key: node-role.kubernetes.io/master
-        operator: Exists
+      - operator: Exists
         effect: NoSchedule
       serviceAccountName: flannel
       initContainers:
@@ -177,8 +176,7 @@ spec:
       nodeSelector:
         beta.kubernetes.io/arch: arm64
       tolerations:
-      - key: node-role.kubernetes.io/master
-        operator: Exists
+      - operator: Exists
         effect: NoSchedule
       serviceAccountName: flannel
       initContainers:
@@ -256,8 +254,7 @@ spec:
       nodeSelector:
         beta.kubernetes.io/arch: arm
       tolerations:
-      - key: node-role.kubernetes.io/master
-        operator: Exists
+      - operator: Exists
         effect: NoSchedule
       serviceAccountName: flannel
       initContainers:
@@ -335,8 +332,7 @@ spec:
       nodeSelector:
         beta.kubernetes.io/arch: ppc64le
       tolerations:
-      - key: node-role.kubernetes.io/master
-        operator: Exists
+      - operator: Exists
         effect: NoSchedule
       serviceAccountName: flannel
       initContainers:
@@ -414,8 +410,7 @@ spec:
       nodeSelector:
         beta.kubernetes.io/arch: s390x
       tolerations:
-      - key: node-role.kubernetes.io/master
-        operator: Exists
+      - operator: Exists
         effect: NoSchedule
       serviceAccountName: flannel
       initContainers:
