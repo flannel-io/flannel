@@ -73,7 +73,7 @@ You can check the podCidr for your nodes with one of the following two commands
 * `kubectl get nodes -o jsonpath='{.items[*].spec.podCIDR}'`
 * `kubectl get nodes -o template --template={{.spec.podCIDR}}`
 
-If your nodes do not have a podCIDR, then either use the `--pod-cidr kubelet` command-line option or the `--allocate-node-cidrs=true --cluster-cidr=<cidr>` controller-manager command-line options.
+If your nodes do not have a podCIDR, then either use the `--pod-cidr` kubelet command-line option or the `--allocate-node-cidrs=true --cluster-cidr=<cidr>` controller-manager command-line options.
 
 If `kubeadm` is being used then pass `--pod-network-cidr=10.244.0.0/16` to `kubeadm init` which will ensure that all nodes are automatically assigned a `podCIDR`.
 
