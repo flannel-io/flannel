@@ -107,6 +107,12 @@ func (n *network) Run(ctx context.Context) {
 
 func (n *network) handleSubnetEvents(batch []subnet.Event) {
 	for _, evt := range batch {
+
+		directRoute := netlink.Route{
+			Dst: evt.Lease.Subnet.ToIPNet(),
+			Gw:  evt.Lease.Attrs.PublicIP.ToIP(),
+		}
+
 		switch evt.Type {
 		case subnet.EventAdded:
 			log.Info("Subnet added: ", evt.Lease.Subnet)
@@ -134,6 +140,10 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				log.Errorf("error loading connection into IKE daemon: %v", err)
 			}
 
+			if err := netlink.RouteReplace(&directRoute); err != nil {
+				log.Errorf("Error adding route to %v via %v: %v", evt.Lease.Subnet.ToIPNet(), evt.Lease.Attrs.PublicIP, err)
+			}
+
 		case subnet.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
 			if evt.Lease.Attrs.BackendType != "ipsec" {
@@ -144,6 +154,10 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 			if evt.Lease.Subnet.Equal(n.SubnetLease.Subnet) {
 				log.Warningf("Ignoring own lease remove event: %+v", evt.Lease)
 				continue
+			}
+
+			if err := netlink.RouteDel(&directRoute); err != nil {
+				log.Errorf("Error deleting route to %v via %v: %v", evt.Lease.Subnet.ToIPNet(), evt.Lease.Attrs.PublicIP, err)
 			}
 
 			if err := n.iked.UnloadCharonConnection(n.SubnetLease, &evt.Lease); err != nil {
