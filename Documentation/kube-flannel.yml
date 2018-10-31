@@ -383,7 +383,7 @@ spec:
       volumes:
         - name: run
           hostPath:
-            path: /run
+            path: /root
         - name: cni
           hostPath:
             path: /etc/cni/net.d
