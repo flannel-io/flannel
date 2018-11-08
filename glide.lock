@@ -33,6 +33,8 @@ imports:
   - private/protocol/xml/xmlutil
   - service/ec2
   - service/sts
+- name: github.com/buger/jsonparser
+  version: f4dd9f5a6b441265aefc1d44872a6f8c10f42b37
 - name: github.com/bronze1man/goStrongswanVici
   version: 4d72634a2f113aa48347dbc7dcb14adb806b6534
 - name: github.com/coreos/etcd
@@ -134,15 +136,33 @@ imports:
   - buffer
   - jlexer
   - jwriter
+- name: github.com/Microsoft/go-winio
+  version: 97e4973ce50b2ff5f09635a57e2b88a037aae829
+- name: github.com/Microsoft/hcsshim
+  version: ad5b578a19495423d2546545fd5134127b272f79
+  subpackages:
+  - internal/guid
+  - internal/hcs
+  - internal/hcserror
+  - internal/hns
+  - internal/interop
+  - internal/longpath
+  - internal/mergemaps
+  - internal/safefile
+  - internal/schema1
+  - internal/timeout
+  - internal/wclayer
 - name: github.com/PuerkitoBio/purell
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/rakelkar/gonetsh
-  version: eabb4ee756f2688e8af92f0fd5a87dbafef4b5dd
+  version: 758b1f7c9d1ca5acaca0b909f06ff9ed9fe35de1
   subpackages:
   - netroute
   - netsh
+- name: github.com/sirupsen/logrus
+  version: 3e01752db0189b9157070a0e1668a620f9a85da2
 - name: github.com/spf13/pflag
   version: 08b1a584251b5b62f458943640fc8ebd4d50aaa5
 - name: github.com/ugorji/go
@@ -178,9 +198,10 @@ imports:
   - jws
   - jwt
 - name: golang.org/x/sys
-  version: 478fcf54317e52ab69f40bb4c7a1520288d7f7ea
+  version: d5840adf789d732bc8b00f37b26ca956a7cc8e79
   subpackages:
   - unix
+  - windows
 - name: golang.org/x/text
   version: 2910a502d2bf9e43193af9d68ca516529614eed3
   subpackages:

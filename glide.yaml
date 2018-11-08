@@ -62,4 +62,10 @@ import:
   version: v1.1
 - package: github.com/bronze1man/goStrongswanVici
   version: 4d72634a2f113aa48347dbc7dcb14adb806b6534
-
+- package: github.com/Microsoft/hcsshim
+  version: v0.7.4
+- package: github.com/Microsoft/go-winio
+  version: v0.4.11
+- pacakge: github.com/sirupsen/logrus
+  version: v1.0.6
+- package: github.com/buger/jsonparser

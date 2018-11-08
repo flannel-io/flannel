@@ -19,10 +19,11 @@ Use in-kernel VXLAN to encapsulate the packets.
 
 Type and options:
 * `Type` (string): `vxlan`
-* `VNI` (number): VXLAN Identifier (VNI) to be used. Defaults to 1.
-* `Port` (number): UDP port to use for sending encapsulated packets. Defaults to kernel default, currently 8472.
-* `GBP` (Boolean): Enable [VXLAN Group Based Policy](https://github.com/torvalds/linux/commit/3511494ce2f3d3b77544c79b87511a4ddb61dc89).  Defaults to `false`.
-* `DirectRouting` (Boolean): Enable direct routes (like `host-gw`) when the hosts are on the same subnet. VXLAN will only be used to encapsulate packets to hosts on different subnets. Defaults to `false`.
+* `VNI` (number): VXLAN Identifier (VNI) to be used. On Linux, defaults to 1. On Windows should be greater than or equal to 4096. 
+* `Port` (number): UDP port to use for sending encapsulated packets. On Linux, defaults to kernel default, currently 8472, but on Windows, must be 4789.
+* `GBP` (Boolean): Enable [VXLAN Group Based Policy](https://github.com/torvalds/linux/commit/3511494ce2f3d3b77544c79b87511a4ddb61dc89).  Defaults to `false`. GBP is not supported on Windows
+* `DirectRouting` (Boolean): Enable direct routes (like `host-gw`) when the hosts are on the same subnet. VXLAN will only be used to encapsulate packets to hosts on different subnets. Defaults to `false`. DirectRouting is not supported on Windows.
+* `MacPrefix` (String): Only use on Windows, set to the MAC prefix. Defaults to `0E-2A`.
 
 ### host-gw
 
