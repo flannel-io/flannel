@@ -2,6 +2,7 @@
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
+QEMU_VERSION=v3.0.0
 
 # Default tag and architecture. Can be overridden
 TAG?=$(shell git describe --tags --dirty)
@@ -33,6 +34,7 @@ clean:
 	rm -f dist/*.aci
 	rm -f dist/*.docker
 	rm -f dist/*.tar.gz
+	rm -f dist/qemu-*
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
 	go build -o dist/flanneld \
@@ -43,11 +45,11 @@ dist/flanneld.exe: $(shell find . -type f  -name '*.go')
 	  -ldflags '-s -w -X github.com/coreos/flannel/version.Version=$(TAG) -extldflags "-static"'
 
 # This will build flannel natively using golang image
-dist/flanneld-$(ARCH):
+dist/flanneld-$(ARCH): dist/qemu-$(ARCH)-static
 	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x]
 	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
 		-u $(shell id -u):$(shell id -g) \
-		-v /usr/bin/qemu-$(ARCH)-static:/usr/bin/qemu-$(ARCH)-static \
+		-v $(CURDIR)/dist/qemu-$(ARCH)-static:/usr/bin/qemu-$(ARCH)-static \
 		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
 		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
 		golang:$(GO_VERSION) /bin/bash -c '\
@@ -133,7 +135,13 @@ release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-aarch6
 	@echo "Use make docker-push-all to push the images to a registry"
 
 dist/qemu-%-static:
-	cp /usr/bin/$(@F) dist
+	if [ "$(@F)" = "qemu-amd64-static" ]; then \
+		wget -O dist/qemu-amd64-static https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-x86_64-static; \
+  elif [ "$(@F)" = "qemu-arm64-static"]; then \
+		wget -O dist/qemu-arm64-static https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-aarch64-static; \
+	else \
+		wget -O dist/$(@F) https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/$(@F); \
+	fi 
 
 ## Build a .tar.gz for the amd64 ppc64le arm arm64 flanneld binary
 tar.gz:
