@@ -131,8 +131,8 @@ Use in-kernel IPSec to encapsulate and encrypt the packets.
 
 Type:
 * `Type` (string): `ipsec`
-* `PSK` (Boolean): Required. The pre shared key to use. It needs to be at least 96 characters long. One method for generating this key is to run `dd if=/dev/urandom count=48 bs=1 status=none | xxd -p -c 48`
-* `UDPEncap` (string): Optional, defaults to false. Forces the use UDP encapsulation of packets which can help with some NAT gateways.
+* `PSK` (string): Required. The pre shared key to use. It needs to be at least 96 characters long. One method for generating this key is to run `dd if=/dev/urandom count=48 bs=1 status=none | xxd -p -c 48`
+* `UDPEncap` (Boolean): Optional, defaults to false. Forces the use UDP encapsulation of packets which can help with some NAT gateways.
 * `ESPProposal` (string): Optional, defaults to `aes128gcm16-sha256-prfsha256-ecp256`. Change this string to choose another ESP Proposal.
 
 #### Troubleshooting
