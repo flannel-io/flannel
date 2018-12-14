@@ -9,7 +9,7 @@ package functional
 //	"github.com/Microsoft/hcsshim/functional/utilities"
 //	"github.com/Microsoft/hcsshim/internal/guid"
 //	"github.com/Microsoft/hcsshim/internal/hcsoci"
-//	"github.com/Microsoft/hcsshim/internal/osversion"
+//	"github.com/Microsoft/hcsshim/osversion"
 //	"github.com/Microsoft/hcsshim/internal/schemaversion"
 //	"github.com/Microsoft/hcsshim/internal/uvm"
 //	"github.com/Microsoft/hcsshim/internal/uvmfolder"
@@ -25,7 +25,7 @@ package functional
 //	t.Skip("Skipping for now")
 //	uvm, uvmScratchDir := createv2WCOWUVM(t, layersNanoserver, "TestV2XenonWCOWCreateLots", nil)
 //	defer os.RemoveAll(uvmScratchDir)
-//	defer uvm.Terminate()
+//	defer uvm.Close()
 
 //	// 63 as 0:0 is already taken as the UVMs scratch. So that leaves us with 64-1 left for container scratches on SCSI
 //	for i := 0; i < 63; i++ {

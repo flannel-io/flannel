@@ -3,12 +3,11 @@
 package hcn
 
 import (
+	"encoding/json"
 	"fmt"
 	"syscall"
 
 	"github.com/Microsoft/hcsshim/internal/guid"
-	"github.com/Microsoft/hcsshim/internal/hcserror"
-	"github.com/Microsoft/hcsshim/internal/interop"
 )
 
 //go:generate go run ../mksyscall_windows.go -output zsyscall_windows.go hcn.go
@@ -71,28 +70,6 @@ type hcnLoadBalancer syscall.Handle
 type hcnService syscall.Handle
 type hcnCallbackHandle syscall.Handle
 
-func checkForErrors(methodName string, hr error, resultBuffer *uint16) error {
-	errorFound := false
-
-	if hr != nil {
-		errorFound = true
-	}
-
-	result := ""
-	if resultBuffer != nil {
-		result = interop.ConvertAndFreeCoTaskMemString(resultBuffer)
-		if result != "" {
-			errorFound = true
-		}
-	}
-
-	if errorFound {
-		return hcserror.New(hr, methodName, result)
-	}
-
-	return nil
-}
-
 // SchemaVersion for HCN Objects/Queries.
 type SchemaVersion = Version // hcnglobals.go
 
@@ -127,6 +104,15 @@ func defaultQuery() HostComputeQuery {
 	return query
 }
 
+func defaultQueryJson() string {
+	query := defaultQuery()
+	queryJson, err := json.Marshal(query)
+	if err != nil {
+		return ""
+	}
+	return string(queryJson)
+}
+
 // PlatformDoesNotSupportError happens when users are attempting to use a newer shim on an older OS
 func platformDoesNotSupportError(featureName string) error {
 	return fmt.Errorf("Platform does not support feature %s", featureName)
@@ -139,6 +125,13 @@ func V2ApiSupported() error {
 		return nil
 	}
 	return platformDoesNotSupportError("V2 Api/Schema")
+}
+
+func V2SchemaVersion() SchemaVersion {
+	return SchemaVersion{
+		Major: 2,
+		Minor: 0,
+	}
 }
 
 // RequestType are the different operations performed to settings.

@@ -9,9 +9,8 @@ import (
 
 	"github.com/Microsoft/hcsshim/functional/utilities"
 	"github.com/Microsoft/hcsshim/internal/copyfile"
-	"github.com/Microsoft/hcsshim/internal/osversion"
 	"github.com/Microsoft/hcsshim/internal/uvm"
-	"github.com/Microsoft/hcsshim/internal/wclayer"
+	"github.com/Microsoft/hcsshim/osversion"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,11 +19,10 @@ func TestVPMEM(t *testing.T) {
 	testutilities.RequiresBuild(t, osversion.RS5)
 	alpineLayers := testutilities.LayerFolders(t, "alpine")
 
-	id := "TestVPMEM"
-	u := testutilities.CreateLCOWUVM(t, id)
-	defer u.Terminate()
+	u := testutilities.CreateLCOWUVM(t, t.Name())
+	defer u.Close()
 
-	var iterations uint32 = uvm.MaxVPMEM
+	var iterations uint32 = uvm.MaxVPMEMCount
 
 	// Use layer.vhd from the alpine image as something to add
 	tempDir := testutilities.CreateTempDir(t)
@@ -32,9 +30,6 @@ func TestVPMEM(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(tempDir)
-	if err := wclayer.GrantVmAccess(id, filepath.Join(tempDir, "layer.vhd")); err != nil {
-		t.Fatal(err)
-	}
 
 	for i := 0; i < int(iterations); i++ {
 		deviceNumber, uvmPath, err := u.AddVPMEM(filepath.Join(tempDir, "layer.vhd"), true)

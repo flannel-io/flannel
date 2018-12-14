@@ -3,20 +3,24 @@ package main
 import (
 	"fmt"
 	"net"
-	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Microsoft/hcsshim/internal/appargs"
+	"github.com/Microsoft/hcsshim/internal/runhcs"
 )
-
-var shimSuccess = []byte{0, 'O', 'K', 0}
 
 var argID = appargs.NonEmptyString
 
 func absPathOrEmpty(path string) (string, error) {
 	if path == "" {
 		return "", nil
+	}
+	if strings.HasPrefix(path, runhcs.SafePipePrefix) {
+		if len(path) > len(runhcs.SafePipePrefix) {
+			return runhcs.SafePipePath(path[len(runhcs.SafePipePrefix):]), nil
+		}
 	}
 	return filepath.Abs(path)
 }
@@ -39,12 +43,6 @@ func createPidFile(path string, pid int) error {
 		return err
 	}
 	return os.Rename(tmpName, path)
-}
-
-func safePipePath(name string) string {
-	// Use a pipe in the Administrators protected prefixed to prevent malicious
-	// squatting.
-	return `\\.\pipe\ProtectedPrefix\Administrators\` + url.PathEscape(name)
 }
 
 func closeWritePipe(pipe net.Conn) error {

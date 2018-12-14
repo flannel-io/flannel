@@ -9,6 +9,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// findVSMBShare finds a share by `hostPath`. If not found returns `ErrNotAttached`.
+func (uvm *UtilityVM) findVSMBShare(hostPath string) (*vsmbShare, error) {
+	share, ok := uvm.vsmbShares[hostPath]
+	if !ok {
+		return nil, ErrNotAttached
+	}
+	return share, nil
+}
+
 func (share *vsmbShare) GuestPath() string {
 	return `\\?\VMSMB\VSMB-{dcc079ae-60ba-4d07-847c-3493609c0870}\` + share.name
 }
@@ -24,11 +33,8 @@ func (uvm *UtilityVM) AddVSMB(hostPath string, guestRequest interface{}, options
 	logrus.Debugf("uvm::AddVSMB %s %+v %+v id:%s", hostPath, guestRequest, options, uvm.id)
 	uvm.m.Lock()
 	defer uvm.m.Unlock()
-	if uvm.vsmbShares == nil {
-		uvm.vsmbShares = make(map[string]*vsmbShare)
-	}
-	share := uvm.vsmbShares[hostPath]
-	if share == nil {
+	share, err := uvm.findVSMBShare(hostPath)
+	if err == ErrNotAttached {
 		uvm.vsmbCounter++
 		shareName := "s" + strconv.FormatUint(uvm.vsmbCounter, 16)
 
@@ -65,8 +71,8 @@ func (uvm *UtilityVM) RemoveVSMB(hostPath string) error {
 	logrus.Debugf("uvm::RemoveVSMB %s id:%s", hostPath, uvm.id)
 	uvm.m.Lock()
 	defer uvm.m.Unlock()
-	share := uvm.vsmbShares[hostPath]
-	if share == nil {
+	share, err := uvm.findVSMBShare(hostPath)
+	if err != nil {
 		return fmt.Errorf("%s is not present as a VSMB share in %s, cannot remove", hostPath, uvm.id)
 	}
 
@@ -96,9 +102,9 @@ func (uvm *UtilityVM) GetVSMBUvmPath(hostPath string) (string, error) {
 	}
 	uvm.m.Lock()
 	defer uvm.m.Unlock()
-	share := uvm.vsmbShares[hostPath]
-	if share == nil {
-		return "", fmt.Errorf("%s not found as VSMB share in %s", hostPath, uvm.id)
+	share, err := uvm.findVSMBShare(hostPath)
+	if err != nil {
+		return "", err
 	}
 	path := share.GuestPath()
 	logrus.Debugf("uvm::GetVSMBUvmPath Success %s id:%s path:%s", hostPath, uvm.id, path)

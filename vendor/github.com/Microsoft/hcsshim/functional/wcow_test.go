@@ -13,13 +13,13 @@ import (
 	"github.com/Microsoft/hcsshim/functional/utilities"
 	"github.com/Microsoft/hcsshim/internal/hcs"
 	"github.com/Microsoft/hcsshim/internal/hcsoci"
-	"github.com/Microsoft/hcsshim/internal/osversion"
 	"github.com/Microsoft/hcsshim/internal/schema1"
 	"github.com/Microsoft/hcsshim/internal/schemaversion"
 	"github.com/Microsoft/hcsshim/internal/uvm"
 	"github.com/Microsoft/hcsshim/internal/uvmfolder"
 	"github.com/Microsoft/hcsshim/internal/wclayer"
 	"github.com/Microsoft/hcsshim/internal/wcow"
+	"github.com/Microsoft/hcsshim/osversion"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 )
 
@@ -416,12 +416,12 @@ func TestWCOWArgonShim(t *testing.T) {
 		LayerFolderPath: argonShimScratchDir,
 		Layers:          layers,
 		MappedDirectories: []schema1.MappedDir{
-			schema1.MappedDir{
+			{
 				HostPath:      hostROSharedDirectory,
 				ContainerPath: `c:\mappedro`,
 				ReadOnly:      true,
 			},
-			schema1.MappedDir{
+			{
 				HostPath:      hostRWSharedDirectory,
 				ContainerPath: `c:\mappedrw`,
 			},
@@ -470,12 +470,12 @@ func TestWCOWXenonShim(t *testing.T) {
 		HvRuntime:       &hcsshim.HvRuntime{ImagePath: filepath.Join(uvmImagePath, "UtilityVM")},
 		HvPartition:     true,
 		MappedDirectories: []schema1.MappedDir{
-			schema1.MappedDir{
+			{
 				HostPath:      hostROSharedDirectory,
 				ContainerPath: `c:\mappedro`,
 				ReadOnly:      true,
 			},
-			schema1.MappedDir{
+			{
 				HostPath:      hostRWSharedDirectory,
 				ContainerPath: `c:\mappedrw`,
 			},
@@ -495,12 +495,12 @@ func generateWCOWOciTestSpec(t *testing.T, imageLayers []string, scratchPath, ho
 			LayerFolders: append(imageLayers, scratchPath),
 		},
 		Mounts: []specs.Mount{
-			specs.Mount{
+			{
 				Source:      hostROSharedDirectory,
 				Destination: `c:\mappedro`,
 				Options:     []string{"ro"},
 			},
-			specs.Mount{
+			{
 				Source:      hostRWSharedDirectory,
 				Destination: `c:\mappedrw`,
 			},
@@ -681,7 +681,7 @@ func TestWCOWXenonOciV2(t *testing.T) {
 			hcsoci.ReleaseResources(xenonOci2Resources, xenonOci2UVM, true)
 		}
 		if xenonOci2UVMCreated {
-			xenonOci2UVM.Terminate()
+			xenonOci2UVM.Close()
 		}
 	}()
 
@@ -692,18 +692,19 @@ func TestWCOWXenonOciV2(t *testing.T) {
 		t.Fatalf("failed to create scratch: %s", err)
 	}
 
-	xenonOci2UVM, err = uvm.Create(
-		&uvm.UVMOptions{
-			ID:              xenonOci2UVMId,
-			OperatingSystem: "windows",
-			LayerFolders:    append(imageLayers, xenonOci2UVMScratchDir),
+	xenonOci2UVM, err = uvm.CreateWCOW(
+		&uvm.OptionsWCOW{
+			Options: &uvm.Options{
+				ID: xenonOci2UVMId,
+			},
+			LayerFolders: append(imageLayers, xenonOci2UVMScratchDir),
 		})
 	if err != nil {
 		t.Fatalf("Failed create UVM: %s", err)
 	}
 	xenonOci2UVMCreated = true
 	if err := xenonOci2UVM.Start(); err != nil {
-		xenonOci2UVM.Terminate()
+		xenonOci2UVM.Close()
 		t.Fatalf("Failed start UVM: %s", err)
 
 	}
@@ -729,6 +730,6 @@ func TestWCOWXenonOciV2(t *testing.T) {
 	xenonOci2Mounted = false
 
 	// Terminate the UVM
-	xenonOci2UVM.ComputeSystem().Terminate()
+	xenonOci2UVM.Close()
 	xenonOci2UVMCreated = false
 }

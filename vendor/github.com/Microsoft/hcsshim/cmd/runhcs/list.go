@@ -110,6 +110,7 @@ func getContainers(context *cli.Context) ([]runhcs.ContainerState, error) {
 			Created:        c.Created,
 			Annotations:    c.Spec.Annotations,
 		})
+		c.Close()
 	}
 	return s, nil
 }

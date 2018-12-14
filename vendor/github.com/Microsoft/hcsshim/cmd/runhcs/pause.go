@@ -22,6 +22,7 @@ Use runhcs list to identify instances of containers and their current status.`,
 		if err != nil {
 			return err
 		}
+		defer container.Close()
 		if err := container.hc.Pause(); err != nil {
 			return err
 		}
@@ -47,6 +48,7 @@ Use runhcs list to identify instances of containers and their current status.`,
 		if err != nil {
 			return err
 		}
+		defer container.Close()
 		if err := container.hc.Resume(); err != nil {
 			return err
 		}

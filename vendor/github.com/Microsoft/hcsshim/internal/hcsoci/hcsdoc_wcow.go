@@ -9,12 +9,13 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/Microsoft/hcsshim/internal/osversion"
 	"github.com/Microsoft/hcsshim/internal/schema1"
 	"github.com/Microsoft/hcsshim/internal/schema2"
 	"github.com/Microsoft/hcsshim/internal/schemaversion"
+	"github.com/Microsoft/hcsshim/internal/uvm"
 	"github.com/Microsoft/hcsshim/internal/uvmfolder"
 	"github.com/Microsoft/hcsshim/internal/wclayer"
+	"github.com/Microsoft/hcsshim/osversion"
 	"github.com/sirupsen/logrus"
 )
 
@@ -146,8 +147,8 @@ func createWindowsContainerDocument(coi *createOptionsInternal) (interface{}, er
 	if (schemaversion.IsV21(coi.actualSchemaVersion) && coi.HostingSystem == nil) ||
 		(schemaversion.IsV10(coi.actualSchemaVersion) && coi.Spec.Windows.HyperV == nil) {
 		// Argon v1 or v2.
-		const volumeGUIDRegex = `^\\\\\?\\(Volume)\{{0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}\}\\$`
-		if _, err := regexp.MatchString(volumeGUIDRegex, coi.Spec.Root.Path); err != nil {
+		const volumeGUIDRegex = `^\\\\\?\\(Volume)\{{0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}\}(|\\)$`
+		if matched, err := regexp.MatchString(volumeGUIDRegex, coi.Spec.Root.Path); !matched || err != nil {
 			return nil, fmt.Errorf(`invalid container spec - Root.Path '%s' must be a volume GUID path in the format '\\?\Volume{GUID}\'`, coi.Spec.Root.Path)
 		}
 		if coi.Spec.Root.Path[len(coi.Spec.Root.Path)-1] != '\\' {
@@ -228,7 +229,15 @@ func createWindowsContainerDocument(coi *createOptionsInternal) (interface{}, er
 			} else {
 				uvmPath, err := coi.HostingSystem.GetVSMBUvmPath(mount.Source)
 				if err != nil {
-					return nil, err
+					if err == uvm.ErrNotAttached {
+						// It could also be a scsi mount.
+						uvmPath, err = coi.HostingSystem.GetScsiUvmPath(mount.Source)
+						if err != nil {
+							return nil, err
+						}
+					} else {
+						return nil, err
+					}
 				}
 				mdv2.HostPath = uvmPath
 			}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Microsoft/hcsshim/internal/guestrequest"
+	"github.com/Microsoft/hcsshim/internal/logfields"
 	"github.com/Microsoft/hcsshim/internal/requesttype"
 	"github.com/Microsoft/hcsshim/internal/schema2"
 	"github.com/sirupsen/logrus"
@@ -12,6 +13,13 @@ import (
 // AddPlan9 adds a Plan9 share to a utility VM. Each Plan9 share is ref-counted and
 // only added if it isn't already.
 func (uvm *UtilityVM) AddPlan9(hostPath string, uvmPath string, readOnly bool) error {
+	logrus.WithFields(logrus.Fields{
+		logfields.UVMID: uvm.id,
+		"host-path":     hostPath,
+		"uvm-path":      uvmPath,
+		"readOnly":      readOnly,
+	}).Debug("uvm::AddPlan9")
+
 	if uvm.operatingSystem != "linux" {
 		return errNotSupported
 	}
@@ -19,7 +27,6 @@ func (uvm *UtilityVM) AddPlan9(hostPath string, uvmPath string, readOnly bool) e
 		return fmt.Errorf("uvmPath must be passed to AddPlan9")
 	}
 
-	logrus.Debugf("uvm::AddPlan9 %s %s %t id:%s", hostPath, uvmPath, readOnly, uvm.id)
 	uvm.m.Lock()
 	defer uvm.m.Unlock()
 	if uvm.plan9Shares == nil {

@@ -9,7 +9,7 @@ import (
 
 	"github.com/Microsoft/hcsshim/functional/utilities"
 	"github.com/Microsoft/hcsshim/internal/lcow"
-	"github.com/Microsoft/hcsshim/internal/osversion"
+	"github.com/Microsoft/hcsshim/osversion"
 )
 
 func TestScratchCreateLCOW(t *testing.T) {
@@ -18,7 +18,7 @@ func TestScratchCreateLCOW(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	firstUVM := testutilities.CreateLCOWUVM(t, "TestCreateLCOWScratch")
-	defer firstUVM.Terminate()
+	defer firstUVM.Close()
 
 	cacheFile := filepath.Join(tempDir, "cache.vhdx")
 	destOne := filepath.Join(tempDir, "destone.vhdx")
@@ -35,7 +35,7 @@ func TestScratchCreateLCOW(t *testing.T) {
 	}
 
 	targetUVM := testutilities.CreateLCOWUVM(t, "TestCreateLCOWScratch_target")
-	defer targetUVM.Terminate()
+	defer targetUVM.Close()
 
 	// A non-cached create
 	if err := lcow.CreateScratch(firstUVM, destTwo, lcow.DefaultScratchSizeGB, cacheFile, targetUVM.ID()); err != nil {
@@ -43,7 +43,7 @@ func TestScratchCreateLCOW(t *testing.T) {
 	}
 
 	// Make sure it can be added (verifies it has access correctly)
-	c, l, err := targetUVM.AddSCSI(destTwo, "")
+	c, l, err := targetUVM.AddSCSI(destTwo, "", false)
 	if err != nil {
 		t.Fatal(err)
 	}

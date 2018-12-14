@@ -50,6 +50,10 @@ type Resources struct {
 
 	// addedNetNSToVM indicates if the network namespace has been added to the containers utility VM
 	addedNetNSToVM bool
+
+	// scsiMounts is an array of the host-paths mounted into a utility VM to
+	// support scsi device passthrough.
+	scsiMounts []string
 }
 
 // TODO: Method on the resources?
@@ -109,6 +113,13 @@ func ReleaseResources(r *Resources, vm *uvm.UtilityVM, all bool) error {
 				return err
 			}
 			r.plan9Mounts = r.plan9Mounts[:len(r.plan9Mounts)-1]
+		}
+
+		for _, path := range r.scsiMounts {
+			if err := vm.RemoveSCSI(path); err != nil {
+				return err
+			}
+			r.scsiMounts = nil
 		}
 	}
 

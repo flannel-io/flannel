@@ -24,6 +24,7 @@ your host.`,
 		if err != nil {
 			return err
 		}
+		defer container.Close()
 		status, err := container.Status()
 		if err != nil {
 			return err

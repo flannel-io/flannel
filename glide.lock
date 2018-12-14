@@ -139,7 +139,7 @@ imports:
 - name: github.com/Microsoft/go-winio
   version: 97e4973ce50b2ff5f09635a57e2b88a037aae829
 - name: github.com/Microsoft/hcsshim
-  version: ad5b578a19495423d2546545fd5134127b272f79
+  version: 2bf3a7ac42318aacfffd0805be705ff2e4d1138f
   subpackages:
   - internal/guid
   - internal/hcs

@@ -1,6 +1,6 @@
 package main
 
-var signalMap = map[string]int{
+var signalMapLcow = map[string]int{
 	"ABRT":   0x6,
 	"ALRM":   0xe,
 	"BUS":    0x7,
@@ -35,4 +35,12 @@ var signalMap = map[string]int{
 	"WINCH":  0x1c,
 	"XCPU":   0x18,
 	"XFSZ":   0x19,
+}
+
+var signalMapWindows = map[string]int{
+	"CTRLC":        0x0,
+	"CTRLBREAK":    0x1,
+	"CTRLCLOSE":    0x2,
+	"CTRLLOGOFF":   0x5,
+	"CTRLSHUTDOWN": 0x6,
 }

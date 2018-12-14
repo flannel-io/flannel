@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -14,6 +15,7 @@ import (
 	"github.com/Microsoft/hcsshim/internal/appargs"
 	"github.com/Microsoft/hcsshim/internal/hcs"
 	"github.com/Microsoft/hcsshim/internal/lcow"
+	"github.com/Microsoft/hcsshim/internal/runhcs"
 	"github.com/Microsoft/hcsshim/internal/schema2"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/sirupsen/logrus"
@@ -22,7 +24,7 @@ import (
 )
 
 func containerPipePath(id string) string {
-	return safePipePath("runhcs-shim-" + id)
+	return runhcs.SafePipePath("runhcs-shim-" + id)
 }
 
 func newFile(context *cli.Context, param string) *os.File {
@@ -42,10 +44,21 @@ var shimCommand = cli.Command{
 		&cli.IntFlag{Name: "stdout", Hidden: true},
 		&cli.IntFlag{Name: "stderr", Hidden: true},
 		&cli.BoolFlag{Name: "exec", Hidden: true},
+		cli.StringFlag{Name: "log-pipe", Hidden: true},
 	},
 	Before: appargs.Validate(argID),
 	Action: func(context *cli.Context) error {
-		logrus.SetOutput(os.Stderr)
+		logPipe := context.String("log-pipe")
+		if logPipe != "" {
+			lpc, err := winio.DialPipe(logPipe, nil)
+			if err != nil {
+				return err
+			}
+			defer lpc.Close()
+			logrus.SetOutput(lpc)
+		} else {
+			logrus.SetOutput(os.Stderr)
+		}
 		fatalWriter.Writer = os.Stdout
 
 		id := context.Args().First()
@@ -53,6 +66,7 @@ var shimCommand = cli.Command{
 		if err != nil {
 			return err
 		}
+		defer c.Close()
 
 		// Asynchronously wait for the container to exit.
 		containerExitCh := make(chan error)
@@ -98,7 +112,7 @@ var shimCommand = cli.Command{
 
 			// Alert the parent process that initialization has completed
 			// successfully.
-			errorOut.Write(shimSuccess)
+			errorOut.Write(runhcs.ShimSuccess)
 			errorOut.Close()
 			fatalWriter.Writer = ioutil.Discard
 
@@ -164,6 +178,7 @@ var shimCommand = cli.Command{
 				WorkingDirectory: spec.Cwd,
 				EmulateConsole:   spec.Terminal,
 				Environment:      environment,
+				User:             spec.User.Username,
 			}
 			for i, arg := range spec.Args {
 				e := windows.EscapeArg(arg)
@@ -171,6 +186,12 @@ var shimCommand = cli.Command{
 					wpp.CommandLine = e
 				} else {
 					wpp.CommandLine += " " + e
+				}
+			}
+			if spec.ConsoleSize != nil {
+				wpp.ConsoleSize = []int32{
+					int32(spec.ConsoleSize.Height),
+					int32(spec.ConsoleSize.Width),
 				}
 			}
 
@@ -209,11 +230,21 @@ var shimCommand = cli.Command{
 			}
 		}
 
+		// Store the Guest pid map
+		err = stateKey.Set(c.ID, fmt.Sprintf(keyPidMapFmt, os.Getpid()), p.Pid())
+		if err != nil {
+			return err
+		}
+		defer func() {
+			// Remove the Guest pid map when this process is cleaned up
+			stateKey.Clear(c.ID, fmt.Sprintf(keyPidMapFmt, os.Getpid()))
+		}()
+
 		terminateOnFailure = false
 
 		// Alert the connected process that the process was launched
 		// successfully.
-		errorOut.Write(shimSuccess)
+		errorOut.Write(runhcs.ShimSuccess)
 		errorOut.Close()
 		fatalWriter.Writer = ioutil.Discard
 

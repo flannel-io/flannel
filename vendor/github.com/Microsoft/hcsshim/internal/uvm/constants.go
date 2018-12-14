@@ -3,13 +3,17 @@ package uvm
 import "fmt"
 
 const (
-	// MaxVPMEM is the maximum number of VPMem devices that may be added to an LCOW
+	// MaxVPMEMCount is the maximum number of VPMem devices that may be added to an LCOW
 	// utility VM
-	MaxVPMEM = 128
+	MaxVPMEMCount = 128
 
-	// DefaultVPMEM is the default number of VPMem devices that may be added to an LCOW
+	// DefaultVPMEMCount is the default number of VPMem devices that may be added to an LCOW
 	// utility VM if the create request doesn't specify how many.
-	DefaultVPMEM = 64
+	DefaultVPMEMCount = 64
+
+	// DefaultVPMemSizeBytes is the default size of a VPMem device if the create request
+	// doesn't specify.
+	DefaultVPMemSizeBytes = 4 * 1024 * 1024 * 1024 // 4GB
 )
 
 var errNotSupported = fmt.Errorf("not supported")

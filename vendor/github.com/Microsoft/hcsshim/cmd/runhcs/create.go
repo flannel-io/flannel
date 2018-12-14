@@ -19,12 +19,12 @@ var createRunFlags = []cli.Flag{
 	cli.StringFlag{
 		Name:  "shim-log",
 		Value: "",
-		Usage: "path to the log file for the launched shim process",
+		Usage: `path to the log file or named pipe (e.g. \\.\pipe\ProtectedPrefix\Administrators\runhcs-<container-id>-shim-log) for the launched shim process`,
 	},
 	cli.StringFlag{
 		Name:  "vm-log",
 		Value: "",
-		Usage: "path to the log file for the launched VM shim process",
+		Usage: `path to the log file or named pipe (e.g. \\.\pipe\ProtectedPrefix\Administrators\runhcs-<container-id>-vm-log) for the launched VM shim process`,
 	},
 	cli.StringFlag{
 		Name:  "vm-console",
@@ -89,6 +89,7 @@ func containerConfigFromContext(context *cli.Context) (*containerConfig, error) 
 	}
 	return &containerConfig{
 		ID:            id,
+		Owner:         context.GlobalString("owner"),
 		PidFile:       pidFile,
 		ShimLogFile:   shimLog,
 		VMLogFile:     vmLog,

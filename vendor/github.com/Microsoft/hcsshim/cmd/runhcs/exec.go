@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/Microsoft/hcsshim/internal/appargs"
@@ -58,7 +59,7 @@ following will output a list of processes running in the container:
 		cli.StringFlag{
 			Name:  "shim-log",
 			Value: "",
-			Usage: "path to the log file for the launched shim process",
+			Usage: `path to the log file or named pipe (e.g. \\.\pipe\ProtectedPrefix\Administrators\runhcs-<container-id>-<exec-id>-log) for the launched shim process`,
 		},
 	},
 	Before: appargs.Validate(argID, appargs.Rest(appargs.String)),
@@ -76,6 +77,7 @@ following will output a list of processes running in the container:
 		if err != nil {
 			return err
 		}
+		defer c.Close()
 		status, err := c.Status()
 		if err != nil {
 			return err
@@ -146,7 +148,9 @@ func validateProcessSpec(spec *specs.Process) error {
 	if spec.Cwd == "" {
 		return fmt.Errorf("Cwd property must not be empty")
 	}
-	if !filepath.IsAbs(spec.Cwd) {
+	// IsAbs doesnt recognize Unix paths on Windows builds so handle that case
+	// here.
+	if !filepath.IsAbs(spec.Cwd) && !strings.HasPrefix(spec.Cwd, "/") {
 		return fmt.Errorf("Cwd must be an absolute path")
 	}
 	if len(spec.Args) == 0 {
