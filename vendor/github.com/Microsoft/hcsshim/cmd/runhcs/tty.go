@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/Microsoft/hcsshim/internal/appargs"
@@ -35,6 +36,11 @@ var resizeTtyCommand = cli.Command{
 		pid := context.Int("pid")
 		if pid == 0 {
 			if err := stateKey.Get(id, keyInitPid, &pid); err != nil {
+				return err
+			}
+		} else {
+			// If a pid was provided map it to its hcs pid.
+			if err := stateKey.Get(id, fmt.Sprintf(keyPidMapFmt, pid), &pid); err != nil {
 				return err
 			}
 		}

@@ -29,6 +29,12 @@ type vsmbShare struct {
 type scsiInfo struct {
 	hostPath string
 	uvmPath  string
+
+	// While most VHDs attached to SCSI are scratch spaces, in the case of LCOW
+	// when the size is over the size possible to attach to PMEM, we use SCSI for
+	// read-only layers. As RO layers are shared, we perform ref-counting.
+	isLayer  bool
+	refCount uint32
 }
 
 // vpmemInfo is an internal structure used for determining VPMem devices mapped to
@@ -64,6 +70,12 @@ type UtilityVM struct {
 	hcsSystem       *hcs.System // The handle to the compute system
 	m               sync.Mutex  // Lock for adding/removing devices
 
+	// containerCounter is the current number of containers that have been
+	// created. This is never decremented in the life of the UVM.
+	//
+	// NOTE: All accesses to this MUST be done atomically.
+	containerCounter uint64
+
 	// VSMB shares that are mapped into a Windows UVM. These are used for read-only
 	// layers and mapped directories
 	vsmbShares  map[string]*vsmbShare
@@ -71,12 +83,13 @@ type UtilityVM struct {
 
 	// VPMEM devices that are mapped into a Linux UVM. These are used for read-only layers, or for
 	// booting from VHD.
-	vpmemDevices [MaxVPMEM]vpmemInfo // Limited by ACPI size.
-	vpmemMax     int32               // Actual number of VPMem devices
+	vpmemDevices      [MaxVPMEMCount]vpmemInfo // Limited by ACPI size.
+	vpmemMaxCount     uint32                   // Actual number of VPMem devices
+	vpmemMaxSizeBytes uint64                   // Actual size of VPMem devices
 
 	// SCSI devices that are mapped into a Windows or Linux utility VM
 	scsiLocations       [4][64]scsiInfo // Hyper-V supports 4 controllers, 64 slots per controller. Limited to 1 controller for now though.
-	scsiControllerCount int             // Number of SCSI controllers in the utility VM
+	scsiControllerCount uint32          // Number of SCSI controllers in the utility VM
 
 	// Plan9 are directories mapped into a Linux utility VM
 	plan9Shares  map[string]*plan9Info
@@ -84,5 +97,7 @@ type UtilityVM struct {
 
 	namespaces map[string]*namespaceInfo
 
-	gcslog net.Listener
+	outputListener       net.Listener
+	outputProcessingDone chan struct{}
+	outputHandler        OutputHandler
 }

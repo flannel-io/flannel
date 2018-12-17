@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
 	"time"
 
 	"github.com/Microsoft/go-winio/vhd"
 	"github.com/Microsoft/hcsshim/internal/copyfile"
 	"github.com/Microsoft/hcsshim/internal/timeout"
 	"github.com/Microsoft/hcsshim/internal/uvm"
-	"github.com/Microsoft/hcsshim/internal/wclayer"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/sirupsen/logrus"
 )
@@ -46,14 +44,6 @@ func CreateScratch(lcowUVM *uvm.UtilityVM, destFile string, sizeGB uint32, cache
 				return fmt.Errorf("failed to copy cached file '%s' to '%s': %s", cacheFile, destFile, err)
 			}
 			logrus.Debugf("hcsshim::CreateLCOWScratch: %s fulfilled from cache (%s)", destFile, cacheFile)
-
-			if vmID != "" {
-				if err := wclayer.GrantVmAccess(vmID, destFile); err != nil {
-					os.Remove(destFile)
-					return err
-				}
-			}
-
 			return nil
 		}
 	}
@@ -63,13 +53,7 @@ func CreateScratch(lcowUVM *uvm.UtilityVM, destFile string, sizeGB uint32, cache
 		return fmt.Errorf("failed to create VHDx %s: %s", destFile, err)
 	}
 
-	//	uvmc.DebugLCOWGCS()
-	// Grant access
-	if err := wclayer.GrantVmAccess(lcowUVM.ID(), destFile); err != nil {
-		return err
-	}
-
-	controller, lun, err := lcowUVM.AddSCSI(destFile, "") // No destination as not formatted
+	controller, lun, err := lcowUVM.AddSCSI(destFile, "", false) // No destination as not formatted
 	if err != nil {
 		return err
 	}
@@ -176,13 +160,6 @@ func CreateScratch(lcowUVM *uvm.UtilityVM, destFile string, sizeGB uint32, cache
 	if cacheFile != "" && (sizeGB == DefaultScratchSizeGB) {
 		if err := copyfile.CopyFile(destFile, cacheFile, true); err != nil {
 			return fmt.Errorf("failed to seed cache '%s' from '%s': %s", destFile, cacheFile, err)
-		}
-	}
-
-	if vmID != "" {
-		if err := wclayer.GrantVmAccess(vmID, destFile); err != nil {
-			os.Remove(destFile)
-			return err
 		}
 	}
 

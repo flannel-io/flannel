@@ -4,6 +4,7 @@ package hcsoci
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"path/filepath"
 
@@ -17,9 +18,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type vpMemEntry struct {
+type lcowLayerEntry struct {
 	hostPath string
 	uvmPath  string
+	scsi     bool
 }
 
 const scratchPath = "scratch"
@@ -71,11 +73,12 @@ func MountContainerLayers(layerFolders []string, guestRoot string, uvm *uvm.Util
 	logrus.Debugf("hcsshim::mountContainerLayers Is a %s V2 UVM", uvm.OS())
 
 	// 	Add each read-only layers. For Windows, this is a VSMB share with the ResourceUri ending in
-	// a GUID based on the folder path. For Linux, this is a VPMEM device.
+	// a GUID based on the folder path. For Linux, this is a VPMEM device, except where is over the
+	// max size supported, where we put it on SCSI instead.
 	//
 	//  Each layer is ref-counted so that multiple containers in the same utility VM can share them.
-	var vsmbAdded []string
-	var vpmemAdded []vpMemEntry
+	var wcowLayersAdded []string
+	var lcowlayersAdded []lcowLayerEntry
 	attachedSCSIHostPath := ""
 
 	for _, layerPath := range layerFolders[:len(layerFolders)-1] {
@@ -90,21 +93,42 @@ func MountContainerLayers(layerFolders []string, guestRoot string, uvm *uvm.Util
 			}
 			err = uvm.AddVSMB(layerPath, "", options)
 			if err == nil {
-				vsmbAdded = append(vsmbAdded, layerPath)
+				wcowLayersAdded = append(wcowLayersAdded, layerPath)
 			}
 		} else {
 			uvmPath := ""
-			_, uvmPath, err = uvm.AddVPMEM(filepath.Join(layerPath, "layer.vhd"), true) // UVM path is calculated. Will be /tmp/vN/
-			if err == nil {
-				vpmemAdded = append(vpmemAdded,
-					vpMemEntry{
-						hostPath: filepath.Join(layerPath, "layer.vhd"),
-						uvmPath:  uvmPath,
-					})
+			hostPath := filepath.Join(layerPath, "layer.vhd")
+
+			var fi os.FileInfo
+			fi, err = os.Stat(hostPath)
+			if err == nil && uint64(fi.Size()) > uvm.PMemMaxSizeBytes() {
+				// Too big for PMEM. Add on SCSI instead (at /tmp/S<C>/<L>).
+				var (
+					controller int
+					lun        int32
+				)
+				controller, lun, err = uvm.AddSCSILayer(hostPath)
+				if err == nil {
+					lcowlayersAdded = append(lcowlayersAdded,
+						lcowLayerEntry{
+							hostPath: hostPath,
+							uvmPath:  fmt.Sprintf("/tmp/S%d/%d", controller, lun),
+							scsi:     true,
+						})
+				}
+			} else {
+				_, uvmPath, err = uvm.AddVPMEM(hostPath, true) // UVM path is calculated. Will be /tmp/vN/
+				if err == nil {
+					lcowlayersAdded = append(lcowlayersAdded,
+						lcowLayerEntry{
+							hostPath: hostPath,
+							uvmPath:  uvmPath,
+						})
+				}
 			}
 		}
 		if err != nil {
-			cleanupOnMountFailure(uvm, vsmbAdded, vpmemAdded, attachedSCSIHostPath)
+			cleanupOnMountFailure(uvm, wcowLayersAdded, lcowlayersAdded, attachedSCSIHostPath)
 			return nil, err
 		}
 	}
@@ -113,19 +137,11 @@ func MountContainerLayers(layerFolders []string, guestRoot string, uvm *uvm.Util
 	// utility VM will be C:\<ID>.
 	hostPath := filepath.Join(layerFolders[len(layerFolders)-1], "sandbox.vhdx")
 
-	// On Linux, we need to grant access to the scratch
-	if uvm.OS() == "linux" {
-		if err := wclayer.GrantVmAccess(uvm.ID(), hostPath); err != nil {
-			cleanupOnMountFailure(uvm, vsmbAdded, vpmemAdded, attachedSCSIHostPath)
-			return nil, err
-		}
-	}
-
 	// BUGBUG Rename guestRoot better.
 	containerScratchPathInUVM := ospath.Join(uvm.OS(), guestRoot, scratchPath)
-	_, _, err := uvm.AddSCSI(hostPath, containerScratchPathInUVM)
+	_, _, err := uvm.AddSCSI(hostPath, containerScratchPathInUVM, false)
 	if err != nil {
-		cleanupOnMountFailure(uvm, vsmbAdded, vpmemAdded, attachedSCSIHostPath)
+		cleanupOnMountFailure(uvm, wcowLayersAdded, lcowlayersAdded, attachedSCSIHostPath)
 		return nil, err
 	}
 	attachedSCSIHostPath = hostPath
@@ -133,9 +149,9 @@ func MountContainerLayers(layerFolders []string, guestRoot string, uvm *uvm.Util
 	if uvm.OS() == "windows" {
 		// 	Load the filter at the C:\s<ID> location calculated above. We pass into this request each of the
 		// 	read-only layer folders.
-		layers, err := computeV2Layers(uvm, vsmbAdded)
+		layers, err := computeV2Layers(uvm, wcowLayersAdded)
 		if err != nil {
-			cleanupOnMountFailure(uvm, vsmbAdded, vpmemAdded, attachedSCSIHostPath)
+			cleanupOnMountFailure(uvm, wcowLayersAdded, lcowlayersAdded, attachedSCSIHostPath)
 			return nil, err
 		}
 		guestRequest := guestrequest.CombinedLayers{
@@ -150,7 +166,7 @@ func MountContainerLayers(layerFolders []string, guestRoot string, uvm *uvm.Util
 			},
 		}
 		if err := uvm.Modify(combinedLayersModification); err != nil {
-			cleanupOnMountFailure(uvm, vsmbAdded, vpmemAdded, attachedSCSIHostPath)
+			cleanupOnMountFailure(uvm, wcowLayersAdded, lcowlayersAdded, attachedSCSIHostPath)
 			return nil, err
 		}
 		logrus.Debugln("hcsshim::mountContainerLayers Succeeded")
@@ -175,8 +191,8 @@ func MountContainerLayers(layerFolders []string, guestRoot string, uvm *uvm.Util
 	//       /dev/sd(b...) are scratch spaces for each container
 
 	layers := []hcsschema.Layer{}
-	for _, vpmem := range vpmemAdded {
-		layers = append(layers, hcsschema.Layer{Path: vpmem.uvmPath})
+	for _, l := range lcowlayersAdded {
+		layers = append(layers, hcsschema.Layer{Path: l.uvmPath})
 	}
 	guestRequest := guestrequest.CombinedLayers{
 		ContainerRootPath: path.Join(guestRoot, rootfsPath),
@@ -191,7 +207,7 @@ func MountContainerLayers(layerFolders []string, guestRoot string, uvm *uvm.Util
 		},
 	}
 	if err := uvm.Modify(combinedLayersModification); err != nil {
-		cleanupOnMountFailure(uvm, vsmbAdded, vpmemAdded, attachedSCSIHostPath)
+		cleanupOnMountFailure(uvm, wcowLayersAdded, lcowlayersAdded, attachedSCSIHostPath)
 		return nil, err
 	}
 	logrus.Debugln("hcsshim::mountContainerLayers Succeeded")
@@ -289,17 +305,26 @@ func UnmountContainerLayers(layerFolders []string, guestRoot string, uvm *uvm.Ut
 		}
 	}
 
-	// Remove each of the read-only layers from VPMEM. These's are ref-counted and
-	// only removed once the count drops to zero. This allows multiple containers
-	// to share layers.
+	// Remove each of the read-only layers from VPMEM (or SCSI). These's are ref-counted
+	// and only removed once the count drops to zero. This allows multiple containers to
+	// share layers. Note that SCSI is used on large layers.
 	if uvm.OS() == "linux" && len(layerFolders) > 1 && (op&UnmountOperationVPMEM) == UnmountOperationVPMEM {
 		for _, layerPath := range layerFolders[:len(layerFolders)-1] {
-			if e := uvm.RemoveVPMEM(filepath.Join(layerPath, "layer.vhd")); e != nil {
-				logrus.Debugln(e)
-				if retError == nil {
-					retError = e
+			hostPath := filepath.Join(layerPath, "layer.vhd")
+			if fi, err := os.Stat(hostPath); err != nil {
+				var e error
+				if uint64(fi.Size()) > uvm.PMemMaxSizeBytes() {
+					e = uvm.RemoveSCSI(hostPath)
 				} else {
-					retError = errors.Wrapf(retError, e.Error())
+					e = uvm.RemoveVPMEM(hostPath)
+				}
+				if e != nil {
+					logrus.Debugln(e)
+					if retError == nil {
+						retError = e
+					} else {
+						retError = errors.Wrapf(retError, e.Error())
+					}
 				}
 			}
 		}
@@ -310,19 +335,23 @@ func UnmountContainerLayers(layerFolders []string, guestRoot string, uvm *uvm.Ut
 	return retError
 }
 
-func cleanupOnMountFailure(uvm *uvm.UtilityVM, vsmbShares []string, vpmemDevices []vpMemEntry, scsiHostPath string) {
-	for _, vsmbShare := range vsmbShares {
-		if err := uvm.RemoveVSMB(vsmbShare); err != nil {
+func cleanupOnMountFailure(uvm *uvm.UtilityVM, wcowLayers []string, lcowLayers []lcowLayerEntry, scratchHostPath string) {
+	for _, wl := range wcowLayers {
+		if err := uvm.RemoveVSMB(wl); err != nil {
 			logrus.Warnf("Possibly leaked vsmbshare on error removal path: %s", err)
 		}
 	}
-	for _, vpmemDevice := range vpmemDevices {
-		if err := uvm.RemoveVPMEM(vpmemDevice.hostPath); err != nil {
+	for _, ll := range lcowLayers {
+		if ll.scsi {
+			if err := uvm.RemoveSCSI(ll.hostPath); err != nil {
+				logrus.Warnf("Possibly leaked SCSI on error removal path: %s", err)
+			}
+		} else if err := uvm.RemoveVPMEM(ll.hostPath); err != nil {
 			logrus.Warnf("Possibly leaked vpmemdevice on error removal path: %s", err)
 		}
 	}
-	if scsiHostPath != "" {
-		if err := uvm.RemoveSCSI(scsiHostPath); err != nil {
+	if scratchHostPath != "" {
+		if err := uvm.RemoveSCSI(scratchHostPath); err != nil {
 			logrus.Warnf("Possibly leaked SCSI disk on error removal path: %s", err)
 		}
 	}

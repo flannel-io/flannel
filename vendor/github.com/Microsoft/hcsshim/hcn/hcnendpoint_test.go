@@ -9,263 +9,263 @@ import (
 )
 
 func TestCreateDeleteEndpoint(t *testing.T) {
-	network, err := HcnCreateTestNetwork()
+	network, err := HcnCreateTestNATNetwork()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	Endpoint, err := HcnCreateTestEndpoint(network)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	jsonString, err := json.Marshal(Endpoint)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	fmt.Printf("Endpoint JSON:\n%s \n", jsonString)
 
 	_, err = Endpoint.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = network.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
 func TestGetEndpointById(t *testing.T) {
-	network, err := HcnCreateTestNetwork()
+	network, err := HcnCreateTestNATNetwork()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	Endpoint, err := HcnCreateTestEndpoint(network)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	foundEndpoint, err := GetEndpointByID(Endpoint.Id)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if foundEndpoint == nil {
-		t.Errorf("No Endpoint found")
+		t.Fatal("No Endpoint found")
 	}
 
 	_, err = foundEndpoint.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = network.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
 func TestGetEndpointByName(t *testing.T) {
-	network, err := HcnCreateTestNetwork()
+	network, err := HcnCreateTestNATNetwork()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	Endpoint, err := HcnCreateTestEndpoint(network)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	foundEndpoint, err := GetEndpointByName(Endpoint.Name)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if foundEndpoint == nil {
-		t.Errorf("No Endpoint found")
+		t.Fatal("No Endpoint found")
 	}
 
 	_, err = foundEndpoint.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = network.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
 func TestListEndpoints(t *testing.T) {
-	network, err := HcnCreateTestNetwork()
+	network, err := HcnCreateTestNATNetwork()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	Endpoint, err := HcnCreateTestEndpoint(network)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	foundEndpoints, err := ListEndpoints()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if len(foundEndpoints) == 0 {
-		t.Errorf("No Endpoint found")
+		t.Fatal("No Endpoint found")
 	}
 
 	_, err = Endpoint.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = network.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
 func TestListEndpointsOfNetwork(t *testing.T) {
-	network, err := HcnCreateTestNetwork()
+	network, err := HcnCreateTestNATNetwork()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	Endpoint, err := HcnCreateTestEndpoint(network)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	foundEndpoints, err := ListEndpointsOfNetwork(network.Id)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if len(foundEndpoints) == 0 {
-		t.Errorf("No Endpoint found")
+		t.Fatal("No Endpoint found")
 	}
 
 	_, err = Endpoint.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = network.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
 func TestEndpointNamespaceAttachDetach(t *testing.T) {
-	network, err := HcnCreateTestNetwork()
+	network, err := HcnCreateTestNATNetwork()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	endpoint, err := HcnCreateTestEndpoint(network)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	namespace, err := HcnCreateTestNamespace()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	err = endpoint.NamespaceAttach(namespace.Id)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	err = endpoint.NamespaceDetach(namespace.Id)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	_, err = namespace.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = endpoint.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = network.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
 func TestCreateEndpointWithNamespace(t *testing.T) {
-	network, err := HcnCreateTestNetwork()
+	network, err := HcnCreateTestNATNetwork()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	namespace, err := HcnCreateTestNamespace()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	Endpoint, err := HcnCreateTestEndpointWithNamespace(network, namespace)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if Endpoint.HostComputeNamespace == "" {
-		t.Errorf("No Namespace detected.")
+		t.Fatal("No Namespace detected.")
 	}
 
 	_, err = Endpoint.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = network.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
 func TestApplyPolicyOnEndpoint(t *testing.T) {
-	network, err := HcnCreateTestNetwork()
+	network, err := HcnCreateTestNATNetwork()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	Endpoint, err := HcnCreateTestEndpoint(network)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	endpointPolicyList, err := HcnCreateAcls()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	jsonString, err := json.Marshal(*endpointPolicyList)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	fmt.Printf("ACLS JSON:\n%s \n", jsonString)
 	err = Endpoint.ApplyPolicy(*endpointPolicyList)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	foundEndpoint, err := GetEndpointByName(Endpoint.Name)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if len(foundEndpoint.Policies) == 0 {
-		t.Errorf("No Endpoint Policies found")
+		t.Fatal("No Endpoint Policies found")
 	}
 
 	_, err = Endpoint.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = network.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
 func TestModifyEndpointSettings(t *testing.T) {
-	network, err := HcnCreateTestNetwork()
+	network, err := HcnCreateTestNATNetwork()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	endpoint, err := HcnCreateTestEndpoint(network)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	endpointPolicy, err := HcnCreateAcls()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	settingsJson, err := json.Marshal(endpointPolicy)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	requestMessage := &ModifyEndpointSettingRequest{
@@ -276,23 +276,23 @@ func TestModifyEndpointSettings(t *testing.T) {
 
 	err = ModifyEndpointSettings(endpoint.Id, requestMessage)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	foundEndpoint, err := GetEndpointByName(endpoint.Name)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if len(foundEndpoint.Policies) == 0 {
-		t.Errorf("No Endpoint Policies found")
+		t.Fatal("No Endpoint Policies found")
 	}
 
 	_, err = endpoint.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = network.Delete()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }

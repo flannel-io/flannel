@@ -28,6 +28,7 @@ var psCommand = cli.Command{
 		if err != nil {
 			return err
 		}
+		defer container.Close()
 
 		props, err := container.hc.Properties(schema1.PropertyTypeProcessList)
 		if err != nil {

@@ -45,24 +45,3 @@ func CreateContainerTestWrapper(options *hcsoci.CreateOptions) (*hcs.System, *hc
 	}
 	return s, r, err
 }
-
-//// Helper to stop a container
-//func stopContainer(t *testing.T, c Container) {
-//	if err := c.Shutdown(); err != nil {
-//		if IsPending(err) {
-//			if err := c.Wait(); err != nil {
-//				t.Fatalf("Failed Wait shutdown: %s", err)
-//			}
-//		} else {
-//			t.Fatalf("Failed shutdown: %s", err)
-//		}
-//	}
-//	//c.Terminate()
-//}
-
-//// Helper to shoot a utility VM
-//func terminateUtilityVM(t *testing.T, uvm *UtilityVM) {
-//	if err := uvm.Terminate(); err != nil {
-//		t.Fatalf("Failed terminate utility VM %s", err)
-//	}
-//}

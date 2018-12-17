@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"os"
-	"strings"
 
 	"github.com/Microsoft/hcsshim/internal/appargs"
 	"github.com/Microsoft/hcsshim/internal/runhcs"
@@ -25,12 +24,10 @@ instance of a container.`,
 		if err != nil {
 			return err
 		}
+		defer c.Close()
 		status, err := c.Status()
 		if err != nil {
-			if !strings.Contains(err.Error(), "operation is not valid in the current state") {
-				return err
-			}
-			status = containerUnknown
+			return err
 		}
 		cs := runhcs.ContainerState{
 			Version:        c.Spec.Version,

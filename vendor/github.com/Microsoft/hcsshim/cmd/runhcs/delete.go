@@ -44,6 +44,7 @@ status of "ubuntu01" as "stopped" the following will delete resources held for
 			}
 			return err
 		}
+		defer container.Close()
 		s, err := container.Status()
 		if err != nil {
 			return err

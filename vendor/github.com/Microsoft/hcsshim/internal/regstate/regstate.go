@@ -41,6 +41,11 @@ func (err *NotFoundError) Error() string {
 	return fmt.Sprintf("ID '%s' was not found", err.Id)
 }
 
+func IsNotFoundError(err error) bool {
+	_, ok := err.(*NotFoundError)
+	return ok
+}
+
 type NoStateError struct {
 	ID  string
 	Key string

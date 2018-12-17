@@ -15,18 +15,19 @@ import (
 	"github.com/Microsoft/hcsshim/internal/hcs"
 	"github.com/Microsoft/hcsshim/internal/hcsoci"
 	"github.com/Microsoft/hcsshim/internal/lcow"
-	"github.com/Microsoft/hcsshim/internal/osversion"
 	"github.com/Microsoft/hcsshim/internal/uvm"
+	"github.com/Microsoft/hcsshim/osversion"
 )
 
 // TestLCOWUVMNoSCSINoVPMemInitrd starts an LCOW utility VM without a SCSI controller and
 // no VPMem device. Uses initrd.
 func TestLCOWUVMNoSCSINoVPMemInitrd(t *testing.T) {
-	scsiCount := 0
-	var vpmemCount int32 = 0
-	opts := &uvm.UVMOptions{
-		OperatingSystem:     "linux",
-		ID:                  "uvm",
+	var scsiCount uint32 = 0
+	var vpmemCount uint32 = 0
+	opts := &uvm.OptionsLCOW{
+		Options: &uvm.Options{
+			ID: "uvm",
+		},
 		VPMemDeviceCount:    &vpmemCount,
 		SCSIControllerCount: &scsiCount,
 	}
@@ -36,12 +37,13 @@ func TestLCOWUVMNoSCSINoVPMemInitrd(t *testing.T) {
 // TestLCOWUVMNoSCSISingleVPMemVHD starts an LCOW utility VM without a SCSI controller and
 // only a single VPMem device. Uses VPMEM VHD
 func TestLCOWUVMNoSCSISingleVPMemVHD(t *testing.T) {
-	scsiCount := 0
-	var vpmemCount int32 = 1
+	var scsiCount uint32 = 0
+	var vpmemCount uint32 = 1
 	var prfst uvm.PreferredRootFSType = uvm.PreferredRootFSTypeVHD
-	opts := &uvm.UVMOptions{
-		OperatingSystem:     "linux",
-		ID:                  "uvm",
+	opts := &uvm.OptionsLCOW{
+		Options: &uvm.Options{
+			ID: "uvm",
+		},
 		VPMemDeviceCount:    &vpmemCount,
 		SCSIControllerCount: &scsiCount,
 		PreferredRootFSType: &prfst,
@@ -50,16 +52,10 @@ func TestLCOWUVMNoSCSISingleVPMemVHD(t *testing.T) {
 	testLCOWUVMNoSCSISingleVPMem(t, opts, `Command line: root=/dev/pmem0 init=/init`)
 }
 
-func testLCOWUVMNoSCSISingleVPMem(t *testing.T, opts *uvm.UVMOptions, expected string) {
+func testLCOWUVMNoSCSISingleVPMem(t *testing.T, opts *uvm.OptionsLCOW, expected string) {
 	testutilities.RequiresBuild(t, osversion.RS5)
-	lcowUVM, err := uvm.Create(opts)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := lcowUVM.Start(); err != nil {
-		t.Fatal(err)
-	}
-	defer lcowUVM.Terminate()
+	lcowUVM := testutilities.CreateLCOWUVMFromOpts(t, opts)
+	defer lcowUVM.Close()
 	out, err := exec.Command(`hcsdiag`, `exec`, `-uvm`, lcowUVM.ID(), `dmesg`).Output() // TODO: Move the CreateProcess.
 	if err != nil {
 		t.Fatal(string(err.(*exec.ExitError).Stderr))
@@ -72,33 +68,50 @@ func testLCOWUVMNoSCSISingleVPMem(t *testing.T, opts *uvm.UVMOptions, expected s
 // TestLCOWTimeUVMStartVHD starts/terminates a utility VM booting from VPMem-
 // attached root filesystem a number of times.
 func TestLCOWTimeUVMStartVHD(t *testing.T) {
-	testLCOWTimeUVMStart(t, uvm.PreferredRootFSTypeVHD)
+	testutilities.RequiresBuild(t, osversion.RS5)
+
+	testLCOWTimeUVMStart(t, false, uvm.PreferredRootFSTypeVHD)
+}
+
+// TestLCOWUVMStart_KernelDirect_VHD starts/terminates a utility VM booting from
+// VPMem- attached root filesystem a number of times starting from the Linux
+// Kernel directly and skipping EFI.
+func TestLCOWUVMStart_KernelDirect_VHD(t *testing.T) {
+	testutilities.RequiresBuild(t, 18286)
+
+	testLCOWTimeUVMStart(t, true, uvm.PreferredRootFSTypeVHD)
 }
 
 // TestLCOWTimeUVMStartInitRD starts/terminates a utility VM booting from initrd-
 // attached root file system a number of times.
 func TestLCOWTimeUVMStartInitRD(t *testing.T) {
-	testLCOWTimeUVMStart(t, uvm.PreferredRootFSTypeInitRd)
+	testutilities.RequiresBuild(t, osversion.RS5)
+
+	testLCOWTimeUVMStart(t, false, uvm.PreferredRootFSTypeInitRd)
 }
 
-func testLCOWTimeUVMStart(t *testing.T, rfsType uvm.PreferredRootFSType) {
-	testutilities.RequiresBuild(t, osversion.RS5)
-	var vpmemCount int32 = 32
+// TestLCOWUVMStart_KernelDirect_InitRd starts/terminates a utility VM booting
+// from initrd- attached root file system a number of times starting from the
+// Linux Kernel directly and skipping EFI.
+func TestLCOWUVMStart_KernelDirect_InitRd(t *testing.T) {
+	testutilities.RequiresBuild(t, 18286)
+
+	testLCOWTimeUVMStart(t, true, uvm.PreferredRootFSTypeInitRd)
+}
+
+func testLCOWTimeUVMStart(t *testing.T, kernelDirect bool, rfsType uvm.PreferredRootFSType) {
+	var vpmemCount uint32 = 32
 	for i := 0; i < 3; i++ {
-		opts := &uvm.UVMOptions{
-			OperatingSystem:     "linux",
-			ID:                  "uvm",
+		opts := &uvm.OptionsLCOW{
+			Options: &uvm.Options{
+				ID: t.Name(),
+			},
 			VPMemDeviceCount:    &vpmemCount,
 			PreferredRootFSType: &rfsType,
+			KernelDirect:        kernelDirect,
 		}
-		lcowUVM, err := uvm.Create(opts)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err := lcowUVM.Start(); err != nil {
-			t.Fatal(err)
-		}
-		lcowUVM.Terminate()
+		lcowUVM := testutilities.CreateLCOWUVMFromOpts(t, opts)
+		lcowUVM.Close()
 	}
 }
 
@@ -126,24 +139,14 @@ func TestLCOWSimplePodScenario(t *testing.T) {
 	defer os.RemoveAll(c2ScratchDir)
 	c2ScratchFile := filepath.Join(c2ScratchDir, "sandbox.vhdx")
 
-	opts := &uvm.UVMOptions{
-		OperatingSystem: "linux",
-		ID:              "uvm",
-	}
-	lcowUVM, err := uvm.Create(opts)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := lcowUVM.Start(); err != nil {
-		t.Fatal(err)
-	}
-	defer lcowUVM.Terminate()
+	lcowUVM := testutilities.CreateLCOWUVM(t, "uvm")
+	defer lcowUVM.Close()
 
 	// Populate the cache and generate the scratch file for /tmp/scratch
 	if err := lcow.CreateScratch(lcowUVM, uvmScratchFile, lcow.DefaultScratchSizeGB, cacheFile, ""); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := lcowUVM.AddSCSI(uvmScratchFile, `/tmp/scratch`); err != nil {
+	if _, _, err := lcowUVM.AddSCSI(uvmScratchFile, `/tmp/scratch`, false); err != nil {
 		t.Fatal(err)
 	}
 

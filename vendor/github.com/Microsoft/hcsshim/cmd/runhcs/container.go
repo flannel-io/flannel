@@ -1,25 +1,25 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	winio "github.com/Microsoft/go-winio"
+	"github.com/Microsoft/hcsshim/internal/cni"
 	"github.com/Microsoft/hcsshim/internal/guid"
 	"github.com/Microsoft/hcsshim/internal/hcs"
 	"github.com/Microsoft/hcsshim/internal/hcsoci"
+	"github.com/Microsoft/hcsshim/internal/logfields"
 	"github.com/Microsoft/hcsshim/internal/regstate"
+	"github.com/Microsoft/hcsshim/internal/runhcs"
 	"github.com/Microsoft/hcsshim/internal/uvm"
+	"github.com/Microsoft/hcsshim/osversion"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/windows"
@@ -28,17 +28,32 @@ import (
 var errContainerStopped = errors.New("container is stopped")
 
 type persistedState struct {
-	ID             string
-	SandboxID      string
-	HostID         string
-	Bundle         string
-	Created        time.Time
-	Rootfs         string
-	Spec           *specs.Spec
-	RequestedNetNS string
-	IsHost         bool
-	UniqueID       guid.GUID
-	HostUniqueID   guid.GUID
+	// ID is the id of this container/UVM.
+	ID string `json:",omitempty"`
+	// Owner is the owner value passed into the runhcs command and may be `""`.
+	Owner string `json:",omitempty"`
+	// SandboxID is the sandbox identifer passed in via OCI specifications. This
+	// can either be the sandbox itself or the sandbox this container should run
+	// in. See `parseSandboxAnnotations`.
+	SandboxID string `json:",omitempty"`
+	// HostID will be VM ID hosting this container. If a sandbox is used it will
+	// match the `SandboxID`.
+	HostID string `json:",omitempty"`
+	// Bundle is the folder path on disk where the container state and spec files
+	// reside.
+	Bundle  string    `json:",omitempty"`
+	Created time.Time `json:",omitempty"`
+	Rootfs  string    `json:",omitempty"`
+	// Spec is the in memory deserialized values found on `Bundle\config.json`.
+	Spec           *specs.Spec `json:",omitempty"`
+	RequestedNetNS string      `json:",omitempty"`
+	// IsHost is `true` when this is a VM isolated config.
+	IsHost bool `json:",omitempty"`
+	// UniqueID is a unique ID generated per container config.
+	UniqueID guid.GUID `json:",omitempty"`
+	// HostUniqueID is the unique ID of the hosting VM if this container is
+	// hosted.
+	HostUniqueID guid.GUID `json:",omitempty"`
 }
 
 type containerStatus string
@@ -55,6 +70,9 @@ const (
 	keyShimPid   = "shim"
 	keyInitPid   = "pid"
 	keyNetNS     = "netns"
+	// keyPidMapFmt is the format to use when mapping a host OS pid to a guest
+	// pid.
+	keyPidMapFmt = "pid-%d"
 )
 
 type container struct {
@@ -62,32 +80,6 @@ type container struct {
 	ShimPid   int
 	hc        *hcs.System
 	resources *hcsoci.Resources
-}
-
-func getErrorFromPipe(pipe io.Reader, p *os.Process) error {
-	serr, err := ioutil.ReadAll(pipe)
-	if err != nil {
-		return err
-	}
-
-	if bytes.Equal(serr, shimSuccess) {
-		return nil
-	}
-
-	extra := ""
-	if p != nil {
-		p.Kill()
-		state, err := p.Wait()
-		if err != nil {
-			panic(err)
-		}
-		extra = fmt.Sprintf(", exit code %d", state.Sys().(syscall.WaitStatus).ExitCode)
-	}
-	if len(serr) == 0 {
-		return fmt.Errorf("unknown shim failure%s", extra)
-	}
-
-	return errors.New(string(serr))
 }
 
 func startProcessShim(id, pidFile, logFile string, spec *specs.Process) (_ *os.Process, err error) {
@@ -108,6 +100,9 @@ func startProcessShim(id, pidFile, logFile string, spec *specs.Process) (_ *os.P
 	}
 	if spec != nil {
 		args = append(args, "--exec")
+	}
+	if strings.HasPrefix(logFile, runhcs.SafePipePrefix) {
+		args = append(args, "--log-pipe", logFile)
 	}
 	args = append(args, id)
 	return launchShim("shim", pidFile, logFile, args, spec)
@@ -143,11 +138,13 @@ func launchShim(cmd, pidFile, logFile string, args []string, data interface{}) (
 	var log *os.File
 	fullargs := []string{os.Args[0]}
 	if logFile != "" {
-		log, err = os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND|os.O_SYNC, 0666)
-		if err != nil {
-			return nil, err
+		if !strings.HasPrefix(logFile, runhcs.SafePipePrefix) {
+			log, err = os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND|os.O_SYNC, 0666)
+			if err != nil {
+				return nil, err
+			}
+			defer log.Close()
 		}
-		defer log.Close()
 
 		fullargs = append(fullargs, "--log-format", logFormat)
 		if logrus.GetLevel() == logrus.DebugLevel {
@@ -185,7 +182,7 @@ func launchShim(cmd, pidFile, logFile string, args []string, data interface{}) (
 		wdatap.Close()
 	}
 
-	err = getErrorFromPipe(rp, p)
+	err = runhcs.GetErrorFromPipe(rp, p)
 	if err != nil {
 		return nil, err
 	}
@@ -199,8 +196,14 @@ func launchShim(cmd, pidFile, logFile string, args []string, data interface{}) (
 	return p, nil
 }
 
-func parseSandboxAnnotations(spec *specs.Spec) (string, bool) {
-	a := spec.Annotations
+// parseSandboxAnnotations searches `a` for various annotations used by
+// different runtimes to represent a sandbox ID, and sandbox type.
+//
+// If found returns the tuple `(sandboxID, isSandbox)` where `isSandbox == true`
+// indicates the identifer is the sandbox itself; `isSandbox == false` indicates
+// the identifer is the sandbox in which to place this container. Otherwise
+// returns `("", false)`.
+func parseSandboxAnnotations(a map[string]string) (string, bool) {
 	var t, id string
 	if t = a["io.kubernetes.cri.container-type"]; t != "" {
 		id = a["io.kubernetes.cri.sandbox-id"]
@@ -221,37 +224,104 @@ func parseSandboxAnnotations(spec *specs.Spec) (string, bool) {
 	return "", false
 }
 
-func (c *container) startVMShim(logFile string, consolePipe string) (*os.Process, error) {
-	opts := &uvm.UVMOptions{
-		ID:          vmID(c.ID),
-		ConsolePipe: consolePipe,
-	}
-	if c.Spec.Windows != nil {
-		opts.Resources = c.Spec.Windows.Resources
-	}
-
-	if c.Spec.Linux != nil {
-		opts.OperatingSystem = "linux"
-	} else {
-		opts.OperatingSystem = "windows"
-		layers := make([]string, len(c.Spec.Windows.LayerFolders))
-		for i, f := range c.Spec.Windows.LayerFolders {
-			if i == len(c.Spec.Windows.LayerFolders)-1 {
-				f = filepath.Join(f, "vm")
-				err := os.MkdirAll(f, 0)
-				if err != nil {
-					return nil, err
-				}
-			}
-			layers[i] = f
+// parseAnnotationsBool searches `a` for `key` and if found verifies that the
+// value is `true` or `false` in any case. If `key` is not found returns `nil`.
+func parseAnnotationsBool(a map[string]string, key string) *bool {
+	if v, ok := a[key]; ok {
+		yes := true
+		no := false
+		switch strings.ToLower(v) {
+		case "true":
+			return &yes
+		case "false":
+			return &no
+		default:
+			logrus.WithFields(logrus.Fields{
+				logfields.OCIAnnotation: key,
+				logfields.Value:         v,
+				logfields.ExpectedType:  logfields.Bool,
+			}).Warning("annotation could not be parsed")
 		}
-		opts.LayerFolders = layers
 	}
-	return launchShim("vmshim", "", logFile, []string{c.VMPipePath()}, opts)
+	return nil
+}
+
+// parseAnnotationsPreferredRootFSType searches `a` for `key` and verifies that the
+// value is in the set of allowed values. If `key` is not found returns `nil`.
+// Otherwise returns the index at which it was found in allowed values.
+func parseAnnotationsPreferredRootFSType(a map[string]string, key string) *uvm.PreferredRootFSType {
+	if v, ok := a[key]; ok {
+		// Following array must match enumeration uvm.PreferredRootFSType indexes
+		possibles := []string{"initrd", "vhd"}
+		for index, possible := range possibles {
+			if possible == v {
+				prfstype := uvm.PreferredRootFSType(index)
+				return &prfstype
+			}
+		}
+		logrus.Warningf("annotation: '%s', with value: '%s' must be one of %+v", key, v, possibles)
+		return nil
+
+	}
+	return nil
+}
+
+// parseAnnotationsUint32 searches `a` for `key` and if found verifies that the
+// value is a 32 bit unsigned integer. If `key` is not found returns `nil`.
+func parseAnnotationsUint32(a map[string]string, key string) *uint32 {
+	if v, ok := a[key]; ok {
+		countu, err := strconv.ParseUint(v, 10, 32)
+		if err == nil {
+			v := uint32(countu)
+			return &v
+		}
+		logrus.WithFields(logrus.Fields{
+			logfields.OCIAnnotation: key,
+			logfields.Value:         v,
+			logfields.ExpectedType:  logfields.Uint32,
+			logrus.ErrorKey:         err,
+		}).Warning("annotation could not be parsed")
+	}
+	return nil
+}
+
+// parseAnnotationsUint64 searches `a` for `key` and if found verifies that the
+// value is a 64 bit unsigned integer. If `key` is not found returns `nil`.
+func parseAnnotationsUint64(a map[string]string, key string) *uint64 {
+	if v, ok := a[key]; ok {
+		countu, err := strconv.ParseUint(v, 10, 64)
+		if err == nil {
+			return &countu
+		}
+		logrus.WithFields(logrus.Fields{
+			logfields.OCIAnnotation: key,
+			logfields.Value:         v,
+			logfields.ExpectedType:  logfields.Uint64,
+			logrus.ErrorKey:         err,
+		}).Warning("annotation could not be parsed")
+	}
+	return nil
+}
+
+// startVMShim starts a vm-shim command with the specified `opts`. `opts` can be `uvm.OptionsWCOW` or `uvm.OptionsLCOW`
+func (c *container) startVMShim(logFile string, opts interface{}) (*os.Process, error) {
+	var os string
+	if _, ok := opts.(*uvm.OptionsLCOW); ok {
+		os = "linux"
+	} else {
+		os = "windows"
+	}
+	args := []string{"--os", os}
+	if strings.HasPrefix(logFile, runhcs.SafePipePrefix) {
+		args = append(args, "--log-pipe", logFile)
+	}
+	args = append(args, c.VMPipePath())
+	return launchShim("vmshim", "", logFile, args, opts)
 }
 
 type containerConfig struct {
 	ID                     string
+	Owner                  string
 	HostID                 string
 	PidFile                string
 	ShimLogFile, VMLogFile string
@@ -268,7 +338,7 @@ func createContainer(cfg *containerConfig) (_ *container, err error) {
 
 	vmisolated := cfg.Spec.Linux != nil || (cfg.Spec.Windows != nil && cfg.Spec.Windows.HyperV != nil)
 
-	sandboxID, isSandbox := parseSandboxAnnotations(cfg.Spec)
+	sandboxID, isSandbox := parseSandboxAnnotations(cfg.Spec.Annotations)
 	hostID := cfg.HostID
 	if isSandbox {
 		if sandboxID != cfg.ID {
@@ -311,7 +381,8 @@ func createContainer(cfg *containerConfig) (_ *container, err error) {
 			return nil, fmt.Errorf("host container %s is not a VM host", hostID)
 		}
 		hostUniqueID = host.UniqueID
-	} else if vmisolated && (isSandbox || cfg.Spec.Linux != nil) {
+	} else if vmisolated && (isSandbox || cfg.Spec.Linux != nil || osversion.Get().Build >= osversion.RS5) {
+		// This handles all LCOW, Pod Sandbox, and (Windows Xenon V2 for RS5+)
 		hostID = cfg.ID
 		newvm = true
 		hostUniqueID = uniqueID
@@ -336,12 +407,18 @@ func createContainer(cfg *containerConfig) (_ *container, err error) {
 		}
 
 		// Determine the network namespace to use.
-		if cfg.Spec.Windows.Network != nil && cfg.Spec.Windows.Network.NetworkSharedContainerName != "" {
-			err = stateKey.Get(cfg.Spec.Windows.Network.NetworkSharedContainerName, keyNetNS, &netNS)
-			if err != nil {
-				if _, ok := err.(*regstate.NoStateError); !ok {
-					return nil, err
+		if cfg.Spec.Windows.Network != nil {
+			if cfg.Spec.Windows.Network.NetworkSharedContainerName != "" {
+				// RS4 case
+				err = stateKey.Get(cfg.Spec.Windows.Network.NetworkSharedContainerName, keyNetNS, &netNS)
+				if err != nil {
+					if _, ok := err.(*regstate.NoStateError); !ok {
+						return nil, err
+					}
 				}
+			} else if cfg.Spec.Windows.Network.NetworkNamespace != "" {
+				// RS5 case
+				netNS = cfg.Spec.Windows.Network.NetworkNamespace
 			}
 		}
 	}
@@ -351,6 +428,7 @@ func createContainer(cfg *containerConfig) (_ *container, err error) {
 	c := &container{
 		persistedState: persistedState{
 			ID:             cfg.ID,
+			Owner:          cfg.Owner,
 			Bundle:         cwd,
 			Rootfs:         rootfs,
 			Created:        time.Now(),
@@ -372,10 +450,89 @@ func createContainer(cfg *containerConfig) (_ *container, err error) {
 			c.Remove()
 		}
 	}()
+	if isSandbox && vmisolated {
+		cnicfg := cni.NewPersistedNamespaceConfig(netNS, cfg.ID, hostUniqueID)
+		err = cnicfg.Store()
+		if err != nil {
+			return nil, err
+		}
+		defer func() {
+			if err != nil {
+				cnicfg.Remove()
+			}
+		}()
+	}
 
 	// Start a VM if necessary.
 	if newvm {
-		shim, err := c.startVMShim(cfg.VMLogFile, cfg.VMConsolePipe)
+		var opts interface{}
+
+		const (
+			annotationAllowOverCommit      = "io.microsoft.virtualmachine.computetopology.memory.allowovercommit"
+			annotationEnableDeferredCommit = "io.microsoft.virtualmachine.computetopology.memory.enabledeferredcommit"
+			annotationMemorySizeInMB       = "io.microsoft.virtualmachine.computetopology.memory.sizeinmb"
+			annotationProcessorCount       = "io.microsoft.virtualmachine.computetopology.processor.count"
+			annotationVPMemCount           = "io.microsoft.virtualmachine.devices.virtualpmem.maximumcount"
+			annotationVPMemSize            = "io.microsoft.virtualmachine.devices.virtualpmem.maximumsizebytes"
+			annotationPreferredRootFSType  = "io.microsoft.virtualmachine.lcow.preferredrootfstype"
+		)
+
+		bothOpts := &uvm.Options{
+			ID:                   vmID(c.ID),
+			Owner:                cfg.Owner,
+			AllowOvercommit:      parseAnnotationsBool(cfg.Spec.Annotations, annotationAllowOverCommit),
+			EnableDeferredCommit: parseAnnotationsBool(cfg.Spec.Annotations, annotationEnableDeferredCommit),
+		}
+
+		// If the Resources section of the config specified mem/cpu set it now.
+		if cfg.Spec.Windows != nil && cfg.Spec.Windows.Resources != nil {
+			if cfg.Spec.Windows.Resources.Memory != nil && cfg.Spec.Windows.Resources.Memory.Limit != nil {
+				bothOpts.MemorySizeInMB = int32(*cfg.Spec.Windows.Resources.Memory.Limit / 1024 / 1024)
+			}
+			if cfg.Spec.Windows.Resources.CPU != nil && cfg.Spec.Windows.Resources.CPU.Count != nil {
+				bothOpts.ProcessorCount = int32(*cfg.Spec.Windows.Resources.CPU.Count)
+			}
+		}
+		// Allow overrides of any mem/cpu annotations
+		memSize := parseAnnotationsUint64(cfg.Spec.Annotations, annotationMemorySizeInMB)
+		if memSize != nil {
+			bothOpts.MemorySizeInMB = int32(*memSize)
+		}
+		cpuCount := parseAnnotationsUint64(cfg.Spec.Annotations, annotationProcessorCount)
+		if cpuCount != nil {
+			bothOpts.ProcessorCount = int32(*cpuCount)
+		}
+
+		if cfg.Spec.Linux != nil {
+			opts = &uvm.OptionsLCOW{
+				Options:             bothOpts,
+				ConsolePipe:         cfg.VMConsolePipe,
+				VPMemDeviceCount:    parseAnnotationsUint32(cfg.Spec.Annotations, annotationVPMemCount),
+				VPMemSizeBytes:      parseAnnotationsUint64(cfg.Spec.Annotations, annotationVPMemSize),
+				PreferredRootFSType: parseAnnotationsPreferredRootFSType(cfg.Spec.Annotations, annotationPreferredRootFSType),
+			}
+		} else {
+			// In order for the UVM sandbox.vhdx not to collide with the actual
+			// nested Argon sandbox.vhdx we append the \vm folder to the last entry
+			// in the list.
+			layersLen := len(cfg.Spec.Windows.LayerFolders)
+			layers := make([]string, layersLen)
+			copy(layers, cfg.Spec.Windows.LayerFolders)
+
+			vmPath := filepath.Join(layers[layersLen-1], "vm")
+			err := os.MkdirAll(vmPath, 0)
+			if err != nil {
+				return nil, err
+			}
+			layers[layersLen-1] = vmPath
+
+			opts = &uvm.OptionsWCOW{
+				Options:      bothOpts,
+				LayerFolders: layers,
+			}
+		}
+
+		shim, err := c.startVMShim(cfg.VMLogFile, opts)
 		if err != nil {
 			return nil, err
 		}
@@ -386,7 +543,7 @@ func createContainer(cfg *containerConfig) (_ *container, err error) {
 		// Call to the VM shim process to create the container. This is done so
 		// that the VM process can keep track of the VM's virtual hardware
 		// resource use.
-		err = c.issueVMRequest(opCreateContainer)
+		err = c.issueVMRequest(runhcs.OpCreateContainer)
 		if err != nil {
 			return nil, err
 		}
@@ -415,11 +572,11 @@ func createContainer(cfg *containerConfig) (_ *container, err error) {
 }
 
 func (c *container) ShimPipePath() string {
-	return safePipePath("runhcs-shim-" + c.UniqueID.String())
+	return runhcs.SafePipePath("runhcs-shim-" + c.UniqueID.String())
 }
 
 func (c *container) VMPipePath() string {
-	return safePipePath("runhcs-vm-" + c.HostUniqueID.String())
+	return runhcs.VMPipePath(c.HostUniqueID)
 }
 
 func (c *container) VMIsolated() bool {
@@ -450,14 +607,18 @@ func (c *container) unmountInHost(vm *uvm.UtilityVM, all bool) error {
 
 func (c *container) Unmount(all bool) error {
 	if c.VMIsolated() {
-		op := opUnmountContainerDiskOnly
+		op := runhcs.OpUnmountContainerDiskOnly
 		if all {
-			op = opUnmountContainer
+			op = runhcs.OpUnmountContainer
 		}
 		err := c.issueVMRequest(op)
 		if err != nil {
 			if _, ok := err.(*noVMError); ok {
-				logrus.Warnf("did not unmount resources for container %s because VM shim for %s could not be contacted", c.ID, c.HostID)
+				logrus.WithFields(logrus.Fields{
+					logfields.ContainerID: c.ID,
+					logfields.UVMID:       c.HostID,
+					logrus.ErrorKey:       errors.New("failed to unmount container resources"),
+				}).Warning("VM shim could not be contacted")
 			} else {
 				return err
 			}
@@ -476,6 +637,7 @@ func createContainerInHost(c *container, vm *uvm.UtilityVM) (err error) {
 	// Create the container without starting it.
 	opts := &hcsoci.CreateOptions{
 		ID:               c.ID,
+		Owner:            c.Owner,
 		Spec:             c.Spec,
 		HostingSystem:    vm,
 		NetworkNamespace: c.RequestedNetNS,
@@ -484,7 +646,10 @@ func createContainerInHost(c *container, vm *uvm.UtilityVM) (err error) {
 	if vm != nil {
 		vmid = vm.ID()
 	}
-	logrus.Infof("creating container %s (VM: '%s')", c.ID, vmid)
+	logrus.WithFields(logrus.Fields{
+		logfields.ContainerID: c.ID,
+		logfields.UVMID:       vmid,
+	}).Info("creating container in UVM")
 	hc, resources, err := hcsoci.CreateContainer(opts)
 	if err != nil {
 		return err
@@ -499,7 +664,7 @@ func createContainerInHost(c *container, vm *uvm.UtilityVM) (err error) {
 
 	// Record the network namespace to support namespace sharing by container ID.
 	if resources.NetNS() != "" {
-		err = stateKey.Set(c.ID, keyNetNS, resources.NetNS)
+		err = stateKey.Set(c.ID, keyNetNS, resources.NetNS())
 		if err != nil {
 			return err
 		}
@@ -571,7 +736,7 @@ func (c *container) Exec() error {
 	}
 	defer shim.Release()
 
-	err = getErrorFromPipe(pipe, shim)
+	err = runhcs.GetErrorFromPipe(pipe, shim)
 	if err != nil {
 		return err
 	}
@@ -648,7 +813,10 @@ func (c *container) Status() (containerStatus, error) {
 	}
 	props, err := c.hc.Properties()
 	if err != nil {
-		return "", err
+		if !strings.Contains(err.Error(), "operation is not valid in the current state") {
+			return "", err
+		}
+		return containerUnknown, nil
 	}
 	state := containerUnknown
 	switch props.State {

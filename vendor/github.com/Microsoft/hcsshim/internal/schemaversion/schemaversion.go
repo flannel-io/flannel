@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Microsoft/hcsshim/internal/osversion"
 	"github.com/Microsoft/hcsshim/internal/schema2"
+	"github.com/Microsoft/hcsshim/osversion"
 	"github.com/sirupsen/logrus"
 )
 
@@ -68,7 +68,7 @@ func String(sv *hcsschema.Version) string {
 func DetermineSchemaVersion(requestedSV *hcsschema.Version) *hcsschema.Version {
 	sv := SchemaV10()
 	if osversion.Get().Build >= osversion.RS5 {
-		sv = SchemaV10() // TODO: When do we flip this to V2 for RS5? Answer - when functionally complete. Templating. CredSpecs. Networking. LCOW...
+		sv = SchemaV21()
 	}
 	if requestedSV != nil {
 		if err := IsSupported(requestedSV); err == nil {

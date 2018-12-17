@@ -48,7 +48,12 @@ func allocateLinuxResources(coi *createOptionsInternal, resources *Resources) er
 	}
 
 	for i, mount := range coi.Spec.Mounts {
-		if mount.Type != "bind" {
+		switch mount.Type {
+		case "bind":
+		case "physical-disk":
+		case "virtual-disk":
+		default:
+			// Unknown mount type
 			continue
 		}
 		if mount.Destination == "" || mount.Source == "" {
@@ -56,8 +61,6 @@ func allocateLinuxResources(coi *createOptionsInternal, resources *Resources) er
 		}
 
 		if coi.HostingSystem != nil {
-			logrus.Debugf("hcsshim::allocateLinuxResources Hot-adding Plan9 for OCI mount %+v", mount)
-
 			hostPath := mount.Source
 			uvmPathForShare := path.Join(resources.containerRootInUVM, mountPathPrefix+strconv.Itoa(i))
 
@@ -68,12 +71,32 @@ func allocateLinuxResources(coi *createOptionsInternal, resources *Resources) er
 					break
 				}
 			}
-			err := coi.HostingSystem.AddPlan9(hostPath, uvmPathForShare, readOnly)
-			if err != nil {
-				return fmt.Errorf("adding plan9 mount %+v: %s", mount, err)
+
+			if mount.Type == "physical-disk" {
+				logrus.Debugf("hcsshim::allocateLinuxResources Hot-adding SCSI physical disk for OCI mount %+v", mount)
+				_, _, err := coi.HostingSystem.AddSCSIPhysicalDisk(hostPath, uvmPathForShare, readOnly)
+				if err != nil {
+					return fmt.Errorf("adding SCSI physical disk mount %+v: %s", mount, err)
+				}
+				resources.scsiMounts = append(resources.scsiMounts, hostPath)
+				coi.Spec.Mounts[i].Type = "none"
+			} else if mount.Type == "virtual-disk" {
+				logrus.Debugf("hcsshim::allocateLinuxResources Hot-adding SCSI virtual disk for OCI mount %+v", mount)
+				_, _, err := coi.HostingSystem.AddSCSI(hostPath, uvmPathForShare, readOnly)
+				if err != nil {
+					return fmt.Errorf("adding SCSI virtual disk mount %+v: %s", mount, err)
+				}
+				resources.scsiMounts = append(resources.scsiMounts, hostPath)
+				coi.Spec.Mounts[i].Type = "none"
+			} else {
+				logrus.Debugf("hcsshim::allocateLinuxResources Hot-adding Plan9 for OCI mount %+v", mount)
+				err := coi.HostingSystem.AddPlan9(hostPath, uvmPathForShare, readOnly)
+				if err != nil {
+					return fmt.Errorf("adding plan9 mount %+v: %s", mount, err)
+				}
+				resources.plan9Mounts = append(resources.plan9Mounts, hostPath)
 			}
 			coi.Spec.Mounts[i].Source = uvmPathForShare
-			resources.plan9Mounts = append(resources.plan9Mounts, hostPath)
 		}
 	}
 

@@ -31,11 +31,11 @@ func init() {
 
 // Copy is a wrapper for io.Copy using a timeout duration
 func Copy(dst io.Writer, src io.Reader, size int64, context string, timeout time.Duration) (int64, error) {
-	log := "to EOF"
-	if size > 0 {
-		log = fmt.Sprintf("%d bytes", size)
-	}
-	logrus.Debugf(fmt.Sprintf("hcsshim::copywithtimeout (%s) %s", context, log))
+	logrus.WithFields(logrus.Fields{
+		"stdval":  context,
+		"size":    size,
+		"timeout": timeout,
+	}).Debug("hcsshim::copywithtimeout - Begin")
 
 	type resultType struct {
 		err   error
@@ -62,7 +62,7 @@ func Copy(dst io.Writer, src io.Reader, size int64, context string, timeout time
 				if size > 0 {
 					bytes := make([]byte, size)
 					if _, err := buf.Read(bytes); err == nil {
-						logrus.Debugf(fmt.Sprintf("hcsshim: copyWithTimeout\n%s", hex.Dump(bytes)))
+						logrus.Debugf("hcsshim::copyWithTimeout - Read bytes\n%s", hex.Dump(bytes))
 					}
 				}
 			}
@@ -85,13 +85,19 @@ func Copy(dst io.Writer, src io.Reader, size int64, context string, timeout time
 					errBrokenPipe = syscall.Errno(109)
 				)
 				if se == errNoData || se == errBrokenPipe {
-					logrus.Debugf("hcsshim::copyWithTimeout: hit NoData or BrokenPipe: %d: %s", se, context)
+					logrus.WithFields(logrus.Fields{
+						"stdval":        context,
+						logrus.ErrorKey: se,
+					}).Debug("hcsshim::copywithtimeout - End")
 					return result.bytes, nil
 				}
 			}
 			return 0, fmt.Errorf("hcsshim::copyWithTimeout: error reading: '%s' after %d bytes (%s)", result.err, result.bytes, context)
 		}
 	}
-	logrus.Debugf("hcsshim::copyWithTimeout: success - copied %d bytes (%s)", result.bytes, context)
+	logrus.WithFields(logrus.Fields{
+		"stdval":       context,
+		"copied-bytes": result.bytes,
+	}).Debug("hcsshim::copywithtimeout - Completed Successfully")
 	return result.bytes, nil
 }

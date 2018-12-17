@@ -6,6 +6,7 @@ import (
 	"github.com/Microsoft/hcsshim/internal/guestrequest"
 	"github.com/Microsoft/hcsshim/internal/requesttype"
 	"github.com/Microsoft/hcsshim/internal/schema2"
+	"github.com/Microsoft/hcsshim/internal/wclayer"
 	"github.com/sirupsen/logrus"
 )
 
@@ -60,6 +61,11 @@ func (uvm *UtilityVM) AddVPMEM(hostPath string, expose bool) (uint32, string, er
 
 	deviceNumber, uvmPath, err = uvm.findVPMEMDevice(hostPath)
 	if err != nil {
+		// Ensure the utility VM has access
+		if err := wclayer.GrantVmAccess(uvm.ID(), hostPath); err != nil {
+			return 0, "", err
+		}
+
 		// It doesn't exist, so we're going to allocate and hot-add it
 		deviceNumber, err = uvm.allocateVPMEM(hostPath)
 		if err != nil {

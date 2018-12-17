@@ -39,6 +39,7 @@ const (
 	AutomaticDNS        NetworkPolicyType = "AutomaticDNS"
 	InterfaceConstraint NetworkPolicyType = "InterfaceConstraint"
 	ProviderAddress     NetworkPolicyType = "ProviderAddress"
+	RemoteSubnetRoute   NetworkPolicyType = "RemoteSubnetRoute"
 )
 
 // NetworkPolicy is a collection of Policy settings for a Network.
@@ -204,4 +205,12 @@ type VlanPolicySetting struct {
 // VsidPolicySetting isolates a subnet with VSID tagging.
 type VsidPolicySetting struct {
 	IsolationId uint32 `json:","`
+}
+
+// RemoteSubnetRoutePolicySetting creates remote subnet route rules on a network
+type RemoteSubnetRoutePolicySetting struct {
+	DestinationPrefix           string
+	IsolationId                 uint16
+	ProviderAddress             string
+	DistributedRouterMacAddress string
 }

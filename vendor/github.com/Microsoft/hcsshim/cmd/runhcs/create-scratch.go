@@ -6,8 +6,8 @@ import (
 
 	"github.com/Microsoft/hcsshim/internal/appargs"
 	"github.com/Microsoft/hcsshim/internal/lcow"
-	"github.com/Microsoft/hcsshim/internal/osversion"
 	"github.com/Microsoft/hcsshim/internal/uvm"
+	"github.com/Microsoft/hcsshim/osversion"
 	gcsclient "github.com/Microsoft/opengcs/client"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
@@ -51,18 +51,20 @@ var createScratchCommand = cli.Command{
 				return errors.Wrapf(err, "failed to create ext4vhdx for '%s'", cfg.Name)
 			}
 		} else {
-			opts := uvm.UVMOptions{
-				ID:              "createscratch-uvm",
-				OperatingSystem: "linux",
+			opts := uvm.OptionsLCOW{
+				Options: &uvm.Options{
+					ID:    "createscratch-uvm",
+					Owner: context.GlobalString("owner"),
+				},
 			}
-			convertUVM, err := uvm.Create(&opts)
+			convertUVM, err := uvm.CreateLCOW(&opts)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create '%s'", opts.ID)
 			}
+			defer convertUVM.Close()
 			if err := convertUVM.Start(); err != nil {
 				return errors.Wrapf(err, "failed to start '%s'", opts.ID)
 			}
-			defer convertUVM.Terminate()
 
 			if err := lcow.CreateScratch(convertUVM, dest, lcow.DefaultScratchSizeGB, "", ""); err != nil {
 				return errors.Wrapf(err, "failed to create ext4vhdx for '%s'", opts.ID)

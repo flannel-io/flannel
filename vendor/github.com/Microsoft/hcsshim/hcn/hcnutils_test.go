@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 )
 
-func cleanup() {
+func cleanup(networkName string) {
 	// Delete test network (if exists)
-	testNetwork, err := GetNetworkByName(NatTestNetworkName)
+	testNetwork, err := GetNetworkByName(networkName)
 	if err != nil {
 		return
 	}
@@ -20,27 +20,27 @@ func cleanup() {
 	}
 }
 
-func HcnCreateTestNetwork() (*HostComputeNetwork, error) {
-	cleanup()
+func HcnCreateTestNATNetwork() (*HostComputeNetwork, error) {
+	cleanup(NatTestNetworkName)
 	network := &HostComputeNetwork{
 		Type: "NAT",
 		Name: NatTestNetworkName,
 		MacPool: MacPool{
 			Ranges: []MacRange{
-				MacRange{
+				{
 					StartMacAddress: "00-15-5D-52-C0-00",
 					EndMacAddress:   "00-15-5D-52-CF-FF",
 				},
 			},
 		},
 		Ipams: []Ipam{
-			Ipam{
+			{
 				Type: "Static",
 				Subnets: []Subnet{
-					Subnet{
+					{
 						IpAddressPrefix: "192.168.100.0/24",
 						Routes: []Route{
-							Route{
+							{
 								NextHop:           "192.168.100.1",
 								DestinationPrefix: "0.0.0.0",
 							},
@@ -58,7 +58,68 @@ func HcnCreateTestNetwork() (*HostComputeNetwork, error) {
 	return network.Create()
 }
 
+func CreateTestOverlayNetwork() (*HostComputeNetwork, error) {
+	cleanup(OverlayTestNetworkName)
+	network := &HostComputeNetwork{
+		Type: "Overlay",
+		Name: OverlayTestNetworkName,
+		MacPool: MacPool{
+			Ranges: []MacRange{
+				{
+					StartMacAddress: "00-15-5D-52-C0-00",
+					EndMacAddress:   "00-15-5D-52-CF-FF",
+				},
+			},
+		},
+		Ipams: []Ipam{
+			{
+				Type: "Static",
+				Subnets: []Subnet{
+					{
+						IpAddressPrefix: "192.168.100.0/24",
+						Routes: []Route{
+							{
+								NextHop:           "192.168.100.1",
+								DestinationPrefix: "0.0.0.0/0",
+							},
+						},
+					},
+				},
+			},
+		},
+		SchemaVersion: SchemaVersion{
+			Major: 2,
+			Minor: 0,
+		},
+	}
+
+	vsid := &VsidPolicySetting{
+		IsolationId: 5000,
+	}
+	vsidJson, err := json.Marshal(vsid)
+	if err != nil {
+		return nil, err
+	}
+
+	sp := &SubnetPolicy{
+		Type: VSID,
+	}
+	sp.Settings = vsidJson
+
+	spJson, err := json.Marshal(sp)
+	if err != nil {
+		return nil, err
+	}
+
+	network.Ipams[0].Subnets[0].Policies = append(network.Ipams[0].Subnets[0].Policies, spJson)
+
+	return network.Create()
+}
+
 func HcnCreateTestEndpoint(network *HostComputeNetwork) (*HostComputeEndpoint, error) {
+	if network == nil {
+
+	}
 	Endpoint := &HostComputeEndpoint{
 		Name: NatTestEndpointName,
 		SchemaVersion: SchemaVersion{
@@ -151,7 +212,7 @@ func HcnCreateTestLoadBalancer(endpoint *HostComputeEndpoint) (*HostComputeLoadB
 		HostComputeEndpoints: []string{endpoint.Id},
 		SourceVIP:            "10.0.0.1",
 		PortMappings: []LoadBalancerPortMapping{
-			LoadBalancerPortMapping{
+			{
 				Protocol:     6, // TCP
 				InternalPort: 8080,
 				ExternalPort: 8090,
@@ -165,4 +226,28 @@ func HcnCreateTestLoadBalancer(endpoint *HostComputeEndpoint) (*HostComputeLoadB
 	}
 
 	return loadBalancer.Create()
+}
+
+func HcnCreateTestRemoteSubnetRoute() (*PolicyNetworkRequest, error) {
+	rsr := RemoteSubnetRoutePolicySetting{
+		DestinationPrefix:           "192.168.2.0/24",
+		IsolationId:                 5000,
+		ProviderAddress:             "1.1.1.1",
+		DistributedRouterMacAddress: "00-12-34-56-78-9a",
+	}
+
+	rawJSON, err := json.Marshal(rsr)
+	if err != nil {
+		return nil, err
+	}
+	rsrPolicy := NetworkPolicy{
+		Type:     RemoteSubnetRoute,
+		Settings: rawJSON,
+	}
+
+	networkRequest := PolicyNetworkRequest{
+		Policies: []NetworkPolicy{rsrPolicy},
+	}
+
+	return &networkRequest, nil
 }
