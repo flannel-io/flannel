@@ -33,7 +33,6 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/Microsoft/hcsshim"
 	"github.com/Microsoft/hcsshim/hcn"
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
@@ -123,17 +122,17 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, 
 	}
 	log.Infof("VXLAN config: Name=%s MacPrefix=%s VNI=%d Port=%d GBP=%v DirectRouting=%v", cfg.Name, cfg.MacPrefix, cfg.VNI, cfg.Port, cfg.GBP, cfg.DirectRouting)
 
-	hnsNetworks, err := hcsshim.HNSListNetworkRequest("GET", "", "")
+	hnsNetworks, err := hcn.ListNetworks()
 	if err != nil {
-		log.Infof("Cannot get HNS networks [%+v]", err)
+		return nil, fmt.Errorf("Cannot get HNS networks [%+v]", err)
 	}
 
 	var remoteDrMac string
-	for _, hnsnetwork := range hnsNetworks {
-		if hnsnetwork.ManagementIP == be.extIface.ExtAddr.String() {
-			hcnnetwork, err := hcn.GetNetworkByID(hnsnetwork.Id)
-			policies := hcnnetwork.Policies
-			for _, policy := range policies {
+	var providerAddress string
+	for _, hnsNetwork := range hnsNetworks {
+		log.Infof("Checking HNS network for DR MAC : [%+v]", hnsNetwork)
+		if len(remoteDrMac) == 0 {
+			for _, policy := range hnsNetwork.Policies {
 				if policy.Type == hcn.DrMacAddress {
 					policySettings := hcn.DrMacAddressNetworkPolicySetting{}
 					err = json.Unmarshal(policy.Settings, &policySettings)
@@ -142,12 +141,31 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, 
 					}
 					remoteDrMac = policySettings.Address
 				}
+				if policy.Type == hcn.ProviderAddress {
+					policySettings := hcn.ProviderAddressEndpointPolicySetting{}
+					err = json.Unmarshal(policy.Settings, &policySettings)
+					if err != nil {
+						return nil, fmt.Errorf("Failed to unmarshal settings")
+					}
+					providerAddress = policySettings.ProviderAddress
+				}
+			}
+			if providerAddress != be.extIface.ExtAddr.String() {
+				log.Infof("Cannot use DR MAC %v since PA %v does not match %v", remoteDrMac, providerAddress, be.extIface.ExtAddr.String())
+				remoteDrMac = ""
 			}
 		}
 	}
+
+	if len(providerAddress) == 0 {
+		return nil, fmt.Errorf("Cannot find network with Management IP %v", be.extIface.ExtAddr.String())
+	}
+	if len(remoteDrMac) == 0 {
+		return nil, fmt.Errorf("Could not find remote DR MAC for Management IP %v", be.extIface.ExtAddr.String())
+	}
 	mac, err := net.ParseMAC(string(remoteDrMac))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Cannot parse DR MAC %v: %+v", remoteDrMac, err)
 	}
 	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, uint16(cfg.VNI), mac)
 	if err != nil {
