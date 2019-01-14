@@ -40,7 +40,7 @@ docker run --rm --net=host quay.io/coreos/etcd etcdctl set /coreos.com/network/c
 Now `flannel` is running, it has created a VXLAN tunnel device on the host and written a subnet config file
 
 ```bash
-cat /var/run/flannel/subnet.env
+cat /run/flannel/subnet.env
 FLANNEL_NETWORK=10.5.0.0/16
 FLANNEL_SUBNET=10.5.72.1/24
 FLANNEL_MTU=1450
@@ -52,7 +52,7 @@ The `FLANNEL_SUBNET` value is also only used if it is valid for the etcd network
 
 Subnet config value is `10.5.72.1/24`
 ```bash
-cat /var/run/flannel/subnet.env
+cat /run/flannel/subnet.env
 FLANNEL_NETWORK=10.5.0.0/16
 FLANNEL_SUBNET=10.5.72.1/24
 FLANNEL_MTU=1450
