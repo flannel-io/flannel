@@ -137,7 +137,7 @@ release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-aarch6
 dist/qemu-%-static:
 	if [ "$(@F)" = "qemu-amd64-static" ]; then \
 		wget -O dist/qemu-amd64-static https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-x86_64-static; \
-  elif [ "$(@F)" = "qemu-arm64-static"]; then \
+	elif [ "$(@F)" = "qemu-arm64-static" ]; then \
 		wget -O dist/qemu-arm64-static https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-aarch64-static; \
 	else \
 		wget -O dist/$(@F) https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/$(@F); \
@@ -253,7 +253,7 @@ stop-etcd:
 run-k8s-apiserver: stop-k8s-apiserver
 	docker run --detach --net=host \
 	  --name calico-k8s-apiserver \
-  	gcr.io/google_containers/hyperkube-amd64:$(K8S_VERSION) \
+	gcr.io/google_containers/hyperkube-amd64:$(K8S_VERSION) \
 		  /hyperkube apiserver --etcd-servers=http://$(LOCAL_IP_ENV):2379 \
 		  --service-cluster-ip-range=10.101.0.0/16
 
