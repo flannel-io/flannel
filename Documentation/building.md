@@ -22,10 +22,13 @@ Then you should be able to set the ARCH as above
 ## Building manually
 
 1. Make sure you have required dependencies installed on your machine.
-    * On Ubuntu, run `sudo apt-get install linux-libc-dev golang gcc`.
+    * On Ubuntu, run `sudo apt-get install linux-libc-dev golang gcc`. 
+      If the golang version installed is not 1.7 or higher. Download the newest golang and install manully.
+      To build the flannel.exe on windows, mingw-w64 is also needed. Run command `sudo apt-get install mingw-w64`
     * On Fedora/Redhat, run `sudo yum install kernel-headers golang gcc`.
 2. Git clone the flannel repo. It MUST be placed in your GOPATH under `github.com/coreos/flannel`: `cd $GOPATH/src; git clone https://github.com/coreos/flannel.git`
-3. Run the build script, ensuring that `CGO_ENABLED=1`: `cd flannel; CGO_ENABLED=1 make dist/flanneld`
+3. Run the build script, ensuring that `CGO_ENABLED=1`: `cd flannel; CGO_ENABLED=1 make dist/flanneld` for linux usage.
+   Run the build script, ensuring that `CGO_ENABLED=1`: `cd flannel; CGO_ENABLED=1 make dist/flanneld.exe` for windows usage.
 
 # Release Process
 
