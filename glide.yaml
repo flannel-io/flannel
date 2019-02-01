@@ -63,7 +63,6 @@ import:
 - package: github.com/bronze1man/goStrongswanVici
   version: 4d72634a2f113aa48347dbc7dcb14adb806b6534
 - package: github.com/Microsoft/hcsshim
-  version: v0.8.3
 - package: github.com/Microsoft/go-winio
   version: v0.4.11
 - pacakge: github.com/sirupsen/logrus

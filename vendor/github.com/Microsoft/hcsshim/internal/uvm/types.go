@@ -3,6 +3,7 @@ package uvm
 // This package describes the external interface for utility VMs.
 
 import (
+	"context"
 	"net"
 	"sync"
 
@@ -97,7 +98,8 @@ type UtilityVM struct {
 
 	namespaces map[string]*namespaceInfo
 
-	outputListener       net.Listener
-	outputProcessingDone chan struct{}
-	outputHandler        OutputHandler
+	outputListener         net.Listener
+	outputProcessingDone   chan struct{}
+	outputHandler          OutputHandler
+	outputProcessingCancel context.CancelFunc
 }

@@ -4,9 +4,9 @@ import (
 	"io/ioutil"
 	"testing"
 
-	_ "github.com/Microsoft/hcsshim/functional/manifest"
 	"github.com/Microsoft/hcsshim/internal/schema2"
 	"github.com/Microsoft/hcsshim/osversion"
+	_ "github.com/Microsoft/hcsshim/test/functional/manifest"
 	"github.com/sirupsen/logrus"
 )
 

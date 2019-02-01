@@ -22,6 +22,35 @@ type OptionsWCOW struct {
 	LayerFolders []string // Set of folders for base layers and scratch. Ordered from top most read-only through base read-only layer, followed by scratch
 }
 
+// NewDefaultOptionsWCOW creates the default options for a bootable version of
+// WCOW. The caller `MUST` set the `LayerFolders` path on the returned value.
+//
+// `id` the ID of the compute system. If not passed will generate a new GUID.
+//
+// `owner` the owner of the compute system. If not passed will use the
+// executable files name.
+func NewDefaultOptionsWCOW(id, owner string) *OptionsWCOW {
+	opts := &OptionsWCOW{
+		Options: &Options{
+			ID:                   id,
+			Owner:                owner,
+			MemorySizeInMB:       1024,
+			AllowOvercommit:      true,
+			EnableDeferredCommit: false,
+			ProcessorCount:       defaultProcessorCount(),
+		},
+	}
+
+	if opts.ID == "" {
+		opts.ID = guid.New().String()
+	}
+	if opts.Owner == "" {
+		opts.Owner = filepath.Base(os.Args[0])
+	}
+
+	return opts
+}
+
 // CreateWCOW creates an HCS compute system representing a utility VM.
 //
 // WCOW Notes:
@@ -40,15 +69,6 @@ func CreateWCOW(opts *OptionsWCOW) (_ *UtilityVM, err error) {
 		operatingSystem:     "windows",
 		scsiControllerCount: 1,
 		vsmbShares:          make(map[string]*vsmbShare),
-	}
-
-	// Defaults if omitted by caller.
-	// TODO: Change this. Don't auto generate ID if omitted. Avoids the chicken-and-egg problem
-	if uvm.id == "" {
-		uvm.id = guid.New().String()
-	}
-	if uvm.owner == "" {
-		uvm.owner = filepath.Base(os.Args[0])
 	}
 
 	if len(opts.LayerFolders) < 2 {
@@ -89,6 +109,7 @@ func CreateWCOW(opts *OptionsWCOW) (_ *UtilityVM, err error) {
 		SchemaVersion:                     schemaversion.SchemaV21(),
 		ShouldTerminateOnLastHandleClosed: true,
 		VirtualMachine: &hcsschema.VirtualMachine{
+			StopOnReset: true,
 			Chipset: &hcsschema.Chipset{
 				Uefi: &hcsschema.Uefi{
 					BootThis: &hcsschema.UefiBootEntry{
@@ -99,16 +120,14 @@ func CreateWCOW(opts *OptionsWCOW) (_ *UtilityVM, err error) {
 			},
 			ComputeTopology: &hcsschema.Topology{
 				Memory: &hcsschema.Memory2{
-					SizeInMB: normalizeMemory(opts.MemorySizeInMB),
-					// AllowOvercommit `true` by default if not passed.
-					AllowOvercommit: opts.AllowOvercommit == nil || *opts.AllowOvercommit,
-					// EnableHotHint is not compatible with physical. Only virtual, and only Windows.
-					EnableHotHint: opts.AllowOvercommit == nil || *opts.AllowOvercommit,
-					// EnableDeferredCommit `false` by default if not passed.
-					EnableDeferredCommit: opts.EnableDeferredCommit != nil && *opts.EnableDeferredCommit,
+					SizeInMB:        opts.MemorySizeInMB,
+					AllowOvercommit: opts.AllowOvercommit,
+					// EnableHotHint is not compatible with physical.
+					EnableHotHint:        opts.AllowOvercommit,
+					EnableDeferredCommit: opts.EnableDeferredCommit,
 				},
 				Processor: &hcsschema.Processor2{
-					Count: normalizeProcessors(opts.ProcessorCount),
+					Count: defaultProcessorCount(),
 				},
 			},
 			GuestConnection: &hcsschema.GuestConnection{},

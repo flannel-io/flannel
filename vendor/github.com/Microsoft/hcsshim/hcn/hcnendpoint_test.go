@@ -23,11 +23,11 @@ func TestCreateDeleteEndpoint(t *testing.T) {
 	}
 	fmt.Printf("Endpoint JSON:\n%s \n", jsonString)
 
-	_, err = Endpoint.Delete()
+	err = Endpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,11 +51,11 @@ func TestGetEndpointById(t *testing.T) {
 		t.Fatal("No Endpoint found")
 	}
 
-	_, err = foundEndpoint.Delete()
+	err = foundEndpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,11 +79,11 @@ func TestGetEndpointByName(t *testing.T) {
 		t.Fatal("No Endpoint found")
 	}
 
-	_, err = foundEndpoint.Delete()
+	err = foundEndpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -107,11 +107,11 @@ func TestListEndpoints(t *testing.T) {
 		t.Fatal("No Endpoint found")
 	}
 
-	_, err = Endpoint.Delete()
+	err = Endpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,11 +135,11 @@ func TestListEndpointsOfNetwork(t *testing.T) {
 		t.Fatal("No Endpoint found")
 	}
 
-	_, err = Endpoint.Delete()
+	err = Endpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,15 +168,15 @@ func TestEndpointNamespaceAttachDetach(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = namespace.Delete()
+	err = namespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = endpoint.Delete()
+	err = endpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -199,11 +199,11 @@ func TestCreateEndpointWithNamespace(t *testing.T) {
 		t.Fatal("No Namespace detected.")
 	}
 
-	_, err = Endpoint.Delete()
+	err = Endpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -240,11 +240,11 @@ func TestApplyPolicyOnEndpoint(t *testing.T) {
 		t.Fatal("No Endpoint Policies found")
 	}
 
-	_, err = Endpoint.Delete()
+	err = Endpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -287,11 +287,11 @@ func TestModifyEndpointSettings(t *testing.T) {
 		t.Fatal("No Endpoint Policies found")
 	}
 
-	_, err = endpoint.Delete()
+	err = endpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}

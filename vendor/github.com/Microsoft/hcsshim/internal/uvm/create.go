@@ -16,11 +16,11 @@ type Options struct {
 
 	// Memory for UVM. Defaults to true. For physical backed memory, set to
 	// false.
-	AllowOvercommit *bool
+	AllowOvercommit bool
 
 	// Memory for UVM. Defaults to false. For virtual memory with deferred
 	// commit, set to true.
-	EnableDeferredCommit *bool
+	EnableDeferredCommit bool
 
 	// ProcessorCount sets the number of vCPU's. If `0` will default to platform
 	// default.
@@ -54,19 +54,9 @@ func (uvm *UtilityVM) Close() error {
 	return err
 }
 
-func normalizeMemory(m int32) int32 {
-	if m == 0 {
-		return 1024 // 1GB By Default.
+func defaultProcessorCount() int32 {
+	if runtime.NumCPU() == 1 {
+		return 1
 	}
-	return m
-}
-
-func normalizeProcessors(p int32) int32 {
-	if p == 0 {
-		if runtime.NumCPU() == 1 {
-			return 1
-		}
-		return 2
-	}
-	return p
+	return 2
 }

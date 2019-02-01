@@ -30,7 +30,7 @@ func TestCreateDeleteNamespace(t *testing.T) {
 	}
 	fmt.Printf("Namespace JSON:\n%s \n", jsonString)
 
-	_, err = namespace.Delete()
+	err = namespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func TestCreateDeleteNamespaceGuest(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = hnsNamespace.Delete()
+	err = hnsNamespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +70,7 @@ func TestGetNamespaceById(t *testing.T) {
 		t.Fatal("No namespace found")
 	}
 
-	_, err = namespace.Delete()
+	err = namespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,7 +90,7 @@ func TestListNamespaces(t *testing.T) {
 		t.Fatal("No Namespaces found")
 	}
 
-	_, err = namespace.Delete()
+	err = namespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,15 +126,15 @@ func TestGetNamespaceEndpointIds(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = namespace.Delete()
+	err = namespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = endpoint.Delete()
+	err = endpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -154,7 +154,7 @@ func TestGetNamespaceContainers(t *testing.T) {
 		t.Fatal("Found containers when none should exist")
 	}
 
-	_, err = namespace.Delete()
+	err = namespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -190,15 +190,15 @@ func TestAddRemoveNamespaceEndpoint(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = namespace.Delete()
+	err = namespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = endpoint.Delete()
+	err = endpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -245,15 +245,15 @@ func TestModifyNamespaceSettings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = namespace.Delete()
+	err = namespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = endpoint.Delete()
+	err = endpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -282,7 +282,7 @@ func TestSyncNamespaceHostDefault(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = hnsNamespace.Delete()
+	err = hnsNamespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -309,7 +309,7 @@ func TestSyncNamespaceHost(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = hnsNamespace.Delete()
+	err = hnsNamespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -336,7 +336,7 @@ func TestSyncNamespaceGuestNoReg(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = hnsNamespace.Delete()
+	err = hnsNamespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -363,7 +363,7 @@ func TestSyncNamespaceGuestDefaultNoReg(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = hnsNamespace.Delete()
+	err = hnsNamespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -404,7 +404,7 @@ func TestSyncNamespaceGuest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = hnsNamespace.Delete()
+	err = hnsNamespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -444,7 +444,7 @@ func TestSyncNamespaceGuestDefault(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = hnsNamespace.Delete()
+	err = hnsNamespace.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -32,6 +32,7 @@ const (
 	forwardStderrArgName        = "fwd-stderr"
 	debugArgName                = "debug"
 	outputHandlingArgName       = "output-handling"
+	consolePipeArgName          = "console-pipe"
 )
 
 func main() {
@@ -88,7 +89,7 @@ func main() {
 				},
 				cli.StringFlag{
 					Name:  rootFSTypeArgName,
-					Usage: "Either 'initrd' or 'vhd'. Uses hcsshim default if not specified",
+					Usage: "Either 'initrd' or 'vhd'. (default: 'vhd' if rootfs.vhd exists)",
 				},
 				cli.UintFlag{
 					Name:  vpMemMaxCountArgName,
@@ -100,7 +101,7 @@ func main() {
 				},
 				cli.BoolFlag{
 					Name:  kernelDirectArgName,
-					Usage: "Use kernel direct booting for UVM",
+					Usage: "Use kernel direct booting for UVM (default: true on builds >= 18286)",
 				},
 				cli.StringFlag{
 					Name:  execCommandLineArgName,
@@ -117,6 +118,10 @@ func main() {
 				cli.StringFlag{
 					Name:  outputHandlingArgName,
 					Usage: "Controls how output from UVM is handled. Use 'stdout' to print all output to stdout",
+				},
+				cli.StringFlag{
+					Name:  consolePipeArgName,
+					Usage: "Named pipe for serial console output (which will be enabled)",
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -142,16 +147,8 @@ func main() {
 
 						id := fmt.Sprintf("uvmboot-%d", i)
 
-						options := uvm.OptionsLCOW{
-							Options: &uvm.Options{
-								ID: id,
-							},
-						}
-
-						{
-							val := false
-							options.UseGuestConnection = &val
-						}
+						options := uvm.NewDefaultOptionsLCOW(id, "")
+						options.UseGuestConnection = false
 
 						if c.GlobalIsSet(cpusArgName) {
 							options.ProcessorCount = int32(c.GlobalUint64(cpusArgName))
@@ -160,12 +157,10 @@ func main() {
 							options.MemorySizeInMB = int32(c.GlobalUint64(memoryArgName))
 						}
 						if c.GlobalIsSet(allowOvercommitArgName) {
-							val := c.GlobalBool(allowOvercommitArgName)
-							options.AllowOvercommit = &val
+							options.AllowOvercommit = c.GlobalBool(allowOvercommitArgName)
 						}
 						if c.GlobalIsSet(enableDeferredCommitArgName) {
-							val := c.GlobalBool(enableDeferredCommitArgName)
-							options.EnableDeferredCommit = &val
+							options.EnableDeferredCommit = c.GlobalBool(enableDeferredCommitArgName)
 						}
 
 						if c.IsSet(kernelDirectArgName) {
@@ -174,11 +169,11 @@ func main() {
 						if c.IsSet(rootFSTypeArgName) {
 							switch strings.ToLower(c.String(rootFSTypeArgName)) {
 							case "initrd":
-								val := uvm.PreferredRootFSTypeInitRd
-								options.PreferredRootFSType = &val
+								options.RootFSFile = uvm.InitrdFile
+								options.PreferredRootFSType = uvm.PreferredRootFSTypeInitRd
 							case "vhd":
-								val := uvm.PreferredRootFSTypeVHD
-								options.PreferredRootFSType = &val
+								options.RootFSFile = uvm.VhdFile
+								options.PreferredRootFSType = uvm.PreferredRootFSTypeVHD
 							default:
 								logrus.Fatalf("Unrecognized value '%s' for option %s", c.String(rootFSTypeArgName), rootFSTypeArgName)
 							}
@@ -187,35 +182,33 @@ func main() {
 							options.KernelBootOptions = c.String(kernelArgsArgName)
 						}
 						if c.IsSet(vpMemMaxCountArgName) {
-							val := uint32(c.Uint(vpMemMaxCountArgName))
-							options.VPMemDeviceCount = &val
+							options.VPMemDeviceCount = uint32(c.Uint(vpMemMaxCountArgName))
 						}
 						if c.IsSet(vpMemMaxSizeArgName) {
-							val := c.Uint64(vpMemMaxSizeArgName) * 1024 * 1024 // convert from MB to bytes
-							options.VPMemSizeBytes = &val
+							options.VPMemSizeBytes = c.Uint64(vpMemMaxSizeArgName) * 1024 * 1024 // convert from MB to bytes
 						}
 						if c.IsSet(execCommandLineArgName) {
 							options.ExecCommandLine = c.String(execCommandLineArgName)
 						}
 						if c.IsSet(forwardStdoutArgName) {
-							val := c.Bool(forwardStdoutArgName)
-							options.ForwardStdout = &val
+							options.ForwardStdout = c.Bool(forwardStdoutArgName)
 						}
 						if c.IsSet(forwardStderrArgName) {
-							val := c.Bool(forwardStderrArgName)
-							options.ForwardStderr = &val
+							options.ForwardStderr = c.Bool(forwardStderrArgName)
 						}
 						if c.IsSet(outputHandlingArgName) {
 							switch strings.ToLower(c.String(outputHandlingArgName)) {
 							case "stdout":
-								val := uvm.OutputHandler(func(r io.Reader) { io.Copy(os.Stdout, r) })
-								options.OutputHandler = &val
+								options.OutputHandler = uvm.OutputHandler(func(r io.Reader) { io.Copy(os.Stdout, r) })
 							default:
 								logrus.Fatalf("Unrecognized value '%s' for option %s", c.String(outputHandlingArgName), outputHandlingArgName)
 							}
 						}
+						if c.IsSet(consolePipeArgName) {
+							options.ConsolePipe = c.String(consolePipeArgName)
+						}
 
-						if err := run(&options); err != nil {
+						if err := run(options); err != nil {
 							logrus.WithField("uvm-id", id).Error(err)
 						}
 					}

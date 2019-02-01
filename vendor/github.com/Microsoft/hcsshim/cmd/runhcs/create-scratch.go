@@ -36,7 +36,7 @@ var createScratchCommand = cli.Command{
 				Options: gcsclient.Options{
 					KirdPath:   filepath.Join(os.Getenv("ProgramFiles"), "Linux Containers"),
 					KernelFile: "kernel",
-					InitrdFile: "initrd.img",
+					InitrdFile: uvm.InitrdFile,
 				},
 				Name:              "createscratch-uvm",
 				UvmTimeoutSeconds: 5 * 60, // 5 Min
@@ -51,13 +51,8 @@ var createScratchCommand = cli.Command{
 				return errors.Wrapf(err, "failed to create ext4vhdx for '%s'", cfg.Name)
 			}
 		} else {
-			opts := uvm.OptionsLCOW{
-				Options: &uvm.Options{
-					ID:    "createscratch-uvm",
-					Owner: context.GlobalString("owner"),
-				},
-			}
-			convertUVM, err := uvm.CreateLCOW(&opts)
+			opts := uvm.NewDefaultOptionsLCOW("createscratch-uvm", context.GlobalString("owner"))
+			convertUVM, err := uvm.CreateLCOW(opts)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create '%s'", opts.ID)
 			}

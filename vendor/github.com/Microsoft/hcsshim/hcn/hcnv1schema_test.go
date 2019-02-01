@@ -41,7 +41,7 @@ func TestV1Network(t *testing.T) {
 		t.Fail()
 	}
 
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 		t.Fail()
@@ -97,13 +97,13 @@ func TestV1Endpoint(t *testing.T) {
 		t.Fail()
 	}
 
-	_, err = endpoint.Delete()
+	err = endpoint.Delete()
 	if err != nil {
 		t.Fatal(err)
 		t.Fail()
 	}
 
-	_, err = network.Delete()
+	err = network.Delete()
 	if err != nil {
 		t.Fatal(err)
 		t.Fail()
