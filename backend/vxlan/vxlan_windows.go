@@ -127,6 +127,11 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, 
 		return nil, fmt.Errorf("Cannot get HNS networks [%+v]", err)
 	}
 
+	err = hcn.RemoteSubnetSupported()
+	if err != nil {
+		return nil, err
+	}
+
 	var remoteDrMac string
 	var providerAddress string
 	for _, hnsNetwork := range hnsNetworks {
