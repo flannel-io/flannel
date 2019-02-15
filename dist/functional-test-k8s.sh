@@ -6,7 +6,7 @@ ETCD_LOCATION="${ETCD_LOCATION:-etcd}"
 FLANNEL_NET="${FLANNEL_NET:-10.10.0.0/16}"
 TAG=`git describe --tags --dirty`
 FLANNEL_DOCKER_IMAGE="${FLANNEL_DOCKER_IMAGE:-quay.io/coreos/flannel:$TAG}"
-K8S_VERSION="${K8S_VERSION:-1.7.6}"
+K8S_VERSION="${K8S_VERSION:-1.13.2}"
 HYPERKUBE_IMG="gcr.io/google_containers/hyperkube-${ARCH}"
 
 docker_ip=$(ip -o -f inet addr show docker0 | grep -Po 'inet \K[\d.]+')
