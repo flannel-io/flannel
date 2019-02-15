@@ -300,6 +300,7 @@ func main() {
 			wg.Wait()
 			os.Exit(1)
 		}
+		log.Infof("Setting up masking rules")
 		go network.SetupAndEnsureIPTables(network.MasqRules(config.Network, bn.Lease()), opts.iptablesResyncSeconds)
 	}
 
@@ -307,6 +308,7 @@ func main() {
 	// In Docker 1.12 and earlier, the default FORWARD chain policy was ACCEPT.
 	// In Docker 1.13 and later, Docker sets the default policy of the FORWARD chain to DROP.
 	if opts.iptablesForwardRules {
+		log.Infof("Changing default FORWARD chain policy to ACCEPT")
 		go network.SetupAndEnsureIPTables(network.ForwardRules(config.Network.String()), opts.iptablesResyncSeconds)
 	}
 
