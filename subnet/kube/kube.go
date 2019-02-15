@@ -328,7 +328,7 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l subnet.Lease, err error)
 	return l, nil
 }
 
-// unimplemented
+// RenewLease: unimplemented
 func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, lease *subnet.Lease) error {
 	return ErrUnimplemented
 }
