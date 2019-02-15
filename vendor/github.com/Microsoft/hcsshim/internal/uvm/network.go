@@ -24,7 +24,8 @@ func (uvm *UtilityVM) AddNetNS(id string, endpoints []*hns.HNSEndpoint) (err err
 		ns = &namespaceInfo{}
 
 		if uvm.isNetworkNamespaceSupported() {
-			// Add a Guest Network namespace. Remove windows check when LCOW supports it
+			// Add a Guest Network namespace. On LCOW we add the adapters
+			// dynamically.
 			if uvm.operatingSystem == "windows" {
 				hcnNamespace, err := hcn.GetNamespaceByID(id)
 				if err != nil {
@@ -182,13 +183,26 @@ func (uvm *UtilityVM) addNIC(id guid.GUID, endpoint *hns.HNSEndpoint) error {
 				requesttype.Add,
 				nil),
 		}
-		// Uncomment this once we have GuestRequest support for Linux
-		//} else {
-		//	request.GuestRequest = guestrequest.GuestRequest{
-		//		ResourceType: guestrequest.ResourceTypeNetwork,
-		//		RequestType:  requesttype.Add,
-		//		Settings:     endpoint,
-		//	}
+	} else {
+		// Verify this version of LCOW supports Network HotAdd
+		if uvm.isNetworkNamespaceSupported() {
+			request.GuestRequest = guestrequest.GuestRequest{
+				ResourceType: guestrequest.ResourceTypeNetwork,
+				RequestType:  requesttype.Add,
+				Settings: &guestrequest.LCOWNetworkAdapter{
+					NamespaceID:     endpoint.Namespace.ID,
+					ID:              id.String(),
+					MacAddress:      endpoint.MacAddress,
+					IPAddress:       endpoint.IPAddress.String(),
+					PrefixLength:    endpoint.PrefixLength,
+					GatewayAddress:  endpoint.GatewayAddress,
+					DNSSuffix:       endpoint.DNSSuffix,
+					DNSServerList:   endpoint.DNSServerList,
+					EnableLowMetric: endpoint.EnableLowMetric,
+					EncapOverhead:   endpoint.EncapOverhead,
+				},
+			}
+		}
 	}
 
 	if err := uvm.Modify(&request); err != nil {
@@ -217,10 +231,16 @@ func (uvm *UtilityVM) removeNIC(id guid.GUID, endpoint *hns.HNSEndpoint) error {
 				nil),
 		}
 	} else {
-		request.GuestRequest = guestrequest.GuestRequest{
-			ResourceType: guestrequest.ResourceTypeNetwork,
-			RequestType:  requesttype.Remove,
-			Settings:     endpoint,
+		// Verify this version of LCOW supports Network HotRemove
+		if uvm.isNetworkNamespaceSupported() {
+			request.GuestRequest = guestrequest.GuestRequest{
+				ResourceType: guestrequest.ResourceTypeNetwork,
+				RequestType:  requesttype.Remove,
+				Settings: &guestrequest.LCOWNetworkAdapter{
+					NamespaceID: endpoint.Namespace.ID,
+					ID:          endpoint.Id,
+				},
+			}
 		}
 	}
 

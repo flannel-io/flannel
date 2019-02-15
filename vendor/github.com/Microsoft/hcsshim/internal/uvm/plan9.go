@@ -27,6 +27,22 @@ func (uvm *UtilityVM) AddPlan9(hostPath string, uvmPath string, readOnly bool) e
 		return fmt.Errorf("uvmPath must be passed to AddPlan9")
 	}
 
+	// TODO: JTERRY75 - These are marked private in the schema. For now use them
+	// but when there are public variants we need to switch to them.
+	const (
+		shareFlagsReadOnly      int32 = 0x00000001
+		shareFlagsLinuxMetadata int32 = 0x00000004
+		shareFlagsCaseSensitive int32 = 0x00000008
+	)
+
+	// TODO: JTERRY75 - `shareFlagsCaseSensitive` only works if the Windows
+	// `hostPath` supports case sensitivity. We need to detect this case before
+	// forwarding this flag in all cases.
+	flags := shareFlagsLinuxMetadata // | shareFlagsCaseSensitive
+	if readOnly {
+		flags |= shareFlagsReadOnly
+	}
+
 	uvm.m.Lock()
 	defer uvm.m.Unlock()
 	if uvm.plan9Shares == nil {
@@ -38,9 +54,10 @@ func (uvm *UtilityVM) AddPlan9(hostPath string, uvmPath string, readOnly bool) e
 		modification := &hcsschema.ModifySettingRequest{
 			RequestType: requesttype.Add,
 			Settings: hcsschema.Plan9Share{
-				Name: fmt.Sprintf("%d", uvm.plan9Counter),
-				Path: hostPath,
-				Port: int32(uvm.plan9Counter), // TODO: Temporary. Will all use a single port (9999)
+				Name:  fmt.Sprintf("%d", uvm.plan9Counter),
+				Path:  hostPath,
+				Port:  int32(uvm.plan9Counter), // TODO: Temporary. Will all use a single port (9999)
+				Flags: flags,
 			},
 			ResourcePath: fmt.Sprintf("VirtualMachine/Devices/Plan9/Shares"),
 			GuestRequest: guestrequest.GuestRequest{

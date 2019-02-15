@@ -130,10 +130,9 @@ func (process *Process) Signal(options guestrequest.SignalProcessOptions) (err e
 	optionsStr := string(optionsb)
 
 	var resultp *uint16
-	completed := false
-	go syscallWatcher(process.logctx, &completed)
-	err = hcsSignalProcess(process.handle, optionsStr, &resultp)
-	completed = true
+	syscallWatcher(process.logctx, func() {
+		err = hcsSignalProcess(process.handle, optionsStr, &resultp)
+	})
 	events := processHcsResult(resultp)
 	if err != nil {
 		return makeProcessError(process, operation, err, events)
@@ -156,10 +155,9 @@ func (process *Process) Kill() (err error) {
 	}
 
 	var resultp *uint16
-	completed := false
-	go syscallWatcher(process.logctx, &completed)
-	err = hcsTerminateProcess(process.handle, &resultp)
-	completed = true
+	syscallWatcher(process.logctx, func() {
+		err = hcsTerminateProcess(process.handle, &resultp)
+	})
 	events := processHcsResult(resultp)
 	if err != nil {
 		return makeProcessError(process, operation, err, events)
@@ -251,10 +249,9 @@ func (process *Process) Properties() (_ *ProcessStatus, err error) {
 		resultp     *uint16
 		propertiesp *uint16
 	)
-	completed := false
-	go syscallWatcher(process.logctx, &completed)
-	err = hcsGetProcessProperties(process.handle, &propertiesp, &resultp)
-	completed = true
+	syscallWatcher(process.logctx, func() {
+		err = hcsGetProcessProperties(process.handle, &propertiesp, &resultp)
+	})
 	events := processHcsResult(resultp)
 	if err != nil {
 		return nil, makeProcessError(process, operation, err, events)
