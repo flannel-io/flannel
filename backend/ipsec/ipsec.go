@@ -95,6 +95,13 @@ func (be *IPSECBackend) RegisterNetwork(
 
 	log.Infof("IPSec config: UDPEncap=%v ESPProposal=%s", cfg.UDPEncap, cfg.ESPProposal)
 
+	dev, err := newIPSecDummyDevice(&ipsecDeviceAttrs{
+		name: "flannel-ipsec",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create IPSec dummy device: %v", err)
+	}
+
 	attrs := subnet.LeaseAttrs{
 		PublicIP:    ip.FromIP(be.extIface.ExtAddr),
 		BackendType: "ipsec",
@@ -110,6 +117,18 @@ func (be *IPSECBackend) RegisterNetwork(
 
 	default:
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
+	}
+
+	// Ensure the whole flannel network is routed to the dummy interface to reach the other nodes.
+
+	networkConfig, err := be.sm.GetNetworkConfig(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read network config: %s", err)
+	}
+
+	// Ensure the device has a /32 address so no broadcast routes are created.
+	if err := dev.Configure(ip.IP4Net{IP: l.Subnet.IP, PrefixLen: 32}, networkConfig.Network); err != nil {
+		return nil, fmt.Errorf("failed to configure interface %s: %s", dev.link.Attrs().Name, err)
 	}
 
 	ikeDaemon, err := NewCharonIKEDaemon(ctx, wg, cfg.ESPProposal)
