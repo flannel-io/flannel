@@ -100,7 +100,7 @@ func (dev *ipsecDevice) Configure(ipn ip.IP4Net, cidr ip.IP4Net) error {
 
 	if err := netlink.RouteAdd(&netlink.Route{
 		LinkIndex: dev.link.Index,
-		Scope:     netlink.SCOPE_LINK,
+		Scope:     netlink.SCOPE_UNIVERSE,
 		Dst: &net.IPNet{
 			IP:   cidr.IP.ToIP(),
 			Mask: net.CIDRMask(int(cidr.PrefixLen), 32),
