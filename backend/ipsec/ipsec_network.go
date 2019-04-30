@@ -20,6 +20,7 @@ import (
 	"net"
 	"strconv"
 	"sync"
+	"time"
 
 	log "github.com/golang/glog"
 	"github.com/vishvananda/netlink"
@@ -50,12 +51,13 @@ type network struct {
 	backend.SimpleNetwork
 	password string
 	UDPEncap bool
+	dev      *ipsecDevice
 	sm       subnet.Manager
 	iked     *CharonIKEDaemon
 }
 
 func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface,
-	UDPEncap bool, password string, ikeDaemon *CharonIKEDaemon,
+	UDPEncap bool, password string, ikeDaemon *CharonIKEDaemon, dev *ipsecDevice,
 	l *subnet.Lease) (*network, error) {
 	n := &network{
 		SimpleNetwork: backend.SimpleNetwork{
@@ -66,6 +68,7 @@ func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface,
 		iked:     ikeDaemon,
 		password: password,
 		UDPEncap: UDPEncap,
+		dev:      dev,
 	}
 
 	return n, nil
@@ -133,6 +136,14 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				strconv.FormatBool(n.UDPEncap)); err != nil {
 				log.Errorf("error loading connection into IKE daemon: %v", err)
 			}
+			go func() {
+				time.Sleep(5 * time.Second)
+				if err := n.dev.AddRoute(&evt.Lease); err != nil {
+					log.Errorf("failed to add route to interface: %v", err)
+				} else {
+					log.Infof("added route for subnet.")
+				}
+			}()
 
 		case subnet.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
@@ -155,6 +166,14 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 
 				log.Errorf("error deleting ipsec policies: %v", err)
 			}
+			go func() {
+				time.Sleep(5 * time.Second)
+				if err := n.dev.DelRoute(&evt.Lease); err != nil {
+					log.Errorf("failed to add route to interface: %v", err)
+				} else {
+					log.Infof("deleted route for subnet.")
+				}
+			}()
 		}
 	}
 }

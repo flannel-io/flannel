@@ -57,6 +57,7 @@ func init() {
 type IPSECBackend struct {
 	sm       subnet.Manager
 	extIface *backend.ExternalInterface
+	dev      *ipsecDevice
 }
 
 func New(sm subnet.Manager, extIface *backend.ExternalInterface) (
@@ -64,6 +65,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (
 	be := &IPSECBackend{
 		sm:       sm,
 		extIface: extIface,
+		dev:      nil,
 	}
 
 	return be, nil
@@ -95,13 +97,6 @@ func (be *IPSECBackend) RegisterNetwork(
 
 	log.Infof("IPSec config: UDPEncap=%v ESPProposal=%s", cfg.UDPEncap, cfg.ESPProposal)
 
-	dev, err := newIPSecDummyDevice(&ipsecDeviceAttrs{
-		name: "flannel-ipsec",
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create IPSec dummy device: %v", err)
-	}
-
 	attrs := subnet.LeaseAttrs{
 		PublicIP:    ip.FromIP(be.extIface.ExtAddr),
 		BackendType: "ipsec",
@@ -126,15 +121,23 @@ func (be *IPSECBackend) RegisterNetwork(
 		return nil, fmt.Errorf("failed to read network config: %s", err)
 	}
 
-	// Ensure the device has a /32 address so no broadcast routes are created.
-	if err := dev.Configure(ip.IP4Net{IP: l.Subnet.IP, PrefixLen: 32}, networkConfig.Network); err != nil {
-		return nil, fmt.Errorf("failed to configure interface %s: %s", dev.link.Attrs().Name, err)
-	}
-
 	ikeDaemon, err := NewCharonIKEDaemon(ctx, wg, cfg.ESPProposal)
 	if err != nil {
 		return nil, fmt.Errorf("error creating CharonIKEDaemon struct: %v", err)
 	}
 
-	return newNetwork(be.sm, be.extIface, cfg.UDPEncap, cfg.PSK, ikeDaemon, l)
+	dev, err := newIPSecDevice(&ipsecDeviceAttrs{
+		name:    "flannel-vti",
+		localIP: be.extIface.IfaceAddr,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create IPSec device: %v", err)
+	}
+	be.dev = dev
+	// Ensure the device has a /32 address so no broadcast routes are created.
+	if err := dev.Configure(ip.IP4Net{IP: l.Subnet.IP, PrefixLen: 32}, networkConfig.Network); err != nil {
+		return nil, fmt.Errorf("failed to configure interface %s: %s", dev.link.Attrs().Name, err)
+	}
+
+	return newNetwork(be.sm, be.extIface, cfg.UDPEncap, cfg.PSK, ikeDaemon, dev, l)
 }

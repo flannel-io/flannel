@@ -18,6 +18,7 @@ package ipsec
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net"
 	"syscall"
 
@@ -25,21 +26,24 @@ import (
 	"github.com/vishvananda/netlink"
 
 	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/subnet"
 )
 
 type ipsecDeviceAttrs struct {
-	name string
+	name    string
+	localIP net.IP
 }
 
 type ipsecDevice struct {
-	link *netlink.Dummy
+	link *netlink.Vti
 }
 
-func newIPSecDummyDevice(devAttrs *ipsecDeviceAttrs) (*ipsecDevice, error) {
-	link := &netlink.Dummy{
+func newIPSecDevice(devAttrs *ipsecDeviceAttrs) (*ipsecDevice, error) {
+	link := &netlink.Vti{
 		LinkAttrs: netlink.LinkAttrs{
 			Name: devAttrs.name,
 		},
+		Local: devAttrs.localIP,
 	}
 
 	link, err := ensureLink(link)
@@ -51,13 +55,14 @@ func newIPSecDummyDevice(devAttrs *ipsecDeviceAttrs) (*ipsecDevice, error) {
 	}, nil
 }
 
-func ensureLink(ipsec *netlink.Dummy) (*netlink.Dummy, error) {
+func ensureLink(ipsec *netlink.Vti) (*netlink.Vti, error) {
 	err := netlink.LinkAdd(ipsec)
 	if err == syscall.EEXIST {
 		// it's ok if the device already exists as long as config is similar
-		log.V(1).Infof("IPSec device already exists")
+		log.Infof("IPSec device already exists", err)
 		existing, err := netlink.LinkByName(ipsec.Name)
 		if err != nil {
+			log.Infof("failed reading back the device", err)
 			return nil, err
 		}
 
@@ -82,7 +87,7 @@ func ensureLink(ipsec *netlink.Dummy) (*netlink.Dummy, error) {
 	}
 
 	var ok bool
-	if ipsec, ok = link.(*netlink.Dummy); !ok {
+	if ipsec, ok = link.(*netlink.Vti); !ok {
 		return nil, fmt.Errorf("created ipsec device with index %v is not dummy", ifindex)
 	}
 
@@ -97,21 +102,41 @@ func (dev *ipsecDevice) Configure(ipn ip.IP4Net, cidr ip.IP4Net) error {
 	if err := netlink.LinkSetUp(dev.link); err != nil {
 		return fmt.Errorf("failed to set interface %s to UP state: %s", dev.link.Attrs().Name, err)
 	}
-
-	if err := netlink.RouteAdd(&netlink.Route{
-		LinkIndex: dev.link.Index,
-		Scope:     netlink.SCOPE_UNIVERSE,
-		Dst: &net.IPNet{
-			IP:   cidr.IP.ToIP(),
-			Mask: net.CIDRMask(int(cidr.PrefixLen), 32),
-		},
-	}); err != nil {
-		return fmt.Errorf("failed to add route to %v via interface %s: %s", cidr, dev.link.Attrs().Name, err)
+	if err := ioutil.WriteFile(fmt.Sprintf("/proc/sys/net/ipv4/conf/%s/disable_policy", dev.link.Attrs().Name), []byte("1"), 644); err != nil {
+		return fmt.Errorf("failed to disable policy on flannel-vti: %v", err)
 	}
+	// if err := netlink.RouteAdd(&netlink.Route{
+	// 	LinkIndex: dev.link.Index,
+	// 	Scope:     netlink.SCOPE_UNIVERSE,
+	// 	Dst: &net.IPNet{
+	// 		IP:   cidr.IP.ToIP(),
+	// 		Mask: net.CIDRMask(int(cidr.PrefixLen), 32),
+	// 	},
+	// }); err != nil {
+	// 	return fmt.Errorf("failed to add route to %v via interface %s: %s", cidr, dev.link.Attrs().Name, err)
+	// }
 
 	return nil
 }
 
-func (dev *ipsecDevice) MACAddr() net.HardwareAddr {
-	return dev.link.HardwareAddr
+func (dev *ipsecDevice) AddRoute(lease *subnet.Lease) error {
+	return netlink.RouteAdd(&netlink.Route{
+		LinkIndex: dev.link.Index,
+		Scope:     netlink.SCOPE_UNIVERSE,
+		Dst: &net.IPNet{
+			IP:   lease.Subnet.IP.ToIP(),
+			Mask: net.CIDRMask(int(lease.Subnet.PrefixLen), 32),
+		},
+	})
+}
+
+func (dev *ipsecDevice) DelRoute(lease *subnet.Lease) error {
+	return netlink.RouteDel(&netlink.Route{
+		LinkIndex: dev.link.Index,
+		Scope:     netlink.SCOPE_UNIVERSE,
+		Dst: &net.IPNet{
+			IP:   lease.Subnet.IP.ToIP(),
+			Mask: net.CIDRMask(int(lease.Subnet.PrefixLen), 32),
+		},
+	})
 }
