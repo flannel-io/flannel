@@ -64,6 +64,7 @@ func MonitorIPVSInterface(ctx context.Context, lease *subnet.Lease) {
 				LinkIndex: evt.LinkIndex,
 				Table:     255, // Local Routing Table
 				Dst:       &evt.LinkAddress,
+				Type:      2, // local route.
 				Src:       src,
 				Scope:     netlink.SCOPE_HOST,
 				Protocol:  2, // Proto Kernel
