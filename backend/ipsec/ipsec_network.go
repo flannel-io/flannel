@@ -16,17 +16,16 @@
 package ipsec
 
 import (
-	"fmt"
 	"net"
 	"strconv"
 	"sync"
-	"time"
 
 	log "github.com/golang/glog"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/backend"
+	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
 )
 
@@ -51,14 +50,12 @@ type network struct {
 	backend.SimpleNetwork
 	password string
 	UDPEncap bool
-	dev      *ipsecDevice
 	sm       subnet.Manager
 	iked     *CharonIKEDaemon
 }
 
 func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface,
-	UDPEncap bool, password string, ikeDaemon *CharonIKEDaemon, dev *ipsecDevice,
-	l *subnet.Lease) (*network, error) {
+	UDPEncap bool, password string, ikeDaemon *CharonIKEDaemon, l *subnet.Lease) (*network, error) {
 	n := &network{
 		SimpleNetwork: backend.SimpleNetwork{
 			SubnetLease: l,
@@ -68,7 +65,6 @@ func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface,
 		iked:     ikeDaemon,
 		password: password,
 		UDPEncap: UDPEncap,
-		dev:      dev,
 	}
 
 	return n, nil
@@ -124,9 +120,17 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				continue
 			}
 
-			if err := n.AddIPSECPolicies(&evt.Lease, defaultReqID); err != nil {
-				log.Errorf("error adding ipsec policy: %v", err)
-			}
+			// We might want to delete only the policies we control and which need to be recreated.
+			// However, for testing let's just recreate all.
+			n.DeleteIPSECPolicies(
+				n.SubnetLease.Subnet.ToIPNet(),
+				evt.Lease.Subnet.ToIPNet(),
+				n.SubnetLease.Attrs.PublicIP.ToIP(),
+				evt.Lease.Attrs.PublicIP.ToIP(),
+				defaultReqID,
+			)
+
+			n.AddIPSECPolicies(&evt.Lease, defaultReqID)
 
 			if err := n.iked.LoadSharedKey(evt.Lease.Attrs.PublicIP.String(), n.password); err != nil {
 				log.Errorf("error loading shared key into IKE daemon: %v", err)
@@ -136,14 +140,11 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				strconv.FormatBool(n.UDPEncap)); err != nil {
 				log.Errorf("error loading connection into IKE daemon: %v", err)
 			}
-			go func() {
-				time.Sleep(5 * time.Second)
-				if err := n.dev.AddRoute(&evt.Lease); err != nil {
-					log.Errorf("failed to add route to interface: %v", err)
-				} else {
-					log.Infof("added route for subnet.")
-				}
-			}()
+			if err := n.AddRoute(&evt.Lease); err != nil {
+				log.Errorf("failed to add route: %v", err)
+			} else {
+				log.Infof("added route for subnet.")
+			}
 
 		case subnet.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
@@ -161,19 +162,19 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				log.Errorf("error unloading charon connections: %v", err)
 			}
 
-			if err := n.DeleteIPSECPolicies(n.SubnetLease.Subnet.ToIPNet(), evt.Lease.Subnet.ToIPNet(),
-				n.SubnetLease.Attrs.PublicIP.ToIP(), evt.Lease.Attrs.PublicIP.ToIP(), defaultReqID); err != nil {
+			n.DeleteIPSECPolicies(
+				n.SubnetLease.Subnet.ToIPNet(),
+				evt.Lease.Subnet.ToIPNet(),
+				n.SubnetLease.Attrs.PublicIP.ToIP(),
+				evt.Lease.Attrs.PublicIP.ToIP(),
+				defaultReqID,
+			)
 
-				log.Errorf("error deleting ipsec policies: %v", err)
+			if err := n.DelRoute(&evt.Lease); err != nil {
+				log.Errorf("failed to add route to interface: %v", err)
+			} else {
+				log.Infof("deleted route for subnet.")
 			}
-			go func() {
-				time.Sleep(5 * time.Second)
-				if err := n.dev.DelRoute(&evt.Lease); err != nil {
-					log.Errorf("failed to add route to interface: %v", err)
-				} else {
-					log.Infof("deleted route for subnet.")
-				}
-			}()
 		}
 	}
 }
@@ -187,40 +188,59 @@ func (n *network) MTU() int {
 	return mtu
 }
 
-func (n *network) AddIPSECPolicies(remoteLease *subnet.Lease, reqID int) error {
-	err := AddXFRMPolicy(n.SubnetLease, remoteLease, netlink.XFRM_DIR_OUT, reqID)
-	if err != nil {
-		return fmt.Errorf("error adding ipsec out policy: %v", err)
-	}
+func (n *network) AddIPSECPolicies(remoteLease *subnet.Lease, reqID int) {
+	// We always want to try to add all policies to gracefully handle new policies.
+	AddXFRMPolicy(n.SubnetLease, remoteLease, netlink.XFRM_DIR_OUT, reqID)
+	AddXFRMPolicy(remoteLease, n.SubnetLease, netlink.XFRM_DIR_IN, reqID)
+	AddXFRMPolicy(remoteLease, n.SubnetLease, netlink.XFRM_DIR_FWD, reqID)
 
-	err = AddXFRMPolicy(remoteLease, n.SubnetLease, netlink.XFRM_DIR_IN, reqID)
-	if err != nil {
-		return fmt.Errorf("error adding ipsec in policy: %v", err)
+	publicIPLease := &subnet.Lease{
+		Attrs:      n.SubnetLease.Attrs,
+		Asof:       n.SubnetLease.Asof,
+		Expiration: n.SubnetLease.Expiration,
+		Subnet: ip.IP4Net{
+			IP:        n.SubnetLease.Attrs.PublicIP,
+			PrefixLen: 32,
+		},
 	}
+	AddXFRMPolicy(publicIPLease, remoteLease, netlink.XFRM_DIR_OUT, reqID)
+	AddXFRMPolicy(remoteLease, publicIPLease, netlink.XFRM_DIR_IN, reqID)
+	AddXFRMPolicy(remoteLease, publicIPLease, netlink.XFRM_DIR_FWD, reqID)
 
-	err = AddXFRMPolicy(remoteLease, n.SubnetLease, netlink.XFRM_DIR_FWD, reqID)
-	if err != nil {
-		return fmt.Errorf("error adding ipsec fwd policy: %v", err)
+	remotePublicLease := &subnet.Lease{
+		Attrs:      remoteLease.Attrs,
+		Asof:       remoteLease.Asof,
+		Expiration: remoteLease.Expiration,
+		Subnet: ip.IP4Net{
+			IP:        remoteLease.Attrs.PublicIP,
+			PrefixLen: 32,
+		},
 	}
-
-	return nil
+	AddXFRMPolicy(n.SubnetLease, remotePublicLease, netlink.XFRM_DIR_OUT, reqID)
+	AddXFRMPolicy(remotePublicLease, n.SubnetLease, netlink.XFRM_DIR_IN, reqID)
+	AddXFRMPolicy(remotePublicLease, n.SubnetLease, netlink.XFRM_DIR_FWD, reqID)
 }
 
-func (n *network) DeleteIPSECPolicies(localSubnet, remoteSubnet *net.IPNet, localPublicIP, remotePublicIP net.IP, reqID int) error {
-	err := DeleteXFRMPolicy(localSubnet, remoteSubnet, localPublicIP, remotePublicIP, netlink.XFRM_DIR_OUT, reqID)
-	if err != nil {
-		return fmt.Errorf("error deleting ipsec out policy: %v", err)
-	}
+func (n *network) DeleteIPSECPolicies(localSubnet, remoteSubnet *net.IPNet, localPublicIP, remotePublicIP net.IP, reqID int) {
+	DeleteXFRMPolicy(localSubnet, remoteSubnet, localPublicIP, remotePublicIP, netlink.XFRM_DIR_OUT, reqID)
+	DeleteXFRMPolicy(remoteSubnet, localSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_IN, reqID)
+	DeleteXFRMPolicy(remoteSubnet, localSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_FWD, reqID)
 
-	err = DeleteXFRMPolicy(remoteSubnet, localSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_IN, reqID)
-	if err != nil {
-		return fmt.Errorf("error deleting ipsec in policy: %v", err)
-	}
+	publicSubnet := ip.IP4Net{
+		IP:        ip.FromIP(localPublicIP),
+		PrefixLen: 32,
+	}.ToIPNet()
 
-	err = DeleteXFRMPolicy(remoteSubnet, localSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_FWD, reqID)
-	if err != nil {
-		return fmt.Errorf("error deleting ipsec fwd policy: %v", err)
-	}
+	remotePublicSubnet := ip.IP4Net{
+		IP:        ip.FromIP(remotePublicIP),
+		PrefixLen: 32,
+	}.ToIPNet()
 
-	return nil
+	DeleteXFRMPolicy(publicSubnet, remoteSubnet, localPublicIP, remotePublicIP, netlink.XFRM_DIR_OUT, reqID)
+	DeleteXFRMPolicy(remoteSubnet, publicSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_IN, reqID)
+	DeleteXFRMPolicy(remoteSubnet, publicSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_FWD, reqID)
+
+	DeleteXFRMPolicy(remotePublicSubnet, localSubnet, localPublicIP, remotePublicIP, netlink.XFRM_DIR_OUT, reqID)
+	DeleteXFRMPolicy(localSubnet, remotePublicSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_IN, reqID)
+	DeleteXFRMPolicy(localSubnet, remotePublicSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_FWD, reqID)
 }

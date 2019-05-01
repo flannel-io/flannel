@@ -16,7 +16,6 @@
 package ipsec
 
 import (
-	"fmt"
 	"net"
 
 	log "github.com/golang/glog"
@@ -25,7 +24,7 @@ import (
 	"github.com/coreos/flannel/subnet"
 )
 
-func AddXFRMPolicy(myLease, remoteLease *subnet.Lease, dir netlink.Dir, reqID int) error {
+func AddXFRMPolicy(myLease, remoteLease *subnet.Lease, dir netlink.Dir, reqID int) {
 	src := myLease.Subnet.ToIPNet()
 
 	dst := remoteLease.Subnet.ToIPNet()
@@ -52,13 +51,11 @@ func AddXFRMPolicy(myLease, remoteLease *subnet.Lease, dir netlink.Dir, reqID in
 	policy.Tmpls = append(policy.Tmpls, tmpl)
 
 	if err := netlink.XfrmPolicyAdd(&policy); err != nil {
-		return fmt.Errorf("error adding policy: %+v err: %v", policy, err)
+		log.Warningf("error adding policy: %+v err: %v", policy, err)
 	}
-
-	return nil
 }
 
-func DeleteXFRMPolicy(localSubnet, remoteSubnet *net.IPNet, localPublicIP, remotePublicIP net.IP, dir netlink.Dir, reqID int) error {
+func DeleteXFRMPolicy(localSubnet, remoteSubnet *net.IPNet, localPublicIP, remotePublicIP net.IP, dir netlink.Dir, reqID int) {
 	src := localSubnet
 	dst := remoteSubnet
 
@@ -84,8 +81,6 @@ func DeleteXFRMPolicy(localSubnet, remoteSubnet *net.IPNet, localPublicIP, remot
 	policy.Tmpls = append(policy.Tmpls, tmpl)
 
 	if err := netlink.XfrmPolicyDel(&policy); err != nil {
-		return fmt.Errorf("error deleting policy: %+v err: %v", policy, err)
+		log.Warningf("error deleting policy: %+v err: %v", policy, err)
 	}
-
-	return nil
 }

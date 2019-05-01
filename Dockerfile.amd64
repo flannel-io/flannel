@@ -9,5 +9,9 @@ RUN apk add wireguard-tools --no-cache --repository http://dl-cdn.alpinelinux.or
 COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld
 COPY dist/mk-docker-opts.sh /opt/bin/
 
+RUN echo $'charon {\n\
+  install_routes = yes\n\
+}' > /etc/strongswan.conf
+
 ENTRYPOINT ["/opt/bin/flanneld"]
 

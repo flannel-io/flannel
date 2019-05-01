@@ -45,6 +45,13 @@ func NewCharonIKEDaemon(ctx context.Context, wg sync.WaitGroup, espProposal stri
 
 	charon := &CharonIKEDaemon{ctx: ctx, espProposal: espProposal}
 
+	if _, err := os.Stat("/var/run/charon.vici"); err == nil || os.IsExist(err) {
+		// When a previous instance fails, k8s kills the pod, leaving those files behind, so remove them on startup.
+		os.Remove("/var/run/charon.vici")
+		os.Remove("/var/run/charon.pid")
+		os.Remove("/var/run/charon.ctl")
+	}
+
 	addr := strings.Split("unix:///var/run/charon.vici", "://")
 	charon.viciUri = Uri{addr[0], addr[1]}
 
@@ -62,7 +69,7 @@ func NewCharonIKEDaemon(ctx context.Context, wg sync.WaitGroup, espProposal stri
 		case <-ctx.Done():
 			cmd.Process.Signal(syscall.SIGTERM)
 			cmd.Wait()
-			log.Infof("Stopped charon daemon")
+			log.Infof("Stopped charon daemon: %v", cmd.ProcessState)
 			wg.Done()
 		}
 	}()

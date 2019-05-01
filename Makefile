@@ -58,7 +58,7 @@ dist/flanneld-$(ARCH): dist/qemu-$(ARCH)-static
 		mv dist/flanneld dist/flanneld-$(ARCH)'
 
 ## Create a docker image on disk for a specific arch and tag
-image:	dist/flanneld-$(TAG)-$(ARCH).docker
+image:	dist/flanneld-$(TAG)-$(ARCH).docker Dockerfile.$(ARCH)
 dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH)
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
 	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY):$(TAG)-$(ARCH)

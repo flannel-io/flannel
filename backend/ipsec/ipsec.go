@@ -57,7 +57,6 @@ func init() {
 type IPSECBackend struct {
 	sm       subnet.Manager
 	extIface *backend.ExternalInterface
-	dev      *ipsecDevice
 }
 
 func New(sm subnet.Manager, extIface *backend.ExternalInterface) (
@@ -65,7 +64,6 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (
 	be := &IPSECBackend{
 		sm:       sm,
 		extIface: extIface,
-		dev:      nil,
 	}
 
 	return be, nil
@@ -116,28 +114,28 @@ func (be *IPSECBackend) RegisterNetwork(
 
 	// Ensure the whole flannel network is routed to the dummy interface to reach the other nodes.
 
-	networkConfig, err := be.sm.GetNetworkConfig(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read network config: %s", err)
-	}
+	//networkConfig, err := be.sm.GetNetworkConfig(ctx)
+	//if err != nil {
+	//	return nil, fmt.Errorf("failed to read network config: %s", err)
+	//}
 
 	ikeDaemon, err := NewCharonIKEDaemon(ctx, wg, cfg.ESPProposal)
 	if err != nil {
 		return nil, fmt.Errorf("error creating CharonIKEDaemon struct: %v", err)
 	}
 
-	dev, err := newIPSecDevice(&ipsecDeviceAttrs{
-		name:    "flannel-vti",
-		localIP: be.extIface.IfaceAddr,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create IPSec device: %v", err)
-	}
-	be.dev = dev
+	//dev, err := newIPSecDevice(&ipsecDeviceAttrs{
+	//	name:    "flannel-vti",
+	//	localIP: be.extIface.IfaceAddr,
+	//})
+	//if err != nil {
+	//	return nil, fmt.Errorf("Failed to create IPSec device: %v", err)
+	//}
+	//be.dev = dev
 	// Ensure the device has a /32 address so no broadcast routes are created.
-	if err := dev.Configure(ip.IP4Net{IP: l.Subnet.IP, PrefixLen: 32}, networkConfig.Network); err != nil {
-		return nil, fmt.Errorf("failed to configure interface %s: %s", dev.link.Attrs().Name, err)
-	}
+	//if err := dev.Configure(ip.IP4Net{IP: l.Subnet.IP, PrefixLen: 32}, networkConfig.Network); err != nil {
+	//	return nil, fmt.Errorf("failed to configure interface %s: %s", dev.link.Attrs().Name, err)
+	//}
 
-	return newNetwork(be.sm, be.extIface, cfg.UDPEncap, cfg.PSK, ikeDaemon, dev, l)
+	return newNetwork(be.sm, be.extIface, cfg.UDPEncap, cfg.PSK, ikeDaemon, l)
 }
