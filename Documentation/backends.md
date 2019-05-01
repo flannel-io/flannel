@@ -134,6 +134,8 @@ Type:
 * `PSK` (string): Required. The pre shared key to use. It needs to be at least 96 characters long. One method for generating this key is to run `dd if=/dev/urandom count=48 bs=1 status=none | xxd -p -c 48`
 * `UDPEncap` (Boolean): Optional, defaults to false. Forces the use UDP encapsulation of packets which can help with some NAT gateways.
 * `ESPProposal` (string): Optional, defaults to `aes128gcm16-sha256-prfsha256-ecp256`. Change this string to choose another ESP Proposal.
+* `K8SMode` (Boolean): Optional, defaults to false. Whether the flannel daemon is deployed as CNI controller below a kubernetes cluster.
+* `K8SIPVS` (Boolean): Optional, defaults to false, only used when K8SMode is `true`. Whether the kubernetes cluster has IPVS proxy mode enabled. Used to ensure that host network pods work correctly.
 
 #### Troubleshooting
 Logging

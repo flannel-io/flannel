@@ -39,6 +39,8 @@ func readGw() (net.IP, int, error) {
 }
 
 func buildRoute(myLease *subnet.Lease, remoteLease *subnet.Lease) (*netlink.Route, error) {
+	// Manually build the routes to all remote leases against the IPSec routing table (220)
+	// To ensure packages coming from the CNI interface will go correctly into the IPSec tunnel.
 	gw, link, err := readGw()
 	if err != nil {
 		return nil, err

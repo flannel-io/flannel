@@ -25,7 +25,6 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
 )
 
@@ -193,54 +192,10 @@ func (n *network) AddIPSECPolicies(remoteLease *subnet.Lease, reqID int) {
 	AddXFRMPolicy(n.SubnetLease, remoteLease, netlink.XFRM_DIR_OUT, reqID)
 	AddXFRMPolicy(remoteLease, n.SubnetLease, netlink.XFRM_DIR_IN, reqID)
 	AddXFRMPolicy(remoteLease, n.SubnetLease, netlink.XFRM_DIR_FWD, reqID)
-
-	publicIPLease := &subnet.Lease{
-		Attrs:      n.SubnetLease.Attrs,
-		Asof:       n.SubnetLease.Asof,
-		Expiration: n.SubnetLease.Expiration,
-		Subnet: ip.IP4Net{
-			IP:        n.SubnetLease.Attrs.PublicIP,
-			PrefixLen: 32,
-		},
-	}
-	AddXFRMPolicy(publicIPLease, remoteLease, netlink.XFRM_DIR_OUT, reqID)
-	AddXFRMPolicy(remoteLease, publicIPLease, netlink.XFRM_DIR_IN, reqID)
-	AddXFRMPolicy(remoteLease, publicIPLease, netlink.XFRM_DIR_FWD, reqID)
-
-	remotePublicLease := &subnet.Lease{
-		Attrs:      remoteLease.Attrs,
-		Asof:       remoteLease.Asof,
-		Expiration: remoteLease.Expiration,
-		Subnet: ip.IP4Net{
-			IP:        remoteLease.Attrs.PublicIP,
-			PrefixLen: 32,
-		},
-	}
-	AddXFRMPolicy(n.SubnetLease, remotePublicLease, netlink.XFRM_DIR_OUT, reqID)
-	AddXFRMPolicy(remotePublicLease, n.SubnetLease, netlink.XFRM_DIR_IN, reqID)
-	AddXFRMPolicy(remotePublicLease, n.SubnetLease, netlink.XFRM_DIR_FWD, reqID)
 }
 
 func (n *network) DeleteIPSECPolicies(localSubnet, remoteSubnet *net.IPNet, localPublicIP, remotePublicIP net.IP, reqID int) {
 	DeleteXFRMPolicy(localSubnet, remoteSubnet, localPublicIP, remotePublicIP, netlink.XFRM_DIR_OUT, reqID)
 	DeleteXFRMPolicy(remoteSubnet, localSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_IN, reqID)
 	DeleteXFRMPolicy(remoteSubnet, localSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_FWD, reqID)
-
-	publicSubnet := ip.IP4Net{
-		IP:        ip.FromIP(localPublicIP),
-		PrefixLen: 32,
-	}.ToIPNet()
-
-	remotePublicSubnet := ip.IP4Net{
-		IP:        ip.FromIP(remotePublicIP),
-		PrefixLen: 32,
-	}.ToIPNet()
-
-	DeleteXFRMPolicy(publicSubnet, remoteSubnet, localPublicIP, remotePublicIP, netlink.XFRM_DIR_OUT, reqID)
-	DeleteXFRMPolicy(remoteSubnet, publicSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_IN, reqID)
-	DeleteXFRMPolicy(remoteSubnet, publicSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_FWD, reqID)
-
-	DeleteXFRMPolicy(remotePublicSubnet, localSubnet, localPublicIP, remotePublicIP, netlink.XFRM_DIR_OUT, reqID)
-	DeleteXFRMPolicy(localSubnet, remotePublicSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_IN, reqID)
-	DeleteXFRMPolicy(localSubnet, remotePublicSubnet, remotePublicIP, localPublicIP, netlink.XFRM_DIR_FWD, reqID)
 }

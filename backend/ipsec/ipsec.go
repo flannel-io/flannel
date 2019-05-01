@@ -46,6 +46,7 @@ import (
 */
 
 const (
+	defaultInterface   = "cni0"
 	defaultESPProposal = "aes128gcm16-sha256-prfsha256-ecp256"
 	minPasswordLength  = 96
 )
@@ -69,16 +70,29 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (
 	return be, nil
 }
 
-func (be *IPSECBackend) RegisterNetwork(
-	ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+func (be *IPSECBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 
 	cfg := struct {
-		UDPEncap    bool
+		UDPEncap bool
+		// Whether the flannel daemon runs as CNI plugin within kubernetes.
+		// This is required to disable the IPSec policy on the CNI interface.
+		// Disabling is important, because otherwise the packets for services will be dropped at the host.
+		K8SMode bool
+		// Whether the kubernetes deployment uses IPVS as proxy mode.
+		// When IPVS is enabled, we want to change the preferred sources for the Cluster-IPs
+		// to our local CNI interface so it looks like we're in the same network.
+		// This is especially relevant for pods with net=host to work.
+		K8SIPVS     bool
 		ESPProposal string
 		PSK         string
+		Interface   string
 	}{
-		UDPEncap:    false,
+		UDPEncap: false,
+		K8SMode:  false,
+		K8SIPVS:  false,
+
 		ESPProposal: defaultESPProposal,
+		Interface:   defaultInterface,
 	}
 
 	if len(config.Backend) > 0 {
@@ -93,7 +107,10 @@ func (be *IPSECBackend) RegisterNetwork(
 			minPasswordLength)
 	}
 
-	log.Infof("IPSec config: UDPEncap=%v ESPProposal=%s", cfg.UDPEncap, cfg.ESPProposal)
+	log.Infof(
+		"IPSec config: UDPEncap=%v ESPProposal=%s, K8S=%v@%s, IPVS=%v",
+		cfg.UDPEncap, cfg.ESPProposal, cfg.K8SMode, cfg.Interface, cfg.K8SIPVS,
+	)
 
 	attrs := subnet.LeaseAttrs{
 		PublicIP:    ip.FromIP(be.extIface.ExtAddr),
@@ -112,30 +129,17 @@ func (be *IPSECBackend) RegisterNetwork(
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
-	// Ensure the whole flannel network is routed to the dummy interface to reach the other nodes.
-
-	//networkConfig, err := be.sm.GetNetworkConfig(ctx)
-	//if err != nil {
-	//	return nil, fmt.Errorf("failed to read network config: %s", err)
-	//}
-
 	ikeDaemon, err := NewCharonIKEDaemon(ctx, wg, cfg.ESPProposal)
 	if err != nil {
 		return nil, fmt.Errorf("error creating CharonIKEDaemon struct: %v", err)
 	}
 
-	//dev, err := newIPSecDevice(&ipsecDeviceAttrs{
-	//	name:    "flannel-vti",
-	//	localIP: be.extIface.IfaceAddr,
-	//})
-	//if err != nil {
-	//	return nil, fmt.Errorf("Failed to create IPSec device: %v", err)
-	//}
-	//be.dev = dev
-	// Ensure the device has a /32 address so no broadcast routes are created.
-	//if err := dev.Configure(ip.IP4Net{IP: l.Subnet.IP, PrefixLen: 32}, networkConfig.Network); err != nil {
-	//	return nil, fmt.Errorf("failed to configure interface %s: %s", dev.link.Attrs().Name, err)
-	//}
+	if cfg.K8SMode {
+		go MonitorCNIInterface(ctx, cfg.Interface)
+		if cfg.K8SIPVS {
+			go MonitorIPVSInterface(ctx, l)
+		}
+	}
 
 	return newNetwork(be.sm, be.extIface, cfg.UDPEncap, cfg.PSK, ikeDaemon, l)
 }
