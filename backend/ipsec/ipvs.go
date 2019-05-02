@@ -18,6 +18,7 @@ package ipsec
 import (
 	"fmt"
 	"io/ioutil"
+	"net"
 
 	"github.com/vishvananda/netlink"
 
@@ -50,7 +51,7 @@ arrived packets.
 This is done in the functions below.
 */
 
-func MonitorIPVSInterface(ctx context.Context, lease *subnet.Lease) {
+func monitorIPVSInterface(ctx context.Context, lease *subnet.Lease) {
 	log.Infof("Starting route manager for ipvs interface")
 	updateChan := make(chan netlink.AddrUpdate)
 	if err := netlink.AddrSubscribeWithOptions(updateChan, ctx.Done(), netlink.AddrSubscribeOptions{
@@ -92,7 +93,13 @@ func MonitorIPVSInterface(ctx context.Context, lease *subnet.Lease) {
 	log.Infof("Stopped route manager")
 }
 
-func MonitorCNIInterface(ctx context.Context, ifname string) {
+func monitorCNIInterface(ctx context.Context, ifname string, extIface *net.Interface) {
+	// I don't know why, but we also need to disable policy for the public interface
+	disablePolicyPath := fmt.Sprintf("/proc/sys/net/ipv4/conf/%s/disable_policy", extIface.Name)
+	if err := ioutil.WriteFile(disablePolicyPath, []byte("1"), 644); err != nil {
+		log.Warningf("Failed to disable policy for external interface link %s: %v", extIface.Name, err)
+	}
+
 	// This function takes care of disabling the IPSec policy for the CNI0 interface.
 	log.Infof("Starting CNI Monitor for interface '%s'", ifname)
 	updateChan := make(chan netlink.LinkUpdate)
@@ -101,7 +108,8 @@ func MonitorCNIInterface(ctx context.Context, ifname string) {
 	}); err != nil {
 		log.Errorf("Failed to subscribe to link ")
 	}
-	disablePolicyPath := fmt.Sprintf("/proc/sys/net/ipv4/conf/%s/disable_policy", ifname)
+
+	disablePolicyPath = fmt.Sprintf("/proc/sys/net/ipv4/conf/%s/disable_policy", ifname)
 	for evt := range updateChan {
 		if evt.Attrs().Name != ifname {
 			continue
