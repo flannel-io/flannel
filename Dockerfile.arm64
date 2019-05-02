@@ -10,21 +10,8 @@ RUN apk add wireguard-tools --no-cache --repository http://dl-cdn.alpinelinux.or
 COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld
 COPY dist/mk-docker-opts.sh /opt/bin/
 
-RUN echo $'config setup\n\
-\n\
-conn %default\n\
-	ikelifetime=60m\n\
-	keylife=20m\n\
-	rekeymargin=3m\n\
-	keyingtries=1\n\
-	authby=secret\n\
-	keyexchange=ikev2\n\
-	mobike=no' > /etc/ipsec.conf
-
 RUN echo $'charon {\n\
-  multiple_authentication = no\n\
-  install_routes = no\n\
-  install_virtual_ip = no\n\
+  install_routes = yes\n\
 }' > /etc/strongswan.conf
 
 ENTRYPOINT ["/opt/bin/flanneld"]
