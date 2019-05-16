@@ -64,9 +64,13 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 }
 
 func newSubnetAttrs(publicIP net.IP, vnid uint16, mac net.HardwareAddr) (*subnet.LeaseAttrs, error) {
+	var hardwareAddress hardwareAddr
+	if mac != nil {
+		hardwareAddress = hardwareAddr(mac)
+	}
 	leaseAttrs := &vxlanLeaseAttrs{
 		VNI:     vnid,
-		VtepMAC: hardwareAddr(mac),
+		VtepMAC: hardwareAddress,
 	}
 	data, err := json.Marshal(&leaseAttrs)
 	if err != nil {
@@ -122,57 +126,12 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, 
 	}
 	log.Infof("VXLAN config: Name=%s MacPrefix=%s VNI=%d Port=%d GBP=%v DirectRouting=%v", cfg.Name, cfg.MacPrefix, cfg.VNI, cfg.Port, cfg.GBP, cfg.DirectRouting)
 
-	hnsNetworks, err := hcn.ListNetworks()
-	if err != nil {
-		return nil, fmt.Errorf("Cannot get HNS networks [%+v]", err)
-	}
-
-	err = hcn.RemoteSubnetSupported()
+	err := hcn.RemoteSubnetSupported()
 	if err != nil {
 		return nil, err
 	}
 
-	var remoteDrMac string
-	var providerAddress string
-	for _, hnsNetwork := range hnsNetworks {
-		log.Infof("Checking HNS network for DR MAC : [%+v]", hnsNetwork)
-		if len(remoteDrMac) == 0 {
-			for _, policy := range hnsNetwork.Policies {
-				if policy.Type == hcn.DrMacAddress {
-					policySettings := hcn.DrMacAddressNetworkPolicySetting{}
-					err = json.Unmarshal(policy.Settings, &policySettings)
-					if err != nil {
-						return nil, fmt.Errorf("Failed to unmarshal settings")
-					}
-					remoteDrMac = policySettings.Address
-				}
-				if policy.Type == hcn.ProviderAddress {
-					policySettings := hcn.ProviderAddressEndpointPolicySetting{}
-					err = json.Unmarshal(policy.Settings, &policySettings)
-					if err != nil {
-						return nil, fmt.Errorf("Failed to unmarshal settings")
-					}
-					providerAddress = policySettings.ProviderAddress
-				}
-			}
-			if providerAddress != be.extIface.ExtAddr.String() {
-				log.Infof("Cannot use DR MAC %v since PA %v does not match %v", remoteDrMac, providerAddress, be.extIface.ExtAddr.String())
-				remoteDrMac = ""
-			}
-		}
-	}
-
-	if len(providerAddress) == 0 {
-		return nil, fmt.Errorf("Cannot find network with Management IP %v", be.extIface.ExtAddr.String())
-	}
-	if len(remoteDrMac) == 0 {
-		return nil, fmt.Errorf("Could not find remote DR MAC for Management IP %v", be.extIface.ExtAddr.String())
-	}
-	mac, err := net.ParseMAC(string(remoteDrMac))
-	if err != nil {
-		return nil, fmt.Errorf("Cannot parse DR MAC %v: %+v", remoteDrMac, err)
-	}
-	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, uint16(cfg.VNI), mac)
+	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, uint16(cfg.VNI), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +158,41 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, 
 	dev.directRouting = cfg.DirectRouting
 	dev.macPrefix = cfg.MacPrefix
 
-	return newNetwork(be.subnetMgr, be.extIface, dev, ip.IP4Net{}, lease)
+	network, err := newNetwork(be.subnetMgr, be.extIface, dev, ip.IP4Net{}, lease)
+	if err != nil {
+		return nil, err
+	}
+
+	hcnNetwork, err := hcn.GetNetworkByName(cfg.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	var newDrMac string
+	for _, policy := range hcnNetwork.Policies {
+		if policy.Type == hcn.DrMacAddress {
+			policySettings := hcn.DrMacAddressNetworkPolicySetting{}
+			err = json.Unmarshal(policy.Settings, &policySettings)
+			if err != nil {
+				return nil, fmt.Errorf("Failed to unmarshal settings")
+			}
+			newDrMac = policySettings.Address
+		}
+	}
+
+	mac, err := net.ParseMAC(string(newDrMac))
+	if err != nil {
+		return nil, fmt.Errorf("Cannot parse DR MAC %v: %+v", newDrMac, err)
+	}
+
+	subnetAttrs, err = newSubnetAttrs(be.extIface.ExtAddr, uint16(cfg.VNI), mac)
+	if err != nil {
+		return nil, err
+	}
+
+	lease, err = be.subnetMgr.AcquireLease(ctx, subnetAttrs)
+
+	return network, nil
 }
 
 // So we can make it JSON (un)marshalable
