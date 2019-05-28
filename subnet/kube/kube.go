@@ -68,17 +68,12 @@ func NewSubnetManager(apiUrl, kubeconfig, prefix string) (subnet.Manager, error)
 
 	var cfg *rest.Config
 	var err error
-	// Use out of cluster config if the URL or kubeconfig have been specified. Otherwise use incluster config.
-	if apiUrl != "" || kubeconfig != "" {
-		cfg, err = clientcmd.BuildConfigFromFlags(apiUrl, kubeconfig)
-		if err != nil {
-			return nil, fmt.Errorf("unable to create k8s config: %v", err)
-		}
-	} else {
-		cfg, err = rest.InClusterConfig()
-		if err != nil {
-			return nil, fmt.Errorf("unable to initialize inclusterconfig: %v", err)
-		}
+	// Try to build kubernetes config from a master url or a kubeconfig filepath. If neither masterUrl
+	// or kubeconfigPath are passed in we fall back to inClusterConfig. If inClusterConfig fails,
+	// we fallback to the default config.
+	cfg, err = clientcmd.BuildConfigFromFlags(apiUrl, kubeconfig)
+	if err != nil {
+		return nil, fmt.Errorf("fail to create kubernetes config: %v", err)
 	}
 
 	c, err := clientset.NewForConfig(cfg)
