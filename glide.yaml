@@ -65,6 +65,6 @@ import:
 - package: github.com/Microsoft/hcsshim
 - package: github.com/Microsoft/go-winio
   version: v0.4.11
-- pacakge: github.com/sirupsen/logrus
+- package: github.com/sirupsen/logrus
   version: v1.0.6
 - package: github.com/buger/jsonparser
