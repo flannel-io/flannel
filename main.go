@@ -98,6 +98,7 @@ type CmdLineOpts struct {
 	charonViciUri          string
 	iptablesResyncSeconds  int
 	iptablesForwardRules   bool
+	netConfPath            string
 }
 
 var (
@@ -130,6 +131,7 @@ func init() {
 	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "the port for healthz server to listen(0 to disable)")
 	flannelFlags.IntVar(&opts.iptablesResyncSeconds, "iptables-resync", 5, "resync period for iptables rules, in seconds")
 	flannelFlags.BoolVar(&opts.iptablesForwardRules, "iptables-forward-rules", true, "add default accept rules to FORWARD chain in iptables")
+	flannelFlags.StringVar(&opts.netConfPath, "net-config-path", "/etc/kube-flannel/net-conf.json", "path to the network configuration file")
 
 	// glog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
@@ -159,7 +161,7 @@ func usage() {
 
 func newSubnetManager() (subnet.Manager, error) {
 	if opts.kubeSubnetMgr {
-		return kube.NewSubnetManager(opts.kubeApiUrl, opts.kubeConfigFile, opts.kubeAnnotationPrefix)
+		return kube.NewSubnetManager(opts.kubeApiUrl, opts.kubeConfigFile, opts.kubeAnnotationPrefix, opts.netConfPath)
 	}
 
 	cfg := &etcdv2.EtcdConfig{
@@ -349,7 +351,7 @@ func recycleIPTables(nw ip.IP4Net, lease *subnet.Lease) error {
 	prevNetwork := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_NETWORK")
 	prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
 	// recycle iptables rules only when network configured or subnet leased is not equal to current one.
-	if prevNetwork != nw && prevSubnet != lease.Subnet{
+	if prevNetwork != nw && prevSubnet != lease.Subnet {
 		log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules", nw, lease.Subnet, prevNetwork, prevSubnet)
 		lease := &subnet.Lease{
 			Subnet: prevSubnet,

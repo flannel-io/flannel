@@ -50,8 +50,6 @@ var (
 const (
 	resyncPeriod              = 5 * time.Minute
 	nodeControllerSyncTimeout = 10 * time.Minute
-
-	netConfPath = "/etc/kube-flannel/net-conf.json"
 )
 
 type kubeSubnetManager struct {
@@ -64,7 +62,7 @@ type kubeSubnetManager struct {
 	events         chan subnet.Event
 }
 
-func NewSubnetManager(apiUrl, kubeconfig, prefix string) (subnet.Manager, error) {
+func NewSubnetManager(apiUrl, kubeconfig, prefix, netConfPath string) (subnet.Manager, error) {
 
 	var cfg *rest.Config
 	var err error
