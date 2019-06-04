@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	kubernetes "github.com/coreos/flannel/kube"
 	"io/ioutil"
 	"net"
 	"os"
@@ -38,9 +39,7 @@ import (
 	listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/pkg/api"
 	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 var (
@@ -64,27 +63,9 @@ type kubeSubnetManager struct {
 	events         chan subnet.Event
 }
 
-func NewSubnetManager(apiUrl, kubeconfig, prefix string) (subnet.Manager, error) {
+func NewSubnetManager(k *kubernetes.Client, prefix string) (subnet.Manager, error) {
 
-	var cfg *rest.Config
-	var err error
-	// Use out of cluster config if the URL or kubeconfig have been specified. Otherwise use incluster config.
-	if apiUrl != "" || kubeconfig != "" {
-		cfg, err = clientcmd.BuildConfigFromFlags(apiUrl, kubeconfig)
-		if err != nil {
-			return nil, fmt.Errorf("unable to create k8s config: %v", err)
-		}
-	} else {
-		cfg, err = rest.InClusterConfig()
-		if err != nil {
-			return nil, fmt.Errorf("unable to initialize inclusterconfig: %v", err)
-		}
-	}
-
-	c, err := clientset.NewForConfig(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize client: %v", err)
-	}
+	c := k.Client
 
 	// The kube subnet mgr needs to know the k8s node name that it's running on so it can annotate it.
 	// If we're running as a pod then the POD_NAME and POD_NAMESPACE will be populated and can be used to find the node

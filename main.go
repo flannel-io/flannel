@@ -18,6 +18,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	kubernetes "github.com/coreos/flannel/kube"
 	"net"
 	"net/http"
 	"os"
@@ -159,7 +160,7 @@ func usage() {
 
 func newSubnetManager() (subnet.Manager, error) {
 	if opts.kubeSubnetMgr {
-		return kube.NewSubnetManager(opts.kubeApiUrl, opts.kubeConfigFile, opts.kubeAnnotationPrefix)
+		return kube.NewSubnetManager(kubernetes.Instance, opts.kubeAnnotationPrefix)
 	}
 
 	cfg := &etcdv2.EtcdConfig{
@@ -234,6 +235,13 @@ func main() {
 			log.Error("Failed to find interface to use that matches the interfaces and/or regexes provided")
 			os.Exit(1)
 		}
+	}
+
+	// Ensuring Kubernetes client
+	err = kubernetes.Create(opts.kubeApiUrl, opts.kubeConfigFile)
+
+	if err != nil {
+		log.Warningf("Failed to create Kubernetes client. This is not relevant, if you don't use flannel inside a kubernetes. Error: %v", err)
 	}
 
 	sm, err := newSubnetManager()

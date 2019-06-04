@@ -136,9 +136,12 @@ func (be *IPSECBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, 
 
 	if cfg.K8SMode {
 		go monitorCNIInterface(ctx, cfg.Interface, be.extIface.Iface)
+
 		if cfg.K8SIPVS {
 			go monitorIPVSInterface(ctx, l)
 		}
+
+		go monitorServices()
 	}
 
 	return newNetwork(be.sm, be.extIface, cfg.UDPEncap, cfg.PSK, ikeDaemon, l)
