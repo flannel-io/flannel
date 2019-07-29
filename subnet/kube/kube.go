@@ -280,6 +280,10 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 			return nil, err
 		}
 	}
+	err = ksm.setNodeNetworkUnavailableFalse()
+	if err != nil {
+		glog.Errorf("Unable to set NetworkUnavailable to False for %q: %v", ksm.nodeName, err)
+	}
 	return &subnet.Lease{
 		Subnet:     ip.FromIPNet(cidr),
 		Attrs:      *attrs,
@@ -332,4 +336,24 @@ func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, curs
 
 func (ksm *kubeSubnetManager) Name() string {
 	return fmt.Sprintf("Kubernetes Subnet Manager - %s", ksm.nodeName)
+}
+
+// Set Kubernetes NodeNetworkUnavailable to false when starting
+// https://kubernetes.io/docs/concepts/architecture/nodes/#condition
+func (ksm *kubeSubnetManager) setNodeNetworkUnavailableFalse() error {
+	condition := v1.NodeCondition{
+		Type:               v1.NodeNetworkUnavailable,
+		Status:             v1.ConditionFalse,
+		Reason:             "FlannelIsUp",
+		Message:            "Flannel is running on this node",
+		LastTransitionTime: metav1.Now(),
+		LastHeartbeatTime:  metav1.Now(),
+	}
+	raw, err := json.Marshal(&[]v1.NodeCondition{condition})
+	if err != nil {
+		return err
+	}
+	patch := []byte(fmt.Sprintf(`{"status":{"conditions":%s}}`, raw))
+	_, err = ksm.client.CoreV1().Nodes().PatchStatus(ksm.nodeName, patch)
+	return err
 }
