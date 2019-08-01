@@ -1,0 +1,55 @@
+name: flannel
+summary:  A network fabric for containers.
+description:|  A simple and easy way to configure a layer 3 network fabric designed for Kubernetes.
+  
+adopt-info: flannel
+
+grade: stable
+confinement: classic
+
+architectures:
+  - build-on: i386
+  - build-on: amd64
+  - build-on: armhf
+  - build-on: arm64
+
+apps:
+  flannel:
+    command: bin/flannel
+    plugs:
+      - home
+      - network
+      - docker
+      - removable-media
+
+parts:
+  flannel:
+  plugin: nil 
+    source: https://github.com/coreos/flannel.git
+    source-type: git
+    override-pull: |
+      git clone https://github.com/coreos/flannel.git src/github.com/coreos/flannel
+      cd src/github.com/coreos/flannel
+      last_committed_tag="$(git describe --tags --abbrev=0)"
+      last_committed_tag_ver="$(echo ${last_committed_tag} | sed 's/v//')"
+      last_released_tag="$(snap info $SNAPCRAFT_PROJECT_NAME | awk '$1 == "beta:" { print $2 }')"
+      # If the latest tag from the upstream project has not been released to
+      # beta, build that tag instead of master.
+      if [ "${last_committed_tag_ver}" != "${last_released_tag}" ]; then
+        git fetch
+        git checkout "${last_committed_tag}"
+      fi
+      snapcraftctl set-version "$(git describe --tags | sed 's/v//')"
+      override-build: |
+      export GOPATH=$PWD
+      cd src/github.com/coreos/flannel
+      env CGO_ENABLED=0 GOOS=linux \
+      go build --ldflags "-s -w \
+        -X 'github.com/coreos/flannel/version.GitCommit=$(git rev-list -1 HEAD)' \
+        -X 'github.com/coreos/flannel/version.Version=$(git describe --tags --abbrev=0)'" \
+        -a -installsuffix cgo -o $SNAPCRAFT_PART_INSTALL/bin/flannel
+    build-snaps:
+      - go
+    build-packages:
+      - git
+      - sed
