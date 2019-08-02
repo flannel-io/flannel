@@ -139,7 +139,7 @@ func TestEnsureRulesError(t *testing.T) {
 
 	rule := ipt_recreate.rules[1]
 	ipt_recreate.failDelete(rule.table, rule.chain, rule.rulespec, false)
-	err := ensureIPTables(ipt_recreate, MasqRules(ip.IP4Net{}, lease()))
+	err := ensureIPTables(ipt_recreate, MasqRules(ip.IP4Net{}, lease()), MasqIPRulesToDelete(ip.IP4Net{}, lease()))
 	if err == nil {
 		t.Errorf("ensureIPTables should have failed but did not.")
 	}
@@ -161,7 +161,7 @@ func TestEnsureIP6RulesError(t *testing.T) {
 
 	rule := ipt_recreate.rules[1]
 	ipt_recreate.failDelete(rule.table, rule.chain, rule.rulespec, false)
-	err := ensureIPTables(ipt_recreate, MasqIP6Rules(ip.IP6Net{}, lease()))
+	err := ensureIPTables(ipt_recreate, MasqIP6Rules(ip.IP6Net{}, lease()), MasqIP6RulesToDelete(ip.IP6Net{}, lease()))
 	if err == nil {
 		t.Errorf("ensureIPTables should have failed but did not.")
 	}
@@ -182,7 +182,7 @@ func TestEnsureRules(t *testing.T) {
 	// set up a normal error that iptables returns when deleting a rule that is already gone
 	deletedRule := ipt_correct.rules[3]
 	ipt_recreate.failDelete(deletedRule.table, deletedRule.chain, deletedRule.rulespec, true)
-	err := ensureIPTables(ipt_recreate, MasqRules(ip.IP4Net{}, lease()))
+	err := ensureIPTables(ipt_recreate, MasqRules(ip.IP4Net{}, lease()), MasqIPRulesToDelete(ip.IP4Net{}, lease()))
 	if err != nil {
 		t.Errorf("ensureIPTables should have completed without errors")
 	}
@@ -202,7 +202,7 @@ func TestEnsureIP6Rules(t *testing.T) {
 	// set up a normal error that iptables returns when deleting a rule that is already gone
 	deletedRule := ipt_correct.rules[3]
 	ipt_recreate.failDelete(deletedRule.table, deletedRule.chain, deletedRule.rulespec, true)
-	err := ensureIPTables(ipt_recreate, MasqIP6Rules(ip.IP6Net{}, lease()))
+	err := ensureIPTables(ipt_recreate, MasqIP6Rules(ip.IP6Net{}, lease()), MasqIP6RulesToDelete(ip.IP6Net{}, lease()))
 	if err != nil {
 		t.Errorf("ensureIPTables should have completed without errors")
 	}

@@ -339,8 +339,7 @@ func main() {
 				os.Exit(1)
 			}
 			log.Infof("Setting up masking rules")
-			go network.SetupAndEnsureIPTables(network.MasqRules(config.Network, bn.Lease()), opts.iptablesResyncSeconds)
-
+			go network.SetupAndEnsureIPTables(network.MasqRules(config.Network, bn.Lease()), network.MasqIPRulesToDelete(config.Network, bn.Lease()), opts.iptablesResyncSeconds)
 		}
 		if config.EnableIPv6 {
 			if err = recycleIP6Tables(config.IPv6Network, bn.Lease()); err != nil {
@@ -350,7 +349,7 @@ func main() {
 				os.Exit(1)
 			}
 			log.Infof("Setting up masking ip6 rules")
-			go network.SetupAndEnsureIP6Tables(network.MasqIP6Rules(config.IPv6Network, bn.Lease()), opts.iptablesResyncSeconds)
+			go network.SetupAndEnsureIP6Tables(network.MasqIP6Rules(config.IPv6Network, bn.Lease()), network.MasqIP6RulesToDelete(config.IPv6Network, bn.Lease()), opts.iptablesResyncSeconds)
 		}
 	}
 
@@ -360,11 +359,11 @@ func main() {
 	if opts.iptablesForwardRules {
 		if config.EnableIPv4 {
 			log.Infof("Changing default FORWARD chain policy to ACCEPT")
-			go network.SetupAndEnsureIPTables(network.ForwardRules(config.Network.String()), opts.iptablesResyncSeconds)
+			go network.SetupAndEnsureIPTables(network.ForwardRules(config.Network.String()), network.ForwardRules(config.Network.String()), opts.iptablesResyncSeconds)
 		}
 		if config.EnableIPv6 {
 			log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
-			go network.SetupAndEnsureIP6Tables(network.ForwardRules(config.IPv6Network.String()), opts.iptablesResyncSeconds)
+			go network.SetupAndEnsureIP6Tables(network.ForwardRules(config.IPv6Network.String()), network.ForwardRules(config.IPv6Network.String()), opts.iptablesResyncSeconds)
 		}
 	}
 
@@ -410,7 +409,7 @@ func recycleIPTables(nw ip.IP4Net, lease *subnet.Lease) error {
 		lease := &subnet.Lease{
 			Subnet: prevSubnet,
 		}
-		if err := network.DeleteIPTables(network.MasqRules(prevNetwork, lease)); err != nil {
+		if err := network.DeleteIPTables(network.MasqIPRulesToDelete(prevNetwork, lease)); err != nil {
 			return err
 		}
 	}
