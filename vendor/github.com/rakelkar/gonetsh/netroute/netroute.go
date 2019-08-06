@@ -7,8 +7,8 @@ import (
 	"strings"
 	"bufio"
 	"bytes"
-	ps "github.com/gorillalabs/go-powershell"
-	psbe "github.com/gorillalabs/go-powershell/backend"
+	ps "github.com/bhendo/go-powershell"
+	psbe "github.com/bhendo/go-powershell/backend"
 
 	"fmt"
 	"math/big"
