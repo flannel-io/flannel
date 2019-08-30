@@ -40,6 +40,13 @@ type IPTablesRule struct {
 	rulespec []string
 }
 
+type IPTablesRulePos struct {
+	table    string
+	chain    string
+	pos      int
+	rulespec []string
+}
+
 func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 	n := ipn.String()
 	sn := lease.Subnet.String()
@@ -74,11 +81,17 @@ func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 	}
 }
 
-func ForwardRules(flannelNetwork string) []IPTablesRule {
+func RulesToInsert(chain string) []IPTablesRulePos {
+	return []IPTablesRulePos{
+		{"filter", "FORWARD", 1, []string{"-m", "comment", "--comment", "flannel forwarding rules", "-j", chain}},
+	}
+}
+
+func ForwardRules(chain, flannelNetwork string) []IPTablesRule {
 	return []IPTablesRule{
 		// These rules allow traffic to be forwarded if it is to or from the flannel network range.
-		{"filter", "FORWARD", []string{"-s", flannelNetwork, "-j", "ACCEPT"}},
-		{"filter", "FORWARD", []string{"-d", flannelNetwork, "-j", "ACCEPT"}},
+		{"filter", chain, []string{"-s", flannelNetwork, "-j", "ACCEPT"}},
+		{"filter", chain, []string{"-d", flannelNetwork, "-j", "ACCEPT"}},
 	}
 }
 
@@ -169,4 +182,34 @@ func teardownIPTables(ipt IPTables, rules []IPTablesRule) {
 		// doesn't exist, which is fine (we don't need to delete rules that don't exist)
 		ipt.Delete(rule.table, rule.chain, rule.rulespec...)
 	}
+}
+
+func AddNewChain(table, chain string) error {
+	ipt, err := iptables.New()
+	if err != nil {
+		// if we can't find iptables, give up and return
+		log.Errorf("Failed to setup IPTables. iptables binary was not found: %v", err)
+		return err
+	}
+	return ipt.ClearChain(table, chain)
+}
+
+func InsertRules(rules []IPTablesRulePos) error {
+	ipt, err := iptables.New()
+	if err != nil {
+		// if we can't find iptables, give up and return
+		log.Errorf("Failed to setup IPTables. iptables binary was not found: %v", err)
+		return err
+	}
+	for _, rule := range rules {
+		log.Info("Inserting iptables rule: ", strings.Join(rule.rulespec, " "))
+		// always remove the old entries first to avoid dulicate
+		ipt.Delete(rule.table, rule.chain, rule.rulespec...)
+		err := ipt.Insert(rule.table, rule.chain, rule.pos, rule.rulespec...)
+		if err != nil {
+			return fmt.Errorf("failed to insert IPTables rule: %v", err)
+		}
+	}
+
+	return nil
 }
