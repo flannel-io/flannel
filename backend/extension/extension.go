@@ -17,6 +17,7 @@ package extension
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"encoding/json"
@@ -133,6 +134,7 @@ func (be *ExtensionBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGro
 
 // Run a cmd, returning a combined stdout and stderr.
 func runCmd(env []string, stdin string, name string, arg ...string) (string, error) {
+	env = append(env, fmt.Sprintf("PATH=%s", os.Getenv("PATH")))
 	cmd := exec.Command(name, arg...)
 	cmd.Env = env
 
