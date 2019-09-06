@@ -48,7 +48,7 @@ func NewCharonIKEDaemon(ctx context.Context, wg sync.WaitGroup, espProposal stri
 	addr := strings.Split("unix:///var/run/charon.vici", "://")
 	charon.viciUri = Uri{addr[0], addr[1]}
 
-	cmd, err := charon.runBundled("/usr/lib/strongswan/charon")
+	cmd, err := charon.runBundled("/usr/lib/strongswan/", "charon")
 
 	if err != nil {
 		log.Errorf("Error starting charon daemon: %v", err)
@@ -93,10 +93,10 @@ func (charon *CharonIKEDaemon) getClient(wait bool) (client *goStrongswanVici.Cl
 	}
 }
 
-func (charon *CharonIKEDaemon) runBundled(execPath string) (cmd *exec.Cmd, err error) {
-	path, err := exec.LookPath(execPath)
+func (charon *CharonIKEDaemon) runBundled(staticLocation string, command string) (cmd *exec.Cmd, err error) {
+	path, err := exec.LookPath(command)
 	if err != nil {
-		return nil, err
+		path = staticLocation + command
 	}
 	cmd = &exec.Cmd{
 		Path: path,
