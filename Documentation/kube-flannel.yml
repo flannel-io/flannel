@@ -47,7 +47,7 @@ spec:
     rule: 'RunAsAny'
 ---
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
 rules:
@@ -76,7 +76,7 @@ rules:
       - patch
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
 roleRef:
@@ -150,7 +150,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-        beta.kubernetes.io/arch: amd64
+        kubernetes.io/arch: amd64
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -233,7 +233,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-        beta.kubernetes.io/arch: arm64
+        kubernetes.io/arch: arm64
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -316,7 +316,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-        beta.kubernetes.io/arch: arm
+        kubernetes.io/arch: arm
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -399,7 +399,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-        beta.kubernetes.io/arch: ppc64le
+        kubernetes.io/arch: ppc64le
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -482,7 +482,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-        beta.kubernetes.io/arch: s390x
+        kubernetes.io/arch: s390x
       tolerations:
       - operator: Exists
         effect: NoSchedule
