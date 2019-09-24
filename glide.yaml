@@ -68,3 +68,4 @@ import:
 - package: github.com/sirupsen/logrus
   version: v1.0.6
 - package: github.com/buger/jsonparser
+- package: github.com/bhendo/go-powershell
