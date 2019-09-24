@@ -105,6 +105,7 @@ metadata:
 data:
   cni-conf.json: |
     {
+      "cniVersion": "0.2.0",
       "name": "cbr0",
       "plugins": [
         {
