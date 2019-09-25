@@ -31,7 +31,7 @@ spec:
   allowPrivilegeEscalation: false
   defaultAllowPrivilegeEscalation: false
   # Capabilities
-  allowedCapabilities: ['NET_ADMIN','NET_RAW']
+  allowedCapabilities: ['NET_ADMIN']
   defaultAddCapabilities: []
   requiredDropCapabilities: []
   # Host namespaces
@@ -47,7 +47,7 @@ spec:
     rule: 'RunAsAny'
 ---
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: flannel
 rules:
@@ -76,7 +76,7 @@ rules:
       - patch
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: flannel
 roleRef:
@@ -106,7 +106,6 @@ data:
   cni-conf.json: |
     {
       "name": "cbr0",
-      "cniVersion": "0.3.1",
       "plugins": [
         {
           "type": "flannel",
@@ -151,7 +150,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-        kubernetes.io/arch: amd64
+        beta.kubernetes.io/arch: amd64
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -234,7 +233,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-        kubernetes.io/arch: arm64
+        beta.kubernetes.io/arch: arm64
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -317,7 +316,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-        kubernetes.io/arch: arm
+        beta.kubernetes.io/arch: arm
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -400,7 +399,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-        kubernetes.io/arch: ppc64le
+        beta.kubernetes.io/arch: ppc64le
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -483,7 +482,7 @@ spec:
     spec:
       hostNetwork: true
       nodeSelector:
-        kubernetes.io/arch: s390x
+        beta.kubernetes.io/arch: s390x
       tolerations:
       - operator: Exists
         effect: NoSchedule
