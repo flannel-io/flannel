@@ -23,7 +23,7 @@ import (
 	etcd "github.com/coreos/etcd/client"
 	"github.com/coreos/flannel/pkg/ip"
 	. "github.com/coreos/flannel/subnet"
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 	"golang.org/x/net/context"
 )
 

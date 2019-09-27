@@ -15,7 +15,7 @@
 package vxlan
 
 import (
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 	"golang.org/x/net/context"
 	"sync"
 

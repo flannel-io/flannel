@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"

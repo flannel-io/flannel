@@ -40,7 +40,7 @@ package gce
 
 import (
 	"fmt"
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 	"golang.org/x/net/context"
 	"google.golang.org/api/googleapi"
 	"strings"

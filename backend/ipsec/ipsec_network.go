@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"sync"
 
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
 

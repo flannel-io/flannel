@@ -27,7 +27,7 @@ import (
 
 	"github.com/bronze1man/goStrongswanVici"
 	"github.com/coreos/flannel/subnet"
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 	"golang.org/x/net/context"
 )
 

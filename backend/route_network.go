@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/subnet"

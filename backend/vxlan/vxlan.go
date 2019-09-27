@@ -55,7 +55,7 @@ package vxlan
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 	"net"
 	"sync"
 

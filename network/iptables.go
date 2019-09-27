@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 
 	"time"
 

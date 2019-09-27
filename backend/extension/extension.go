@@ -24,7 +24,7 @@ import (
 	"os/exec"
 	"sync"
 
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"

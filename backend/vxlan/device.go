@@ -22,7 +22,7 @@ import (
 	"net"
 	"syscall"
 
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 	"github.com/vishvananda/netlink"
 
 	"github.com/coreos/flannel/pkg/ip"

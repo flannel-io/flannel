@@ -24,7 +24,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 
 	"github.com/coreos/flannel/pkg/ip"
 )

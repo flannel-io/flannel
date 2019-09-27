@@ -18,7 +18,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 	"github.com/rakelkar/gonetsh/netroute"
 	"golang.org/x/net/context"
 
