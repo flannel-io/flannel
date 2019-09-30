@@ -65,7 +65,6 @@ func Syscall9(trap, a1, a2, a3, a4, a5, a6, a7, a8, a9 uintptr) (r1, r2 uintptr,
 
 //sys	Lstat(path string, stat *Stat_t) (err error) = SYS_LSTAT64
 //sys	Fstat(fd int, stat *Stat_t) (err error) = SYS_FSTAT64
-//sys	Fstatat(dirfd int, path string, stat *Stat_t, flags int) (err error) = SYS_FSTATAT64
 //sys	Stat(path string, stat *Stat_t) (err error) = SYS_STAT64
 
 //sys	Utime(path string, buf *Utimbuf) (err error)
@@ -74,6 +73,7 @@ func Syscall9(trap, a1, a2, a3, a4, a5, a6, a7, a8, a9 uintptr) (r1, r2 uintptr,
 
 func Fstatfs(fd int, buf *Statfs_t) (err error) {
 	_, _, e := Syscall(SYS_FSTATFS64, uintptr(fd), unsafe.Sizeof(*buf), uintptr(unsafe.Pointer(buf)))
+	use(unsafe.Pointer(buf))
 	if e != 0 {
 		err = errnoErr(e)
 	}
@@ -86,6 +86,7 @@ func Statfs(path string, buf *Statfs_t) (err error) {
 		return err
 	}
 	_, _, e := Syscall(SYS_STATFS64, uintptr(unsafe.Pointer(p)), unsafe.Sizeof(*buf), uintptr(unsafe.Pointer(buf)))
+	use(unsafe.Pointer(p))
 	if e != 0 {
 		err = errnoErr(e)
 	}
@@ -100,12 +101,19 @@ func Seek(fd int, offset int64, whence int) (off int64, err error) {
 	return
 }
 
-func setTimespec(sec, nsec int64) Timespec {
-	return Timespec{Sec: int32(sec), Nsec: int32(nsec)}
+func TimespecToNsec(ts Timespec) int64 { return int64(ts.Sec)*1e9 + int64(ts.Nsec) }
+
+func NsecToTimespec(nsec int64) (ts Timespec) {
+	ts.Sec = int32(nsec / 1e9)
+	ts.Nsec = int32(nsec % 1e9)
+	return
 }
 
-func setTimeval(sec, usec int64) Timeval {
-	return Timeval{Sec: int32(sec), Usec: int32(usec)}
+func NsecToTimeval(nsec int64) (tv Timeval) {
+	nsec += 999 // round up to microsecond
+	tv.Sec = int32(nsec / 1e9)
+	tv.Usec = int32(nsec % 1e9 / 1e3)
+	return
 }
 
 //sysnb pipe2(p *[2]_C_int, flags int) (err error)
@@ -205,9 +213,9 @@ func Setrlimit(resource int, rlim *Rlimit) (err error) {
 	return setrlimit(resource, &rl)
 }
 
-func (r *PtraceRegs) PC() uint64 { return r.Epc }
+func (r *PtraceRegs) PC() uint64 { return uint64(r.Regs[64]) }
 
-func (r *PtraceRegs) SetPC(pc uint64) { r.Epc = pc }
+func (r *PtraceRegs) SetPC(pc uint64) { r.Regs[64] = uint32(pc) }
 
 func (iov *Iovec) SetLen(length int) {
 	iov.Len = uint32(length)
@@ -229,3 +237,5 @@ func Poll(fds []PollFd, timeout int) (n int, err error) {
 	}
 	return poll(&fds[0], len(fds), timeout)
 }
+
+func Getpagesize() int { return 4096 }

@@ -68,3 +68,5 @@ import:
 - package: github.com/sirupsen/logrus
   version: v1.0.6
 - package: github.com/buger/jsonparser
+- package: github.com/rakelkar/gonetsh
+  version: e5c5ffe4bdf04bc060fc45ff4aca2349f51c94a7

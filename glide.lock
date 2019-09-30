@@ -1,12 +1,12 @@
-hash: 2f18ae318a81ddf8a97889dd05c1d2cae675586788b641c8b2b1fec819177d69
-updated: 2018-01-01T18:24:38.545866546-06:00
+hash: 944c8566876787e646a930a3215727c6f199b466b3f7e910b913299ff060148f
+updated: 2019-09-30T15:56:07.745341329-04:00
 imports:
 - name: cloud.google.com/go
   version: 7c205da84d8d024a8200be93ab042357c9a70177
   subpackages:
   - compute/metadata
 - name: github.com/aws/aws-sdk-go
-  version: 5db34a6d9a78f5a3c6a713197aeb6bf159458211
+  version: 63033a5636f9a9ad84cfaaf97b44e31286fb3c54
   subpackages:
   - aws
   - aws/awserr
@@ -17,28 +17,42 @@ imports:
   - aws/credentials
   - aws/credentials/ec2rolecreds
   - aws/credentials/endpointcreds
+  - aws/credentials/processcreds
   - aws/credentials/stscreds
+  - aws/csm
   - aws/defaults
   - aws/ec2metadata
   - aws/endpoints
   - aws/request
   - aws/session
   - aws/signer/v4
+  - internal/ini
+  - internal/sdkio
+  - internal/sdkmath
+  - internal/sdkrand
+  - internal/sdkuri
   - internal/shareddefaults
   - private/protocol
   - private/protocol/ec2query
+  - private/protocol/json/jsonutil
   - private/protocol/query
   - private/protocol/query/queryutil
   - private/protocol/rest
   - private/protocol/xml/xmlutil
   - service/ec2
   - service/sts
-- name: github.com/buger/jsonparser
-  version: f4dd9f5a6b441265aefc1d44872a6f8c10f42b37
+  - service/sts/stsiface
+- name: github.com/benmoss/go-powershell
+  version: 09527df358cac0543ab98a3b6a39c7e9a6960cb7
+  subpackages:
+  - backend
+  - utils
 - name: github.com/bronze1man/goStrongswanVici
   version: 4d72634a2f113aa48347dbc7dcb14adb806b6534
+- name: github.com/buger/jsonparser
+  version: f4dd9f5a6b441265aefc1d44872a6f8c10f42b37
 - name: github.com/coreos/etcd
-  version: 960f4604bc821241b94906da5fe7f66306a77472
+  version: 992dbd4d1ee8a42b1ffdcedc02edcc9cc9d6d551
   subpackages:
   - client
   - clientv3
@@ -48,7 +62,7 @@ imports:
   - pkg/transport
   - pkg/types
 - name: github.com/coreos/go-iptables
-  version: 47f22b0dd3355c0ba570ba12b0b8a36bf214c04b
+  version: af017ce15ce0adc4beab89d270abfeeb4d262cf1
   subpackages:
   - iptables
 - name: github.com/coreos/go-systemd
@@ -85,8 +99,6 @@ imports:
   - swagger
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
-- name: github.com/go-ini/ini
-  version: 3d73f4b845efdf9989fffd4b4e562727744a34ba
 - name: github.com/go-openapi/jsonpointer
   version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
 - name: github.com/go-openapi/jsonreference
@@ -96,26 +108,20 @@ imports:
 - name: github.com/go-openapi/swag
   version: 1d0bd113de87027671077d3c71eb3ac5d7dbba72
 - name: github.com/gogo/protobuf
-  version: 909568be09de550ed094403c2bf8a261b5bb730a
+  version: e18d7aa8f8c624c915db340349aad4c49b10d173
   subpackages:
   - proto
   - sortkeys
 - name: github.com/golang/glog
   version: 44145f04b68cf362d9c4df2182967c2275eaefed
 - name: github.com/golang/protobuf
-  version: 4bd1920723d7b7c925de087aa32e2187708897f7
+  version: 8616e8ee5e20a1704615e6c8d7afcdac06087a67
   subpackages:
-  - jsonpb
   - proto
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/gorilla/mux
-  version: 7f08801859139f86dfafd1c296e2cba9a80d292e
-- name: github.com/bhendo/go-powershell
-  version: 5e467ffeda17bce224fe913c8786e22c63f67257
-  subpackages:
-  - backend
-  - utils
+  version: 00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15
 - name: github.com/howeyc/gopass
   version: 3ca23474a7c7203e0a0a070fd33508f6efdb9b3d
 - name: github.com/imdario/mergo
@@ -141,15 +147,22 @@ imports:
 - name: github.com/Microsoft/hcsshim
   version: bc49f75c72216a28ffc7443177f477aae7e61d1f
   subpackages:
+  - hcn
+  - internal/cni
+  - internal/guestrequest
   - internal/guid
   - internal/hcs
   - internal/hcserror
   - internal/hns
   - internal/interop
+  - internal/logfields
   - internal/longpath
   - internal/mergemaps
+  - internal/regstate
+  - internal/runhcs
   - internal/safefile
   - internal/schema1
+  - internal/schema2
   - internal/timeout
   - internal/wclayer
 - name: github.com/PuerkitoBio/purell
@@ -157,14 +170,14 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/rakelkar/gonetsh
-  version: 758b1f7c9d1ca5acaca0b909f06ff9ed9fe35de1
+  version: e5c5ffe4bdf04bc060fc45ff4aca2349f51c94a7
   subpackages:
   - netroute
   - netsh
 - name: github.com/sirupsen/logrus
   version: 3e01752db0189b9157070a0e1668a620f9a85da2
 - name: github.com/spf13/pflag
-  version: 08b1a584251b5b62f458943640fc8ebd4d50aaa5
+  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - name: github.com/ugorji/go
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
@@ -182,7 +195,7 @@ imports:
   - blowfish
   - ssh/terminal
 - name: golang.org/x/net
-  version: f2499483f923065a842d38eb4c7f1927e6fc6e6d
+  version: e90d6d0afc4c315a0d87a568ae68577cc15149a0
   subpackages:
   - context
   - context/ctxhttp
@@ -198,10 +211,11 @@ imports:
   - jws
   - jwt
 - name: golang.org/x/sys
-  version: d5840adf789d732bc8b00f37b26ca956a7cc8e79
+  version: 478fcf54317e52ab69f40bb4c7a1520288d7f7ea
   subpackages:
   - unix
   - windows
+  - windows/registry
 - name: golang.org/x/text
   version: 2910a502d2bf9e43193af9d68ca516529614eed3
   subpackages:
