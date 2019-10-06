@@ -116,7 +116,7 @@ endif
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
 		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
-		golang:1.8.3 /bin/bash -c '\
+		golang:$(GO_VERSION) /bin/bash -c '\
 		cd /go/src/github.com/coreos/flannel && \
 		CGO_ENABLED=1 make -e dist/flanneld && \
 		mv dist/flanneld dist/flanneld-$(ARCH)'
