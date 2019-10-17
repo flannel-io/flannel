@@ -16,7 +16,6 @@ package hostgw
 
 import (
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 
@@ -26,12 +25,11 @@ import (
 	"github.com/coreos/flannel/subnet"
 	log "github.com/golang/glog"
 	"github.com/juju/errors"
-	"github.com/rakelkar/gonetsh/netroute"
-	"github.com/rakelkar/gonetsh/netsh"
+	"github.com/thxcode/winnet/pkg/adapter"
+	"github.com/thxcode/winnet/pkg/ipforward"
 	"golang.org/x/net/context"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/wait"
-	utilexec "k8s.io/utils/exec"
 )
 
 func init() {
@@ -81,8 +79,8 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup,
 		Mtu:         be.extIface.Iface.MTU,
 		LinkIndex:   be.extIface.Iface.Index,
 	}
-	n.GetRoute = func(lease *subnet.Lease) *netroute.Route {
-		return &netroute.Route{
+	n.GetRoute = func(lease *subnet.Lease) *ipforward.Route {
+		return &ipforward.Route{
 			DestinationSubnet: lease.Subnet.ToIPNet(),
 			GatewayAddress:    lease.Attrs.PublicIP.ToIP(),
 			LinkIndex:         n.LinkIndex,
@@ -108,7 +106,6 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup,
 	}
 
 	// 3. Check if the network exists and has the expected settings
-	netshHelper := netsh.New(utilexec.New())
 	createNewNetwork := true
 	expectedSubnet := n.SubnetLease.Subnet
 	expectedAddressPrefix := expectedSubnet.String()
@@ -173,7 +170,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup,
 		// Wait for the interface with the management IP
 		log.Infof("Waiting to get net interface for HNSNetwork %s (%s)", networkName, newNetwork.ManagementIP)
 		waitErr = wait.Poll(500*time.Millisecond, 5*time.Second, func() (done bool, err error) {
-			_, lastErr = netshHelper.GetInterfaceByIP(newNetwork.ManagementIP)
+			_, lastErr = adapter.GetInterfaceByIP(newNetwork.ManagementIP)
 			return lastErr == nil, nil
 		})
 		if waitErr == wait.ErrWaitTimeout {
@@ -230,7 +227,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup,
 
 	// 7. Enable forwarding on the host interface and endpoint
 	for _, interfaceIpAddress := range []string{expectedNetwork.ManagementIP, expectedBridgeEndpoint.IPAddress.String()} {
-		netInterface, err := netshHelper.GetInterfaceByIP(interfaceIpAddress)
+		netInterface, err := adapter.GetInterfaceByIP(interfaceIpAddress)
 		if err != nil {
 			return nil, errors.Annotatef(err, "failed to find interface for IP Address %s", interfaceIpAddress)
 		}
@@ -242,11 +239,11 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup,
 			n.Name = netInterface.Name
 		}
 
-		interfaceIdx := strconv.Itoa(netInterface.Idx)
-		if err := netshHelper.EnableForwarding(interfaceIdx); err != nil {
-			return nil, errors.Annotatef(err, "failed to enable forwarding on %s index %s", netInterface.Name, interfaceIdx)
+		interfaceIdx := netInterface.Idx
+		if err := adapter.EnableForwardingByIndex(interfaceIdx); err != nil {
+			return nil, errors.Annotatef(err, "failed to enable forwarding on %s index %d", netInterface.Name, interfaceIdx)
 		}
-		log.Infof("Enabled forwarding on %s index %s", netInterface.Name, interfaceIdx)
+		log.Infof("Enabled forwarding on %s index %d", netInterface.Name, interfaceIdx)
 	}
 
 	return n, nil

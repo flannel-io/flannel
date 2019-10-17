@@ -15,15 +15,14 @@
 package backend
 
 import (
+	"strings"
 	"sync"
 	"time"
 
-	log "github.com/golang/glog"
-	"github.com/rakelkar/gonetsh/netroute"
-	"golang.org/x/net/context"
-
 	"github.com/coreos/flannel/subnet"
-	"strings"
+	log "github.com/golang/glog"
+	"github.com/thxcode/winnet/pkg/ipforward"
+	"golang.org/x/net/context"
 )
 
 const (
@@ -35,10 +34,10 @@ type RouteNetwork struct {
 	Name        string
 	BackendType string
 	SM          subnet.Manager
-	GetRoute    func(lease *subnet.Lease) *netroute.Route
+	GetRoute    func(lease *subnet.Lease) *ipforward.Route
 	Mtu         int
 	LinkIndex   int
-	routes      []netroute.Route
+	routes      []ipforward.Route
 }
 
 func (n *RouteNetwork) MTU() int {
@@ -56,7 +55,7 @@ func (n *RouteNetwork) Run(ctx context.Context) {
 		wg.Done()
 	}()
 
-	n.routes = make([]netroute.Route, 0, 10)
+	n.routes = make([]ipforward.Route, 0, 10)
 	wg.Add(1)
 	go func() {
 		n.routeCheck(ctx)
@@ -77,8 +76,6 @@ func (n *RouteNetwork) Run(ctx context.Context) {
 }
 
 func (n *RouteNetwork) handleSubnetEvents(batch []subnet.Event) {
-	netrouteHelper := netroute.New()
-
 	for _, evt := range batch {
 		leaseSubnet := evt.Lease.Subnet
 		leaseAttrs := evt.Lease.Attrs
@@ -93,7 +90,7 @@ func (n *RouteNetwork) handleSubnetEvents(batch []subnet.Event) {
 		case subnet.EventAdded:
 			log.Infof("Subnet added: %v via %v", leaseSubnet, leaseAttrs.PublicIP)
 
-			existingRoutes, _ := netrouteHelper.GetNetRoutes(expectedRoute.LinkIndex, expectedRoute.DestinationSubnet)
+			existingRoutes, _ := ipforward.GetNetRoutes(expectedRoute.LinkIndex, expectedRoute.DestinationSubnet)
 			if len(existingRoutes) > 0 {
 				existingRoute := existingRoutes[0]
 				if existingRoute.Equal(*expectedRoute) {
@@ -101,14 +98,14 @@ func (n *RouteNetwork) handleSubnetEvents(batch []subnet.Event) {
 				}
 
 				log.Warningf("Replacing existing route %v via %v with %v via %v", leaseSubnet, existingRoute.GatewayAddress, leaseSubnet, leaseAttrs.PublicIP)
-				err := netrouteHelper.RemoveNetRoute(existingRoute.LinkIndex, existingRoute.DestinationSubnet, existingRoute.GatewayAddress)
+				err := ipforward.RemoveNetRoute(existingRoute.LinkIndex, existingRoute.DestinationSubnet, existingRoute.GatewayAddress)
 				if err != nil {
 					log.Errorf("Error removing route: %v", err)
 					continue
 				}
 			}
 
-			err := netrouteHelper.NewNetRoute(expectedRoute.LinkIndex, expectedRoute.DestinationSubnet, expectedRoute.GatewayAddress)
+			err := ipforward.NewNetRoute(expectedRoute.LinkIndex, expectedRoute.DestinationSubnet, expectedRoute.GatewayAddress)
 			if err != nil {
 				log.Errorf("Error creating route: %v", err)
 				continue
@@ -119,13 +116,13 @@ func (n *RouteNetwork) handleSubnetEvents(batch []subnet.Event) {
 		case subnet.EventRemoved:
 			log.Infof("Subnet removed: %v", leaseSubnet)
 
-			existingRoutes, _ := netrouteHelper.GetNetRoutes(expectedRoute.LinkIndex, expectedRoute.DestinationSubnet)
+			existingRoutes, _ := ipforward.GetNetRoutes(expectedRoute.LinkIndex, expectedRoute.DestinationSubnet)
 			if len(existingRoutes) > 0 {
 				existingRoute := existingRoutes[0]
 				if existingRoute.Equal(*expectedRoute) {
 					log.Infof("Removing existing route %v via %v", leaseSubnet, existingRoute.GatewayAddress)
 
-					err := netrouteHelper.RemoveNetRoute(existingRoute.LinkIndex, existingRoute.DestinationSubnet, existingRoute.GatewayAddress)
+					err := ipforward.RemoveNetRoute(existingRoute.LinkIndex, existingRoute.DestinationSubnet, existingRoute.GatewayAddress)
 					if err != nil {
 						log.Warningf("Error removing route: %v", err)
 					}
@@ -140,7 +137,7 @@ func (n *RouteNetwork) handleSubnetEvents(batch []subnet.Event) {
 	}
 }
 
-func (n *RouteNetwork) addToRouteList(newRoute *netroute.Route) {
+func (n *RouteNetwork) addToRouteList(newRoute *ipforward.Route) {
 	for _, route := range n.routes {
 		if route.Equal(*newRoute) {
 			return
@@ -150,7 +147,7 @@ func (n *RouteNetwork) addToRouteList(newRoute *netroute.Route) {
 	n.routes = append(n.routes, *newRoute)
 }
 
-func (n *RouteNetwork) removeFromRouteList(oldRoute *netroute.Route) {
+func (n *RouteNetwork) removeFromRouteList(oldRoute *ipforward.Route) {
 	for index, route := range n.routes {
 		if route.Equal(*oldRoute) {
 			n.routes = append(n.routes[:index], n.routes[index+1:]...)
@@ -171,9 +168,7 @@ func (n *RouteNetwork) routeCheck(ctx context.Context) {
 }
 
 func (n *RouteNetwork) checkSubnetExistInRoutes() {
-	netrouteHelper := netroute.New()
-
-	existingRoutes, err := netrouteHelper.GetNetRoutesAll()
+	existingRoutes, err := ipforward.GetNetRoutesAll()
 	if err != nil {
 		log.Errorf("Error enumerating routes: %v", err)
 		return
@@ -188,7 +183,7 @@ func (n *RouteNetwork) checkSubnetExistInRoutes() {
 		}
 
 		if !exist {
-			err := netrouteHelper.NewNetRoute(expectedRoute.LinkIndex, expectedRoute.DestinationSubnet, expectedRoute.GatewayAddress)
+			err := ipforward.NewNetRoute(expectedRoute.LinkIndex, expectedRoute.DestinationSubnet, expectedRoute.GatewayAddress)
 			if err != nil {
 				log.Warningf("Error recovering route to %v via %v on %v (%v).", expectedRoute.DestinationSubnet, expectedRoute.GatewayAddress, expectedRoute.LinkIndex, err)
 				continue

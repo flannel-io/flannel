@@ -111,11 +111,6 @@ imports:
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/gorilla/mux
   version: 7f08801859139f86dfafd1c296e2cba9a80d292e
-- name: github.com/bhendo/go-powershell
-  version: 5e467ffeda17bce224fe913c8786e22c63f67257
-  subpackages:
-  - backend
-  - utils
 - name: github.com/howeyc/gopass
   version: 3ca23474a7c7203e0a0a070fd33508f6efdb9b3d
 - name: github.com/imdario/mergo
@@ -156,11 +151,14 @@ imports:
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
-- name: github.com/rakelkar/gonetsh
-  version: 501daadcadf88660f61cc3352bdcb26b5f8ba4ce
+- name: github.com/thxcode/winnet
+  version: bb4ea078e0eea4f4cc226530839e94c2056bcf97
   subpackages:
-  - netroute
-  - netsh
+  - pkg/adapter
+  - pkg/converters
+  - pkg/ipforward
+  - pkg/syscalls
+  - pkg/tool
 - name: github.com/sirupsen/logrus
   version: 3e01752db0189b9157070a0e1668a620f9a85da2
 - name: github.com/spf13/pflag

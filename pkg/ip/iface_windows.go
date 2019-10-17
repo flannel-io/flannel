@@ -15,15 +15,15 @@
 package ip
 
 import (
-	netsh "github.com/rakelkar/gonetsh/netsh"
 	"net"
+
+	"github.com/thxcode/winnet/pkg/adapter"
 )
 
 func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
 	// get ip address for the interface
 	// prefer global unicast to link local addresses
-	netHelper := netsh.New(nil)
-	ifaceDetails, err := netHelper.GetInterfaceByName(iface.Name)
+	ifaceDetails, err := adapter.GetInterfaceByName(iface.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -34,9 +34,7 @@ func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
 }
 
 func GetDefaultGatewayIface() (*net.Interface, error) {
-	netHelper := netsh.New(nil)
-
-	defaultIfaceName, err := netHelper.GetDefaultGatewayIfaceName()
+	defaultIfaceName, err := adapter.GetDefaultGatewayIfaceName()
 	if err != nil {
 		return nil, err
 	}
@@ -50,9 +48,7 @@ func GetDefaultGatewayIface() (*net.Interface, error) {
 }
 
 func GetInterfaceByIP(ip net.IP) (*net.Interface, error) {
-	netHelper := netsh.New(nil)
-
-	ifaceDetails, err := netHelper.GetInterfaceByIP(ip.String())
+	ifaceDetails, err := adapter.GetInterfaceByIP(ip.String())
 	if err != nil {
 		return nil, err
 	}

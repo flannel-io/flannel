@@ -68,3 +68,11 @@ import:
 - package: github.com/sirupsen/logrus
   version: v1.0.6
 - package: github.com/buger/jsonparser
+- package: github.com/thxcode/winnet
+  version: v0.1.0
+  subpackages:
+  - pkg/adapter
+  - pkg/converters
+  - pkg/ipforward
+  - pkg/syscalls
+  - pkg/tool
