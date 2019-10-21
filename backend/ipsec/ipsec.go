@@ -95,6 +95,11 @@ func (be *IPSECBackend) RegisterNetwork(
 
 	log.Infof("IPSec config: UDPEncap=%v ESPProposal=%s", cfg.UDPEncap, cfg.ESPProposal)
 
+	ikeDaemon, err := NewCharonIKEDaemon(ctx, wg, cfg.ESPProposal)
+	if err != nil {
+		return nil, fmt.Errorf("error creating CharonIKEDaemon struct: %v", err)
+	}
+
 	attrs := subnet.LeaseAttrs{
 		PublicIP:    ip.FromIP(be.extIface.ExtAddr),
 		BackendType: "ipsec",
@@ -110,11 +115,6 @@ func (be *IPSECBackend) RegisterNetwork(
 
 	default:
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
-	}
-
-	ikeDaemon, err := NewCharonIKEDaemon(ctx, wg, cfg.ESPProposal)
-	if err != nil {
-		return nil, fmt.Errorf("error creating CharonIKEDaemon struct: %v", err)
 	}
 
 	return newNetwork(be.sm, be.extIface, cfg.UDPEncap, cfg.PSK, ikeDaemon, l)
