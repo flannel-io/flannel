@@ -161,6 +161,7 @@ func (charon *CharonIKEDaemon) LoadConnection(localLease, remoteLease *subnet.Le
 		ESPProposals: []string{charon.espProposal},
 		StartAction:  "start",
 		CloseAction:  "trap",
+		DpdAction:    "restart",
 		Mode:         "tunnel",
 		ReqID:        reqID,
 		//		RekeyTime:     rekeyTime,
