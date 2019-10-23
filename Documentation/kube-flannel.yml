@@ -244,7 +244,7 @@ spec:
         tier: node
         app: flannel
     spec:
-      priorityClassName: system-cluster-critical
+      priorityClassName: system-node-critical
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -339,7 +339,7 @@ spec:
         tier: node
         app: flannel
     spec:
-      priorityClassName: system-cluster-critical
+      priorityClassName: system-node-critical
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -434,7 +434,7 @@ spec:
         tier: node
         app: flannel
     spec:
-      priorityClassName: system-cluster-critical
+      priorityClassName: system-node-critical
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -529,7 +529,7 @@ spec:
         tier: node
         app: flannel
     spec:
-      priorityClassName: system-cluster-critical
+      priorityClassName: system-node-critical
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
