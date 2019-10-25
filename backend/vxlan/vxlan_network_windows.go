@@ -101,6 +101,11 @@ func (nw *network) handleSubnetEvents(batch []subnet.Event) {
 			continue
 		}
 
+		if vxlanAttrs.VNI < 4096 {
+			log.Error("VNI is required to greater than or equal to 4096 on Windows.")
+			continue
+		}
+
 		hnsnetwork, err := hcn.GetNetworkByName(nw.dev.link.Name)
 		if err != nil {
 			log.Errorf("Unable to find network %v, error: %v", nw.dev.link.Name, err)
@@ -109,7 +114,7 @@ func (nw *network) handleSubnetEvents(batch []subnet.Event) {
 		managementIp := event.Lease.Attrs.PublicIP.String()
 
 		networkPolicySettings := hcn.RemoteSubnetRoutePolicySetting{
-			IsolationId:                 4096,
+			IsolationId:                 vxlanAttrs.VNI,
 			DistributedRouterMacAddress: net.HardwareAddr(vxlanAttrs.VtepMAC).String(),
 			ProviderAddress:             managementIp,
 			DestinationPrefix:           event.Lease.Subnet.String(),
