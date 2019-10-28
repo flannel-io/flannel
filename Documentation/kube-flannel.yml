@@ -43,7 +43,7 @@ spec:
     max: 65535
   # SELinux
   seLinux:
-    # SELinux is unsed in CaaSP
+    # SELinux is unused in CaaSP
     rule: 'RunAsAny'
 ---
 kind: ClusterRole
@@ -199,7 +199,7 @@ spec:
         securityContext:
           privileged: false
           capabilities:
-             add: ["NET_ADMIN"]
+            add: ["NET_ADMIN"]
         env:
         - name: POD_NAME
           valueFrom:
