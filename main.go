@@ -199,7 +199,7 @@ func main() {
 	var err error
 	// Check the default interface only if no interfaces are specified
 	if len(opts.iface) == 0 && len(opts.ifaceRegex) == 0 {
-		extIface, err = LookupExtIface("", "")
+		extIface, err = LookupExtIface(opts.publicIP, "")
 		if err != nil {
 			log.Error("Failed to find any valid interface to use: ", err)
 			os.Exit(1)
