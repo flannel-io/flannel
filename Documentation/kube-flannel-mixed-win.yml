@@ -106,7 +106,7 @@ data:
   cni-conf.json: |
     {
       "name": "vxlan0",
-      "cniVersion": "0.2.0",
+      "cniVersion": "0.3.1",
       "plugins": [
         {
           "type": "flannel",
