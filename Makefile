@@ -73,7 +73,7 @@ test: header-check gofmt
 	# Run the unit tests
 	# NET_ADMIN capacity is required to do some network operation
 	# SYS_ADMIN capacity is required to create network namespace
-	docker run --cap-add=NET_ADMIN --cap-add=SYS_ADMIN --rm -v $(shell pwd):/go/src/github.com/coreos/flannel golang:1.8.3 go test -v -cover $(TEST_PACKAGES_EXPANDED)
+	docker run --cap-add=NET_ADMIN --cap-add=SYS_ADMIN --rm -v $(shell pwd):/go/src/github.com/coreos/flannel golang:$(GO_VERSION) go test -v -cover $(TEST_PACKAGES_EXPANDED)
 
 	# Test the docker-opts script
 	cd dist; ./mk-docker-opts_tests.sh
@@ -97,10 +97,22 @@ header-check:
 # Throw an error if gofmt finds problems.
 # "read" will return a failure return code if there is no output. This is inverted wth the "!"
 gofmt:
-	bash -c '! gofmt -d $(PACKAGES) 2>&1 | read'
+	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
+		-u $(shell id -u):$(shell id -g) \
+		-v $(CURDIR):/go/src/github.com/coreos/flannel \
+		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
+		golang:$(GO_VERSION) /bin/bash -c '\
+		cd /go/src/github.com/coreos/flannel && \
+		! gofmt -d $(PACKAGES) 2>&1 | read'
 
 gofmt-fix:
-	gofmt -w $(PACKAGES)
+	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
+		-u $(shell id -u):$(shell id -g) \
+		-v $(CURDIR):/go/src/github.com/coreos/flannel \
+		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
+		golang:$(GO_VERSION) /bin/bash -c '\
+		cd /go/src/github.com/coreos/flannel && \
+		gofmt -w $(PACKAGES)'
 
 bash_unit:
 	wget https://raw.githubusercontent.com/pgrange/bash_unit/v1.6.0/bash_unit
@@ -116,7 +128,7 @@ endif
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
 		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
-		golang:1.8.3 /bin/bash -c '\
+		golang:$(GO_VERSION) /bin/bash -c '\
 		cd /go/src/github.com/coreos/flannel && \
 		CGO_ENABLED=1 make -e dist/flanneld && \
 		mv dist/flanneld dist/flanneld-$(ARCH)'
