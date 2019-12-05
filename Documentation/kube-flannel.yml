@@ -214,6 +214,8 @@ spec:
           mountPath: /run/flannel
         - name: flannel-cfg
           mountPath: /etc/kube-flannel/
+        - name: xtables-lock
+          mountPath: /run/xtables.lock
       volumes:
         - name: run
           hostPath:
@@ -224,6 +226,10 @@ spec:
         - name: flannel-cfg
           configMap:
             name: kube-flannel-cfg
+        - name: xtables-lock
+          hostPath:
+            path: /run/xtables.lock
+            type: FileOrCreate
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -308,6 +314,8 @@ spec:
           mountPath: /run/flannel
         - name: flannel-cfg
           mountPath: /etc/kube-flannel/
+        - name: xtables-lock
+          mountPath: /run/xtables.lock
       volumes:
         - name: run
           hostPath:
@@ -318,6 +326,10 @@ spec:
         - name: flannel-cfg
           configMap:
             name: kube-flannel-cfg
+        - name: xtables-lock
+          hostPath:
+            path: /run/xtables.lock
+            type: FileOrCreate
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -402,6 +414,8 @@ spec:
           mountPath: /run/flannel
         - name: flannel-cfg
           mountPath: /etc/kube-flannel/
+        - name: xtables-lock
+          mountPath: /run/xtables.lock
       volumes:
         - name: run
           hostPath:
@@ -412,6 +426,10 @@ spec:
         - name: flannel-cfg
           configMap:
             name: kube-flannel-cfg
+        - name: xtables-lock
+          hostPath:
+            path: /run/xtables.lock
+            type: FileOrCreate
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -496,6 +514,8 @@ spec:
           mountPath: /run/flannel
         - name: flannel-cfg
           mountPath: /etc/kube-flannel/
+        - name: xtables-lock
+          mountPath: /run/xtables.lock
       volumes:
         - name: run
           hostPath:
@@ -506,6 +526,10 @@ spec:
         - name: flannel-cfg
           configMap:
             name: kube-flannel-cfg
+        - name: xtables-lock
+          hostPath:
+            path: /run/xtables.lock
+            type: FileOrCreate
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -590,6 +614,8 @@ spec:
           mountPath: /run/flannel
         - name: flannel-cfg
           mountPath: /etc/kube-flannel/
+        - name: xtables-lock
+          mountPath: /run/xtables.lock
       volumes:
         - name: run
           hostPath:
@@ -600,3 +626,8 @@ spec:
         - name: flannel-cfg
           configMap:
             name: kube-flannel-cfg
+        - name: xtables-lock
+          hostPath:
+            path: /run/xtables.lock
+            type: FileOrCreate
+
