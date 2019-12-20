@@ -471,7 +471,7 @@ func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, 
 
 		// Check IP
 		for _, ifaceToMatch := range ifaces {
-			ifaceIP, err := ip.GetIfaceIP4Addr(&ifaceToMatch)
+			ifaceIP, err := ip.GetInterfaceIP4Addr(&ifaceToMatch)
 			if err != nil {
 				// Skip if there is no IPv4 address
 				continue
@@ -508,7 +508,7 @@ func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, 
 		if iface == nil {
 			var availableFaces []string
 			for _, f := range ifaces {
-				ip, _ := ip.GetIfaceIP4Addr(&f) // We can safely ignore errors. We just won't log any ip
+				ip, _ := ip.GetInterfaceIP4Addr(&f) // We can safely ignore errors. We just won't log any ip
 				availableFaces = append(availableFaces, fmt.Sprintf("%s:%s", f.Name, ip))
 			}
 
@@ -516,13 +516,13 @@ func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, 
 		}
 	} else {
 		log.Info("Determining IP address of default interface")
-		if iface, err = ip.GetDefaultGatewayIface(); err != nil {
+		if iface, err = ip.GetDefaultGatewayInterface(); err != nil {
 			return nil, fmt.Errorf("failed to get default interface: %s", err)
 		}
 	}
 
 	if ifaceAddr == nil {
-		ifaceAddr, err = ip.GetIfaceIP4Addr(iface)
+		ifaceAddr, err = ip.GetInterfaceIP4Addr(iface)
 		if err != nil {
 			return nil, fmt.Errorf("failed to find IPv4 address for interface %s", iface.Name)
 		}
