@@ -15,6 +15,7 @@
 package subnet
 
 import (
+	"bytes"
 	"time"
 
 	log "github.com/golang/glog"
@@ -76,7 +77,7 @@ func (lw *leaseWatcher) reset(leases []Lease) []Event {
 
 		found := false
 		for i, ol := range lw.leases {
-			if ol.Subnet.Equal(nl.Subnet) {
+			if ol.Subnet.Equal(nl.Subnet) && bytes.Compare(ol.Attrs.BackendData, nl.Attrs.BackendData) == 0 {
 				lw.leases = deleteLease(lw.leases, i)
 				found = true
 				break
@@ -89,7 +90,7 @@ func (lw *leaseWatcher) reset(leases []Lease) []Event {
 		}
 	}
 
-	// everything left in sm.leases has been deleted
+	// everything left in lw.leases has been deleted
 	for _, l := range lw.leases {
 		if lw.ownLease != nil && l.Subnet.Equal(lw.ownLease.Subnet) {
 			continue
