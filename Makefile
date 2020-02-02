@@ -15,7 +15,7 @@ else
 endif
 
 # Go version to use for builds
-GO_VERSION=1.10.3
+GO_VERSION=1.13.7
 
 # K8s version used for Makefile helpers
 K8S_VERSION=v1.6.6
@@ -47,7 +47,7 @@ dist/flanneld.exe: $(shell find . -type f  -name '*.go')
 # This will build flannel natively using golang image
 dist/flanneld-$(ARCH): dist/qemu-$(ARCH)-static
 	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x]
-	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
+	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOCACHE=/tmp/ -e GOARCH=$(ARCH) \
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR)/dist/qemu-$(ARCH)-static:/usr/bin/qemu-$(ARCH)-static \
 		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
@@ -69,7 +69,7 @@ ifeq ($(ARCH),amd64)
 endif
 
 ### TESTING
-test: header-check gofmt verify-glide
+test: header-check gofmt
 	# Run the unit tests
 	# NET_ADMIN capacity is required to do some network operation
 	# SYS_ADMIN capacity is required to create network namespace
@@ -98,11 +98,6 @@ header-check:
 # "read" will return a failure return code if there is no output. This is inverted wth the "!"
 gofmt:
 	bash -c '! gofmt -d $(PACKAGES) 2>&1 | read'
-
-# Throw an error if `glide list` finds any errors.
-verify-glide:
-	$(if $(shell which glide),,$(error "glide not found in PATH"))
-	bash -c '! glide list 2>&1 | grep "ERROR"'
 
 gofmt-fix:
 	gofmt -w $(PACKAGES)
@@ -209,13 +204,6 @@ flannel-git:
 	ARCH=arm64 REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-arm64.docker docker-push
 	ARCH=ppc64le REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-ppc64le.docker docker-push
 	ARCH=s390x REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-s390x.docker docker-push
-
-### DEVELOPING
-update-glide:
-	# go get -d -u github.com/Masterminds/glide
-	glide update --strip-vendor
-	# go get -d -u github.com/sgotti/glide-vc
-	glide vc --only-code --no-tests
 
 install:
 	# This is intended as just a developer convenience to help speed up non-containerized builds
