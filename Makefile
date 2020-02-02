@@ -73,7 +73,7 @@ test: header-check gofmt
 	# Run the unit tests
 	# NET_ADMIN capacity is required to do some network operation
 	# SYS_ADMIN capacity is required to create network namespace
-	docker run --cap-add=NET_ADMIN --cap-add=SYS_ADMIN --rm -v $(shell pwd):/go/src/github.com/coreos/flannel golang:1.8.3 go test -v -cover $(TEST_PACKAGES_EXPANDED)
+	docker run --cap-add=NET_ADMIN --cap-add=SYS_ADMIN --rm -v $(shell pwd):/go/src/github.com/coreos/flannel golang:${GO_VERSION} go test -v -cover $(TEST_PACKAGES_EXPANDED)
 
 	# Test the docker-opts script
 	cd dist; ./mk-docker-opts_tests.sh
@@ -116,7 +116,7 @@ endif
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
 		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
-		golang:1.8.3 /bin/bash -c '\
+		golang:${GO_VERSION} /bin/bash -c '\
 		cd /go/src/github.com/coreos/flannel && \
 		CGO_ENABLED=1 make -e dist/flanneld && \
 		mv dist/flanneld dist/flanneld-$(ARCH)'

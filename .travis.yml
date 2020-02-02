@@ -4,6 +4,8 @@ services:
     - docker
 
 language: go
+go:
+  - 1.13.x
 
 env:
   global:
@@ -24,10 +26,3 @@ after_success:
 
 notifications:
   email: false
-
-addons:
-  apt:
-    sources:
-      - sourceline: 'ppa:masterminds/glide'
-    packages:
-      - glide
