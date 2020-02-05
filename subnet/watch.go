@@ -77,9 +77,13 @@ func (lw *leaseWatcher) reset(leases []Lease) []Event {
 
 		found := false
 		for i, ol := range lw.leases {
-			if ol.Subnet.Equal(nl.Subnet) && bytes.Compare(ol.Attrs.BackendData, nl.Attrs.BackendData) == 0 {
+			if ol.Subnet.Equal(nl.Subnet) {
 				lw.leases = deleteLease(lw.leases, i)
-				found = true
+
+				// If the backend data has changed, send the added event to the backend
+				if bytes.Compare(ol.Attrs.BackendData, nl.Attrs.BackendData) == 0 {
+					found = true
+				}
 				break
 			}
 		}
