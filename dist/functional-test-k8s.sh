@@ -8,6 +8,8 @@ TAG=`git describe --tags --dirty`
 FLANNEL_DOCKER_IMAGE="${FLANNEL_DOCKER_IMAGE:-quay.io/coreos/flannel:$TAG}"
 K8S_VERSION="${K8S_VERSION:-1.13.2}"
 HYPERKUBE_IMG="gcr.io/google_containers/hyperkube-${ARCH}"
+HYPERKUBE_CMD="${HYPERKUBE_CMD:-/hyperkube}"
+HYPERKUBE_APISERVER_CMD="${HYPERKUBE_APISERVER_CMD:-apiserver}"
 
 docker_ip=$(ip -o -f inet addr show docker0 | grep -Po 'inet \K[\d.]+')
 etcd_endpt="http://$docker_ip:2379"
@@ -31,11 +33,11 @@ setup_suite() {
     # Start a kubernetes API server
     docker rm -f flannel-e2e-k8s-apiserver >/dev/null 2>/dev/null
     docker run -d --net=host --name flannel-e2e-k8s-apiserver ${HYPERKUBE_IMG}:v$K8S_VERSION \
-      /hyperkube apiserver --etcd-servers=$etcd_endpt \
+      ${HYPERKUBE_CMD} ${HYPERKUBE_APISERVER_CMD} --etcd-servers=$etcd_endpt \
       --service-cluster-ip-range=10.101.0.0/16 --insecure-bind-address=0.0.0.0 --allow-privileged >/dev/null
     sleep 1
 
-    while ! cat <<EOF |  docker run -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION /hyperkube kubectl create -f - >/dev/null 2>/dev/null
+    while ! cat <<EOF |  docker run -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION ${HYPERKUBE_CMD} kubectl create -f - >/dev/null 2>/dev/null
 apiVersion: v1
 kind: Node
 metadata:
@@ -49,7 +51,7 @@ do
     sleep 1
 done
 
-cat <<EOF |  docker run -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION /hyperkube kubectl create -f - >/dev/null 2>/dev/null
+cat <<EOF |  docker run -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION ${HYPERKUBE_CMD} kubectl create -f - >/dev/null 2>/dev/null
 apiVersion: v1
 kind: Node
 metadata:
@@ -148,5 +150,5 @@ pings() {
 
 test_manifest() {
     # This just tests that the API server accepts the manifest, not that it actually acts on it correctly.
-    assert "cat ../Documentation/kube-flannel.yml |  docker run -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION /hyperkube kubectl create -f -"
+    assert "cat ../Documentation/kube-flannel.yml |  docker run -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION ${HYPERKUBE_CMD} kubectl create -f -"
 }
