@@ -239,7 +239,7 @@ func (me *mockEtcd) set(ctx context.Context, key, value string, opts *etcd.SetOp
 
 	if node != nil {
 		if opts.PrevIndex > 0 && opts.PrevIndex < node.ModifiedIndex {
-			return nil, me.newError(etcd.ErrorCodeTestFailed, "Key %s PrevIndex %s less than node ModifiedIndex %d", key, opts.PrevIndex, node.ModifiedIndex)
+			return nil, me.newError(etcd.ErrorCodeTestFailed, "Key %s PrevIndex %v less than node ModifiedIndex %d", key, opts.PrevIndex, node.ModifiedIndex)
 		}
 
 		if opts.Dir != node.Dir {
@@ -342,7 +342,7 @@ func (me *mockEtcd) Delete(ctx context.Context, key string, opts *etcd.DeleteOpt
 	}
 
 	if opts.PrevIndex > 0 && opts.PrevIndex < node.ModifiedIndex {
-		return nil, me.newError(etcd.ErrorCodeTestFailed, "Key %s PrevIndex %s less than node ModifiedIndex %d", key, opts.PrevIndex, node.ModifiedIndex)
+		return nil, me.newError(etcd.ErrorCodeTestFailed, "Key %s PrevIndex %v less than node ModifiedIndex %d", key, opts.PrevIndex, node.ModifiedIndex)
 	}
 
 	if opts.PrevValue != "" && opts.PrevValue != node.Value {
