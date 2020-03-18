@@ -72,7 +72,7 @@ Recommended when running within an Amazon VPC, AWS VPC creates IP routes in an [
 
 Requirements:
 * Running on an EC2 instance that is in an Amazon VPC.
-* Permissions required: `CreateRoute`, `DeleteRoute`,`DescribeRouteTables`, `ModifyInstanceAttribute`, `DescribeInstances` (optional)
+* Permissions required: `CreateRoute`, `DeleteRoute`,`DescribeRouteTables`, `ModifyNetworkInterfaceAttribute`, `DescribeInstances` (optional)
 
 Type and options:
 * `Type` (string): `aws-vpc`

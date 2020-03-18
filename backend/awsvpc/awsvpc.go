@@ -56,7 +56,7 @@ type backendConfig struct {
 
 func (conf *backendConfig) routeTables() ([]string, error) {
 	if table, ok := conf.RouteTableID.(string); ok {
-		log.Info("RouteTableID configured as string: %s", table)
+		log.Infof("RouteTableID configured as string: %s", table)
 		return []string{table}, nil
 	}
 	if rawTables, ok := conf.RouteTableID.([]interface{}); ok {
