@@ -118,6 +118,11 @@ func (dev *vxlanDevice) Configure(ipn ip.IP4Net) error {
 		return fmt.Errorf("failed to set interface %s to UP state: %s", dev.link.Attrs().Name, err)
 	}
 
+	// TODO: Workaround to fix #1282
+	if err := ip.SetChecksumOffloading(dev.link.Attrs().Name, false, false); err != nil {
+		return fmt.Errorf("failed to disable interface %s tx and rx offloading: %s", dev.link.Attrs().Name, err)
+	}
+
 	return nil
 }
 
