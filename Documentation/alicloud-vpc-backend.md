@@ -65,14 +65,14 @@ $ etcdctl set /coreos.com/network/config '{"Network":"10.24.0.0/16", "Backend": 
 - export ENV
 
 ```
-export ACCESS_KEY_ID=YOUR_ACCESS_KEY_SECRET
+export ACCESS_KEY_ID=YOUR_ACCESS_KEY_ID
 export ACCESS_KEY_SECRET=YOUR_ACCESS_KEY_SECRET
 ```
 
 - Run flannel daemon:
 
 ```
-sudo ./flanneld --etcd-endpoints=http://127.0.0.1:2379
+sudo -E ./flanneld --etcd-endpoints=http://127.0.0.1:2379
 ```
 
 Next, create and connect to a clone of `instance-1`.
