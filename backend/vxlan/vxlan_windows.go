@@ -191,7 +191,10 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, 
 	}
 
 	lease, err = be.subnetMgr.AcquireLease(ctx, subnetAttrs)
-
+	if err != nil {
+		return nil, err
+	}
+	network.SubnetLease = lease
 	return network, nil
 }
 
