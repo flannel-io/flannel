@@ -98,6 +98,12 @@ docker daemon --bip=${FLANNEL_SUBNET} --mtu=${FLANNEL_MTU} &
 
 Systemd users can use `EnvironmentFile` directive in the `.service` file to pull in `/run/flannel/subnet.env`
 
+If you want to leave default docker0 network as it is and instead create a new network that will be using flannel you do so like this:
+```bash
+source /run/flannel/subnet.env
+docker network create --attachable=true --subnet=${FLANNEL_SUBNET} -o "com.docker.network.driver.mtu"=${FLANNEL_MTU} flannel
+```
+
 ## CoreOS integration
 
 CoreOS ships with flannel integrated into the distribution.
