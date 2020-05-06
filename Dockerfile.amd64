@@ -1,4 +1,4 @@
-FROM alpine
+FROM alpine:3.11
 
 LABEL maintainer="Tom Denham <tom@tigera.io>"
 
