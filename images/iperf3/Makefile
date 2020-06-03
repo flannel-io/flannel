@@ -5,13 +5,13 @@ ARCH ?= amd64
 TEMP_DIR := $(shell mktemp -d)
 
 ifeq ($(ARCH),amd64)
-        BASEIMAGE=alpine:3.6
+        BASEIMAGE=alpine:3.12
 endif
 ifeq ($(ARCH),arm64)
-	BASEIMAGE=aarch64/alpine:3.6
+	BASEIMAGE=aarch64/alpine:3.12
 endif
 ifeq ($(ARCH),ppc64le)
-	BASEIMAGE=ppc64le/alpine:3.6
+	BASEIMAGE=ppc64le/alpine:3.12
 endif
 
 all: container
