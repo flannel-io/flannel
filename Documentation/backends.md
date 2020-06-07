@@ -135,6 +135,9 @@ Type:
 * `UDPEncap` (Boolean): Optional, defaults to false. Forces the use UDP encapsulation of packets which can help with some NAT gateways.
 * `ESPProposal` (string): Optional, defaults to `aes128gcm16-sha256-prfsha256-ecp256`. Change this string to choose another ESP Proposal.
 
+Hint: 
+Add rules to your firewall: Open ports 50 (for ESP protocol), UDP 500 (for IKE, to manage encryption keys) and UDP 4500 (for IPSEC NAT-Traversal mode).
+
 #### Troubleshooting
 Logging
 * When flannel is run from a container, the Strongswan tools are installed. `swanctl` can be used for interacting with the charon and it provides a logs command.. 
