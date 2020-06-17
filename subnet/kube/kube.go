@@ -142,10 +142,18 @@ func newKubeSubnetManager(c clientset.Interface, sc *subnet.Config, nodeName, pr
 	indexer, controller := cache.NewIndexerInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return ksm.client.CoreV1().Nodes().List(options)
+				obj, err := ksm.client.CoreV1().Nodes().List(options)
+				if err != nil {
+					glog.Exit(err, "failed to list nodes in newKubeSubnetManager")
+				}
+				return obj, err
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return ksm.client.CoreV1().Nodes().Watch(options)
+				iface, err := ksm.client.CoreV1().Nodes().Watch(options)
+				if err != nil {
+					glog.Exit(err, "failed to watch nodes in newKubeSubnetManager")
+				}
+				return iface, err
 			},
 		},
 		&v1.Node{},
