@@ -298,7 +298,7 @@ func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, cursor interface{
 			Events: []subnet.Event{event},
 		}, nil
 	case <-ctx.Done():
-		return subnet.LeaseWatchResult{}, nil
+		return subnet.LeaseWatchResult{}, context.Canceled
 	}
 }
 
