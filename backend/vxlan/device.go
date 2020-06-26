@@ -25,8 +25,8 @@ import (
 	log "github.com/golang/glog"
 	"github.com/vishvananda/netlink"
 
+	"github.com/containernetworking/plugins/pkg/utils/sysctl"
 	"github.com/coreos/flannel/pkg/ip"
-        "github.com/containernetworking/plugins/pkg/utils/sysctl"
 )
 
 type vxlanDeviceAttrs struct {
@@ -62,7 +62,7 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 		return nil, err
 	}
 
-        _, _ = sysctl.Sysctl(fmt.Sprintf("net/ipv6/conf/%s/accept_ra", devAttrs.name), "0")
+	_, _ = sysctl.Sysctl(fmt.Sprintf("net/ipv6/conf/%s/accept_ra", devAttrs.name), "0")
 
 	return &vxlanDevice{
 		link: link,
