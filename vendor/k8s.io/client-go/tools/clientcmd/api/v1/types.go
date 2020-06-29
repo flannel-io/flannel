@@ -24,16 +24,16 @@ import (
 // Top level config objects and all values required for proper functioning are not "omitempty".  Any truly optional piece of config is allowed to be omitted.
 
 // Config holds the information needed to build connect to remote kubernetes clusters as a given user
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type Config struct {
 	// Legacy field from pkg/api/types.go TypeMeta.
 	// TODO(jlowdermilk): remove this after eliminating downstream dependencies.
+	// +k8s:conversion-gen=false
 	// +optional
 	Kind string `json:"kind,omitempty"`
-	// DEPRECATED: APIVersion is the preferred api version for communicating with the kubernetes cluster (v1, v2, etc).
-	// Because a cluster can run multiple API groups and potentially multiple versions of each, it no longer makes sense to specify
-	// a single value for the cluster version.
-	// This field isn't really needed anyway, so we are deprecating it without replacement.
-	// It will be ignored if it is present.
+	// Legacy field from pkg/api/types.go TypeMeta.
+	// TODO(jlowdermilk): remove this after eliminating downstream dependencies.
+	// +k8s:conversion-gen=false
 	// +optional
 	APIVersion string `json:"apiVersion,omitempty"`
 	// Preferences holds general information to be use for cli interactions
@@ -63,9 +63,9 @@ type Preferences struct {
 type Cluster struct {
 	// Server is the address of the kubernetes cluster (https://hostname:port).
 	Server string `json:"server"`
-	// APIVersion is the preferred api version for communicating with the kubernetes cluster (v1, v2, etc).
+	// TLSServerName is used to check server certificate. If TLSServerName is empty, the hostname used to contact the server is used.
 	// +optional
-	APIVersion string `json:"api-version,omitempty"`
+	TLSServerName string `json:"tls-server-name,omitempty"`
 	// InsecureSkipTLSVerify skips the validity check for the server's certificate. This will make your HTTPS connections insecure.
 	// +optional
 	InsecureSkipTLSVerify bool `json:"insecure-skip-tls-verify,omitempty"`
@@ -103,6 +103,12 @@ type AuthInfo struct {
 	// Impersonate is the username to imperonate.  The name matches the flag.
 	// +optional
 	Impersonate string `json:"as,omitempty"`
+	// ImpersonateGroups is the groups to imperonate.
+	// +optional
+	ImpersonateGroups []string `json:"as-groups,omitempty"`
+	// ImpersonateUserExtra contains additional information for impersonated user.
+	// +optional
+	ImpersonateUserExtra map[string][]string `json:"as-user-extra,omitempty"`
 	// Username is the username for basic authentication to the kubernetes cluster.
 	// +optional
 	Username string `json:"username,omitempty"`
@@ -112,6 +118,9 @@ type AuthInfo struct {
 	// AuthProvider specifies a custom authentication plugin for the kubernetes cluster.
 	// +optional
 	AuthProvider *AuthProviderConfig `json:"auth-provider,omitempty"`
+	// Exec specifies a custom exec-based authentication plugin for the kubernetes cluster.
+	// +optional
+	Exec *ExecConfig `json:"exec,omitempty"`
 	// Extensions holds additional information. This is useful for extenders so that reads and writes don't clobber unknown fields
 	// +optional
 	Extensions []NamedExtension `json:"extensions,omitempty"`
@@ -167,4 +176,33 @@ type NamedExtension struct {
 type AuthProviderConfig struct {
 	Name   string            `json:"name"`
 	Config map[string]string `json:"config"`
+}
+
+// ExecConfig specifies a command to provide client credentials. The command is exec'd
+// and outputs structured stdout holding credentials.
+//
+// See the client.authentiction.k8s.io API group for specifications of the exact input
+// and output format
+type ExecConfig struct {
+	// Command to execute.
+	Command string `json:"command"`
+	// Arguments to pass to the command when executing it.
+	// +optional
+	Args []string `json:"args"`
+	// Env defines additional environment variables to expose to the process. These
+	// are unioned with the host's environment, as well as variables client-go uses
+	// to pass argument to the plugin.
+	// +optional
+	Env []ExecEnvVar `json:"env"`
+
+	// Preferred input version of the ExecInfo. The returned ExecCredentials MUST use
+	// the same encoding version as the input.
+	APIVersion string `json:"apiVersion,omitempty"`
+}
+
+// ExecEnvVar is used for setting environment variables when executing an exec-based
+// credential plugin.
+type ExecEnvVar struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
