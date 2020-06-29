@@ -18,15 +18,16 @@ package awsvpc
 import (
 	"encoding/json"
 	"fmt"
+	"net"
+	"sync"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	log "k8s.io/klog"
 	"golang.org/x/net/context"
-	"net"
-	"sync"
+	log "k8s.io/klog"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
@@ -56,11 +57,11 @@ type backendConfig struct {
 
 func (conf *backendConfig) routeTables() ([]string, error) {
 	if table, ok := conf.RouteTableID.(string); ok {
-		log.Info("RouteTableID configured as string: %s", table)
+		log.Infof("RouteTableID configured as string: %s", table)
 		return []string{table}, nil
 	}
 	if rawTables, ok := conf.RouteTableID.([]interface{}); ok {
-		log.Info("RouteTableID configured as slice: %+v", rawTables)
+		log.Infof("RouteTableID configured as slice: %+v", rawTables)
 		tables := make([]string, len(rawTables))
 		for idx, t := range rawTables {
 			table, ok := t.(string)
@@ -85,7 +86,7 @@ func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup,
 	var cfg backendConfig
 
 	if len(config.Backend) > 0 {
-		log.Info("Backend configured as: %s", string(config.Backend))
+		log.Infof("Backend configured as: %s", string(config.Backend))
 		if err := json.Unmarshal(config.Backend, &cfg); err != nil {
 			return nil, fmt.Errorf("error decoding VPC backend config: %v", err)
 		}
