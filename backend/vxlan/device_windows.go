@@ -16,14 +16,15 @@ package vxlan
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/Microsoft/hcsshim/hcn"
 	"github.com/coreos/flannel/pkg/ip"
-	log "k8s.io/klog"
-	"github.com/juju/errors"
+	"github.com/pkg/errors"
 	"github.com/rakelkar/gonetsh/netsh"
 	"k8s.io/apimachinery/pkg/util/wait"
+	log "k8s.io/klog"
 	utilexec "k8s.io/utils/exec"
-	"time"
 )
 
 type vxlanDeviceAttrs struct {
@@ -108,7 +109,7 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 	if createNetwork {
 		if existingNetwork != nil {
 			if err := existingNetwork.Delete(); err != nil {
-				return nil, errors.Annotatef(err, "failed to delete existing HostComputeNetwork %s", networkName)
+				return nil, errors.Wrapf(err, "failed to delete existing HostComputeNetwork %s", networkName)
 			}
 			log.Infof("Deleted stale HostComputeNetwork %s", networkName)
 		}
@@ -116,7 +117,7 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 		log.Infof("Attempting to create HostComputeNetwork %v", expectedNetwork)
 		newNetwork, err := expectedNetwork.Create()
 		if err != nil {
-			return nil, errors.Annotatef(err, "failed to create HostComputeNetwork %s", networkName)
+			return nil, errors.Wrapf(err, "failed to create HostComputeNetwork %s", networkName)
 		}
 
 		var waitErr, lastErr error
@@ -127,7 +128,7 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 			return newNetwork != nil && len(getManagementIP(newNetwork)) != 0, nil
 		})
 		if waitErr == wait.ErrWaitTimeout {
-			return nil, errors.Annotatef(lastErr, "timeout, failed to get management IP from HostComputeNetwork %s", networkName)
+			return nil, errors.Wrapf(lastErr, "timeout, failed to get management IP from HostComputeNetwork %s", networkName)
 		}
 
 		managementIP := getManagementIP(newNetwork)
@@ -139,7 +140,7 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 			return lastErr == nil, nil
 		})
 		if waitErr == wait.ErrWaitTimeout {
-			return nil, errors.Annotatef(lastErr, "timeout, failed to get net interface for HostComputeNetwork %s (%s)", networkName, managementIP)
+			return nil, errors.Wrapf(lastErr, "timeout, failed to get net interface for HostComputeNetwork %s (%s)", networkName, managementIP)
 		}
 
 		log.Infof("Created HostComputeNetwork %s", networkName)
