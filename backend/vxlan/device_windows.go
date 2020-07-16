@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// +build windows
 
 package vxlan
 
@@ -20,9 +21,7 @@ import (
 	"github.com/coreos/flannel/pkg/ip"
 	log "github.com/golang/glog"
 	"github.com/juju/errors"
-	"github.com/rakelkar/gonetsh/netsh"
 	"k8s.io/apimachinery/pkg/util/wait"
-	utilexec "k8s.io/utils/exec"
 	"time"
 )
 
@@ -132,10 +131,14 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 
 		managementIP := getManagementIP(newNetwork)
 		// Wait for the interface with the management IP
-		netshHelper := netsh.New(utilexec.New())
 		log.Infof("Waiting to get net interface for HostComputeNetwork %s (%s)", networkName, managementIP)
+		managementIPv4, err := ip.ParseIP4(managementIP)
+		if err != nil {
+			return nil, errors.Annotatef(err, "Failed to parse management ip (%s)", managementIP)
+		}
+
 		waitErr = wait.Poll(500*time.Millisecond, 5*time.Second, func() (done bool, err error) {
-			_, lastErr = netshHelper.GetInterfaceByIP(managementIP)
+			_, lastErr = ip.GetInterfaceByIP(managementIPv4.ToIP())
 			return lastErr == nil, nil
 		})
 		if waitErr == wait.ErrWaitTimeout {

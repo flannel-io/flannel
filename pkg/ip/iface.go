@@ -13,7 +13,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// +build !windows
 
 package ip
 
@@ -36,7 +35,7 @@ func getIfaceAddrs(iface *net.Interface) ([]netlink.Addr, error) {
 	return netlink.AddrList(link, syscall.AF_INET)
 }
 
-func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
+func GetInterfaceIP4Addr(iface *net.Interface) (net.IP, error) {
 	addrs, err := getIfaceAddrs(iface)
 	if err != nil {
 		return nil, err
@@ -67,7 +66,7 @@ func GetIfaceIP4Addr(iface *net.Interface) (net.IP, error) {
 	return nil, errors.New("No IPv4 address found for given interface")
 }
 
-func GetIfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) error {
+func GetInterfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) error {
 	addrs, err := getIfaceAddrs(iface)
 	if err != nil {
 		return err
@@ -86,7 +85,7 @@ func GetIfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) error {
 	return errors.New("No IPv4 address found for given interface")
 }
 
-func GetDefaultGatewayIface() (*net.Interface, error) {
+func GetDefaultGatewayInterface() (*net.Interface, error) {
 	routes, err := netlink.RouteList(nil, syscall.AF_INET)
 	if err != nil {
 		return nil, err
@@ -111,7 +110,7 @@ func GetInterfaceByIP(ip net.IP) (*net.Interface, error) {
 	}
 
 	for _, iface := range ifaces {
-		err := GetIfaceIP4AddrMatch(&iface, ip)
+		err := GetInterfaceIP4AddrMatch(&iface, ip)
 		if err == nil {
 			return &iface, nil
 		}
