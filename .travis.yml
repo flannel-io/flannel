@@ -17,10 +17,3 @@ after_success:
     fi
 notifications:
   email: false
-
-addons:
-  apt:
-    sources:
-      - sourceline: 'ppa:masterminds/glide'
-    packages:
-      - glide

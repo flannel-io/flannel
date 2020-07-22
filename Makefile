@@ -15,7 +15,7 @@ else
 endif
 
 # Go version to use for builds
-GO_VERSION=1.10.3
+GO_VERSION=1.14.6
 
 # K8s version used for Makefile helpers
 K8S_VERSION=v1.6.6
@@ -69,7 +69,7 @@ ifeq ($(ARCH),amd64)
 endif
 
 ### TESTING
-test: header-check gofmt verify-glide
+test: header-check gofmt verify-modules
 	# Run the unit tests
 	# NET_ADMIN capacity is required to do some network operation
 	# SYS_ADMIN capacity is required to create network namespace
@@ -105,10 +105,9 @@ gofmt:
 		cd /go/src/github.com/coreos/flannel && \
 		! gofmt -d $(PACKAGES) 2>&1 | read'
 
-# Throw an error if `glide list` finds any errors.
-verify-glide:
-	$(if $(shell which glide),,$(error "glide not found in PATH"))
-	bash -c '! glide list 2>&1 | grep "ERROR"'
+verify-modules:
+	$(if $(shell which go),,$(error "go not found in PATH"))
+	go mod tidy
 
 gofmt-fix:
 	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
@@ -225,13 +224,6 @@ flannel-git:
 	ARCH=arm64 REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-arm64.docker docker-push
 	ARCH=ppc64le REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-ppc64le.docker docker-push
 	ARCH=s390x REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-s390x.docker docker-push
-
-### DEVELOPING
-update-glide:
-	# go get -d -u github.com/Masterminds/glide
-	glide update --strip-vendor
-	# go get -d -u github.com/sgotti/glide-vc
-	glide vc --only-code --no-tests
 
 install:
 	# This is intended as just a developer convenience to help speed up non-containerized builds
