@@ -1,35 +1,11 @@
 package nl
 
 import (
-	"syscall"
 	"unsafe"
 )
 
 const (
 	DEFAULT_CHANGE = 0xFFFFFFFF
-	// doesn't exist in syscall
-	IFLA_VFINFO_LIST = syscall.IFLA_IFALIAS + 1 + iota
-	IFLA_STATS64
-	IFLA_VF_PORTS
-	IFLA_PORT_SELF
-	IFLA_AF_SPEC
-	IFLA_GROUP
-	IFLA_NET_NS_FD
-	IFLA_EXT_MASK
-	IFLA_PROMISCUITY
-	IFLA_NUM_TX_QUEUES
-	IFLA_NUM_RX_QUEUES
-	IFLA_CARRIER
-	IFLA_PHYS_PORT_ID
-	IFLA_CARRIER_CHANGES
-	IFLA_PHYS_SWITCH_ID
-	IFLA_LINK_NETNSID
-	IFLA_PHYS_PORT_NAME
-	IFLA_PROTO_DOWN
-	IFLA_GSO_MAX_SEGS
-	IFLA_GSO_MAX_SIZE
-	IFLA_PAD
-	IFLA_XDP
 )
 
 const (
@@ -102,7 +78,10 @@ const (
 	IFLA_BRPORT_FAST_LEAVE
 	IFLA_BRPORT_LEARNING
 	IFLA_BRPORT_UNICAST_FLOOD
-	IFLA_BRPORT_MAX = IFLA_BRPORT_UNICAST_FLOOD
+	IFLA_BRPORT_PROXYARP
+	IFLA_BRPORT_LEARNING_SYNC
+	IFLA_BRPORT_PROXYARP_WIFI
+	IFLA_BRPORT_MAX = IFLA_BRPORT_PROXYARP_WIFI
 )
 
 const (
@@ -115,6 +94,10 @@ const (
 	IFLA_MACVLAN_UNSPEC = iota
 	IFLA_MACVLAN_MODE
 	IFLA_MACVLAN_FLAGS
+	IFLA_MACVLAN_MACADDR_MODE
+	IFLA_MACVLAN_MACADDR
+	IFLA_MACVLAN_MACADDR_DATA
+	IFLA_MACVLAN_MACADDR_COUNT
 	IFLA_MACVLAN_MAX = IFLA_MACVLAN_FLAGS
 )
 
@@ -124,6 +107,13 @@ const (
 	MACVLAN_MODE_BRIDGE   = 4
 	MACVLAN_MODE_PASSTHRU = 8
 	MACVLAN_MODE_SOURCE   = 16
+)
+
+const (
+	MACVLAN_MACADDR_ADD = iota
+	MACVLAN_MACADDR_DEL
+	MACVLAN_MACADDR_FLUSH
+	MACVLAN_MACADDR_SET
 )
 
 const (
@@ -151,6 +141,10 @@ const (
 	IFLA_BOND_AD_LACP_RATE
 	IFLA_BOND_AD_SELECT
 	IFLA_BOND_AD_INFO
+	IFLA_BOND_AD_ACTOR_SYS_PRIO
+	IFLA_BOND_AD_USER_PORT_KEY
+	IFLA_BOND_AD_ACTOR_SYSTEM
+	IFLA_BOND_TLB_DYNAMIC_LB
 )
 
 const (
@@ -223,8 +217,11 @@ const (
 	IFLA_VF_RSS_QUERY_EN /* RSS Redirection Table and Hash Key query
 	 * on/off switch
 	 */
-	IFLA_VF_STATS /* network device statistics */
-	IFLA_VF_MAX   = IFLA_VF_STATS
+	IFLA_VF_STATS        /* network device statistics */
+	IFLA_VF_TRUST        /* Trust state of VF */
+	IFLA_VF_IB_NODE_GUID /* VF Infiniband node GUID */
+	IFLA_VF_IB_PORT_GUID /* VF Infiniband port GUID */
+	IFLA_VF_MAX          = IFLA_VF_IB_PORT_GUID
 )
 
 const (
@@ -252,6 +249,8 @@ const (
 	SizeofVfSpoofchk   = 0x08
 	SizeofVfLinkState  = 0x08
 	SizeofVfRssQueryEn = 0x08
+	SizeofVfTrust      = 0x08
+	SizeofVfGUID       = 0x10
 )
 
 // struct ifla_vf_mac {
@@ -412,11 +411,66 @@ func (msg *VfRssQueryEn) Serialize() []byte {
 	return (*(*[SizeofVfRssQueryEn]byte)(unsafe.Pointer(msg)))[:]
 }
 
+// struct ifla_vf_trust {
+//   __u32 vf;
+//   __u32 setting;
+// };
+
+type VfTrust struct {
+	Vf      uint32
+	Setting uint32
+}
+
+func (msg *VfTrust) Len() int {
+	return SizeofVfTrust
+}
+
+func DeserializeVfTrust(b []byte) *VfTrust {
+	return (*VfTrust)(unsafe.Pointer(&b[0:SizeofVfTrust][0]))
+}
+
+func (msg *VfTrust) Serialize() []byte {
+	return (*(*[SizeofVfTrust]byte)(unsafe.Pointer(msg)))[:]
+}
+
+// struct ifla_vf_guid {
+//   __u32 vf;
+//   __u32 rsvd;
+//   __u64 guid;
+// };
+
+type VfGUID struct {
+	Vf   uint32
+	Rsvd uint32
+	GUID uint64
+}
+
+func (msg *VfGUID) Len() int {
+	return SizeofVfGUID
+}
+
+func DeserializeVfGUID(b []byte) *VfGUID {
+	return (*VfGUID)(unsafe.Pointer(&b[0:SizeofVfGUID][0]))
+}
+
+func (msg *VfGUID) Serialize() []byte {
+	return (*(*[SizeofVfGUID]byte)(unsafe.Pointer(msg)))[:]
+}
+
+const (
+	XDP_FLAGS_UPDATE_IF_NOEXIST = 1 << iota
+	XDP_FLAGS_SKB_MODE
+	XDP_FLAGS_DRV_MODE
+	XDP_FLAGS_MASK = XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE | XDP_FLAGS_DRV_MODE
+)
+
 const (
 	IFLA_XDP_UNSPEC   = iota
 	IFLA_XDP_FD       /* fd of xdp program to attach, or -1 to remove */
 	IFLA_XDP_ATTACHED /* read-only bool indicating if prog is attached */
-	IFLA_XDP_MAX      = IFLA_XDP_ATTACHED
+	IFLA_XDP_FLAGS    /* xdp prog related flags */
+	IFLA_XDP_PROG_ID  /* xdp prog id */
+	IFLA_XDP_MAX      = IFLA_XDP_PROG_ID
 )
 
 const (
@@ -435,7 +489,12 @@ const (
 	IFLA_IPTUN_6RD_RELAY_PREFIX
 	IFLA_IPTUN_6RD_PREFIXLEN
 	IFLA_IPTUN_6RD_RELAY_PREFIXLEN
-	IFLA_IPTUN_MAX = IFLA_IPTUN_6RD_RELAY_PREFIXLEN
+	IFLA_IPTUN_ENCAP_TYPE
+	IFLA_IPTUN_ENCAP_FLAGS
+	IFLA_IPTUN_ENCAP_SPORT
+	IFLA_IPTUN_ENCAP_DPORT
+	IFLA_IPTUN_COLLECT_METADATA
+	IFLA_IPTUN_MAX = IFLA_IPTUN_COLLECT_METADATA
 )
 
 const (
@@ -451,4 +510,66 @@ const (
 const (
 	IFLA_VRF_UNSPEC = iota
 	IFLA_VRF_TABLE
+)
+
+const (
+	IFLA_BR_UNSPEC = iota
+	IFLA_BR_FORWARD_DELAY
+	IFLA_BR_HELLO_TIME
+	IFLA_BR_MAX_AGE
+	IFLA_BR_AGEING_TIME
+	IFLA_BR_STP_STATE
+	IFLA_BR_PRIORITY
+	IFLA_BR_VLAN_FILTERING
+	IFLA_BR_VLAN_PROTOCOL
+	IFLA_BR_GROUP_FWD_MASK
+	IFLA_BR_ROOT_ID
+	IFLA_BR_BRIDGE_ID
+	IFLA_BR_ROOT_PORT
+	IFLA_BR_ROOT_PATH_COST
+	IFLA_BR_TOPOLOGY_CHANGE
+	IFLA_BR_TOPOLOGY_CHANGE_DETECTED
+	IFLA_BR_HELLO_TIMER
+	IFLA_BR_TCN_TIMER
+	IFLA_BR_TOPOLOGY_CHANGE_TIMER
+	IFLA_BR_GC_TIMER
+	IFLA_BR_GROUP_ADDR
+	IFLA_BR_FDB_FLUSH
+	IFLA_BR_MCAST_ROUTER
+	IFLA_BR_MCAST_SNOOPING
+	IFLA_BR_MCAST_QUERY_USE_IFADDR
+	IFLA_BR_MCAST_QUERIER
+	IFLA_BR_MCAST_HASH_ELASTICITY
+	IFLA_BR_MCAST_HASH_MAX
+	IFLA_BR_MCAST_LAST_MEMBER_CNT
+	IFLA_BR_MCAST_STARTUP_QUERY_CNT
+	IFLA_BR_MCAST_LAST_MEMBER_INTVL
+	IFLA_BR_MCAST_MEMBERSHIP_INTVL
+	IFLA_BR_MCAST_QUERIER_INTVL
+	IFLA_BR_MCAST_QUERY_INTVL
+	IFLA_BR_MCAST_QUERY_RESPONSE_INTVL
+	IFLA_BR_MCAST_STARTUP_QUERY_INTVL
+	IFLA_BR_NF_CALL_IPTABLES
+	IFLA_BR_NF_CALL_IP6TABLES
+	IFLA_BR_NF_CALL_ARPTABLES
+	IFLA_BR_VLAN_DEFAULT_PVID
+	IFLA_BR_PAD
+	IFLA_BR_VLAN_STATS_ENABLED
+	IFLA_BR_MCAST_STATS_ENABLED
+	IFLA_BR_MCAST_IGMP_VERSION
+	IFLA_BR_MCAST_MLD_VERSION
+	IFLA_BR_MAX = IFLA_BR_MCAST_MLD_VERSION
+)
+
+const (
+	IFLA_GTP_UNSPEC = iota
+	IFLA_GTP_FD0
+	IFLA_GTP_FD1
+	IFLA_GTP_PDP_HASHSIZE
+	IFLA_GTP_ROLE
+)
+
+const (
+	GTP_ROLE_GGSN = iota
+	GTP_ROLE_SGSN
 )

@@ -138,7 +138,9 @@ func getThisCgroup(cgroupType string) (string, error) {
 		return "", fmt.Errorf("docker pid not found in /var/run/docker.pid")
 	}
 	pid, err := strconv.Atoi(result[0])
-
+	if err != nil {
+		return "", err
+	}
 	output, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/cgroup", pid))
 	if err != nil {
 		return "", err
@@ -186,6 +188,12 @@ func getPidForContainer(id string) (int, error) {
 		filepath.Join(cgroupRoot, "system.slice", "docker-"+id+".scope", "tasks"),
 		// Even more recent docker versions under cgroup/systemd/docker/<id>/
 		filepath.Join(cgroupRoot, "..", "systemd", "docker", id, "tasks"),
+		// Kubernetes with docker and CNI is even more different
+		filepath.Join(cgroupRoot, "..", "systemd", "kubepods", "*", "pod*", id, "tasks"),
+		// Another flavor of containers location in recent kubernetes 1.11+
+		filepath.Join(cgroupRoot, cgroupThis, "kubepods.slice", "kubepods-besteffort.slice", "*", "docker-"+id+".scope", "tasks"),
+		// When runs inside of a container with recent kubernetes 1.11+
+		filepath.Join(cgroupRoot, "kubepods.slice", "kubepods-besteffort.slice", "*", "docker-"+id+".scope", "tasks"),
 	}
 
 	var filename string
