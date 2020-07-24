@@ -70,7 +70,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (
 }
 
 func (be *IPSECBackend) RegisterNetwork(
-	ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+	ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 
 	cfg := struct {
 		UDPEncap    bool

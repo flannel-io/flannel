@@ -35,7 +35,7 @@ type ExternalInterface struct {
 // needed.
 type Backend interface {
 	// Called when the backend should create or begin managing a new network
-	RegisterNetwork(ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (Network, error)
+	RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (Network, error)
 }
 
 type Network interface {

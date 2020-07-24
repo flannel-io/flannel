@@ -55,7 +55,7 @@ func (_ *ExtensionBackend) Run(ctx context.Context) {
 	<-ctx.Done()
 }
 
-func (be *ExtensionBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+func (be *ExtensionBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 	n := &network{
 		extIface: be.extIface,
 		sm:       be.sm,

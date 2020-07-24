@@ -48,7 +48,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return &be, nil
 }
 
-func (be *AliVpcBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+func (be *AliVpcBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 	// 1. Parse our configuration
 	cfg := struct {
 		AccessKeyID     string

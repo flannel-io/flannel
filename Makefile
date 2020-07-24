@@ -108,6 +108,7 @@ gofmt:
 verify-modules:
 	$(if $(shell which go),,$(error "go not found in PATH"))
 	go mod tidy
+	go vet
 
 gofmt-fix:
 	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
