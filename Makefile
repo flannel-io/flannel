@@ -1,4 +1,4 @@
-.PHONY: test e2e-test cover gofmt gofmt-fix header-check clean tar.gz docker-push release docker-push-all flannel-git
+.PHONY: test e2e-test cover gofmt gofmt-fix header-check clean tar.gz docker-push release docker-push-all flannel-git docker-manifest-amend docker-manifest-push
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
@@ -205,26 +205,27 @@ release-k8s-tests: bash_unit
 docker-push: dist/flanneld-$(TAG)-$(ARCH).docker
 	docker push $(REGISTRY):$(TAG)-$(ARCH)
 
-# amd64 gets an image with the suffix too (i.e. it's the default)
-ifeq ($(ARCH),amd64)
-	docker push $(REGISTRY):$(TAG)
-endif
+docker-manifest-amend:
+	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create --amend $(REGISTRY):$(TAG) $(REGISTRY):$(TAG)-$(ARCH)
+
+docker-manifest-push:
+	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push --purge $(REGISTRY):$(TAG)
 
 docker-push-all:
-	ARCH=amd64 make docker-push
-	ARCH=arm make docker-push
-	ARCH=arm64 make docker-push
-	ARCH=ppc64le make docker-push
-	ARCH=s390x make docker-push
+	ARCH=amd64 make docker-push docker-manifest-amend
+	ARCH=arm make docker-push docker-manifest-amend
+	ARCH=arm64 make docker-push docker-manifest-amend
+	ARCH=ppc64le make docker-push docker-manifest-amend
+	ARCH=s390x make docker-push docker-manifest-amend
+	make docker-manifest-push
 
 flannel-git:
-	ARCH=amd64 REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-amd64.docker docker-push
-	docker build -f Dockerfile.amd64 -t quay.io/coreos/flannel-git .
-	docker push quay.io/coreos/flannel-git
-	ARCH=arm REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-arm.docker docker-push
-	ARCH=arm64 REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-arm64.docker docker-push
-	ARCH=ppc64le REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-ppc64le.docker docker-push
-	ARCH=s390x REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-s390x.docker docker-push
+	ARCH=amd64 REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-amd64.docker docker-push docker-manifest-amend
+	ARCH=arm REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-arm.docker docker-push docker-manifest-amend
+	ARCH=arm64 REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-arm64.docker docker-push docker-manifest-amend
+	ARCH=ppc64le REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-ppc64le.docker docker-push docker-manifest-amend
+	ARCH=s390x REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-s390x.docker docker-push docker-manifest-amend
+	REGISTRY=quay.io/coreos/flannel-git make docker-manifest-push
 
 ### DEVELOPING
 update-glide:
