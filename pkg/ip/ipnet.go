@@ -31,7 +31,13 @@ func FromBytes(ip []byte) IP4 {
 }
 
 func FromIP(ip net.IP) IP4 {
-	return FromBytes(ip.To4())
+	ipv4 := ip.To4()
+
+	if ipv4 == nil {
+		panic("Address is not an IPv4 address")
+	}
+
+	return FromBytes(ipv4)
 }
 
 func ParseIP4(s string) (IP4, error) {
