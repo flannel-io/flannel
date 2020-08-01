@@ -163,6 +163,7 @@ spec:
                     values:
                       - amd64
       hostNetwork: true
+      priorityClassName: system-node-critical
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -257,6 +258,7 @@ spec:
                     values:
                       - arm64
       hostNetwork: true
+      priorityClassName: system-node-critical
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -351,6 +353,7 @@ spec:
                     values:
                       - arm
       hostNetwork: true
+      priorityClassName: system-node-critical
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -445,6 +448,7 @@ spec:
                     values:
                       - ppc64le
       hostNetwork: true
+      priorityClassName: system-node-critical
       tolerations:
       - operator: Exists
         effect: NoSchedule
@@ -539,6 +543,7 @@ spec:
                     values:
                       - s390x
       hostNetwork: true
+      priorityClassName: system-node-critical
       tolerations:
       - operator: Exists
         effect: NoSchedule

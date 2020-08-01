@@ -86,6 +86,7 @@ spec:
         app: flannel
     spec:
       hostNetwork: true
+      priorityClassName: system-node-critical
       nodeSelector:
         beta.kubernetes.io/arch: amd64
       tolerations:
