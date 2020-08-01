@@ -41,8 +41,7 @@ type CharonIKEDaemon struct {
 	ctx         context.Context
 }
 
-func NewCharonIKEDaemon(ctx context.Context, wg sync.WaitGroup, espProposal string) (*CharonIKEDaemon, error) {
-
+func NewCharonIKEDaemon(ctx context.Context, wg *sync.WaitGroup, espProposal string) (*CharonIKEDaemon, error) {
 	charon := &CharonIKEDaemon{ctx: ctx, espProposal: espProposal}
 
 	addr := strings.Split("unix:///var/run/charon.vici", "://")

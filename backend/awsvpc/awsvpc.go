@@ -80,7 +80,7 @@ func (conf *backendConfig) routeTableConfigured() bool {
 	return configured
 }
 
-func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 	// Parse our configuration
 	var cfg backendConfig
 

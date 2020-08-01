@@ -286,7 +286,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	bn, err := be.RegisterNetwork(ctx, wg, config)
+	bn, err := be.RegisterNetwork(ctx, &wg, config)
 	if err != nil {
 		log.Errorf("Error registering network: %s", err)
 		cancel()

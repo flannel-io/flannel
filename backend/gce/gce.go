@@ -82,7 +82,7 @@ func (g *GCEBackend) ensureAPI() error {
 	return err
 }
 
-func (g *GCEBackend) RegisterNetwork(ctx context.Context, wg sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+func (g *GCEBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 	attrs := subnet.LeaseAttrs{
 		PublicIP: ip.FromIP(g.extIface.ExtAddr),
 	}
