@@ -57,6 +57,12 @@ flannel is also widely used outside of kubernetes. When deployed outside of kube
 * Planning/Roadmap: [milestones][milestones], [roadmap][roadmap]
 * Bugs: [issues][flannel-issues]
 
+## Community Meeting
+
+The Flannel Maintainer Community runs a meeting on every other Thursday at 8:30 AM PST. This meeting is used to discuss issues, open pull requests, and other topics related to Flannel should the need arise.
+
+The meeting agenda and Zoom link can be found here: [Flannel Community Meeting Agneda](https://docs.google.com/document/d/1kPMMFDhljWL8_CUZajrfL8Q9sdntd9vvUpe-UGhX5z8)
+
 ## Contributing
 
 See [CONTRIBUTING][contributing] for details on submitting patches and the contribution workflow.
