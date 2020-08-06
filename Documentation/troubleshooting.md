@@ -66,6 +66,8 @@ When using `vxlan` backend, kernel uses UDP port 8472 for sending encapsulated p
 
 Make sure that your firewall rules allow this traffic for all hosts participating in the overlay network.
 
+Make sure that your firewall rules allow traffic from pod network cidr visit your kubernetes master node.
+
 # Kubernetes Specific
 The flannel kube subnet manager relies on the fact that each node already has a `podCIDR` defined.
 
