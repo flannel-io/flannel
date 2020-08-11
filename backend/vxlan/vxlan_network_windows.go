@@ -73,11 +73,12 @@ func (nw *network) Run(ctx context.Context) {
 
 	for {
 		select {
-		case evtBatch := <-events:
+		case evtBatch, ok := <-events:
+			if !ok {
+				log.Infof("evts chan closed")
+				return
+			}
 			nw.handleSubnetEvents(evtBatch)
-
-		case <-ctx.Done():
-			return
 		}
 	}
 }

@@ -37,6 +37,8 @@ func WatchLeases(ctx context.Context, sm Manager, ownLease *Lease, receiver chan
 		res, err := sm.WatchLeases(ctx, cursor)
 		if err != nil {
 			if err == context.Canceled || err == context.DeadlineExceeded {
+				log.Infof("%v, close receiver chan", err)
+				close(receiver)
 				return
 			}
 
@@ -169,6 +171,8 @@ func WatchLease(ctx context.Context, sm Manager, sn ip.IP4Net, receiver chan Eve
 		wr, err := sm.WatchLease(ctx, sn, cursor)
 		if err != nil {
 			if err == context.Canceled || err == context.DeadlineExceeded {
+				log.Infof("%v, close receiver chan", err)
+				close(receiver)
 				return
 			}
 
