@@ -41,4 +41,4 @@ Kubernetes 1.6 requires CNI plugin version 0.5.1 or later.
 
 See [troubleshooting](troubleshooting.md)
 
-[kubeadm]: https://kubernetes.io/docs/getting-started-guides/kubeadm/
+[kubeadm]: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/
