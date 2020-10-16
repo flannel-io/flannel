@@ -20,14 +20,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
-
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
+	"golang.org/x/net/http2"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -36,8 +38,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	clientset "k8s.io/client-go/kubernetes"
 	listers "k8s.io/client-go/listers/core/v1"
-	"k8s.io/client-go/pkg/api"
-	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
@@ -48,6 +48,7 @@ var (
 )
 
 const (
+	readIdleTimeout           = 1 * time.Minute
 	resyncPeriod              = 5 * time.Minute
 	nodeControllerSyncTimeout = 10 * time.Minute
 )
@@ -62,8 +63,7 @@ type kubeSubnetManager struct {
 	events         chan subnet.Event
 }
 
-func NewSubnetManager(apiUrl, kubeconfig, prefix, netConfPath string) (subnet.Manager, error) {
-
+func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPath string) (subnet.Manager, error) {
 	var cfg *rest.Config
 	var err error
 	// Try to build kubernetes config from a master url or a kubeconfig filepath. If neither masterUrl
@@ -73,6 +73,16 @@ func NewSubnetManager(apiUrl, kubeconfig, prefix, netConfPath string) (subnet.Ma
 	if err != nil {
 		return nil, fmt.Errorf("fail to create kubernetes config: %v", err)
 	}
+
+	transport, err := rest.TransportFor(cfg)
+	if err != nil {
+		return nil, err
+	}
+	t1 := transport.(*http.Transport)
+	t1.TLSClientConfig.NextProtos = append(t1.TLSClientConfig.NextProtos, "h2")
+	t2, _ := http2.ConfigureTransports(t1)
+	t2.ReadIdleTimeout = readIdleTimeout
+	cfg.Transport = t2
 
 	c, err := clientset.NewForConfig(cfg)
 	if err != nil {
@@ -90,7 +100,7 @@ func NewSubnetManager(apiUrl, kubeconfig, prefix, netConfPath string) (subnet.Ma
 			return nil, fmt.Errorf("env variables POD_NAME and POD_NAMESPACE must be set")
 		}
 
-		pod, err := c.Pods(podNamespace).Get(podName, metav1.GetOptions{})
+		pod, err := c.CoreV1().Pods(podNamespace).Get(ctx, podName, metav1.GetOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving pod spec for '%s/%s': %v", podNamespace, podName, err)
 		}
@@ -110,7 +120,7 @@ func NewSubnetManager(apiUrl, kubeconfig, prefix, netConfPath string) (subnet.Ma
 		return nil, fmt.Errorf("error parsing subnet config: %s", err)
 	}
 
-	sm, err := newKubeSubnetManager(c, sc, nodeName, prefix)
+	sm, err := newKubeSubnetManager(ctx, c, sc, nodeName, prefix)
 	if err != nil {
 		return nil, fmt.Errorf("error creating network manager: %s", err)
 	}
@@ -128,7 +138,7 @@ func NewSubnetManager(apiUrl, kubeconfig, prefix, netConfPath string) (subnet.Ma
 	return sm, nil
 }
 
-func newKubeSubnetManager(c clientset.Interface, sc *subnet.Config, nodeName, prefix string) (*kubeSubnetManager, error) {
+func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet.Config, nodeName, prefix string) (*kubeSubnetManager, error) {
 	var err error
 	var ksm kubeSubnetManager
 	ksm.annotations, err = newAnnotations(prefix)
@@ -142,10 +152,10 @@ func newKubeSubnetManager(c clientset.Interface, sc *subnet.Config, nodeName, pr
 	indexer, controller := cache.NewIndexerInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return ksm.client.CoreV1().Nodes().List(options)
+				return ksm.client.CoreV1().Nodes().List(ctx, options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return ksm.client.CoreV1().Nodes().Watch(options)
+				return ksm.client.CoreV1().Nodes().Watch(ctx, options)
 			},
 		},
 		&v1.Node{},
@@ -224,12 +234,8 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 	if err != nil {
 		return nil, err
 	}
-	nobj, err := api.Scheme.DeepCopy(cachedNode)
-	if err != nil {
-		return nil, err
-	}
-	n := nobj.(*v1.Node)
 
+	n := cachedNode.DeepCopy()
 	if n.Spec.PodCIDR == "" {
 		return nil, fmt.Errorf("node %q pod cidr not assigned", ksm.nodeName)
 	}
@@ -275,12 +281,12 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 			return nil, fmt.Errorf("failed to create patch for node %q: %v", ksm.nodeName, err)
 		}
 
-		_, err = ksm.client.CoreV1().Nodes().Patch(ksm.nodeName, types.StrategicMergePatchType, patchBytes, "status")
+		_, err = ksm.client.CoreV1().Nodes().Patch(ctx, ksm.nodeName, types.StrategicMergePatchType, patchBytes, metav1.PatchOptions{}, "status")
 		if err != nil {
 			return nil, err
 		}
 	}
-	err = ksm.setNodeNetworkUnavailableFalse()
+	err = ksm.setNodeNetworkUnavailableFalse(ctx)
 	if err != nil {
 		glog.Errorf("Unable to set NetworkUnavailable to False for %q: %v", ksm.nodeName, err)
 	}
@@ -340,7 +346,7 @@ func (ksm *kubeSubnetManager) Name() string {
 
 // Set Kubernetes NodeNetworkUnavailable to false when starting
 // https://kubernetes.io/docs/concepts/architecture/nodes/#condition
-func (ksm *kubeSubnetManager) setNodeNetworkUnavailableFalse() error {
+func (ksm *kubeSubnetManager) setNodeNetworkUnavailableFalse(ctx context.Context) error {
 	condition := v1.NodeCondition{
 		Type:               v1.NodeNetworkUnavailable,
 		Status:             v1.ConditionFalse,
@@ -354,6 +360,6 @@ func (ksm *kubeSubnetManager) setNodeNetworkUnavailableFalse() error {
 		return err
 	}
 	patch := []byte(fmt.Sprintf(`{"status":{"conditions":%s}}`, raw))
-	_, err = ksm.client.CoreV1().Nodes().PatchStatus(ksm.nodeName, patch)
+	_, err = ksm.client.CoreV1().Nodes().PatchStatus(ctx, ksm.nodeName, patch)
 	return err
 }
