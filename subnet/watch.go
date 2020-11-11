@@ -40,6 +40,10 @@ func WatchLeases(ctx context.Context, sm Manager, ownLease *Lease, receiver chan
 				return
 			}
 
+			if res.Cursor != nil {
+				cursor = res.Cursor
+			}
+
 			log.Errorf("Watch subnets: %v", err)
 			time.Sleep(time.Second)
 			continue
