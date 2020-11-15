@@ -17,12 +17,13 @@ package vxlan
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/Microsoft/hcsshim/hcn"
 	"github.com/coreos/flannel/pkg/ip"
 	log "github.com/golang/glog"
-	"github.com/juju/errors"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"time"
 )
 
 type vxlanDeviceAttrs struct {
@@ -107,7 +108,7 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 	if createNetwork {
 		if existingNetwork != nil {
 			if err := existingNetwork.Delete(); err != nil {
-				return nil, errors.Annotatef(err, "failed to delete existing HostComputeNetwork %s", networkName)
+				return nil, errors.Wrapf(err, "failed to delete existing HostComputeNetwork %s", networkName)
 			}
 			log.Infof("Deleted stale HostComputeNetwork %s", networkName)
 		}
@@ -115,7 +116,7 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 		log.Infof("Attempting to create HostComputeNetwork %v", expectedNetwork)
 		newNetwork, err := expectedNetwork.Create()
 		if err != nil {
-			return nil, errors.Annotatef(err, "failed to create HostComputeNetwork %s", networkName)
+			return nil, errors.Wrapf(err, "failed to create HostComputeNetwork %s", networkName)
 		}
 
 		var waitErr, lastErr error
@@ -126,7 +127,7 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 			return newNetwork != nil && len(getManagementIP(newNetwork)) != 0, nil
 		})
 		if waitErr == wait.ErrWaitTimeout {
-			return nil, errors.Annotatef(lastErr, "timeout, failed to get management IP from HostComputeNetwork %s", networkName)
+			return nil, errors.Wrapf(lastErr, "timeout, failed to get management IP from HostComputeNetwork %s", networkName)
 		}
 
 		managementIP := getManagementIP(newNetwork)
@@ -134,7 +135,7 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 		log.Infof("Waiting to get net interface for HostComputeNetwork %s (%s)", networkName, managementIP)
 		managementIPv4, err := ip.ParseIP4(managementIP)
 		if err != nil {
-			return nil, errors.Annotatef(err, "Failed to parse management ip (%s)", managementIP)
+			return nil, errors.Wrapf(err, "Failed to parse management ip (%s)", managementIP)
 		}
 
 		waitErr = wait.Poll(500*time.Millisecond, 5*time.Second, func() (done bool, err error) {
@@ -142,7 +143,7 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 			return lastErr == nil, nil
 		})
 		if waitErr == wait.ErrWaitTimeout {
-			return nil, errors.Annotatef(lastErr, "timeout, failed to get net interface for HostComputeNetwork %s (%s)", networkName, managementIP)
+			return nil, errors.Wrapf(lastErr, "timeout, failed to get net interface for HostComputeNetwork %s (%s)", networkName, managementIP)
 		}
 
 		log.Infof("Created HostComputeNetwork %s", networkName)
