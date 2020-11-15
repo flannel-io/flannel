@@ -16,16 +16,17 @@ package hostgw
 
 import (
 	"fmt"
-	"github.com/coreos/flannel/pkg/routing"
 	"sync"
 	"time"
+
+	"github.com/coreos/flannel/pkg/routing"
 
 	"github.com/Microsoft/hcsshim"
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
 	log "github.com/golang/glog"
-	"github.com/juju/errors"
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -61,7 +62,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 	}{}
 	if len(config.Backend) > 0 {
 		if err := json.Unmarshal(config.Backend, &cfg); err != nil {
-			return nil, errors.Annotate(err, "error decoding windows host-gw backend config")
+			return nil, errors.Wrap(err, "error decoding windows host-gw backend config")
 		}
 	}
 	if len(cfg.Name) == 0 {
@@ -101,7 +102,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 		return nil, err
 
 	default:
-		return nil, errors.Annotate(err, "failed to acquire lease")
+		return nil, errors.Wrap(err, "failed to acquire lease")
 	}
 
 	// 3. Check if the network exists and has the expected settings
@@ -129,7 +130,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 	if createNewNetwork {
 		if existingNetwork != nil {
 			if _, err := existingNetwork.Delete(); err != nil {
-				return nil, errors.Annotatef(err, "failed to delete existing HNSNetwork %s", networkName)
+				return nil, errors.Wrapf(err, "failed to delete existing HNSNetwork %s", networkName)
 			}
 			log.Infof("Deleted stale HNSNetwork %s", networkName)
 		}
@@ -147,13 +148,13 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 		}
 		jsonRequest, err := json.Marshal(expectedNetwork)
 		if err != nil {
-			return nil, errors.Annotatef(err, "failed to marshal %+v", expectedNetwork)
+			return nil, errors.Wrapf(err, "failed to marshal %+v", expectedNetwork)
 		}
 
 		log.Infof("Attempting to create HNSNetwork %s", string(jsonRequest))
 		newNetwork, err := hcsshim.HNSNetworkRequest("POST", "", string(jsonRequest))
 		if err != nil {
-			return nil, errors.Annotatef(err, "failed to create HNSNetwork %s", networkName)
+			return nil, errors.Wrapf(err, "failed to create HNSNetwork %s", networkName)
 		}
 
 		// Wait for the network to populate Management IP
@@ -163,14 +164,14 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 			return newNetwork != nil && len(newNetwork.ManagementIP) != 0, nil
 		})
 		if waitErr == wait.ErrWaitTimeout {
-			return nil, errors.Annotatef(waitErr, "timeout, failed to get management IP from HNSNetwork %s", networkName)
+			return nil, errors.Wrapf(waitErr, "timeout, failed to get management IP from HNSNetwork %s", networkName)
 		}
 
 		// Wait for the interface with the management IP
 		log.Infof("Waiting to get net interface for HNSNetwork %s (%s)", networkName, newNetwork.ManagementIP)
 		managementIP, err := ip.ParseIP4(newNetwork.ManagementIP)
 		if err != nil {
-			return nil, errors.Annotatef(err, "Failed to parse management ip (%s)", newNetwork.ManagementIP)
+			return nil, errors.Wrapf(err, "Failed to parse management ip (%s)", newNetwork.ManagementIP)
 		}
 
 		waitErr = wait.Poll(500*time.Millisecond, 5*time.Second, func() (done bool, err error) {
@@ -178,7 +179,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 			return lastErr == nil, nil
 		})
 		if waitErr == wait.ErrWaitTimeout {
-			return nil, errors.Annotatef(lastErr, "timeout, failed to get net interface for HNSNetwork %s (%s)", networkName, newNetwork.ManagementIP)
+			return nil, errors.Wrapf(lastErr, "timeout, failed to get net interface for HNSNetwork %s (%s)", networkName, newNetwork.ManagementIP)
 		}
 
 		log.Infof("Created HNSNetwork %s", networkName)
@@ -199,7 +200,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 	if createNewBridgeEndpoint {
 		if existingBridgeEndpoint != nil {
 			if _, err = existingBridgeEndpoint.Delete(); err != nil {
-				return nil, errors.Annotatef(err, "failed to delete existing bridge HNSEndpoint %s", bridgeEndpointName)
+				return nil, errors.Wrapf(err, "failed to delete existing bridge HNSEndpoint %s", bridgeEndpointName)
 			}
 			log.Infof("Deleted stale bridge HNSEndpoint %s", bridgeEndpointName)
 		}
@@ -212,7 +213,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 
 		log.Infof("Attempting to create bridge HNSEndpoint %+v", expectedBridgeEndpoint)
 		if expectedBridgeEndpoint, err = expectedBridgeEndpoint.Create(); err != nil {
-			return nil, errors.Annotatef(err, "failed to create bridge HNSEndpoint %s", bridgeEndpointName)
+			return nil, errors.Wrapf(err, "failed to create bridge HNSEndpoint %s", bridgeEndpointName)
 		}
 
 		log.Infof("Created bridge HNSEndpoint %s", bridgeEndpointName)
@@ -225,7 +226,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 		return lastErr == nil, nil
 	})
 	if waitErr == wait.ErrWaitTimeout {
-		return nil, errors.Annotatef(lastErr, "failed to hot attach bridge HNSEndpoint %s to host compartment", bridgeEndpointName)
+		return nil, errors.Wrapf(lastErr, "failed to hot attach bridge HNSEndpoint %s to host compartment", bridgeEndpointName)
 	}
 	log.Infof("Attached bridge endpoint %s to host successfully", bridgeEndpointName)
 
@@ -233,12 +234,12 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 	for _, interfaceIpAddress := range []string{expectedNetwork.ManagementIP, expectedBridgeEndpoint.IPAddress.String()} {
 		ipv4, err := ip.ParseIP4(interfaceIpAddress)
 		if err != nil {
-			return nil, errors.Annotatef(err, "Failed to parse expected net interface ip (%s)", interfaceIpAddress)
+			return nil, errors.Wrapf(err, "Failed to parse expected net interface ip (%s)", interfaceIpAddress)
 		}
 
 		netInterface, err := ip.GetInterfaceByIP(ipv4.ToIP())
 		if err != nil {
-			return nil, errors.Annotatef(err, "failed to find interface for IP Address %s", interfaceIpAddress)
+			return nil, errors.Wrapf(err, "failed to find interface for IP Address %s", interfaceIpAddress)
 		}
 		log.Infof("Found %+v interface with IP %s", netInterface, interfaceIpAddress)
 
@@ -249,7 +250,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 		}
 
 		if err := ip.EnableForwardingForInterface(netInterface); err != nil {
-			return nil, errors.Annotatef(err, "failed to enable forwarding on %s index %d", netInterface.Name, netInterface.Index)
+			return nil, errors.Wrapf(err, "failed to enable forwarding on %s index %d", netInterface.Name, netInterface.Index)
 		}
 		log.Infof("Enabled forwarding on %s index %d", netInterface.Name, netInterface.Index)
 	}
