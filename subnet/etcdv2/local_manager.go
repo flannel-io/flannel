@@ -345,6 +345,9 @@ func (m *LocalManager) WatchLeases(ctx context.Context, cursor interface{}) (Lea
 		log.Warning("Watch of subnet leases failed because etcd index outside history window")
 		return m.leasesWatchReset(ctx)
 
+	case index != 0:
+		return LeaseWatchResult{Cursor: watchCursor{index}}, err
+
 	default:
 		return LeaseWatchResult{}, err
 	}
