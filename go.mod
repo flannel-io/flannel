@@ -1,6 +1,6 @@
 module github.com/coreos/flannel
 
-go 1.14
+go 1.15
 
 require (
 	cloud.google.com/go v0.9.1-0.20170629112852-7c205da84d8d // indirect
