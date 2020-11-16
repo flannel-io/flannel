@@ -51,8 +51,6 @@ flannel is also widely used outside of kubernetes. When deployed outside of kube
 
 ## Contact
 
-* Mailing list: coreos-dev
-* IRC: #coreos on freenode.org
 * Slack: #flannel on [Calico Users Slack](https://slack.projectcalico.org)
 * Planning/Roadmap: [milestones][milestones], [roadmap][roadmap]
 * Bugs: [issues][flannel-issues]
