@@ -144,14 +144,9 @@ github.com/joho/godotenv
 # github.com/jonboulle/clockwork v0.1.0
 ## explicit
 github.com/jonboulle/clockwork
-# github.com/juju/errors v0.0.0-20170703010042-c7d06af17c68
-## explicit
-github.com/juju/errors
 # github.com/juju/ratelimit v0.0.0-20151125201925-77ed1c8a0121
 ## explicit
 github.com/juju/ratelimit
-# github.com/juju/testing v0.0.0-20200706033705-4c23f9c453cd
-## explicit
 # github.com/mailru/easyjson v0.0.0-20160728113105-d5b7844b561a
 ## explicit
 github.com/mailru/easyjson/buffer
@@ -159,6 +154,9 @@ github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
 # github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e
 ## explicit
+# github.com/pkg/errors v0.9.1
+## explicit
+github.com/pkg/errors
 # github.com/sirupsen/logrus v1.0.6
 github.com/sirupsen/logrus
 # github.com/smartystreets/goconvey v1.6.4
@@ -239,6 +237,7 @@ gopkg.in/inf.v0
 # gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
 ## explicit
 # gopkg.in/yaml.v2 v2.0.0-20170712054546-1be3d31502d6
+## explicit
 gopkg.in/yaml.v2
 # k8s.io/apimachinery v0.0.0-20170513172009-9603df80256c
 ## explicit
