@@ -159,9 +159,9 @@ func usage() {
 	os.Exit(0)
 }
 
-func newSubnetManager() (subnet.Manager, error) {
+func newSubnetManager(ctx context.Context) (subnet.Manager, error) {
 	if opts.kubeSubnetMgr {
-		return kube.NewSubnetManager(opts.kubeApiUrl, opts.kubeConfigFile, opts.kubeAnnotationPrefix, opts.netConfPath)
+		return kube.NewSubnetManager(ctx, opts.kubeApiUrl, opts.kubeConfigFile, opts.kubeAnnotationPrefix, opts.netConfPath)
 	}
 
 	cfg := &etcdv2.EtcdConfig{
@@ -238,7 +238,14 @@ func main() {
 		}
 	}
 
-	sm, err := newSubnetManager()
+	// This is the main context that everything should run in.
+	// All spawned goroutines should exit when cancel is called on this context.
+	// Go routines spawned from main.go coordinate using a WaitGroup. This provides a mechanism to allow the shutdownHandler goroutine
+	// to block until all the goroutines return . If those goroutines spawn other goroutines then they are responsible for
+	// blocking and returning only when cancel() is called.
+	ctx, cancel := context.WithCancel(context.Background())
+
+	sm, err := newSubnetManager(ctx)
 	if err != nil {
 		log.Error("Failed to create SubnetManager: ", err)
 		os.Exit(1)
@@ -250,12 +257,6 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
 
-	// This is the main context that everything should run in.
-	// All spawned goroutines should exit when cancel is called on this context.
-	// Go routines spawned from main.go coordinate using a WaitGroup. This provides a mechanism to allow the shutdownHandler goroutine
-	// to block until all the goroutines return . If those goroutines spawn other goroutines then they are responsible for
-	// blocking and returning only when cancel() is called.
-	ctx, cancel := context.WithCancel(context.Background())
 	wg := sync.WaitGroup{}
 
 	wg.Add(1)
