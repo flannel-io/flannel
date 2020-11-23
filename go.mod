@@ -2,7 +2,7 @@ module github.com/coreos/flannel
 
 go 1.13
 
-replace github.com/benmoss/go-powershell => github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373
+replace github.com/benmoss/go-powershell => github.com/k3s-io/go-powershell v0.0.0-20201118222746-51f4c451fbd7
 
 require (
 	github.com/Microsoft/go-winio v0.4.11 // indirect
@@ -19,10 +19,10 @@ require (
 	github.com/jmespath/go-jmespath v0.0.0-20160803190731-bd40a432e4c7 // indirect
 	github.com/joho/godotenv v0.0.0-20161216230537-726cc8b906e3
 	github.com/jonboulle/clockwork v0.1.0
+	github.com/k3s-io/go-powershell v0.0.0-20200701182037-6845e6fcfa79 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rakelkar/gonetsh v0.0.0-20190930180311-e5c5ffe4bdf0
-	github.com/rancher/go-powershell v0.0.0-20200701182037-6845e6fcfa79 // indirect
 	github.com/sirupsen/logrus v1.0.6 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.6.1 // indirect
