@@ -60,7 +60,7 @@ func (conf *backendConfig) routeTables() ([]string, error) {
 		return []string{table}, nil
 	}
 	if rawTables, ok := conf.RouteTableID.([]interface{}); ok {
-		log.Info("RouteTableID configured as slice: %+v", rawTables)
+		log.Infof("RouteTableID configured as slice: %+v", rawTables)
 		tables := make([]string, len(rawTables))
 		for idx, t := range rawTables {
 			table, ok := t.(string)
@@ -85,7 +85,7 @@ func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 	var cfg backendConfig
 
 	if len(config.Backend) > 0 {
-		log.Info("Backend configured as: %s", string(config.Backend))
+		log.Infof("Backend configured as: %s", string(config.Backend))
 		if err := json.Unmarshal(config.Backend, &cfg); err != nil {
 			return nil, fmt.Errorf("error decoding VPC backend config: %v", err)
 		}
