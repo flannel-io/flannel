@@ -25,11 +25,10 @@ import (
 
 	etcd "github.com/coreos/etcd/client"
 	"github.com/coreos/etcd/pkg/transport"
-	log "github.com/golang/glog"
-	"golang.org/x/net/context"
-
 	"github.com/coreos/flannel/pkg/ip"
 	. "github.com/coreos/flannel/subnet"
+	"golang.org/x/net/context"
+	log "k8s.io/klog"
 )
 
 var (

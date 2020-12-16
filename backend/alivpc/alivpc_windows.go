@@ -15,7 +15,7 @@
 package alivpc
 
 import (
-	log "github.com/golang/glog"
+	log "k8s.io/klog"
 )
 
 func init() {

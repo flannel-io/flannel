@@ -24,9 +24,8 @@ import (
 	"reflect"
 	"unsafe"
 
-	log "github.com/golang/glog"
-
 	"github.com/coreos/flannel/pkg/ip"
+	log "k8s.io/klog"
 )
 
 func runCProxy(tun *os.File, conn *net.UDPConn, ctl *os.File, tunIP ip.IP4, tunMTU int) {

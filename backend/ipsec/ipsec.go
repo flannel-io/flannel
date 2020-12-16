@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"sync"
 
-	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
+	log "k8s.io/klog"
 )
 
 /*

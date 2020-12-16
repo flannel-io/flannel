@@ -23,8 +23,8 @@ import (
 	etcd "github.com/coreos/etcd/client"
 	"github.com/coreos/flannel/pkg/ip"
 	. "github.com/coreos/flannel/subnet"
-	log "github.com/golang/glog"
 	"golang.org/x/net/context"
+	log "k8s.io/klog"
 )
 
 const (

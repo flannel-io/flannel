@@ -40,15 +40,15 @@ package gce
 
 import (
 	"fmt"
-	log "github.com/golang/glog"
-	"golang.org/x/net/context"
-	"google.golang.org/api/googleapi"
 	"strings"
 	"sync"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
+	"golang.org/x/net/context"
+	"google.golang.org/api/googleapi"
+	log "k8s.io/klog"
 )
 
 func init() {

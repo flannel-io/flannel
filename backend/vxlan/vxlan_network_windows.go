@@ -15,18 +15,18 @@
 package vxlan
 
 import (
-	log "github.com/golang/glog"
-	"golang.org/x/net/context"
-	"sync"
-
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/subnet"
-
 	"encoding/json"
-	"github.com/Microsoft/hcsshim/hcn"
-	"github.com/coreos/flannel/pkg/ip"
 	"net"
 	"strings"
+	"sync"
+
+	"golang.org/x/net/context"
+
+	"github.com/Microsoft/hcsshim/hcn"
+	"github.com/coreos/flannel/backend"
+	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/subnet"
+	log "k8s.io/klog"
 )
 
 type network struct {

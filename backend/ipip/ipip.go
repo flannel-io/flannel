@@ -19,16 +19,15 @@ package ipip
 import (
 	"encoding/json"
 	"fmt"
-	"syscall"
-
 	"sync"
+	"syscall"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
-	log "github.com/golang/glog"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
+	log "k8s.io/klog"
 )
 
 const (

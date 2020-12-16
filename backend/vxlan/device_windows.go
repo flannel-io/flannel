@@ -21,9 +21,9 @@ import (
 
 	"github.com/Microsoft/hcsshim/hcn"
 	"github.com/coreos/flannel/pkg/ip"
-	log "github.com/golang/glog"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
+	log "k8s.io/klog"
 )
 
 type vxlanDeviceAttrs struct {
