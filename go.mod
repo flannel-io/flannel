@@ -13,7 +13,6 @@ require (
 	github.com/coreos/pkg v0.0.0-20160727233714-3ac0863d7acf
 	github.com/denverdino/aliyungo v0.0.0-20170629053852-f6cab0c35083
 	github.com/go-ini/ini v1.28.1 // indirect
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/jmespath/go-jmespath v0.0.0-20160803190731-bd40a432e4c7 // indirect
 	github.com/joho/godotenv v0.0.0-20161216230537-726cc8b906e3
 	github.com/jonboulle/clockwork v0.1.0
@@ -31,4 +30,5 @@ require (
 	k8s.io/api v0.19.5
 	k8s.io/apimachinery v0.19.5
 	k8s.io/client-go v0.19.5
+	k8s.io/klog v1.0.0
 )
