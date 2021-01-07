@@ -16,19 +16,21 @@ package hostgw
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/Microsoft/hcsshim"
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/pkg/routing"
-	"github.com/coreos/flannel/subnet"
 	log "github.com/golang/glog"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	"github.com/coreos/flannel/backend"
+	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/pkg/routing"
+	"github.com/coreos/flannel/subnet"
 )
 
 func init() {
@@ -222,7 +224,15 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 	log.Infof("Waiting to attach bridge endpoint %s to host", bridgeEndpointName)
 	waitErr = wait.Poll(500*time.Millisecond, 5*time.Second, func() (done bool, err error) {
 		lastErr = expectedBridgeEndpoint.HostAttach(1)
-		return lastErr == nil, nil
+		if lastErr == nil {
+			return true, nil
+		}
+		// See https://github.com/coreos/flannel/issues/1391 and
+		// hcsshim lacks some validations to detect the error, so we judge it by error message.
+		if strings.Contains(lastErr.Error(), "This endpoint is already attached to the switch.") {
+			return true, nil
+		}
+		return false, nil
 	})
 	if waitErr == wait.ErrWaitTimeout {
 		return nil, errors.Wrapf(lastErr, "failed to hot attach bridge HNSEndpoint %s to host compartment", bridgeEndpointName)
