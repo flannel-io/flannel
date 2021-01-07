@@ -32,9 +32,9 @@ import (
 	Flannel's approach to IPSec uses Strongswan to handle the key exchange (using IKEv2) and the kernel to handle the
 	actual encryption.
 
-	Strongswan's "charon" is bundled in the flannel container. Flannel runs it as a child process when the ipsec backend
-	is selected and communicates with it using the "VICI" interface. Strongswan ships a utility "swanctl" which also
-	uses the VICI interface. This utility is bundled in the flannel container and can help with debugging.
+	Flannel runs Strongswan's "charon" as a child process when the ipsec backend is selected and communicates with it
+	using the "VICI" interface. Strongswan ships a utility "swanctl" which also uses the VICI interface. This utility
+	is bundled in the flannel container and can help with debugging.
 
 	The file "handle_charon.go" contains the logic for working with the charon. It supports creating a "CharonIKEDaemon"
 	which supports loading the PSK into the charon and adding and removing connections.
