@@ -17,10 +17,10 @@ package subnet
 import (
 	"time"
 
-	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/pkg/ip"
+	log "k8s.io/klog"
 )
 
 // WatchLeases performs a long term watch of the given network's subnet leases

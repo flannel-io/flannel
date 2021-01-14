@@ -15,15 +15,15 @@
 package backend
 
 import (
+	"strings"
 	"sync"
 	"time"
 
-	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/pkg/routing"
 	"github.com/coreos/flannel/subnet"
-	"strings"
+	log "k8s.io/klog"
 )
 
 const (

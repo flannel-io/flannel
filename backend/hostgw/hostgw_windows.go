@@ -21,16 +21,15 @@ import (
 	"time"
 
 	"github.com/Microsoft/hcsshim"
-	log "github.com/golang/glog"
-	"github.com/pkg/errors"
-	"golang.org/x/net/context"
-	"k8s.io/apimachinery/pkg/util/json"
-	"k8s.io/apimachinery/pkg/util/wait"
-
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/pkg/routing"
 	"github.com/coreos/flannel/subnet"
+	"github.com/pkg/errors"
+	"golang.org/x/net/context"
+	"k8s.io/apimachinery/pkg/util/json"
+	"k8s.io/apimachinery/pkg/util/wait"
+	log "k8s.io/klog"
 )
 
 func init() {

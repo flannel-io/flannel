@@ -55,7 +55,6 @@ package vxlan
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/golang/glog"
 	"net"
 	"sync"
 
@@ -64,6 +63,7 @@ import (
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
+	log "k8s.io/klog"
 )
 
 func init() {

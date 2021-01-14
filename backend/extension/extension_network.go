@@ -18,13 +18,13 @@ import (
 	"encoding/json"
 	"sync"
 
-	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
 	"fmt"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/subnet"
+	log "k8s.io/klog"
 )
 
 type network struct {

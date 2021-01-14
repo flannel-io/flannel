@@ -21,10 +21,9 @@ import (
 	"net"
 	"syscall"
 
-	log "github.com/golang/glog"
-	"github.com/vishvananda/netlink"
-
 	"github.com/coreos/flannel/subnet"
+	"github.com/vishvananda/netlink"
+	log "k8s.io/klog"
 )
 
 func AddXFRMPolicy(myLease, remoteLease *subnet.Lease, dir netlink.Dir, reqID int) error {

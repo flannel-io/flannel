@@ -22,11 +22,10 @@ import (
 	"net"
 	"syscall"
 
-	log "github.com/golang/glog"
-	"github.com/vishvananda/netlink"
-
 	"github.com/containernetworking/plugins/pkg/utils/sysctl"
 	"github.com/coreos/flannel/pkg/ip"
+	"github.com/vishvananda/netlink"
+	log "k8s.io/klog"
 )
 
 type vxlanDeviceAttrs struct {

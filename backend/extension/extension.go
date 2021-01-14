@@ -23,12 +23,11 @@ import (
 	"os/exec"
 	"sync"
 
-	log "github.com/golang/glog"
-
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
 	"golang.org/x/net/context"
+	log "k8s.io/klog"
 )
 
 func init() {

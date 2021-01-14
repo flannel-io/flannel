@@ -18,14 +18,12 @@ package network
 import (
 	"fmt"
 	"strings"
-
-	log "github.com/golang/glog"
-
 	"time"
 
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
 	"github.com/coreos/go-iptables/iptables"
+	log "k8s.io/klog"
 )
 
 type IPTables interface {

@@ -19,11 +19,10 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/golang/glog"
-
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
+	log "k8s.io/klog"
 )
 
 type gceAPI struct {

@@ -9,7 +9,7 @@ This problems manifests itself as connectivity problems between containers runni
 
 
 ## Logging
-Flannel uses the `glog` library but only supports logging to stderr. The severity level can't be changed but the verbosity can be changed with the `-v` option. Flannel does not make extensive use of the verbosity level but increasing the value from `0` (the default) will result in some additional logs. To get the most detailed logs, use `-v=10`
+Flannel uses the `klog` library but only supports logging to stderr. The severity level can't be changed but the verbosity can be changed with the `-v` option. Flannel does not make extensive use of the verbosity level but increasing the value from `0` (the default) will result in some additional logs. To get the most detailed logs, use `-v=10`
 
 ```
 -v value

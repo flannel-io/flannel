@@ -18,7 +18,6 @@ package alivpc
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 	"os"
 	"sync"
@@ -29,6 +28,7 @@ import (
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
 	"github.com/denverdino/aliyungo/metadata"
+	log "k8s.io/klog"
 )
 
 func init() {

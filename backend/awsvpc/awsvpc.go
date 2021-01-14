@@ -18,19 +18,20 @@ package awsvpc
 import (
 	"encoding/json"
 	"fmt"
+	"net"
+	"sync"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	log "github.com/golang/glog"
 	"golang.org/x/net/context"
-	"net"
-	"sync"
 
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
+	log "k8s.io/klog"
 )
 
 func init() {
@@ -60,7 +61,7 @@ func (conf *backendConfig) routeTables() ([]string, error) {
 		return []string{table}, nil
 	}
 	if rawTables, ok := conf.RouteTableID.([]interface{}); ok {
-		log.Info("RouteTableID configured as slice: %+v", rawTables)
+		log.Infof("RouteTableID configured as slice: %+v", rawTables)
 		tables := make([]string, len(rawTables))
 		for idx, t := range rawTables {
 			table, ok := t.(string)
@@ -85,7 +86,7 @@ func (be *AwsVpcBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 	var cfg backendConfig
 
 	if len(config.Backend) > 0 {
-		log.Info("Backend configured as: %s", string(config.Backend))
+		log.Infof("Backend configured as: %s", string(config.Backend))
 		if err := json.Unmarshal(config.Backend, &cfg); err != nil {
 			return nil, fmt.Errorf("error decoding VPC backend config: %v", err)
 		}
@@ -200,7 +201,7 @@ func (be *AwsVpcBackend) cleanupBlackholeRoutes(routeTableID string, network ip.
 			if *route.State == "blackhole" && route.DestinationCidrBlock != nil {
 				_, subnet, err := net.ParseCIDR(*route.DestinationCidrBlock)
 				if err == nil && network.Contains(ip.FromIP(subnet.IP)) {
-					log.Info("Removing blackhole route: ", *route.DestinationCidrBlock)
+					log.Infof("Removing blackhole route: ", *route.DestinationCidrBlock)
 					deleteRouteInput := &ec2.DeleteRouteInput{RouteTableId: &routeTableID, DestinationCidrBlock: route.DestinationCidrBlock}
 					if _, err := ec2c.DeleteRoute(deleteRouteInput); err != nil {
 						if ec2err, ok := err.(awserr.Error); !ok || ec2err.Code() != "InvalidRoute.NotFound" {
@@ -298,7 +299,7 @@ func (be *AwsVpcBackend) detectRouteTableID(eni *ec2.InstanceNetworkInterface, e
 
 	res, err = ec2c.DescribeRouteTables(routeTablesInput)
 	if err != nil {
-		log.Info("error describing route tables: ", err)
+		log.Infof("error describing route tables: ", err)
 	}
 
 	if len(res.RouteTables) == 0 {

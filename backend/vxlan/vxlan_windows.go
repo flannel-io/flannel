@@ -27,9 +27,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"sync"
-
-	log "github.com/golang/glog"
 
 	"golang.org/x/net/context"
 
@@ -37,7 +36,7 @@ import (
 	"github.com/coreos/flannel/backend"
 	"github.com/coreos/flannel/pkg/ip"
 	"github.com/coreos/flannel/subnet"
-	"net"
+	log "k8s.io/klog"
 )
 
 func init() {

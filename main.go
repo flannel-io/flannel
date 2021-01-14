@@ -26,10 +26,11 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
+	"time"
 
 	"github.com/coreos/pkg/flagutil"
-	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
 	"github.com/coreos/flannel/network"
@@ -38,12 +39,9 @@ import (
 	"github.com/coreos/flannel/subnet/etcdv2"
 	"github.com/coreos/flannel/subnet/kube"
 	"github.com/coreos/flannel/version"
-
-	"time"
+	log "k8s.io/klog"
 
 	"github.com/joho/godotenv"
-
-	"sync"
 
 	// Backends need to be imported for their init() to get executed and them to register
 	"github.com/coreos/flannel/backend"
@@ -133,11 +131,13 @@ func init() {
 	flannelFlags.BoolVar(&opts.iptablesForwardRules, "iptables-forward-rules", true, "add default accept rules to FORWARD chain in iptables")
 	flannelFlags.StringVar(&opts.netConfPath, "net-config-path", "/etc/kube-flannel/net-conf.json", "path to the network configuration file")
 
-	// glog will log to tmp files by default. override so all entries
+	log.InitFlags(nil)
+
+	// klog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
 	flag.Set("logtostderr", "true")
 
-	// Only copy the non file logging options from glog
+	// Only copy the non file logging options from klog
 	copyFlag("v")
 	copyFlag("vmodule")
 	copyFlag("log_backtrace_at")
