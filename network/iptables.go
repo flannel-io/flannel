@@ -20,9 +20,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coreos/go-iptables/iptables"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/subnet"
-	"github.com/coreos/go-iptables/iptables"
 	log "k8s.io/klog"
 )
 

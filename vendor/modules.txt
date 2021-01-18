@@ -148,6 +148,13 @@ github.com/sirupsen/logrus
 github.com/spf13/pflag
 # github.com/stretchr/testify v1.6.1
 ## explicit
+# github.com/tencentcloud/tencentcloud-sdk-go v1.0.67
+## explicit
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/http
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc/v20170312
 # github.com/ugorji/go v0.0.0-20170107133203-ded73eae5db7
 ## explicit
 github.com/ugorji/go/codec
