@@ -112,8 +112,8 @@ func ensureLink(vxlan *netlink.Vxlan) (*netlink.Vxlan, error) {
 	return vxlan, nil
 }
 
-func (dev *vxlanDevice) Configure(ipn ip.IP4Net) error {
-	if err := ip.EnsureV4AddressOnLink(ipn, dev.link); err != nil {
+func (dev *vxlanDevice) Configure(ipa ip.IP4Net, flannelnet ip.IP4Net) error {
+	if err := ip.EnsureV4AddressOnLink(ipa, flannelnet, dev.link); err != nil {
 		return fmt.Errorf("failed to ensure address of interface %s: %s", dev.link.Attrs().Name, err)
 	}
 

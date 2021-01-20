@@ -35,7 +35,8 @@ func TestEnsureV4AddressOnLink(t *testing.T) {
 		t.Fatal(err)
 	}
 	// check changing address
-	if err := EnsureV4AddressOnLink(IP4Net{IP: FromIP(net.ParseIP("127.0.0.2")), PrefixLen: 24}, lo); err != nil {
+	ipn := IP4Net{IP: FromIP(net.ParseIP("127.0.0.2")), PrefixLen: 24}
+	if err := EnsureV4AddressOnLink(ipn, ipn, lo); err != nil {
 		t.Fatal(err)
 	}
 	addrs, err := netlink.AddrList(lo, netlink.FAMILY_V4)
@@ -46,11 +47,18 @@ func TestEnsureV4AddressOnLink(t *testing.T) {
 		t.Fatalf("addrs %v is not expected", addrs)
 	}
 
-	// check changing address if there exist multiple addresses
-	if err := netlink.AddrAdd(lo, &netlink.Addr{IPNet: &net.IPNet{IP: net.ParseIP("127.0.0.3"), Mask: net.CIDRMask(24, 32)}}); err != nil {
+	// check changing address if there exist unknown addresses
+	if err := netlink.AddrAdd(lo, &netlink.Addr{IPNet: &net.IPNet{IP: net.ParseIP("127.0.1.1"), Mask: net.CIDRMask(24, 32)}}); err != nil {
 		t.Fatal(err)
 	}
-	if err := EnsureV4AddressOnLink(IP4Net{IP: FromIP(net.ParseIP("127.0.0.2")), PrefixLen: 24}, lo); err == nil {
-		t.Fatal("EnsureV4AddressOnLink should return error if there exist multiple address on link")
+	if err := EnsureV4AddressOnLink(ipn, ipn, lo); err != nil {
+		t.Fatal(err)
+	}
+	addrs, err = netlink.AddrList(lo, netlink.FAMILY_V4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(addrs) != 2 {
+		t.Fatalf("two addresses expected, addrs: %v", addrs)
 	}
 }
