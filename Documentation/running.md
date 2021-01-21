@@ -23,7 +23,7 @@ flanneld -subnet-file /vxlan.env -etcd-prefix=/vxlan/network
 
 1. Download a `flannel` binary.
 ```bash
-wget https://github.com/coreos/flannel/releases/download/v0.10.0/flanneld-amd64 && chmod +x flanneld-amd64
+wget https://github.com/coreos/flannel/releases/download/v0.13.0/flanneld-amd64 && chmod +x flanneld-amd64
 ```
 2. Run the binary.
 ```bash
