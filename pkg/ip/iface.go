@@ -23,6 +23,7 @@ import (
 	"syscall"
 
 	"github.com/vishvananda/netlink"
+	log "k8s.io/klog"
 )
 
 func getIfaceAddrs(iface *net.Interface) ([]netlink.Addr, error) {
@@ -131,32 +132,33 @@ func DirectRouting(ip net.IP) (bool, error) {
 	return false, nil
 }
 
-// EnsureV4AddressOnLink ensures that there is only one v4 Addr on `link` and it equals `ipn`.
-// If there exist multiple addresses on link, it returns an error message to tell callers to remove additional address.
-func EnsureV4AddressOnLink(ipn IP4Net, link netlink.Link) error {
-	addr := netlink.Addr{IPNet: ipn.ToIPNet()}
+// EnsureV4AddressOnLink ensures that there is only one v4 Addr on `link` within the `ipn` address space and it equals `ipa`.
+func EnsureV4AddressOnLink(ipa IP4Net, ipn IP4Net, link netlink.Link) error {
+	addr := netlink.Addr{IPNet: ipa.ToIPNet()}
 	existingAddrs, err := netlink.AddrList(link, netlink.FAMILY_V4)
 	if err != nil {
 		return err
 	}
 
-	// flannel will never make this happen. This situation can only be caused by a user, so get them to sort it out.
-	if len(existingAddrs) > 1 {
-		return fmt.Errorf("link has incompatible addresses. Remove additional addresses and try again. %#v", link)
-	}
-
-	// If the device has an incompatible address then delete it. This can happen if the lease changes for example.
-	if len(existingAddrs) == 1 && !existingAddrs[0].Equal(addr) {
-		if err := netlink.AddrDel(link, &existingAddrs[0]); err != nil {
-			return fmt.Errorf("failed to remove IP address %s from %s: %s", ipn.String(), link.Attrs().Name, err)
+	var hasAddr bool
+	for _, existingAddr := range existingAddrs {
+		if existingAddr.Equal(addr) {
+			hasAddr = true
+			continue
 		}
-		existingAddrs = []netlink.Addr{}
+
+		if ipn.Contains(FromIP(existingAddr.IP)) {
+			if err := netlink.AddrDel(link, &existingAddr); err != nil {
+				return fmt.Errorf("failed to remove IP address %s from %s: %s", existingAddr.String(), link.Attrs().Name, err)
+			}
+			log.Infof("removed IP address %s from %s", existingAddr.String(), link.Attrs().Name)
+		}
 	}
 
 	// Actually add the desired address to the interface if needed.
-	if len(existingAddrs) == 0 {
+	if !hasAddr {
 		if err := netlink.AddrAdd(link, &addr); err != nil {
-			return fmt.Errorf("failed to add IP address %s to %s: %s", ipn.String(), link.Attrs().Name, err)
+			return fmt.Errorf("failed to add IP address %s to %s: %s", addr.String(), link.Attrs().Name, err)
 		}
 	}
 

@@ -88,7 +88,7 @@ func (be *IPIPBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, 
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
-	link, err := be.configureIPIPDevice(n.SubnetLease)
+	link, err := be.configureIPIPDevice(n.SubnetLease, config.Network)
 
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (be *IPIPBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, 
 	return n, nil
 }
 
-func (be *IPIPBackend) configureIPIPDevice(lease *subnet.Lease) (*netlink.Iptun, error) {
+func (be *IPIPBackend) configureIPIPDevice(lease *subnet.Lease, flannelnet ip.IP4Net) (*netlink.Iptun, error) {
 	// When modprobe ipip module, a tunl0 ipip device is created automatically per network namespace by ipip kernel module.
 	// It is the namespace default IPIP device with attributes local=any and remote=any.
 	// When receiving IPIP protocol packets, kernel will forward them to tunl0 as a fallback device
@@ -195,7 +195,7 @@ func (be *IPIPBackend) configureIPIPDevice(lease *subnet.Lease) (*netlink.Iptun,
 	// Ensure that the device has a /32 address so that no broadcast routes are created.
 	// This IP is just used as a source address for host to workload traffic (so
 	// the return path for the traffic has an address on the flannel network to use as the destination)
-	if err := ip.EnsureV4AddressOnLink(ip.IP4Net{IP: lease.Subnet.IP, PrefixLen: 32}, link); err != nil {
+	if err := ip.EnsureV4AddressOnLink(ip.IP4Net{IP: lease.Subnet.IP, PrefixLen: 32}, flannelnet, link); err != nil {
 		return nil, fmt.Errorf("failed to ensure address of interface %s: %s", link.Attrs().Name, err)
 	}
 
