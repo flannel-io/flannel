@@ -122,11 +122,16 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 		var waitErr, lastErr error
 		// Wait for the network to populate Management IP
 		log.Infof("Waiting to get ManagementIP from HostComputeNetwork %s", networkName)
+		var newNetworkID = newNetwork.Id
 		waitErr = wait.Poll(500*time.Millisecond, 5*time.Second, func() (done bool, err error) {
-			newNetwork, lastErr = hcn.GetNetworkByID(newNetwork.Id)
+			newNetwork, lastErr = hcn.GetNetworkByID(newNetworkID)
 			return newNetwork != nil && len(getManagementIP(newNetwork)) != 0, nil
 		})
 		if waitErr == wait.ErrWaitTimeout {
+			// Do not swallow the root cause
+			if lastErr != nil {
+				waitErr = lastErr
+			}
 			return nil, errors.Wrapf(lastErr, "timeout, failed to get management IP from HostComputeNetwork %s", networkName)
 		}
 
