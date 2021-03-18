@@ -159,11 +159,16 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 
 		// Wait for the network to populate Management IP
 		log.Infof("Waiting to get ManagementIP from HNSNetwork %s", networkName)
+		var newNetworkID = newNetwork.Id
 		waitErr = wait.Poll(500*time.Millisecond, 30*time.Second, func() (done bool, err error) {
-			newNetwork, lastErr = hcsshim.HNSNetworkRequest("GET", newNetwork.Id, "")
+			newNetwork, lastErr = hcsshim.HNSNetworkRequest("GET", newNetworkID, "")
 			return newNetwork != nil && len(newNetwork.ManagementIP) != 0, nil
 		})
 		if waitErr == wait.ErrWaitTimeout {
+			// Do not swallow the root cause
+			if lastErr != nil {
+				waitErr = lastErr
+			}
 			return nil, errors.Wrapf(waitErr, "timeout, failed to get management IP from HNSNetwork %s", networkName)
 		}
 
