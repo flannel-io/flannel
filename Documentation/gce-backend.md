@@ -47,7 +47,7 @@ $ etcd --advertise-client-urls http://$INTERNAL_IP:2379 --listen-client-urls htt
 $ etcdctl set /coreos.com/network/config '{"Network":"10.40.0.0/16", "Backend": {"Type": "gce"}}'
 ```
 
-- Fetch the 0.8.0 release using wget from [here](https://github.com/coreos/flannel/releases/download/v0.8.0/flannel-v0.8.0-linux-amd64.tar.gz)
+- Fetch the 0.8.0 release using wget from [here](https://github.com/flannel-io/flannel/releases/download/v0.8.0/flannel-v0.8.0-linux-amd64.tar.gz)
 - Run flannel daemon:
 
 ```

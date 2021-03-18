@@ -1,6 +1,6 @@
-module github.com/coreos/flannel
+module github.com/flannel-io/flannel
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Microsoft/hcsshim v0.8.6

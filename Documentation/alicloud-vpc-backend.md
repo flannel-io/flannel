@@ -58,7 +58,7 @@ $ etcd --advertise-client-urls http://$INTERNAL_IP:2379 --listen-client-urls htt
 ```
 $ etcdctl set /coreos.com/network/config '{"Network":"10.24.0.0/16", "Backend": {"Type": "ali-vpc"}}'
 ```
-- Fetch the latest release using wget from https://github.com/coreos/flannel/
+- Fetch the latest release using wget from https://github.com/flannel-io/flannel/
 
 - make dist/flanneld
 

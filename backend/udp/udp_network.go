@@ -18,9 +18,9 @@ package udp
 import (
 	"fmt"
 
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/subnet"
 )
 
 func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, port int, nw ip.IP4Net, l *subnet.Lease) (*backend.SimpleNetwork, error) {

@@ -19,7 +19,7 @@ package ip
 import (
 	"errors"
 	"fmt"
-	"github.com/coreos/flannel/pkg/powershell"
+	"github.com/flannel-io/flannel/pkg/powershell"
 	"net"
 )
 

@@ -19,7 +19,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/coreos/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/ip"
 )
 
 type Config struct {

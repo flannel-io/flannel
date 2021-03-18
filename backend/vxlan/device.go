@@ -23,7 +23,7 @@ import (
 	"syscall"
 
 	"github.com/containernetworking/plugins/pkg/utils/sysctl"
-	"github.com/coreos/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/vishvananda/netlink"
 	log "k8s.io/klog"
 )

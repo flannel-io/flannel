@@ -26,7 +26,7 @@ import (
 	"time"
 
 	"github.com/bronze1man/goStrongswanVici"
-	"github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
 	log "k8s.io/klog"
 )

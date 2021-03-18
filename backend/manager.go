@@ -21,7 +21,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/subnet"
 )
 
 var constructors = make(map[string]BackendCtor)

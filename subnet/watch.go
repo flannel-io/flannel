@@ -19,7 +19,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/coreos/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/ip"
 	log "k8s.io/klog"
 )
 

@@ -77,9 +77,9 @@ Flannel is under the Apache 2.0 license. See the [LICENSE][license] file for det
 [pod-cidr]: https://kubernetes.io/docs/admin/kubelet/
 [etcd]: https://github.com/coreos/etcd
 [contributing]: CONTRIBUTING.md
-[license]: https://github.com/coreos/flannel/blob/master/LICENSE
-[milestones]: https://github.com/coreos/flannel/milestones
-[flannel-issues]: https://github.com/coreos/flannel/issues
+[license]: https://github.com/flannel-io/flannel/blob/master/LICENSE
+[milestones]: https://github.com/flannel-io/flannel/milestones
+[flannel-issues]: https://github.com/flannel-io/flannel/issues
 [backends]: Documentation/backends.md
 [roadmap]: https://github.com/kubernetes/kubernetes/milestones
 [reporting]: Documentation/reporting_bugs.md

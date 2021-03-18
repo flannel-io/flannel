@@ -1,6 +1,6 @@
 [
 	{
-		"project": "github.com/coreos/flannel",
+		"project": "github.com/flannel-io/flannel",
 		"license": "Apache License 2.0",
 		"confidence": 1
 	},

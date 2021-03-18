@@ -63,7 +63,7 @@ $ etcd --advertise-client-urls http://$INTERNAL_IP:2379 --listen-client-urls htt
 ```
 $ etcdctl set /coreos.com/network/config '{"Network":"10.24.0.0/16", "Backend": {"Type": "ali-vpc"}}'
 ```
-- 从 https://github.com/coreos/flannel/ 上拉取最新的分支
+- 从 https://github.com/flannel-io/flannel/ 上拉取最新的分支
 - 编译项目
 - 设置环境变量
 

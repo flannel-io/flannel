@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/Microsoft/hcsshim/hcn"
-	"github.com/coreos/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 	log "k8s.io/klog"

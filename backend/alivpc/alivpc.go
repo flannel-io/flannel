@@ -22,9 +22,9 @@ import (
 	"os"
 	"sync"
 
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/subnet"
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
 	"github.com/denverdino/aliyungo/metadata"

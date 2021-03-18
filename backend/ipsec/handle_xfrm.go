@@ -21,7 +21,7 @@ import (
 	"net"
 	"syscall"
 
-	"github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/subnet"
 	"github.com/vishvananda/netlink"
 	log "k8s.io/klog"
 )
