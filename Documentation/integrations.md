@@ -1,6 +1,6 @@
 # Integrations
 
-This document tracks projects that integrate with flannel. [Join the community](https://github.com/coreos/flannel/) and help us keep the list current.
+This document tracks projects that integrate with flannel. [Join the community](https://github.com/flannel-io/flannel/) and help us keep the list current.
 
 ## Projects
 

@@ -21,10 +21,10 @@ import (
 	"time"
 
 	"github.com/Microsoft/hcsshim"
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/pkg/routing"
-	"github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/routing"
+	"github.com/flannel-io/flannel/subnet"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"k8s.io/apimachinery/pkg/util/json"
@@ -231,7 +231,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 		if lastErr == nil {
 			return true, nil
 		}
-		// See https://github.com/coreos/flannel/issues/1391 and
+		// See https://github.com/flannel-io/flannel/issues/1391 and
 		// hcsshim lacks some validations to detect the error, so we judge it by error message.
 		if strings.Contains(lastErr.Error(), "This endpoint is already attached to the switch.") {
 			return true, nil

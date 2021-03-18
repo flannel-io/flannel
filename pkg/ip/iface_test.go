@@ -20,7 +20,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/coreos/flannel/pkg/ns"
+	"github.com/flannel-io/flannel/pkg/ns"
 	"github.com/vishvananda/netlink"
 )
 

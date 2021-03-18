@@ -103,9 +103,9 @@ Command to create a compute instance with the correct permissions and IP forward
 Route Limits: GCE [limits](https://cloud.google.com/compute/docs/resource-quotas) the number of routes for every *project* to 100 by default.
 
 
-[alicloud-vpc]: https://github.com/coreos/flannel/blob/master/Documentation/alicloud-vpc-backend.md
-[amazon-vpc]: https://github.com/coreos/flannel/blob/master/Documentation/aws-vpc-backend.md
-[gce-backend]: https://github.com/coreos/flannel/blob/master/Documentation/gce-backend.md
+[alicloud-vpc]: https://github.com/flannel-io/flannel/blob/master/Documentation/alicloud-vpc-backend.md
+[amazon-vpc]: https://github.com/flannel-io/flannel/blob/master/Documentation/aws-vpc-backend.md
+[gce-backend]: https://github.com/flannel-io/flannel/blob/master/Documentation/gce-backend.md
 
 
 ### IPIP

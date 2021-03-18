@@ -21,8 +21,8 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/subnet"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
 	log "k8s.io/klog"

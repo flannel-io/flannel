@@ -25,11 +25,11 @@ apps:
 parts:
   flannel:
   plugin: nil 
-    source: https://github.com/coreos/flannel.git
+    source: https://github.com/flannel-io/flannel.git
     source-type: git
     override-pull: |
-      git clone https://github.com/coreos/flannel.git src/github.com/coreos/flannel
-      cd src/github.com/coreos/flannel
+      git clone https://github.com/flannel-io/flannel.git src/github.com/flannel-io/flannel
+      cd src/github.com/flannel-io/flannel
       last_committed_tag="$(git describe --tags --abbrev=0)"
       last_committed_tag_ver="$(echo ${last_committed_tag} | sed 's/v//')"
       last_released_tag="$(snap info $SNAPCRAFT_PROJECT_NAME | awk '$1 == "beta:" { print $2 }')"
@@ -42,11 +42,11 @@ parts:
       snapcraftctl set-version "$(git describe --tags | sed 's/v//')"
       override-build: |
       export GOPATH=$PWD
-      cd src/github.com/coreos/flannel
+      cd src/github.com/flannel-io/flannel
       env CGO_ENABLED=0 GOOS=linux \
       go build --ldflags "-s -w \
-        -X 'github.com/coreos/flannel/version.GitCommit=$(git rev-list -1 HEAD)' \
-        -X 'github.com/coreos/flannel/version.Version=$(git describe --tags --abbrev=0)'" \
+        -X 'github.com/flannel-io/flannel/version.GitCommit=$(git rev-list -1 HEAD)' \
+        -X 'github.com/flannel-io/flannel/version.Version=$(git describe --tags --abbrev=0)'" \
         -a -installsuffix cgo -o $SNAPCRAFT_PART_INSTALL/bin/flannel
     build-snaps:
       - go

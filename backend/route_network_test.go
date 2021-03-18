@@ -19,9 +19,9 @@ import (
 	"net"
 	"testing"
 
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/pkg/ns"
-	"github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/ns"
+	"github.com/flannel-io/flannel/subnet"
 	"github.com/vishvananda/netlink"
 )
 

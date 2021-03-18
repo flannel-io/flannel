@@ -23,8 +23,8 @@ import (
 	etcd "github.com/coreos/etcd/client"
 	"golang.org/x/net/context"
 
-	"github.com/coreos/flannel/pkg/ip"
-	. "github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/pkg/ip"
+	. "github.com/flannel-io/flannel/subnet"
 )
 
 func newTestEtcdRegistry(t *testing.T) (Registry, *mockEtcd) {
