@@ -109,12 +109,13 @@ func (n *network) Run(ctx context.Context) {
 
 	for {
 		select {
-		case evtBatch := <-evts:
+		case evtBatch, ok := <-evts:
+			if !ok {
+				log.Infof("evts chan closed")
+				stopProxy(n.ctl)
+				return
+			}
 			n.processSubnetEvents(evtBatch)
-
-		case <-ctx.Done():
-			stopProxy(n.ctl)
-			return
 		}
 	}
 }

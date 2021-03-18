@@ -426,7 +426,11 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 			log.Info("Lease renewed, new expiration: ", bn.Lease().Expiration)
 			dur = bn.Lease().Expiration.Sub(time.Now()) - renewMargin
 
-		case e := <-evts:
+		case e, ok := <-evts:
+			if !ok {
+				log.Infof("Stopped monitoring lease")
+				return errCanceled
+			}
 			switch e.Type {
 			case subnet.EventAdded:
 				bn.Lease().Expiration = e.Lease.Expiration
@@ -437,10 +441,6 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 				log.Error("Lease has been revoked. Shutting down daemon.")
 				return errInterrupted
 			}
-
-		case <-ctx.Done():
-			log.Infof("Stopped monitoring lease")
-			return errCanceled
 		}
 	}
 }
