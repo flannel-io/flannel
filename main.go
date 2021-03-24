@@ -44,6 +44,7 @@ import (
 	"github.com/joho/godotenv"
 
 	// Backends need to be imported for their init() to get executed and them to register
+	"github.com/coreos/go-systemd/daemon"
 	"github.com/flannel-io/flannel/backend"
 	_ "github.com/flannel-io/flannel/backend/alivpc"
 	_ "github.com/flannel-io/flannel/backend/alloc"
@@ -53,9 +54,9 @@ import (
 	_ "github.com/flannel-io/flannel/backend/hostgw"
 	_ "github.com/flannel-io/flannel/backend/ipip"
 	_ "github.com/flannel-io/flannel/backend/ipsec"
+	_ "github.com/flannel-io/flannel/backend/tencentvpc"
 	_ "github.com/flannel-io/flannel/backend/udp"
 	_ "github.com/flannel-io/flannel/backend/vxlan"
-	"github.com/coreos/go-systemd/daemon"
 )
 
 type flagSlice []string
