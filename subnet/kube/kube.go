@@ -51,16 +51,17 @@ const (
 )
 
 type kubeSubnetManager struct {
-	annotations    annotations
-	client         clientset.Interface
-	nodeName       string
-	nodeStore      listers.NodeLister
-	nodeController cache.Controller
-	subnetConf     *subnet.Config
-	events         chan subnet.Event
+	annotations               annotations
+	client                    clientset.Interface
+	nodeName                  string
+	nodeStore                 listers.NodeLister
+	nodeController            cache.Controller
+	subnetConf                *subnet.Config
+	events                    chan subnet.Event
+	setNodeNetworkUnavailable bool
 }
 
-func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPath string) (subnet.Manager, error) {
+func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPath string, setNodeNetworkUnavailable bool) (subnet.Manager, error) {
 	var cfg *rest.Config
 	var err error
 	// Try to build kubernetes config from a master url or a kubeconfig filepath. If neither masterUrl
@@ -111,6 +112,7 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 	if err != nil {
 		return nil, fmt.Errorf("error creating network manager: %s", err)
 	}
+	sm.setNodeNetworkUnavailable = setNodeNetworkUnavailable
 	go sm.Run(context.Background())
 
 	log.Infof("Waiting %s for node controller to sync", nodeControllerSyncTimeout)
@@ -273,9 +275,14 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 			return nil, err
 		}
 	}
-	err = ksm.setNodeNetworkUnavailableFalse(ctx)
-	if err != nil {
-		log.Errorf("Unable to set NetworkUnavailable to False for %q: %v", ksm.nodeName, err)
+	if ksm.setNodeNetworkUnavailable {
+		log.Infoln("Setting NodeNetworkUnavailable")
+		err = ksm.setNodeNetworkUnavailableFalse(ctx)
+		if err != nil {
+			log.Errorf("Unable to set NodeNetworkUnavailable to False for %q: %v", ksm.nodeName, err)
+		}
+	} else {
+		log.Infoln("Skip setting NodeNetworkUnavailable")
 	}
 	return &subnet.Lease{
 		Subnet:     ip.FromIPNet(cidr),
