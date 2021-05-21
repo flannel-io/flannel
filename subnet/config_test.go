@@ -21,7 +21,7 @@ import (
 func TestConfigDefaults(t *testing.T) {
 	s := `{ "network": "10.3.0.0/16" }`
 
-	cfg, err := ParseConfig(s)
+	cfg, err := ParseConfig(s, true)
 	if err != nil {
 		t.Fatalf("ParseConfig failed: %s", err)
 	}
@@ -47,7 +47,7 @@ func TestConfigDefaults(t *testing.T) {
 func TestConfigOverrides(t *testing.T) {
 	s := `{ "Network": "10.3.0.0/16", "SubnetMin": "10.3.5.0", "SubnetMax": "10.3.8.0", "SubnetLen": 28 }`
 
-	cfg, err := ParseConfig(s)
+	cfg, err := ParseConfig(s, true)
 	if err != nil {
 		t.Fatalf("ParseConfig failed: %s", err)
 	}
@@ -67,5 +67,31 @@ func TestConfigOverrides(t *testing.T) {
 
 	if cfg.SubnetLen != 28 {
 		t.Errorf("SubnetLen mismatch: expected 28, got %d", cfg.SubnetLen)
+	}
+}
+
+func TestConfigDefaultsNoSubnetCalculation(t *testing.T) {
+	s := `{ "network": "10.3.0.0/16" }`
+
+	cfg, err := ParseConfig(s, false)
+	if err != nil {
+		t.Fatalf("ParseConfig failed: %s", err)
+	}
+
+	expectedNet := "10.3.0.0/16"
+	if cfg.Network.String() != expectedNet {
+		t.Errorf("Network mismatch: expected %s, got %s", expectedNet, cfg.Network)
+	}
+
+	if cfg.SubnetMin.String() != "0.0.0.0" {
+		t.Errorf("SubnetMin mismatch, expected 0.0.0.0, got %s", cfg.SubnetMin)
+	}
+
+	if cfg.SubnetMax.String() != "0.0.0.0" {
+		t.Errorf("SubnetMax mismatch, expected 0.0.0.0, got %s", cfg.SubnetMax)
+	}
+
+	if cfg.SubnetLen != 0 {
+		t.Errorf("SubnetLen mismatch: expected 0, got %d", cfg.SubnetLen)
 	}
 }

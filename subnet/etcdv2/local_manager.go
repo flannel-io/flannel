@@ -90,7 +90,7 @@ func (m *LocalManager) GetNetworkConfig(ctx context.Context) (*Config, error) {
 		return nil, err
 	}
 
-	return ParseConfig(cfg)
+	return ParseConfig(cfg, true)
 }
 
 func (m *LocalManager) AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Lease, error) {

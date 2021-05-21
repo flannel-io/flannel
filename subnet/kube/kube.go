@@ -102,7 +102,7 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 		return nil, fmt.Errorf("failed to read net conf: %v", err)
 	}
 
-	sc, err := subnet.ParseConfig(string(netConf))
+	sc, err := subnet.ParseConfig(string(netConf), false)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing subnet config: %s", err)
 	}
