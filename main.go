@@ -134,8 +134,6 @@ func init() {
 	flannelFlags.StringVar(&opts.publicIPv6, "public-ipv6", "", "IPv6 accessible by other nodes for inter-host communication")
 	flannelFlags.IntVar(&opts.subnetLeaseRenewMargin, "subnet-lease-renew-margin", 60, "subnet lease renewal margin, in minutes, ranging from 1 to 1439")
 	flannelFlags.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
-	flannelFlags.BoolVar(&opts.autoDetectIPv4, "auto-detect-ipv4", true, "auto detect ipv4 address of the iface")
-	flannelFlags.BoolVar(&opts.autoDetectIPv6, "auto-detect-ipv6", false, "auto detect ipv6 address of the iface")
 	flannelFlags.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "contact the Kubernetes API for subnet assignment instead of etcd.")
 	flannelFlags.StringVar(&opts.kubeApiUrl, "kube-api-url", "", "Kubernetes API server URL. Does not need to be specified if flannel is running in a pod.")
 	flannelFlags.StringVar(&opts.kubeAnnotationPrefix, "kube-annotation-prefix", "flannel.alpha.coreos.com", `Kubernetes annotation prefix. Can contain single slash "/", otherwise it will be appended at the end.`)
@@ -225,15 +223,53 @@ func main() {
 		os.Exit(1)
 	}
 
+	// This is the main context that everything should run in.
+	// All spawned goroutines should exit when cancel is called on this context.
+	// Go routines spawned from main.go coordinate using a WaitGroup. This provides a mechanism to allow the shutdownHandler goroutine
+	// to block until all the goroutines return . If those goroutines spawn other goroutines then they are responsible for
+	// blocking and returning only when cancel() is called.
+	ctx, cancel := context.WithCancel(context.Background())
+
+	sm, err := newSubnetManager(ctx)
+	if err != nil {
+		log.Error("Failed to create SubnetManager: ", err)
+		os.Exit(1)
+	}
+	log.Infof("Created subnet manager: %s", sm.Name())
+
+	// Register for SIGINT and SIGTERM
+	log.Info("Installing signal handlers")
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+
+	wg := sync.WaitGroup{}
+
+	wg.Add(1)
+	go func() {
+		shutdownHandler(ctx, sigs, cancel)
+		wg.Done()
+	}()
+
+	if opts.healthzPort > 0 {
+		// It's not super easy to shutdown the HTTP server so don't attempt to stop it cleanly
+		go mustRunHealthz()
+	}
+
+	// Fetch the network config (i.e. what backend to use etc..).
+	config, err := getConfig(ctx, sm)
+	if err == errCanceled {
+		wg.Wait()
+		os.Exit(0)
+	}
+
 	// Get ip family stack
-	ipStack, stackErr := getIPFamily(opts.autoDetectIPv4, opts.autoDetectIPv6)
+	ipStack, stackErr := getIPFamily(config.EnableIPv4, config.EnableIPv6)
 	if stackErr != nil {
 		log.Error(stackErr.Error())
 		os.Exit(1)
 	}
 	// Work out which interface to use
 	var extIface *backend.ExternalInterface
-	var err error
 	// Check the default interface only if no interfaces are specified
 	if len(opts.iface) == 0 && len(opts.ifaceRegex) == 0 {
 		extIface, err = LookupExtIface(opts.publicIP, "", ipStack)
@@ -275,44 +311,7 @@ func main() {
 		}
 	}
 
-	// This is the main context that everything should run in.
-	// All spawned goroutines should exit when cancel is called on this context.
-	// Go routines spawned from main.go coordinate using a WaitGroup. This provides a mechanism to allow the shutdownHandler goroutine
-	// to block until all the goroutines return . If those goroutines spawn other goroutines then they are responsible for
-	// blocking and returning only when cancel() is called.
-	ctx, cancel := context.WithCancel(context.Background())
 
-	sm, err := newSubnetManager(ctx)
-	if err != nil {
-		log.Error("Failed to create SubnetManager: ", err)
-		os.Exit(1)
-	}
-	log.Infof("Created subnet manager: %s", sm.Name())
-
-	// Register for SIGINT and SIGTERM
-	log.Info("Installing signal handlers")
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
-
-	wg := sync.WaitGroup{}
-
-	wg.Add(1)
-	go func() {
-		shutdownHandler(ctx, sigs, cancel)
-		wg.Done()
-	}()
-
-	if opts.healthzPort > 0 {
-		// It's not super easy to shutdown the HTTP server so don't attempt to stop it cleanly
-		go mustRunHealthz()
-	}
-
-	// Fetch the network config (i.e. what backend to use etc..).
-	config, err := getConfig(ctx, sm)
-	if err == errCanceled {
-		wg.Wait()
-		os.Exit(0)
-	}
 
 	// Create a backend manager then use it to create the backend and register the network with it.
 	bm := backend.NewManager(ctx, sm, extIface)
@@ -517,11 +516,16 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 	}
 }
 
-func LookupExtIface(ifname string, ifregex string, ipStack int) (*backend.ExternalInterface, error) {
+func LookupExtIface(ifname string, ifregexS string, ipStack int) (*backend.ExternalInterface, error) {
 	var iface *net.Interface
 	var ifaceAddr net.IP
 	var ifaceV6Addr net.IP
 	var err error
+
+        ifregex, err := regexp.Compile(ifregexS)
+	if err != nil {
+		return nil, fmt.Errorf("could not compile the IP address regex '%s': %w", ifregexS, err)
+	}
 
 	// Check ip family stack
 	if ipStack == noneStack {
@@ -578,9 +582,9 @@ func LookupExtIface(ifname string, ifregex string, ipStack int) (*backend.Extern
 					continue
 				}
 
-				matched, err := regexp.MatchString(ifregex, ifaceIP.String())
+				matched, err := ifregex.MatchString(ifaceIP.String())
 				if err != nil {
-					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregex, ifaceIP.String())
+					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregexS, ifaceIP.String())
 				}
 
 				if matched {
@@ -595,9 +599,9 @@ func LookupExtIface(ifname string, ifregex string, ipStack int) (*backend.Extern
 					continue
 				}
 
-				matched, err := regexp.MatchString(ifregex, ifaceIP.String())
+				matched, err := ifregex.MatchString(ifaceIP.String())
 				if err != nil {
-					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregex, ifaceIP.String())
+					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregexS, ifaceIP.String())
 				}
 
 				if matched {
@@ -612,9 +616,9 @@ func LookupExtIface(ifname string, ifregex string, ipStack int) (*backend.Extern
 					continue
 				}
 
-				matched, err := regexp.MatchString(ifregex, ifaceIP.String())
+				matched, err := ifregex.MatchString(ifaceIP.String())
 				if err != nil {
-					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregex, ifaceIP.String())
+					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregexS, ifaceIP.String())
 				}
 
 				ifaceV6IP, err := ip.GetInterfaceIP6Addr(&ifaceToMatch)
@@ -623,9 +627,9 @@ func LookupExtIface(ifname string, ifregex string, ipStack int) (*backend.Extern
 					continue
 				}
 
-				v6Matched, err := regexp.MatchString(ifregex, ifaceV6IP.String())
+				v6Matched, err := ifregex.MatchString(ifaceV6IP.String())
 				if err != nil {
-					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregex, ifaceIP.String())
+					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregexS, ifaceIP.String())
 				}
 
 				if matched && v6Matched {
@@ -640,9 +644,9 @@ func LookupExtIface(ifname string, ifregex string, ipStack int) (*backend.Extern
 		// Check Name
 		if iface == nil && (ifaceAddr == nil || ifaceV6Addr == nil) {
 			for _, ifaceToMatch := range ifaces {
-				matched, err := regexp.MatchString(ifregex, ifaceToMatch.Name)
+				matched, err := ifregex.MatchString(ifaceToMatch.Name)
 				if err != nil {
-					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregex, ifaceToMatch.Name)
+					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregexS, ifaceToMatch.Name)
 				}
 
 				if matched {
@@ -666,26 +670,26 @@ func LookupExtIface(ifname string, ifregex string, ipStack int) (*backend.Extern
 				availableFaces = append(availableFaces, fmt.Sprintf("%s:%s", f.Name, ipaddr))
 			}
 
-			return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces (%s)", ifregex, strings.Join(availableFaces, ", "))
+			return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces (%s)", ifregexS, strings.Join(availableFaces, ", "))
 		}
 	} else {
 		log.Info("Determining IP address of default interface")
 		switch ipStack {
 		case ipv4Stack:
 			if iface, err = ip.GetDefaultGatewayInterface(); err != nil {
-				return nil, fmt.Errorf("failed to get default interface: %s", err)
+				return nil, fmt.Errorf("failed to get default interface: %w", err)
 			}
 		case ipv6Stack:
 			if iface, err = ip.GetDefaultV6GatewayInterface(); err != nil {
-				return nil, fmt.Errorf("failed to get default v6 interface: %s", err)
+				return nil, fmt.Errorf("failed to get default v6 interface: %w", err)
 			}
 		case dualStack:
 			if iface, err = ip.GetDefaultGatewayInterface(); err != nil {
-				return nil, fmt.Errorf("failed to get default interface: %s", err)
+				return nil, fmt.Errorf("failed to get default interface: %w", err)
 			}
 			v6Iface, err := ip.GetDefaultV6GatewayInterface()
 			if err != nil {
-				return nil, fmt.Errorf("failed to get default v6 interface: %s", err)
+				return nil, fmt.Errorf("failed to get default v6 interface: %w", err)
 			}
 			if iface.Name != v6Iface.Name {
 				return nil, fmt.Errorf("v6 default route interface %s "+

@@ -88,7 +88,7 @@ func (lw *leaseWatcher) reset(leases []Lease) []Event {
 			continue
 		} else if lw.ownLease != nil && !nl.EnableIPv4 && !nl.EnableIPv6 &&
 			nl.Subnet.Equal(lw.ownLease.Subnet) {
-			//TODO - temporarily compatible with etcd subnet manager
+			//TODO - dual-stack temporarily only compatible with kube subnet manager
 			continue
 		}
 
@@ -108,7 +108,7 @@ func (lw *leaseWatcher) reset(leases []Lease) []Event {
 				found = true
 				break
 			} else if !ol.EnableIPv4 && !ol.EnableIPv6 && ol.Subnet.Equal(nl.Subnet) {
-				//TODO - temporarily compatible with etcd subnet manager
+				//TODO - dual-stack temporarily only compatible with kube subnet manager
 				lw.leases = deleteLease(lw.leases, i)
 				found = true
 				break
@@ -135,7 +135,7 @@ func (lw *leaseWatcher) reset(leases []Lease) []Event {
 			continue
 		} else if lw.ownLease != nil && !l.EnableIPv4 && !l.EnableIPv6 &&
 			l.Subnet.Equal(lw.ownLease.Subnet) {
-			//TODO - temporarily compatible with etcd subnet manager
+			//TODO - dual-stack temporarily only compatible with kube subnet manager
 			continue
 		}
 		batch = append(batch, Event{EventRemoved, l})
@@ -164,7 +164,7 @@ func (lw *leaseWatcher) update(events []Event) []Event {
 			continue
 		} else if lw.ownLease != nil && !e.Lease.EnableIPv4 && !e.Lease.EnableIPv6 &&
 			e.Lease.Subnet.Equal(lw.ownLease.Subnet) {
-			//TODO - temporarily compatible with etcd subnet manager
+			//TODO - dual-stack temporarily only compatible with kube subnet manager
 			continue
 		}
 
@@ -193,7 +193,7 @@ func (lw *leaseWatcher) add(lease *Lease) Event {
 			lw.leases[i] = *lease
 			return Event{EventAdded, lw.leases[i]}
 		} else if !l.EnableIPv4 && !l.EnableIPv6 && l.Subnet.Equal(lease.Subnet) {
-			//TODO - temporarily compatible with etcd subnet manager
+			//TODO - dual-stack temporarily only compatible with kube subnet manager
 			lw.leases[i] = *lease
 			return Event{EventAdded, lw.leases[i]}
 		}
@@ -216,7 +216,7 @@ func (lw *leaseWatcher) remove(lease *Lease) Event {
 			lw.leases = deleteLease(lw.leases, i)
 			return Event{EventRemoved, l}
 		} else if !l.EnableIPv4 && !l.EnableIPv6 && l.Subnet.Equal(lease.Subnet) {
-			//TODO - temporarily compatible with etcd subnet manager
+			//TODO - dual-stack temporarily only compatible with kube subnet manager
 			lw.leases = deleteLease(lw.leases, i)
 			return Event{EventRemoved, l}
 		}

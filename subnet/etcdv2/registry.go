@@ -314,8 +314,7 @@ func nodeToLease(node *etcd.Node) (*Lease, error) {
 	}
 
 	lease := Lease{
-		//TODO - temporarily compatible with dual stack,
-		// only vxlan backend and kube subnet manager support dual stack now.
+		//TODO only vxlan backend and kube subnet manager support dual stack now.
 		EnableIPv4: true,
 		EnableIPv6: false,
 		Subnet:     *sn,

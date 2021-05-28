@@ -60,9 +60,6 @@ func ParseConfig(s string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !cfg.EnableIPv4 && !cfg.EnableIPv6 {
-		return nil, fmt.Errorf("EnableIPv4 or EnableIPv6 option must be enabled one at least")
-	}
 
 	if cfg.EnableIPv4 {
 		if cfg.SubnetLen > 0 {

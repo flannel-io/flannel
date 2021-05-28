@@ -124,13 +124,13 @@ func (dev *vxlanDevice) Configure(ipa ip.IP4Net, flannelnet ip.IP4Net) error {
 	return nil
 }
 
-func (dev *vxlanDevice) ConfigureIPv6(ipn ip.IP6Net) error {
-	if err := ip.EnsureV6AddressOnLink(ipn, dev.link); err != nil {
-		return fmt.Errorf("failed to ensure v6 address of interface %s: %s", dev.link.Attrs().Name, err)
+func (dev *vxlanDevice) ConfigureIPv6(ipn ip.IP6Net, flannelnet ip.IP6Net) error {
+	if err := ip.EnsureV6AddressOnLink(ipn, flannelnet, dev.link); err != nil {
+		return fmt.Errorf("failed to ensure v6 address of interface %s: %w", dev.link.Attrs().Name, err)
 	}
 
 	if err := netlink.LinkSetUp(dev.link); err != nil {
-		return fmt.Errorf("failed to set v6 interface %s to UP state: %s", dev.link.Attrs().Name, err)
+		return fmt.Errorf("failed to set v6 interface %s to UP state: %w", dev.link.Attrs().Name, err)
 	}
 
 	return nil

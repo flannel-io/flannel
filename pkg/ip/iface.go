@@ -261,16 +261,11 @@ func EnsureV4AddressOnLink(ipa IP4Net, ipn IP4Net, link netlink.Link) error {
 
 // EnsureV6AddressOnLink ensures that there is only one v6 Addr on `link` and it equals `ipn`.
 // If there exist multiple addresses on link, it returns an error message to tell callers to remove additional address.
-func EnsureV6AddressOnLink(ipn IP6Net, link netlink.Link) error {
-	addr := netlink.Addr{IPNet: ipn.ToIPNet()}
+func EnsureV6AddressOnLink(ipa IP6Net, ipn IP6Net, link netlink.Link) error {
+	addr := netlink.Addr{IPNet: ipa.ToIPNet()}
 	existingAddrs, err := netlink.AddrList(link, netlink.FAMILY_V6)
 	if err != nil {
 		return err
-	}
-
-	// flannel will never make this happen. This situation can only be caused by a user, so get them to sort it out.
-	if len(existingAddrs) > 2 {
-		return fmt.Errorf("link has incompatible v6 addresses. Remove additional v6 addresses and try again. %#v", link)
 	}
 
 	onlyLinkLocal := true
@@ -278,7 +273,7 @@ func EnsureV6AddressOnLink(ipn IP6Net, link netlink.Link) error {
 		if !existingAddr.IP.IsLinkLocalUnicast() {
 			if !existingAddr.Equal(addr) {
 				if err := netlink.AddrDel(link, &existingAddr); err != nil {
-					return fmt.Errorf("failed to remove v6 IP address %s from %s: %s", ipn.String(), link.Attrs().Name, err)
+					return fmt.Errorf("failed to remove v6 IP address %s from %s: %w", ipn.String(), link.Attrs().Name, err)
 				}
 				existingAddrs = []netlink.Addr{}
 				onlyLinkLocal = false
@@ -295,7 +290,7 @@ func EnsureV6AddressOnLink(ipn IP6Net, link netlink.Link) error {
 	// Actually add the desired address to the interface if needed.
 	if len(existingAddrs) == 0 {
 		if err := netlink.AddrAdd(link, &addr); err != nil {
-			return fmt.Errorf("failed to add v6 IP address %s to %s: %s", ipn.String(), link.Attrs().Name, err)
+			return fmt.Errorf("failed to add v6 IP address %s to %s: %w", ipn.String(), link.Attrs().Name, err)
 		}
 	}
 
