@@ -1,4 +1,4 @@
-FROM ppc64le/alpine:3.12
+FROM ppc64le/alpine:3.13
 
 LABEL maintainer="Tom Denham <tom@tigera.io>"
 

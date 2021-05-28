@@ -1,4 +1,4 @@
-FROM arm32v6/alpine:3.12
+FROM arm32v6/alpine:3.13
 
 LABEL maintainer="Tom Denham <tom@tigera.io>"
 
