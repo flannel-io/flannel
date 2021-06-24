@@ -189,6 +189,9 @@ func main() {
 
 	flagutil.SetFlagsFromEnv(flannelFlags, "FLANNELD")
 
+	// Log the config set via CLI flags
+	log.Infof("CLI flags config: %+v", opts)
+
 	// Validate flags
 	if opts.subnetLeaseRenewMargin >= 24*60 || opts.subnetLeaseRenewMargin <= 0 {
 		log.Error("Invalid subnet-lease-renew-margin option, out of acceptable range")
