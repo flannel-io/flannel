@@ -71,33 +71,34 @@ func (t *flagSlice) Set(val string) error {
 }
 
 type CmdLineOpts struct {
-	etcdEndpoints          string
-	etcdPrefix             string
-	etcdKeyfile            string
-	etcdCertfile           string
-	etcdCAFile             string
-	etcdUsername           string
-	etcdPassword           string
-	help                   bool
-	version                bool
-	kubeSubnetMgr          bool
-	kubeApiUrl             string
-	kubeAnnotationPrefix   string
-	kubeConfigFile         string
-	iface                  flagSlice
-	ifaceRegex             flagSlice
-	ipMasq                 bool
-	subnetFile             string
-	subnetDir              string
-	publicIP               string
-	subnetLeaseRenewMargin int
-	healthzIP              string
-	healthzPort            int
-	charonExecutablePath   string
-	charonViciUri          string
-	iptablesResyncSeconds  int
-	iptablesForwardRules   bool
-	netConfPath            string
+	etcdEndpoints             string
+	etcdPrefix                string
+	etcdKeyfile               string
+	etcdCertfile              string
+	etcdCAFile                string
+	etcdUsername              string
+	etcdPassword              string
+	help                      bool
+	version                   bool
+	kubeSubnetMgr             bool
+	kubeApiUrl                string
+	kubeAnnotationPrefix      string
+	kubeConfigFile            string
+	iface                     flagSlice
+	ifaceRegex                flagSlice
+	ipMasq                    bool
+	subnetFile                string
+	subnetDir                 string
+	publicIP                  string
+	subnetLeaseRenewMargin    int
+	healthzIP                 string
+	healthzPort               int
+	charonExecutablePath      string
+	charonViciUri             string
+	iptablesResyncSeconds     int
+	iptablesForwardRules      bool
+	netConfPath               string
+	setNodeNetworkUnavailable bool
 }
 
 var (
@@ -131,6 +132,7 @@ func init() {
 	flannelFlags.IntVar(&opts.iptablesResyncSeconds, "iptables-resync", 5, "resync period for iptables rules, in seconds")
 	flannelFlags.BoolVar(&opts.iptablesForwardRules, "iptables-forward-rules", true, "add default accept rules to FORWARD chain in iptables")
 	flannelFlags.StringVar(&opts.netConfPath, "net-config-path", "/etc/kube-flannel/net-conf.json", "path to the network configuration file")
+	flannelFlags.BoolVar(&opts.setNodeNetworkUnavailable, "set-node-network-unavailable", true, "set NodeNetworkUnavailable after ready")
 
 	log.InitFlags(nil)
 
@@ -162,7 +164,7 @@ func usage() {
 
 func newSubnetManager(ctx context.Context) (subnet.Manager, error) {
 	if opts.kubeSubnetMgr {
-		return kube.NewSubnetManager(ctx, opts.kubeApiUrl, opts.kubeConfigFile, opts.kubeAnnotationPrefix, opts.netConfPath)
+		return kube.NewSubnetManager(ctx, opts.kubeApiUrl, opts.kubeConfigFile, opts.kubeAnnotationPrefix, opts.netConfPath, opts.setNodeNetworkUnavailable)
 	}
 
 	cfg := &etcdv2.EtcdConfig{
