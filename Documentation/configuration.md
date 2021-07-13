@@ -80,3 +80,26 @@ Any command line option can be turned into an environment variable by prefixing 
 Flannel provides a health check http endpoint `healthz`. Currently this endpoint will blindly
 return http status ok(i.e. 200) when flannel is running. This feature is by default disabled.
 Set `healthz-port` to a non-zero value will enable a healthz server for flannel.
+
+## Dual-stack
+
+Flannel supports the dual-stack mode of Kubernetes. This means pods and services could use ipv4 and ipv6 at the same time. Currently, dual-stack is only supported for kube subnet manager and vxlan backend.
+
+Requirements:
+* v1.0 of flannel binary from [containernetworking/plugins](https://github.com/containernetworking/plugins)
+* Nodes must have an ipv4 and ipv6 address in the main interface
+* Nodes must have an ipv4 and ipv6 address default route
+* vxlan support ipv6 tunnel require kernel version >= 3.12
+
+Configuration:
+* Set flanneld daemon with "--kube-subnet-mgr" CLI option
+* Set "EnableIPv6": true and the "IPv6Network", for example "IPv6Network": "2001:cafe:42:0::/56" in the net-conf.json of the kube-flannel-cfg ConfigMap 
+
+If everything works as expected, flanneld should generate a `/run/flannel/subnet.env` file with IPV6 subnet and network. For example:
+
+FLANNEL_NETWORK=10.42.0.0/16
+FLANNEL_SUBNET=10.42.0.1/24
+FLANNEL_IPV6_NETWORK=2001:cafe:42::/56
+FLANNEL_IPV6_SUBNET=2001:cafe:42::1/64
+FLANNEL_MTU=1450
+FLANNEL_IPMASQ=true
