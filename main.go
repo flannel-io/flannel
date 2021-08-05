@@ -311,8 +311,6 @@ func main() {
 		}
 	}
 
-
-
 	// Create a backend manager then use it to create the backend and register the network with it.
 	bm := backend.NewManager(ctx, sm, extIface)
 	be, err := bm.GetBackend(config.BackendType)
@@ -521,10 +519,13 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int) (*backend.Exter
 	var ifaceAddr net.IP
 	var ifaceV6Addr net.IP
 	var err error
+	var ifregex *regexp.Regexp
 
-        ifregex, err := regexp.Compile(ifregexS)
-	if err != nil {
-		return nil, fmt.Errorf("could not compile the IP address regex '%s': %w", ifregexS, err)
+	if ifregexS != "" {
+		ifregex, err = regexp.Compile(ifregexS)
+		if err != nil {
+			return nil, fmt.Errorf("could not compile the IP address regex '%s': %w", ifregexS, err)
+		}
 	}
 
 	// Check ip family stack
@@ -565,7 +566,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int) (*backend.Exter
 				return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
 			}
 		}
-	} else if len(ifregex) > 0 {
+	} else if ifregex != nil {
 		// Use the regex if specified and the iface option for matching a specific ip or name is not used
 		ifaces, err := net.Interfaces()
 		if err != nil {
@@ -582,12 +583,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int) (*backend.Exter
 					continue
 				}
 
-				matched, err := ifregex.MatchString(ifaceIP.String())
-				if err != nil {
-					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregexS, ifaceIP.String())
-				}
-
-				if matched {
+				if ifregex.MatchString(ifaceIP.String()) {
 					ifaceAddr = ifaceIP
 					iface = &ifaceToMatch
 					break
@@ -599,12 +595,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int) (*backend.Exter
 					continue
 				}
 
-				matched, err := ifregex.MatchString(ifaceIP.String())
-				if err != nil {
-					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregexS, ifaceIP.String())
-				}
-
-				if matched {
+				if ifregex.MatchString(ifaceIP.String()) {
 					ifaceV6Addr = ifaceIP
 					iface = &ifaceToMatch
 					break
@@ -616,23 +607,13 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int) (*backend.Exter
 					continue
 				}
 
-				matched, err := ifregex.MatchString(ifaceIP.String())
-				if err != nil {
-					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregexS, ifaceIP.String())
-				}
-
 				ifaceV6IP, err := ip.GetInterfaceIP6Addr(&ifaceToMatch)
 				if err != nil {
 					// Skip if there is no IPv6 address
 					continue
 				}
 
-				v6Matched, err := ifregex.MatchString(ifaceV6IP.String())
-				if err != nil {
-					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregexS, ifaceIP.String())
-				}
-
-				if matched && v6Matched {
+				if ifregex.MatchString(ifaceIP.String()) && ifregex.MatchString(ifaceV6IP.String()) {
 					ifaceAddr = ifaceIP
 					ifaceV6Addr = ifaceV6IP
 					iface = &ifaceToMatch
@@ -644,12 +625,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int) (*backend.Exter
 		// Check Name
 		if iface == nil && (ifaceAddr == nil || ifaceV6Addr == nil) {
 			for _, ifaceToMatch := range ifaces {
-				matched, err := ifregex.MatchString(ifaceToMatch.Name)
-				if err != nil {
-					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregexS, ifaceToMatch.Name)
-				}
-
-				if matched {
+				if ifregex.MatchString(ifaceToMatch.Name) {
 					iface = &ifaceToMatch
 					break
 				}

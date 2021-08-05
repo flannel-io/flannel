@@ -20,11 +20,10 @@ import (
 	"time"
 
 	etcd "github.com/coreos/etcd/client"
-	"github.com/jonboulle/clockwork"
-	"golang.org/x/net/context"
-
 	"github.com/flannel-io/flannel/pkg/ip"
 	. "github.com/flannel-io/flannel/subnet"
+	"github.com/jonboulle/clockwork"
+	"golang.org/x/net/context"
 )
 
 var clock clockwork.Clock = clockwork.NewRealClock()

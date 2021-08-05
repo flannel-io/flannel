@@ -21,10 +21,9 @@ import (
 	"time"
 
 	etcd "github.com/coreos/etcd/client"
-	"golang.org/x/net/context"
-
 	"github.com/flannel-io/flannel/pkg/ip"
 	. "github.com/flannel-io/flannel/subnet"
+	"golang.org/x/net/context"
 )
 
 func newTestEtcdRegistry(t *testing.T) (Registry, *mockEtcd) {

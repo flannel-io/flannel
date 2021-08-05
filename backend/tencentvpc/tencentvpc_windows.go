@@ -13,11 +13,3 @@
 // limitations under the License.
 
 package tencentvpc
-
-import (
-	log "k8s.io/klog"
-)
-
-func init() {
-	log.Infof("TencentVpc is not supported on this platform")
-}

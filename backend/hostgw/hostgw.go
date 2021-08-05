@@ -19,7 +19,6 @@ package hostgw
 
 import (
 	"fmt"
-
 	"sync"
 
 	"github.com/flannel-io/flannel/backend"

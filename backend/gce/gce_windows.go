@@ -36,11 +36,3 @@
 // SOFTWARE.
 
 package gce
-
-import (
-	log "k8s.io/klog"
-)
-
-func init() {
-	log.Infof("GCE is not supported on this platform")
-}

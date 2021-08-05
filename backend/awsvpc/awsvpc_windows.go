@@ -13,11 +13,3 @@
 // limitations under the License.
 
 package awsvpc
-
-import (
-	log "k8s.io/klog"
-)
-
-func init() {
-	log.Infof("AWS VPC is not supported on this platform")
-}

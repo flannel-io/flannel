@@ -18,9 +18,8 @@ import (
 	"net"
 	"sync"
 
-	"golang.org/x/net/context"
-
 	"github.com/flannel-io/flannel/subnet"
+	"golang.org/x/net/context"
 )
 
 type ExternalInterface struct {
