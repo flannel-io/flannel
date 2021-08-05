@@ -13,11 +13,3 @@
 // limitations under the License.
 
 package udp
-
-import (
-	log "k8s.io/klog"
-)
-
-func init() {
-	log.Infof("udp is not supported on this platform")
-}

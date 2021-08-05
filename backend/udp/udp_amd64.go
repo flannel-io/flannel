@@ -20,11 +20,10 @@ import (
 	"fmt"
 	"sync"
 
-	"golang.org/x/net/context"
-
 	"github.com/flannel-io/flannel/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/subnet"
+	"golang.org/x/net/context"
 )
 
 func init() {

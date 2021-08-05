@@ -13,11 +13,3 @@
 // limitations under the License.
 
 package alivpc
-
-import (
-	log "k8s.io/klog"
-)
-
-func init() {
-	log.Infof("AliVpc is not supported on this platform")
-}

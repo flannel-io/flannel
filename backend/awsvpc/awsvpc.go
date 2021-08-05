@@ -26,11 +26,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"golang.org/x/net/context"
-
 	"github.com/flannel-io/flannel/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/subnet"
+	"golang.org/x/net/context"
 	log "k8s.io/klog"
 )
 
