@@ -277,14 +277,15 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		n.Annotations[ksm.annotations.BackendPublicIP] != attrs.PublicIP.String() ||
 		n.Annotations[ksm.annotations.SubnetKubeManaged] != "true" ||
 		(n.Annotations[ksm.annotations.BackendPublicIPOverwrite] != "" && n.Annotations[ksm.annotations.BackendPublicIPOverwrite] != attrs.PublicIP.String())) ||
-		(n.Annotations[ksm.annotations.BackendV6Data] != string(v6Bd) ||
-			n.Annotations[ksm.annotations.BackendType] != attrs.BackendType ||
-			n.Annotations[ksm.annotations.BackendPublicIPv6] != attrs.PublicIPv6.String() ||
-			n.Annotations[ksm.annotations.SubnetKubeManaged] != "true" ||
-			(n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != "" && n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != attrs.PublicIPv6.String())) {
+		(attrs.PublicIPv6 != nil &&
+			(n.Annotations[ksm.annotations.BackendV6Data] != string(v6Bd) ||
+				n.Annotations[ksm.annotations.BackendType] != attrs.BackendType ||
+				n.Annotations[ksm.annotations.BackendPublicIPv6] != attrs.PublicIPv6.String() ||
+				n.Annotations[ksm.annotations.SubnetKubeManaged] != "true" ||
+				(n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != "" && n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != attrs.PublicIPv6.String()))) {
 		n.Annotations[ksm.annotations.BackendType] = attrs.BackendType
 
-		//TODO -i only vxlan backend support dual stack now.
+		//TODO -i only vxlan and host-gw backends support dual stack now.
 		if (attrs.BackendType == "vxlan" && string(bd) != "null") || attrs.BackendType != "vxlan" {
 			n.Annotations[ksm.annotations.BackendData] = string(bd)
 			if n.Annotations[ksm.annotations.BackendPublicIPOverwrite] != "" {
@@ -299,7 +300,7 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 			}
 		}
 
-		if string(v6Bd) != "null" {
+		if (attrs.BackendType == "vxlan" && string(v6Bd) != "null") || (attrs.BackendType == "host-gw" && attrs.PublicIPv6 != nil) {
 			n.Annotations[ksm.annotations.BackendV6Data] = string(v6Bd)
 			if n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != "" {
 				if n.Annotations[ksm.annotations.BackendPublicIPv6] != n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] {
@@ -354,8 +355,8 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 	if ipv6Cidr != nil {
 		lease.IPv6Subnet = ip.FromIP6Net(ipv6Cidr)
 	}
-	//TODO - only vxlan backend support dual stack now.
-	if attrs.BackendType != "vxlan" {
+	//TODO - only vxlan and host-gw backends support dual stack now.
+	if attrs.BackendType != "vxlan" && attrs.BackendType != "host-gw" {
 		lease.EnableIPv4 = true
 		lease.EnableIPv6 = false
 	}
