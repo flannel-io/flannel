@@ -118,4 +118,9 @@ func TestIP4Net(t *testing.T) {
 	} else if string(j) != `"1.2.3.0/24"` {
 		t.Error("Marshal of IP4Net failed with unexpected value: ", j)
 	}
+
+	n1.IncrementIP()
+	if n1.String() != "1.2.3.1/24" {
+		t.Error("IncrementIP() failed")
+	}
 }
