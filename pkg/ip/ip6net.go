@@ -142,6 +142,11 @@ func (n IP6Net) Next() IP6Net {
 	}
 }
 
+// IncrementIP() increments the IP of IP6Net CIDR by 1
+func (n *IP6Net) IncrementIP() {
+	n.IP = (*IP6)(big.NewInt(0).Add((*big.Int)(n.IP), big.NewInt(1)))
+}
+
 func FromIP6Net(n *net.IPNet) IP6Net {
 	prefixLen, _ := n.Mask.Size()
 	return IP6Net{

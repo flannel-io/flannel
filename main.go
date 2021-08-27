@@ -18,7 +18,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"math/big"
 	"net"
 	"net/http"
 	"os"
@@ -754,17 +753,17 @@ func WriteSubnetFile(path string, config *subnet.Config, ipMasq bool, bn backend
 	}
 	if config.EnableIPv4 {
 		nw := config.Network
-		// Write out the first usable IP by incrementing
-		// sn.IP by one
 		sn := bn.Lease().Subnet
-		sn.IP += 1
+		// Write out the first usable IP by incrementing sn.IP by one
+		sn.IncrementIP()
 		fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", nw)
 		fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn)
 	}
 	if config.EnableIPv6 {
 		ip6Nw := config.IPv6Network
 		ip6Sn := bn.Lease().IPv6Subnet
-		ip6Sn.IP = (*ip.IP6)(big.NewInt(0).Add((*big.Int)(ip6Sn.IP), big.NewInt(1)))
+		// Write out the first usable IP by incrementing ip6Sn.IP by one
+		ip6Sn.IncrementIP()
 		fmt.Fprintf(f, "FLANNEL_IPV6_NETWORK=%s\n", ip6Nw)
 		fmt.Fprintf(f, "FLANNEL_IPV6_SUBNET=%s\n", ip6Sn)
 	}

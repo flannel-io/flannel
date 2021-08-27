@@ -110,4 +110,9 @@ func TestIP6Net(t *testing.T) {
 	} else if string(j) != `"fc00:1::/64"` {
 		t.Error("Marshal of IP6Net failed with unexpected value: ", j)
 	}
+
+	n1.IncrementIP()
+	if n1.String() != "fc00:1::1/64" {
+		t.Error("IncrementIP() failed")
+	}
 }
