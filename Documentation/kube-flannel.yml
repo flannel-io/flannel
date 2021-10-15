@@ -166,7 +166,7 @@ spec:
       serviceAccountName: flannel
       initContainers:
       - name: install-cni-plugin
-        image: rancher/flannel-cni-plugin:v1.2
+        image: flannelcni/flannel-cni-plugin:v1.2
         command:
         - cp
         args:
