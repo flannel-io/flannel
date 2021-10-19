@@ -1,7 +1,5 @@
 FROM arm32v6/alpine:3.13
 
-LABEL maintainer="Tom Denham <tom@tigera.io>"
-
 ENV FLANNEL_ARCH=arm
 
 ADD dist/qemu-$FLANNEL_ARCH-static /usr/bin/qemu-$FLANNEL_ARCH-static

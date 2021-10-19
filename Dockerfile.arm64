@@ -1,7 +1,5 @@
 FROM arm64v8/alpine:3.13
 
-LABEL maintainer="Tom Denham <tom@tigera.io>"
-
 ENV FLANNEL_ARCH=arm64
 
 ADD dist/qemu-aarch64-static /usr/bin/qemu-aarch64-static

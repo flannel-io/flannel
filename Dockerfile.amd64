@@ -1,7 +1,5 @@
 FROM alpine:3.13
 
-LABEL maintainer="Tom Denham <tom@tigera.io>"
-
 ENV FLANNEL_ARCH=amd64
 
 RUN apk add --no-cache iproute2 net-tools ca-certificates iptables strongswan && update-ca-certificates
