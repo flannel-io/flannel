@@ -24,8 +24,10 @@ require (
 	github.com/ugorji/go v0.0.0-20170107133203-ded73eae5db7 // indirect
 	github.com/vishvananda/netlink v0.0.0-20181108222139-023a6dafdcdf
 	github.com/vishvananda/netns v0.0.0-20180720170159-13995c7128cc
-	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
+	golang.org/x/net v0.0.0-20211020060615-d418f374d309
 	golang.org/x/oauth2 v0.0.0-20191202225959-858c2ad4c8b6
+	golang.zx2c4.com/wireguard v0.0.0-20211022192229-f1f626090e3b // indirect
+	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20211019185142-5be1d6054c42
 	google.golang.org/api v0.15.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	k8s.io/api v0.19.5
