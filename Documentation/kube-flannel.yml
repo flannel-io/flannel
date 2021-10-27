@@ -166,7 +166,7 @@ spec:
       serviceAccountName: flannel
       initContainers:
       - name: install-cni-plugin
-        image: rancher/mirrored-flannelcni-flannel-cni-plugin:v1.2
+        image: rancher/mirrored-flannelcni-flannel-cni-plugin:v1.0.0
         command:
         - cp
         args:
@@ -177,7 +177,7 @@ spec:
         - name: cni-plugin
           mountPath: /opt/cni/bin
       - name: install-cni
-        image: quay.io/coreos/flannel:v0.15.0
+        image: quay.io/coreos/flannel:v0.15.1
         command:
         - cp
         args:
@@ -191,7 +191,7 @@ spec:
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
-        image: quay.io/coreos/flannel:v0.15.0
+        image: quay.io/coreos/flannel:v0.15.1
         command:
         - /opt/bin/flanneld
         args:
