@@ -285,8 +285,8 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 				(n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != "" && n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != attrs.PublicIPv6.String()))) {
 		n.Annotations[ksm.annotations.BackendType] = attrs.BackendType
 
-		//TODO -i only vxlan and host-gw backends support dual stack now.
-		if (attrs.BackendType == "vxlan" && string(bd) != "null") || attrs.BackendType != "vxlan" {
+		//TODO -i only vxlan, extension, and host-gw backends support dual stack now.
+		if (attrs.BackendType == "vxlan" && string(bd) != "null") || attrs.BackendType != "vxlan" || attrs.BackendType != "extension" {
 			n.Annotations[ksm.annotations.BackendData] = string(bd)
 			if n.Annotations[ksm.annotations.BackendPublicIPOverwrite] != "" {
 				if n.Annotations[ksm.annotations.BackendPublicIP] != n.Annotations[ksm.annotations.BackendPublicIPOverwrite] {
@@ -300,7 +300,7 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 			}
 		}
 
-		if (attrs.BackendType == "vxlan" && string(v6Bd) != "null") || (attrs.BackendType == "host-gw" && attrs.PublicIPv6 != nil) {
+		if (attrs.BackendType == "vxlan" && string(v6Bd) != "null") || ((attrs.BackendType == "host-gw" || attrs.BackendType == "extension") && attrs.PublicIPv6 != nil) {
 			n.Annotations[ksm.annotations.BackendV6Data] = string(v6Bd)
 			if n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != "" {
 				if n.Annotations[ksm.annotations.BackendPublicIPv6] != n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] {
@@ -357,8 +357,8 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		lease.EnableIPv6 = true
 		lease.IPv6Subnet = ip.FromIP6Net(ipv6Cidr)
 	}
-	//TODO - only vxlan and host-gw backends support dual stack now.
-	if attrs.BackendType != "vxlan" && attrs.BackendType != "host-gw" {
+	//TODO - only extension, vxlan and host-gw backends support dual stack now.
+	if attrs.BackendType != "vxlan" && attrs.BackendType != "host-gw" && attrs.BackendType != "extension" {
 		lease.EnableIPv6 = false
 	}
 	return lease, nil

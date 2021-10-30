@@ -71,6 +71,22 @@ func (n *network) Run(ctx context.Context) {
 	}
 }
 
+func leaseToEnv(lease subnet.Lease) []string {
+	env := []string{}
+	if lease.EnableIPv4 {
+		env = append(env,
+			fmt.Sprintf("SUBNET=%s", lease.Subnet),
+			fmt.Sprintf("PUBLIC_IP=%s", lease.Attrs.PublicIP))
+	}
+	if lease.EnableIPv6 {
+		env = append(env,
+			fmt.Sprintf("IPV6_SUBNET=%s", lease.IPv6Subnet),
+			fmt.Sprintf("PUBLIC_IPV6=%s", lease.Attrs.PublicIPv6))
+	}
+
+	return env
+}
+
 func (n *network) handleSubnetEvents(batch []subnet.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
@@ -92,9 +108,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 					}
 				}
 
-				cmd_output, err := runCmd([]string{
-					fmt.Sprintf("SUBNET=%s", evt.Lease.Subnet),
-					fmt.Sprintf("PUBLIC_IP=%s", evt.Lease.Attrs.PublicIP)},
+				cmd_output, err := runCmd(leaseToEnv(evt.Lease),
 					backendData,
 					"sh", "-c", n.subnetAddCommand)
 
@@ -122,9 +136,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 						continue
 					}
 				}
-				cmd_output, err := runCmd([]string{
-					fmt.Sprintf("SUBNET=%s", evt.Lease.Subnet),
-					fmt.Sprintf("PUBLIC_IP=%s", evt.Lease.Attrs.PublicIP)},
+				cmd_output, err := runCmd(leaseToEnv(evt.Lease),
 					backendData,
 					"sh", "-c", n.subnetRemoveCommand)
 

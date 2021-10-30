@@ -96,9 +96,17 @@ func (be *ExtensionBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	}
 
 	attrs := subnet.LeaseAttrs{
-		PublicIP:    ip.FromIP(be.extIface.ExtAddr),
 		BackendType: "extension",
-		BackendData: data,
+	}
+
+	if config.EnableIPv4 {
+		attrs.PublicIP = ip.FromIP(be.extIface.ExtAddr)
+		attrs.BackendData = data
+	}
+
+	if config.EnableIPv6 {
+		attrs.PublicIPv6 = ip.FromIP6(be.extIface.ExtV6Addr)
+		attrs.BackendV6Data = data
 	}
 
 	lease, err := be.sm.AcquireLease(ctx, &attrs)
@@ -114,11 +122,20 @@ func (be *ExtensionBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	}
 
 	if len(n.postStartupCommand) > 0 {
-		cmd_output, err := runCmd([]string{
-			fmt.Sprintf("NETWORK=%s", config.Network),
-			fmt.Sprintf("SUBNET=%s", lease.Subnet),
-			fmt.Sprintf("PUBLIC_IP=%s", attrs.PublicIP)},
-			"", "sh", "-c", n.postStartupCommand)
+		env := []string{}
+		if lease.EnableIPv4 {
+			env = append(env,
+				fmt.Sprintf("NETWORK=%s", config.Network),
+				fmt.Sprintf("SUBNET=%s", lease.Subnet),
+				fmt.Sprintf("PUBLIC_IP=%s", attrs.PublicIP))
+		}
+		if lease.EnableIPv6 {
+			env = append(env,
+				fmt.Sprintf("IPV6_NETWORK=%s", config.IPv6Network),
+				fmt.Sprintf("IPV6_SUBNET=%s", lease.IPv6Subnet),
+				fmt.Sprintf("PUBLIC_IPV6=%s", attrs.PublicIPv6))
+		}
+		cmd_output, err := runCmd(env, "", "sh", "-c", n.postStartupCommand)
 		if err != nil {
 			return nil, fmt.Errorf("failed to run command: %s Err: %v Output: %s", n.postStartupCommand, err, cmd_output)
 		} else {
