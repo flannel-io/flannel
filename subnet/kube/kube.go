@@ -350,14 +350,15 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		Expiration: time.Now().Add(24 * time.Hour),
 	}
 	if cidr != nil {
+		lease.EnableIPv4 = true
 		lease.Subnet = ip.FromIPNet(cidr)
 	}
 	if ipv6Cidr != nil {
+		lease.EnableIPv6 = true
 		lease.IPv6Subnet = ip.FromIP6Net(ipv6Cidr)
 	}
 	//TODO - only vxlan and host-gw backends support dual stack now.
 	if attrs.BackendType != "vxlan" && attrs.BackendType != "host-gw" {
-		lease.EnableIPv4 = true
 		lease.EnableIPv6 = false
 	}
 	return lease, nil
