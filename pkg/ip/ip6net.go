@@ -193,6 +193,11 @@ func (n IP6Net) Empty() bool {
 	return n.IP == (*IP6)(big.NewInt(0)) && n.PrefixLen == uint(0)
 }
 
+func (n IP6Net) UniqueLocalAddress() bool {
+	// fc00::/7 is the Unique Local address range
+	return (*big.Int)(n.IP).Bytes()[0]&0xfc == 0xfc
+}
+
 // MarshalJSON: json.Marshaler impl
 func (n IP6Net) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, n)), nil
