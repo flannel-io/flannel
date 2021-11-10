@@ -2,7 +2,7 @@ FROM arm64v8/alpine:3.13
 
 ENV FLANNEL_ARCH=arm64
 
-ADD dist/qemu-aarch64-static /usr/bin/qemu-aarch64-static
+ADD dist/qemu-arm64-static /usr/bin/qemu-arm64-static
 RUN apk add --no-cache iproute2 net-tools ca-certificates iptables strongswan && update-ca-certificates
 RUN apk add wireguard-tools --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community
 COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld
