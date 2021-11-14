@@ -111,6 +111,12 @@ func (ip6 *IP6) Cmp(other *IP6) int {
 	return (*big.Int)(ip6).Cmp((*big.Int)(other))
 }
 
+// IsPrivate reports whether ip is a private address, according to
+// RFC 4193 (IPv6 addresses).
+func (ip6 *IP6) IsPrivate() bool {
+	return (*big.Int)(ip6).Bytes()[0]&0xfe == 0xfc
+}
+
 // similar to net.IPNet but has uint based representation
 type IP6Net struct {
 	IP        *IP6
