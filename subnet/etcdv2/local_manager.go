@@ -174,31 +174,7 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 	var sn ip.IP4Net
 	if !m.previousSubnet.Empty() {
 		// use previous subnet
-		if l := findLeaseBySubnet(leases, m.previousSubnet); l != nil {
-			// Make sure the existing subnet is still within the configured network
-			if isSubnetConfigCompat(config, l.Subnet) {
-				log.Infof("Found lease (%v) matching previously leased subnet, reusing", l.Subnet)
-
-				ttl := time.Duration(0)
-				if !l.Expiration.IsZero() {
-					// Not a reservation
-					ttl = subnetTTL
-				}
-				exp, err := m.registry.updateSubnet(ctx, l.Subnet, attrs, ttl, 0)
-				if err != nil {
-					return nil, err
-				}
-
-				l.Attrs = *attrs
-				l.Expiration = exp
-				return l, nil
-			} else {
-				log.Infof("Found lease (%v) matching previously leased subnet but not compatible with current config, deleting", l.Subnet)
-				if err := m.registry.deleteSubnet(ctx, l.Subnet); err != nil {
-					return nil, err
-				}
-			}
-		} else {
+		if l := findLeaseBySubnet(leases, m.previousSubnet); l == nil {
 			// Check if the previous subnet is a part of the network and of the right subnet length
 			if isSubnetConfigCompat(config, m.previousSubnet) {
 				log.Infof("Found previously leased subnet (%v), reusing", m.previousSubnet)
