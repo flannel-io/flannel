@@ -1,6 +1,6 @@
 // Copyright 2017, The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE.md file.
+// license that can be found in the LICENSE file.
 
 package cmp
 
@@ -177,7 +177,8 @@ type structField struct {
 	// pvx, pvy, and field are only valid if unexported is true.
 	unexported bool
 	mayForce   bool                // Forcibly allow visibility
-	pvx, pvy   reflect.Value       // Parent values
+	paddr      bool                // Was parent addressable?
+	pvx, pvy   reflect.Value       // Parent values (always addressible)
 	field      reflect.StructField // Field information
 }
 
@@ -189,8 +190,8 @@ func (sf StructField) Values() (vx, vy reflect.Value) {
 
 	// Forcibly obtain read-write access to an unexported struct field.
 	if sf.mayForce {
-		vx = retrieveUnexportedField(sf.pvx, sf.field)
-		vy = retrieveUnexportedField(sf.pvy, sf.field)
+		vx = retrieveUnexportedField(sf.pvx, sf.field, sf.paddr)
+		vy = retrieveUnexportedField(sf.pvy, sf.field, sf.paddr)
 		return vx, vy // CanInterface reports true
 	}
 	return sf.vx, sf.vy // CanInterface reports false
@@ -314,7 +315,7 @@ func (tf Transform) Option() Option { return tf.trans }
 // pops the address from the stack. Thus, when traversing into a pointer from
 // reflect.Ptr, reflect.Slice element, or reflect.Map, we can detect cycles
 // by checking whether the pointer has already been visited. The cycle detection
-// uses a seperate stack for the x and y values.
+// uses a separate stack for the x and y values.
 //
 // If a cycle is detected we need to determine whether the two pointers
 // should be considered equal. The definition of equality chosen by Equal

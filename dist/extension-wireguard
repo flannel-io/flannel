@@ -1,3 +1,4 @@
+// This is deprecated and should not be used. Please use the wireguard backend instead!
 {
   "Network": "10.50.0.0/16",
   "Backend": {

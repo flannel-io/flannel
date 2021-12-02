@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build windows
 // +build windows
 
 package windows
@@ -128,6 +129,10 @@ const (
 	SERVICE_NOTIFY_CREATED          = 0x00000080
 	SERVICE_NOTIFY_DELETED          = 0x00000100
 	SERVICE_NOTIFY_DELETE_PENDING   = 0x00000200
+
+	SC_EVENT_DATABASE_CHANGE = 0
+	SC_EVENT_PROPERTY_CHANGE = 1
+	SC_EVENT_STATUS_CHANGE   = 2
 )
 
 type SERVICE_STATUS struct {
@@ -229,3 +234,6 @@ type QUERY_SERVICE_LOCK_STATUS struct {
 //sys	EnumServicesStatusEx(mgr Handle, infoLevel uint32, serviceType uint32, serviceState uint32, services *byte, bufSize uint32, bytesNeeded *uint32, servicesReturned *uint32, resumeHandle *uint32, groupName *uint16) (err error) = advapi32.EnumServicesStatusExW
 //sys	QueryServiceStatusEx(service Handle, infoLevel uint32, buff *byte, buffSize uint32, bytesNeeded *uint32) (err error) = advapi32.QueryServiceStatusEx
 //sys	NotifyServiceStatusChange(service Handle, notifyMask uint32, notifier *SERVICE_NOTIFY) (ret error) = advapi32.NotifyServiceStatusChangeW
+//sys	SubscribeServiceChangeNotifications(service Handle, eventType uint32, callback uintptr, callbackCtx uintptr, subscription *uintptr) (ret error) = sechost.SubscribeServiceChangeNotifications?
+//sys	UnsubscribeServiceChangeNotifications(subscription uintptr) = sechost.UnsubscribeServiceChangeNotifications?
+//sys	RegisterServiceCtrlHandlerEx(serviceName *uint16, handlerProc uintptr, context uintptr) (handle Handle, err error) = advapi32.RegisterServiceCtrlHandlerExW

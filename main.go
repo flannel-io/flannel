@@ -57,6 +57,7 @@ import (
 	_ "github.com/flannel-io/flannel/backend/tencentvpc"
 	_ "github.com/flannel-io/flannel/backend/udp"
 	_ "github.com/flannel-io/flannel/backend/vxlan"
+	_ "github.com/flannel-io/flannel/backend/wireguard"
 )
 
 type flagSlice []string

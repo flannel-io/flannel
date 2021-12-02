@@ -99,7 +99,7 @@ github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
-# github.com/google/go-cmp v0.4.0
+# github.com/google/go-cmp v0.5.6
 github.com/google/go-cmp/cmp
 github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
@@ -127,8 +127,17 @@ github.com/joho/godotenv
 # github.com/jonboulle/clockwork v0.1.0
 ## explicit
 github.com/jonboulle/clockwork
+# github.com/josharian/native v0.0.0-20200817173448-b6b71def0850
+github.com/josharian/native
 # github.com/json-iterator/go v1.1.10
 github.com/json-iterator/go
+# github.com/mdlayher/genetlink v1.0.0
+github.com/mdlayher/genetlink
+# github.com/mdlayher/netlink v1.4.1
+github.com/mdlayher/netlink
+github.com/mdlayher/netlink/nlenc
+# github.com/mdlayher/socket v0.0.0-20210307095302-262dc9984e00
+github.com/mdlayher/socket
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
@@ -180,10 +189,13 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
-# golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+# golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+golang.org/x/crypto/curve25519
+golang.org/x/crypto/curve25519/internal/field
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
+# golang.org/x/net v0.0.0-20211020060615-d418f374d309
 ## explicit
+golang.org/x/net/bpf
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/http/httpguts
@@ -199,18 +211,37 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20201112073958-5cba982894dd
+# golang.org/x/sys v0.0.0-20211020174200-9d6173849985
 golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry
-# golang.org/x/text v0.3.3
+# golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+golang.org/x/term
+# golang.org/x/text v0.3.6
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 golang.org/x/time/rate
+# golang.zx2c4.com/wireguard v0.0.0-20211022192229-f1f626090e3b
+## explicit
+golang.zx2c4.com/wireguard/ipc/winpipe
+# golang.zx2c4.com/wireguard/wgctrl v0.0.0-20211019185142-5be1d6054c42
+## explicit
+golang.zx2c4.com/wireguard/wgctrl
+golang.zx2c4.com/wireguard/wgctrl/internal/wginternal
+golang.zx2c4.com/wireguard/wgctrl/internal/wglinux
+golang.zx2c4.com/wireguard/wgctrl/internal/wglinux/internal/wgh
+golang.zx2c4.com/wireguard/wgctrl/internal/wgopenbsd
+golang.zx2c4.com/wireguard/wgctrl/internal/wgopenbsd/internal/wgh
+golang.zx2c4.com/wireguard/wgctrl/internal/wguser
+golang.zx2c4.com/wireguard/wgctrl/internal/wgwindows
+golang.zx2c4.com/wireguard/wgctrl/internal/wgwindows/internal/ioctl
+golang.zx2c4.com/wireguard/wgctrl/internal/wgwindows/internal/setupapi
+golang.zx2c4.com/wireguard/wgctrl/wgtypes
 # google.golang.org/api v0.15.0
 ## explicit
 google.golang.org/api/compute/v1
