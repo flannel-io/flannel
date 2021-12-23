@@ -13,11 +13,3 @@
 // limitations under the License.
 
 package awsvpc
-
-import (
-	log "github.com/golang/glog"
-)
-
-func init() {
-	log.Infof("AWS VPC is not supported on this platform")
-}

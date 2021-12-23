@@ -25,11 +25,10 @@ import (
 
 	etcd "github.com/coreos/etcd/client"
 	"github.com/coreos/etcd/pkg/transport"
-	log "github.com/golang/glog"
+	"github.com/flannel-io/flannel/pkg/ip"
+	. "github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
-
-	"github.com/coreos/flannel/pkg/ip"
-	. "github.com/coreos/flannel/subnet"
+	log "k8s.io/klog"
 )
 
 var (
@@ -315,6 +314,9 @@ func nodeToLease(node *etcd.Node) (*Lease, error) {
 	}
 
 	lease := Lease{
+		//TODO only vxlan backend and kube subnet manager support dual stack now.
+		EnableIPv4: true,
+		EnableIPv6: false,
 		Subnet:     *sn,
 		Attrs:      *attrs,
 		Expiration: exp,

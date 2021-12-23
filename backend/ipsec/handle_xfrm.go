@@ -21,10 +21,9 @@ import (
 	"net"
 	"syscall"
 
-	log "github.com/golang/glog"
+	"github.com/flannel-io/flannel/subnet"
 	"github.com/vishvananda/netlink"
-
-	"github.com/coreos/flannel/subnet"
+	log "k8s.io/klog"
 )
 
 func AddXFRMPolicy(myLease, remoteLease *subnet.Lease, dir netlink.Dir, reqID int) error {
@@ -61,7 +60,7 @@ func AddXFRMPolicy(myLease, remoteLease *subnet.Lease, dir netlink.Dir, reqID in
 			return fmt.Errorf("error getting policy: %+v err: %v", policy, err)
 		}
 	} else {
-		log.Info("Updating ipsec policy %+v with %+v", existingPolicy, policy)
+		log.Infof("Updating ipsec policy %+v with %+v", existingPolicy, policy)
 		if err := netlink.XfrmPolicyUpdate(policy); err != nil {
 			return fmt.Errorf("error updating policy: %+v err: %v", policy, err)
 		}

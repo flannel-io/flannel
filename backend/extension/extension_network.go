@@ -18,13 +18,13 @@ import (
 	"encoding/json"
 	"sync"
 
-	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
 	"fmt"
 
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/subnet"
+	log "k8s.io/klog"
 )
 
 type network struct {
@@ -61,11 +61,12 @@ func (n *network) Run(ctx context.Context) {
 
 	for {
 		select {
-		case evtBatch := <-evts:
+		case evtBatch, ok := <-evts:
+			if !ok {
+				log.Infof("evts chan closed")
+				return
+			}
 			n.handleSubnetEvents(evtBatch)
-
-		case <-ctx.Done():
-			return
 		}
 	}
 }

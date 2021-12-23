@@ -15,18 +15,17 @@
 package vxlan
 
 import (
-	log "github.com/golang/glog"
-	"golang.org/x/net/context"
-	"sync"
-
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/subnet"
-
 	"encoding/json"
-	"github.com/Microsoft/hcsshim/hcn"
-	"github.com/coreos/flannel/pkg/ip"
 	"net"
 	"strings"
+	"sync"
+
+	"github.com/Microsoft/hcsshim/hcn"
+	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/subnet"
+	"golang.org/x/net/context"
+	log "k8s.io/klog"
 )
 
 type network struct {
@@ -73,11 +72,12 @@ func (nw *network) Run(ctx context.Context) {
 
 	for {
 		select {
-		case evtBatch := <-events:
+		case evtBatch, ok := <-events:
+			if !ok {
+				log.Infof("evts chan closed")
+				return
+			}
 			nw.handleSubnetEvents(evtBatch)
-
-		case <-ctx.Done():
-			return
 		}
 	}
 }
@@ -101,6 +101,11 @@ func (nw *network) handleSubnetEvents(batch []subnet.Event) {
 			continue
 		}
 
+		if vxlanAttrs.VNI < 4096 {
+			log.Error("VNI is required to greater than or equal to 4096 on Windows.")
+			continue
+		}
+
 		hnsnetwork, err := hcn.GetNetworkByName(nw.dev.link.Name)
 		if err != nil {
 			log.Errorf("Unable to find network %v, error: %v", nw.dev.link.Name, err)
@@ -109,7 +114,7 @@ func (nw *network) handleSubnetEvents(batch []subnet.Event) {
 		managementIp := event.Lease.Attrs.PublicIP.String()
 
 		networkPolicySettings := hcn.RemoteSubnetRoutePolicySetting{
-			IsolationId:                 4096,
+			IsolationId:                 vxlanAttrs.VNI,
 			DistributedRouterMacAddress: net.HardwareAddr(vxlanAttrs.VtepMAC).String(),
 			ProviderAddress:             managementIp,
 			DestinationPrefix:           event.Lease.Subnet.String(),

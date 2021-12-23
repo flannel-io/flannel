@@ -63,23 +63,23 @@ $ etcd --advertise-client-urls http://$INTERNAL_IP:2379 --listen-client-urls htt
 ```
 $ etcdctl set /coreos.com/network/config '{"Network":"10.24.0.0/16", "Backend": {"Type": "ali-vpc"}}'
 ```
-- 从 https://github.com/coreos/flannel/ 上拉取最新的分支
+- 从 https://github.com/flannel-io/flannel/ 上拉取最新的分支
 - 编译项目
 - 设置环境变量
 
 ```
-export ACCESS_KEY_ID=YOUR_ACCESS_KEY_SECRET
+export ACCESS_KEY_ID=YOUR_ACCESS_KEY_ID
 export ACCESS_KEY_SECRET=YOUR_ACCESS_KEY_SECRET
 ```
 
 - 运行 flannel :
 
 ```
-sudo ./flanneld --etcd-endpoints=http://127.0.0.1:2379
+sudo -E ./flanneld --etcd-endpoints=http://127.0.0.1:2379
 ```
 
 然后创建一个同样的实例并且连接。
-运行 flannel 时候制定 `--etcd-endpoints` 来制定使用的ETCD。
+运行 flannel 时候指定 `--etcd-endpoints` 来指定使用的ETCD。
 
 确认创建的每一个子网都在路由表上有相应的记录。
 

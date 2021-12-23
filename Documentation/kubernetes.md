@@ -22,6 +22,8 @@ When you run pods, they will be allocated IP addresses from the pod network CIDR
 
 `kube-flannel.yaml` has some features that aren't compatible with older versions of Kubernetes, though flanneld itself should work with any version of Kubernetes.
 
+### For Kubernetes v1.6~v1.15
+
 If you see errors saying `found invalid field...` when you try to apply `kube-flannel.yaml` then you can try the "legacy" manifest file
 * `kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/k8s-manifests/kube-flannel-legacy.yml`
 
@@ -30,6 +32,10 @@ This file does not bundle RBAC permissions. If you need those, run
 
 If you didn't apply the `kube-flannel-rbac.yml` manifest and you need to, you'll see errors in your flanneld logs about failing to connect.
 * `Failed to create SubnetManager: error retrieving pod spec...`
+
+### For Kubernetes v1.16
+
+`kube-flannel.yaml` uses `ClusterRole` & `ClusterRoleBinding` of `rbac.authorization.k8s.io/v1`. When you use Kubernetes v1.16, you should replace `rbac.authorization.k8s.io/v1` to `rbac.authorization.k8s.io/v1beta1` because `rbac.authorization.k8s.io/v1` had become GA from Kubernetes v1.17.
 
 ## The flannel CNI plugin
 
@@ -41,4 +47,4 @@ Kubernetes 1.6 requires CNI plugin version 0.5.1 or later.
 
 See [troubleshooting](troubleshooting.md)
 
-[kubeadm]: https://kubernetes.io/docs/getting-started-guides/kubeadm/
+[kubeadm]: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/

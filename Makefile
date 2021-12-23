@@ -5,7 +5,7 @@ REGISTRY?=quay.io/coreos/flannel
 QEMU_VERSION=v3.0.0
 
 # Default tag and architecture. Can be overridden
-TAG?=$(shell git describe --tags --dirty)
+TAG?=$(shell git describe --tags --dirty --always)
 ARCH?=amd64
 # Only enable CGO (and build the UDP backend) on AMD64
 ifeq ($(ARCH),amd64)
@@ -15,7 +15,7 @@ else
 endif
 
 # Go version to use for builds
-GO_VERSION=1.14.6
+GO_VERSION=1.15.5
 
 # K8s version used for Makefile helpers
 K8S_VERSION=v1.6.6
@@ -24,9 +24,9 @@ GOARM=7
 
 # These variables can be overridden by setting an environment variable.
 TEST_PACKAGES?=pkg/ip subnet subnet/etcdv2 network backend
-TEST_PACKAGES_EXPANDED=$(TEST_PACKAGES:%=github.com/coreos/flannel/%)
+TEST_PACKAGES_EXPANDED=$(TEST_PACKAGES:%=github.com/flannel-io/flannel/%)
 PACKAGES?=$(TEST_PACKAGES) network
-PACKAGES_EXPANDED=$(PACKAGES:%=github.com/coreos/flannel/%)
+PACKAGES_EXPANDED=$(PACKAGES:%=github.com/flannel-io/flannel/%)
 
 ### BUILDING
 clean:
@@ -38,11 +38,11 @@ clean:
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
 	go build -o dist/flanneld \
-	  -ldflags '-s -w -X github.com/coreos/flannel/version.Version=$(TAG) -extldflags "-static"'
+	  -ldflags '-s -w -X github.com/flannel-io/flannel/version.Version=$(TAG) -extldflags "-static"'
 
 dist/flanneld.exe: $(shell find . -type f  -name '*.go')
 	CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc CGO_ENABLED=1 GOOS=windows go build -o dist/flanneld.exe \
-	  -ldflags '-s -w -X github.com/coreos/flannel/version.Version=$(TAG) -extldflags "-static"'
+	  -ldflags '-s -w -X github.com/flannel-io/flannel/version.Version=$(TAG) -extldflags "-static"'
 
 # This will build flannel natively using golang image
 dist/flanneld-$(ARCH): dist/qemu-$(ARCH)-static
@@ -50,10 +50,10 @@ dist/flanneld-$(ARCH): dist/qemu-$(ARCH)-static
 	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) -e GOCACHE=/go \
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR)/dist/qemu-$(ARCH)-static:/usr/bin/qemu-$(ARCH)-static \
-		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
-		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
+		-v $(CURDIR):/go/src/github.com/flannel-io/flannel:ro \
+		-v $(CURDIR)/dist:/go/src/github.com/flannel-io/flannel/dist \
 		golang:$(GO_VERSION) /bin/bash -c '\
-		cd /go/src/github.com/coreos/flannel && \
+		cd /go/src/github.com/flannel-io/flannel && \
 		make -e dist/flanneld && \
 		mv dist/flanneld dist/flanneld-$(ARCH)'
 
@@ -73,7 +73,7 @@ test: header-check gofmt verify-modules
 	# Run the unit tests
 	# NET_ADMIN capacity is required to do some network operation
 	# SYS_ADMIN capacity is required to create network namespace
-	docker run --cap-add=NET_ADMIN --cap-add=SYS_ADMIN --rm -v $(shell pwd):/go/src/github.com/coreos/flannel golang:$(GO_VERSION) go test -v -cover $(TEST_PACKAGES_EXPANDED)
+	docker run --cap-add=NET_ADMIN --cap-add=SYS_ADMIN --rm -v $(shell pwd):/go/src/github.com/flannel-io/flannel golang:$(GO_VERSION) go test -v -cover $(TEST_PACKAGES_EXPANDED)
 
 	# Test the docker-opts script
 	cd dist; ./mk-docker-opts_tests.sh
@@ -99,10 +99,10 @@ header-check:
 gofmt:
 	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
 		-u $(shell id -u):$(shell id -g) \
-		-v $(CURDIR):/go/src/github.com/coreos/flannel \
-		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
+		-v $(CURDIR):/go/src/github.com/flannel-io/flannel \
+		-v $(CURDIR)/dist:/go/src/github.com/flannel-io/flannel/dist \
 		golang:$(GO_VERSION) /bin/bash -c '\
-		cd /go/src/github.com/coreos/flannel && \
+		cd /go/src/github.com/flannel-io/flannel && \
 		! gofmt -d $(PACKAGES) 2>&1 | read'
 
 verify-modules:
@@ -113,10 +113,10 @@ verify-modules:
 gofmt-fix:
 	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
 		-u $(shell id -u):$(shell id -g) \
-		-v $(CURDIR):/go/src/github.com/coreos/flannel \
-		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
+		-v $(CURDIR):/go/src/github.com/flannel-io/flannel \
+		-v $(CURDIR)/dist:/go/src/github.com/flannel-io/flannel/dist \
 		golang:$(GO_VERSION) /bin/bash -c '\
-		cd /go/src/github.com/coreos/flannel && \
+		cd /go/src/github.com/flannel-io/flannel && \
 		gofmt -w $(PACKAGES)'
 
 bash_unit:
@@ -131,17 +131,17 @@ endif
 	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x]
 	docker run -e GOARM=$(GOARM) -e GOCACHE=/go \
 		-u $(shell id -u):$(shell id -g) \
-		-v $(CURDIR):/go/src/github.com/coreos/flannel:ro \
-		-v $(CURDIR)/dist:/go/src/github.com/coreos/flannel/dist \
+		-v $(CURDIR):/go/src/github.com/flannel-io/flannel:ro \
+		-v $(CURDIR)/dist:/go/src/github.com/flannel-io/flannel/dist \
 		golang:$(GO_VERSION) /bin/bash -c '\
-		cd /go/src/github.com/coreos/flannel && \
+		cd /go/src/github.com/flannel-io/flannel && \
 		CGO_ENABLED=1 make -e dist/flanneld && \
 		mv dist/flanneld dist/flanneld-$(ARCH)'
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
 
 # Make a release after creating a tag
 # To build cross platform Docker images, the qemu-static binaries are needed. On ubuntu "apt-get install  qemu-user-static"
-release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-aarch64-static dist/qemu-arm-static #release-tests
+release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-arm64-static dist/qemu-arm-static #release-tests
 	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.docker
 	ARCH=arm make dist/flanneld-$(TAG)-arm.docker
 	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.docker
@@ -230,7 +230,7 @@ flannel-git:
 install:
 	# This is intended as just a developer convenience to help speed up non-containerized builds
 	# It is NOT how you install flannel
-	CGO_ENABLED=1 go install -v github.com/coreos/flannel
+	CGO_ENABLED=1 go install -v github.com/flannel-io/flannel
 
 minikube-start:
 	minikube start --network-plugin cni

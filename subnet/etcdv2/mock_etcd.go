@@ -178,7 +178,7 @@ func (me *mockEtcd) sendEvent(resp *etcd.Response) {
 	me.events = append(me.events, resp)
 
 	// and notify watchers
-	for w, _ := range me.watchers {
+	for w := range me.watchers {
 		w.notifyEvent(resp)
 	}
 }

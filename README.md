@@ -31,7 +31,7 @@ Though not required, it's recommended that flannel uses the Kubernetes API as it
 
 Flannel can be added to any existing Kubernetes cluster though it's simplest to add `flannel` before any pods using the pod network have been started.
 
-For Kubernetes v1.7+
+For Kubernetes v1.17+
 `kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml`
 
 See [Kubernetes](Documentation/kubernetes.md) for more details.
@@ -51,9 +51,7 @@ flannel is also widely used outside of kubernetes. When deployed outside of kube
 
 ## Contact
 
-* Mailing list: coreos-dev
-* IRC: #coreos on freenode.org
-* Slack: #flannel on [Calico Users Slack](https://slack.projectcalico.org)
+* Slack: #flannel-users on [Calico Users Slack](https://slack.projectcalico.org)
 * Planning/Roadmap: [milestones][milestones], [roadmap][roadmap]
 * Bugs: [issues][flannel-issues]
 
@@ -61,7 +59,7 @@ flannel is also widely used outside of kubernetes. When deployed outside of kube
 
 The Flannel Maintainer Community runs a meeting on every other Thursday at 8:30 AM PST. This meeting is used to discuss issues, open pull requests, and other topics related to Flannel should the need arise.
 
-The meeting agenda and Zoom link can be found here: [Flannel Community Meeting Agneda](https://docs.google.com/document/d/1kPMMFDhljWL8_CUZajrfL8Q9sdntd9vvUpe-UGhX5z8)
+The meeting agenda and Zoom link can be found here: [Flannel Community Meeting Agenda](https://docs.google.com/document/d/1kPMMFDhljWL8_CUZajrfL8Q9sdntd9vvUpe-UGhX5z8)
 
 ## Contributing
 
@@ -79,9 +77,9 @@ Flannel is under the Apache 2.0 license. See the [LICENSE][license] file for det
 [pod-cidr]: https://kubernetes.io/docs/admin/kubelet/
 [etcd]: https://github.com/coreos/etcd
 [contributing]: CONTRIBUTING.md
-[license]: https://github.com/coreos/flannel/blob/master/LICENSE
-[milestones]: https://github.com/coreos/flannel/milestones
-[flannel-issues]: https://github.com/coreos/flannel/issues
+[license]: https://github.com/flannel-io/flannel/blob/master/LICENSE
+[milestones]: https://github.com/flannel-io/flannel/milestones
+[flannel-issues]: https://github.com/flannel-io/flannel/issues
 [backends]: Documentation/backends.md
 [roadmap]: https://github.com/kubernetes/kubernetes/milestones
 [reporting]: Documentation/reporting_bugs.md

@@ -21,12 +21,11 @@ import (
 	"strconv"
 	"sync"
 
-	log "github.com/golang/glog"
+	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/subnet"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
-
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/subnet"
+	log "k8s.io/klog"
 )
 
 const (
@@ -95,12 +94,13 @@ func (n *network) Run(ctx context.Context) {
 
 	for {
 		select {
-		case evtsBatch := <-evts:
+		case evtsBatch, ok := <-evts:
+			if !ok {
+				log.Infof("evts chan closed")
+				return
+			}
 			log.Info("Handling event")
 			n.handleSubnetEvents(evtsBatch)
-		case <-ctx.Done():
-			log.Info("Received DONE")
-			return
 		}
 	}
 }

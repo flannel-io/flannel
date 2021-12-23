@@ -1,3 +1,5 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
 reviewers:
 - thockin
 - smarterclayton
@@ -12,12 +14,10 @@ reviewers:
 - davidopp
 - sttts
 - quinton-hoole
-- kargakis
 - luxas
 - janetkuo
 - justinsb
 - ncdc
-- timothysc
 - soltysh
 - dims
 - madhusudancs
@@ -25,9 +25,7 @@ reviewers:
 - krousey
 - mml
 - mbohlool
-- david-mcmahon
 - therc
 - mqliang
 - kevin-wangzefeng
 - jianhuiz
-- feihujiang

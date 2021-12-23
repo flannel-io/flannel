@@ -58,21 +58,21 @@ $ etcd --advertise-client-urls http://$INTERNAL_IP:2379 --listen-client-urls htt
 ```
 $ etcdctl set /coreos.com/network/config '{"Network":"10.24.0.0/16", "Backend": {"Type": "ali-vpc"}}'
 ```
-- Fetch the latest release using wget from https://github.com/coreos/flannel/
+- Fetch the latest release using wget from https://github.com/flannel-io/flannel/
 
 - make dist/flanneld
 
 - export ENV
 
 ```
-export ACCESS_KEY_ID=YOUR_ACCESS_KEY_SECRET
+export ACCESS_KEY_ID=YOUR_ACCESS_KEY_ID
 export ACCESS_KEY_SECRET=YOUR_ACCESS_KEY_SECRET
 ```
 
 - Run flannel daemon:
 
 ```
-sudo ./flanneld --etcd-endpoints=http://127.0.0.1:2379
+sudo -E ./flanneld --etcd-endpoints=http://127.0.0.1:2379
 ```
 
 Next, create and connect to a clone of `instance-1`.

@@ -19,9 +19,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
-
-	"github.com/coreos/flannel/subnet"
 )
 
 var constructors = make(map[string]BackendCtor)

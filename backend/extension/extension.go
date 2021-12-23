@@ -17,18 +17,18 @@ package extension
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"encoding/json"
 	"os/exec"
 	"sync"
 
-	log "github.com/golang/glog"
-
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
+	log "k8s.io/klog"
 )
 
 func init() {
@@ -134,7 +134,7 @@ func (be *ExtensionBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 // Run a cmd, returning a combined stdout and stderr.
 func runCmd(env []string, stdin string, name string, arg ...string) (string, error) {
 	cmd := exec.Command(name, arg...)
-	cmd.Env = env
+	cmd.Env = append(os.Environ(), env...)
 
 	stdinpipe, err := cmd.StdinPipe()
 	if err != nil {

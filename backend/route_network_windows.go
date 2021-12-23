@@ -15,15 +15,14 @@
 package backend
 
 import (
+	"strings"
 	"sync"
 	"time"
 
-	log "github.com/golang/glog"
+	"github.com/flannel-io/flannel/pkg/routing"
+	"github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
-
-	"github.com/coreos/flannel/pkg/routing"
-	"github.com/coreos/flannel/subnet"
-	"strings"
+	log "k8s.io/klog"
 )
 
 const (
@@ -67,11 +66,12 @@ func (n *RouteNetwork) Run(ctx context.Context) {
 
 	for {
 		select {
-		case evtBatch := <-evts:
+		case evtBatch, ok := <-evts:
+			if !ok {
+				log.Infof("evts chan closed")
+				return
+			}
 			n.handleSubnetEvents(evtBatch)
-
-		case <-ctx.Done():
-			return
 		}
 	}
 }

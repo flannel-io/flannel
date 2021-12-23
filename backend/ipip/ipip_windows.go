@@ -14,11 +14,3 @@
 // +build windows
 
 package ipip
-
-import (
-	log "github.com/golang/glog"
-)
-
-func init() {
-	log.Infof("ipip is not supported on this platform")
-}

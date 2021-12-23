@@ -15,8 +15,8 @@
 package etcdv2
 
 import (
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/subnet"
 )
 
 func NewMockManager(registry *MockSubnetRegistry) subnet.Manager {

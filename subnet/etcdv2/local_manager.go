@@ -21,10 +21,10 @@ import (
 	"time"
 
 	etcd "github.com/coreos/etcd/client"
-	"github.com/coreos/flannel/pkg/ip"
-	. "github.com/coreos/flannel/subnet"
-	log "github.com/golang/glog"
+	"github.com/flannel-io/flannel/pkg/ip"
+	. "github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
+	log "k8s.io/klog"
 )
 
 const (
@@ -103,6 +103,9 @@ func (m *LocalManager) AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Le
 		l, err := m.tryAcquireLease(ctx, config, attrs.PublicIP, attrs)
 		switch err {
 		case nil:
+			//TODO only vxlan backend and kube subnet manager support dual stack now.
+			l.EnableIPv4 = true
+			l.EnableIPv6 = false
 			return l, nil
 		case errTryAgain:
 			continue
@@ -288,6 +291,10 @@ func (m *LocalManager) leaseWatchReset(ctx context.Context, sn ip.IP4Net) (Lease
 		return LeaseWatchResult{}, err
 	}
 
+	//TODO only vxlan backend and kube subnet manager support dual stack now.
+	l.EnableIPv4 = true
+	l.EnableIPv6 = false
+
 	return LeaseWatchResult{
 		Snapshot: []Lease{*l},
 		Cursor:   watchCursor{index},
@@ -308,6 +315,9 @@ func (m *LocalManager) WatchLease(ctx context.Context, sn ip.IP4Net, cursor inte
 
 	switch {
 	case err == nil:
+		//TODO only vxlan backend and kube subnet manager support dual stack now.
+		evt.Lease.EnableIPv4 = true
+		evt.Lease.EnableIPv6 = false
 		return LeaseWatchResult{
 			Events: []Event{evt},
 			Cursor: watchCursor{index},
@@ -333,9 +343,11 @@ func (m *LocalManager) WatchLeases(ctx context.Context, cursor interface{}) (Lea
 	}
 
 	evt, index, err := m.registry.watchSubnets(ctx, nextIndex)
-
 	switch {
 	case err == nil:
+		//TODO only vxlan backend and kube subnet manager support dual stack now.
+		evt.Lease.EnableIPv4 = true
+		evt.Lease.EnableIPv6 = false
 		return LeaseWatchResult{
 			Events: []Event{evt},
 			Cursor: watchCursor{index},
@@ -344,6 +356,9 @@ func (m *LocalManager) WatchLeases(ctx context.Context, cursor interface{}) (Lea
 	case isIndexTooSmall(err):
 		log.Warning("Watch of subnet leases failed because etcd index outside history window")
 		return m.leasesWatchReset(ctx)
+
+	case index != 0:
+		return LeaseWatchResult{Cursor: watchCursor{index}}, err
 
 	default:
 		return LeaseWatchResult{}, err

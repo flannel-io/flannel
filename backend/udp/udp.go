@@ -19,8 +19,8 @@ package udp
 import (
 	"fmt"
 
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/subnet"
+	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/subnet"
 )
 
 func init() {

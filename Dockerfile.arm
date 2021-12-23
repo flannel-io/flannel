@@ -1,6 +1,4 @@
-FROM arm32v6/alpine:3.12
-
-LABEL maintainer="Tom Denham <tom@tigera.io>"
+FROM arm32v6/alpine:3.13
 
 ENV FLANNEL_ARCH=arm
 

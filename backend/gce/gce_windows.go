@@ -36,11 +36,3 @@
 // SOFTWARE.
 
 package gce
-
-import (
-	log "github.com/golang/glog"
-)
-
-func init() {
-	log.Infof("GCE is not supported on this platform")
-}

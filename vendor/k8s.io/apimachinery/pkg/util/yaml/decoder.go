@@ -26,8 +26,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/ghodss/yaml"
-	"github.com/golang/glog"
+	"k8s.io/klog/v2"
+	"sigs.k8s.io/yaml"
 )
 
 // ToJSON converts a single YAML document into a JSON document
@@ -92,6 +92,10 @@ type YAMLDecoder struct {
 // the caller in framing the chunk.
 func NewDocumentDecoder(r io.ReadCloser) io.ReadCloser {
 	scanner := bufio.NewScanner(r)
+	// the size of initial allocation for buffer 4k
+	buf := make([]byte, 4*1024)
+	// the maximum size used to buffer a token 5M
+	scanner.Buffer(buf, 5*1024*1024)
 	scanner.Split(splitYAMLDocument)
 	return &YAMLDecoder{
 		r:       r,
@@ -122,12 +126,12 @@ func (d *YAMLDecoder) Read(data []byte) (n int, err error) {
 	if left <= len(data) {
 		copy(data, d.remaining)
 		d.remaining = nil
-		return len(d.remaining), nil
+		return left, nil
 	}
 
 	// caller will need to reread
-	copy(data, d.remaining[:left])
-	d.remaining = d.remaining[left:]
+	copy(data, d.remaining[:len(data)])
+	d.remaining = d.remaining[len(data):]
 	return len(data), io.ErrShortBuffer
 }
 
@@ -217,11 +221,9 @@ func (d *YAMLOrJSONDecoder) Decode(into interface{}) error {
 	if d.decoder == nil {
 		buffer, origData, isJSON := GuessJSONStream(d.r, d.bufferSize)
 		if isJSON {
-			glog.V(4).Infof("decoding stream as JSON")
 			d.decoder = json.NewDecoder(buffer)
 			d.rawData = origData
 		} else {
-			glog.V(4).Infof("decoding stream as YAML")
 			d.decoder = NewYAMLToJSONDecoder(buffer)
 		}
 	}
@@ -230,7 +232,7 @@ func (d *YAMLOrJSONDecoder) Decode(into interface{}) error {
 		if syntax, ok := err.(*json.SyntaxError); ok {
 			data, readErr := ioutil.ReadAll(jsonDecoder.Buffered())
 			if readErr != nil {
-				glog.V(4).Infof("reading stream failed: %v", readErr)
+				klog.V(4).Infof("reading stream failed: %v", readErr)
 			}
 			js := string(data)
 

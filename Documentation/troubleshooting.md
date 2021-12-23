@@ -9,7 +9,7 @@ This problems manifests itself as connectivity problems between containers runni
 
 
 ## Logging
-Flannel uses the `glog` library but only supports logging to stderr. The severity level can't be changed but the verbosity can be changed with the `-v` option. Flannel does not make extensive use of the verbosity level but increasing the value from `0` (the default) will result in some additional logs. To get the most detailed logs, use `-v=10`
+Flannel uses the `klog` library but only supports logging to stderr. The severity level can't be changed but the verbosity can be changed with the `-v` option. Flannel does not make extensive use of the verbosity level but increasing the value from `0` (the default) will result in some additional logs. To get the most detailed logs, use `-v=10`
 
 ```
 -v value
@@ -37,7 +37,7 @@ I0629 14:28:35.867000    5522 main.go:412] Using 10.10.10.10 as external address
 ### Vagrant
 Vagrant typically assigns two interfaces to all VMs. The first, for which all hosts are assigned the IP address `10.0.2.15`, is for external traffic that gets NATed.
 
-This may lead to problems with flannel. By default, flannel selects the first interface on a host. This leads to all hosts thinking they have the same public IP address. To prevent this issue, pass the `--iface eth1` flag to flannel so that the second interface is chosen.
+This may lead to problems with flannel. By default, flannel selects the first interface on a host. This leads to all hosts thinking they have the same public IP address. To prevent this issue, pass the `--iface=eth1` flag to flannel so that the second interface is chosen.
 
 ## Permissions
 Depending on the backend being used, flannel may need to run with super user permissions. Examples include creating VXLAN devices or programming routes.  If you see errors similar to the following, confirm that the user running flannel has the right permissions (or try running with `sudo)`.

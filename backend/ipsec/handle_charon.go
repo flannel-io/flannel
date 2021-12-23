@@ -26,9 +26,9 @@ import (
 	"time"
 
 	"github.com/bronze1man/goStrongswanVici"
-	"github.com/coreos/flannel/subnet"
-	log "github.com/golang/glog"
+	"github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
+	log "k8s.io/klog"
 )
 
 type Uri struct {
@@ -47,8 +47,13 @@ func NewCharonIKEDaemon(ctx context.Context, wg *sync.WaitGroup, espProposal str
 	addr := strings.Split("unix:///var/run/charon.vici", "://")
 	charon.viciUri = Uri{addr[0], addr[1]}
 
-	cmd, err := charon.runBundled("/usr/lib/strongswan/charon")
+	execPath, err := findExecPath()
+	if err != nil {
+		log.Errorf("Charon daemon not found: %v", err)
+		return nil, err
+	}
 
+	cmd, err := charon.run(execPath)
 	if err != nil {
 		log.Errorf("Error starting charon daemon: %v", err)
 		return nil, err
@@ -92,13 +97,9 @@ func (charon *CharonIKEDaemon) getClient(wait bool) (client *goStrongswanVici.Cl
 	}
 }
 
-func (charon *CharonIKEDaemon) runBundled(execPath string) (cmd *exec.Cmd, err error) {
-	path, err := exec.LookPath(execPath)
-	if err != nil {
-		return nil, err
-	}
+func (charon *CharonIKEDaemon) run(execPath string) (cmd *exec.Cmd, err error) {
 	cmd = &exec.Cmd{
-		Path: path,
+		Path: execPath,
 		SysProcAttr: &syscall.SysProcAttr{
 			Pdeathsig: syscall.SIGTERM,
 		},
@@ -155,14 +156,15 @@ func (charon *CharonIKEDaemon) LoadConnection(localLease, remoteLease *subnet.Le
 
 	childConfMap := make(map[string]goStrongswanVici.ChildSAConf)
 	childSAConf := goStrongswanVici.ChildSAConf{
-		Local_ts:     []string{localLease.Subnet.String()},
-		Remote_ts:    []string{remoteLease.Subnet.String()},
-		ESPProposals: []string{charon.espProposal},
-		StartAction:  "start",
-		CloseAction:  "trap",
-		Mode:         "tunnel",
-		ReqID:        reqID,
-		//		RekeyTime:     rekeyTime,
+		Local_ts:      []string{localLease.Subnet.String()},
+		Remote_ts:     []string{remoteLease.Subnet.String()},
+		ESPProposals:  []string{charon.espProposal},
+		StartAction:   "start",
+		CloseAction:   "trap",
+		DpdAction:     "restart",
+		Mode:          "tunnel",
+		ReqID:         reqID,
+		RekeyTime:     "1h",
 		InstallPolicy: "no",
 	}
 
@@ -232,4 +234,26 @@ func formatConnectionName(localLease, remoteLease *subnet.Lease) string {
 
 func formatChildSAConfName(localLease, remoteLease *subnet.Lease) string {
 	return fmt.Sprintf("%s-%s", localLease.Subnet, remoteLease.Subnet)
+}
+
+func findExecPath() (string, error) {
+	// try well known charon paths
+	paths := []string{
+		"charon",                         // PATH
+		"/usr/lib/strongswan/charon",     // alpine, arch, flannel container
+		"/usr/lib/ipsec/charon",          // debian/ubuntu
+		"/usr/libexec/strongswan/charon", // centos/rhel
+		"/usr/libexec/ipsec/charon",      // opensuse/sles
+	}
+	for _, path := range paths {
+		path, err := exec.LookPath(path)
+		if err != nil {
+			log.Warningf("No valid charon executable found at path %s: %v", path, err)
+			continue
+		}
+		return path, nil
+	}
+
+	err := fmt.Errorf("No valid charon executable found at paths %v", paths)
+	return "", err
 }

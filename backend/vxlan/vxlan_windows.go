@@ -27,17 +27,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"sync"
 
-	log "github.com/golang/glog"
-
-	"golang.org/x/net/context"
-
 	"github.com/Microsoft/hcsshim/hcn"
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/subnet"
-	"net"
+	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/subnet"
+	"golang.org/x/net/context"
+	log "k8s.io/klog"
 )
 
 func init() {

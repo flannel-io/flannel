@@ -3,7 +3,7 @@ services:
     - docker
 language: go
 go:
-  - 1.14.x
+  - 1.15.x
 env:
   global:
     - TOOLS_CMD=golang.org/x/tools/cmd
@@ -17,3 +17,11 @@ after_success:
     fi
 notifications:
   email: false
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:wireguard/wireguard'
+    packages:
+      - wireguard
+      - linux-headers-$(uname -r)

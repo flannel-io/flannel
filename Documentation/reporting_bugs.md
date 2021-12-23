@@ -32,5 +32,5 @@ $ kill -QUIT $PID
 $ flannel --version
 ```
 
-[flannel-issue]: https://github.com/coreos/flannel/issues/new
+[flannel-issue]: https://github.com/flannel-io/flannel/issues/new
 [filing-good-bugs]: http://fantasai.inkedblade.net/style/talks/filing-good-bugs/

@@ -26,38 +26,38 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
+	"time"
 
 	"github.com/coreos/pkg/flagutil"
-	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
-	"github.com/coreos/flannel/network"
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/subnet"
-	"github.com/coreos/flannel/subnet/etcdv2"
-	"github.com/coreos/flannel/subnet/kube"
-	"github.com/coreos/flannel/version"
-
-	"time"
+	"github.com/flannel-io/flannel/network"
+	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/subnet"
+	"github.com/flannel-io/flannel/subnet/etcdv2"
+	"github.com/flannel-io/flannel/subnet/kube"
+	"github.com/flannel-io/flannel/version"
+	log "k8s.io/klog"
 
 	"github.com/joho/godotenv"
 
-	"sync"
-
 	// Backends need to be imported for their init() to get executed and them to register
-	"github.com/coreos/flannel/backend"
-	_ "github.com/coreos/flannel/backend/alivpc"
-	_ "github.com/coreos/flannel/backend/alloc"
-	_ "github.com/coreos/flannel/backend/awsvpc"
-	_ "github.com/coreos/flannel/backend/extension"
-	_ "github.com/coreos/flannel/backend/gce"
-	_ "github.com/coreos/flannel/backend/hostgw"
-	_ "github.com/coreos/flannel/backend/ipip"
-	_ "github.com/coreos/flannel/backend/ipsec"
-	_ "github.com/coreos/flannel/backend/udp"
-	_ "github.com/coreos/flannel/backend/vxlan"
 	"github.com/coreos/go-systemd/daemon"
+	"github.com/flannel-io/flannel/backend"
+	_ "github.com/flannel-io/flannel/backend/alivpc"
+	_ "github.com/flannel-io/flannel/backend/alloc"
+	_ "github.com/flannel-io/flannel/backend/awsvpc"
+	_ "github.com/flannel-io/flannel/backend/extension"
+	_ "github.com/flannel-io/flannel/backend/gce"
+	_ "github.com/flannel-io/flannel/backend/hostgw"
+	_ "github.com/flannel-io/flannel/backend/ipip"
+	_ "github.com/flannel-io/flannel/backend/ipsec"
+	_ "github.com/flannel-io/flannel/backend/tencentvpc"
+	_ "github.com/flannel-io/flannel/backend/udp"
+	_ "github.com/flannel-io/flannel/backend/vxlan"
+	_ "github.com/flannel-io/flannel/backend/wireguard"
 )
 
 type flagSlice []string
@@ -72,33 +72,37 @@ func (t *flagSlice) Set(val string) error {
 }
 
 type CmdLineOpts struct {
-	etcdEndpoints          string
-	etcdPrefix             string
-	etcdKeyfile            string
-	etcdCertfile           string
-	etcdCAFile             string
-	etcdUsername           string
-	etcdPassword           string
-	help                   bool
-	version                bool
-	kubeSubnetMgr          bool
-	kubeApiUrl             string
-	kubeAnnotationPrefix   string
-	kubeConfigFile         string
-	iface                  flagSlice
-	ifaceRegex             flagSlice
-	ipMasq                 bool
-	subnetFile             string
-	subnetDir              string
-	publicIP               string
-	subnetLeaseRenewMargin int
-	healthzIP              string
-	healthzPort            int
-	charonExecutablePath   string
-	charonViciUri          string
-	iptablesResyncSeconds  int
-	iptablesForwardRules   bool
-	netConfPath            string
+	etcdEndpoints             string
+	etcdPrefix                string
+	etcdKeyfile               string
+	etcdCertfile              string
+	etcdCAFile                string
+	etcdUsername              string
+	etcdPassword              string
+	help                      bool
+	version                   bool
+	autoDetectIPv4            bool
+	autoDetectIPv6            bool
+	kubeSubnetMgr             bool
+	kubeApiUrl                string
+	kubeAnnotationPrefix      string
+	kubeConfigFile            string
+	iface                     flagSlice
+	ifaceRegex                flagSlice
+	ipMasq                    bool
+	subnetFile                string
+	subnetDir                 string
+	publicIP                  string
+	publicIPv6                string
+	subnetLeaseRenewMargin    int
+	healthzIP                 string
+	healthzPort               int
+	charonExecutablePath      string
+	charonViciUri             string
+	iptablesResyncSeconds     int
+	iptablesForwardRules      bool
+	netConfPath               string
+	setNodeNetworkUnavailable bool
 }
 
 var (
@@ -106,6 +110,13 @@ var (
 	errInterrupted = errors.New("interrupted")
 	errCanceled    = errors.New("canceled")
 	flannelFlags   = flag.NewFlagSet("flannel", flag.ExitOnError)
+)
+
+const (
+	ipv4Stack int = iota
+	ipv6Stack
+	dualStack
+	noneStack
 )
 
 func init() {
@@ -120,6 +131,7 @@ func init() {
 	flannelFlags.Var(&opts.ifaceRegex, "iface-regex", "regex expression to match the first interface to use (IP or name) for inter-host communication. Can be specified multiple times to check each regex in order. Returns the first match found. Regexes are checked after specific interfaces specified by the iface option have already been checked.")
 	flannelFlags.StringVar(&opts.subnetFile, "subnet-file", "/run/flannel/subnet.env", "filename where env variables (subnet, MTU, ... ) will be written to")
 	flannelFlags.StringVar(&opts.publicIP, "public-ip", "", "IP accessible by other nodes for inter-host communication")
+	flannelFlags.StringVar(&opts.publicIPv6, "public-ipv6", "", "IPv6 accessible by other nodes for inter-host communication")
 	flannelFlags.IntVar(&opts.subnetLeaseRenewMargin, "subnet-lease-renew-margin", 60, "subnet lease renewal margin, in minutes, ranging from 1 to 1439")
 	flannelFlags.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
 	flannelFlags.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "contact the Kubernetes API for subnet assignment instead of etcd.")
@@ -132,12 +144,15 @@ func init() {
 	flannelFlags.IntVar(&opts.iptablesResyncSeconds, "iptables-resync", 5, "resync period for iptables rules, in seconds")
 	flannelFlags.BoolVar(&opts.iptablesForwardRules, "iptables-forward-rules", true, "add default accept rules to FORWARD chain in iptables")
 	flannelFlags.StringVar(&opts.netConfPath, "net-config-path", "/etc/kube-flannel/net-conf.json", "path to the network configuration file")
+	flannelFlags.BoolVar(&opts.setNodeNetworkUnavailable, "set-node-network-unavailable", true, "set NodeNetworkUnavailable after ready")
 
-	// glog will log to tmp files by default. override so all entries
+	log.InitFlags(nil)
+
+	// klog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
 	flag.Set("logtostderr", "true")
 
-	// Only copy the non file logging options from glog
+	// Only copy the non file logging options from klog
 	copyFlag("v")
 	copyFlag("vmodule")
 	copyFlag("log_backtrace_at")
@@ -159,9 +174,20 @@ func usage() {
 	os.Exit(0)
 }
 
-func newSubnetManager() (subnet.Manager, error) {
+func getIPFamily(autoDetectIPv4, autoDetectIPv6 bool) (int, error) {
+	if autoDetectIPv4 && !autoDetectIPv6 {
+		return ipv4Stack, nil
+	} else if !autoDetectIPv4 && autoDetectIPv6 {
+		return ipv6Stack, nil
+	} else if autoDetectIPv4 && autoDetectIPv6 {
+		return dualStack, nil
+	}
+	return noneStack, errors.New("none defined stack")
+}
+
+func newSubnetManager(ctx context.Context) (subnet.Manager, error) {
 	if opts.kubeSubnetMgr {
-		return kube.NewSubnetManager(opts.kubeApiUrl, opts.kubeConfigFile, opts.kubeAnnotationPrefix, opts.netConfPath)
+		return kube.NewSubnetManager(ctx, opts.kubeApiUrl, opts.kubeConfigFile, opts.kubeAnnotationPrefix, opts.netConfPath, opts.setNodeNetworkUnavailable)
 	}
 
 	cfg := &etcdv2.EtcdConfig{
@@ -188,57 +214,23 @@ func main() {
 
 	flagutil.SetFlagsFromEnv(flannelFlags, "FLANNELD")
 
+	// Log the config set via CLI flags
+	log.Infof("CLI flags config: %+v", opts)
+
 	// Validate flags
 	if opts.subnetLeaseRenewMargin >= 24*60 || opts.subnetLeaseRenewMargin <= 0 {
 		log.Error("Invalid subnet-lease-renew-margin option, out of acceptable range")
 		os.Exit(1)
 	}
 
-	// Work out which interface to use
-	var extIface *backend.ExternalInterface
-	var err error
-	// Check the default interface only if no interfaces are specified
-	if len(opts.iface) == 0 && len(opts.ifaceRegex) == 0 {
-		extIface, err = LookupExtIface(opts.publicIP, "")
-		if err != nil {
-			log.Error("Failed to find any valid interface to use: ", err)
-			os.Exit(1)
-		}
-	} else {
-		// Check explicitly specified interfaces
-		for _, iface := range opts.iface {
-			extIface, err = LookupExtIface(iface, "")
-			if err != nil {
-				log.Infof("Could not find valid interface matching %s: %s", iface, err)
-			}
+	// This is the main context that everything should run in.
+	// All spawned goroutines should exit when cancel is called on this context.
+	// Go routines spawned from main.go coordinate using a WaitGroup. This provides a mechanism to allow the shutdownHandler goroutine
+	// to block until all the goroutines return . If those goroutines spawn other goroutines then they are responsible for
+	// blocking and returning only when cancel() is called.
+	ctx, cancel := context.WithCancel(context.Background())
 
-			if extIface != nil {
-				break
-			}
-		}
-
-		// Check interfaces that match any specified regexes
-		if extIface == nil {
-			for _, ifaceRegex := range opts.ifaceRegex {
-				extIface, err = LookupExtIface("", ifaceRegex)
-				if err != nil {
-					log.Infof("Could not find valid interface matching %s: %s", ifaceRegex, err)
-				}
-
-				if extIface != nil {
-					break
-				}
-			}
-		}
-
-		if extIface == nil {
-			// Exit if any of the specified interfaces do not match
-			log.Error("Failed to find interface to use that matches the interfaces and/or regexes provided")
-			os.Exit(1)
-		}
-	}
-
-	sm, err := newSubnetManager()
+	sm, err := newSubnetManager(ctx)
 	if err != nil {
 		log.Error("Failed to create SubnetManager: ", err)
 		os.Exit(1)
@@ -250,12 +242,6 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
 
-	// This is the main context that everything should run in.
-	// All spawned goroutines should exit when cancel is called on this context.
-	// Go routines spawned from main.go coordinate using a WaitGroup. This provides a mechanism to allow the shutdownHandler goroutine
-	// to block until all the goroutines return . If those goroutines spawn other goroutines then they are responsible for
-	// blocking and returning only when cancel() is called.
-	ctx, cancel := context.WithCancel(context.Background())
 	wg := sync.WaitGroup{}
 
 	wg.Add(1)
@@ -274,6 +260,55 @@ func main() {
 	if err == errCanceled {
 		wg.Wait()
 		os.Exit(0)
+	}
+
+	// Get ip family stack
+	ipStack, stackErr := getIPFamily(config.EnableIPv4, config.EnableIPv6)
+	if stackErr != nil {
+		log.Error(stackErr.Error())
+		os.Exit(1)
+	}
+	// Work out which interface to use
+	var extIface *backend.ExternalInterface
+	// Check the default interface only if no interfaces are specified
+	if len(opts.iface) == 0 && len(opts.ifaceRegex) == 0 {
+		extIface, err = LookupExtIface(opts.publicIP, "", ipStack)
+		if err != nil {
+			log.Error("Failed to find any valid interface to use: ", err)
+			os.Exit(1)
+		}
+	} else {
+		// Check explicitly specified interfaces
+		for _, iface := range opts.iface {
+			extIface, err = LookupExtIface(iface, "", ipStack)
+			if err != nil {
+				log.Infof("Could not find valid interface matching %s: %s", iface, err)
+			}
+
+			if extIface != nil {
+				break
+			}
+		}
+
+		// Check interfaces that match any specified regexes
+		if extIface == nil {
+			for _, ifaceRegex := range opts.ifaceRegex {
+				extIface, err = LookupExtIface("", ifaceRegex, ipStack)
+				if err != nil {
+					log.Infof("Could not find valid interface matching %s: %s", ifaceRegex, err)
+				}
+
+				if extIface != nil {
+					break
+				}
+			}
+		}
+
+		if extIface == nil {
+			// Exit if any of the specified interfaces do not match
+			log.Error("Failed to find interface to use that matches the interfaces and/or regexes provided")
+			os.Exit(1)
+		}
 	}
 
 	// Create a backend manager then use it to create the backend and register the network with it.
@@ -296,25 +331,44 @@ func main() {
 
 	// Set up ipMasq if needed
 	if opts.ipMasq {
-		if err = recycleIPTables(config.Network, bn.Lease()); err != nil {
-			log.Errorf("Failed to recycle IPTables rules, %v", err)
-			cancel()
-			wg.Wait()
-			os.Exit(1)
+		if config.EnableIPv4 {
+			if err = recycleIPTables(config.Network, bn.Lease()); err != nil {
+				log.Errorf("Failed to recycle IPTables rules, %v", err)
+				cancel()
+				wg.Wait()
+				os.Exit(1)
+			}
+			log.Infof("Setting up masking rules")
+			go network.SetupAndEnsureIPTables(network.MasqRules(config.Network, bn.Lease()), opts.iptablesResyncSeconds)
+
 		}
-		log.Infof("Setting up masking rules")
-		go network.SetupAndEnsureIPTables(network.MasqRules(config.Network, bn.Lease()), opts.iptablesResyncSeconds)
+		if config.EnableIPv6 {
+			if err = recycleIP6Tables(config.IPv6Network, bn.Lease()); err != nil {
+				log.Errorf("Failed to recycle IP6Tables rules, %v", err)
+				cancel()
+				wg.Wait()
+				os.Exit(1)
+			}
+			log.Infof("Setting up masking ip6 rules")
+			go network.SetupAndEnsureIP6Tables(network.MasqIP6Rules(config.IPv6Network, bn.Lease()), opts.iptablesResyncSeconds)
+		}
 	}
 
 	// Always enables forwarding rules. This is needed for Docker versions >1.13 (https://docs.docker.com/engine/userguide/networking/default_network/container-communication/#container-communication-between-hosts)
 	// In Docker 1.12 and earlier, the default FORWARD chain policy was ACCEPT.
 	// In Docker 1.13 and later, Docker sets the default policy of the FORWARD chain to DROP.
 	if opts.iptablesForwardRules {
-		log.Infof("Changing default FORWARD chain policy to ACCEPT")
-		go network.SetupAndEnsureIPTables(network.ForwardRules(config.Network.String()), opts.iptablesResyncSeconds)
+		if config.EnableIPv4 {
+			log.Infof("Changing default FORWARD chain policy to ACCEPT")
+			go network.SetupAndEnsureIPTables(network.ForwardRules(config.Network.String()), opts.iptablesResyncSeconds)
+		}
+		if config.EnableIPv6 {
+			log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
+			go network.SetupAndEnsureIP6Tables(network.ForwardRules(config.IPv6Network.String()), opts.iptablesResyncSeconds)
+		}
 	}
 
-	if err := WriteSubnetFile(opts.subnetFile, config.Network, opts.ipMasq, bn); err != nil {
+	if err := WriteSubnetFile(opts.subnetFile, config, opts.ipMasq, bn); err != nil {
 		// Continue, even though it failed.
 		log.Warningf("Failed to write subnet file: %s", err)
 	} else {
@@ -357,6 +411,22 @@ func recycleIPTables(nw ip.IP4Net, lease *subnet.Lease) error {
 			Subnet: prevSubnet,
 		}
 		if err := network.DeleteIPTables(network.MasqRules(prevNetwork, lease)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func recycleIP6Tables(nw ip.IP6Net, lease *subnet.Lease) error {
+	prevNetwork := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_NETWORK")
+	prevSubnet := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_SUBNET")
+	// recycle iptables rules only when network configured or subnet leased is not equal to current one.
+	if prevNetwork.String() != nw.String() && prevSubnet.String() != lease.IPv6Subnet.String() {
+		log.Infof("Current ipv6 network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old ip6tables rules", nw, lease.IPv6Subnet, prevNetwork, prevSubnet)
+		lease := &subnet.Lease{
+			IPv6Subnet: prevSubnet,
+		}
+		if err := network.DeleteIP6Tables(network.MasqIP6Rules(prevNetwork, lease)); err != nil {
 			return err
 		}
 	}
@@ -425,7 +495,11 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 			log.Info("Lease renewed, new expiration: ", bn.Lease().Expiration)
 			dur = bn.Lease().Expiration.Sub(time.Now()) - renewMargin
 
-		case e := <-evts:
+		case e, ok := <-evts:
+			if !ok {
+				log.Infof("Stopped monitoring lease")
+				return errCanceled
+			}
 			switch e.Type {
 			case subnet.EventAdded:
 				bn.Lease().Expiration = e.Lease.Expiration
@@ -436,25 +510,55 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 				log.Error("Lease has been revoked. Shutting down daemon.")
 				return errInterrupted
 			}
-
-		case <-ctx.Done():
-			log.Infof("Stopped monitoring lease")
-			return errCanceled
 		}
 	}
 }
 
-func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, error) {
+func LookupExtIface(ifname string, ifregexS string, ipStack int) (*backend.ExternalInterface, error) {
 	var iface *net.Interface
 	var ifaceAddr net.IP
+	var ifaceV6Addr net.IP
 	var err error
+	var ifregex *regexp.Regexp
+
+	if ifregexS != "" {
+		ifregex, err = regexp.Compile(ifregexS)
+		if err != nil {
+			return nil, fmt.Errorf("could not compile the IP address regex '%s': %w", ifregexS, err)
+		}
+	}
+
+	// Check ip family stack
+	if ipStack == noneStack {
+		return nil, fmt.Errorf("none matched ip stack")
+	}
 
 	if len(ifname) > 0 {
 		if ifaceAddr = net.ParseIP(ifname); ifaceAddr != nil {
 			log.Infof("Searching for interface using %s", ifaceAddr)
-			iface, err = ip.GetInterfaceByIP(ifaceAddr)
-			if err != nil {
-				return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
+			switch ipStack {
+			case ipv4Stack:
+				iface, err = ip.GetInterfaceByIP(ifaceAddr)
+				if err != nil {
+					return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
+				}
+			case ipv6Stack:
+				iface, err = ip.GetInterfaceByIP6(ifaceAddr)
+				if err != nil {
+					return nil, fmt.Errorf("error looking up v6 interface %s: %s", ifname, err)
+				}
+			case dualStack:
+				iface, err = ip.GetInterfaceByIP(ifaceAddr)
+				if err != nil {
+					return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
+				}
+				v6Iface, err := ip.GetInterfaceByIP6(ifaceAddr)
+				if err != nil {
+					return nil, fmt.Errorf("error looking up v6 interface %s: %s", ifname, err)
+				}
+				if iface.Name != v6Iface.Name {
+					return nil, fmt.Errorf("v6 interface %s must be the same with v4 interface %s", v6Iface.Name, iface.Name)
+				}
 			}
 		} else {
 			iface, err = net.InterfaceByName(ifname)
@@ -462,7 +566,7 @@ func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, 
 				return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
 			}
 		}
-	} else if len(ifregex) > 0 {
+	} else if ifregex != nil {
 		// Use the regex if specified and the iface option for matching a specific ip or name is not used
 		ifaces, err := net.Interfaces()
 		if err != nil {
@@ -471,33 +575,57 @@ func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, 
 
 		// Check IP
 		for _, ifaceToMatch := range ifaces {
-			ifaceIP, err := ip.GetInterfaceIP4Addr(&ifaceToMatch)
-			if err != nil {
-				// Skip if there is no IPv4 address
-				continue
-			}
+			switch ipStack {
+			case ipv4Stack:
+				ifaceIP, err := ip.GetInterfaceIP4Addr(&ifaceToMatch)
+				if err != nil {
+					// Skip if there is no IPv4 address
+					continue
+				}
 
-			matched, err := regexp.MatchString(ifregex, ifaceIP.String())
-			if err != nil {
-				return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregex, ifaceIP.String())
-			}
+				if ifregex.MatchString(ifaceIP.String()) {
+					ifaceAddr = ifaceIP
+					iface = &ifaceToMatch
+					break
+				}
+			case ipv6Stack:
+				ifaceIP, err := ip.GetInterfaceIP6Addr(&ifaceToMatch)
+				if err != nil {
+					// Skip if there is no IPv6 address
+					continue
+				}
 
-			if matched {
-				ifaceAddr = ifaceIP
-				iface = &ifaceToMatch
-				break
+				if ifregex.MatchString(ifaceIP.String()) {
+					ifaceV6Addr = ifaceIP
+					iface = &ifaceToMatch
+					break
+				}
+			case dualStack:
+				ifaceIP, err := ip.GetInterfaceIP4Addr(&ifaceToMatch)
+				if err != nil {
+					// Skip if there is no IPv4 address
+					continue
+				}
+
+				ifaceV6IP, err := ip.GetInterfaceIP6Addr(&ifaceToMatch)
+				if err != nil {
+					// Skip if there is no IPv6 address
+					continue
+				}
+
+				if ifregex.MatchString(ifaceIP.String()) && ifregex.MatchString(ifaceV6IP.String()) {
+					ifaceAddr = ifaceIP
+					ifaceV6Addr = ifaceV6IP
+					iface = &ifaceToMatch
+					break
+				}
 			}
 		}
 
 		// Check Name
-		if iface == nil && ifaceAddr == nil {
+		if iface == nil && (ifaceAddr == nil || ifaceV6Addr == nil) {
 			for _, ifaceToMatch := range ifaces {
-				matched, err := regexp.MatchString(ifregex, ifaceToMatch.Name)
-				if err != nil {
-					return nil, fmt.Errorf("regex error matching pattern %s to %s", ifregex, ifaceToMatch.Name)
-				}
-
-				if matched {
+				if ifregex.MatchString(ifaceToMatch.Name) {
 					iface = &ifaceToMatch
 					break
 				}
@@ -508,33 +636,78 @@ func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, 
 		if iface == nil {
 			var availableFaces []string
 			for _, f := range ifaces {
-				ip, _ := ip.GetInterfaceIP4Addr(&f) // We can safely ignore errors. We just won't log any ip
-				availableFaces = append(availableFaces, fmt.Sprintf("%s:%s", f.Name, ip))
+				var ipaddr net.IP
+				switch ipStack {
+				case ipv4Stack, dualStack:
+					ipaddr, _ = ip.GetInterfaceIP4Addr(&f) // We can safely ignore errors. We just won't log any ip
+				case ipv6Stack:
+					ipaddr, _ = ip.GetInterfaceIP6Addr(&f) // We can safely ignore errors. We just won't log any ip
+				}
+				availableFaces = append(availableFaces, fmt.Sprintf("%s:%s", f.Name, ipaddr))
 			}
 
-			return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces (%s)", ifregex, strings.Join(availableFaces, ", "))
+			return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces (%s)", ifregexS, strings.Join(availableFaces, ", "))
 		}
 	} else {
 		log.Info("Determining IP address of default interface")
-		if iface, err = ip.GetDefaultGatewayInterface(); err != nil {
-			return nil, fmt.Errorf("failed to get default interface: %s", err)
+		switch ipStack {
+		case ipv4Stack:
+			if iface, err = ip.GetDefaultGatewayInterface(); err != nil {
+				return nil, fmt.Errorf("failed to get default interface: %w", err)
+			}
+		case ipv6Stack:
+			if iface, err = ip.GetDefaultV6GatewayInterface(); err != nil {
+				return nil, fmt.Errorf("failed to get default v6 interface: %w", err)
+			}
+		case dualStack:
+			if iface, err = ip.GetDefaultGatewayInterface(); err != nil {
+				return nil, fmt.Errorf("failed to get default interface: %w", err)
+			}
+			v6Iface, err := ip.GetDefaultV6GatewayInterface()
+			if err != nil {
+				return nil, fmt.Errorf("failed to get default v6 interface: %w", err)
+			}
+			if iface.Name != v6Iface.Name {
+				return nil, fmt.Errorf("v6 default route interface %s "+
+					"must be the same with v4 default route interface %s", v6Iface.Name, iface.Name)
+			}
 		}
 	}
 
-	if ifaceAddr == nil {
+	if ipStack == ipv4Stack && ifaceAddr == nil {
 		ifaceAddr, err = ip.GetInterfaceIP4Addr(iface)
 		if err != nil {
 			return nil, fmt.Errorf("failed to find IPv4 address for interface %s", iface.Name)
 		}
+	} else if ipStack == ipv6Stack && ifaceV6Addr == nil {
+		ifaceV6Addr, err = ip.GetInterfaceIP6Addr(iface)
+		if err != nil {
+			return nil, fmt.Errorf("failed to find IPv6 address for interface %s", iface.Name)
+		}
+	} else if ipStack == dualStack && ifaceAddr == nil && ifaceV6Addr == nil {
+		ifaceAddr, err = ip.GetInterfaceIP4Addr(iface)
+		if err != nil {
+			return nil, fmt.Errorf("failed to find IPv4 address for interface %s", iface.Name)
+		}
+		ifaceV6Addr, err = ip.GetInterfaceIP6Addr(iface)
+		if err != nil {
+			return nil, fmt.Errorf("failed to find IPv6 address for interface %s", iface.Name)
+		}
 	}
 
-	log.Infof("Using interface with name %s and address %s", iface.Name, ifaceAddr)
+	if ifaceAddr != nil {
+		log.Infof("Using interface with name %s and address %s", iface.Name, ifaceAddr)
+	}
+	if ifaceV6Addr != nil {
+		log.Infof("Using interface with name %s and v6 address %s", iface.Name, ifaceV6Addr)
+	}
 
 	if iface.MTU == 0 {
 		return nil, fmt.Errorf("failed to determine MTU for %s interface", ifaceAddr)
 	}
 
 	var extAddr net.IP
+	var extV6Addr net.IP
 
 	if len(opts.publicIP) > 0 {
 		extAddr = net.ParseIP(opts.publicIP)
@@ -549,30 +722,53 @@ func LookupExtIface(ifname string, ifregex string) (*backend.ExternalInterface, 
 		extAddr = ifaceAddr
 	}
 
+	if len(opts.publicIPv6) > 0 {
+		extV6Addr = net.ParseIP(opts.publicIPv6)
+		if extV6Addr == nil {
+			return nil, fmt.Errorf("invalid public IPv6 address: %s", opts.publicIPv6)
+		}
+		log.Infof("Using %s as external address", extV6Addr)
+	}
+
+	if extV6Addr == nil {
+		log.Infof("Defaulting external v6 address to interface address (%s)", ifaceV6Addr)
+		extV6Addr = ifaceV6Addr
+	}
+
 	return &backend.ExternalInterface{
-		Iface:     iface,
-		IfaceAddr: ifaceAddr,
-		ExtAddr:   extAddr,
+		Iface:       iface,
+		IfaceAddr:   ifaceAddr,
+		IfaceV6Addr: ifaceV6Addr,
+		ExtAddr:     extAddr,
+		ExtV6Addr:   extV6Addr,
 	}, nil
 }
 
-func WriteSubnetFile(path string, nw ip.IP4Net, ipMasq bool, bn backend.Network) error {
+func WriteSubnetFile(path string, config *subnet.Config, ipMasq bool, bn backend.Network) error {
 	dir, name := filepath.Split(path)
 	os.MkdirAll(dir, 0755)
-
 	tempFile := filepath.Join(dir, "."+name)
 	f, err := os.Create(tempFile)
 	if err != nil {
 		return err
 	}
+	if config.EnableIPv4 {
+		nw := config.Network
+		sn := bn.Lease().Subnet
+		// Write out the first usable IP by incrementing sn.IP by one
+		sn.IncrementIP()
+		fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", nw)
+		fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn)
+	}
+	if config.EnableIPv6 {
+		ip6Nw := config.IPv6Network
+		ip6Sn := bn.Lease().IPv6Subnet
+		// Write out the first usable IP by incrementing ip6Sn.IP by one
+		ip6Sn.IncrementIP()
+		fmt.Fprintf(f, "FLANNEL_IPV6_NETWORK=%s\n", ip6Nw)
+		fmt.Fprintf(f, "FLANNEL_IPV6_SUBNET=%s\n", ip6Sn)
+	}
 
-	// Write out the first usable IP by incrementing
-	// sn.IP by one
-	sn := bn.Lease().Subnet
-	sn.IP += 1
-
-	fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", nw)
-	fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn)
 	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", bn.MTU())
 	_, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", ipMasq)
 	f.Close()
@@ -603,6 +799,22 @@ func mustRunHealthz() {
 
 func ReadCIDRFromSubnetFile(path string, CIDRKey string) ip.IP4Net {
 	var prevCIDR ip.IP4Net
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		prevSubnetVals, err := godotenv.Read(path)
+		if err != nil {
+			log.Errorf("Couldn't fetch previous %s from subnet file at %s: %s", CIDRKey, path, err)
+		} else if prevCIDRString, ok := prevSubnetVals[CIDRKey]; ok {
+			err = prevCIDR.UnmarshalJSON([]byte(prevCIDRString))
+			if err != nil {
+				log.Errorf("Couldn't parse previous %s from subnet file at %s: %s", CIDRKey, path, err)
+			}
+		}
+	}
+	return prevCIDR
+}
+
+func ReadIP6CIDRFromSubnetFile(path string, CIDRKey string) ip.IP6Net {
+	var prevCIDR ip.IP6Net
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		prevSubnetVals, err := godotenv.Read(path)
 		if err != nil {

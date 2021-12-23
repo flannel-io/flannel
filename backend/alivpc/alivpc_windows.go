@@ -13,11 +13,3 @@
 // limitations under the License.
 
 package alivpc
-
-import (
-	log "github.com/golang/glog"
-)
-
-func init() {
-	log.Infof("AliVpc is not supported on this platform")
-}

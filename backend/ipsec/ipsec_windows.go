@@ -13,9 +13,3 @@
 // limitations under the License.
 
 package ipsec
-
-import log "github.com/golang/glog"
-
-func init() {
-	log.Infof("ipsec is not supported on this platform")
-}

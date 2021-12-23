@@ -24,13 +24,12 @@ import (
 	"sync"
 	"syscall"
 
-	log "github.com/golang/glog"
+	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/subnet"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
-
-	"github.com/coreos/flannel/backend"
-	"github.com/coreos/flannel/pkg/ip"
-	"github.com/coreos/flannel/subnet"
+	log "k8s.io/klog"
 )
 
 const (
@@ -109,12 +108,13 @@ func (n *network) Run(ctx context.Context) {
 
 	for {
 		select {
-		case evtBatch := <-evts:
+		case evtBatch, ok := <-evts:
+			if !ok {
+				log.Infof("evts chan closed")
+				stopProxy(n.ctl)
+				return
+			}
 			n.processSubnetEvents(evtBatch)
-
-		case <-ctx.Done():
-			stopProxy(n.ctl)
-			return
 		}
 	}
 }

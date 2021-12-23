@@ -13,11 +13,3 @@
 // limitations under the License.
 
 package udp
-
-import (
-	log "github.com/golang/glog"
-)
-
-func init() {
-	log.Infof("udp is not supported on this platform")
-}
