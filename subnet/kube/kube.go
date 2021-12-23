@@ -143,11 +143,11 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 	ksm.nodeName = nodeName
 	ksm.subnetConf = sc
 	scale := 5000
-	scaleStr := os.Getenv("K8S_SCALE")
+	scaleStr := os.Getenv("EVENT_QUEUE_DEPTH")
 	if scaleStr != "" {
 		n, err := strconv.Atoi(scaleStr)
 		if err != nil {
-			return nil, fmt.Errorf("env K8S_SCALE=%s format error: %v", scaleStr, err)
+			return nil, fmt.Errorf("env EVENT_QUEUE_DEPTH=%s format error: %v", scaleStr, err)
 		}
 		if n > 0 {
 			scale = n
