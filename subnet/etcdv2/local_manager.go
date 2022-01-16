@@ -103,9 +103,6 @@ func (m *LocalManager) AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Le
 		l, err := m.tryAcquireLease(ctx, config, attrs.PublicIP, attrs)
 		switch err {
 		case nil:
-			//TODO only vxlan backend and kube subnet manager support dual stack now.
-			l.EnableIPv4 = true
-			l.EnableIPv6 = false
 			return l, nil
 		case errTryAgain:
 			continue
@@ -146,15 +143,15 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 	// Try to reuse a subnet if there's one that matches our IP
 	if l := findLeaseByIP(leases, extIaddr); l != nil {
 		// Make sure the existing subnet is still within the configured network
-		if isSubnetConfigCompat(config, l.Subnet) {
-			log.Infof("Found lease (%v) for current IP (%v), reusing", l.Subnet, extIaddr)
+		if isSubnetConfigCompat(config, l.Subnet) && isIPv6SubnetConfigCompat(config, l.IPv6Subnet) {
+			log.Infof("Found lease (ip: %v ipv6: %v) for current IP (%v), reusing", l.Subnet, l.IPv6Subnet, extIaddr)
 
 			ttl := time.Duration(0)
 			if !l.Expiration.IsZero() {
 				// Not a reservation
 				ttl = subnetTTL
 			}
-			exp, err := m.registry.updateSubnet(ctx, l.Subnet, attrs, ttl, 0)
+			exp, err := m.registry.updateSubnet(ctx, l.Subnet, l.IPv6Subnet, attrs, ttl, 0)
 			if err != nil {
 				return nil, err
 			}
@@ -163,8 +160,8 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 			l.Expiration = exp
 			return l, nil
 		} else {
-			log.Infof("Found lease (%v) for current IP (%v) but not compatible with current config, deleting", l.Subnet, extIaddr)
-			if err := m.registry.deleteSubnet(ctx, l.Subnet); err != nil {
+			log.Infof("Found lease (%+v) for current IP (%v) but not compatible with current config, deleting", l, extIaddr)
+			if err := m.registry.deleteSubnet(ctx, l.Subnet, l.IPv6Subnet); err != nil {
 				return nil, err
 			}
 		}
@@ -172,11 +169,12 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 
 	// no existing match, check if there was a previous subnet to use
 	var sn ip.IP4Net
+	var sn6 ip.IP6Net
 	if !m.previousSubnet.Empty() {
 		// use previous subnet
 		if l := findLeaseBySubnet(leases, m.previousSubnet); l != nil {
 			// Make sure the existing subnet is still within the configured network
-			if isSubnetConfigCompat(config, l.Subnet) {
+			if isSubnetConfigCompat(config, l.Subnet) && isIPv6SubnetConfigCompat(config, l.IPv6Subnet) {
 				log.Infof("Found lease (%v) matching previously leased subnet, reusing", l.Subnet)
 
 				ttl := time.Duration(0)
@@ -184,7 +182,7 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 					// Not a reservation
 					ttl = subnetTTL
 				}
-				exp, err := m.registry.updateSubnet(ctx, l.Subnet, attrs, ttl, 0)
+				exp, err := m.registry.updateSubnet(ctx, l.Subnet, l.IPv6Subnet, attrs, ttl, 0)
 				if err != nil {
 					return nil, err
 				}
@@ -194,12 +192,13 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 				return l, nil
 			} else {
 				log.Infof("Found lease (%v) matching previously leased subnet but not compatible with current config, deleting", l.Subnet)
-				if err := m.registry.deleteSubnet(ctx, l.Subnet); err != nil {
+				if err := m.registry.deleteSubnet(ctx, l.Subnet, l.IPv6Subnet); err != nil {
 					return nil, err
 				}
 			}
 		} else {
 			// Check if the previous subnet is a part of the network and of the right subnet length
+			// TODO ipv6?
 			if isSubnetConfigCompat(config, m.previousSubnet) {
 				log.Infof("Found previously leased subnet (%v), reusing", m.previousSubnet)
 				sn = m.previousSubnet
@@ -211,18 +210,21 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 
 	if sn.Empty() {
 		// no existing match, grab a new one
-		sn, err = m.allocateSubnet(config, leases)
+		sn, sn6, err = m.allocateSubnet(config, leases)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	exp, err := m.registry.createSubnet(ctx, sn, attrs, subnetTTL)
+	exp, err := m.registry.createSubnet(ctx, sn, sn6, attrs, subnetTTL)
 	switch {
 	case err == nil:
-		log.Infof("Allocated lease (%v) to current node (%v) ", sn, extIaddr)
+		log.Infof("Allocated lease (ip: %v ipv6: %v) to current node (%v) ", sn, sn6, extIaddr)
 		return &Lease{
+			EnableIPv4: true,
 			Subnet:     sn,
+			EnableIPv6: !sn6.Empty(),
+			IPv6Subnet: sn6,
 			Attrs:      *attrs,
 			Expiration: exp,
 		}, nil
@@ -233,32 +235,63 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 	}
 }
 
-func (m *LocalManager) allocateSubnet(config *Config, leases []Lease) (ip.IP4Net, error) {
+func (m *LocalManager) allocateSubnet(config *Config, leases []Lease) (ip.IP4Net, ip.IP6Net, error) {
 	log.Infof("Picking subnet in range %s ... %s", config.SubnetMin, config.SubnetMax)
+	if config.EnableIPv6 {
+		log.Infof("Picking ipv6 subnet in range %s ... %s", config.IPv6SubnetMin, config.IPv6SubnetMax)
+	}
 
-	var bag []ip.IP4
+	type IPs struct {
+		ip  ip.IP4
+		ip6 *ip.IP6
+	}
+	var availableIPs []IPs
+
 	sn := ip.IP4Net{IP: config.SubnetMin, PrefixLen: config.SubnetLen}
+	var sn6 ip.IP6Net
+	if config.EnableIPv6 {
+		sn6 = ip.IP6Net{IP: config.IPv6SubnetMin, PrefixLen: config.IPv6SubnetLen}
+	}
 
 OuterLoop:
-	for ; sn.IP <= config.SubnetMax && len(bag) < 100; sn = sn.Next() {
+	for ; sn.IP <= config.SubnetMax && len(availableIPs) < 100; sn = sn.Next() {
+		if !sn6.Empty() {
+			if sn6.IP.Cmp(config.IPv6SubnetMax) >= 0 {
+				break OuterLoop
+			}
+		}
 		for _, l := range leases {
 			if sn.Overlaps(l.Subnet) {
 				continue OuterLoop
 			}
+			if !sn6.Empty() && sn6.Overlaps(l.IPv6Subnet) {
+				continue OuterLoop
+			}
 		}
-		bag = append(bag, sn.IP)
+
+		if !sn6.Empty() {
+			availableIPs = append(availableIPs, IPs{ip: sn.IP, ip6: sn6.IP})
+			sn6 = sn6.Next()
+		} else {
+			availableIPs = append(availableIPs, IPs{ip: sn.IP, ip6: nil})
+		}
 	}
 
-	if len(bag) == 0 {
-		return ip.IP4Net{}, errors.New("out of subnets")
+	if len(availableIPs) == 0 {
+		return ip.IP4Net{}, ip.IP6Net{}, errors.New("out of subnets")
 	} else {
-		i := randInt(0, len(bag))
-		return ip.IP4Net{IP: bag[i], PrefixLen: config.SubnetLen}, nil
+		i := randInt(0, len(availableIPs))
+		ipnet := ip.IP4Net{IP: availableIPs[i].ip, PrefixLen: config.SubnetLen}
+
+		if availableIPs[i].ip6 == nil {
+			return ipnet, ip.IP6Net{}, nil
+		}
+		return ipnet, ip.IP6Net{IP: availableIPs[i].ip6, PrefixLen: config.IPv6SubnetLen}, nil
 	}
 }
 
 func (m *LocalManager) RenewLease(ctx context.Context, lease *Lease) error {
-	exp, err := m.registry.updateSubnet(ctx, lease.Subnet, &lease.Attrs, subnetTTL, 0)
+	exp, err := m.registry.updateSubnet(ctx, lease.Subnet, lease.IPv6Subnet, &lease.Attrs, subnetTTL, 0)
 	if err != nil {
 		return err
 	}
@@ -285,15 +318,11 @@ func getNextIndex(cursor interface{}) (uint64, error) {
 	return nextIndex, nil
 }
 
-func (m *LocalManager) leaseWatchReset(ctx context.Context, sn ip.IP4Net) (LeaseWatchResult, error) {
-	l, index, err := m.registry.getSubnet(ctx, sn)
+func (m *LocalManager) leaseWatchReset(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) (LeaseWatchResult, error) {
+	l, index, err := m.registry.getSubnet(ctx, sn, sn6)
 	if err != nil {
 		return LeaseWatchResult{}, err
 	}
-
-	//TODO only vxlan backend and kube subnet manager support dual stack now.
-	l.EnableIPv4 = true
-	l.EnableIPv6 = false
 
 	return LeaseWatchResult{
 		Snapshot: []Lease{*l},
@@ -301,9 +330,9 @@ func (m *LocalManager) leaseWatchReset(ctx context.Context, sn ip.IP4Net) (Lease
 	}, nil
 }
 
-func (m *LocalManager) WatchLease(ctx context.Context, sn ip.IP4Net, cursor interface{}) (LeaseWatchResult, error) {
+func (m *LocalManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (LeaseWatchResult, error) {
 	if cursor == nil {
-		return m.leaseWatchReset(ctx, sn)
+		return m.leaseWatchReset(ctx, sn, sn6)
 	}
 
 	nextIndex, err := getNextIndex(cursor)
@@ -311,13 +340,10 @@ func (m *LocalManager) WatchLease(ctx context.Context, sn ip.IP4Net, cursor inte
 		return LeaseWatchResult{}, err
 	}
 
-	evt, index, err := m.registry.watchSubnet(ctx, nextIndex, sn)
+	evt, index, err := m.registry.watchSubnet(ctx, nextIndex, sn, sn6)
 
 	switch {
 	case err == nil:
-		//TODO only vxlan backend and kube subnet manager support dual stack now.
-		evt.Lease.EnableIPv4 = true
-		evt.Lease.EnableIPv6 = false
 		return LeaseWatchResult{
 			Events: []Event{evt},
 			Cursor: watchCursor{index},
@@ -325,7 +351,7 @@ func (m *LocalManager) WatchLease(ctx context.Context, sn ip.IP4Net, cursor inte
 
 	case isIndexTooSmall(err):
 		log.Warning("Watch of subnet leases failed because etcd index outside history window")
-		return m.leaseWatchReset(ctx, sn)
+		return m.leaseWatchReset(ctx, sn, sn6)
 
 	default:
 		return LeaseWatchResult{}, err
@@ -347,7 +373,6 @@ func (m *LocalManager) WatchLeases(ctx context.Context, cursor interface{}) (Lea
 	case err == nil:
 		//TODO only vxlan backend and kube subnet manager support dual stack now.
 		evt.Lease.EnableIPv4 = true
-		evt.Lease.EnableIPv6 = false
 		return LeaseWatchResult{
 			Events: []Event{evt},
 			Cursor: watchCursor{index},
@@ -390,6 +415,17 @@ func isSubnetConfigCompat(config *Config, sn ip.IP4Net) bool {
 	}
 
 	return sn.PrefixLen == config.SubnetLen
+}
+
+func isIPv6SubnetConfigCompat(config *Config, sn6 ip.IP6Net) bool {
+	if !config.EnableIPv6 {
+		return sn6.Empty()
+	}
+	if sn6.Empty() || sn6.IP.Cmp(config.IPv6SubnetMin) < 0 || sn6.IP.Cmp(config.IPv6SubnetMax) > 0 {
+		return false
+	}
+
+	return sn6.PrefixLen == config.IPv6SubnetLen
 }
 
 func (m *LocalManager) Name() string {

@@ -110,6 +110,10 @@ func (ip6 *IP6) UnmarshalJSON(j []byte) error {
 	}
 }
 
+func (ip6 *IP6) Cmp(other *IP6) int {
+	return (*big.Int)(ip6).Cmp((*big.Int)(other))
+}
+
 // similar to net.IPNet but has uint based representation
 type IP6Net struct {
 	IP        *IP6

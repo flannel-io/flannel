@@ -190,7 +190,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 	attrs := &LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.1.1.1"),
 	}
-	_, err := msr.createSubnet(ctx, expected, attrs, 0)
+	_, err := msr.createSubnet(ctx, expected, ip.IP6Net{}, attrs, 0)
 	if err != nil {
 		t.Fatalf("createSubnet filed: %v", err)
 	}

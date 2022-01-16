@@ -475,7 +475,8 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 
 	wg.Add(1)
 	go func() {
-		subnet.WatchLease(ctx, sm, bn.Lease().Subnet, evts)
+		l := bn.Lease()
+		subnet.WatchLease(ctx, sm, l.Subnet, l.IPv6Subnet, evts)
 		wg.Done()
 	}()
 
