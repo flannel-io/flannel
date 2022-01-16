@@ -61,6 +61,7 @@ The following configuration illustrates the use of most options with `udp` backe
 --net-config-path=/etc/kube-flannel/net-conf.json: path to the network configuration file to use
 --subnet-lease-renew-margin=60: subnet lease renewal margin, in minutes.
 --ip-masq=false: setup IP masquerade for traffic destined for outside the flannel network. Flannel assumes that the default policy is ACCEPT in the NAT POSTROUTING chain.
+--ipv6-masq=false: setup IPv6 masquerade for traffic destined for outside the flannel network. Flannel assumes that the default policy is ACCEPT in the NAT POSTROUTING chain.
 -v=0: log level for V logs. Set to 1 to see messages related to data path.
 --healthz-ip="0.0.0.0": The IP address for healthz server to listen (default "0.0.0.0")
 --healthz-port=0: The port for healthz server to listen(0 to disable)

@@ -90,6 +90,7 @@ type CmdLineOpts struct {
 	iface                     flagSlice
 	ifaceRegex                flagSlice
 	ipMasq                    bool
+	ipv6Masq                  bool
 	subnetFile                string
 	subnetDir                 string
 	publicIP                  string
@@ -134,6 +135,7 @@ func init() {
 	flannelFlags.StringVar(&opts.publicIPv6, "public-ipv6", "", "IPv6 accessible by other nodes for inter-host communication")
 	flannelFlags.IntVar(&opts.subnetLeaseRenewMargin, "subnet-lease-renew-margin", 60, "subnet lease renewal margin, in minutes, ranging from 1 to 1439")
 	flannelFlags.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
+	flannelFlags.BoolVar(&opts.ipv6Masq, "ipv6-masq", false, "setup IPv6 masquerade rule for traffic destined outside of overlay network")
 	flannelFlags.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "contact the Kubernetes API for subnet assignment instead of etcd.")
 	flannelFlags.StringVar(&opts.kubeApiUrl, "kube-api-url", "", "Kubernetes API server URL. Does not need to be specified if flannel is running in a pod.")
 	flannelFlags.StringVar(&opts.kubeAnnotationPrefix, "kube-annotation-prefix", "flannel.alpha.coreos.com", `Kubernetes annotation prefix. Can contain single slash "/", otherwise it will be appended at the end.`)
@@ -342,6 +344,10 @@ func main() {
 			go network.SetupAndEnsureIPTables(network.MasqRules(config.Network, bn.Lease()), opts.iptablesResyncSeconds)
 
 		}
+	}
+
+	// Set up ip6Masq if needed
+	if opts.ipv6Masq {
 		if config.EnableIPv6 {
 			if err = recycleIP6Tables(config.IPv6Network, bn.Lease()); err != nil {
 				log.Errorf("Failed to recycle IP6Tables rules, %v", err)
@@ -368,7 +374,7 @@ func main() {
 		}
 	}
 
-	if err := WriteSubnetFile(opts.subnetFile, config, opts.ipMasq, bn); err != nil {
+	if err := WriteSubnetFile(opts.subnetFile, config, opts.ipMasq, opts.ipv6Masq, bn); err != nil {
 		// Continue, even though it failed.
 		log.Warningf("Failed to write subnet file: %s", err)
 	} else {
@@ -744,7 +750,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int) (*backend.Exter
 	}, nil
 }
 
-func WriteSubnetFile(path string, config *subnet.Config, ipMasq bool, bn backend.Network) error {
+func WriteSubnetFile(path string, config *subnet.Config, ipMasq bool, ip6Masq bool, bn backend.Network) error {
 	dir, name := filepath.Split(path)
 	os.MkdirAll(dir, 0755)
 	tempFile := filepath.Join(dir, "."+name)
@@ -759,6 +765,7 @@ func WriteSubnetFile(path string, config *subnet.Config, ipMasq bool, bn backend
 		sn.IncrementIP()
 		fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", nw)
 		fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn)
+		fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", ipMasq)
 	}
 	if config.EnableIPv6 {
 		ip6Nw := config.IPv6Network
@@ -767,10 +774,10 @@ func WriteSubnetFile(path string, config *subnet.Config, ipMasq bool, bn backend
 		ip6Sn.IncrementIP()
 		fmt.Fprintf(f, "FLANNEL_IPV6_NETWORK=%s\n", ip6Nw)
 		fmt.Fprintf(f, "FLANNEL_IPV6_SUBNET=%s\n", ip6Sn)
+		fmt.Fprintf(f, "FLANNEL_IPV6_MASQ=%v\n", ip6Masq)
 	}
 
-	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", bn.MTU())
-	_, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", ipMasq)
+	_, err = fmt.Fprintf(f, "FLANNEL_MTU=%d\n", bn.MTU())
 	f.Close()
 	if err != nil {
 		return err
