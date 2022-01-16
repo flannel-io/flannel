@@ -149,7 +149,7 @@ func (esr *etcdSubnetRegistry) getSubnets(ctx context.Context) ([]Lease, uint64,
 }
 
 func (esr *etcdSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net) (*Lease, uint64, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn))
+	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn, ip.IP6Net{}))
 	resp, err := esr.client().Get(ctx, key, &etcd.GetOptions{Quorum: true})
 	if err != nil {
 		return nil, 0, err
@@ -160,7 +160,7 @@ func (esr *etcdSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net) (*Le
 }
 
 func (esr *etcdSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn))
+	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn, ip.IP6Net{}))
 	value, err := json.Marshal(attrs)
 	if err != nil {
 		return time.Time{}, err
@@ -185,7 +185,7 @@ func (esr *etcdSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, a
 }
 
 func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration, asof uint64) (time.Time, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn))
+	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn, ip.IP6Net{}))
 	value, err := json.Marshal(attrs)
 	if err != nil {
 		return time.Time{}, err
@@ -208,7 +208,7 @@ func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, a
 }
 
 func (esr *etcdSubnetRegistry) deleteSubnet(ctx context.Context, sn ip.IP4Net) error {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn))
+	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn, ip.IP6Net{}))
 	_, err := esr.client().Delete(ctx, key, nil)
 	return err
 }
@@ -229,7 +229,7 @@ func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, since uint64) (
 }
 
 func (esr *etcdSubnetRegistry) watchSubnet(ctx context.Context, since uint64, sn ip.IP4Net) (Event, uint64, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn))
+	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn, ip.IP6Net{}))
 	opts := &etcd.WatcherOptions{
 		AfterIndex: since,
 	}
@@ -261,7 +261,7 @@ func (esr *etcdSubnetRegistry) resetClient() {
 }
 
 func parseSubnetWatchResponse(resp *etcd.Response) (Event, error) {
-	sn := ParseSubnetKey(resp.Node.Key)
+	sn, _ := ParseSubnetKey(resp.Node.Key)
 	if sn == nil {
 		return Event{}, fmt.Errorf("%v %q: not a subnet, skipping", resp.Action, resp.Node.Key)
 	}
@@ -298,7 +298,7 @@ func parseSubnetWatchResponse(resp *etcd.Response) (Event, error) {
 }
 
 func nodeToLease(node *etcd.Node) (*Lease, error) {
-	sn := ParseSubnetKey(node.Key)
+	sn, _ := ParseSubnetKey(node.Key)
 	if sn == nil {
 		return nil, fmt.Errorf("failed to parse subnet key %s", node.Key)
 	}
