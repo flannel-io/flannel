@@ -190,7 +190,7 @@ func (n IP6Net) Contains(ip *IP6) bool {
 }
 
 func (n IP6Net) Empty() bool {
-	return n.IP == (*IP6)(big.NewInt(0)) && n.PrefixLen == uint(0)
+	return IsEmpty(n.IP) && n.PrefixLen == uint(0)
 }
 
 // MarshalJSON: json.Marshaler impl
