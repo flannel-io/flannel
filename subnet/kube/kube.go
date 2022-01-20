@@ -403,6 +403,7 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l subnet.Lease, err error)
 		l.Attrs.BackendV6Data = json.RawMessage(n.Annotations[ksm.annotations.BackendV6Data])
 
 		ipv6Cidr := new(net.IPNet)
+		log.Infof("Creating the node lease for IPv6. This is the n.Spec.PodCIDRs: %v", n.Spec.PodCIDRs)
 		for _, podCidr := range n.Spec.PodCIDRs {
 			_, parseCidr, err := net.ParseCIDR(podCidr)
 			if err != nil {
