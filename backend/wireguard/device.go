@@ -259,7 +259,7 @@ func (dev *wgDevice) ConfigureV6(devIP *ip.IP6, flannelnet ip.IP6Net) error {
 	return nil
 }
 
-func (dev *wgDevice) addPeer(publicEndpoint string, peerPublicKeyRaw string, peerSubnet *net.IPNet) error {
+func (dev *wgDevice) addPeer(publicEndpoint string, peerPublicKeyRaw string, peerSubnets []net.IPNet) error {
 	udpEndpoint, err := net.ResolveUDPAddr("udp", publicEndpoint)
 	if err != nil {
 		return fmt.Errorf("failed to resolve UDP address: %w", err)
@@ -281,9 +281,7 @@ func (dev *wgDevice) addPeer(publicEndpoint string, peerPublicKeyRaw string, pee
 				PersistentKeepaliveInterval: dev.attrs.keepalive,
 				Endpoint:                    udpEndpoint,
 				ReplaceAllowedIPs:           true,
-				AllowedIPs: []net.IPNet{
-					*peerSubnet,
-				},
+				AllowedIPs:                  peerSubnets,
 			},
 		}}
 

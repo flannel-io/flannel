@@ -174,6 +174,13 @@ Type:
 * `PSK` (string): Optional. The pre shared key to use. Use `wg genpsk` to generate a key.
 * `ListenPort` (int): Optional. The udp port to listen on. Default is `51820`.
 * `ListenPortV6` (int): Optional. The udp port to listen on for ipv6. Default is `51821`.
+* `Mode` (string): Optional.
+    * separate - Use separate wireguard tunnels for ipv4 and ipv6 (default)
+    * auto - Single wireguard tunnel for both address families; autodetermine the preferred peer address
+    * ipv4 - Single wireguard tunnel for both address families; use ipv4 for
+      the peer addresses
+    * ipv6 - Single wireguard tunnel for both address families; use ipv6 for
+      the peer addresses
 * `PersistentKeepaliveInterval` (int): Optional. Default is 0 (disabled).
 
 If no private key was generated before the private key is written to `/run/flannel/wgkey`. You can use environment `WIREGUARD_KEY_FILE` to change this path.
