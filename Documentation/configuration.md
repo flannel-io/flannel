@@ -86,7 +86,7 @@ Set `healthz-port` to a non-zero value will enable a healthz server for flannel.
 Flannel supports the dual-stack mode of Kubernetes. This means pods and services could use ipv4 and ipv6 at the same time. Currently, dual-stack is only supported for kube subnet manager and vxlan, wireguard or host-gw(linux) backend.
 
 Requirements:
-* v1.0 of flannel binary from [containernetworking/plugins](https://github.com/containernetworking/plugins)
+* v1.0.1 of flannel binary from [containernetworking/plugins](https://github.com/containernetworking/plugins)
 * Nodes must have an ipv4 and ipv6 address in the main interface
 * Nodes must have an ipv4 and ipv6 address default route
 * vxlan support ipv6 tunnel require kernel version >= 3.12
