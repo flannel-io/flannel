@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   GO_VERSION: "1.15.15"
-  LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le"
+  LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le mips64le"
 
 jobs:
   build-images:
@@ -70,4 +70,11 @@ jobs:
         with:
           context: .
           file: Dockerfile.ppc64le
+          push: false
+
+      - name: Build Docker image for mips64le
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.mips64le
           push: false
