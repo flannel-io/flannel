@@ -285,7 +285,7 @@ type Fq struct {
 
 func (fq *Fq) String() string {
 	return fmt.Sprintf(
-		"{PacketLimit: %v, FlowPacketLimit: %v, Quantum: %v, InitalQuantum: %v, Pacing: %v, FlowDefaultRate: %v, FlowMaxRate: %v, Buckets: %v, FlowRefillDelay: %v,  LowRateTreshold: %v}",
+		"{PacketLimit: %v, FlowPacketLimit: %v, Quantum: %v, InitialQuantum: %v, Pacing: %v, FlowDefaultRate: %v, FlowMaxRate: %v, Buckets: %v, FlowRefillDelay: %v,  LowRateThreshold: %v}",
 		fq.PacketLimit, fq.FlowPacketLimit, fq.Quantum, fq.InitialQuantum, fq.Pacing, fq.FlowDefaultRate, fq.FlowMaxRate, fq.Buckets, fq.FlowRefillDelay, fq.LowRateThreshold,
 	)
 }
@@ -337,4 +337,28 @@ func (qdisc *FqCodel) Attrs() *QdiscAttrs {
 
 func (qdisc *FqCodel) Type() string {
 	return "fq_codel"
+}
+
+type Sfq struct {
+	QdiscAttrs
+	// TODO: Only the simplified options for SFQ are handled here. Support for the extended one can be added later.
+	Quantum uint8
+	Perturb uint8
+	Limit   uint32
+	Divisor uint8
+}
+
+func (sfq *Sfq) String() string {
+	return fmt.Sprintf(
+		"{%v -- Quantum: %v, Perturb: %v, Limit: %v, Divisor: %v}",
+		sfq.Attrs(), sfq.Quantum, sfq.Perturb, sfq.Limit, sfq.Divisor,
+	)
+}
+
+func (qdisc *Sfq) Attrs() *QdiscAttrs {
+	return &qdisc.QdiscAttrs
+}
+
+func (qdisc *Sfq) Type() string {
+	return "sfq"
 }

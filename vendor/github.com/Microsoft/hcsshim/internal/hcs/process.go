@@ -1,46 +1,48 @@
 package hcs
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"io"
+	"os"
 	"sync"
 	"syscall"
 	"time"
 
-	"github.com/Microsoft/hcsshim/internal/guestrequest"
-	"github.com/Microsoft/hcsshim/internal/interop"
-	"github.com/Microsoft/hcsshim/internal/logfields"
-	"github.com/sirupsen/logrus"
+	"github.com/Microsoft/hcsshim/internal/log"
+	"github.com/Microsoft/hcsshim/internal/oc"
+	"github.com/Microsoft/hcsshim/internal/vmcompute"
+	"go.opencensus.io/trace"
 )
 
 // ContainerError is an error encountered in HCS
 type Process struct {
-	handleLock     sync.RWMutex
-	handle         hcsProcess
-	processID      int
-	system         *System
-	cachedPipes    *cachedPipes
-	callbackNumber uintptr
+	handleLock          sync.RWMutex
+	handle              vmcompute.HcsProcess
+	processID           int
+	system              *System
+	hasCachedStdio      bool
+	stdioLock           sync.Mutex
+	stdin               io.WriteCloser
+	stdout              io.ReadCloser
+	stderr              io.ReadCloser
+	callbackNumber      uintptr
+	killSignalDelivered bool
 
-	logctx logrus.Fields
+	closedWaitOnce sync.Once
+	waitBlock      chan struct{}
+	exitCode       int
+	waitError      error
 }
 
-func newProcess(process hcsProcess, processID int, computeSystem *System) *Process {
+func newProcess(process vmcompute.HcsProcess, processID int, computeSystem *System) *Process {
 	return &Process{
 		handle:    process,
 		processID: processID,
 		system:    computeSystem,
-		logctx: logrus.Fields{
-			logfields.ContainerID: computeSystem.ID(),
-			logfields.ProcessID:   processID,
-		},
+		waitBlock: make(chan struct{}),
 	}
-}
-
-type cachedPipes struct {
-	stdIn  syscall.Handle
-	stdOut syscall.Handle
-	stdErr syscall.Handle
 }
 
 type processModifyRequest struct {
@@ -58,18 +60,14 @@ type closeHandle struct {
 	Handle string
 }
 
-type ProcessStatus struct {
+type processStatus struct {
 	ProcessID      uint32
 	Exited         bool
 	ExitCode       uint32
 	LastWaitResult int32
 }
 
-const (
-	stdIn  string = "StdIn"
-	stdOut string = "StdOut"
-	stdErr string = "StdErr"
-)
+const stdIn string = "StdIn"
 
 const (
 	modifyConsoleSize string = "ConsoleSize"
@@ -86,120 +84,188 @@ func (process *Process) SystemID() string {
 	return process.system.ID()
 }
 
-func (process *Process) logOperationBegin(operation string) {
-	logOperationBegin(
-		process.logctx,
-		operation+" - Begin Operation")
-}
-
-func (process *Process) logOperationEnd(operation string, err error) {
-	var result string
-	if err == nil {
-		result = "Success"
-	} else {
-		result = "Error"
+func (process *Process) processSignalResult(ctx context.Context, err error) (bool, error) {
+	switch err {
+	case nil:
+		return true, nil
+	case ErrVmcomputeOperationInvalidState, ErrComputeSystemDoesNotExist, ErrElementNotFound:
+		select {
+		case <-process.waitBlock:
+			// The process exit notification has already arrived.
+		default:
+			// The process should be gone, but we have not received the notification.
+			// After a second, force unblock the process wait to work around a possible
+			// deadlock in the HCS.
+			go func() {
+				time.Sleep(time.Second)
+				process.closedWaitOnce.Do(func() {
+					log.G(ctx).WithError(err).Warn("force unblocking process waits")
+					process.exitCode = -1
+					process.waitError = err
+					close(process.waitBlock)
+				})
+			}()
+		}
+		return false, nil
+	default:
+		return false, err
 	}
-
-	logOperationEnd(
-		process.logctx,
-		operation+" - End Operation - "+result,
-		err)
 }
 
 // Signal signals the process with `options`.
-func (process *Process) Signal(options guestrequest.SignalProcessOptions) (err error) {
+//
+// For LCOW `guestrequest.SignalProcessOptionsLCOW`.
+//
+// For WCOW `guestrequest.SignalProcessOptionsWCOW`.
+func (process *Process) Signal(ctx context.Context, options interface{}) (bool, error) {
 	process.handleLock.RLock()
 	defer process.handleLock.RUnlock()
 
-	operation := "hcsshim::Process::Signal"
-	process.logOperationBegin(operation)
-	defer func() { process.logOperationEnd(operation, err) }()
+	operation := "hcs::Process::Signal"
 
 	if process.handle == 0 {
-		return makeProcessError(process, operation, ErrAlreadyClosed, nil)
+		return false, makeProcessError(process, operation, ErrAlreadyClosed, nil)
 	}
 
 	optionsb, err := json.Marshal(options)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	optionsStr := string(optionsb)
-
-	var resultp *uint16
-	syscallWatcher(process.logctx, func() {
-		err = hcsSignalProcess(process.handle, optionsStr, &resultp)
-	})
-	events := processHcsResult(resultp)
+	resultJSON, err := vmcompute.HcsSignalProcess(ctx, process.handle, string(optionsb))
+	events := processHcsResult(ctx, resultJSON)
+	delivered, err := process.processSignalResult(ctx, err)
 	if err != nil {
-		return makeProcessError(process, operation, err, events)
+		err = makeProcessError(process, operation, err, events)
 	}
-
-	return nil
+	return delivered, err
 }
 
 // Kill signals the process to terminate but does not wait for it to finish terminating.
-func (process *Process) Kill() (err error) {
+func (process *Process) Kill(ctx context.Context) (bool, error) {
 	process.handleLock.RLock()
 	defer process.handleLock.RUnlock()
 
-	operation := "hcsshim::Process::Kill"
-	process.logOperationBegin(operation)
-	defer func() { process.logOperationEnd(operation, err) }()
+	operation := "hcs::Process::Kill"
 
 	if process.handle == 0 {
-		return makeProcessError(process, operation, ErrAlreadyClosed, nil)
+		return false, makeProcessError(process, operation, ErrAlreadyClosed, nil)
 	}
 
-	var resultp *uint16
-	syscallWatcher(process.logctx, func() {
-		err = hcsTerminateProcess(process.handle, &resultp)
+	if process.killSignalDelivered {
+		// A kill signal has already been sent to this process. Sending a second
+		// one offers no real benefit, as processes cannot stop themselves from
+		// being terminated, once a TerminateProcess has been issued. Sending a
+		// second kill may result in a number of errors (two of which detailed bellow)
+		// and which we can avoid handling.
+		return true, nil
+	}
+
+	resultJSON, err := vmcompute.HcsTerminateProcess(ctx, process.handle)
+	if err != nil {
+		// We still need to check these two cases, as processes may still be killed by an
+		// external actor (human operator, OOM, random script etc).
+		if errors.Is(err, os.ErrPermission) || IsAlreadyStopped(err) {
+			// There are two cases where it should be safe to ignore an error returned
+			// by HcsTerminateProcess. The first one is cause by the fact that
+			// HcsTerminateProcess ends up calling TerminateProcess in the context
+			// of a container. According to the TerminateProcess documentation:
+			// https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess#remarks
+			// After a process has terminated, call to TerminateProcess with open
+			// handles to the process fails with ERROR_ACCESS_DENIED (5) error code.
+			// It's safe to ignore this error here. HCS should always have permissions
+			// to kill processes inside any container. So an ERROR_ACCESS_DENIED
+			// is unlikely to be anything else than what the ending remarks in the
+			// documentation states.
+			//
+			// The second case is generated by hcs itself, if for any reason HcsTerminateProcess
+			// is called twice in a very short amount of time. In such cases, hcs may return
+			// HCS_E_PROCESS_ALREADY_STOPPED.
+			return true, nil
+		}
+	}
+	events := processHcsResult(ctx, resultJSON)
+	delivered, err := process.processSignalResult(ctx, err)
+	if err != nil {
+		err = makeProcessError(process, operation, err, events)
+	}
+
+	process.killSignalDelivered = delivered
+	return delivered, err
+}
+
+// waitBackground waits for the process exit notification. Once received sets
+// `process.waitError` (if any) and unblocks all `Wait` calls.
+//
+// This MUST be called exactly once per `process.handle` but `Wait` is safe to
+// call multiple times.
+func (process *Process) waitBackground() {
+	operation := "hcs::Process::waitBackground"
+	ctx, span := trace.StartSpan(context.Background(), operation)
+	defer span.End()
+	span.AddAttributes(
+		trace.StringAttribute("cid", process.SystemID()),
+		trace.Int64Attribute("pid", int64(process.processID)))
+
+	var (
+		err            error
+		exitCode       = -1
+		propertiesJSON string
+		resultJSON     string
+	)
+
+	err = waitForNotification(ctx, process.callbackNumber, hcsNotificationProcessExited, nil)
+	if err != nil {
+		err = makeProcessError(process, operation, err, nil)
+		log.G(ctx).WithError(err).Error("failed wait")
+	} else {
+		process.handleLock.RLock()
+		defer process.handleLock.RUnlock()
+
+		// Make sure we didnt race with Close() here
+		if process.handle != 0 {
+			propertiesJSON, resultJSON, err = vmcompute.HcsGetProcessProperties(ctx, process.handle)
+			events := processHcsResult(ctx, resultJSON)
+			if err != nil {
+				err = makeProcessError(process, operation, err, events) //nolint:ineffassign
+			} else {
+				properties := &processStatus{}
+				err = json.Unmarshal([]byte(propertiesJSON), properties)
+				if err != nil {
+					err = makeProcessError(process, operation, err, nil) //nolint:ineffassign
+				} else {
+					if properties.LastWaitResult != 0 {
+						log.G(ctx).WithField("wait-result", properties.LastWaitResult).Warning("non-zero last wait result")
+					} else {
+						exitCode = int(properties.ExitCode)
+					}
+				}
+			}
+		}
+	}
+	log.G(ctx).WithField("exitCode", exitCode).Debug("process exited")
+
+	process.closedWaitOnce.Do(func() {
+		process.exitCode = exitCode
+		process.waitError = err
+		close(process.waitBlock)
 	})
-	events := processHcsResult(resultp)
-	if err != nil {
-		return makeProcessError(process, operation, err, events)
-	}
-
-	return nil
+	oc.SetSpanStatus(span, err)
 }
 
-// Wait waits for the process to exit.
-func (process *Process) Wait() (err error) {
-	operation := "hcsshim::Process::Wait"
-	process.logOperationBegin(operation)
-	defer func() { process.logOperationEnd(operation, err) }()
-
-	err = waitForNotification(process.callbackNumber, hcsNotificationProcessExited, nil)
-	if err != nil {
-		return makeProcessError(process, operation, err, nil)
-	}
-
-	return nil
-}
-
-// WaitTimeout waits for the process to exit or the duration to elapse. It returns
-// false if timeout occurs.
-func (process *Process) WaitTimeout(timeout time.Duration) (err error) {
-	operation := "hcssshim::Process::WaitTimeout"
-	process.logOperationBegin(operation)
-	defer func() { process.logOperationEnd(operation, err) }()
-
-	err = waitForNotification(process.callbackNumber, hcsNotificationProcessExited, &timeout)
-	if err != nil {
-		return makeProcessError(process, operation, err, nil)
-	}
-
-	return nil
+// Wait waits for the process to exit. If the process has already exited returns
+// the pervious error (if any).
+func (process *Process) Wait() error {
+	<-process.waitBlock
+	return process.waitError
 }
 
 // ResizeConsole resizes the console of the process.
-func (process *Process) ResizeConsole(width, height uint16) (err error) {
+func (process *Process) ResizeConsole(ctx context.Context, width, height uint16) error {
 	process.handleLock.RLock()
 	defer process.handleLock.RUnlock()
 
-	operation := "hcsshim::Process::ResizeConsole"
-	process.logOperationBegin(operation)
-	defer func() { process.logOperationEnd(operation, err) }()
+	operation := "hcs::Process::ResizeConsole"
 
 	if process.handle == 0 {
 		return makeProcessError(process, operation, ErrAlreadyClosed, nil)
@@ -218,11 +284,8 @@ func (process *Process) ResizeConsole(width, height uint16) (err error) {
 		return err
 	}
 
-	modifyRequestStr := string(modifyRequestb)
-
-	var resultp *uint16
-	err = hcsModifyProcess(process.handle, modifyRequestStr, &resultp)
-	events := processHcsResult(resultp)
+	resultJSON, err := vmcompute.HcsModifyProcess(ctx, process.handle, string(modifyRequestb))
+	events := processHcsResult(ctx, resultJSON)
 	if err != nil {
 		return makeProcessError(process, operation, err, events)
 	}
@@ -230,104 +293,55 @@ func (process *Process) ResizeConsole(width, height uint16) (err error) {
 	return nil
 }
 
-func (process *Process) Properties() (_ *ProcessStatus, err error) {
-	process.handleLock.RLock()
-	defer process.handleLock.RUnlock()
-
-	operation := "hcsshim::Process::Properties"
-	process.logOperationBegin(operation)
-	defer func() { process.logOperationEnd(operation, err) }()
-
-	if process.handle == 0 {
-		return nil, makeProcessError(process, operation, ErrAlreadyClosed, nil)
-	}
-
-	var (
-		resultp     *uint16
-		propertiesp *uint16
-	)
-	syscallWatcher(process.logctx, func() {
-		err = hcsGetProcessProperties(process.handle, &propertiesp, &resultp)
-	})
-	events := processHcsResult(resultp)
-	if err != nil {
-		return nil, makeProcessError(process, operation, err, events)
-	}
-
-	if propertiesp == nil {
-		return nil, ErrUnexpectedValue
-	}
-	propertiesRaw := interop.ConvertAndFreeCoTaskMemBytes(propertiesp)
-
-	properties := &ProcessStatus{}
-	if err := json.Unmarshal(propertiesRaw, properties); err != nil {
-		return nil, makeProcessError(process, operation, err, nil)
-	}
-
-	return properties, nil
-}
-
 // ExitCode returns the exit code of the process. The process must have
 // already terminated.
-func (process *Process) ExitCode() (_ int, err error) {
-	operation := "hcsshim::Process::ExitCode"
-	process.logOperationBegin(operation)
-	defer func() { process.logOperationEnd(operation, err) }()
-
-	properties, err := process.Properties()
-	if err != nil {
-		return 0, makeProcessError(process, operation, err, nil)
+func (process *Process) ExitCode() (int, error) {
+	select {
+	case <-process.waitBlock:
+		if process.waitError != nil {
+			return -1, process.waitError
+		}
+		return process.exitCode, nil
+	default:
+		return -1, makeProcessError(process, "hcs::Process::ExitCode", ErrInvalidProcessState, nil)
 	}
-
-	if properties.Exited == false {
-		return 0, makeProcessError(process, operation, ErrInvalidProcessState, nil)
-	}
-
-	if properties.LastWaitResult != 0 {
-		return 0, makeProcessError(process, operation, syscall.Errno(properties.LastWaitResult), nil)
-	}
-
-	return int(properties.ExitCode), nil
 }
 
-// Stdio returns the stdin, stdout, and stderr pipes, respectively. Closing
-// these pipes does not close the underlying pipes; it should be possible to
-// call this multiple times to get multiple interfaces.
-func (process *Process) Stdio() (_ io.WriteCloser, _ io.ReadCloser, _ io.ReadCloser, err error) {
+// StdioLegacy returns the stdin, stdout, and stderr pipes, respectively. Closing
+// these pipes does not close the underlying pipes. Once returned, these pipes
+// are the responsibility of the caller to close.
+func (process *Process) StdioLegacy() (_ io.WriteCloser, _ io.ReadCloser, _ io.ReadCloser, err error) {
+	operation := "hcs::Process::StdioLegacy"
+	ctx, span := trace.StartSpan(context.Background(), operation)
+	defer span.End()
+	defer func() { oc.SetSpanStatus(span, err) }()
+	span.AddAttributes(
+		trace.StringAttribute("cid", process.SystemID()),
+		trace.Int64Attribute("pid", int64(process.processID)))
+
 	process.handleLock.RLock()
 	defer process.handleLock.RUnlock()
-
-	operation := "hcsshim::Process::Stdio"
-	process.logOperationBegin(operation)
-	defer func() { process.logOperationEnd(operation, err) }()
 
 	if process.handle == 0 {
 		return nil, nil, nil, makeProcessError(process, operation, ErrAlreadyClosed, nil)
 	}
 
-	var stdIn, stdOut, stdErr syscall.Handle
-
-	if process.cachedPipes == nil {
-		var (
-			processInfo hcsProcessInformation
-			resultp     *uint16
-		)
-		err = hcsGetProcessInfo(process.handle, &processInfo, &resultp)
-		events := processHcsResult(resultp)
-		if err != nil {
-			return nil, nil, nil, makeProcessError(process, operation, err, events)
-		}
-
-		stdIn, stdOut, stdErr = processInfo.StdInput, processInfo.StdOutput, processInfo.StdError
-	} else {
-		// Use cached pipes
-		stdIn, stdOut, stdErr = process.cachedPipes.stdIn, process.cachedPipes.stdOut, process.cachedPipes.stdErr
-
-		// Invalidate the cache
-		process.cachedPipes = nil
+	process.stdioLock.Lock()
+	defer process.stdioLock.Unlock()
+	if process.hasCachedStdio {
+		stdin, stdout, stderr := process.stdin, process.stdout, process.stderr
+		process.stdin, process.stdout, process.stderr = nil, nil, nil
+		process.hasCachedStdio = false
+		return stdin, stdout, stderr, nil
 	}
 
-	pipes, err := makeOpenFiles([]syscall.Handle{stdIn, stdOut, stdErr})
+	processInfo, resultJSON, err := vmcompute.HcsGetProcessInfo(ctx, process.handle)
+	events := processHcsResult(ctx, resultJSON)
+	if err != nil {
+		return nil, nil, nil, makeProcessError(process, operation, err, events)
+	}
+
+	pipes, err := makeOpenFiles([]syscall.Handle{processInfo.StdInput, processInfo.StdOutput, processInfo.StdError})
 	if err != nil {
 		return nil, nil, nil, makeProcessError(process, operation, err, nil)
 	}
@@ -335,15 +349,21 @@ func (process *Process) Stdio() (_ io.WriteCloser, _ io.ReadCloser, _ io.ReadClo
 	return pipes[0], pipes[1], pipes[2], nil
 }
 
+// Stdio returns the stdin, stdout, and stderr pipes, respectively.
+// To close them, close the process handle.
+func (process *Process) Stdio() (stdin io.Writer, stdout, stderr io.Reader) {
+	process.stdioLock.Lock()
+	defer process.stdioLock.Unlock()
+	return process.stdin, process.stdout, process.stderr
+}
+
 // CloseStdin closes the write side of the stdin pipe so that the process is
 // notified on the read side that there is no more data in stdin.
-func (process *Process) CloseStdin() (err error) {
+func (process *Process) CloseStdin(ctx context.Context) error {
 	process.handleLock.RLock()
 	defer process.handleLock.RUnlock()
 
-	operation := "hcsshim::Process::CloseStdin"
-	process.logOperationBegin(operation)
-	defer func() { process.logOperationEnd(operation, err) }()
+	operation := "hcs::Process::CloseStdin"
 
 	if process.handle == 0 {
 		return makeProcessError(process, operation, ErrAlreadyClosed, nil)
@@ -361,99 +381,177 @@ func (process *Process) CloseStdin() (err error) {
 		return err
 	}
 
-	modifyRequestStr := string(modifyRequestb)
-
-	var resultp *uint16
-	err = hcsModifyProcess(process.handle, modifyRequestStr, &resultp)
-	events := processHcsResult(resultp)
+	resultJSON, err := vmcompute.HcsModifyProcess(ctx, process.handle, string(modifyRequestb))
+	events := processHcsResult(ctx, resultJSON)
 	if err != nil {
 		return makeProcessError(process, operation, err, events)
 	}
 
+	process.stdioLock.Lock()
+	if process.stdin != nil {
+		process.stdin.Close()
+		process.stdin = nil
+	}
+	process.stdioLock.Unlock()
+
+	return nil
+}
+
+func (process *Process) CloseStdout(ctx context.Context) (err error) {
+	ctx, span := trace.StartSpan(ctx, "hcs::Process::CloseStdout") //nolint:ineffassign,staticcheck
+	defer span.End()
+	defer func() { oc.SetSpanStatus(span, err) }()
+	span.AddAttributes(
+		trace.StringAttribute("cid", process.SystemID()),
+		trace.Int64Attribute("pid", int64(process.processID)))
+
+	process.handleLock.Lock()
+	defer process.handleLock.Unlock()
+
+	if process.handle == 0 {
+		return nil
+	}
+
+	process.stdioLock.Lock()
+	defer process.stdioLock.Unlock()
+	if process.stdout != nil {
+		process.stdout.Close()
+		process.stdout = nil
+	}
+	return nil
+}
+
+func (process *Process) CloseStderr(ctx context.Context) (err error) {
+	ctx, span := trace.StartSpan(ctx, "hcs::Process::CloseStderr") //nolint:ineffassign,staticcheck
+	defer span.End()
+	defer func() { oc.SetSpanStatus(span, err) }()
+	span.AddAttributes(
+		trace.StringAttribute("cid", process.SystemID()),
+		trace.Int64Attribute("pid", int64(process.processID)))
+
+	process.handleLock.Lock()
+	defer process.handleLock.Unlock()
+
+	if process.handle == 0 {
+		return nil
+	}
+
+	process.stdioLock.Lock()
+	defer process.stdioLock.Unlock()
+	if process.stderr != nil {
+		process.stderr.Close()
+		process.stderr = nil
+
+	}
 	return nil
 }
 
 // Close cleans up any state associated with the process but does not kill
 // or wait on it.
 func (process *Process) Close() (err error) {
+	operation := "hcs::Process::Close"
+	ctx, span := trace.StartSpan(context.Background(), operation)
+	defer span.End()
+	defer func() { oc.SetSpanStatus(span, err) }()
+	span.AddAttributes(
+		trace.StringAttribute("cid", process.SystemID()),
+		trace.Int64Attribute("pid", int64(process.processID)))
+
 	process.handleLock.Lock()
 	defer process.handleLock.Unlock()
-
-	operation := "hcsshim::Process::Close"
-	process.logOperationBegin(operation)
-	defer func() { process.logOperationEnd(operation, err) }()
 
 	// Don't double free this
 	if process.handle == 0 {
 		return nil
 	}
 
-	if err = process.unregisterCallback(); err != nil {
+	process.stdioLock.Lock()
+	if process.stdin != nil {
+		process.stdin.Close()
+		process.stdin = nil
+	}
+	if process.stdout != nil {
+		process.stdout.Close()
+		process.stdout = nil
+	}
+	if process.stderr != nil {
+		process.stderr.Close()
+		process.stderr = nil
+	}
+	process.stdioLock.Unlock()
+
+	if err = process.unregisterCallback(ctx); err != nil {
 		return makeProcessError(process, operation, err, nil)
 	}
 
-	if err = hcsCloseProcess(process.handle); err != nil {
+	if err = vmcompute.HcsCloseProcess(ctx, process.handle); err != nil {
 		return makeProcessError(process, operation, err, nil)
 	}
 
 	process.handle = 0
+	process.closedWaitOnce.Do(func() {
+		process.exitCode = -1
+		process.waitError = ErrAlreadyClosed
+		close(process.waitBlock)
+	})
 
 	return nil
 }
 
-func (process *Process) registerCallback() error {
-	context := &notifcationWatcherContext{
-		channels: newChannels(),
+func (process *Process) registerCallback(ctx context.Context) error {
+	callbackContext := &notificationWatcherContext{
+		channels:  newProcessChannels(),
+		systemID:  process.SystemID(),
+		processID: process.processID,
 	}
 
 	callbackMapLock.Lock()
 	callbackNumber := nextCallback
 	nextCallback++
-	callbackMap[callbackNumber] = context
+	callbackMap[callbackNumber] = callbackContext
 	callbackMapLock.Unlock()
 
-	var callbackHandle hcsCallback
-	err := hcsRegisterProcessCallback(process.handle, notificationWatcherCallback, callbackNumber, &callbackHandle)
+	callbackHandle, err := vmcompute.HcsRegisterProcessCallback(ctx, process.handle, notificationWatcherCallback, callbackNumber)
 	if err != nil {
 		return err
 	}
-	context.handle = callbackHandle
+	callbackContext.handle = callbackHandle
 	process.callbackNumber = callbackNumber
 
 	return nil
 }
 
-func (process *Process) unregisterCallback() error {
+func (process *Process) unregisterCallback(ctx context.Context) error {
 	callbackNumber := process.callbackNumber
 
 	callbackMapLock.RLock()
-	context := callbackMap[callbackNumber]
+	callbackContext := callbackMap[callbackNumber]
 	callbackMapLock.RUnlock()
 
-	if context == nil {
+	if callbackContext == nil {
 		return nil
 	}
 
-	handle := context.handle
+	handle := callbackContext.handle
 
 	if handle == 0 {
 		return nil
 	}
 
-	// hcsUnregisterProcessCallback has its own syncronization
-	// to wait for all callbacks to complete. We must NOT hold the callbackMapLock.
-	err := hcsUnregisterProcessCallback(handle)
+	// vmcompute.HcsUnregisterProcessCallback has its own synchronization to
+	// wait for all callbacks to complete. We must NOT hold the callbackMapLock.
+	err := vmcompute.HcsUnregisterProcessCallback(ctx, handle)
 	if err != nil {
 		return err
 	}
 
-	closeChannels(context.channels)
+	closeChannels(callbackContext.channels)
 
 	callbackMapLock.Lock()
-	callbackMap[callbackNumber] = nil
+	delete(callbackMap, callbackNumber)
 	callbackMapLock.Unlock()
 
-	handle = 0
+	handle = 0 //nolint:ineffassign
 
 	return nil
 }

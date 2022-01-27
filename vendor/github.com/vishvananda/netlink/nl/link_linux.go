@@ -1,6 +1,8 @@
 package nl
 
 import (
+	"bytes"
+	"encoding/binary"
 	"unsafe"
 )
 
@@ -13,7 +15,9 @@ const (
 	IFLA_INFO_KIND
 	IFLA_INFO_DATA
 	IFLA_INFO_XSTATS
-	IFLA_INFO_MAX = IFLA_INFO_XSTATS
+	IFLA_INFO_SLAVE_KIND
+	IFLA_INFO_SLAVE_DATA
+	IFLA_INFO_MAX = IFLA_INFO_SLAVE_DATA
 )
 
 const (
@@ -87,7 +91,8 @@ const (
 const (
 	IFLA_IPVLAN_UNSPEC = iota
 	IFLA_IPVLAN_MODE
-	IFLA_IPVLAN_MAX = IFLA_IPVLAN_MODE
+	IFLA_IPVLAN_FLAG
+	IFLA_IPVLAN_MAX = IFLA_IPVLAN_FLAG
 )
 
 const (
@@ -164,6 +169,8 @@ const (
 	IFLA_BOND_SLAVE_PERM_HWADDR
 	IFLA_BOND_SLAVE_QUEUE_ID
 	IFLA_BOND_SLAVE_AD_AGGREGATOR_ID
+	IFLA_BOND_SLAVE_AD_ACTOR_OPER_PORT_STATE
+	IFLA_BOND_SLAVE_AD_PARTNER_OPER_PORT_STATE
 )
 
 const (
@@ -238,7 +245,9 @@ const (
 	IFLA_VF_STATS_TX_BYTES
 	IFLA_VF_STATS_BROADCAST
 	IFLA_VF_STATS_MULTICAST
-	IFLA_VF_STATS_MAX = IFLA_VF_STATS_MULTICAST
+	IFLA_VF_STATS_RX_DROPPED
+	IFLA_VF_STATS_TX_DROPPED
+	IFLA_VF_STATS_MAX = IFLA_VF_STATS_TX_DROPPED
 )
 
 const (
@@ -319,6 +328,59 @@ func DeserializeVfTxRate(b []byte) *VfTxRate {
 
 func (msg *VfTxRate) Serialize() []byte {
 	return (*(*[SizeofVfTxRate]byte)(unsafe.Pointer(msg)))[:]
+}
+
+//struct ifla_vf_stats {
+//	__u64 rx_packets;
+//	__u64 tx_packets;
+//	__u64 rx_bytes;
+//	__u64 tx_bytes;
+//	__u64 broadcast;
+//	__u64 multicast;
+//};
+
+type VfStats struct {
+	RxPackets uint64
+	TxPackets uint64
+	RxBytes   uint64
+	TxBytes   uint64
+	Multicast uint64
+	Broadcast uint64
+	RxDropped uint64
+	TxDropped uint64
+}
+
+func DeserializeVfStats(b []byte) VfStats {
+	var vfstat VfStats
+	stats, err := ParseRouteAttr(b)
+	if err != nil {
+		return vfstat
+	}
+	var valueVar uint64
+	for _, stat := range stats {
+		if err := binary.Read(bytes.NewBuffer(stat.Value), NativeEndian(), &valueVar); err != nil {
+			break
+		}
+		switch stat.Attr.Type {
+		case IFLA_VF_STATS_RX_PACKETS:
+			vfstat.RxPackets = valueVar
+		case IFLA_VF_STATS_TX_PACKETS:
+			vfstat.TxPackets = valueVar
+		case IFLA_VF_STATS_RX_BYTES:
+			vfstat.RxBytes = valueVar
+		case IFLA_VF_STATS_TX_BYTES:
+			vfstat.TxBytes = valueVar
+		case IFLA_VF_STATS_MULTICAST:
+			vfstat.Multicast = valueVar
+		case IFLA_VF_STATS_BROADCAST:
+			vfstat.Broadcast = valueVar
+		case IFLA_VF_STATS_RX_DROPPED:
+			vfstat.RxDropped = valueVar
+		case IFLA_VF_STATS_TX_DROPPED:
+			vfstat.TxDropped = valueVar
+		}
+	}
+	return vfstat
 }
 
 // struct ifla_vf_rate {
@@ -473,6 +535,14 @@ const (
 	IFLA_XDP_MAX      = IFLA_XDP_PROG_ID
 )
 
+// XDP program attach mode (used as dump value for IFLA_XDP_ATTACHED)
+const (
+	XDP_ATTACHED_NONE = iota
+	XDP_ATTACHED_DRV
+	XDP_ATTACHED_SKB
+	XDP_ATTACHED_HW
+)
+
 const (
 	IFLA_IPTUN_UNSPEC = iota
 	IFLA_IPTUN_LINK
@@ -572,4 +642,34 @@ const (
 const (
 	GTP_ROLE_GGSN = iota
 	GTP_ROLE_SGSN
+)
+
+const (
+	IFLA_XFRM_UNSPEC = iota
+	IFLA_XFRM_LINK
+	IFLA_XFRM_IF_ID
+
+	IFLA_XFRM_MAX = iota - 1
+)
+
+const (
+	IFLA_TUN_UNSPEC = iota
+	IFLA_TUN_OWNER
+	IFLA_TUN_GROUP
+	IFLA_TUN_TYPE
+	IFLA_TUN_PI
+	IFLA_TUN_VNET_HDR
+	IFLA_TUN_PERSIST
+	IFLA_TUN_MULTI_QUEUE
+	IFLA_TUN_NUM_QUEUES
+	IFLA_TUN_NUM_DISABLED_QUEUES
+	IFLA_TUN_MAX = IFLA_TUN_NUM_DISABLED_QUEUES
+)
+
+const (
+	IFLA_IPOIB_UNSPEC = iota
+	IFLA_IPOIB_PKEY
+	IFLA_IPOIB_MODE
+	IFLA_IPOIB_UMCAST
+	IFLA_IPOIB_MAX = IFLA_IPOIB_UMCAST
 )
