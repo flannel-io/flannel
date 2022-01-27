@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
-	etcd "github.com/coreos/etcd/client"
 	"github.com/flannel-io/flannel/pkg/ip"
 	. "github.com/flannel-io/flannel/subnet"
+	etcd "go.etcd.io/etcd/client"
 	"golang.org/x/net/context"
 )
 

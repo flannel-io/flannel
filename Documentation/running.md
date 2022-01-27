@@ -128,8 +128,3 @@ As such, `flanneld` can be restarted (even to do an upgrade) without disturbing 
 However in the case of `vxlan` backend, this needs to be done within a few seconds as ARP entries can start to timeout requiring the flannel daemon to refresh them.
 
 Also, to avoid interruptions during restart, the configuration must not be changed (e.g. VNI, --iface values).
-
-
-[coreos-etcd]: https://github.com/coreos/etcd/blob/master/Documentation/dev-guide/local_cluster.md
-[configuring-flannel]: https://coreos.com/docs/cluster-management/setup/flannel-config/
-[leases]: reservations.md

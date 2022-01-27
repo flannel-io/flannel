@@ -19,10 +19,10 @@ import (
 	"sync"
 	"time"
 
-	etcd "github.com/coreos/etcd/client"
 	"github.com/flannel-io/flannel/pkg/ip"
 	. "github.com/flannel-io/flannel/subnet"
 	"github.com/jonboulle/clockwork"
+	etcd "go.etcd.io/etcd/client"
 	"golang.org/x/net/context"
 )
 
