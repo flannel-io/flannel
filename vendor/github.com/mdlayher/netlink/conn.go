@@ -556,6 +556,9 @@ type Config struct {
 	// to 0.
 	NetNS int
 
-	// DisableNSLockThread is deprecated and has no effect.
+	// DisableNSLockThread is a no-op.
+	//
+	// Deprecated: internal changes have made this option obsolete and it has no
+	// effect. Do not use.
 	DisableNSLockThread bool
 }

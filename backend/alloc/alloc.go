@@ -16,11 +16,12 @@ package alloc
 
 import (
 	"fmt"
+	"sync"
+
 	"github.com/flannel-io/flannel/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
-	"sync"
 )
 
 func init() {

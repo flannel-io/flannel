@@ -7,9 +7,9 @@ import (
 	"unsafe"
 
 	"golang.org/x/sys/windows"
+
 	"golang.zx2c4.com/wireguard/wgctrl/internal/wginternal"
 	"golang.zx2c4.com/wireguard/wgctrl/internal/wgwindows/internal/ioctl"
-	"golang.zx2c4.com/wireguard/wgctrl/internal/wgwindows/internal/setupapi"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
@@ -24,9 +24,9 @@ type Client struct {
 var (
 	deviceClassNetGUID     = windows.GUID{0x4d36e972, 0xe325, 0x11ce, [8]byte{0xbf, 0xc1, 0x08, 0x00, 0x2b, 0xe1, 0x03, 0x18}}
 	deviceInterfaceNetGUID = windows.GUID{0xcac88484, 0x7515, 0x4c03, [8]byte{0x82, 0xe6, 0x71, 0xa8, 0x7a, 0xba, 0xc3, 0x61}}
-	devpkeyWgName          = setupapi.DEVPROPKEY{
-		FmtID: setupapi.DEVPROPGUID{0x65726957, 0x7547, 0x7261, [8]byte{0x64, 0x4e, 0x61, 0x6d, 0x65, 0x4b, 0x65, 0x79}},
-		PID:   setupapi.DEVPROPID_FIRST_USABLE + 1,
+	devpkeyWgName          = windows.DEVPROPKEY{
+		FmtID: windows.DEVPROPGUID{0x65726957, 0x7547, 0x7261, [8]byte{0x64, 0x4e, 0x61, 0x6d, 0x65, 0x4b, 0x65, 0x79}},
+		PID:   windows.DEVPROPID_FIRST_USABLE + 1,
 	}
 )
 
@@ -40,20 +40,20 @@ func init() {
 
 func (c *Client) refreshInstanceIdCache() error {
 	cachedAdapters := make(map[string]string, 5)
-	devInfo, err := setupapi.SetupDiGetClassDevsEx(&deviceClassNetGUID, enumerator, 0, setupapi.DIGCF_PRESENT, 0, "")
+	devInfo, err := windows.SetupDiGetClassDevsEx(&deviceClassNetGUID, enumerator, 0, windows.DIGCF_PRESENT, 0, "")
 	if err != nil {
 		return err
 	}
-	defer setupapi.SetupDiDestroyDeviceInfoList(devInfo)
+	defer windows.SetupDiDestroyDeviceInfoList(devInfo)
 	for i := 0; ; i++ {
-		devInfoData, err := setupapi.SetupDiEnumDeviceInfo(devInfo, i)
+		devInfoData, err := windows.SetupDiEnumDeviceInfo(devInfo, i)
 		if err != nil {
 			if err == windows.ERROR_NO_MORE_ITEMS {
 				break
 			}
 			continue
 		}
-		prop, err := setupapi.SetupDiGetDeviceProperty(devInfo, devInfoData, &devpkeyWgName)
+		prop, err := windows.SetupDiGetDeviceProperty(devInfo, devInfoData, &devpkeyWgName)
 		if err != nil {
 			continue
 		}
@@ -62,11 +62,11 @@ func (c *Client) refreshInstanceIdCache() error {
 			continue
 		}
 		var status, problemCode uint32
-		ret := setupapi.CM_Get_DevNode_Status(&status, &problemCode, devInfoData.DevInst, 0)
-		if ret != setupapi.CR_SUCCESS || (status&setupapi.DN_DRIVER_LOADED|setupapi.DN_STARTED) != setupapi.DN_DRIVER_LOADED|setupapi.DN_STARTED {
+		ret := windows.CM_Get_DevNode_Status(&status, &problemCode, devInfoData.DevInst, 0)
+		if ret != nil || (status&windows.DN_DRIVER_LOADED|windows.DN_STARTED) != windows.DN_DRIVER_LOADED|windows.DN_STARTED {
 			continue
 		}
-		instanceId, err := setupapi.SetupDiGetDeviceInstanceId(devInfo, devInfoData)
+		instanceId, err := windows.SetupDiGetDeviceInstanceId(devInfo, devInfoData)
 		if err != nil {
 			continue
 		}
@@ -88,7 +88,7 @@ func (c *Client) interfaceHandle(name string) (windows.Handle, error) {
 			return 0, os.ErrNotExist
 		}
 	}
-	interfaces, err := setupapi.CM_Get_Device_Interface_List(instanceId, &deviceInterfaceNetGUID, setupapi.CM_GET_DEVICE_INTERFACE_LIST_PRESENT)
+	interfaces, err := windows.CM_Get_Device_Interface_List(instanceId, &deviceInterfaceNetGUID, windows.CM_GET_DEVICE_INTERFACE_LIST_PRESENT)
 	if err != nil {
 		return 0, err
 	}
@@ -254,7 +254,7 @@ func (c *Client) ConfigureDevice(name string, cfg wgtypes.Config) error {
 			peer.Flags |= ioctl.PeerReplaceAllowedIPs
 		}
 		if cfg.Peers[i].UpdateOnly {
-			peer.Flags |= ioctl.PeerUpdate
+			peer.Flags |= ioctl.PeerUpdateOnly
 		}
 		if cfg.Peers[i].Remove {
 			peer.Flags |= ioctl.PeerRemove

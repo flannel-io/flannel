@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 // Copyright 2021 flannel authors

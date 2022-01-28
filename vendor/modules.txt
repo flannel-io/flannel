@@ -1,6 +1,10 @@
-# cloud.google.com/go v0.57.0
+# cloud.google.com/go v0.65.0
 ## explicit; go 1.11
 cloud.google.com/go/compute/metadata
+# github.com/BurntSushi/toml v0.4.1
+## explicit; go 1.16
+github.com/BurntSushi/toml
+github.com/BurntSushi/toml/internal
 # github.com/Microsoft/go-winio v0.4.17
 ## explicit; go 1.12
 github.com/Microsoft/go-winio
@@ -164,15 +168,15 @@ github.com/josharian/native
 # github.com/json-iterator/go v1.1.11
 ## explicit; go 1.12
 github.com/json-iterator/go
-# github.com/mdlayher/genetlink v1.0.0
+# github.com/mdlayher/genetlink v1.1.0
 ## explicit; go 1.13
 github.com/mdlayher/genetlink
-# github.com/mdlayher/netlink v1.4.1
+# github.com/mdlayher/netlink v1.4.2
 ## explicit; go 1.12
 github.com/mdlayher/netlink
 github.com/mdlayher/netlink/nlenc
-# github.com/mdlayher/socket v0.0.0-20210307095302-262dc9984e00
-## explicit; go 1.16
+# github.com/mdlayher/socket v0.0.0-20211102153432-57e3fa563ecb
+## explicit; go 1.17
 github.com/mdlayher/socket
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 ## explicit
@@ -221,7 +225,7 @@ go.etcd.io/etcd/pkg/tlsutil
 go.etcd.io/etcd/pkg/transport
 go.etcd.io/etcd/pkg/types
 go.etcd.io/etcd/version
-# go.opencensus.io v0.22.3
+# go.opencensus.io v0.22.4
 ## explicit; go 1.13
 go.opencensus.io
 go.opencensus.io/internal
@@ -253,12 +257,15 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+# golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
 ## explicit; go 1.17
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/curve25519/internal/field
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/net v0.0.0-20211020060615-d418f374d309
+# golang.org/x/mod v0.5.1
+## explicit; go 1.17
+golang.org/x/mod/semver
+# golang.org/x/net v0.0.0-20211208012354-db4efeb81f4b
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -269,15 +276,18 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+# golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 ## explicit; go 1.11
 golang.org/x/oauth2
+golang.org/x/oauth2/authhandler
 golang.org/x/oauth2/google
+golang.org/x/oauth2/google/internal/externalaccount
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
 # golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
 ## explicit; go 1.17
+golang.org/x/sys/execabs
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
@@ -286,8 +296,8 @@ golang.org/x/sys/windows/registry
 # golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 ## explicit; go 1.11
 golang.org/x/term
-# golang.org/x/text v0.3.6
-## explicit; go 1.11
+# golang.org/x/text v0.3.7
+## explicit; go 1.17
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
@@ -295,23 +305,50 @@ golang.org/x/text/unicode/norm
 # golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
 ## explicit
 golang.org/x/time/rate
-# golang.zx2c4.com/wireguard v0.0.0-20211022192229-f1f626090e3b
+# golang.org/x/tools v0.1.8
 ## explicit; go 1.17
-golang.zx2c4.com/wireguard/ipc/winpipe
-# golang.zx2c4.com/wireguard/wgctrl v0.0.0-20211019185142-5be1d6054c42
+golang.org/x/tools/go/analysis
+golang.org/x/tools/go/analysis/passes/inspect
+golang.org/x/tools/go/ast/astutil
+golang.org/x/tools/go/ast/inspector
+golang.org/x/tools/go/buildutil
+golang.org/x/tools/go/gcexportdata
+golang.org/x/tools/go/internal/cgo
+golang.org/x/tools/go/internal/gcimporter
+golang.org/x/tools/go/internal/packagesdriver
+golang.org/x/tools/go/loader
+golang.org/x/tools/go/packages
+golang.org/x/tools/go/types/objectpath
+golang.org/x/tools/go/types/typeutil
+golang.org/x/tools/internal/analysisinternal
+golang.org/x/tools/internal/event
+golang.org/x/tools/internal/event/core
+golang.org/x/tools/internal/event/keys
+golang.org/x/tools/internal/event/label
+golang.org/x/tools/internal/gocommand
+golang.org/x/tools/internal/lsp/fuzzy
+golang.org/x/tools/internal/packagesinternal
+golang.org/x/tools/internal/typeparams
+golang.org/x/tools/internal/typesinternal
+# golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+## explicit; go 1.11
+golang.org/x/xerrors
+golang.org/x/xerrors/internal
+# golang.zx2c4.com/wireguard v0.0.0-20220117163742-e0b8f11489c5
+## explicit; go 1.17
+golang.zx2c4.com/wireguard/ipc/namedpipe
+# golang.zx2c4.com/wireguard/wgctrl v0.0.0-20211230205640-daad0b7ba671
 ## explicit; go 1.13
 golang.zx2c4.com/wireguard/wgctrl
 golang.zx2c4.com/wireguard/wgctrl/internal/wginternal
 golang.zx2c4.com/wireguard/wgctrl/internal/wglinux
-golang.zx2c4.com/wireguard/wgctrl/internal/wglinux/internal/wgh
 golang.zx2c4.com/wireguard/wgctrl/internal/wgopenbsd
 golang.zx2c4.com/wireguard/wgctrl/internal/wgopenbsd/internal/wgh
 golang.zx2c4.com/wireguard/wgctrl/internal/wguser
 golang.zx2c4.com/wireguard/wgctrl/internal/wgwindows
 golang.zx2c4.com/wireguard/wgctrl/internal/wgwindows/internal/ioctl
-golang.zx2c4.com/wireguard/wgctrl/internal/wgwindows/internal/setupapi
 golang.zx2c4.com/wireguard/wgctrl/wgtypes
-# google.golang.org/api v0.22.0
+# google.golang.org/api v0.30.0
 ## explicit; go 1.11
 google.golang.org/api/compute/v1
 google.golang.org/api/googleapi
@@ -418,6 +455,45 @@ gopkg.in/inf.v0
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
+# honnef.co/go/tools v0.2.2
+## explicit; go 1.14
+honnef.co/go/tools/analysis/code
+honnef.co/go/tools/analysis/edit
+honnef.co/go/tools/analysis/facts
+honnef.co/go/tools/analysis/facts/nilness
+honnef.co/go/tools/analysis/facts/typedness
+honnef.co/go/tools/analysis/lint
+honnef.co/go/tools/analysis/report
+honnef.co/go/tools/cmd/staticcheck
+honnef.co/go/tools/config
+honnef.co/go/tools/go/ast/astutil
+honnef.co/go/tools/go/ir
+honnef.co/go/tools/go/ir/irutil
+honnef.co/go/tools/go/loader
+honnef.co/go/tools/go/types/typeutil
+honnef.co/go/tools/internal/cache
+honnef.co/go/tools/internal/go/gcimporter
+honnef.co/go/tools/internal/passes/buildir
+honnef.co/go/tools/internal/renameio
+honnef.co/go/tools/internal/robustio
+honnef.co/go/tools/internal/sharedcheck
+honnef.co/go/tools/internal/sync
+honnef.co/go/tools/knowledge
+honnef.co/go/tools/lintcmd
+honnef.co/go/tools/lintcmd/runner
+honnef.co/go/tools/lintcmd/version
+honnef.co/go/tools/pattern
+honnef.co/go/tools/printf
+honnef.co/go/tools/quickfix
+honnef.co/go/tools/sarif
+honnef.co/go/tools/simple
+honnef.co/go/tools/staticcheck
+honnef.co/go/tools/staticcheck/fakejson
+honnef.co/go/tools/staticcheck/fakereflect
+honnef.co/go/tools/staticcheck/fakexml
+honnef.co/go/tools/stylecheck
+honnef.co/go/tools/unused
+honnef.co/go/tools/unused/typemap
 # k8s.io/api v0.20.6
 ## explicit; go 1.15
 k8s.io/api/admissionregistration/v1
@@ -599,4 +675,5 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
+# github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
 # google.golang.org/grpc => google.golang.org/grpc v1.29.0
