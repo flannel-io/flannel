@@ -38,6 +38,7 @@ type ModifyInstanceNetworkSpec struct {
 	InstanceId              string
 	InternetMaxBandwidthOut *int
 	InternetMaxBandwidthIn  *int
+	NetworkChargeType       common.InternetChargeType
 }
 
 type ModifyInstanceNetworkSpecResponse struct {
@@ -57,6 +58,7 @@ type AllocateEipAddressArgs struct {
 	RegionId           common.Region
 	Bandwidth          int
 	InternetChargeType common.InternetChargeType
+	ISP                string
 	ClientToken        string
 }
 
@@ -81,9 +83,19 @@ func (client *Client) AllocateEipAddress(args *AllocateEipAddressArgs) (EipAddre
 	return response.EipAddress, response.AllocationId, nil
 }
 
+type EipInstanceType string
+
+const (
+	EcsInstance = "EcsInstance"
+	SlbInstance = "SlbInstance"
+	Nat         = "Nat"
+	HaVip       = "HaVip"
+)
+
 type AssociateEipAddressArgs struct {
 	AllocationId string
 	InstanceId   string
+	InstanceType EipInstanceType
 }
 
 type AssociateEipAddressResponse struct {
@@ -102,6 +114,11 @@ func (client *Client) AssociateEipAddress(allocationId string, instanceId string
 	return client.Invoke("AssociateEipAddress", &args, &response)
 }
 
+func (client *Client) NewAssociateEipAddress(args *AssociateEipAddressArgs) error {
+	response := ModifyInstanceNetworkSpecResponse{}
+	return client.Invoke("AssociateEipAddress", args, &response)
+}
+
 // Status of disks
 type EipStatus string
 
@@ -112,11 +129,22 @@ const (
 	EipStatusAvailable     = EipStatus("Available")
 )
 
+type AssociatedInstanceType string
+
+const (
+	AssociatedInstanceTypeEcsInstance = AssociatedInstanceType("EcsInstance")
+	AssociatedInstanceTypeSlbInstance = AssociatedInstanceType("SlbInstance")
+	AssociatedInstanceTypeNat         = AssociatedInstanceType("Nat")
+	AssociatedInstanceTypeHaVip       = AssociatedInstanceType("HaVip")
+)
+
 type DescribeEipAddressesArgs struct {
-	RegionId     common.Region
-	Status       EipStatus //enum Associating | Unassociating | InUse | Available
-	EipAddress   string
-	AllocationId string
+	RegionId               common.Region
+	Status                 EipStatus //enum Associating | Unassociating | InUse | Available
+	EipAddress             string
+	AllocationId           string
+	AssociatedInstanceType AssociatedInstanceType //enum EcsInstance | SlbInstance | Nat | HaVip
+	AssociatedInstanceId   string                 //绑定的资源的Id。 这是一个过滤器性质的参数，若不指定，则表示不适用该条件对结果进行过滤。 如果要使用该过滤器，必须同时使用AssociatedInstanceType。若InstanceType为EcsInstance，则此处填写ECS实例Id。若InstanceType为SlbInstance，则此处填写VPC类型的私网SLB 的实例ID。若InstanceType为Nat，则此处填写NAT 的实例ID。。若InstanceType为HaVip，则此处填写HaVipId。
 	common.Pagination
 }
 
@@ -128,6 +156,7 @@ type EipAddressSetType struct {
 	AllocationId       string
 	Status             EipStatus
 	InstanceId         string
+	InstanceType       string
 	Bandwidth          string // Why string
 	InternetChargeType common.InternetChargeType
 	OperationLocks     OperationLocksType
@@ -146,16 +175,25 @@ type DescribeEipAddressesResponse struct {
 //
 // You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/network&describeeipaddresses
 func (client *Client) DescribeEipAddresses(args *DescribeEipAddressesArgs) (eipAddresses []EipAddressSetType, pagination *common.PaginationResult, err error) {
-	args.Validate()
-	response := DescribeEipAddressesResponse{}
-
-	err = client.Invoke("DescribeEipAddresses", args, &response)
-
+	response, err := client.DescribeEipAddressesWithRaw(args)
 	if err == nil {
 		return response.EipAddresses.EipAddress, &response.PaginationResult, nil
 	}
 
 	return nil, nil, err
+}
+
+func (client *Client) DescribeEipAddressesWithRaw(args *DescribeEipAddressesArgs) (response *DescribeEipAddressesResponse, err error) {
+	args.Validate()
+	response = &DescribeEipAddressesResponse{}
+
+	err = client.Invoke("DescribeEipAddresses", args, response)
+
+	if err == nil {
+		return response, nil
+	}
+
+	return nil, err
 }
 
 type ModifyEipAddressAttributeArgs struct {

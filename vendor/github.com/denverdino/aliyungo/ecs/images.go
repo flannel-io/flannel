@@ -37,6 +37,13 @@ const (
 	ImageUsageNone     = ImageUsage("none")
 )
 
+type ImageFormatType string
+
+const (
+	RAW = ImageFormatType("RAW")
+	VHD = ImageFormatType("VHD")
+)
+
 // DescribeImagesArgs repsents arguments to describe images
 type DescribeImagesArgs struct {
 	RegionId        common.Region
@@ -63,8 +70,10 @@ type DescribeImagesResponse struct {
 type DiskDeviceMapping struct {
 	SnapshotId string
 	//Why Size Field is string-type.
-	Size   string
-	Device string
+	Size string
+	// Now the key Size change to DiskImageSize
+	DiskImageSize string
+	Device        string
 	//For import images
 	Format    string
 	OSSBucket string
@@ -102,14 +111,21 @@ type ImageType struct {
 //
 // You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/image&describeimages
 func (client *Client) DescribeImages(args *DescribeImagesArgs) (images []ImageType, pagination *common.PaginationResult, err error) {
-
-	args.Validate()
-	response := DescribeImagesResponse{}
-	err = client.Invoke("DescribeImages", args, &response)
+	response, err := client.DescribeImagesWithRaw(args)
 	if err != nil {
 		return nil, nil, err
 	}
 	return response.Images.Image, &response.PaginationResult, nil
+}
+
+func (client *Client) DescribeImagesWithRaw(args *DescribeImagesArgs) (response *DescribeImagesResponse, err error) {
+	args.Validate()
+	response = &DescribeImagesResponse{}
+	err = client.Invoke("DescribeImages", args, response)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 }
 
 // CreateImageArgs repsents arguments to create image
@@ -144,6 +160,7 @@ func (client *Client) CreateImage(args *CreateImageArgs) (imageId string, err er
 type DeleteImageArgs struct {
 	RegionId common.Region
 	ImageId  string
+	Force    bool
 }
 
 type DeleteImageResponse struct {
@@ -157,6 +174,20 @@ func (client *Client) DeleteImage(regionId common.Region, imageId string) error 
 	args := DeleteImageArgs{
 		RegionId: regionId,
 		ImageId:  imageId,
+	}
+
+	response := &DeleteImageResponse{}
+	return client.Invoke("DeleteImage", &args, &response)
+}
+
+// DeleteImage deletes Image
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/image&deleteimage
+func (client *Client) DeleteImageWithForce(regionId common.Region, imageId string, force bool) error {
+	args := DeleteImageArgs{
+		RegionId: regionId,
+		ImageId:  imageId,
+		Force:    force,
 	}
 
 	response := &DeleteImageResponse{}

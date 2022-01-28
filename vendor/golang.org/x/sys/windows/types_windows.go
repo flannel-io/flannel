@@ -156,6 +156,8 @@ const (
 	MAX_PATH      = 260
 	MAX_LONG_PATH = 32768
 
+	MAX_MODULE_NAME32 = 255
+
 	MAX_COMPUTERNAME_LENGTH = 15
 
 	TIME_ZONE_ID_UNKNOWN  = 0
@@ -936,8 +938,8 @@ type StartupInfoEx struct {
 type ProcThreadAttributeList struct{}
 
 type ProcThreadAttributeListContainer struct {
-	data            *ProcThreadAttributeList
-	heapAllocations []uintptr
+	data     *ProcThreadAttributeList
+	pointers []unsafe.Pointer
 }
 
 type ProcessInformation struct {
@@ -969,6 +971,21 @@ type ThreadEntry32 struct {
 	DeltaPri       int32
 	Flags          uint32
 }
+
+type ModuleEntry32 struct {
+	Size         uint32
+	ModuleID     uint32
+	ProcessID    uint32
+	GlblcntUsage uint32
+	ProccntUsage uint32
+	ModBaseAddr  uintptr
+	ModBaseSize  uint32
+	ModuleHandle Handle
+	Module       [MAX_MODULE_NAME32 + 1]uint16
+	ExePath      [MAX_PATH]uint16
+}
+
+const SizeofModuleEntry32 = unsafe.Sizeof(ModuleEntry32{})
 
 type Systemtime struct {
 	Year         uint16
@@ -2562,6 +2579,60 @@ const (
 	FILE_PIPE_SERVER_END = 0x00000001
 )
 
+const (
+	// FileInformationClass for NtSetInformationFile
+	FileBasicInformation                         = 4
+	FileRenameInformation                        = 10
+	FileDispositionInformation                   = 13
+	FilePositionInformation                      = 14
+	FileEndOfFileInformation                     = 20
+	FileValidDataLengthInformation               = 39
+	FileShortNameInformation                     = 40
+	FileIoPriorityHintInformation                = 43
+	FileReplaceCompletionInformation             = 61
+	FileDispositionInformationEx                 = 64
+	FileCaseSensitiveInformation                 = 71
+	FileLinkInformation                          = 72
+	FileCaseSensitiveInformationForceAccessCheck = 75
+	FileKnownFolderInformation                   = 76
+
+	// Flags for FILE_RENAME_INFORMATION
+	FILE_RENAME_REPLACE_IF_EXISTS                    = 0x00000001
+	FILE_RENAME_POSIX_SEMANTICS                      = 0x00000002
+	FILE_RENAME_SUPPRESS_PIN_STATE_INHERITANCE       = 0x00000004
+	FILE_RENAME_SUPPRESS_STORAGE_RESERVE_INHERITANCE = 0x00000008
+	FILE_RENAME_NO_INCREASE_AVAILABLE_SPACE          = 0x00000010
+	FILE_RENAME_NO_DECREASE_AVAILABLE_SPACE          = 0x00000020
+	FILE_RENAME_PRESERVE_AVAILABLE_SPACE             = 0x00000030
+	FILE_RENAME_IGNORE_READONLY_ATTRIBUTE            = 0x00000040
+	FILE_RENAME_FORCE_RESIZE_TARGET_SR               = 0x00000080
+	FILE_RENAME_FORCE_RESIZE_SOURCE_SR               = 0x00000100
+	FILE_RENAME_FORCE_RESIZE_SR                      = 0x00000180
+
+	// Flags for FILE_DISPOSITION_INFORMATION_EX
+	FILE_DISPOSITION_DO_NOT_DELETE             = 0x00000000
+	FILE_DISPOSITION_DELETE                    = 0x00000001
+	FILE_DISPOSITION_POSIX_SEMANTICS           = 0x00000002
+	FILE_DISPOSITION_FORCE_IMAGE_SECTION_CHECK = 0x00000004
+	FILE_DISPOSITION_ON_CLOSE                  = 0x00000008
+	FILE_DISPOSITION_IGNORE_READONLY_ATTRIBUTE = 0x00000010
+
+	// Flags for FILE_CASE_SENSITIVE_INFORMATION
+	FILE_CS_FLAG_CASE_SENSITIVE_DIR = 0x00000001
+
+	// Flags for FILE_LINK_INFORMATION
+	FILE_LINK_REPLACE_IF_EXISTS                    = 0x00000001
+	FILE_LINK_POSIX_SEMANTICS                      = 0x00000002
+	FILE_LINK_SUPPRESS_STORAGE_RESERVE_INHERITANCE = 0x00000008
+	FILE_LINK_NO_INCREASE_AVAILABLE_SPACE          = 0x00000010
+	FILE_LINK_NO_DECREASE_AVAILABLE_SPACE          = 0x00000020
+	FILE_LINK_PRESERVE_AVAILABLE_SPACE             = 0x00000030
+	FILE_LINK_IGNORE_READONLY_ATTRIBUTE            = 0x00000040
+	FILE_LINK_FORCE_RESIZE_TARGET_SR               = 0x00000080
+	FILE_LINK_FORCE_RESIZE_SOURCE_SR               = 0x00000100
+	FILE_LINK_FORCE_RESIZE_SR                      = 0x00000180
+)
+
 // ProcessInformationClasses for NtQueryInformationProcess and NtSetInformationProcess.
 const (
 	ProcessBasicInformation = iota
@@ -2676,6 +2747,43 @@ type PROCESS_BASIC_INFORMATION struct {
 	BasePriority                 int32
 	UniqueProcessId              uintptr
 	InheritedFromUniqueProcessId uintptr
+}
+
+type SYSTEM_PROCESS_INFORMATION struct {
+	NextEntryOffset              uint32
+	NumberOfThreads              uint32
+	WorkingSetPrivateSize        int64
+	HardFaultCount               uint32
+	NumberOfThreadsHighWatermark uint32
+	CycleTime                    uint64
+	CreateTime                   int64
+	UserTime                     int64
+	KernelTime                   int64
+	ImageName                    NTUnicodeString
+	BasePriority                 int32
+	UniqueProcessID              uintptr
+	InheritedFromUniqueProcessID uintptr
+	HandleCount                  uint32
+	SessionID                    uint32
+	UniqueProcessKey             *uint32
+	PeakVirtualSize              uintptr
+	VirtualSize                  uintptr
+	PageFaultCount               uint32
+	PeakWorkingSetSize           uintptr
+	WorkingSetSize               uintptr
+	QuotaPeakPagedPoolUsage      uintptr
+	QuotaPagedPoolUsage          uintptr
+	QuotaPeakNonPagedPoolUsage   uintptr
+	QuotaNonPagedPoolUsage       uintptr
+	PagefileUsage                uintptr
+	PeakPagefileUsage            uintptr
+	PrivatePageCount             uintptr
+	ReadOperationCount           int64
+	WriteOperationCount          int64
+	OtherOperationCount          int64
+	ReadTransferCount            int64
+	WriteTransferCount           int64
+	OtherTransferCount           int64
 }
 
 // SystemInformationClasses for NtQuerySystemInformation and NtSetSystemInformation

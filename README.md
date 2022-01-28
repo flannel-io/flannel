@@ -75,7 +75,7 @@ Flannel is under the Apache 2.0 license. See the [LICENSE][license] file for det
 
 [calico]: http://www.projectcalico.org
 [pod-cidr]: https://kubernetes.io/docs/admin/kubelet/
-[etcd]: https://github.com/coreos/etcd
+[etcd]: https://go.etcd.io/etcd/v3
 [contributing]: CONTRIBUTING.md
 [license]: https://github.com/flannel-io/flannel/blob/master/LICENSE
 [milestones]: https://github.com/flannel-io/flannel/milestones

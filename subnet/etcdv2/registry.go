@@ -23,10 +23,10 @@ import (
 	"sync"
 	"time"
 
-	etcd "github.com/coreos/etcd/client"
-	"github.com/coreos/etcd/pkg/transport"
 	"github.com/flannel-io/flannel/pkg/ip"
 	. "github.com/flannel-io/flannel/subnet"
+	etcd "go.etcd.io/etcd/client"
+	"go.etcd.io/etcd/pkg/transport"
 	"golang.org/x/net/context"
 	log "k8s.io/klog"
 )
@@ -68,9 +68,9 @@ type etcdSubnetRegistry struct {
 
 func newEtcdClient(c *EtcdConfig) (etcd.KeysAPI, error) {
 	tlsInfo := transport.TLSInfo{
-		CertFile: c.Certfile,
-		KeyFile:  c.Keyfile,
-		CAFile:   c.CAFile,
+		CertFile:      c.Certfile,
+		KeyFile:       c.Keyfile,
+		TrustedCAFile: c.CAFile,
 	}
 
 	t, err := transport.NewTransport(tlsInfo, time.Second)

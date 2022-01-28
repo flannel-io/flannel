@@ -40,9 +40,10 @@ const (
 	NFNETLINK_V0 = 0
 )
 
-// #define NLA_F_NESTED (1 << 15)
 const (
-	NLA_F_NESTED = (1 << 15)
+	NLA_F_NESTED        uint16 = (1 << 15) // #define NLA_F_NESTED (1 << 15)
+	NLA_F_NET_BYTEORDER uint16 = (1 << 14) // #define NLA_F_NESTED (1 << 14)
+	NLA_TYPE_MASK              = ^(NLA_F_NESTED | NLA_F_NET_BYTEORDER)
 )
 
 // enum ctattr_type {
@@ -79,11 +80,14 @@ const (
 	CTA_TUPLE_ORIG     = 1
 	CTA_TUPLE_REPLY    = 2
 	CTA_STATUS         = 3
+	CTA_PROTOINFO      = 4
 	CTA_TIMEOUT        = 7
 	CTA_MARK           = 8
 	CTA_COUNTERS_ORIG  = 9
 	CTA_COUNTERS_REPLY = 10
-	CTA_PROTOINFO      = 4
+	CTA_USE            = 11
+	CTA_ID             = 12
+	CTA_TIMESTAMP      = 20
 )
 
 // enum ctattr_tuple {
@@ -178,6 +182,14 @@ const (
 const (
 	CTA_COUNTERS_PACKETS = 1
 	CTA_COUNTERS_BYTES   = 2
+)
+
+// enum CTA TIMESTAMP TLVs
+// CTA_TIMESTAMP_START       /* 64bit value */
+// CTA_TIMESTAMP_STOP        /* 64bit value */
+const (
+	CTA_TIMESTAMP_START = 1
+	CTA_TIMESTAMP_STOP  = 2
 )
 
 // /* General form of address family dependent message.

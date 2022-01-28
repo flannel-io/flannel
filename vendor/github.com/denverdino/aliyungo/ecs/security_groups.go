@@ -6,10 +6,15 @@ import (
 )
 
 type NicType string
+type Direction string
 
 const (
 	NicTypeInternet = NicType("internet")
 	NicTypeIntranet = NicType("intranet")
+
+	DirectionIngress = Direction("ingress")
+	DirectionEgress  = Direction("egress")
+	DirectionAll     = Direction("all")
 )
 
 type IpProtocol string
@@ -29,11 +34,18 @@ const (
 	PermissionPolicyDrop   = PermissionPolicy("drop")
 )
 
+type GroupInnerAccessPolicy string
+
+const (
+	GroupInnerAccept = GroupInnerAccessPolicy("Accept")
+	GroupInnerDrop   = GroupInnerAccessPolicy("Drop")
+)
+
 type DescribeSecurityGroupAttributeArgs struct {
 	SecurityGroupId string
 	RegionId        common.Region
-	NicType         NicType //enum for internet (default) |intranet
-	Direction       string  // enum ingress egress
+	NicType         NicType   //enum for internet (default) |intranet
+	Direction       Direction // enum ingress egress
 }
 
 //
@@ -64,7 +76,8 @@ type DescribeSecurityGroupAttributeResponse struct {
 	Permissions       struct {
 		Permission []PermissionType
 	}
-	VpcId string
+	VpcId             string
+	InnerAccessPolicy GroupInnerAccessPolicy
 }
 
 //
@@ -108,16 +121,25 @@ type DescribeSecurityGroupsResponse struct {
 //
 // You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/securitygroup&describesecuritygroups
 func (client *Client) DescribeSecurityGroups(args *DescribeSecurityGroupsArgs) (securityGroupItems []SecurityGroupItemType, pagination *common.PaginationResult, err error) {
-	args.Validate()
-	response := DescribeSecurityGroupsResponse{}
-
-	err = client.Invoke("DescribeSecurityGroups", args, &response)
-
+	response, err := client.DescribeSecurityGroupsWithRaw(args)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	return response.SecurityGroups.SecurityGroup, &response.PaginationResult, nil
+}
+
+func (client *Client) DescribeSecurityGroupsWithRaw(args *DescribeSecurityGroupsArgs) (response *DescribeSecurityGroupsResponse, err error) {
+	args.Validate()
+	response = &DescribeSecurityGroupsResponse{}
+
+	err = client.Invoke("DescribeSecurityGroups", args, response)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }
 
 type CreateSecurityGroupArgs struct {
@@ -185,6 +207,21 @@ type ModifySecurityGroupAttributeResponse struct {
 func (client *Client) ModifySecurityGroupAttribute(args *ModifySecurityGroupAttributeArgs) error {
 	response := ModifySecurityGroupAttributeResponse{}
 	err := client.Invoke("ModifySecurityGroupAttribute", args, &response)
+	return err
+}
+
+type ModifySecurityGroupPolicyArgs struct {
+	RegionId          common.Region
+	SecurityGroupId   string
+	InnerAccessPolicy GroupInnerAccessPolicy
+}
+
+// ModifySecurityGroupPolicy modifies inner access policy of security group
+//
+// You can read doc at https://www.alibabacloud.com/help/doc-detail/57315.htm
+func (client *Client) ModifySecurityGroupPolicy(args *ModifySecurityGroupPolicyArgs) error {
+	response := common.Response{}
+	err := client.Invoke("ModifySecurityGroupPolicy", args, &response)
 	return err
 }
 
