@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 // Copyright 2017 flannel authors

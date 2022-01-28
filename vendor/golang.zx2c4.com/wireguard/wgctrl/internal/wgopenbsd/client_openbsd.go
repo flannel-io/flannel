@@ -19,10 +19,8 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-var (
-	// ifGroupWG is the WireGuard interface group name passed to the kernel.
-	ifGroupWG = [16]byte{0: 'w', 1: 'g'}
-)
+// ifGroupWG is the WireGuard interface group name passed to the kernel.
+var ifGroupWG = [16]byte{0: 'w', 1: 'g'}
 
 var _ wginternal.Client = &Client{}
 

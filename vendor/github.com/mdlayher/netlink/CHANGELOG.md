@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## v1.4.2
+
+- [Documentation] [commit](https://github.com/mdlayher/netlink/commit/177e6364fb170d465d681c7c8a6283417a6d3e49):
+  the `netlink.Config.DisableNSLockThread` now properly uses Go's deprecated
+  identifier convention. This option has been a noop for a long time and should
+  not be used.
+- [Improvement] [#189](https://github.com/mdlayher/netlink/pull/189): the
+  package now uses Go 1.17's `//go:build` identifiers. Thanks @tklauser.
+- [Bug Fix]
+  [commit](https://github.com/mdlayher/netlink/commit/fe6002e030928bd1f2a446c0b6c65e8f2df4ed5e):
+  the `netlink.AttributeEncoder`'s `Bytes`, `String`, and `Do` methods now
+  properly reject byte slices and strings which are too large to fit in the
+  value of a netlink attribute. Thanks @ubiquitousbyte for the report.
+
 ## v1.4.1
 
 - [Improvement]: significant runtime network poller integration cleanup through

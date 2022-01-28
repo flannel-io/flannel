@@ -2,7 +2,10 @@ module github.com/flannel-io/flannel
 
 go 1.17
 
-replace google.golang.org/grpc => google.golang.org/grpc v1.29.0
+replace (
+	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
+	google.golang.org/grpc => google.golang.org/grpc v1.29.0
+)
 
 require (
 	github.com/Microsoft/hcsshim v0.9.2
@@ -30,21 +33,23 @@ require (
 	github.com/vishvananda/netns v0.0.0-20200728191858-db3c7e526aae
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
 	go.uber.org/zap v1.17.0 // indirect
-	golang.org/x/net v0.0.0-20211020060615-d418f374d309
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/net v0.0.0-20211208012354-db4efeb81f4b
+	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
-	golang.zx2c4.com/wireguard v0.0.0-20211022192229-f1f626090e3b // indirect
-	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20211019185142-5be1d6054c42
-	google.golang.org/api v0.22.0
+	golang.zx2c4.com/wireguard v0.0.0-20220117163742-e0b8f11489c5 // indirect
+	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20211230205640-daad0b7ba671
+	google.golang.org/api v0.30.0
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
 	k8s.io/api v0.20.6
 	k8s.io/apimachinery v0.20.6
 	k8s.io/client-go v0.20.6
 	k8s.io/klog v1.0.0
+
 )
 
 require (
-	cloud.google.com/go v0.57.0 // indirect
+	cloud.google.com/go v0.65.0 // indirect
+	github.com/BurntSushi/toml v0.4.1 // indirect
 	github.com/Microsoft/go-winio v0.4.17 // indirect
 	github.com/containerd/cgroups v1.0.1 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
@@ -61,25 +66,29 @@ require (
 	github.com/jmespath/go-jmespath v0.0.0-20160803190731-bd40a432e4c7 // indirect
 	github.com/josharian/native v0.0.0-20200817173448-b6b71def0850 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
-	github.com/mdlayher/genetlink v1.0.0 // indirect
-	github.com/mdlayher/netlink v1.4.1 // indirect
-	github.com/mdlayher/socket v0.0.0-20210307095302-262dc9984e00 // indirect
+	github.com/mdlayher/genetlink v1.1.0 // indirect
+	github.com/mdlayher/netlink v1.4.2 // indirect
+	github.com/mdlayher/socket v0.0.0-20211102153432-57e3fa563ecb // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	go.opencensus.io v0.22.3 // indirect
+	go.opencensus.io v0.22.4 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
+	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e // indirect
+	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/tools v0.1.8 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/grpc v1.40.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	honnef.co/go/tools v0.2.2 // indirect
 	k8s.io/klog/v2 v2.4.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20201113171705-d219536bb9fd // indirect
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920 // indirect
