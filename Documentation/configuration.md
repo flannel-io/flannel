@@ -11,6 +11,10 @@ The value of the config is a JSON dictionary with the following keys:
 
 * `Network` (string): IPv4 network in CIDR format to use for the entire flannel network. (This is the only mandatory key.)
 
+* `IPv6Network` (string): IPv6 network in CIDR format to use for the entire flannel network. (Mandatory if EnableIPv6 is true)
+
+* `EnableIPv6` (bool): Enables ipv6 support
+
 * `SubnetLen` (integer): The size of the subnet allocated to each host.
    Defaults to 24 (i.e. /24) unless `Network` was configured to be smaller than a /24 in which case it is one less than the network.
 
@@ -19,6 +23,15 @@ The value of the config is a JSON dictionary with the following keys:
 
 * `SubnetMax` (string): The end of the IP range at which the subnet allocation should end with.
    Defaults to the last subnet of `Network`.
+
+* `IPv6SubnetLen` (integer): The size of the ipv6 subnet allocated to each host.
+   Defaults to 64 (i.e. /64) unless `Ipv6Network` was configured to be smaller than a /64 in which case it is two less than the network.
+
+* `IPv6SubnetMin` (string): The beginning of IPv6 range which the subnet allocation should start with.
+   Defaults to the first subnet of `Ipv6Network`.
+
+* `IPv6SubnetMax` (string): The end of the IPv6 range at which the subnet allocation should end with.
+   Defaults to the last subnet of `Ipv6Network`.
 
 * `Backend` (dictionary): Type of backend to use and specific configurations for that backend.
    The list of available backends and the keys that can be put into the this dictionary are listed below.
@@ -83,7 +96,7 @@ Set `healthz-port` to a non-zero value will enable a healthz server for flannel.
 
 ## Dual-stack
 
-Flannel supports the dual-stack mode of Kubernetes. This means pods and services could use ipv4 and ipv6 at the same time. Currently, dual-stack is only supported for kube subnet manager and vxlan, wireguard or host-gw(linux) backend.
+Flannel supports dual-stack mode. This means pods and services could use ipv4 and ipv6 at the same time. Currently, dual-stack is only supported for vxlan, wireguard or host-gw(linux) backends.
 
 Requirements:
 * v1.0 of flannel binary from [containernetworking/plugins](https://github.com/containernetworking/plugins)
@@ -92,8 +105,7 @@ Requirements:
 * vxlan support ipv6 tunnel require kernel version >= 3.12
 
 Configuration:
-* Set flanneld daemon with "--kube-subnet-mgr" CLI option
-* Set "EnableIPv6": true and the "IPv6Network", for example "IPv6Network": "2001:cafe:42:0::/56" in the net-conf.json of the kube-flannel-cfg ConfigMap
+* Set "EnableIPv6": true and the "IPv6Network", for example "IPv6Network": * "2001:cafe:42:0::/56" in the net-conf.json of the kube-flannel-cfg ConfigMap or in `/coreos.com/network/config` for etcd
 
 If everything works as expected, flanneld should generate a `/run/flannel/subnet.env` file with IPV6 subnet and network. For example:
 
