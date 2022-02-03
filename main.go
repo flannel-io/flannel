@@ -202,8 +202,9 @@ func newSubnetManager(ctx context.Context) (subnet.Manager, error) {
 
 	// Attempt to renew the lease for the subnet specified in the subnetFile
 	prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
+	prevIPv6Subnet := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_SUBNET")
 
-	return etcdv2.NewLocalManager(cfg, prevSubnet)
+	return etcdv2.NewLocalManager(cfg, prevSubnet, prevIPv6Subnet)
 }
 
 func main() {

@@ -33,8 +33,9 @@ const (
 )
 
 type LocalManager struct {
-	registry       Registry
-	previousSubnet ip.IP4Net
+	registry           Registry
+	previousSubnet     ip.IP4Net
+	previousIPv6Subnet ip.IP6Net
 }
 
 type watchCursor struct {
@@ -69,18 +70,19 @@ func (c watchCursor) String() string {
 	return strconv.FormatUint(c.index, 10)
 }
 
-func NewLocalManager(config *EtcdConfig, prevSubnet ip.IP4Net) (Manager, error) {
+func NewLocalManager(config *EtcdConfig, prevSubnet ip.IP4Net, prevIPv6Subnet ip.IP6Net) (Manager, error) {
 	r, err := newEtcdSubnetRegistry(config, nil)
 	if err != nil {
 		return nil, err
 	}
-	return newLocalManager(r, prevSubnet), nil
+	return newLocalManager(r, prevSubnet, prevIPv6Subnet), nil
 }
 
-func newLocalManager(r Registry, prevSubnet ip.IP4Net) Manager {
+func newLocalManager(r Registry, prevSubnet ip.IP4Net, prevIPv6Subnet ip.IP6Net) Manager {
 	return &LocalManager{
-		registry:       r,
-		previousSubnet: prevSubnet,
+		registry:           r,
+		previousSubnet:     prevSubnet,
+		previousIPv6Subnet: prevIPv6Subnet,
 	}
 }
 
@@ -198,10 +200,10 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 			}
 		} else {
 			// Check if the previous subnet is a part of the network and of the right subnet length
-			// TODO ipv6?
-			if isSubnetConfigCompat(config, m.previousSubnet) {
+			if isSubnetConfigCompat(config, m.previousSubnet) && isIPv6SubnetConfigCompat(config, m.previousIPv6Subnet) {
 				log.Infof("Found previously leased subnet (%v), reusing", m.previousSubnet)
 				sn = m.previousSubnet
+				sn6 = m.previousIPv6Subnet
 			} else {
 				log.Errorf("Found previously leased subnet (%v) that is not compatible with the Etcd network config, ignoring", m.previousSubnet)
 			}
