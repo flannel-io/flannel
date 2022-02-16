@@ -26,11 +26,13 @@ import (
 )
 
 // GetInterfaceIP4Addr returns the IPv4 address for the given network interface
-func GetInterfaceIP4Addr(iface *net.Interface) (net.IP, error) {
+func GetInterfaceIP4Addr(iface *net.Interface) ([]net.IP, error) {
 	addrs, err := iface.Addrs()
 	if err != nil {
 		return nil, err
 	}
+
+	ipAddrs := make([]net.IP, 0)
 
 	for _, addr := range addrs {
 		var ip net.IP
@@ -42,8 +44,12 @@ func GetInterfaceIP4Addr(iface *net.Interface) (net.IP, error) {
 		}
 
 		if ip != nil && ip.To4() != nil {
-			return ip, nil
+			ipAddrs = append(ipAddrs, ip)
 		}
+	}
+
+	if len(ipAddrs) > 0 {
+		return ipAddrs, nil
 	}
 
 	return nil, errors.New("no IPv4 address found for given interface")
@@ -146,6 +152,6 @@ func IsForwardingEnabledForInterface(iface *net.Interface) (bool, error) {
 	return powerShellJsonData.Forwarding == 1, nil
 }
 
-func GetInterfaceByIP6(ip net.IP) (*net.Interface, error)      { return nil, nil }
-func GetInterfaceIP6Addr(iface *net.Interface) (net.IP, error) { return nil, nil }
-func GetDefaultV6GatewayInterface() (*net.Interface, error)    { return nil, nil }
+func GetInterfaceByIP6(ip net.IP) (*net.Interface, error)        { return nil, nil }
+func GetInterfaceIP6Addr(iface *net.Interface) ([]net.IP, error) { return nil, nil }
+func GetDefaultV6GatewayInterface() (*net.Interface, error)      { return nil, nil }
