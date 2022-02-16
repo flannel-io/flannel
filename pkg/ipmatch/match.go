@@ -94,6 +94,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 		}
 
 		// Check IP
+	ifaceLoop:
 		for _, ifaceToMatch := range ifaces {
 			switch ipStack {
 			case IPv4Stack:
@@ -105,7 +106,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 				if matched := matchIP(ifregex, ifaceIPs); matched != nil {
 					ifaceAddr = matched
 					iface = &ifaceToMatch
-					break
+					break ifaceLoop
 				}
 			case IPv6Stack:
 				ifaceIPs, err := ip.GetInterfaceIP6Addr(&ifaceToMatch)
@@ -116,7 +117,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 				if matched := matchIP(ifregex, ifaceIPs); matched != nil {
 					ifaceV6Addr = matched
 					iface = &ifaceToMatch
-					break
+					break ifaceLoop
 				}
 			case DualStack:
 				ifaceIPs, err := ip.GetInterfaceIP4Addr(&ifaceToMatch)
@@ -139,7 +140,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 				if matched := matchIP(ifregex, ifaceV6IPs); matched != nil {
 					ifaceV6Addr = matched
 					iface = &ifaceToMatch
-					break
+					break ifaceLoop
 				}
 			}
 		}
