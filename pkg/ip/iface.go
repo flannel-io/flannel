@@ -47,7 +47,7 @@ func getIfaceV6Addrs(iface *net.Interface) ([]netlink.Addr, error) {
 	return netlink.AddrList(link, syscall.AF_INET6)
 }
 
-func GetInterfaceIP4Addr(iface *net.Interface) ([]net.IP, error) {
+func GetInterfaceIP4Addrs(iface *net.Interface) ([]net.IP, error) {
 	addrs, err := getIfaceAddrs(iface)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func GetInterfaceIP4Addr(iface *net.Interface) ([]net.IP, error) {
 	ipAddrs := make([]net.IP, 0)
 
 	// prefer non link-local addr
-	var ll net.IP
+	ll := make([]net.IP, 0)
 
 	for _, addr := range addrs {
 		if addr.IP.To4() == nil {
@@ -69,24 +69,23 @@ func GetInterfaceIP4Addr(iface *net.Interface) ([]net.IP, error) {
 		}
 
 		if addr.IP.IsLinkLocalUnicast() {
-			ll = addr.IP
+			ll = append(ll, addr.IP)
 		}
+	}
+
+	if len(ll) > 0 {
+		// didn't find global but found link-local. it'll do.
+		ipAddrs = append(ipAddrs, ll...)
 	}
 
 	if len(ipAddrs) > 0 {
 		return ipAddrs, nil
 	}
 
-	if ll != nil {
-		// didn't find global but found link-local. it'll do.
-		ipAddrs = append(ipAddrs, ll)
-		return ipAddrs, nil
-	}
-
 	return nil, errors.New("No IPv4 address found for given interface")
 }
 
-func GetInterfaceIP6Addr(iface *net.Interface) ([]net.IP, error) {
+func GetInterfaceIP6Addrs(iface *net.Interface) ([]net.IP, error) {
 	addrs, err := getIfaceV6Addrs(iface)
 	if err != nil {
 		return nil, err
@@ -95,7 +94,7 @@ func GetInterfaceIP6Addr(iface *net.Interface) ([]net.IP, error) {
 	ipAddrs := make([]net.IP, 0)
 
 	// prefer non link-local addr
-	var ll net.IP
+	ll := make([]net.IP, 0)
 
 	for _, addr := range addrs {
 		if addr.IP.To16() == nil {
@@ -108,17 +107,16 @@ func GetInterfaceIP6Addr(iface *net.Interface) ([]net.IP, error) {
 		}
 
 		if addr.IP.IsLinkLocalUnicast() {
-			ll = addr.IP
+			ll = append(ll, addr.IP)
 		}
 	}
 
-	if len(ipAddrs) > 0 {
-		return ipAddrs, nil
+	if len(ll) > 0 {
+		// didn't find global but found link-local. it'll do.
+		ipAddrs = append(ipAddrs, ll...)
 	}
 
-	if ll != nil {
-		// didn't find global but found link-local. it'll do.
-		ipAddrs = append(ipAddrs, ll)
+	if len(ipAddrs) > 0 {
 		return ipAddrs, nil
 	}
 

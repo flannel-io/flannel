@@ -25,8 +25,8 @@ import (
 	"github.com/flannel-io/flannel/pkg/powershell"
 )
 
-// GetInterfaceIP4Addr returns the IPv4 address for the given network interface
-func GetInterfaceIP4Addr(iface *net.Interface) ([]net.IP, error) {
+// GetInterfaceIP4Addrs returns the IPv4 address for the given network interface
+func GetInterfaceIP4Addrs(iface *net.Interface) ([]net.IP, error) {
 	addrs, err := iface.Addrs()
 	if err != nil {
 		return nil, err
@@ -152,6 +152,6 @@ func IsForwardingEnabledForInterface(iface *net.Interface) (bool, error) {
 	return powerShellJsonData.Forwarding == 1, nil
 }
 
-func GetInterfaceByIP6(ip net.IP) (*net.Interface, error)        { return nil, nil }
-func GetInterfaceIP6Addr(iface *net.Interface) ([]net.IP, error) { return nil, nil }
-func GetDefaultV6GatewayInterface() (*net.Interface, error)      { return nil, nil }
+func GetInterfaceByIP6(ip net.IP) (*net.Interface, error)         { return nil, nil }
+func GetInterfaceIP6Addrs(iface *net.Interface) ([]net.IP, error) { return nil, nil }
+func GetDefaultV6GatewayInterface() (*net.Interface, error)       { return nil, nil }
