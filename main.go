@@ -250,8 +250,7 @@ func main() {
 	}()
 
 	if opts.healthzPort > 0 {
-		// It's not super easy to shutdown the HTTP server so don't attempt to stop it cleanly
-		go mustRunHealthz()
+		mustRunHealthz(ctx.Done(), &wg)
 	}
 
 	// Fetch the network config (i.e. what backend to use etc..).
@@ -782,7 +781,7 @@ func WriteSubnetFile(path string, config *subnet.Config, ipMasq bool, bn backend
 	//TODO - is this safe? What if it's not on the same FS?
 }
 
-func mustRunHealthz() {
+func mustRunHealthz(stopChan <-chan struct{}, wg *sync.WaitGroup) {
 	address := net.JoinHostPort(opts.healthzIP, strconv.Itoa(opts.healthzPort))
 	log.Infof("Start healthz server on %s", address)
 
@@ -791,10 +790,29 @@ func mustRunHealthz() {
 		w.Write([]byte("flanneld is running"))
 	})
 
-	if err := http.ListenAndServe(address, nil); err != nil {
-		log.Errorf("Start healthz server error. %v", err)
-		panic(err)
-	}
+	server := &http.Server{Addr: address}
+
+	wg.Add(2)
+	go func() {
+		// when Shutdown is called, ListenAndServe immediately return ErrServerClosed.
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Errorf("Start healthz server error. %v", err)
+			panic(err)
+		}
+		wg.Done()
+	}()
+
+	go func() {
+		// wait to stop
+		<-stopChan
+
+		// create new context with timeout for http server to shutdown gracefully
+		ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+		if err := server.Shutdown(ctx); err != nil {
+			log.Errorf("Shutdown healthz server error. %v", err)
+		}
+		wg.Done()
+	}()
 }
 
 func ReadCIDRFromSubnetFile(path string, CIDRKey string) ip.IP4Net {
