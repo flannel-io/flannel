@@ -112,7 +112,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 
 				if len(event.Lease.Attrs.BackendData) > 0 {
 					if err := json.Unmarshal(event.Lease.Attrs.BackendData, &wireguardAttrs); err != nil {
-						log.Errorf("failed to unmarshal BackendData: %w", err)
+						log.Errorf("failed to unmarshal BackendData: %v", err)
 						continue
 					}
 				}
@@ -131,7 +131,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 
 				if len(event.Lease.Attrs.BackendV6Data) > 0 {
 					if err := json.Unmarshal(event.Lease.Attrs.BackendV6Data, &wireguardAttrs); err != nil {
-						log.Errorf("failed to unmarshal BackendData: %w", err)
+						log.Errorf("failed to unmarshal BackendData: %v", err)
 						continue
 					}
 				}
@@ -141,7 +141,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 					publicEndpoint,
 					wireguardAttrs.PublicKey,
 					event.Lease.IPv6Subnet.ToIPNet()); err != nil {
-					log.Errorf("failed to setup ipv6 peer (%s): %w", wireguardAttrs.PublicKey, err)
+					log.Errorf("failed to setup ipv6 peer (%s): %v", wireguardAttrs.PublicKey, err)
 				}
 			}
 
@@ -157,7 +157,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				log.Info("Subnet removed: ", event.Lease.Subnet)
 				if len(event.Lease.Attrs.BackendData) > 0 {
 					if err := json.Unmarshal(event.Lease.Attrs.BackendData, &wireguardAttrs); err != nil {
-						log.Errorf("failed to unmarshal BackendData: %w", err)
+						log.Errorf("failed to unmarshal BackendData: %v", err)
 						continue
 					}
 				}
@@ -173,7 +173,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				log.Info("Subnet removed: ", event.Lease.IPv6Subnet)
 				if len(event.Lease.Attrs.BackendV6Data) > 0 {
 					if err := json.Unmarshal(event.Lease.Attrs.BackendV6Data, &wireguardAttrs); err != nil {
-						log.Errorf("failed to unmarshal BackendData: %w", err)
+						log.Errorf("failed to unmarshal BackendData: %v", err)
 						continue
 					}
 				}
@@ -181,7 +181,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				if err := n.v6Dev.removePeer(
 					wireguardAttrs.PublicKey,
 				); err != nil {
-					log.Errorf("failed to remove ipv6 peer (%s): %w", wireguardAttrs.PublicKey, err)
+					log.Errorf("failed to remove ipv6 peer (%s): %v", wireguardAttrs.PublicKey, err)
 				}
 			}
 

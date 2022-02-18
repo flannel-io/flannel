@@ -144,7 +144,10 @@ func SetupAndEnsureIPTables(rules []IPTablesRule, resyncPeriod int) {
 	}
 
 	defer func() {
-		teardownIPTables(ipt, rules)
+		err := teardownIPTables(ipt, rules)
+		if err != nil {
+			log.Errorf("Failed to tear down IPTables: %v", err)
+		}
 	}()
 
 	for {
@@ -166,7 +169,10 @@ func SetupAndEnsureIP6Tables(rules []IPTablesRule, resyncPeriod int) {
 	}
 
 	defer func() {
-		teardownIPTables(ipt, rules)
+		err := teardownIPTables(ipt, rules)
+		if err != nil {
+			log.Errorf("Failed to tear down IPTables: %v", err)
+		}
 	}()
 
 	for {
@@ -187,7 +193,11 @@ func DeleteIPTables(rules []IPTablesRule) error {
 		log.Errorf("Failed to setup IPTables. iptables binary was not found: %v", err)
 		return err
 	}
-	teardownIPTables(ipt, rules)
+	err = teardownIPTables(ipt, rules)
+	if err != nil {
+		log.Errorf("Failed to tear down IPTables: %v", err)
+		return err
+	}
 	return nil
 }
 
@@ -199,7 +209,11 @@ func DeleteIP6Tables(rules []IPTablesRule) error {
 		log.Errorf("Failed to setup IP6Tables. iptables binary was not found: %v", err)
 		return err
 	}
-	teardownIPTables(ipt, rules)
+	err = teardownIPTables(ipt, rules)
+	if err != nil {
+		log.Errorf("Failed to tear down IPTables: %v", err)
+		return err
+	}
 	return nil
 }
 

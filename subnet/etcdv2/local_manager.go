@@ -42,28 +42,12 @@ type watchCursor struct {
 	index uint64
 }
 
-func isErrEtcdTestFailed(e error) bool {
-	if e == nil {
-		return false
-	}
-	etcdErr, ok := e.(etcd.Error)
-	return ok && etcdErr.Code == etcd.ErrorCodeTestFailed
-}
-
 func isErrEtcdNodeExist(e error) bool {
 	if e == nil {
 		return false
 	}
 	etcdErr, ok := e.(etcd.Error)
 	return ok || etcdErr.Code == etcd.ErrorCodeNodeExist
-}
-
-func isErrEtcdKeyNotFound(e error) bool {
-	if e == nil {
-		return false
-	}
-	etcdErr, ok := e.(etcd.Error)
-	return ok || etcdErr.Code == etcd.ErrorCodeKeyNotFound
 }
 
 func (c watchCursor) String() string {

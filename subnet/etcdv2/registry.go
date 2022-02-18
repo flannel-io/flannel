@@ -249,17 +249,6 @@ func (esr *etcdSubnetRegistry) client() etcd.KeysAPI {
 	return esr.cli
 }
 
-func (esr *etcdSubnetRegistry) resetClient() {
-	esr.mux.Lock()
-	defer esr.mux.Unlock()
-
-	var err error
-	esr.cli, err = newEtcdClient(esr.etcdCfg)
-	if err != nil {
-		panic(fmt.Errorf("resetClient: error recreating etcd client: %v", err))
-	}
-}
-
 func parseSubnetWatchResponse(resp *etcd.Response) (Event, error) {
 	sn, tsn6 := ParseSubnetKey(resp.Node.Key)
 	if sn == nil {
@@ -274,8 +263,8 @@ func parseSubnetWatchResponse(resp *etcd.Response) (Event, error) {
 	switch resp.Action {
 	case "delete", "expire":
 		return Event{
-			EventRemoved,
-			Lease{
+			Type: EventRemoved,
+			Lease: Lease{
 				EnableIPv4: true,
 				Subnet:     *sn,
 				EnableIPv6: !sn6.Empty(),
@@ -296,8 +285,8 @@ func parseSubnetWatchResponse(resp *etcd.Response) (Event, error) {
 		}
 
 		evt := Event{
-			EventAdded,
-			Lease{
+			Type: EventAdded,
+			Lease: Lease{
 				EnableIPv4: true,
 				Subnet:     *sn,
 				EnableIPv6: !sn6.Empty(),

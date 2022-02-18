@@ -19,21 +19,18 @@ import (
 	"testing"
 )
 
-func mkIP4Net(s string, plen uint) ip.IP4Net {
-	ip4, err := ip.ParseIP4(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return ip.IP4Net{ip4, plen}
-}
-
 func TestSubnetNodev4(t *testing.T) {
 	key := "10.12.13.0-24"
 	sn, sn6 := ParseSubnetKey(key)
 
 	if sn == nil {
 		t.Errorf("Failed to parse ipv4 address")
+		return
+	}
+
+	if sn.ToIPNet() == nil {
+		t.Errorf("Failed to transform sn into IPNet")
+		return
 	}
 
 	if sn.ToIPNet().String() != "10.12.13.0/24" {
@@ -55,6 +52,11 @@ func TestSubnetNodev6(t *testing.T) {
 
 	if sn == nil {
 		t.Errorf("Failed to parse ipv4 address")
+		return
+	}
+
+	if sn.ToIPNet() == nil {
+		t.Errorf("Failed to transform sn into IPNet")
 		return
 	}
 
