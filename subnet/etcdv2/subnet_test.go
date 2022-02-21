@@ -79,7 +79,7 @@ func TestAcquireLease(t *testing.T) {
 	// Test if a previous subnet will be used
 	msr2 := newDummyRegistry()
 	prevSubnet := ip.IP4Net{ip.MustParseIP4("10.3.6.0"), 24}
-	sm2 := NewMockManagerWithSubnet(msr2, prevSubnet)
+	sm2 := NewMockManagerWithSubnet(msr2, prevSubnet, ip.IP6Net{})
 	prev, err := sm2.AcquireLease(context.Background(), &attrs)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
@@ -91,7 +91,7 @@ func TestAcquireLease(t *testing.T) {
 	// Test that a previous subnet will not be used if it does not match the registry config
 	msr3 := newDummyRegistry()
 	invalidSubnet := ip.IP4Net{ip.MustParseIP4("10.4.1.0"), 24}
-	sm3 := NewMockManagerWithSubnet(msr3, invalidSubnet)
+	sm3 := NewMockManagerWithSubnet(msr3, invalidSubnet, ip.IP6Net{})
 	l3, err := sm3.AcquireLease(context.Background(), &attrs)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
@@ -190,7 +190,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 	attrs := &LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.1.1.1"),
 	}
-	_, err := msr.createSubnet(ctx, expected, attrs, 0)
+	_, err := msr.createSubnet(ctx, expected, ip.IP6Net{}, attrs, 0)
 	if err != nil {
 		t.Fatalf("createSubnet filed: %v", err)
 	}

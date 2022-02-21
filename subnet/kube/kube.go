@@ -426,7 +426,7 @@ func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, lease *subnet.Leas
 	return ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
+func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
 	return subnet.LeaseWatchResult{}, ErrUnimplemented
 }
 

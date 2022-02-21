@@ -201,8 +201,9 @@ func newSubnetManager(ctx context.Context) (subnet.Manager, error) {
 
 	// Attempt to renew the lease for the subnet specified in the subnetFile
 	prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
+	prevIPv6Subnet := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_SUBNET")
 
-	return etcdv2.NewLocalManager(cfg, prevSubnet)
+	return etcdv2.NewLocalManager(cfg, prevSubnet, prevIPv6Subnet)
 }
 
 func main() {
@@ -473,7 +474,8 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 
 	wg.Add(1)
 	go func() {
-		subnet.WatchLease(ctx, sm, bn.Lease().Subnet, evts)
+		l := bn.Lease()
+		subnet.WatchLease(ctx, sm, l.Subnet, l.IPv6Subnet, evts)
 		wg.Done()
 	}()
 

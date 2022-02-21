@@ -133,7 +133,7 @@ func TestEtcdRegistry(t *testing.T) {
 	attrs := &LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.2.3.4"),
 	}
-	exp, err := r.createSubnet(ctx, sn, attrs, 24*time.Hour)
+	exp, err := r.createSubnet(ctx, sn, ip.IP6Net{}, attrs, 24*time.Hour)
 	if err != nil {
 		t.Fatal("Failed to create subnet lease")
 	}
@@ -161,12 +161,12 @@ func TestEtcdRegistry(t *testing.T) {
 		t.Fatalf("Mismatched subnet %v (expected %v)", leases[0].Subnet, sn)
 	}
 
-	lease, _, err := r.getSubnet(ctx, sn)
+	lease, _, err := r.getSubnet(ctx, sn, ip.IP6Net{})
 	if lease == nil {
 		t.Fatal("Missing subnet lease")
 	}
 
-	err = r.deleteSubnet(ctx, sn)
+	err = r.deleteSubnet(ctx, sn, ip.IP6Net{})
 	if err != nil {
 		t.Fatalf("Failed to delete subnet %v: %v", sn, err)
 	}

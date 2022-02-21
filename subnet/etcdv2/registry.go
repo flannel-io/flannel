@@ -38,12 +38,12 @@ var (
 type Registry interface {
 	getNetworkConfig(ctx context.Context) (string, error)
 	getSubnets(ctx context.Context) ([]Lease, uint64, error)
-	getSubnet(ctx context.Context, sn ip.IP4Net) (*Lease, uint64, error)
-	createSubnet(ctx context.Context, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error)
-	updateSubnet(ctx context.Context, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration, asof uint64) (time.Time, error)
-	deleteSubnet(ctx context.Context, sn ip.IP4Net) error
+	getSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) (*Lease, uint64, error)
+	createSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error)
+	updateSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *LeaseAttrs, ttl time.Duration, asof uint64) (time.Time, error)
+	deleteSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) error
 	watchSubnets(ctx context.Context, since uint64) (Event, uint64, error)
-	watchSubnet(ctx context.Context, since uint64, sn ip.IP4Net) (Event, uint64, error)
+	watchSubnet(ctx context.Context, since uint64, sn ip.IP4Net, sn6 ip.IP6Net) (Event, uint64, error)
 }
 
 type EtcdConfig struct {
@@ -148,8 +148,8 @@ func (esr *etcdSubnetRegistry) getSubnets(ctx context.Context) ([]Lease, uint64,
 	return leases, resp.Index, nil
 }
 
-func (esr *etcdSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net) (*Lease, uint64, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn))
+func (esr *etcdSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) (*Lease, uint64, error) {
+	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn, sn6))
 	resp, err := esr.client().Get(ctx, key, &etcd.GetOptions{Quorum: true})
 	if err != nil {
 		return nil, 0, err
@@ -159,8 +159,8 @@ func (esr *etcdSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net) (*Le
 	return l, resp.Index, err
 }
 
-func (esr *etcdSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn))
+func (esr *etcdSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error) {
+	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn, sn6))
 	value, err := json.Marshal(attrs)
 	if err != nil {
 		return time.Time{}, err
@@ -184,8 +184,8 @@ func (esr *etcdSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, a
 	return exp, nil
 }
 
-func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration, asof uint64) (time.Time, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn))
+func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *LeaseAttrs, ttl time.Duration, asof uint64) (time.Time, error) {
+	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn, sn6))
 	value, err := json.Marshal(attrs)
 	if err != nil {
 		return time.Time{}, err
@@ -207,8 +207,8 @@ func (esr *etcdSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, a
 	return exp, nil
 }
 
-func (esr *etcdSubnetRegistry) deleteSubnet(ctx context.Context, sn ip.IP4Net) error {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn))
+func (esr *etcdSubnetRegistry) deleteSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) error {
+	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn, sn6))
 	_, err := esr.client().Delete(ctx, key, nil)
 	return err
 }
@@ -228,8 +228,8 @@ func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, since uint64) (
 	return evt, e.Node.ModifiedIndex, err
 }
 
-func (esr *etcdSubnetRegistry) watchSubnet(ctx context.Context, since uint64, sn ip.IP4Net) (Event, uint64, error) {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn))
+func (esr *etcdSubnetRegistry) watchSubnet(ctx context.Context, since uint64, sn ip.IP4Net, sn6 ip.IP6Net) (Event, uint64, error) {
+	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn, sn6))
 	opts := &etcd.WatcherOptions{
 		AfterIndex: since,
 	}
@@ -261,16 +261,26 @@ func (esr *etcdSubnetRegistry) resetClient() {
 }
 
 func parseSubnetWatchResponse(resp *etcd.Response) (Event, error) {
-	sn := ParseSubnetKey(resp.Node.Key)
+	sn, tsn6 := ParseSubnetKey(resp.Node.Key)
 	if sn == nil {
 		return Event{}, fmt.Errorf("%v %q: not a subnet, skipping", resp.Action, resp.Node.Key)
+	}
+
+	var sn6 ip.IP6Net
+	if tsn6 != nil {
+		sn6 = *tsn6
 	}
 
 	switch resp.Action {
 	case "delete", "expire":
 		return Event{
 			EventRemoved,
-			Lease{Subnet: *sn},
+			Lease{
+				EnableIPv4: true,
+				Subnet:     *sn,
+				EnableIPv6: !sn6.Empty(),
+				IPv6Subnet: sn6,
+			},
 		}, nil
 
 	default:
@@ -288,7 +298,10 @@ func parseSubnetWatchResponse(resp *etcd.Response) (Event, error) {
 		evt := Event{
 			EventAdded,
 			Lease{
+				EnableIPv4: true,
 				Subnet:     *sn,
+				EnableIPv6: !sn6.Empty(),
+				IPv6Subnet: sn6,
 				Attrs:      *attrs,
 				Expiration: exp,
 			},
@@ -298,9 +311,14 @@ func parseSubnetWatchResponse(resp *etcd.Response) (Event, error) {
 }
 
 func nodeToLease(node *etcd.Node) (*Lease, error) {
-	sn := ParseSubnetKey(node.Key)
+	sn, tsn6 := ParseSubnetKey(node.Key)
 	if sn == nil {
 		return nil, fmt.Errorf("failed to parse subnet key %s", node.Key)
+	}
+
+	var sn6 ip.IP6Net
+	if tsn6 != nil {
+		sn6 = *tsn6
 	}
 
 	attrs := &LeaseAttrs{}
@@ -314,10 +332,10 @@ func nodeToLease(node *etcd.Node) (*Lease, error) {
 	}
 
 	lease := Lease{
-		//TODO only vxlan backend and kube subnet manager support dual stack now.
 		EnableIPv4: true,
-		EnableIPv6: false,
+		EnableIPv6: !sn6.Empty(),
 		Subnet:     *sn,
+		IPv6Subnet: sn6,
 		Attrs:      *attrs,
 		Expiration: exp,
 		Asof:       node.ModifiedIndex,

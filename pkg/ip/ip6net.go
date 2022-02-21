@@ -110,6 +110,10 @@ func (ip6 *IP6) UnmarshalJSON(j []byte) error {
 	}
 }
 
+func (ip6 *IP6) Cmp(other *IP6) int {
+	return (*big.Int)(ip6).Cmp((*big.Int)(other))
+}
+
 // similar to net.IPNet but has uint based representation
 type IP6Net struct {
 	IP        *IP6
@@ -190,7 +194,7 @@ func (n IP6Net) Contains(ip *IP6) bool {
 }
 
 func (n IP6Net) Empty() bool {
-	return n.IP == (*IP6)(big.NewInt(0)) && n.PrefixLen == uint(0)
+	return IsEmpty(n.IP) && n.PrefixLen == uint(0)
 }
 
 // MarshalJSON: json.Marshaler impl
