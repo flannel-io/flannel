@@ -78,10 +78,7 @@ type CmdLineOpts struct {
 	etcdCAFile                string
 	etcdUsername              string
 	etcdPassword              string
-	help                      bool
 	version                   bool
-	autoDetectIPv4            bool
-	autoDetectIPv6            bool
 	kubeSubnetMgr             bool
 	kubeApiUrl                string
 	kubeAnnotationPrefix      string
@@ -90,14 +87,11 @@ type CmdLineOpts struct {
 	ifaceRegex                flagSlice
 	ipMasq                    bool
 	subnetFile                string
-	subnetDir                 string
 	publicIP                  string
 	publicIPv6                string
 	subnetLeaseRenewMargin    int
 	healthzIP                 string
 	healthzPort               int
-	charonExecutablePath      string
-	charonViciUri             string
 	iptablesResyncSeconds     int
 	iptablesForwardRules      bool
 	netConfPath               string
@@ -149,7 +143,12 @@ func init() {
 
 	// klog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
-	flag.Set("logtostderr", "true")
+	err := flag.Set("logtostderr", "true")
+	if err != nil {
+                log.Error("Can't set the logtostderr flag", err)
+                os.Exit(1)
+	}
+
 
 	// Only copy the non file logging options from klog
 	copyFlag("v")
@@ -160,7 +159,12 @@ func init() {
 	flannelFlags.Usage = usage
 
 	// now parse command line args
-	flannelFlags.Parse(os.Args[1:])
+	err = flannelFlags.Parse(os.Args[1:])
+        if err != nil {
+                log.Error("Can't parse flannel flags", err)
+                os.Exit(1)
+        }
+
 }
 
 func copyFlag(name string) {
@@ -212,7 +216,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	flagutil.SetFlagsFromEnv(flannelFlags, "FLANNELD")
+	err := flagutil.SetFlagsFromEnv(flannelFlags, "FLANNELD")
+	if err != nil {
+		log.Error("Failed to set flag FLANNELD from env", err)
+	}
 
 	// Log the config set via CLI flags
 	log.Infof("CLI flags config: %+v", opts)
@@ -382,7 +389,10 @@ func main() {
 		wg.Done()
 	}()
 
-	daemon.SdNotify(false, "READY=1")
+	_, err = daemon.SdNotify(false, "READY=1")
+	if err != nil {
+		log.Errorf("Failed to notify systemd the message READY=1 %v", err)
+	}
 
 	// Kube subnet mgr doesn't lease the subnet for this node - it just uses the podCidr that's already assigned.
 	if !opts.kubeSubnetMgr {
@@ -480,7 +490,7 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 	}()
 
 	renewMargin := time.Duration(opts.subnetLeaseRenewMargin) * time.Minute
-	dur := bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+	dur := time.Until(bn.Lease().Expiration) - renewMargin
 
 	for {
 		select {
@@ -493,7 +503,7 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 			}
 
 			log.Info("Lease renewed, new expiration: ", bn.Lease().Expiration)
-			dur = bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+			dur = time.Until(bn.Lease().Expiration) - renewMargin
 
 		case e, ok := <-evts:
 			if !ok {
@@ -503,7 +513,7 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 			switch e.Type {
 			case subnet.EventAdded:
 				bn.Lease().Expiration = e.Lease.Expiration
-				dur = bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+				dur = time.Until(bn.Lease().Expiration) - renewMargin
 				log.Infof("Waiting for %s to renew lease", dur)
 
 			case subnet.EventRemoved:
@@ -747,7 +757,10 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int) (*backend.Exter
 
 func WriteSubnetFile(path string, config *subnet.Config, ipMasq bool, bn backend.Network) error {
 	dir, name := filepath.Split(path)
-	os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		return err
+	}
 	tempFile := filepath.Join(dir, "."+name)
 	f, err := os.Create(tempFile)
 	if err != nil {
@@ -789,7 +802,11 @@ func mustRunHealthz(stopChan <-chan struct{}, wg *sync.WaitGroup) {
 
 	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("flanneld is running"))
+		_, err := w.Write([]byte("flanneld is running"))
+		if err != nil {
+			log.Errorf("Handling /healthz error. %v", err)
+			panic(err)
+		}
 	})
 
 	server := &http.Server{Addr: address}

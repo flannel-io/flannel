@@ -141,8 +141,15 @@ func runCmd(env []string, stdin string, name string, arg ...string) (string, err
 		return "", err
 	}
 
-	io.WriteString(stdinpipe, stdin)
-	io.WriteString(stdinpipe, "\n")
+	_, err = io.WriteString(stdinpipe, stdin)
+	if err != nil {
+		return "", err
+	}
+
+	_, err = io.WriteString(stdinpipe, "\n")
+	if err != nil {
+		return "", err
+	}
 	stdinpipe.Close()
 
 	output, err := cmd.CombinedOutput()

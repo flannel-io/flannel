@@ -67,10 +67,7 @@ func GetIPv6SubnetMax(networkIP *IP6, subnetSize *big.Int) *IP6 {
 }
 
 func CheckIPv6Subnet(subnetIP *IP6, mask *big.Int) bool {
-	if (*big.Int)(subnetIP).Cmp(big.NewInt(0).And((*big.Int)(subnetIP), mask)) != 0 {
-		return false
-	}
-	return true
+	return (*big.Int)(subnetIP).Cmp(big.NewInt(0).And((*big.Int)(subnetIP), mask)) == 0
 }
 
 func MustParseIP6(s string) *IP6 {

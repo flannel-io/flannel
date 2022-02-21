@@ -162,12 +162,13 @@ func newWGDevice(devAttrs *wgDeviceAttrs, ctx context.Context, wg *sync.WaitGrou
 	// We remove the device to undo any change we did to the system.
 	wg.Add(1)
 	go func() {
-		select {
-		case <-ctx.Done():
-			dev.remove()
-			log.Infof("Removed wireguard device %s", dev.attrs.name)
-			wg.Done()
+		<-ctx.Done()
+		err := dev.remove()
+		if err != nil {
+			log.Errorf("Error while removing device: %v", err)
 		}
+		log.Infof("Removed wireguard device %s", dev.attrs.name)
+		wg.Done()
 	}()
 
 	return &dev, nil
@@ -298,7 +299,10 @@ func (dev *wgDevice) addPeer(publicEndpoint string, peerPublicKeyRaw string, pee
 	}
 
 	// Remove peers from this endpoint with different public keys
-	dev.cleanupEndpointPeers(udpEndpoint, peerPublicKeyRaw)
+	err = dev.cleanupEndpointPeers(udpEndpoint, peerPublicKeyRaw)
+	if err != nil {
+		return fmt.Errorf("failed to clean up endpoint peers %w", err)
+	}
 
 	return nil
 }

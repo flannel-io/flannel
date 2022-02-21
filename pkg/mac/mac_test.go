@@ -23,6 +23,6 @@ func TestNewHardwareAddr(t *testing.T) {
 	// But an error should never be returned.
 	_, err := NewHardwareAddr()
 	if err != nil {
-		t.Fatalf(err)
+		t.Fatalf("err: %v", err)
 	}
 }

@@ -38,7 +38,6 @@ const (
 
 type network struct {
 	backend.SimpleNetwork
-	name   string
 	port   int
 	ctl    *os.File
 	ctl2   *os.File
@@ -107,15 +106,13 @@ func (n *network) Run(ctx context.Context) {
 	}()
 
 	for {
-		select {
-		case evtBatch, ok := <-evts:
-			if !ok {
-				log.Infof("evts chan closed")
-				stopProxy(n.ctl)
-				return
-			}
-			n.processSubnetEvents(evtBatch)
+		evtBatch, ok := <-evts
+		if !ok {
+			log.Infof("evts chan closed")
+			stopProxy(n.ctl)
+			return
 		}
+		n.processSubnetEvents(evtBatch)
 	}
 }
 

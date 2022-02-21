@@ -94,15 +94,13 @@ func (n *network) Run(ctx context.Context) {
 	}()
 
 	for {
-		select {
-		case evtsBatch, ok := <-evts:
-			if !ok {
-				log.Infof("evts chan closed")
-				return
-			}
-			log.Info("Handling event")
-			n.handleSubnetEvents(evtsBatch)
+		evtsBatch, ok := <-evts
+		if !ok {
+			log.Infof("evts chan closed")
+			return
 		}
+		log.Info("Handling event")
+		n.handleSubnetEvents(evtsBatch)
 	}
 }
 
