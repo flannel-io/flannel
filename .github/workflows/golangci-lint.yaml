@@ -1,0 +1,14 @@
+name: build flannel
+
+on: [push, pull_request]
+
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2.5.2
+        with:
+          args: "--out-${NO_FUTURE}format colored-line-number --skip-dirs='backend/udp' --timeout=5m"

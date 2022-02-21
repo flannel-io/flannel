@@ -115,7 +115,7 @@ func (me *mockEtcd) findNode(key string) (*etcd.Node, *etcd.Node, error) {
 		}
 
 		// intermediates must be directories
-		if i < len(path)-1 && node.Dir != true {
+		if i < len(path)-1 && !node.Dir {
 			return nil, nil, me.newError(etcd.ErrorCodeNotDir, "Intermediate node %s not a directory", part)
 		}
 	}
@@ -243,7 +243,7 @@ func (me *mockEtcd) set(ctx context.Context, key, value string, opts *etcd.SetOp
 		}
 
 		if opts.Dir != node.Dir {
-			if opts.Dir == true {
+			if opts.Dir {
 				return nil, me.newError(etcd.ErrorCodeNotDir, "Key %s is not a directory", key)
 			} else {
 				return nil, me.newError(etcd.ErrorCodeNotFile, "Key %s is not a file", key)
@@ -300,12 +300,15 @@ func (me *mockEtcd) Set(ctx context.Context, key, value string, opts *etcd.SetOp
 func (me *mockEtcd) deleteNode(node *etcd.Node, parent *etcd.Node, recursive bool) (*etcd.Response, error) {
 	for _, child := range me.nodes {
 		if isChild, directChild := isChild(node, child); isChild {
-			if recursive == false {
+			if !recursive {
 				return nil, me.newError(etcd.ErrorCodeDirNotEmpty, "Key %s not empty", node.Key)
 			}
 
 			if directChild {
-				me.deleteNode(child, node, true)
+				_, err := me.deleteNode(child, node, true)
+				if err != nil {
+					return nil, err
+				}
 				me.index += 1
 				node.ModifiedIndex = me.index
 			}
@@ -350,7 +353,7 @@ func (me *mockEtcd) Delete(ctx context.Context, key string, opts *etcd.DeleteOpt
 	}
 
 	if opts.Dir != node.Dir {
-		if opts.Dir == true {
+		if opts.Dir {
 			return nil, me.newError(etcd.ErrorCodeNotDir, "Key %s is not a directory", key)
 		} else {
 			return nil, me.newError(etcd.ErrorCodeNotFile, "Key %s is not a file", key)

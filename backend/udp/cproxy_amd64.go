@@ -60,7 +60,10 @@ func writeCommand(f *os.File, cmd *C.command) {
 	}
 	buf := *(*[]byte)(unsafe.Pointer(&hdr))
 
-	f.Write(buf)
+	_, err := f.Write(buf)
+	if err != nil {
+		log.Errorf("Error while writing the command %v. Error: %v", cmd, err)
+	}
 }
 
 func setRoute(ctl *os.File, dst ip.IP4Net, nextHopIP ip.IP4, nextHopPort int) {

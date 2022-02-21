@@ -94,7 +94,7 @@ func TestEtcdRegistry(t *testing.T) {
 
 	ctx, _ := context.WithCancel(context.Background())
 
-	config, err := r.getNetworkConfig(ctx)
+	_, err := r.getNetworkConfig(ctx)
 	if err == nil {
 		t.Fatal("Should hit error getting config")
 	}
@@ -102,9 +102,12 @@ func TestEtcdRegistry(t *testing.T) {
 	// Populate etcd with a network
 	netKey := "/coreos.com/network/config"
 	netValue := "{ \"Network\": \"10.1.0.0/16\", \"Backend\": { \"Type\": \"host-gw\" } }"
-	m.Create(ctx, netKey, netValue)
+	_, err = m.Create(ctx, netKey, netValue)
+	if err != nil {
+		t.Fatal("Failed to create new entry", err)
+	}
 
-	config, err = r.getNetworkConfig(ctx)
+	config, err := r.getNetworkConfig(ctx)
 	if err != nil {
 		t.Fatal("Failed to get network config", err)
 	}
@@ -133,7 +136,7 @@ func TestEtcdRegistry(t *testing.T) {
 	attrs := &LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.2.3.4"),
 	}
-	exp, err := r.createSubnet(ctx, sn, attrs, 24*time.Hour)
+	exp, err := r.createSubnet(ctx, sn, ip.IP6Net{}, attrs, 24*time.Hour)
 	if err != nil {
 		t.Fatal("Failed to create subnet lease")
 	}
@@ -154,6 +157,9 @@ func TestEtcdRegistry(t *testing.T) {
 	}
 
 	leases, _, err := r.getSubnets(ctx)
+	if err != nil {
+		t.Fatal("Failed to get Subnets")
+	}
 	if len(leases) != 1 {
 		t.Fatalf("Unexpected number of leases %d (expected 1)", len(leases))
 	}
@@ -161,18 +167,21 @@ func TestEtcdRegistry(t *testing.T) {
 		t.Fatalf("Mismatched subnet %v (expected %v)", leases[0].Subnet, sn)
 	}
 
-	lease, _, err := r.getSubnet(ctx, sn)
+	lease, _, err := r.getSubnet(ctx, sn, ip.IP6Net{})
 	if lease == nil {
 		t.Fatal("Missing subnet lease")
 	}
+	if err != nil {
+		t.Fatal("Failed to get Subnet")
+	}
 
-	err = r.deleteSubnet(ctx, sn)
+	err = r.deleteSubnet(ctx, sn, ip.IP6Net{})
 	if err != nil {
 		t.Fatalf("Failed to delete subnet %v: %v", sn, err)
 	}
 
 	// Make sure the lease got deleted
-	resp, err = m.Get(ctx, "/coreos.com/network/subnets/10.1.5.0-24", nil)
+	_, err = m.Get(ctx, "/coreos.com/network/subnets/10.1.5.0-24", nil)
 	if err == nil {
 		t.Fatal("Unexpected success getting deleted subnet")
 	}

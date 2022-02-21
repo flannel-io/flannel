@@ -63,13 +63,17 @@ func NewCharonIKEDaemon(ctx context.Context, wg *sync.WaitGroup, espProposal str
 	}
 	wg.Add(1)
 	go func() {
-		select {
-		case <-ctx.Done():
-			cmd.Process.Signal(syscall.SIGTERM)
-			cmd.Wait()
-			log.Infof("Stopped charon daemon")
-			wg.Done()
+		<-ctx.Done()
+		err := cmd.Process.Signal(syscall.SIGTERM)
+		if err != nil {
+			log.Errorf("Error while processing the signal: %v", err)
 		}
+		err = cmd.Wait()
+		if err != nil {
+			log.Errorf("Error while waiting for process to exit: %v", err)
+		}
+		log.Infof("Stopped charon daemon")
+		wg.Done()
 	}()
 	return charon, nil
 }

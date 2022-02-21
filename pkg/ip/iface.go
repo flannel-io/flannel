@@ -29,7 +29,7 @@ import (
 
 func getIfaceAddrs(iface *net.Interface) ([]netlink.Addr, error) {
 	link := &netlink.Device{
-		netlink.LinkAttrs{
+		LinkAttrs: netlink.LinkAttrs{
 			Index: iface.Index,
 		},
 	}
@@ -39,7 +39,7 @@ func getIfaceAddrs(iface *net.Interface) ([]netlink.Addr, error) {
 
 func getIfaceV6Addrs(iface *net.Interface) ([]netlink.Addr, error) {
 	link := &netlink.Device{
-		netlink.LinkAttrs{
+		LinkAttrs: netlink.LinkAttrs{
 			Index: iface.Index,
 		},
 	}

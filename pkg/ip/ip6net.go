@@ -67,10 +67,7 @@ func GetIPv6SubnetMax(networkIP *IP6, subnetSize *big.Int) *IP6 {
 }
 
 func CheckIPv6Subnet(subnetIP *IP6, mask *big.Int) bool {
-	if (*big.Int)(subnetIP).Cmp(big.NewInt(0).And((*big.Int)(subnetIP), mask)) != 0 {
-		return false
-	}
-	return true
+	return (*big.Int)(subnetIP).Cmp(big.NewInt(0).And((*big.Int)(subnetIP), mask)) == 0
 }
 
 func MustParseIP6(s string) *IP6 {
@@ -108,6 +105,10 @@ func (ip6 *IP6) UnmarshalJSON(j []byte) error {
 		*ip6 = *val
 		return nil
 	}
+}
+
+func (ip6 *IP6) Cmp(other *IP6) int {
+	return (*big.Int)(ip6).Cmp((*big.Int)(other))
 }
 
 // similar to net.IPNet but has uint based representation
@@ -190,7 +191,7 @@ func (n IP6Net) Contains(ip *IP6) bool {
 }
 
 func (n IP6Net) Empty() bool {
-	return n.IP == (*IP6)(big.NewInt(0)) && n.PrefixLen == uint(0)
+	return IsEmpty(n.IP) && n.PrefixLen == uint(0)
 }
 
 // MarshalJSON: json.Marshaler impl

@@ -159,7 +159,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 			},
 			UpdateFunc: ksm.handleUpdateLeaseEvent,
 			DeleteFunc: func(obj interface{}) {
-				node, isNode := obj.(*v1.Node)
+				_, isNode := obj.(*v1.Node)
 				// We can get DeletedFinalStateUnknown instead of *api.Node here and we need to handle that correctly.
 				if !isNode {
 					deletedState, ok := obj.(cache.DeletedFinalStateUnknown)
@@ -167,7 +167,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 						log.Infof("Error received unexpected object: %v", obj)
 						return
 					}
-					node, ok = deletedState.Obj.(*v1.Node)
+					node, ok := deletedState.Obj.(*v1.Node)
 					if !ok {
 						log.Infof("Error deletedFinalStateUnknown contained non-Node object: %v", deletedState.Obj)
 						return
@@ -195,7 +195,7 @@ func (ksm *kubeSubnetManager) handleAddLeaseEvent(et subnet.EventType, obj inter
 		log.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.events <- subnet.Event{et, l}
+	ksm.events <- subnet.Event{Type: et, Lease: l}
 }
 
 func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{}) {
@@ -226,7 +226,7 @@ func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{})
 		log.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.events <- subnet.Event{subnet.EventAdded, l}
+	ksm.events <- subnet.Event{Type: subnet.EventAdded, Lease: l}
 }
 
 func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {
@@ -426,7 +426,7 @@ func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, lease *subnet.Leas
 	return ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
+func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
 	return subnet.LeaseWatchResult{}, ErrUnimplemented
 }
 

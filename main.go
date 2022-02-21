@@ -78,10 +78,7 @@ type CmdLineOpts struct {
 	etcdCAFile                string
 	etcdUsername              string
 	etcdPassword              string
-	help                      bool
 	version                   bool
-	autoDetectIPv4            bool
-	autoDetectIPv6            bool
 	kubeSubnetMgr             bool
 	kubeApiUrl                string
 	kubeAnnotationPrefix      string
@@ -90,14 +87,11 @@ type CmdLineOpts struct {
 	ifaceRegex                flagSlice
 	ipMasq                    bool
 	subnetFile                string
-	subnetDir                 string
 	publicIP                  string
 	publicIPv6                string
 	subnetLeaseRenewMargin    int
 	healthzIP                 string
 	healthzPort               int
-	charonExecutablePath      string
-	charonViciUri             string
 	iptablesResyncSeconds     int
 	iptablesForwardRules      bool
 	netConfPath               string
@@ -149,7 +143,12 @@ func init() {
 
 	// klog will log to tmp files by default. override so all entries
 	// can flow into journald (if running under systemd)
-	flag.Set("logtostderr", "true")
+	err := flag.Set("logtostderr", "true")
+	if err != nil {
+                log.Error("Can't set the logtostderr flag", err)
+                os.Exit(1)
+	}
+
 
 	// Only copy the non file logging options from klog
 	copyFlag("v")
@@ -160,7 +159,12 @@ func init() {
 	flannelFlags.Usage = usage
 
 	// now parse command line args
-	flannelFlags.Parse(os.Args[1:])
+	err = flannelFlags.Parse(os.Args[1:])
+        if err != nil {
+                log.Error("Can't parse flannel flags", err)
+                os.Exit(1)
+        }
+
 }
 
 func copyFlag(name string) {
@@ -201,8 +205,9 @@ func newSubnetManager(ctx context.Context) (subnet.Manager, error) {
 
 	// Attempt to renew the lease for the subnet specified in the subnetFile
 	prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
+	prevIPv6Subnet := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_SUBNET")
 
-	return etcdv2.NewLocalManager(cfg, prevSubnet)
+	return etcdv2.NewLocalManager(cfg, prevSubnet, prevIPv6Subnet)
 }
 
 func main() {
@@ -211,7 +216,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	flagutil.SetFlagsFromEnv(flannelFlags, "FLANNELD")
+	err := flagutil.SetFlagsFromEnv(flannelFlags, "FLANNELD")
+	if err != nil {
+		log.Error("Failed to set flag FLANNELD from env", err)
+	}
 
 	// Log the config set via CLI flags
 	log.Infof("CLI flags config: %+v", opts)
@@ -250,8 +258,7 @@ func main() {
 	}()
 
 	if opts.healthzPort > 0 {
-		// It's not super easy to shutdown the HTTP server so don't attempt to stop it cleanly
-		go mustRunHealthz()
+		mustRunHealthz(ctx.Done(), &wg)
 	}
 
 	// Fetch the network config (i.e. what backend to use etc..).
@@ -382,7 +389,10 @@ func main() {
 		wg.Done()
 	}()
 
-	daemon.SdNotify(false, "READY=1")
+	_, err = daemon.SdNotify(false, "READY=1")
+	if err != nil {
+		log.Errorf("Failed to notify systemd the message READY=1 %v", err)
+	}
 
 	// Kube subnet mgr doesn't lease the subnet for this node - it just uses the podCidr that's already assigned.
 	if !opts.kubeSubnetMgr {
@@ -474,12 +484,13 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 
 	wg.Add(1)
 	go func() {
-		subnet.WatchLease(ctx, sm, bn.Lease().Subnet, evts)
+		l := bn.Lease()
+		subnet.WatchLease(ctx, sm, l.Subnet, l.IPv6Subnet, evts)
 		wg.Done()
 	}()
 
 	renewMargin := time.Duration(opts.subnetLeaseRenewMargin) * time.Minute
-	dur := bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+	dur := time.Until(bn.Lease().Expiration) - renewMargin
 
 	for {
 		select {
@@ -492,7 +503,7 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 			}
 
 			log.Info("Lease renewed, new expiration: ", bn.Lease().Expiration)
-			dur = bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+			dur = time.Until(bn.Lease().Expiration) - renewMargin
 
 		case e, ok := <-evts:
 			if !ok {
@@ -502,7 +513,7 @@ func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg
 			switch e.Type {
 			case subnet.EventAdded:
 				bn.Lease().Expiration = e.Lease.Expiration
-				dur = bn.Lease().Expiration.Sub(time.Now()) - renewMargin
+				dur = time.Until(bn.Lease().Expiration) - renewMargin
 				log.Infof("Waiting for %s to renew lease", dur)
 
 			case subnet.EventRemoved:
@@ -746,7 +757,10 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int) (*backend.Exter
 
 func WriteSubnetFile(path string, config *subnet.Config, ipMasq bool, bn backend.Network) error {
 	dir, name := filepath.Split(path)
-	os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		return err
+	}
 	tempFile := filepath.Join(dir, "."+name)
 	f, err := os.Create(tempFile)
 	if err != nil {
@@ -782,19 +796,42 @@ func WriteSubnetFile(path string, config *subnet.Config, ipMasq bool, bn backend
 	//TODO - is this safe? What if it's not on the same FS?
 }
 
-func mustRunHealthz() {
+func mustRunHealthz(stopChan <-chan struct{}, wg *sync.WaitGroup) {
 	address := net.JoinHostPort(opts.healthzIP, strconv.Itoa(opts.healthzPort))
 	log.Infof("Start healthz server on %s", address)
 
 	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("flanneld is running"))
+		_, err := w.Write([]byte("flanneld is running"))
+		if err != nil {
+			log.Errorf("Handling /healthz error. %v", err)
+			panic(err)
+		}
 	})
 
-	if err := http.ListenAndServe(address, nil); err != nil {
-		log.Errorf("Start healthz server error. %v", err)
-		panic(err)
-	}
+	server := &http.Server{Addr: address}
+
+	wg.Add(2)
+	go func() {
+		// when Shutdown is called, ListenAndServe immediately return ErrServerClosed.
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Errorf("Start healthz server error. %v", err)
+			panic(err)
+		}
+		wg.Done()
+	}()
+
+	go func() {
+		// wait to stop
+		<-stopChan
+
+		// create new context with timeout for http server to shutdown gracefully
+		ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+		if err := server.Shutdown(ctx); err != nil {
+			log.Errorf("Shutdown healthz server error. %v", err)
+		}
+		wg.Done()
+	}()
 }
 
 func ReadCIDRFromSubnetFile(path string, CIDRKey string) ip.IP4Net {
