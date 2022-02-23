@@ -25,7 +25,7 @@ import (
 func TestLookupExtIface(t *testing.T) {
 	var err error
 
-	var execOrFail = func(name string, arg ...string) {
+	execOrFail := func(name string, arg ...string) {
 		err = exec.Command(name, arg...).Run()
 		if err != nil {
 			t.Fatalf("exec ip link command failed.\nmaybe you need adjust sudo config to allow user exec root command without input password.\nerr=%v", err)
@@ -39,8 +39,8 @@ func TestLookupExtIface(t *testing.T) {
 	execOrFail("sudo", "ip", "link", "set", "dummy0", "up")
 
 	defer func() {
-		exec.Command("sudo", "ip", "link", "set", "dummy0", "down").Run()
-		exec.Command("sudo", "ip", "link", "delete", "dummy0").Run()
+		_ = exec.Command("sudo", "ip", "link", "set", "dummy0", "down").Run()
+		_ = exec.Command("sudo", "ip", "link", "delete", "dummy0").Run()
 	}()
 
 	t.Run("ByIfRegexForIPv4", func(t *testing.T) {

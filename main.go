@@ -105,13 +105,6 @@ var (
 	flannelFlags   = flag.NewFlagSet("flannel", flag.ExitOnError)
 )
 
-const (
-	ipv4Stack int = iota
-	ipv6Stack
-	dualStack
-	noneStack
-)
-
 func init() {
 	flannelFlags.StringVar(&opts.etcdEndpoints, "etcd-endpoints", "http://127.0.0.1:4001,http://127.0.0.1:2379", "a comma-delimited list of etcd endpoints")
 	flannelFlags.StringVar(&opts.etcdPrefix, "etcd-prefix", "/coreos.com/network", "etcd prefix")
@@ -145,10 +138,9 @@ func init() {
 	// can flow into journald (if running under systemd)
 	err := flag.Set("logtostderr", "true")
 	if err != nil {
-                log.Error("Can't set the logtostderr flag", err)
-                os.Exit(1)
+		log.Error("Can't set the logtostderr flag", err)
+		os.Exit(1)
 	}
-
 
 	// Only copy the non file logging options from klog
 	copyFlag("v")
@@ -160,11 +152,10 @@ func init() {
 
 	// now parse command line args
 	err = flannelFlags.Parse(os.Args[1:])
-        if err != nil {
-                log.Error("Can't parse flannel flags", err)
-                os.Exit(1)
-        }
-
+	if err != nil {
+		log.Error("Can't parse flannel flags", err)
+		os.Exit(1)
+	}
 }
 
 func copyFlag(name string) {
