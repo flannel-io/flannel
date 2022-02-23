@@ -26,10 +26,10 @@ import (
 )
 
 const (
-	IPv4Stack int = iota
-	IPv6Stack
-	DualStack
-	NoneStack
+	ipv4Stack int = iota
+	ipv6Stack
+	dualStack
+	noneStack
 )
 
 type PublicIPOpts struct {
@@ -39,13 +39,13 @@ type PublicIPOpts struct {
 
 func GetIPFamily(autoDetectIPv4, autoDetectIPv6 bool) (int, error) {
 	if autoDetectIPv4 && !autoDetectIPv6 {
-		return IPv4Stack, nil
+		return ipv4Stack, nil
 	} else if !autoDetectIPv4 && autoDetectIPv6 {
-		return IPv6Stack, nil
+		return ipv6Stack, nil
 	} else if autoDetectIPv4 && autoDetectIPv6 {
-		return DualStack, nil
+		return dualStack, nil
 	}
-	return NoneStack, errors.New("none defined stack")
+	return noneStack, errors.New("none defined stack")
 }
 
 func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOpts) (*backend.ExternalInterface, error) {
@@ -63,7 +63,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 	}
 
 	// Check ip family stack
-	if ipStack == NoneStack {
+	if ipStack == noneStack {
 		return nil, fmt.Errorf("none matched ip stack")
 	}
 
@@ -71,17 +71,17 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 		if ifaceAddr = net.ParseIP(ifname); ifaceAddr != nil {
 			log.Infof("Searching for interface using %s", ifaceAddr)
 			switch ipStack {
-			case IPv4Stack:
+			case ipv4Stack:
 				iface, err = ip.GetInterfaceByIP(ifaceAddr)
 				if err != nil {
 					return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
 				}
-			case IPv6Stack:
+			case ipv6Stack:
 				iface, err = ip.GetInterfaceByIP6(ifaceAddr)
 				if err != nil {
 					return nil, fmt.Errorf("error looking up v6 interface %s: %s", ifname, err)
 				}
-			case DualStack:
+			case dualStack:
 				iface, err = ip.GetInterfaceByIP(ifaceAddr)
 				if err != nil {
 					return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
@@ -111,7 +111,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 	ifaceLoop:
 		for _, ifaceToMatch := range ifaces {
 			switch ipStack {
-			case IPv4Stack:
+			case ipv4Stack:
 				ifaceIPs, err := ip.GetInterfaceIP4Addrs(&ifaceToMatch)
 				if err != nil {
 					// Skip if there is no IPv4 address
@@ -122,7 +122,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 					iface = &ifaceToMatch
 					break ifaceLoop
 				}
-			case IPv6Stack:
+			case ipv6Stack:
 				ifaceIPs, err := ip.GetInterfaceIP6Addrs(&ifaceToMatch)
 				if err != nil {
 					// Skip if there is no IPv6 address
@@ -133,7 +133,7 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 					iface = &ifaceToMatch
 					break ifaceLoop
 				}
-			case DualStack:
+			case dualStack:
 				ifaceIPs, err := ip.GetInterfaceIP4Addrs(&ifaceToMatch)
 				if err != nil {
 					// Skip if there is no IPv4 address
@@ -175,9 +175,9 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 			for _, f := range ifaces {
 				var ipaddr []net.IP
 				switch ipStack {
-				case IPv4Stack, DualStack:
+				case ipv4Stack, dualStack:
 					ipaddr, _ = ip.GetInterfaceIP4Addrs(&f) // We can safely ignore errors. We just won't log any ip
-				case IPv6Stack:
+				case ipv6Stack:
 					ipaddr, _ = ip.GetInterfaceIP6Addrs(&f) // We can safely ignore errors. We just won't log any ip
 				}
 				availableFaces = append(availableFaces, fmt.Sprintf("%s:%v", f.Name, ipaddr))
@@ -188,15 +188,15 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 	} else {
 		log.Info("Determining IP address of default interface")
 		switch ipStack {
-		case IPv4Stack:
+		case ipv4Stack:
 			if iface, err = ip.GetDefaultGatewayInterface(); err != nil {
 				return nil, fmt.Errorf("failed to get default interface: %w", err)
 			}
-		case IPv6Stack:
+		case ipv6Stack:
 			if iface, err = ip.GetDefaultV6GatewayInterface(); err != nil {
 				return nil, fmt.Errorf("failed to get default v6 interface: %w", err)
 			}
-		case DualStack:
+		case dualStack:
 			if iface, err = ip.GetDefaultGatewayInterface(); err != nil {
 				return nil, fmt.Errorf("failed to get default interface: %w", err)
 			}
@@ -213,19 +213,19 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 
 	var ifaceAddrs []net.IP
 	var ifaceV6Addrs []net.IP
-	if ipStack == IPv4Stack && ifaceAddr == nil {
+	if ipStack == ipv4Stack && ifaceAddr == nil {
 		ifaceAddrs, err = ip.GetInterfaceIP4Addrs(iface)
 		if err != nil || len(ifaceAddrs) == 0 {
 			return nil, fmt.Errorf("failed to find IPv4 address for interface %s", iface.Name)
 		}
 		ifaceAddr = ifaceAddrs[0]
-	} else if ipStack == IPv6Stack && ifaceV6Addr == nil {
+	} else if ipStack == ipv6Stack && ifaceV6Addr == nil {
 		ifaceV6Addrs, err = ip.GetInterfaceIP6Addrs(iface)
 		if err != nil || len(ifaceV6Addrs) == 0 {
 			return nil, fmt.Errorf("failed to find IPv6 address for interface %s", iface.Name)
 		}
 		ifaceV6Addr = ifaceV6Addrs[0]
-	} else if ipStack == DualStack && ifaceAddr == nil && ifaceV6Addr == nil {
+	} else if ipStack == dualStack && ifaceAddr == nil && ifaceV6Addr == nil {
 		ifaceAddrs, err = ip.GetInterfaceIP4Addrs(iface)
 		if err != nil || len(ifaceAddrs) == 0 {
 			return nil, fmt.Errorf("failed to find IPv4 address for interface %s", iface.Name)
