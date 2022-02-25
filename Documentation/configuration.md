@@ -117,3 +117,7 @@ FLANNEL_IPV6_SUBNET=2001:cafe:42::1/64
 FLANNEL_MTU=1450
 FLANNEL_IPMASQ=true
 ```
+
+## IPv6 only
+
+To use an IPv6 only environment use the same configuration of the Dual-stack to enable IPv6 and add "EnableIPv4": false in the net-conf.json of the kube-flannel-cfg ConfigMap

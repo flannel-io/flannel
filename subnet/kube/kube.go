@@ -349,7 +349,7 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		Attrs:      *attrs,
 		Expiration: time.Now().Add(24 * time.Hour),
 	}
-	if cidr != nil {
+	if cidr != nil && ksm.enableIPv4 {
 		lease.Subnet = ip.FromIPNet(cidr)
 	}
 	if ipv6Cidr != nil {
