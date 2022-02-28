@@ -27,7 +27,7 @@ func TestGetInterfaceIP4Addr(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = GetInterfaceIP4Addr(iface)
+	_, err = GetInterfaceIP4Addrs(iface)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +46,7 @@ func TestGetInterfaceByIP(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defaultIpv4Addr, err := GetInterfaceIP4Addr(defaultIface)
+	defaultIpv4Addr, err := GetInterfaceIP4Addrs(defaultIface)
 	if err != nil {
 		t.Fatal(err)
 	}
