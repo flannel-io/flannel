@@ -1,4 +1,5 @@
-// +build !windows
+//go:build !windows && !windows
+// +build !windows,!windows
 
 // Copyright 2015 flannel authors
 //
@@ -13,7 +14,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// +build !windows
 
 package udp
 
@@ -38,7 +38,6 @@ const (
 
 type network struct {
 	backend.SimpleNetwork
-	name   string
 	port   int
 	ctl    *os.File
 	ctl2   *os.File
@@ -107,15 +106,13 @@ func (n *network) Run(ctx context.Context) {
 	}()
 
 	for {
-		select {
-		case evtBatch, ok := <-evts:
-			if !ok {
-				log.Infof("evts chan closed")
-				stopProxy(n.ctl)
-				return
-			}
-			n.processSubnetEvents(evtBatch)
+		evtBatch, ok := <-evts
+		if !ok {
+			log.Infof("evts chan closed")
+			stopProxy(n.ctl)
+			return
 		}
+		n.processSubnetEvents(evtBatch)
 	}
 }
 

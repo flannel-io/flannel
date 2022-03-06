@@ -11,17 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//go:build !windows
 // +build !windows
 
 package gce
 
 import (
+	"context"
 	"fmt"
 	"time"
 
-	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
+	"google.golang.org/api/option"
 	log "k8s.io/klog"
 )
 
@@ -33,12 +35,12 @@ type gceAPI struct {
 }
 
 func newAPI() (*gceAPI, error) {
-	client, err := google.DefaultClient(oauth2.NoContext)
+	client, err := google.DefaultClient(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("error creating client: %v", err)
 	}
 
-	cs, err := compute.New(client)
+	cs, err := compute.NewService(context.TODO(), option.WithHTTPClient(client))
 	if err != nil {
 		return nil, fmt.Errorf("error creating compute service: %v", err)
 	}

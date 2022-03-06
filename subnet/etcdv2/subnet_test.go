@@ -35,13 +35,13 @@ func newDummyRegistry() *MockSubnetRegistry {
 
 	subnets := []Lease{
 		// leases within SubnetMin-SubnetMax range
-		{true, false, ip.IP4Net{ip.MustParseIP4("10.3.1.0"), 24}, ip.IP6Net{}, attrs, exp, 10},
-		{true, false, ip.IP4Net{ip.MustParseIP4("10.3.2.0"), 24}, ip.IP6Net{}, attrs, exp, 11},
-		{true, false, ip.IP4Net{ip.MustParseIP4("10.3.4.0"), 24}, ip.IP6Net{}, attrs, exp, 12},
-		{true, false, ip.IP4Net{ip.MustParseIP4("10.3.5.0"), 24}, ip.IP6Net{}, attrs, exp, 13},
+		{EnableIPv4: true, EnableIPv6: false, Subnet: ip.IP4Net{IP: ip.MustParseIP4("10.3.1.0"), PrefixLen: 24}, IPv6Subnet: ip.IP6Net{}, Attrs: attrs, Expiration: exp, Asof: 10},
+		{EnableIPv4: true, EnableIPv6: false, Subnet: ip.IP4Net{IP: ip.MustParseIP4("10.3.2.0"), PrefixLen: 24}, IPv6Subnet: ip.IP6Net{}, Attrs: attrs, Expiration: exp, Asof: 11},
+		{EnableIPv4: true, EnableIPv6: false, Subnet: ip.IP4Net{IP: ip.MustParseIP4("10.3.4.0"), PrefixLen: 24}, IPv6Subnet: ip.IP6Net{}, Attrs: attrs, Expiration: exp, Asof: 12},
+		{EnableIPv4: true, EnableIPv6: false, Subnet: ip.IP4Net{IP: ip.MustParseIP4("10.3.5.0"), PrefixLen: 24}, IPv6Subnet: ip.IP6Net{}, Attrs: attrs, Expiration: exp, Asof: 13},
 
 		// hand created lease outside the range of subnetMin-SubnetMax for testing removal
-		{true, false, ip.IP4Net{ip.MustParseIP4("10.3.31.0"), 24}, ip.IP6Net{}, attrs, exp, 13},
+		{EnableIPv4: true, EnableIPv6: false, Subnet: ip.IP4Net{IP: ip.MustParseIP4("10.3.31.0"), PrefixLen: 24}, IPv6Subnet: ip.IP6Net{}, Attrs: attrs, Expiration: exp, Asof: 13},
 	}
 
 	config := `{ "Network": "10.3.0.0/16", "SubnetMin": "10.3.1.0", "SubnetMax": "10.3.25.0" }`
@@ -78,8 +78,8 @@ func TestAcquireLease(t *testing.T) {
 
 	// Test if a previous subnet will be used
 	msr2 := newDummyRegistry()
-	prevSubnet := ip.IP4Net{ip.MustParseIP4("10.3.6.0"), 24}
-	sm2 := NewMockManagerWithSubnet(msr2, prevSubnet)
+	prevSubnet := ip.IP4Net{IP: ip.MustParseIP4("10.3.6.0"), PrefixLen: 24}
+	sm2 := NewMockManagerWithSubnet(msr2, prevSubnet, ip.IP6Net{})
 	prev, err := sm2.AcquireLease(context.Background(), &attrs)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
@@ -90,8 +90,8 @@ func TestAcquireLease(t *testing.T) {
 
 	// Test that a previous subnet will not be used if it does not match the registry config
 	msr3 := newDummyRegistry()
-	invalidSubnet := ip.IP4Net{ip.MustParseIP4("10.4.1.0"), 24}
-	sm3 := NewMockManagerWithSubnet(msr3, invalidSubnet)
+	invalidSubnet := ip.IP4Net{IP: ip.MustParseIP4("10.4.1.0"), PrefixLen: 24}
+	sm3 := NewMockManagerWithSubnet(msr3, invalidSubnet, ip.IP6Net{})
 	l3, err := sm3.AcquireLease(context.Background(), &attrs)
 	if err != nil {
 		t.Fatal("AcquireLease failed: ", err)
@@ -121,7 +121,10 @@ func TestConfigChanged(t *testing.T) {
 
 	// Change config
 	config := `{ "Network": "10.4.0.0/16" }`
-	msr.setConfig(config)
+	err = msr.setConfig(config)
+	if err != nil {
+		t.Fatal("Failed to set the Config", err)
+	}
 
 	// Acquire again, should not reuse
 	if l, err = sm.AcquireLease(context.Background(), &attrs); err != nil {
@@ -130,17 +133,6 @@ func TestConfigChanged(t *testing.T) {
 
 	if !inAllocatableRange(context.Background(), sm, l.Subnet) {
 		t.Fatal("Acquired subnet outside of valid range: ", l.Subnet)
-	}
-}
-
-func newIP4Net(ipaddr string, prefix uint) ip.IP4Net {
-	a, err := ip.ParseIP4(ipaddr)
-	if err != nil {
-		panic("failed to parse ipaddr")
-	}
-	return ip.IP4Net{
-		IP:        a,
-		PrefixLen: prefix,
 	}
 }
 
@@ -190,7 +182,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 	attrs := &LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.1.1.1"),
 	}
-	_, err := msr.createSubnet(ctx, expected, attrs, 0)
+	_, err := msr.createSubnet(ctx, expected, ip.IP6Net{}, attrs, 0)
 	if err != nil {
 		t.Fatalf("createSubnet filed: %v", err)
 	}
@@ -233,7 +225,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 		}
 	}
 
-	expected := ip.IP4Net{ip.MustParseIP4("10.3.31.0"), 24}
+	expected := ip.IP4Net{IP: ip.MustParseIP4("10.3.31.0"), PrefixLen: 24}
 	// Sanity check to make sure acquired lease is not this.
 	// It shouldn't be as SubnetMin/SubnetMax in config is [10.3.1.0/24 to 10.3.25.0/24]
 	if l.Subnet.Equal(expected) {

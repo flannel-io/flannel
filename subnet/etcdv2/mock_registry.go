@@ -19,10 +19,10 @@ import (
 	"sync"
 	"time"
 
-	etcd "github.com/coreos/etcd/client"
 	"github.com/flannel-io/flannel/pkg/ip"
 	. "github.com/flannel-io/flannel/subnet"
 	"github.com/jonboulle/clockwork"
+	etcd "go.etcd.io/etcd/client"
 	"golang.org/x/net/context"
 )
 
@@ -103,7 +103,8 @@ func (msr *MockSubnetRegistry) getSubnets(ctx context.Context) ([]Lease, uint64,
 	return subs, msr.index, nil
 }
 
-func (msr *MockSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net) (*Lease, uint64, error) {
+// TODO ignores ipv6
+func (msr *MockSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) (*Lease, uint64, error) {
 	msr.mux.Lock()
 	defer msr.mux.Unlock()
 
@@ -115,7 +116,8 @@ func (msr *MockSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net) (*Le
 	return nil, msr.index, fmt.Errorf("subnet %s not found", sn)
 }
 
-func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error) {
+// TOODO ignores ipv6
+func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error) {
 	msr.mux.Lock()
 	defer msr.mux.Unlock()
 
@@ -152,7 +154,8 @@ func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, a
 	return exp, nil
 }
 
-func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, attrs *LeaseAttrs, ttl time.Duration, asof uint64) (time.Time, error) {
+// TODO ignores ipv6
+func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *LeaseAttrs, ttl time.Duration, asof uint64) (time.Time, error) {
 	msr.mux.Lock()
 	defer msr.mux.Unlock()
 
@@ -182,7 +185,7 @@ func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, a
 	return sub.Expiration, nil
 }
 
-func (msr *MockSubnetRegistry) deleteSubnet(ctx context.Context, sn ip.IP4Net) error {
+func (msr *MockSubnetRegistry) deleteSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) error {
 	msr.mux.Lock()
 	defer msr.mux.Unlock()
 
@@ -233,7 +236,8 @@ func (msr *MockSubnetRegistry) watchSubnets(ctx context.Context, since uint64) (
 	}
 }
 
-func (msr *MockSubnetRegistry) watchSubnet(ctx context.Context, since uint64, sn ip.IP4Net) (Event, uint64, error) {
+// TODO ignores ip6
+func (msr *MockSubnetRegistry) watchSubnet(ctx context.Context, since uint64, sn ip.IP4Net, sn6 ip.IP6Net) (Event, uint64, error) {
 	for {
 		msr.mux.Lock()
 		index := msr.index

@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//go:build !windows
 // +build !windows
 
 package network
@@ -105,11 +106,17 @@ func (mock *MockIPTables) AppendUnique(table string, chain string, rulespec ...s
 
 func TestDeleteRules(t *testing.T) {
 	ipt := &MockIPTables{t: t}
-	setupIPTables(ipt, MasqRules(ip.IP4Net{}, lease()))
+	err := setupIPTables(ipt, MasqRules(ip.IP4Net{}, lease()))
+	if err != nil {
+		t.Error("Error setting up iptables")
+	}
 	if len(ipt.rules) != 4 {
 		t.Errorf("Should be 4 masqRules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
 	}
-	teardownIPTables(ipt, MasqRules(ip.IP4Net{}, lease()))
+	err = teardownIPTables(ipt, MasqRules(ip.IP4Net{}, lease()))
+	if err != nil {
+		t.Error("Error tearing down iptables")
+	}
 	if len(ipt.rules) != 0 {
 		t.Errorf("Should be 0 masqRules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
 	}
@@ -117,11 +124,17 @@ func TestDeleteRules(t *testing.T) {
 
 func TestDeleteIP6Rules(t *testing.T) {
 	ipt := &MockIPTables{t: t}
-	setupIPTables(ipt, MasqIP6Rules(ip.IP6Net{}, lease()))
+	err := setupIPTables(ipt, MasqIP6Rules(ip.IP6Net{}, lease()))
+	if err != nil {
+		t.Error("Error setting up iptables")
+	}
 	if len(ipt.rules) != 4 {
 		t.Errorf("Should be 4 masqRules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
 	}
-	teardownIPTables(ipt, MasqIP6Rules(ip.IP6Net{}, lease()))
+	err = teardownIPTables(ipt, MasqIP6Rules(ip.IP6Net{}, lease()))
+	if err != nil {
+		t.Error("Error tearing down iptables")
+	}
 	if len(ipt.rules) != 0 {
 		t.Errorf("Should be 0 masqRules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
 	}
@@ -131,15 +144,21 @@ func TestEnsureRulesError(t *testing.T) {
 	// If an error prevents a rule from being deleted, ensureIPTables should leave the rules as is
 	// rather than potentially re-appending rules in an incorrect order
 	ipt_correct := &MockIPTables{t: t}
-	setupIPTables(ipt_correct, MasqRules(ip.IP4Net{}, lease()))
+	err := setupIPTables(ipt_correct, MasqRules(ip.IP4Net{}, lease()))
+	if err != nil {
+		t.Error("Error setting up iptables")
+	}
 	// setup a mock instance where we delete some masqRules and run `ensureIPTables`
 	ipt_recreate := &MockIPTables{t: t}
-	setupIPTables(ipt_recreate, MasqRules(ip.IP4Net{}, lease()))
+	err = setupIPTables(ipt_recreate, MasqRules(ip.IP4Net{}, lease()))
+	if err != nil {
+		t.Error("Error setting up iptables")
+	}
 	ipt_recreate.rules = ipt_recreate.rules[0:2]
 
 	rule := ipt_recreate.rules[1]
 	ipt_recreate.failDelete(rule.table, rule.chain, rule.rulespec, false)
-	err := ensureIPTables(ipt_recreate, MasqRules(ip.IP4Net{}, lease()))
+	err = ensureIPTables(ipt_recreate, MasqRules(ip.IP4Net{}, lease()))
 	if err == nil {
 		t.Errorf("ensureIPTables should have failed but did not.")
 	}
@@ -153,15 +172,21 @@ func TestEnsureIP6RulesError(t *testing.T) {
 	// If an error prevents a rule from being deleted, ensureIPTables should leave the rules as is
 	// rather than potentially re-appending rules in an incorrect order
 	ipt_correct := &MockIPTables{t: t}
-	setupIPTables(ipt_correct, MasqIP6Rules(ip.IP6Net{}, lease()))
+	err := setupIPTables(ipt_correct, MasqIP6Rules(ip.IP6Net{}, lease()))
+	if err != nil {
+		t.Error("Error setting up iptables")
+	}
 	// setup a mock instance where we delete some masqRules and run `ensureIPTables`
 	ipt_recreate := &MockIPTables{t: t}
-	setupIPTables(ipt_recreate, MasqIP6Rules(ip.IP6Net{}, lease()))
+	err = setupIPTables(ipt_recreate, MasqIP6Rules(ip.IP6Net{}, lease()))
+	if err != nil {
+		t.Error("Error setting up iptables")
+	}
 	ipt_recreate.rules = ipt_recreate.rules[0:2]
 
 	rule := ipt_recreate.rules[1]
 	ipt_recreate.failDelete(rule.table, rule.chain, rule.rulespec, false)
-	err := ensureIPTables(ipt_recreate, MasqIP6Rules(ip.IP6Net{}, lease()))
+	err = ensureIPTables(ipt_recreate, MasqIP6Rules(ip.IP6Net{}, lease()))
 	if err == nil {
 		t.Errorf("ensureIPTables should have failed but did not.")
 	}
@@ -174,15 +199,21 @@ func TestEnsureIP6RulesError(t *testing.T) {
 func TestEnsureRules(t *testing.T) {
 	// If any masqRules are missing, they should be all deleted and recreated in the correct order
 	ipt_correct := &MockIPTables{t: t}
-	setupIPTables(ipt_correct, MasqRules(ip.IP4Net{}, lease()))
+	err := setupIPTables(ipt_correct, MasqRules(ip.IP4Net{}, lease()))
+	if err != nil {
+		t.Error("Error setting up iptables")
+	}
 	// setup a mock instance where we delete some masqRules and run `ensureIPTables`
 	ipt_recreate := &MockIPTables{t: t}
-	setupIPTables(ipt_recreate, MasqRules(ip.IP4Net{}, lease()))
+	err = setupIPTables(ipt_recreate, MasqRules(ip.IP4Net{}, lease()))
+	if err != nil {
+		t.Error("Error setting up iptables")
+	}
 	ipt_recreate.rules = ipt_recreate.rules[0:2]
 	// set up a normal error that iptables returns when deleting a rule that is already gone
 	deletedRule := ipt_correct.rules[3]
 	ipt_recreate.failDelete(deletedRule.table, deletedRule.chain, deletedRule.rulespec, true)
-	err := ensureIPTables(ipt_recreate, MasqRules(ip.IP4Net{}, lease()))
+	err = ensureIPTables(ipt_recreate, MasqRules(ip.IP4Net{}, lease()))
 	if err != nil {
 		t.Errorf("ensureIPTables should have completed without errors")
 	}
@@ -194,15 +225,21 @@ func TestEnsureRules(t *testing.T) {
 func TestEnsureIP6Rules(t *testing.T) {
 	// If any masqRules are missing, they should be all deleted and recreated in the correct order
 	ipt_correct := &MockIPTables{t: t}
-	setupIPTables(ipt_correct, MasqIP6Rules(ip.IP6Net{}, lease()))
+	err := setupIPTables(ipt_correct, MasqIP6Rules(ip.IP6Net{}, lease()))
+	if err != nil {
+		t.Error("Error setting up iptables")
+	}
 	// setup a mock instance where we delete some masqRules and run `ensureIPTables`
 	ipt_recreate := &MockIPTables{t: t}
-	setupIPTables(ipt_recreate, MasqIP6Rules(ip.IP6Net{}, lease()))
+	err = setupIPTables(ipt_recreate, MasqIP6Rules(ip.IP6Net{}, lease()))
+	if err != nil {
+		t.Error("Error setting up iptables")
+	}
 	ipt_recreate.rules = ipt_recreate.rules[0:2]
 	// set up a normal error that iptables returns when deleting a rule that is already gone
 	deletedRule := ipt_correct.rules[3]
 	ipt_recreate.failDelete(deletedRule.table, deletedRule.chain, deletedRule.rulespec, true)
-	err := ensureIPTables(ipt_recreate, MasqIP6Rules(ip.IP6Net{}, lease()))
+	err = ensureIPTables(ipt_recreate, MasqIP6Rules(ip.IP6Net{}, lease()))
 	if err != nil {
 		t.Errorf("ensureIPTables should have completed without errors")
 	}

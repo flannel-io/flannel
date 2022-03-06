@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//go:build !windows
 // +build !windows
 
 package vxlan
@@ -69,14 +70,12 @@ func (nw *network) Run(ctx context.Context) {
 	defer wg.Wait()
 
 	for {
-		select {
-		case evtBatch, ok := <-events:
-			if !ok {
-				log.Infof("evts chan closed")
-				return
-			}
-			nw.handleSubnetEvents(evtBatch)
+		evtBatch, ok := <-events
+		if !ok {
+			log.Infof("evts chan closed")
+			return
 		}
+		nw.handleSubnetEvents(evtBatch)
 	}
 }
 

@@ -30,7 +30,7 @@ import (
 var (
 	ErrLeaseTaken  = errors.New("subnet: lease already taken")
 	ErrNoMoreTries = errors.New("subnet: no more tries")
-	subnetRegex    = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)`)
+	subnetRegex    = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)(?:&([a-f\d:]+)-(\d+))?$`)
 )
 
 type LeaseAttrs struct {
@@ -53,7 +53,7 @@ type Lease struct {
 }
 
 func (l *Lease) Key() string {
-	return MakeSubnetKey(l.Subnet)
+	return MakeSubnetKey(l.Subnet, l.IPv6Subnet)
 }
 
 type (
@@ -107,27 +107,45 @@ func (et *EventType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func ParseSubnetKey(s string) *ip.IP4Net {
-	if parts := subnetRegex.FindStringSubmatch(s); len(parts) == 3 {
+func ParseSubnetKey(s string) (*ip.IP4Net, *ip.IP6Net) {
+	if parts := subnetRegex.FindStringSubmatch(s); len(parts) == 5 {
 		snIp := net.ParseIP(parts[1]).To4()
 		prefixLen, err := strconv.ParseUint(parts[2], 10, 5)
-		if snIp != nil && err == nil {
-			return &ip.IP4Net{IP: ip.FromIP(snIp), PrefixLen: uint(prefixLen)}
+
+		if snIp == nil || err != nil {
+			return nil, nil
 		}
+		sn4 := &ip.IP4Net{IP: ip.FromIP(snIp), PrefixLen: uint(prefixLen)}
+
+		var sn6 *ip.IP6Net
+		if parts[3] != "" {
+			snIp6 := net.ParseIP(parts[3]).To16()
+			prefixLen, err = strconv.ParseUint(parts[4], 10, 7)
+			if snIp6 == nil || err != nil {
+				return nil, nil
+			}
+			sn6 = &ip.IP6Net{IP: ip.FromIP6(snIp6), PrefixLen: uint(prefixLen)}
+		}
+
+		return sn4, sn6
 	}
 
-	return nil
+	return nil, nil
 }
 
-func MakeSubnetKey(sn ip.IP4Net) string {
-	return sn.StringSep(".", "-")
+func MakeSubnetKey(sn ip.IP4Net, sn6 ip.IP6Net) string {
+	if sn6.Empty() {
+		return sn.StringSep(".", "-")
+	} else {
+		return sn.StringSep(".", "-") + "&" + sn6.StringSep(":", "-")
+	}
 }
 
 type Manager interface {
 	GetNetworkConfig(ctx context.Context) (*Config, error)
 	AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Lease, error)
 	RenewLease(ctx context.Context, lease *Lease) error
-	WatchLease(ctx context.Context, sn ip.IP4Net, cursor interface{}) (LeaseWatchResult, error)
+	WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (LeaseWatchResult, error)
 	WatchLeases(ctx context.Context, cursor interface{}) (LeaseWatchResult, error)
 
 	Name() string

@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"testing"
 
-	etcd "github.com/coreos/etcd/client"
+	etcd "go.etcd.io/etcd/client"
 	"golang.org/x/net/context"
 )
 
@@ -208,7 +208,7 @@ func TestMockEtcd(t *testing.T) {
 
 	// Delete a key
 	dopts := &etcd.DeleteOptions{Recursive: true, Dir: false}
-	r, err = m.Delete(ctx, "/coreos.com/network/foobar", dopts)
+	_, err = m.Delete(ctx, "/coreos.com/network/foobar", dopts)
 	if err == nil {
 		t.Fatalf("Unexpected success deleting a directory")
 	}

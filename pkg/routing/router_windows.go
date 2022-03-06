@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 // Copyright 2015 flannel authors
@@ -18,8 +19,9 @@ package routing
 
 import (
 	"fmt"
-	"github.com/flannel-io/flannel/pkg/powershell"
 	"net"
+
+	"github.com/flannel-io/flannel/pkg/powershell"
 )
 
 // Router manages network routes on Windows OS using MSFT_NetRoute

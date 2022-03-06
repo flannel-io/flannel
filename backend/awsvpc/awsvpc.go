@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//go:build !windows
 // +build !windows
 
 package awsvpc
@@ -200,7 +201,7 @@ func (be *AwsVpcBackend) cleanupBlackholeRoutes(routeTableID string, network ip.
 			if *route.State == "blackhole" && route.DestinationCidrBlock != nil {
 				_, subnet, err := net.ParseCIDR(*route.DestinationCidrBlock)
 				if err == nil && network.Contains(ip.FromIP(subnet.IP)) {
-					log.Infof("Removing blackhole route: ", *route.DestinationCidrBlock)
+					log.Infof("Removing blackhole route: %v", *route.DestinationCidrBlock)
 					deleteRouteInput := &ec2.DeleteRouteInput{RouteTableId: &routeTableID, DestinationCidrBlock: route.DestinationCidrBlock}
 					if _, err := ec2c.DeleteRoute(deleteRouteInput); err != nil {
 						if ec2err, ok := err.(awserr.Error); !ok || ec2err.Code() != "InvalidRoute.NotFound" {
@@ -298,7 +299,7 @@ func (be *AwsVpcBackend) detectRouteTableID(eni *ec2.InstanceNetworkInterface, e
 
 	res, err = ec2c.DescribeRouteTables(routeTablesInput)
 	if err != nil {
-		log.Infof("error describing route tables: ", err)
+		log.Infof("error describing route tables: %v", err)
 	}
 
 	if len(res.RouteTables) == 0 {

@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 // Copyright 2015 flannel authors
@@ -28,7 +29,7 @@ import (
 
 func getIfaceAddrs(iface *net.Interface) ([]netlink.Addr, error) {
 	link := &netlink.Device{
-		netlink.LinkAttrs{
+		LinkAttrs: netlink.LinkAttrs{
 			Index: iface.Index,
 		},
 	}
@@ -38,7 +39,7 @@ func getIfaceAddrs(iface *net.Interface) ([]netlink.Addr, error) {
 
 func getIfaceV6Addrs(iface *net.Interface) ([]netlink.Addr, error) {
 	link := &netlink.Device{
-		netlink.LinkAttrs{
+		LinkAttrs: netlink.LinkAttrs{
 			Index: iface.Index,
 		},
 	}
@@ -46,14 +47,16 @@ func getIfaceV6Addrs(iface *net.Interface) ([]netlink.Addr, error) {
 	return netlink.AddrList(link, syscall.AF_INET6)
 }
 
-func GetInterfaceIP4Addr(iface *net.Interface) (net.IP, error) {
+func GetInterfaceIP4Addrs(iface *net.Interface) ([]net.IP, error) {
 	addrs, err := getIfaceAddrs(iface)
 	if err != nil {
 		return nil, err
 	}
 
+	ipAddrs := make([]net.IP, 0)
+
 	// prefer non link-local addr
-	var ll net.IP
+	ll := make([]net.IP, 0)
 
 	for _, addr := range addrs {
 		if addr.IP.To4() == nil {
@@ -61,30 +64,37 @@ func GetInterfaceIP4Addr(iface *net.Interface) (net.IP, error) {
 		}
 
 		if addr.IP.IsGlobalUnicast() {
-			return addr.IP, nil
+			ipAddrs = append(ipAddrs, addr.IP)
+			continue
 		}
 
 		if addr.IP.IsLinkLocalUnicast() {
-			ll = addr.IP
+			ll = append(ll, addr.IP)
 		}
 	}
 
-	if ll != nil {
+	if len(ll) > 0 {
 		// didn't find global but found link-local. it'll do.
-		return ll, nil
+		ipAddrs = append(ipAddrs, ll...)
+	}
+
+	if len(ipAddrs) > 0 {
+		return ipAddrs, nil
 	}
 
 	return nil, errors.New("No IPv4 address found for given interface")
 }
 
-func GetInterfaceIP6Addr(iface *net.Interface) (net.IP, error) {
+func GetInterfaceIP6Addrs(iface *net.Interface) ([]net.IP, error) {
 	addrs, err := getIfaceV6Addrs(iface)
 	if err != nil {
 		return nil, err
 	}
 
+	ipAddrs := make([]net.IP, 0)
+
 	// prefer non link-local addr
-	var ll net.IP
+	ll := make([]net.IP, 0)
 
 	for _, addr := range addrs {
 		if addr.IP.To16() == nil {
@@ -92,17 +102,22 @@ func GetInterfaceIP6Addr(iface *net.Interface) (net.IP, error) {
 		}
 
 		if addr.IP.IsGlobalUnicast() {
-			return addr.IP, nil
+			ipAddrs = append(ipAddrs, addr.IP)
+			continue
 		}
 
 		if addr.IP.IsLinkLocalUnicast() {
-			ll = addr.IP
+			ll = append(ll, addr.IP)
 		}
 	}
 
-	if ll != nil {
+	if len(ll) > 0 {
 		// didn't find global but found link-local. it'll do.
-		return ll, nil
+		ipAddrs = append(ipAddrs, ll...)
+	}
+
+	if len(ipAddrs) > 0 {
+		return ipAddrs, nil
 	}
 
 	return nil, errors.New("No IPv6 address found for given interface")

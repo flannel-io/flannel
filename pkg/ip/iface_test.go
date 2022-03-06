@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 // Copyright 2017 flannel authors
@@ -91,6 +92,9 @@ func TestEnsureV6AddressOnLink(t *testing.T) {
 		t.Fatal(err)
 	}
 	addrs, err = netlink.AddrList(lo, netlink.FAMILY_V6)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if len(addrs) != 2 {
 		t.Fatalf("two addresses expected, addrs: %v", addrs)
 	}

@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//go:build !windows
 // +build !windows
 
 package udp
@@ -59,7 +60,10 @@ func writeCommand(f *os.File, cmd *C.command) {
 	}
 	buf := *(*[]byte)(unsafe.Pointer(&hdr))
 
-	f.Write(buf)
+	_, err := f.Write(buf)
+	if err != nil {
+		log.Errorf("Error while writing the command %v. Error: %v", cmd, err)
+	}
 }
 
 func setRoute(ctl *os.File, dst ip.IP4Net, nextHopIP ip.IP4, nextHopPort int) {

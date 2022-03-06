@@ -28,7 +28,6 @@ import (
 )
 
 type network struct {
-	name                string
 	extIface            *backend.ExternalInterface
 	lease               *subnet.Lease
 	sm                  subnet.Manager
@@ -60,14 +59,12 @@ func (n *network) Run(ctx context.Context) {
 	defer wg.Wait()
 
 	for {
-		select {
-		case evtBatch, ok := <-evts:
-			if !ok {
-				log.Infof("evts chan closed")
-				return
-			}
-			n.handleSubnetEvents(evtBatch)
+		evtBatch, ok := <-evts
+		if !ok {
+			log.Infof("evts chan closed")
+			return
 		}
+		n.handleSubnetEvents(evtBatch)
 	}
 }
 

@@ -2,9 +2,9 @@ package hns
 
 import (
 	"encoding/json"
-	"net"
-
+	"errors"
 	"github.com/sirupsen/logrus"
+	"net"
 )
 
 // Subnet is assoicated with a network and represents a list
@@ -37,12 +37,6 @@ type HNSNetwork struct {
 	DNSServerCompartment uint32            `json:",omitempty"`
 	ManagementIP         string            `json:",omitempty"`
 	AutomaticDNS         bool              `json:",omitempty"`
-}
-
-type hnsNetworkResponse struct {
-	Success bool
-	Error   string
-	Output  HNSNetwork
 }
 
 type hnsResponse struct {
@@ -97,6 +91,12 @@ func (network *HNSNetwork) Create() (*HNSNetwork, error) {
 	operation := "Create"
 	title := "hcsshim::HNSNetwork::" + operation
 	logrus.Debugf(title+" id=%s", network.Id)
+
+	for _, subnet := range network.Subnets {
+		if (subnet.AddressPrefix != "") && (subnet.GatewayAddress == "") {
+			return nil, errors.New("network create error, subnet has address prefix but no gateway specified")
+		}
+	}
 
 	jsonString, err := json.Marshal(network)
 	if err != nil {

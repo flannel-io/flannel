@@ -3,7 +3,6 @@ package metadata
 import (
 	"errors"
 	"fmt"
-	"github.com/denverdino/aliyungo/util"
 	"io"
 	"io/ioutil"
 	"net"
@@ -11,10 +10,13 @@ import (
 	"net/url"
 	"strings"
 	"time"
-)
 
-type Request struct {
-}
+	"encoding/json"
+	"reflect"
+
+	"github.com/denverdino/aliyungo/util"
+	"os"
+)
 
 const (
 	ENDPOINT = "http://100.100.100.200"
@@ -41,18 +43,24 @@ const (
 	VPC_ID             = "vpc-id"
 	VSWITCH_CIDR_BLOCK = "vswitch-cidr-block"
 	VSWITCH_ID         = "vswitch-id"
+	ZONE               = "zone-id"
+	RAM_SECURITY       = "Ram/security-credentials"
 )
 
-type IMetaDataClient interface {
-	Version(version string) IMetaDataClient
-	ResourceType(rtype string) IMetaDataClient
-	Resource(resource string) IMetaDataClient
-	Go() ([]string, error)
+type IMetaDataRequest interface {
+	Version(version string) IMetaDataRequest
+	ResourceType(rtype string) IMetaDataRequest
+	Resource(resource string) IMetaDataRequest
+	SubResource(sub string) IMetaDataRequest
 	Url() (string, error)
+	Do(api interface{}) error
 }
 
 type MetaData struct {
-	c IMetaDataClient
+	// mock for unit test.
+	mock    requestMock
+
+	client 	*http.Client
 }
 
 func NewMetaData(client *http.Client) *MetaData {
@@ -60,184 +68,238 @@ func NewMetaData(client *http.Client) *MetaData {
 		client = &http.Client{}
 	}
 	return &MetaData{
-		c: &MetaDataClient{client: client},
+		client: client,
+	}
+}
+
+func NewMockMetaData(client *http.Client, sendRequest requestMock) *MetaData {
+	if client == nil {
+		client = &http.Client{}
+	}
+	return &MetaData{
+		client: client,
+		mock:   sendRequest,
+	}
+}
+
+func (m *MetaData) New() *MetaDataRequest {
+	return &MetaDataRequest{
+		client:      m.client,
+		sendRequest: m.mock,
 	}
 }
 
 func (m *MetaData) HostName() (string, error) {
-
-	hostname, err := m.c.Resource(HOSTNAME).Go()
+	var hostname ResultList
+	err := m.New().Resource(HOSTNAME).Do(&hostname)
 	if err != nil {
 		return "", err
 	}
-	return hostname[0], nil
+	return hostname.result[0], nil
 }
 
 func (m *MetaData) ImageID() (string, error) {
-
-	image, err := m.c.Resource(IMAGE_ID).Go()
+	var image ResultList
+	err := m.New().Resource(IMAGE_ID).Do(&image)
 	if err != nil {
 		return "", err
 	}
-	return image[0], err
+	return image.result[0], err
 }
 
 func (m *MetaData) InstanceID() (string, error) {
-
-	instanceid, err := m.c.Resource(INSTANCE_ID).Go()
+	var instanceid ResultList
+	err := m.New().Resource(INSTANCE_ID).Do(&instanceid)
 	if err != nil {
 		return "", err
 	}
-	return instanceid[0], err
+	return instanceid.result[0], err
 }
 
 func (m *MetaData) Mac() (string, error) {
-
-	mac, err := m.c.Resource(MAC).Go()
+	var mac ResultList
+	err := m.New().Resource(MAC).Do(&mac)
 	if err != nil {
 		return "", err
 	}
-	return mac[0], nil
+	return mac.result[0], nil
 }
 
 func (m *MetaData) NetworkType() (string, error) {
-
-	network, err := m.c.Resource(NETWORK_TYPE).Go()
+	var network ResultList
+	err := m.New().Resource(NETWORK_TYPE).Do(&network)
 	if err != nil {
 		return "", err
 	}
-	return network[0], nil
+	return network.result[0], nil
 }
 
 func (m *MetaData) OwnerAccountID() (string, error) {
-
-	owner, err := m.c.Resource(OWNER_ACCOUNT_ID).Go()
+	var owner ResultList
+	err := m.New().Resource(OWNER_ACCOUNT_ID).Do(&owner)
 	if err != nil {
 		return "", err
 	}
-	return owner[0], nil
+	return owner.result[0], nil
 }
 
 func (m *MetaData) PrivateIPv4() (string, error) {
-
-	private, err := m.c.Resource(PRIVATE_IPV4).Go()
+	var private ResultList
+	err := m.New().Resource(PRIVATE_IPV4).Do(&private)
 	if err != nil {
 		return "", err
 	}
-	return private[0], nil
+	return private.result[0], nil
 }
 
 func (m *MetaData) Region() (string, error) {
-
-	region, err := m.c.Resource(REGION).Go()
+	var region ResultList
+	err := m.New().Resource(REGION).Do(&region)
 	if err != nil {
 		return "", err
 	}
-	return region[0], nil
+	return region.result[0], nil
 }
 
 func (m *MetaData) SerialNumber() (string, error) {
-
-	serial, err := m.c.Resource(SERIAL_NUMBER).Go()
+	var serial ResultList
+	err := m.New().Resource(SERIAL_NUMBER).Do(&serial)
 	if err != nil {
 		return "", err
 	}
-	return serial[0], nil
+	return serial.result[0], nil
 }
 
 func (m *MetaData) SourceAddress() (string, error) {
-
-	source, err := m.c.Resource(SOURCE_ADDRESS).Go()
+	var source ResultList
+	err := m.New().Resource(SOURCE_ADDRESS).Do(&source)
 	if err != nil {
 		return "", err
 	}
-	return source[0], nil
+	return source.result[0], nil
 
 }
 
 func (m *MetaData) VpcCIDRBlock() (string, error) {
-
-	vpcCIDR, err := m.c.Resource(VPC_CIDR_BLOCK).Go()
+	var vpcCIDR ResultList
+	err := m.New().Resource(VPC_CIDR_BLOCK).Do(&vpcCIDR)
 	if err != nil {
 		return "", err
 	}
-	return vpcCIDR[0], err
+	return vpcCIDR.result[0], err
 }
 
 func (m *MetaData) VpcID() (string, error) {
-
-	vpcId, err := m.c.Resource(VPC_ID).Go()
+	var vpcId ResultList
+	err := m.New().Resource(VPC_ID).Do(&vpcId)
 	if err != nil {
 		return "", err
 	}
-	return vpcId[0], err
+	return vpcId.result[0], err
 }
 
 func (m *MetaData) VswitchCIDRBlock() (string, error) {
-
-	cidr, err := m.c.Resource(VSWITCH_CIDR_BLOCK).Go()
+	var cidr ResultList
+	err := m.New().Resource(VSWITCH_CIDR_BLOCK).Do(&cidr)
 	if err != nil {
 		return "", err
 	}
-	return cidr[0], err
+	return cidr.result[0], err
 }
 
 func (m *MetaData) VswitchID() (string, error) {
-
-	vswithcid, err := m.c.Resource(VSWITCH_ID).Go()
+	var vswithcid ResultList
+	err := m.New().Resource(VSWITCH_ID).Do(&vswithcid)
 	if err != nil {
 		return "", err
 	}
-	return vswithcid[0], err
+	return vswithcid.result[0], err
 }
 
 func (m *MetaData) EIPv4() (string, error) {
-
-	eip, err := m.c.Resource(EIPV4).Go()
+	var eip ResultList
+	err := m.New().Resource(EIPV4).Do(&eip)
 	if err != nil {
 		return "", err
 	}
-	return eip[0], nil
+	return eip.result[0], nil
 }
 
 func (m *MetaData) DNSNameServers() ([]string, error) {
-
-	data, err := m.c.Resource(DNS_NAMESERVERS).Go()
+	var data ResultList
+	err := m.New().Resource(DNS_NAMESERVERS).Do(&data)
 	if err != nil {
 		return []string{}, err
 	}
-	return data, nil
+	return data.result, nil
 }
 
 func (m *MetaData) NTPConfigServers() ([]string, error) {
-
-	data, err := m.c.Resource(NTP_CONF_SERVERS).Go()
+	var data ResultList
+	err := m.New().Resource(NTP_CONF_SERVERS).Do(&data)
 	if err != nil {
 		return []string{}, err
 	}
-	return data, nil
+	return data.result, nil
 }
 
+func (m *MetaData) Zone() (string, error) {
+	var zone ResultList
+	err := m.New().Resource(ZONE).Do(&zone)
+	if err != nil {
+		return "", err
+	}
+	return zone.result[0], nil
+}
+
+func (m *MetaData) RoleName() (string, error) {
+	var roleName ResultList
+	err := m.New().Resource("ram/security-credentials/").Do(&roleName)
+	if err != nil {
+		return "", err
+	}
+	return roleName.result[0], nil
+}
+
+func (m *MetaData) RamRoleToken(role string) (RoleAuth, error) {
+	var roleauth RoleAuth
+	err := m.New().Resource(RAM_SECURITY).SubResource(role).Do(&roleauth)
+	if err != nil {
+		return RoleAuth{}, err
+	}
+	return roleauth, nil
+}
+
+type requestMock func(resource string) (string, error)
+
 //
-type MetaDataClient struct {
+type MetaDataRequest struct {
 	version      string
 	resourceType string
 	resource     string
+	subResource  string
 	client       *http.Client
+
+	sendRequest requestMock
 }
 
-func (vpc *MetaDataClient) Version(version string) IMetaDataClient {
+func (vpc *MetaDataRequest) Version(version string) IMetaDataRequest {
 	vpc.version = version
 	return vpc
 }
 
-func (vpc *MetaDataClient) ResourceType(rtype string) IMetaDataClient {
+func (vpc *MetaDataRequest) ResourceType(rtype string) IMetaDataRequest {
 	vpc.resourceType = rtype
 	return vpc
 }
 
-func (vpc *MetaDataClient) Resource(resource string) IMetaDataClient {
+func (vpc *MetaDataRequest) Resource(resource string) IMetaDataRequest {
 	vpc.resource = resource
+	return vpc
+}
+
+func (vpc *MetaDataRequest) SubResource(sub string) IMetaDataRequest {
+	vpc.subResource = sub
 	return vpc
 }
 
@@ -247,7 +309,7 @@ var retry = util.AttemptStrategy{
 	Delay: 200 * time.Millisecond,
 }
 
-func (vpc *MetaDataClient) Url() (string, error) {
+func (vpc *MetaDataRequest) Url() (string, error) {
 	if vpc.version == "" {
 		vpc.version = "latest"
 	}
@@ -257,46 +319,75 @@ func (vpc *MetaDataClient) Url() (string, error) {
 	if vpc.resource == "" {
 		return "", errors.New("the resource you want to visit must not be nil!")
 	}
-	return fmt.Sprintf("%s/%s/%s/%s", ENDPOINT, vpc.version, vpc.resourceType, vpc.resource), nil
+	endpoint := os.Getenv("METADATA_ENDPOINT")
+	if endpoint == "" {
+		endpoint = ENDPOINT
+	}
+	r := fmt.Sprintf("%s/%s/%s/%s", endpoint, vpc.version, vpc.resourceType, vpc.resource)
+	if vpc.subResource == "" {
+		return r, nil
+	}
+	return fmt.Sprintf("%s/%s", r, vpc.subResource), nil
 }
 
-func (vpc *MetaDataClient) Go() (resu []string, err error) {
+func (vpc *MetaDataRequest) Do(api interface{}) (err error) {
+	var res = ""
 	for r := retry.Start(); r.Next(); {
-		resu, err = vpc.send()
+		if vpc.sendRequest != nil {
+			res, err = vpc.sendRequest(vpc.resource)
+		} else {
+			res, err = vpc.send()
+		}
 		if !shouldRetry(err) {
 			break
 		}
 	}
-	return resu, err
+	if err != nil {
+		return err
+	}
+	return vpc.Decode(res, api)
 }
 
-func (vpc *MetaDataClient) send() ([]string, error) {
+func (vpc *MetaDataRequest) Decode(data string, api interface{}) error {
+	if data == "" {
+		url, _ := vpc.Url()
+		return errors.New(fmt.Sprintf("metadata: alivpc decode data must not be nil. url=[%s]\n", url))
+	}
+	switch api.(type) {
+	case *ResultList:
+		api.(*ResultList).result = strings.Split(data, "\n")
+		return nil
+	case *RoleAuth:
+		return json.Unmarshal([]byte(data), api)
+	default:
+		return errors.New(fmt.Sprintf("metadata: unknow type to decode, type=%s\n", reflect.TypeOf(api)))
+	}
+}
+
+func (vpc *MetaDataRequest) send() (string, error) {
 	url, err := vpc.Url()
 	if err != nil {
-		return []string{}, err
+		return "", err
 	}
 	requ, err := http.NewRequest(http.MethodGet, url, nil)
 
 	if err != nil {
-		return []string{}, err
+		return "", err
 	}
 	resp, err := vpc.client.Do(requ)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	if resp.StatusCode != 200 {
-		return nil, err
+		return "", fmt.Errorf("Aliyun Metadata API Error: Status Code: %d", resp.StatusCode)
 	}
 	defer resp.Body.Close()
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return []string{}, err
+		return "", err
 	}
-	if string(data) == "" {
-		return []string{""}, nil
-	}
-	return strings.Split(string(data), "\n"), nil
+	return string(data), nil
 }
 
 type TimeoutError interface {
@@ -341,4 +432,17 @@ func shouldRetry(err error) bool {
 		}
 	}
 	return false
+}
+
+type ResultList struct {
+	result []string
+}
+
+type RoleAuth struct {
+	AccessKeyId     string
+	AccessKeySecret string
+	Expiration      time.Time
+	SecurityToken   string
+	LastUpdated     time.Time
+	Code            string
 }

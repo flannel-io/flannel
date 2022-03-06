@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//go:build !windows
 // +build !windows
 
 package ipsec
@@ -93,15 +94,13 @@ func (n *network) Run(ctx context.Context) {
 	}()
 
 	for {
-		select {
-		case evtsBatch, ok := <-evts:
-			if !ok {
-				log.Infof("evts chan closed")
-				return
-			}
-			log.Info("Handling event")
-			n.handleSubnetEvents(evtsBatch)
+		evtsBatch, ok := <-evts
+		if !ok {
+			log.Infof("evts chan closed")
+			return
 		}
+		log.Info("Handling event")
+		n.handleSubnetEvents(evtsBatch)
 	}
 }
 

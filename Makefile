@@ -15,10 +15,10 @@ else
 endif
 
 # Go version to use for builds
-GO_VERSION=1.15.5
+GO_VERSION=1.17.2
 
 # K8s version used for Makefile helpers
-K8S_VERSION=v1.6.6
+K8S_VERSION=v1.22.3
 
 GOARM=7
 
@@ -46,7 +46,7 @@ dist/flanneld.exe: $(shell find . -type f  -name '*.go')
 
 # This will build flannel natively using golang image
 dist/flanneld-$(ARCH): dist/qemu-$(ARCH)-static
-	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x]
+	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x mips64le]
 	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) -e GOCACHE=/go \
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR)/dist/qemu-$(ARCH)-static:/usr/bin/qemu-$(ARCH)-static \
@@ -73,7 +73,11 @@ test: header-check gofmt verify-modules
 	# Run the unit tests
 	# NET_ADMIN capacity is required to do some network operation
 	# SYS_ADMIN capacity is required to create network namespace
-	docker run --cap-add=NET_ADMIN --cap-add=SYS_ADMIN --rm -v $(shell pwd):/go/src/github.com/flannel-io/flannel golang:$(GO_VERSION) go test -v -cover $(TEST_PACKAGES_EXPANDED)
+	docker run --cap-add=NET_ADMIN \
+		--cap-add=SYS_ADMIN --rm \
+		-v $(shell pwd):/go/src/github.com/flannel-io/flannel \
+		golang:$(GO_VERSION) \
+		/bin/bash -c 'cd /go/src/github.com/flannel-io/flannel && go test -v -cover $(TEST_PACKAGES_EXPANDED)'
 
 	# Test the docker-opts script
 	cd dist; ./mk-docker-opts_tests.sh
@@ -128,7 +132,7 @@ dist/flanneld-e2e-$(TAG)-$(ARCH).docker:
 ifneq ($(ARCH),amd64)
 	$(MAKE) dist/qemu-$(ARCH)-static
 endif
-	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x]
+	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x mips64le]
 	docker run -e GOARM=$(GOARM) -e GOCACHE=/go \
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR):/go/src/github.com/flannel-io/flannel:ro \
@@ -141,12 +145,13 @@ endif
 
 # Make a release after creating a tag
 # To build cross platform Docker images, the qemu-static binaries are needed. On ubuntu "apt-get install  qemu-user-static"
-release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-aarch64-static dist/qemu-arm-static #release-tests
+release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-arm64-static dist/qemu-arm-static dist/qemu-mips64le-static #release-tests
 	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.docker
 	ARCH=arm make dist/flanneld-$(TAG)-arm.docker
 	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.docker
 	ARCH=ppc64le make dist/flanneld-$(TAG)-ppc64le.docker
 	ARCH=s390x make dist/flanneld-$(TAG)-s390x.docker
+	ARCH=mips64le make dist/flanneld-$(TAG)-mips64le.docker
 	@echo "Everything should be built for $(TAG)"
 	@echo "Add all flanneld-* and *.tar.gz files from dist/ to the Github release"
 	@echo "Use make docker-push-all to push the images to a registry"
@@ -156,11 +161,13 @@ dist/qemu-%-static:
 		wget -O dist/qemu-amd64-static https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-x86_64-static; \
 	elif [ "$(@F)" = "qemu-arm64-static" ]; then \
 		wget -O dist/qemu-arm64-static https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-aarch64-static; \
+	elif [ "$(@F)" = "qemu-mips64le-static" ]; then \
+		wget -O dist/qemu-mips64le-static https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-mips64el-static; \
 	else \
 		wget -O dist/$(@F) https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/$(@F); \
 	fi 
 
-## Build a .tar.gz for the amd64 ppc64le arm arm64 flanneld binary
+## Build a .tar.gz for the amd64 ppc64le arm arm64 mips64le flanneld binary
 tar.gz:
 	ARCH=amd64 make dist/flanneld-amd64
 	tar --transform='flags=r;s|-amd64||' -zcvf dist/flannel-$(TAG)-linux-amd64.tar.gz -C dist flanneld-amd64 mk-docker-opts.sh ../README.md
@@ -180,6 +187,9 @@ tar.gz:
 	ARCH=s390x make dist/flanneld-s390x
 	tar --transform='flags=r;s|-s390x||' -zcvf dist/flannel-$(TAG)-linux-s390x.tar.gz -C dist flanneld-s390x mk-docker-opts.sh ../README.md
 	tar -tvf dist/flannel-$(TAG)-linux-s390x.tar.gz
+	ARCH=mips64le make dist/flanneld-mips64le
+	tar --transform='flags=r;s|-mips64le||' -zcvf dist/flannel-$(TAG)-linux-mips64le.tar.gz -C dist flanneld-mips64le mk-docker-opts.sh ../README.md
+	tar -tvf dist/flannel-$(TAG)-linux-mips64le.tar.gz
 
 release-tests: release-etcd-tests release-k8s-tests
 
@@ -217,6 +227,7 @@ docker-push-all:
 	ARCH=arm64 make docker-push docker-manifest-amend
 	ARCH=ppc64le make docker-push docker-manifest-amend
 	ARCH=s390x make docker-push docker-manifest-amend
+	ARCH=mips64le make docker-push docker-manifest-amend
 	make docker-manifest-push
 
 flannel-git:
@@ -225,6 +236,7 @@ flannel-git:
 	ARCH=arm64 REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-arm64.docker docker-push docker-manifest-amend
 	ARCH=ppc64le REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-ppc64le.docker docker-push docker-manifest-amend
 	ARCH=s390x REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-s390x.docker docker-push docker-manifest-amend
+	ARCH=mips64le REGISTRY=quay.io/coreos/flannel-git make clean dist/flanneld-$(TAG)-mips64le.docker docker-push docker-manifest-amend
 	REGISTRY=quay.io/coreos/flannel-git make docker-manifest-push
 
 install:

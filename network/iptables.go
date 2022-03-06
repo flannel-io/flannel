@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//go:build !windows
 // +build !windows
 
 package network
@@ -55,24 +56,24 @@ func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 	if supports_random_fully {
 		return []IPTablesRule{
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-			{"nat", "POSTROUTING", []string{"-s", n, "-d", n, "-j", "RETURN"}},
+			{"nat", "POSTROUTING", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// NAT if it's not multicast traffic
-			{"nat", "POSTROUTING", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
+			{"nat", "POSTROUTING", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
 			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-j", "RETURN"}},
+			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// Masquerade anything headed towards flannel from the host
-			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-j", "MASQUERADE", "--random-fully"}},
+			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
 		}
 	} else {
 		return []IPTablesRule{
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-			{"nat", "POSTROUTING", []string{"-s", n, "-d", n, "-j", "RETURN"}},
+			{"nat", "POSTROUTING", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// NAT if it's not multicast traffic
-			{"nat", "POSTROUTING", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE"}},
+			{"nat", "POSTROUTING", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
 			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-j", "RETURN"}},
+			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// Masquerade anything headed towards flannel from the host
-			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-j", "MASQUERADE"}},
+			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
 		}
 	}
 }
@@ -89,24 +90,24 @@ func MasqIP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
 	if supports_random_fully {
 		return []IPTablesRule{
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-			{"nat", "POSTROUTING", []string{"-s", n, "-d", n, "-j", "RETURN"}},
+			{"nat", "POSTROUTING", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// NAT if it's not multicast traffic
-			{"nat", "POSTROUTING", []string{"-s", n, "!", "-d", "ff00::/8", "-j", "MASQUERADE", "--random-fully"}},
+			{"nat", "POSTROUTING", []string{"-s", n, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
 			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-j", "RETURN"}},
+			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// Masquerade anything headed towards flannel from the host
-			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-j", "MASQUERADE", "--random-fully"}},
+			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
 		}
 	} else {
 		return []IPTablesRule{
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-			{"nat", "POSTROUTING", []string{"-s", n, "-d", n, "-j", "RETURN"}},
+			{"nat", "POSTROUTING", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// NAT if it's not multicast traffic
-			{"nat", "POSTROUTING", []string{"-s", n, "!", "-d", "ff00::/8", "-j", "MASQUERADE"}},
+			{"nat", "POSTROUTING", []string{"-s", n, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
 			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-j", "RETURN"}},
+			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// Masquerade anything headed towards flannel from the host
-			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-j", "MASQUERADE"}},
+			{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
 		}
 	}
 }
@@ -114,8 +115,8 @@ func MasqIP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
 func ForwardRules(flannelNetwork string) []IPTablesRule {
 	return []IPTablesRule{
 		// These rules allow traffic to be forwarded if it is to or from the flannel network range.
-		{"filter", "FORWARD", []string{"-s", flannelNetwork, "-j", "ACCEPT"}},
-		{"filter", "FORWARD", []string{"-d", flannelNetwork, "-j", "ACCEPT"}},
+		{"filter", "FORWARD", []string{"-s", flannelNetwork, "-m", "comment", "--comment", "flanneld forward", "-j", "ACCEPT"}},
+		{"filter", "FORWARD", []string{"-d", flannelNetwork, "-m", "comment", "--comment", "flanneld forward", "-j", "ACCEPT"}},
 	}
 }
 
@@ -143,7 +144,10 @@ func SetupAndEnsureIPTables(rules []IPTablesRule, resyncPeriod int) {
 	}
 
 	defer func() {
-		teardownIPTables(ipt, rules)
+		err := teardownIPTables(ipt, rules)
+		if err != nil {
+			log.Errorf("Failed to tear down IPTables: %v", err)
+		}
 	}()
 
 	for {
@@ -165,7 +169,10 @@ func SetupAndEnsureIP6Tables(rules []IPTablesRule, resyncPeriod int) {
 	}
 
 	defer func() {
-		teardownIPTables(ipt, rules)
+		err := teardownIPTables(ipt, rules)
+		if err != nil {
+			log.Errorf("Failed to tear down IPTables: %v", err)
+		}
 	}()
 
 	for {
@@ -186,7 +193,11 @@ func DeleteIPTables(rules []IPTablesRule) error {
 		log.Errorf("Failed to setup IPTables. iptables binary was not found: %v", err)
 		return err
 	}
-	teardownIPTables(ipt, rules)
+	err = teardownIPTables(ipt, rules)
+	if err != nil {
+		log.Errorf("Failed to tear down IPTables: %v", err)
+		return err
+	}
 	return nil
 }
 
@@ -198,7 +209,11 @@ func DeleteIP6Tables(rules []IPTablesRule) error {
 		log.Errorf("Failed to setup IP6Tables. iptables binary was not found: %v", err)
 		return err
 	}
-	teardownIPTables(ipt, rules)
+	err = teardownIPTables(ipt, rules)
+	if err != nil {
+		log.Errorf("Failed to tear down IPTables: %v", err)
+		return err
+	}
 	return nil
 }
 

@@ -124,7 +124,7 @@ $ etcdctl set /coreos.com/network/config '{"Network":"10.20.0.0/16", "Backend": 
 - If you want to manually specify your route table ID or if you want to update multiple route tables, e.g. for a deployment across multiple availability zones, use either a string for one or an array for one or more route tables like this.
 
 ```
-$ etcdctl set /coreos.com/network/config '{"Network":"10.20.0.0/16", "Backend": {"Type": "aws-vpc", "RouteTableID": ["rtb-abc00001","rtb-abc00002","rtb-abc00003"]} }'}}'
+$ etcdctl set /coreos.com/network/config '{"Network":"10.20.0.0/16", "Backend": {"Type": "aws-vpc", "RouteTableID": ["rtb-abc00001","rtb-abc00002","rtb-abc00003"]} }'
 ```
 
 

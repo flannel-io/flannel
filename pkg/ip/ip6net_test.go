@@ -44,6 +44,17 @@ func TestIP6(t *testing.T) {
 		t.Error("FromIP6 failed")
 	}
 
+	nip = net.ParseIP("::")
+	ip = FromIP6(nip)
+	ipStr = ip.String()
+	if ipStr != "::" {
+		t.Error(":: FromIP6 failed")
+	}
+
+	if !IsEmpty(ip) {
+		t.Error("IsEmpty failed")
+	}
+
 	ip, err := ParseIP6("fc00::1")
 	if err != nil {
 		t.Error("ParseIP6 failed with: ", err)
@@ -67,7 +78,25 @@ func TestIP6(t *testing.T) {
 }
 
 func TestIP6Net(t *testing.T) {
+	var n IP6Net
+	if !n.Empty() {
+		t.Error("Empty failed")
+	}
+
+	n = mkIP6Net("::", 0)
+	if !n.Empty() {
+		t.Error("::/0 Empty failed")
+	}
+
+	n = mkIP6Net("::", 64)
+	if n.Empty() {
+		t.Error("::/64 Empty failed")
+	}
+
 	n1 := mkIP6Net("fc00:1::", 64)
+	if n1.Empty() {
+		t.Error("fc00:1::/64 Empty failed")
+	}
 
 	if n1.ToIPNet().String() != "fc00:1::/64" {
 		t.Error("ToIPNet failed")

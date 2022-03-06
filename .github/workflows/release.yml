@@ -1,0 +1,179 @@
+on:
+  release:
+    types: [published]
+
+env:
+  GO_VERSION: "1.17.2"
+  LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le mips64le"
+  REPOSITORY: flannelcni/flannel
+
+jobs:
+  build-and-push-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: go mod vendor
+        run: go mod vendor
+
+      - name: build linux
+        run: |
+          set -e
+          for arch in ${LINUX_ARCHES}; do
+            echo "Building for arch $arch"
+            ARCH=$arch make dist/flanneld-$arch
+            file dist/flanneld-$arch
+          done
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REPOSITORY }}
+          flavor: latest=false
+          tags: |
+            type=ref,event=tag
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image for amd64
+        if: github.repository_owner == 'flannel-io'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-amd64
+
+      - name: Build and push Docker image for arm
+        if: github.repository_owner == 'flannel-io'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.arm
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-arm
+
+      - name: Build and push Docker image for arm64
+        if: github.repository_owner == 'flannel-io'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-arm64
+
+      - name: Build and push Docker image for s390x
+        if: github.repository_owner == 'flannel-io'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.s390x
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-s390x
+
+      - name: Build and push Docker image for ppc64le
+        if: github.repository_owner == 'flannel-io'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.ppc64le
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-ppc64le
+        
+      - name: Build and push Docker image for mips64le
+        if: github.repository_owner == 'flannel-io'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.mips64le
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-mips64le
+
+  build-and-push-multi-arch-image:
+    needs: [build-and-push-images]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: go mod vendor
+        run: go mod vendor
+
+      - name: build linux
+        run: |
+          set -e
+          for arch in ${LINUX_ARCHES}; do
+            echo "Building for arch $arch"
+            ARCH=$arch make dist/flanneld-$arch
+            file dist/flanneld-$arch
+          done
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REPOSITORY }}
+          flavor: latest=false
+          tags: |
+            type=ref,event=tag
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Create and push manifest for multi-arch image
+        if: github.repository_owner == 'flannel-io'
+        run: |
+          # get artifacts from previous steps and integrate into one multi-arch manifest
+          docker pull ${{ steps.meta.outputs.tags }}-amd64
+          docker pull ${{ steps.meta.outputs.tags }}-arm64
+          docker pull ${{ steps.meta.outputs.tags }}-arm
+          docker pull ${{ steps.meta.outputs.tags }}-ppc64le
+          docker pull ${{ steps.meta.outputs.tags }}-s390x
+          docker pull ${{ steps.meta.outputs.tags }}-mips64le
+          docker manifest create ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-amd64 ${{ steps.meta.outputs.tags }}-arm64 ${{ steps.meta.outputs.tags }}-arm ${{ steps.meta.outputs.tags }}-ppc64le ${{ steps.meta.outputs.tags }}-s390x ${{ steps.meta.outputs.tags }}-mips64le
+          docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-amd64 --arch amd64
+          docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-arm64 --arch arm64
+          docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-arm --arch arm
+          docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-ppc64le --arch ppc64le
+          docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-s390x --arch s390x
+          docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-mips64le --arch mips64le
+          docker manifest push ${{ steps.meta.outputs.tags }}
+          docker pull ${{ steps.meta.outputs.tags }}
+          docker tag ${{ steps.meta.outputs.tags }} ${{ env.REPOSITORY }}:latest
+          docker push ${{ env.REPOSITORY }}:latest

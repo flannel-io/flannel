@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"context"
 	"io"
 	"time"
 )
@@ -21,35 +22,43 @@ func SetOutput(out io.Writer) {
 
 // SetFormatter sets the standard logger formatter.
 func SetFormatter(formatter Formatter) {
-	std.mu.Lock()
-	defer std.mu.Unlock()
-	std.Formatter = formatter
+	std.SetFormatter(formatter)
+}
+
+// SetReportCaller sets whether the standard logger will include the calling
+// method as a field.
+func SetReportCaller(include bool) {
+	std.SetReportCaller(include)
 }
 
 // SetLevel sets the standard logger level.
 func SetLevel(level Level) {
-	std.mu.Lock()
-	defer std.mu.Unlock()
 	std.SetLevel(level)
 }
 
 // GetLevel returns the standard logger level.
 func GetLevel() Level {
-	std.mu.Lock()
-	defer std.mu.Unlock()
-	return std.level()
+	return std.GetLevel()
+}
+
+// IsLevelEnabled checks if the log level of the standard logger is greater than the level param
+func IsLevelEnabled(level Level) bool {
+	return std.IsLevelEnabled(level)
 }
 
 // AddHook adds a hook to the standard logger hooks.
 func AddHook(hook Hook) {
-	std.mu.Lock()
-	defer std.mu.Unlock()
-	std.Hooks.Add(hook)
+	std.AddHook(hook)
 }
 
 // WithError creates an entry from the standard logger and adds an error to it, using the value defined in ErrorKey as key.
 func WithError(err error) *Entry {
 	return std.WithField(ErrorKey, err)
+}
+
+// WithContext creates an entry from the standard logger and adds a context to it.
+func WithContext(ctx context.Context) *Entry {
+	return std.WithContext(ctx)
 }
 
 // WithField creates an entry from the standard logger and adds a field to
@@ -71,13 +80,18 @@ func WithFields(fields Fields) *Entry {
 	return std.WithFields(fields)
 }
 
-// WithTime creats an entry from the standard logger and overrides the time of
+// WithTime creates an entry from the standard logger and overrides the time of
 // logs generated with it.
 //
 // Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal
 // or Panic on the Entry it returns.
 func WithTime(t time.Time) *Entry {
 	return std.WithTime(t)
+}
+
+// Trace logs a message at level Trace on the standard logger.
+func Trace(args ...interface{}) {
+	std.Trace(args...)
 }
 
 // Debug logs a message at level Debug on the standard logger.
@@ -120,6 +134,56 @@ func Fatal(args ...interface{}) {
 	std.Fatal(args...)
 }
 
+// TraceFn logs a message from a func at level Trace on the standard logger.
+func TraceFn(fn LogFunction) {
+	std.TraceFn(fn)
+}
+
+// DebugFn logs a message from a func at level Debug on the standard logger.
+func DebugFn(fn LogFunction) {
+	std.DebugFn(fn)
+}
+
+// PrintFn logs a message from a func at level Info on the standard logger.
+func PrintFn(fn LogFunction) {
+	std.PrintFn(fn)
+}
+
+// InfoFn logs a message from a func at level Info on the standard logger.
+func InfoFn(fn LogFunction) {
+	std.InfoFn(fn)
+}
+
+// WarnFn logs a message from a func at level Warn on the standard logger.
+func WarnFn(fn LogFunction) {
+	std.WarnFn(fn)
+}
+
+// WarningFn logs a message from a func at level Warn on the standard logger.
+func WarningFn(fn LogFunction) {
+	std.WarningFn(fn)
+}
+
+// ErrorFn logs a message from a func at level Error on the standard logger.
+func ErrorFn(fn LogFunction) {
+	std.ErrorFn(fn)
+}
+
+// PanicFn logs a message from a func at level Panic on the standard logger.
+func PanicFn(fn LogFunction) {
+	std.PanicFn(fn)
+}
+
+// FatalFn logs a message from a func at level Fatal on the standard logger then the process will exit with status set to 1.
+func FatalFn(fn LogFunction) {
+	std.FatalFn(fn)
+}
+
+// Tracef logs a message at level Trace on the standard logger.
+func Tracef(format string, args ...interface{}) {
+	std.Tracef(format, args...)
+}
+
 // Debugf logs a message at level Debug on the standard logger.
 func Debugf(format string, args ...interface{}) {
 	std.Debugf(format, args...)
@@ -158,6 +222,11 @@ func Panicf(format string, args ...interface{}) {
 // Fatalf logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
 func Fatalf(format string, args ...interface{}) {
 	std.Fatalf(format, args...)
+}
+
+// Traceln logs a message at level Trace on the standard logger.
+func Traceln(args ...interface{}) {
+	std.Traceln(args...)
 }
 
 // Debugln logs a message at level Debug on the standard logger.

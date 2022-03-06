@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 // Copyright 2017 flannel authors
@@ -69,14 +70,12 @@ func (n *RouteNetwork) Run(ctx context.Context) {
 	defer wg.Wait()
 
 	for {
-		select {
-		case evtBatch, ok := <-evts:
-			if !ok {
-				log.Infof("evts chan closed")
-				return
-			}
-			n.handleSubnetEvents(evtBatch)
+		evtBatch, ok := <-evts
+		if !ok {
+			log.Infof("evts chan closed")
+			return
 		}
+		n.handleSubnetEvents(evtBatch)
 	}
 }
 
@@ -168,7 +167,7 @@ func routeAdd(route *netlink.Route, ipFamily int, addToRouteList, removeFromRout
 		log.Errorf("Error adding route to %v", route)
 		return
 	}
-	routeList, err = netlink.RouteListFiltered(ipFamily, &netlink.Route{Dst: route.Dst}, netlink.RT_FILTER_DST)
+	_, err = netlink.RouteListFiltered(ipFamily, &netlink.Route{Dst: route.Dst}, netlink.RT_FILTER_DST)
 	if err != nil {
 		log.Warningf("Unable to list routes: %v", err)
 	}

@@ -159,7 +159,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 			},
 			UpdateFunc: ksm.handleUpdateLeaseEvent,
 			DeleteFunc: func(obj interface{}) {
-				node, isNode := obj.(*v1.Node)
+				_, isNode := obj.(*v1.Node)
 				// We can get DeletedFinalStateUnknown instead of *api.Node here and we need to handle that correctly.
 				if !isNode {
 					deletedState, ok := obj.(cache.DeletedFinalStateUnknown)
@@ -167,7 +167,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 						log.Infof("Error received unexpected object: %v", obj)
 						return
 					}
-					node, ok = deletedState.Obj.(*v1.Node)
+					node, ok := deletedState.Obj.(*v1.Node)
 					if !ok {
 						log.Infof("Error deletedFinalStateUnknown contained non-Node object: %v", deletedState.Obj)
 						return
@@ -195,7 +195,7 @@ func (ksm *kubeSubnetManager) handleAddLeaseEvent(et subnet.EventType, obj inter
 		log.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.events <- subnet.Event{et, l}
+	ksm.events <- subnet.Event{Type: et, Lease: l}
 }
 
 func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{}) {
@@ -226,7 +226,7 @@ func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{})
 		log.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.events <- subnet.Event{subnet.EventAdded, l}
+	ksm.events <- subnet.Event{Type: subnet.EventAdded, Lease: l}
 }
 
 func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {
@@ -286,7 +286,7 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		n.Annotations[ksm.annotations.BackendType] = attrs.BackendType
 
 		//TODO -i only vxlan and host-gw backends support dual stack now.
-		if (attrs.BackendType == "vxlan" && string(bd) != "null") || attrs.BackendType != "vxlan" {
+		if (attrs.BackendType == "vxlan" && string(bd) != "null") || (attrs.BackendType == "wireguard" && string(bd) != "null") || attrs.BackendType != "vxlan" {
 			n.Annotations[ksm.annotations.BackendData] = string(bd)
 			if n.Annotations[ksm.annotations.BackendPublicIPOverwrite] != "" {
 				if n.Annotations[ksm.annotations.BackendPublicIP] != n.Annotations[ksm.annotations.BackendPublicIPOverwrite] {
@@ -300,7 +300,7 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 			}
 		}
 
-		if (attrs.BackendType == "vxlan" && string(v6Bd) != "null") || (attrs.BackendType == "host-gw" && attrs.PublicIPv6 != nil) {
+		if (attrs.BackendType == "vxlan" && string(v6Bd) != "null") || (attrs.BackendType == "wireguard" && string(v6Bd) != "null" && attrs.PublicIPv6 != nil) || (attrs.BackendType == "host-gw" && attrs.PublicIPv6 != nil) {
 			n.Annotations[ksm.annotations.BackendV6Data] = string(v6Bd)
 			if n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != "" {
 				if n.Annotations[ksm.annotations.BackendPublicIPv6] != n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] {
@@ -349,14 +349,14 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		Attrs:      *attrs,
 		Expiration: time.Now().Add(24 * time.Hour),
 	}
-	if cidr != nil {
+	if cidr != nil && ksm.enableIPv4 {
 		lease.Subnet = ip.FromIPNet(cidr)
 	}
 	if ipv6Cidr != nil {
 		lease.IPv6Subnet = ip.FromIP6Net(ipv6Cidr)
 	}
-	//TODO - only vxlan and host-gw backends support dual stack now.
-	if attrs.BackendType != "vxlan" && attrs.BackendType != "host-gw" {
+	//TODO - only vxlan, host-gw and wireguard backends support dual stack now.
+	if attrs.BackendType != "vxlan" && attrs.BackendType != "host-gw" && attrs.BackendType != "wireguard" {
 		lease.EnableIPv4 = true
 		lease.EnableIPv6 = false
 	}
@@ -403,6 +403,7 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l subnet.Lease, err error)
 		l.Attrs.BackendV6Data = json.RawMessage(n.Annotations[ksm.annotations.BackendV6Data])
 
 		ipv6Cidr := new(net.IPNet)
+		log.Infof("Creating the node lease for IPv6. This is the n.Spec.PodCIDRs: %v", n.Spec.PodCIDRs)
 		for _, podCidr := range n.Spec.PodCIDRs {
 			_, parseCidr, err := net.ParseCIDR(podCidr)
 			if err != nil {
@@ -425,7 +426,7 @@ func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, lease *subnet.Leas
 	return ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
+func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
 	return subnet.LeaseWatchResult{}, ErrUnimplemented
 }
 

@@ -164,3 +164,20 @@ Troubleshooting
 * `ip xfrm policy` can be used to show the installed policies. Flannel installs three policies for each host it connects to. 
 
 Flannel will not restore policies that are manually deleted (unless flannel is restarted). It will also not delete stale policies on startup. They can be removed by rebooting your host or by removing all ipsec state with `ip xfrm state flush && ip xfrm policy flush` and restarting flannel.
+
+### WireGuard
+
+Use in-kernel [WireGuard](https://www.wireguard.com) to encapsulate and encrypt the packets.
+
+Type:
+* `Type` (string): `wireguard`
+* `PSK` (string): Optional. The pre shared key to use. Use `wg genpsk` to generate a key.
+* `ListenPort` (int): Optional. The udp port to listen on. Default is `51820`.
+* `ListenPortV6` (int): Optional. The udp port to listen on for ipv6. Default is `51821`.
+* `PersistentKeepaliveInterval` (int): Optional. Default is 0 (disabled).
+
+If no private key was generated before the private key is written to `/run/flannel/wgkey`. You can use environment `WIREGUARD_KEY_FILE` to change this path.
+
+The static names of the interfaces are `flannel-wg` and `flannel-wg-v6`. WireGuard tools like `wg show` can be used to debug interfaces and peers.
+
+Users of kernels < 5.6 need to [install](https://www.wireguard.com/install/) a module.
