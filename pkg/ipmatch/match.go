@@ -17,12 +17,13 @@ package ipmatch
 import (
 	"errors"
 	"fmt"
-	"github.com/flannel-io/flannel/backend"
-	"github.com/flannel-io/flannel/pkg/ip"
-	log "k8s.io/klog"
 	"net"
 	"regexp"
 	"strings"
+
+	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/ip"
+	log "k8s.io/klog"
 )
 
 const (
@@ -48,7 +49,7 @@ func GetIPFamily(autoDetectIPv4, autoDetectIPv6 bool) (int, error) {
 	return noneStack, errors.New("none defined stack")
 }
 
-func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOpts) (*backend.ExternalInterface, error) {
+func LookupExtIface(ifname string, ifregexS string, ifcanreach string, ipStack int, opts PublicIPOpts) (*backend.ExternalInterface, error) {
 	var iface *net.Interface
 	var ifaceAddr net.IP
 	var ifaceV6Addr net.IP
@@ -184,6 +185,11 @@ func LookupExtIface(ifname string, ifregexS string, ipStack int, opts PublicIPOp
 			}
 
 			return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces (%s)", ifregexS, strings.Join(availableFaces, ", "))
+		}
+	} else if len(ifcanreach) > 0 {
+		log.Info("Determining interface to use based on given ifcanreach: ", ifcanreach)
+		if iface, err = ip.GetInterfaceBySpecificIPRouting(net.ParseIP(ifcanreach)); err != nil {
+			return nil, fmt.Errorf("failed to get ifcanreach based interface: %s", err)
 		}
 	} else {
 		log.Info("Determining IP address of default interface")

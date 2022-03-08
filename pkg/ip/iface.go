@@ -229,6 +229,19 @@ func GetInterfaceByIP6(ip net.IP) (*net.Interface, error) {
 	return nil, errors.New("No interface with given IPv6 found")
 }
 
+func GetInterfaceBySpecificIPRouting(ip net.IP) (*net.Interface, error) {
+	routes, err := netlink.RouteGet(ip)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't lookup route to %v: %v", ip, err)
+	}
+
+	for _, route := range routes {
+		return net.InterfaceByIndex(route.LinkIndex)
+	}
+
+	return nil, errors.New("No interface with given IP found")
+}
+
 func DirectRouting(ip net.IP) (bool, error) {
 	routes, err := netlink.RouteGet(ip)
 	if err != nil {
