@@ -102,7 +102,7 @@ if [ "$combined_opts" = true ]; then
 	echo "${combined_opts_key}=\"${docker_opts}\"" >>$docker_env
 fi
 
-dot_four=`echo ${subnets}|cut -d. -f4|cut -d/ -f1`
+dot_four=`echo ${FLANNEL_SUBNET}|cut -d. -f4|cut -d/ -f1`
 dot_four=$((${dot_four}-1))
 subnets_pre=`echo ${subnets}|cut -d. -f 1,2,3`
 subnets_lat=`echo ${subnets}|cut -d/ -f2`
