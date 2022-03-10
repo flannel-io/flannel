@@ -102,12 +102,14 @@ if [ "$combined_opts" = true ]; then
 	echo "${combined_opts_key}=\"${docker_opts}\"" >>$docker_env
 fi
 
-dot_four=`echo ${FLANNEL_SUBNET}|cut -d. -f4|cut -d/ -f1`
-dot_four=$((${dot_four}-1))
-subnets_pre=`echo ${subnets}|cut -d. -f 1,2,3`
-subnets_lat=`echo ${subnets}|cut -d/ -f2`
-subnets=${subnets_pre}.${dot_four}/${subnets_lat}
-route_invalid=`ip route show|grep ${subnets}|grep via`
-if [ "x${route_invalid}" != "x" ];then
-    ip route del ${route_invalid}
+if [ "x${FLANNEL_SUBNET}" != "x" ];then
+    dot_four=`echo ${FLANNEL_SUBNET}|cut -d. -f4|cut -d/ -f1`
+    dot_four=$((${dot_four}-1))
+    subnets_pre=`echo ${subnets}|cut -d. -f 1,2,3`
+    subnets_lat=`echo ${subnets}|cut -d/ -f2`
+    subnets=${subnets_pre}.${dot_four}/${subnets_lat}
+    route_invalid=`ip route show|grep ${subnets}|grep via`
+    if [ "x${route_invalid}" != "x" ];then
+        ip route del ${route_invalid}
+    fi
 fi
