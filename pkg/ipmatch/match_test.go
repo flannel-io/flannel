@@ -44,7 +44,7 @@ func TestLookupExtIface(t *testing.T) {
 	}()
 
 	t.Run("ByIfRegexForIPv4", func(t *testing.T) {
-		backendInterface, err := LookupExtIface("", `192\.168\.200\.\d+`, ipv4Stack, PublicIPOpts{})
+		backendInterface, err := LookupExtIface("", `192\.168\.200\.\d+`, "", ipv4Stack, PublicIPOpts{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -54,12 +54,12 @@ func TestLookupExtIface(t *testing.T) {
 			t.Fatalf("iface name not equal, expected=%v actual=%v", "dummy0", backendInterface.Iface.Name)
 		}
 		if backendInterface.IfaceAddr.String() != "192.168.200.128" {
-			t.Fatalf("iface addr not equal, expected=%v actual=%v", "192.168.200.128", backendInterface.IfaceAddr.String())
+			t.Fatalf("iface addr not equal, expected=%v actual=%v", "192.168.200.128", "", backendInterface.IfaceAddr.String())
 		}
 	})
 
 	t.Run("ByIfRegexForName", func(t *testing.T) {
-		backendInterface, err := LookupExtIface("", `dummy\d+`, ipv4Stack, PublicIPOpts{})
+		backendInterface, err := LookupExtIface("", `dummy\d+`, "", ipv4Stack, PublicIPOpts{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -74,7 +74,7 @@ func TestLookupExtIface(t *testing.T) {
 	})
 
 	t.Run("ByName", func(t *testing.T) {
-		backendInterface, err := LookupExtIface("dummy0", "", ipv4Stack, PublicIPOpts{})
+		backendInterface, err := LookupExtIface("dummy0", "", "", ipv4Stack, PublicIPOpts{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -89,7 +89,7 @@ func TestLookupExtIface(t *testing.T) {
 	})
 
 	t.Run("ByIPv4", func(t *testing.T) {
-		backendInterface, err := LookupExtIface("172.16.30.18", "", ipv4Stack, PublicIPOpts{})
+		backendInterface, err := LookupExtIface("172.16.30.18", "", "", ipv4Stack, PublicIPOpts{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -107,7 +107,7 @@ func TestLookupExtIface(t *testing.T) {
 		expectedIfaceName := "dummy0"
 		expectedIP := "172.16.30.18"
 		expectedPublicIP := "172.16.31.200"
-		backendInterface, err := LookupExtIface("", `172\.16\.30\.\d+`, ipv4Stack, PublicIPOpts{
+		backendInterface, err := LookupExtIface("", `172\.16\.30\.\d+`, "", ipv4Stack, PublicIPOpts{
 			PublicIP: expectedPublicIP,
 		})
 		if err != nil {
