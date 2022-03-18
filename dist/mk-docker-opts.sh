@@ -105,8 +105,8 @@ fi
 if [ -n ${FLANNEL_SUBNET} ];then
     dot_four=`echo ${FLANNEL_SUBNET}|cut -d. -f4|cut -d/ -f1`
     dot_four=$((${dot_four}-1))
-    subnets_pre=`echo ${subnets}|cut -d. -f 1,2,3`
-    subnets_lat=`echo ${subnets}|cut -d/ -f2`
+    subnets_pre=`echo ${FLANNEL_SUBNET}|cut -d. -f 1,2,3`
+    subnets_lat=`echo ${FLANNEL_SUBNET}|cut -d/ -f2`
     subnets=${subnets_pre}.${dot_four}/${subnets_lat}
     route_invalid=`ip route show|grep ${subnets}|grep via`
     if [ -n ${route_invalid} ];then
