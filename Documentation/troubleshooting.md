@@ -79,7 +79,7 @@ If your nodes do not have a podCIDR, then either use the `--pod-cidr` kubelet co
 
 If `kubeadm` is being used then pass `--pod-network-cidr=10.244.0.0/16` to `kubeadm init` which will ensure that all nodes are automatically assigned a `podCIDR`.
 
-It's possible to manually set the `podCIDR` for each node.
+It's possible (but not generally recommended) to manually set the `podCIDR` to a fixed value for each node. The node subnet ranges must not overlap.
 * `kubectl patch node <NODE_NAME> -p '{"spec":{"podCIDR":"<SUBNET>"}}'`
 
 ## Log messages
