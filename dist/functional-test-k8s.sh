@@ -27,7 +27,7 @@ setup_suite() {
 
     # Start etcd
     docker rm -f flannel-e2e-test-etcd >/dev/null 2>/dev/null
-    docker run --name=flannel-e2e-test-etcd -d -p 2379:2379 $ETCD_IMG etcd --listen-client-urls http://0.0.0.0:2379 --advertise-client-urls $etcd_endpt >/dev/null
+    docker run --name=flannel-e2e-test-etcd -d -p 2379:2379 -e ETCD_UNSUPPORTED_ARCH=${ARCH} $ETCD_IMG etcd --listen-client-urls http://0.0.0.0:2379 --advertise-client-urls $etcd_endpt >/dev/null
     sleep 1
 
     # Start a kubernetes API server
