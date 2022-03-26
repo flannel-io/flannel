@@ -110,6 +110,7 @@ if [ -n "${FLANNEL_SUBNET}" ];then
     subnets=${subnets_pre}.${dot_four}/${subnets_lat}
     route_invalid=`ip route show|grep ${subnets}|grep via`
     if [ -n "${route_invalid}" ];then
-        ip route del ${route_invalid}
+        echo "Your routing table already contains the subnet: ${route_invalid}" >&2
+	exit 1
     fi
 fi
