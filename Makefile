@@ -1,7 +1,7 @@
 .PHONY: test e2e-test cover gofmt gofmt-fix header-check clean tar.gz docker-push release docker-push-all flannel-git docker-manifest-amend docker-manifest-push
 
 # Registry used for publishing images
-REGISTRY?=quay.io/coreos/flannel
+REGISTRY?=docker.io/flannelcni/flannel
 QEMU_VERSION=v3.0.0
 
 # Default tag and architecture. Can be overridden
