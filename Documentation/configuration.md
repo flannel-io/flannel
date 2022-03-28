@@ -16,19 +16,19 @@ The value of the config is a JSON dictionary with the following keys:
 * `EnableIPv6` (bool): Enables ipv6 support
 
 * `SubnetLen` (integer): The size of the subnet allocated to each host.
-   Defaults to 24 (i.e. /24) unless `Network` was configured to be smaller than a /24 in which case it is one less than the network.
+   Defaults to 24 (i.e. /24) unless `Network` was configured to be smaller than a /22 in which case it is two less than the network.
 
 * `SubnetMin` (string): The beginning of IP range which the subnet allocation should start with.
-   Defaults to the first subnet of `Network`.
+   Defaults to the second subnet of `Network`.
 
 * `SubnetMax` (string): The end of the IP range at which the subnet allocation should end with.
    Defaults to the last subnet of `Network`.
 
 * `IPv6SubnetLen` (integer): The size of the ipv6 subnet allocated to each host.
-   Defaults to 64 (i.e. /64) unless `Ipv6Network` was configured to be smaller than a /64 in which case it is two less than the network.
+   Defaults to 64 (i.e. /64) unless `Ipv6Network` was configured to be smaller than a /62 in which case it is two less than the network.
 
 * `IPv6SubnetMin` (string): The beginning of IPv6 range which the subnet allocation should start with.
-   Defaults to the first subnet of `Ipv6Network`.
+   Defaults to the second subnet of `Ipv6Network`.
 
 * `IPv6SubnetMax` (string): The end of the IPv6 range at which the subnet allocation should end with.
    Defaults to the last subnet of `Ipv6Network`.
