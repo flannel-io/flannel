@@ -54,7 +54,7 @@ func TestLookupExtIface(t *testing.T) {
 			t.Fatalf("iface name not equal, expected=%v actual=%v", "dummy0", backendInterface.Iface.Name)
 		}
 		if backendInterface.IfaceAddr.String() != "192.168.200.128" {
-			t.Fatalf("iface addr not equal, expected=%v actual=%v", "192.168.200.128", "", backendInterface.IfaceAddr.String())
+			t.Fatalf("iface addr not equal, expected=%v actual=%v", "192.168.200.128", backendInterface.IfaceAddr.String())
 		}
 	})
 
