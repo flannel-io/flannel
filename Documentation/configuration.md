@@ -69,7 +69,7 @@ The following configuration illustrates the use of most options with `udp` backe
 --kube-subnet-mgr: Contact the Kubernetes API for subnet assignment instead of etcd.
 --iface="": interface to use (IP or name) for inter-host communication. Defaults to the interface for the default route on the machine. This can be specified multiple times to check each option in order. Returns the first match found.
 --iface-regex="": regex expression to match the first interface to use (IP or name) for inter-host communication. If unspecified, will default to the interface for the default route on the machine. This can be specified multiple times to check each regex in order. Returns the first match found. This option is superseded by the iface option and will only be used if nothing matches any option specified in the iface options.
---iface-can-reach="": detect interface to use (IP or name) for inter-host communication based on which will be used for provided IP. This is exactly the interface to use of command "ip route get <ip-address>"
+--iface-can-reach="": detect interface to use (IP or name) for inter-host communication based on which will be used for provided IP. This is exactly the interface to use of command "ip route get <ip-address>" (example: --iface-can-reach=192.168.1.1 results the interface can be reached to 192.168.1.1 will be selected)
 --iptables-resync=5: resync period for iptables rules, in seconds. Defaults to 5 seconds, if you see a large amount of contention for the iptables lock increasing this will probably help.
 --subnet-file=/run/flannel/subnet.env: filename where env variables (subnet and MTU values) will be written to.
 --net-config-path=/etc/kube-flannel/net-conf.json: path to the network configuration file to use
