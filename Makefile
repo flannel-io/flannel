@@ -37,7 +37,7 @@ clean:
 	rm -f dist/qemu-*
 
 dist/flanneld: $(shell find . -type f  -name '*.go')
-	go build -o dist/flanneld \
+	CGO_ENABLED=$(CGO_ENABLED) go build -o dist/flanneld \
 	  -ldflags '-s -w -X github.com/flannel-io/flannel/version.Version=$(TAG) -extldflags "-static"'
 
 dist/flanneld.exe: $(shell find . -type f  -name '*.go')
@@ -47,7 +47,7 @@ dist/flanneld.exe: $(shell find . -type f  -name '*.go')
 # This will build flannel natively using golang image
 dist/flanneld-$(ARCH): dist/qemu-$(ARCH)-static
 	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x mips64le]
-	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) -e GOCACHE=/go \
+	docker run --rm -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) -e GOCACHE=/go \
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR)/dist/qemu-$(ARCH)-static:/usr/bin/qemu-$(ARCH)-static \
 		-v $(CURDIR):/go/src/github.com/flannel-io/flannel:ro \
@@ -101,7 +101,7 @@ header-check:
 # Throw an error if gofmt finds problems.
 # "read" will return a failure return code if there is no output. This is inverted wth the "!"
 gofmt:
-	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
+	docker run --rm -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR):/go/src/github.com/flannel-io/flannel \
 		-v $(CURDIR)/dist:/go/src/github.com/flannel-io/flannel/dist \
@@ -110,12 +110,17 @@ gofmt:
 		! gofmt -d $(PACKAGES) 2>&1 | read'
 
 verify-modules:
-	$(if $(shell which go),,$(error "go not found in PATH"))
-	go mod tidy
-	go vet
+	docker run --rm -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
+                -u $(shell id -u):$(shell id -g) \
+                -v $(CURDIR):/go/src/github.com/flannel-io/flannel \
+                -v $(CURDIR)/dist:/go/src/github.com/flannel-io/flannel/dist \
+                golang:$(GO_VERSION) /bin/bash -c '\
+                cd /go/src/github.com/flannel-io/flannel && \
+		!go mod tidy 2>&1|read && \
+		!go vet 2>&1|read'
 
 gofmt-fix:
-	docker run -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
+	docker run --rm -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR):/go/src/github.com/flannel-io/flannel \
 		-v $(CURDIR)/dist:/go/src/github.com/flannel-io/flannel/dist \
@@ -133,13 +138,13 @@ ifneq ($(ARCH),amd64)
 	$(MAKE) dist/qemu-$(ARCH)-static
 endif
 	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x mips64le]
-	docker run -e GOARM=$(GOARM) -e GOCACHE=/go \
+	docker run --rm -e GOARM=$(GOARM) -e CGO_ENABLED=$(CGO_ENABLED) -e GOCACHE=/go \
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR):/go/src/github.com/flannel-io/flannel:ro \
 		-v $(CURDIR)/dist:/go/src/github.com/flannel-io/flannel/dist \
 		golang:$(GO_VERSION) /bin/bash -c '\
 		cd /go/src/github.com/flannel-io/flannel && \
-		CGO_ENABLED=1 make -e dist/flanneld && \
+		make -e dist/flanneld && \
 		mv dist/flanneld dist/flanneld-$(ARCH)'
 	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
 
@@ -242,7 +247,7 @@ flannel-git:
 install:
 	# This is intended as just a developer convenience to help speed up non-containerized builds
 	# It is NOT how you install flannel
-	CGO_ENABLED=1 go install -v github.com/flannel-io/flannel
+	CGO_ENABLED=$(CGO_ENABLED) go install -v github.com/flannel-io/flannel
 
 minikube-start:
 	minikube start --network-plugin cni
@@ -270,6 +275,7 @@ run-etcd: stop-etcd
 	docker run --detach \
 	-p 2379:2379 \
 	--name flannel-etcd quay.io/coreos/etcd \
+	-e ETCD_UNSUPPORTED_ARCH=$(ARCH) \
 	etcd \
 	--advertise-client-urls "http://$(LOCAL_IP_ENV):2379,http://127.0.0.1:2379,http://$(LOCAL_IP_ENV):4001,http://127.0.0.1:4001" \
 	--listen-client-urls "http://0.0.0.0:2379,http://0.0.0.0:4001"
