@@ -88,6 +88,8 @@ The command line options outlined above can also be specified via environment va
 For example `--etcd-endpoints=http://10.0.0.2:2379` is equivalent to `FLANNELD_ETCD_ENDPOINTS=http://10.0.0.2:2379` environment variable.
 Any command line option can be turned into an environment variable by prefixing it with `FLANNELD_`, stripping leading dashes, converting to uppercase and replacing all other dashes to underscores.
 
+`EVENT_QUEUE_DEPTH` is another environment variable to indicate the kubernetes scale. Set `EVENT_QUEUE_DEPTH` to adapter your cluster node numbers. If not set, default value is 5000. 
+
 ## Health Check
 
 Flannel provides a health check http endpoint `healthz`. Currently this endpoint will blindly
