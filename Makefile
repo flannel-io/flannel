@@ -23,7 +23,7 @@ K8S_VERSION=v1.22.3
 GOARM=7
 
 # These variables can be overridden by setting an environment variable.
-TEST_PACKAGES?=pkg/ip subnet subnet/etcdv2 network backend
+TEST_PACKAGES?=pkg/ip subnet subnet/etcdv2 subnet/kube network backend
 TEST_PACKAGES_EXPANDED=$(TEST_PACKAGES:%=github.com/flannel-io/flannel/%)
 PACKAGES?=$(TEST_PACKAGES) network
 PACKAGES_EXPANDED=$(PACKAGES:%=github.com/flannel-io/flannel/%)
