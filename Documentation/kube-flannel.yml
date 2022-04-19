@@ -1,5 +1,5 @@
 ---
-apiVersion: policy/v1beta1
+apiVersion: apps/v1
 kind: PodSecurityPolicy
 metadata:
   name: psp.flannel.unprivileged
