@@ -188,7 +188,7 @@ func LookupExtIface(ifname string, ifregexS string, ifcanreach string, ipStack i
 		}
 	} else if len(ifcanreach) > 0 {
 		log.Info("Determining interface to use based on given ifcanreach: ", ifcanreach)
-		if iface, err = ip.GetInterfaceBySpecificIPRouting(net.ParseIP(ifcanreach)); err != nil {
+		if iface, ifaceAddr, err = ip.GetInterfaceBySpecificIPRouting(net.ParseIP(ifcanreach)); err != nil {
 			return nil, fmt.Errorf("failed to get ifcanreach based interface: %s", err)
 		}
 	} else {
