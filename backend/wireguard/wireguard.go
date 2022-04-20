@@ -29,6 +29,15 @@ import (
 	"golang.org/x/net/context"
 )
 
+type Mode string
+
+const (
+	Separate Mode = "separate"
+	Auto     Mode = "auto"
+	Ipv4     Mode = "ipv4"
+	Ipv6     Mode = "ipv6"
+)
+
 func init() {
 	backend.Register("wireguard", New)
 }
@@ -47,7 +56,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return be, nil
 }
 
-func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, dev, v6Dev *wgDevice, publicKey string) (*subnet.LeaseAttrs, error) {
+func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, enableIPv4, enableIPv6 bool, publicKey string) (*subnet.LeaseAttrs, error) {
 	data, err := json.Marshal(&wireguardLeaseAttrs{
 		PublicKey: publicKey,
 	})
@@ -59,17 +68,36 @@ func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, dev, v6Dev *wgDevice, pu
 		BackendType: "wireguard",
 	}
 
-	if publicIP != nil && dev != nil {
+	if publicIP != nil {
 		leaseAttrs.PublicIP = ip.FromIP(publicIP)
+	}
+
+	if enableIPv4 {
 		leaseAttrs.BackendData = json.RawMessage(data)
 	}
 
-	if publicIPv6 != nil && v6Dev != nil {
+	if publicIPv6 != nil {
 		leaseAttrs.PublicIPv6 = ip.FromIP6(publicIPv6)
+	}
+
+	if enableIPv6 {
 		leaseAttrs.BackendV6Data = json.RawMessage(data)
 	}
 
 	return leaseAttrs, nil
+}
+
+func createWGDev(ctx context.Context, wg *sync.WaitGroup, name string, psk string, keepalive *time.Duration, listenPort int) (*wgDevice, error) {
+	devAttrs := wgDeviceAttrs{
+		keepalive:  keepalive,
+		listenPort: listenPort,
+		name:       name,
+	}
+	err := devAttrs.setupKeys(psk)
+	if err != nil {
+		return nil, err
+	}
+	return newWGDevice(&devAttrs, ctx, wg)
 }
 
 func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
@@ -79,10 +107,12 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 		ListenPortV6                int
 		PSK                         string
 		PersistentKeepaliveInterval time.Duration
+		Mode                        Mode
 	}{
 		ListenPort:                  51820,
 		ListenPortV6:                51821,
 		PersistentKeepaliveInterval: 0,
+		Mode:                        Separate,
 	}
 
 	if len(config.Backend) > 0 {
@@ -96,43 +126,32 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	var err error
 	var dev, v6Dev *wgDevice
 	var publicKey string
-	if config.EnableIPv4 {
-		devAttrs := wgDeviceAttrs{
-			keepalive:  &keepalive,
-			listenPort: cfg.ListenPort,
-			name:       "flannel-wg",
+	if cfg.Mode == Separate {
+		if config.EnableIPv4 {
+			dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort)
+			if err != nil {
+				return nil, err
+			}
+			publicKey = dev.attrs.publicKey.String()
 		}
-		err := devAttrs.setupKeys(cfg.PSK)
+		if config.EnableIPv6 {
+			v6Dev, err = createWGDev(ctx, wg, "flannel-wg-v6", cfg.PSK, &keepalive, cfg.ListenPortV6)
+			if err != nil {
+				return nil, err
+			}
+			publicKey = dev.attrs.publicKey.String()
+		}
+	} else if cfg.Mode == Auto || cfg.Mode == Ipv4 || cfg.Mode == Ipv6 {
+		dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort)
 		if err != nil {
 			return nil, err
 		}
-		dev, err = newWGDevice(&devAttrs, ctx, wg)
-		if err != nil {
-			return nil, err
-		}
-		publicKey = devAttrs.publicKey.String()
+		publicKey = dev.attrs.publicKey.String()
+	} else {
+		return nil, fmt.Errorf("No valid Mode configured")
 	}
 
-	// We create a second network device for IPv6 to ensure the inter-host communication is based on IPv6.
-	// We are required to do this because wireguard does not allow to have a peer with multiple endpoints.
-	if config.EnableIPv6 {
-		v6DevAttrs := wgDeviceAttrs{
-			keepalive:  &keepalive,
-			listenPort: cfg.ListenPortV6,
-			name:       "flannel-wg-v6",
-		}
-		err := v6DevAttrs.setupKeys(cfg.PSK)
-		if err != nil {
-			return nil, err
-		}
-		v6Dev, err = newWGDevice(&v6DevAttrs, ctx, wg)
-		if err != nil {
-			return nil, err
-		}
-		publicKey = v6DevAttrs.publicKey.String()
-	}
-
-	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, be.extIface.ExtV6Addr, dev, v6Dev, publicKey)
+	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, be.extIface.ExtV6Addr, config.EnableIPv4, config.EnableIPv6, publicKey)
 	if err != nil {
 		return nil, err
 	}
@@ -155,11 +174,15 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	}
 
 	if config.EnableIPv6 {
-		err = v6Dev.ConfigureV6(lease.IPv6Subnet.IP, config.IPv6Network)
+		if cfg.Mode == Separate {
+			err = v6Dev.ConfigureV6(lease.IPv6Subnet.IP, config.IPv6Network)
+		} else {
+			err = dev.ConfigureV6(lease.IPv6Subnet.IP, config.IPv6Network)
+		}
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return newNetwork(be.sm, be.extIface, dev, v6Dev, lease)
+	return newNetwork(be.sm, be.extIface, dev, v6Dev, cfg.Mode, lease)
 }

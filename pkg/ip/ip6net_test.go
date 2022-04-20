@@ -75,6 +75,27 @@ func TestIP6(t *testing.T) {
 	} else if string(j) != `"fc00::1"` {
 		t.Error("Marshal of IP6 failed with unexpected value: ", j)
 	}
+
+	addresses := []*struct {
+		ip      string
+		private bool
+	}{
+		{"fc00::1", true},
+		{"fcff::1", true},
+		{"fd00::1", true},
+		{"fdff::1", true},
+
+		{"2001::", false},
+		{"fe00::", false},
+	}
+
+	for _, address := range addresses {
+		ip := mkIP6(address.ip)
+		is_private := ip.IsPrivate()
+		if is_private != address.private {
+			t.Errorf("%v misdetected expected private=%v got private=%v", address.ip, address.private, is_private)
+		}
+	}
 }
 
 func TestIP6Net(t *testing.T) {
