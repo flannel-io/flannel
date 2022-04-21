@@ -239,8 +239,9 @@ func GetInterfaceBySpecificIPRouting(ip net.IP) (*net.Interface, net.IP, error) 
 		iface, err := net.InterfaceByIndex(route.LinkIndex)
 		if err != nil {
 			return nil, nil, fmt.Errorf("couldn't lookup interface: %v", err)
+		} else {
+			return iface, route.Src, nil
 		}
-		return iface, route.Src, nil
 	}
 
 	return nil, nil, errors.New("No interface with given IP found")
