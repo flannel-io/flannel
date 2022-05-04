@@ -101,3 +101,16 @@ done
 if [ "$combined_opts" = true ]; then
 	echo "${combined_opts_key}=\"${docker_opts}\"" >>$docker_env
 fi
+
+if [ -n "${FLANNEL_SUBNET}" ];then
+    dot_four=`echo ${FLANNEL_SUBNET}|cut -d. -f4|cut -d/ -f1`
+    dot_four=$((${dot_four}-1))
+    subnets_pre=`echo ${FLANNEL_SUBNET}|cut -d. -f 1,2,3`
+    subnets_lat=`echo ${FLANNEL_SUBNET}|cut -d/ -f2`
+    subnets=${subnets_pre}.${dot_four}/${subnets_lat}
+    route_invalid=`ip route show|grep ${subnets}|grep via`
+    if [ -n "${route_invalid}" ];then
+        echo "Your routing table already contains the subnet: ${route_invalid}" >&2
+	exit 1
+    fi
+fi
