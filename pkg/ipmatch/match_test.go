@@ -36,7 +36,9 @@ func TestLookupExtIface(t *testing.T) {
 	execOrFail("sudo", "ip", "addr", "add", "192.168.200.128", "dev", "dummy0")
 	execOrFail("sudo", "ip", "addr", "add", "172.16.30.18", "dev", "dummy0")
 	execOrFail("sudo", "ip", "addr", "add", "172.16.31.200", "dev", "dummy0")
+	execOrFail("sudo", "ip", "addr", "add", "172.16.32.100", "dev", "dummy0")
 	execOrFail("sudo", "ip", "link", "set", "dummy0", "up")
+	execOrFail("sudo", "ip", "route", "add", "172.16.32.254", "via", "172.16.32.100", "dev", "dummy0")
 
 	defer func() {
 		_ = exec.Command("sudo", "ip", "link", "set", "dummy0", "down").Run()
@@ -44,7 +46,7 @@ func TestLookupExtIface(t *testing.T) {
 	}()
 
 	t.Run("ByIfRegexForIPv4", func(t *testing.T) {
-		backendInterface, err := LookupExtIface("", `192\.168\.200\.\d+`, ipv4Stack, PublicIPOpts{})
+		backendInterface, err := LookupExtIface("", `192\.168\.200\.\d+`, "", ipv4Stack, PublicIPOpts{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -59,7 +61,7 @@ func TestLookupExtIface(t *testing.T) {
 	})
 
 	t.Run("ByIfRegexForName", func(t *testing.T) {
-		backendInterface, err := LookupExtIface("", `dummy\d+`, ipv4Stack, PublicIPOpts{})
+		backendInterface, err := LookupExtIface("", `dummy\d+`, "", ipv4Stack, PublicIPOpts{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -74,7 +76,7 @@ func TestLookupExtIface(t *testing.T) {
 	})
 
 	t.Run("ByName", func(t *testing.T) {
-		backendInterface, err := LookupExtIface("dummy0", "", ipv4Stack, PublicIPOpts{})
+		backendInterface, err := LookupExtIface("dummy0", "", "", ipv4Stack, PublicIPOpts{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -89,7 +91,7 @@ func TestLookupExtIface(t *testing.T) {
 	})
 
 	t.Run("ByIPv4", func(t *testing.T) {
-		backendInterface, err := LookupExtIface("172.16.30.18", "", ipv4Stack, PublicIPOpts{})
+		backendInterface, err := LookupExtIface("172.16.30.18", "", "", ipv4Stack, PublicIPOpts{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -107,7 +109,7 @@ func TestLookupExtIface(t *testing.T) {
 		expectedIfaceName := "dummy0"
 		expectedIP := "172.16.30.18"
 		expectedPublicIP := "172.16.31.200"
-		backendInterface, err := LookupExtIface("", `172\.16\.30\.\d+`, ipv4Stack, PublicIPOpts{
+		backendInterface, err := LookupExtIface("", `172\.16\.30\.\d+`, "", ipv4Stack, PublicIPOpts{
 			PublicIP: expectedPublicIP,
 		})
 		if err != nil {
@@ -123,6 +125,23 @@ func TestLookupExtIface(t *testing.T) {
 		}
 		if backendInterface.ExtAddr.String() != expectedPublicIP {
 			t.Fatalf("iface addr not equal, expected=%v actual=%v", expectedPublicIP, backendInterface.ExtAddr.String())
+		}
+	})
+
+	t.Run("ByIfCanReach", func(t *testing.T) {
+		expectedIfaceName := "dummy0"
+		expectedIP := "172.16.32.100"
+		backendInterface, err := LookupExtIface("", "", "172.16.32.254", ipv4Stack, PublicIPOpts{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("backendInterface=%+v iface=%+v", backendInterface, *backendInterface.Iface)
+
+		if backendInterface.Iface.Name != expectedIfaceName {
+			t.Fatalf("iface name not equal, expected=%v actual=%v", expectedIfaceName, backendInterface.Iface.Name)
+		}
+		if backendInterface.IfaceAddr.String() != expectedIP {
+			t.Fatalf("iface addr not equal, expected=%v actual=%v", expectedIP, backendInterface.IfaceAddr.String())
 		}
 	})
 }
