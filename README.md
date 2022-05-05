@@ -32,7 +32,9 @@ Though not required, it's recommended that flannel uses the Kubernetes API as it
 Flannel can be added to any existing Kubernetes cluster though it's simplest to add `flannel` before any pods using the pod network have been started.
 
 For Kubernetes v1.17+
-`kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml`
+
+1. Make sure a `flanneld` binary exists at `/opt/bin/flanneld` on each node
+2. `kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml`
 
 See [Kubernetes](Documentation/kubernetes.md) for more details.
 
