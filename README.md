@@ -34,6 +34,8 @@ Flannel can be added to any existing Kubernetes cluster though it's simplest to 
 For Kubernetes v1.17+
 `kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml`
 
+If you use custom `podCIDR` (not `10.244.0.0/16`) you first need to download the above manifest and modify the network to match your one.
+
 See [Kubernetes](Documentation/kubernetes.md) for more details.
 
 ## Getting started on Docker

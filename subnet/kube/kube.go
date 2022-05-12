@@ -362,9 +362,17 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		Expiration: time.Now().Add(24 * time.Hour),
 	}
 	if cidr != nil && ksm.enableIPv4 {
+		if !containsCIDR(ksm.subnetConf.Network.ToIPNet(), cidr) {
+			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q PodCIDR of the %q node.", ksm.subnetConf.Network, cidr, ksm.nodeName)
+		}
+
 		lease.Subnet = ip.FromIPNet(cidr)
 	}
 	if ipv6Cidr != nil {
+		if !containsCIDR(ksm.subnetConf.IPv6Network.ToIPNet(), ipv6Cidr) {
+			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q IPv6 PodCIDR of the %q.", ksm.subnetConf.IPv6Network, ipv6Cidr, ksm.nodeName)
+		}
+
 		lease.IPv6Subnet = ip.FromIP6Net(ipv6Cidr)
 	}
 	//TODO - only vxlan, host-gw and wireguard backends support dual stack now.
@@ -464,4 +472,10 @@ func (ksm *kubeSubnetManager) setNodeNetworkUnavailableFalse(ctx context.Context
 	patch := []byte(fmt.Sprintf(`{"status":{"conditions":%s}}`, raw))
 	_, err = ksm.client.CoreV1().Nodes().PatchStatus(ctx, ksm.nodeName, patch)
 	return err
+}
+
+func containsCIDR(ipnet1, ipnet2 *net.IPNet) bool {
+	ones1, _ := ipnet1.Mask.Size()
+	ones2, _ := ipnet2.Mask.Size()
+	return ones1 <= ones2 && ipnet1.Contains(ipnet2.IP)
 }
