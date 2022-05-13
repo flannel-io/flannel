@@ -34,7 +34,7 @@ import (
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/ipmatch"
 	"github.com/flannel-io/flannel/subnet"
-	"github.com/flannel-io/flannel/subnet/etcdv2"
+	etcd "github.com/flannel-io/flannel/subnet/etcd"
 	"github.com/flannel-io/flannel/subnet/kube"
 	"github.com/flannel-io/flannel/version"
 	"golang.org/x/net/context"
@@ -175,7 +175,7 @@ func newSubnetManager(ctx context.Context) (subnet.Manager, error) {
 		return kube.NewSubnetManager(ctx, opts.kubeApiUrl, opts.kubeConfigFile, opts.kubeAnnotationPrefix, opts.netConfPath, opts.setNodeNetworkUnavailable)
 	}
 
-	cfg := &etcdv2.EtcdConfig{
+	cfg := &etcd.EtcdConfig{
 		Endpoints: strings.Split(opts.etcdEndpoints, ","),
 		Keyfile:   opts.etcdKeyfile,
 		Certfile:  opts.etcdCertfile,
@@ -189,7 +189,7 @@ func newSubnetManager(ctx context.Context) (subnet.Manager, error) {
 	prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
 	prevIPv6Subnet := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_SUBNET")
 
-	return etcdv2.NewLocalManager(cfg, prevSubnet, prevIPv6Subnet)
+	return etcd.NewLocalManager(ctx, cfg, prevSubnet, prevIPv6Subnet)
 }
 
 func main() {

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package etcdv2
+package etcd
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ import (
 	"github.com/flannel-io/flannel/pkg/ip"
 	. "github.com/flannel-io/flannel/subnet"
 	"github.com/jonboulle/clockwork"
-	etcd "go.etcd.io/etcd/client"
+	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"golang.org/x/net/context"
 )
 
@@ -63,13 +63,13 @@ func (n *netwk) subnetEventsChan(sn ip.IP4Net) chan event {
 
 type event struct {
 	evt   Event
-	index uint64
+	index int64
 }
 
 type MockSubnetRegistry struct {
 	mux     sync.Mutex
 	network *netwk
-	index   uint64
+	index   int64
 }
 
 func NewMockRegistry(config string, initialSubnets []Lease) *MockSubnetRegistry {
@@ -94,7 +94,7 @@ func (msr *MockSubnetRegistry) setConfig(config string) error {
 	return nil
 }
 
-func (msr *MockSubnetRegistry) getSubnets(ctx context.Context) ([]Lease, uint64, error) {
+func (msr *MockSubnetRegistry) getSubnets(ctx context.Context) ([]Lease, int64, error) {
 	//msr.mux.Lock()
 	//defer msr.mux.Unlock()
 
@@ -104,7 +104,7 @@ func (msr *MockSubnetRegistry) getSubnets(ctx context.Context) ([]Lease, uint64,
 }
 
 // TODO ignores ipv6
-func (msr *MockSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) (*Lease, uint64, error) {
+func (msr *MockSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) (*Lease, int64, error) {
 	msr.mux.Lock()
 	defer msr.mux.Unlock()
 
@@ -123,10 +123,7 @@ func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, s
 
 	// check for existing
 	if _, _, err := msr.network.findSubnet(sn); err == nil {
-		return time.Time{}, etcd.Error{
-			Code:  etcd.ErrorCodeNodeExist,
-			Index: msr.index,
-		}
+		return time.Time{}, rpctypes.ErrGRPCKeyNotFound
 	}
 
 	msr.index += 1
@@ -155,7 +152,7 @@ func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, s
 }
 
 // TODO ignores ipv6
-func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *LeaseAttrs, ttl time.Duration, asof uint64) (time.Time, error) {
+func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *LeaseAttrs, ttl time.Duration, asof int64) (time.Time, error) {
 	msr.mux.Lock()
 	defer msr.mux.Unlock()
 
@@ -209,19 +206,14 @@ func (msr *MockSubnetRegistry) deleteSubnet(ctx context.Context, sn ip.IP4Net, s
 	return nil
 }
 
-func (msr *MockSubnetRegistry) watchSubnets(ctx context.Context, since uint64) (Event, uint64, error) {
+func (msr *MockSubnetRegistry) watchSubnets(ctx context.Context, since int64) (Event, int64, error) {
 	for {
 		msr.mux.Lock()
 		index := msr.index
 		msr.mux.Unlock()
 
 		if since < index {
-			return Event{}, 0, etcd.Error{
-				Code:    etcd.ErrorCodeEventIndexCleared,
-				Cause:   "out of date",
-				Message: "cursor is out of date",
-				Index:   index,
-			}
+			return Event{}, 0, rpctypes.ErrGRPCCompacted
 		}
 
 		select {
@@ -237,19 +229,14 @@ func (msr *MockSubnetRegistry) watchSubnets(ctx context.Context, since uint64) (
 }
 
 // TODO ignores ip6
-func (msr *MockSubnetRegistry) watchSubnet(ctx context.Context, since uint64, sn ip.IP4Net, sn6 ip.IP6Net) (Event, uint64, error) {
+func (msr *MockSubnetRegistry) watchSubnet(ctx context.Context, since int64, sn ip.IP4Net, sn6 ip.IP6Net) (Event, int64, error) {
 	for {
 		msr.mux.Lock()
 		index := msr.index
 		msr.mux.Unlock()
 
 		if since < index {
-			return Event{}, msr.index, etcd.Error{
-				Code:    etcd.ErrorCodeEventIndexCleared,
-				Cause:   "out of date",
-				Message: "cursor is out of date",
-				Index:   index,
-			}
+			return Event{}, msr.index, rpctypes.ErrGRPCCompacted
 		}
 
 		select {

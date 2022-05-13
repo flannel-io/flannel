@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package etcdv2
+package etcd
 
 import (
 	"github.com/flannel-io/flannel/pkg/ip"

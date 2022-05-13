@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package etcdv2
+package etcd
 
 import (
+	"bytes"
 	"fmt"
 	"sync"
 	"testing"
@@ -22,27 +23,30 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	. "github.com/flannel-io/flannel/subnet"
-	etcd "go.etcd.io/etcd/client"
+	etcd "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/tests/v3/integration"
 	"golang.org/x/net/context"
 )
 
-func newTestEtcdRegistry(t *testing.T) (Registry, *mockEtcd) {
+func newTestEtcdRegistry(t *testing.T, ctx context.Context, client *etcd.Client) (Registry, etcd.KV) {
 	cfg := &EtcdConfig{
 		Endpoints: []string{"http://127.0.0.1:4001", "http://127.0.0.1:2379"},
 		Prefix:    "/coreos.com/network",
 	}
 
-	r, err := newEtcdSubnetRegistry(cfg, func(c *EtcdConfig) (etcd.KeysAPI, error) {
-		return newMockEtcd(), nil
-	})
+	r, err := newEtcdSubnetRegistry(ctx, cfg,
+		func(ctx context.Context, c *EtcdConfig) (*etcd.Client, etcd.KV, error) {
+			return client, client.KV, nil
+		},
+	)
 	if err != nil {
 		t.Fatal("Failed to create etcd subnet registry")
 	}
 
-	return r, r.(*etcdSubnetRegistry).cli.(*mockEtcd)
+	return r, r.(*etcdSubnetRegistry).kvApi
 }
 
-func watchSubnets(t *testing.T, r Registry, ctx context.Context, sn ip.IP4Net, nextIndex uint64, result chan error) {
+func watchSubnets(t *testing.T, r Registry, ctx context.Context, sn ip.IP4Net, nextIndex int64, result chan error) {
 	type leaseEvent struct {
 		etype  EventType
 		subnet ip.IP4Net
@@ -80,7 +84,7 @@ func watchSubnets(t *testing.T, r Registry, ctx context.Context, sn ip.IP4Net, n
 				return
 			}
 		case isIndexTooSmall(err):
-			nextIndex = err.(etcd.Error).Index
+			nextIndex = nextIndex + 1
 
 		default:
 			result <- fmt.Errorf("Error watching subnet leases: %v", err)
@@ -90,9 +94,16 @@ func watchSubnets(t *testing.T, r Registry, ctx context.Context, sn ip.IP4Net, n
 }
 
 func TestEtcdRegistry(t *testing.T) {
-	r, m := newTestEtcdRegistry(t)
+	integration.BeforeTestExternal(t)
+
+	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1})
+	defer clus.Terminate(t)
+
+	client := clus.RandClient()
 
 	ctx, _ := context.WithCancel(context.Background())
+
+	r, kvApi := newTestEtcdRegistry(t, ctx, client)
 
 	_, err := r.getNetworkConfig(ctx)
 	if err == nil {
@@ -102,7 +113,7 @@ func TestEtcdRegistry(t *testing.T) {
 	// Populate etcd with a network
 	netKey := "/coreos.com/network/config"
 	netValue := "{ \"Network\": \"10.1.0.0/16\", \"Backend\": { \"Type\": \"host-gw\" } }"
-	_, err = m.Create(ctx, netKey, netValue)
+	_, err = kvApi.Put(ctx, netKey, netValue)
 	if err != nil {
 		t.Fatal("Failed to create new entry", err)
 	}
@@ -127,7 +138,7 @@ func TestEtcdRegistry(t *testing.T) {
 	result := make(chan error, 1)
 	go func() {
 		startWg.Done()
-		watchSubnets(t, r, ctx, sn, m.index, result)
+		watchSubnets(t, r, ctx, sn, 0, result)
 		wg.Done()
 	}()
 
@@ -145,15 +156,16 @@ func TestEtcdRegistry(t *testing.T) {
 	}
 
 	// Make sure the lease got created
-	resp, err := m.Get(ctx, "/coreos.com/network/subnets/10.1.5.0-24", nil)
+	resp, err := kvApi.Get(ctx, "/coreos.com/network/subnets/10.1.5.0-24")
 	if err != nil {
 		t.Fatalf("Failed to verify subnet lease directly in etcd: %v", err)
 	}
-	if resp == nil || resp.Node == nil {
+	if resp == nil || resp.Kvs == nil {
 		t.Fatal("Failed to retrive node in subnet lease")
 	}
-	if resp.Node.Value != "{\"PublicIP\":\"1.2.3.4\",\"PublicIPv6\":null}" {
-		t.Fatalf("Unexpected subnet lease node %s value %s", resp.Node.Key, resp.Node.Value)
+
+	if len(resp.Kvs) != 1 || !bytes.Equal(resp.Kvs[0].Value, []byte("{\"PublicIP\":\"1.2.3.4\",\"PublicIPv6\":null}")) {
+		t.Fatalf("Unexpected subnet lease node %s value %s", resp.Kvs[0].Key, resp.Kvs[0].Value)
 	}
 
 	leases, _, err := r.getSubnets(ctx)
@@ -181,8 +193,11 @@ func TestEtcdRegistry(t *testing.T) {
 	}
 
 	// Make sure the lease got deleted
-	_, err = m.Get(ctx, "/coreos.com/network/subnets/10.1.5.0-24", nil)
-	if err == nil {
+	resp, err = kvApi.Get(ctx, "/coreos.com/network/subnets/10.1.5.0-24")
+	if err != nil {
+		t.Fatal("Failed to get Subnet" + err.Error())
+	}
+	if len(resp.Kvs) > 0 {
 		t.Fatal("Unexpected success getting deleted subnet")
 	}
 

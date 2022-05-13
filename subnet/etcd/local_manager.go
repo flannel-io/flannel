@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package etcdv2
+package etcd
 
 import (
 	"errors"
@@ -22,7 +22,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	. "github.com/flannel-io/flannel/subnet"
-	etcd "go.etcd.io/etcd/client"
+	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"golang.org/x/net/context"
 	log "k8s.io/klog"
 )
@@ -39,23 +39,22 @@ type LocalManager struct {
 }
 
 type watchCursor struct {
-	index uint64
+	index int64
 }
 
 func isErrEtcdNodeExist(e error) bool {
 	if e == nil {
 		return false
 	}
-	etcdErr, ok := e.(etcd.Error)
-	return ok || etcdErr.Code == etcd.ErrorCodeNodeExist
+	return e == rpctypes.ErrDuplicateKey
 }
 
 func (c watchCursor) String() string {
-	return strconv.FormatUint(c.index, 10)
+	return strconv.FormatInt(c.index, 10)
 }
 
-func NewLocalManager(config *EtcdConfig, prevSubnet ip.IP4Net, prevIPv6Subnet ip.IP6Net) (Manager, error) {
-	r, err := newEtcdSubnetRegistry(config, nil)
+func NewLocalManager(ctx context.Context, config *EtcdConfig, prevSubnet ip.IP4Net, prevIPv6Subnet ip.IP6Net) (Manager, error) {
+	r, err := newEtcdSubnetRegistry(ctx, config, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -262,14 +261,14 @@ func (m *LocalManager) RenewLease(ctx context.Context, lease *Lease) error {
 	return nil
 }
 
-func getNextIndex(cursor interface{}) (uint64, error) {
-	nextIndex := uint64(0)
+func getNextIndex(cursor interface{}) (int64, error) {
+	nextIndex := int64(0)
 
 	if wc, ok := cursor.(watchCursor); ok {
 		nextIndex = wc.index
 	} else if s, ok := cursor.(string); ok {
 		var err error
-		nextIndex, err = strconv.ParseUint(s, 10, 64)
+		nextIndex, err = strconv.ParseInt(s, 10, 64)
 		if err != nil {
 			return 0, fmt.Errorf("failed to parse cursor: %v", err)
 		}
@@ -353,8 +352,7 @@ func (m *LocalManager) WatchLeases(ctx context.Context, cursor interface{}) (Lea
 }
 
 func isIndexTooSmall(err error) bool {
-	etcdErr, ok := err.(etcd.Error)
-	return ok && etcdErr.Code == etcd.ErrorCodeEventIndexCleared
+	return err == rpctypes.ErrGRPCCompacted
 }
 
 // leasesWatchReset is called when incremental lease watch failed and we need to grab a snapshot

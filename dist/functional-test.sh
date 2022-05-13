@@ -44,10 +44,10 @@ setup() {
 }
 
 teardown() {
-    echo "########## logs flannel-e2e-test-flannel1 for ##########" 2>&1
+    echo "########## logs for flannel-e2e-test-flannel1 container ##########" 2>&1
     docker logs flannel-e2e-test-flannel1
     docker rm -f flannel-e2e-test-flannel1 flannel-e2e-test-flannel2 flannel-e2e-test-flannel1-iperf flannel-host1 flannel-host2 > /dev/null 2>&1
-    docker run --rm $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt rm /coreos.com/network/config > /dev/null 2>&1
+    docker run --rm -e ETCDCTL_API=3 $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt rm /coreos.com/network/config > /dev/null 2>&1
 }
 
 write_config_etcd() {
@@ -59,7 +59,7 @@ write_config_etcd() {
         flannel_conf="{ \"Network\": \"$FLANNEL_NET\", \"Backend\": { \"Type\": \"${backend}\" } }"
     fi
 
-    while ! docker run --rm $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt set /coreos.com/network/config "$flannel_conf" >/dev/null
+    while ! docker run --rm -e ETCDCTL_API=3 $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt put /coreos.com/network/config "$flannel_conf" >/dev/null
     do
         sleep 0.1
     done
@@ -181,12 +181,12 @@ test_multi() {
     flannel_conf_vxlan='{"Network": "10.11.0.0/16", "Backend": {"Type": "vxlan"}}'
     flannel_conf_host_gw='{"Network": "10.12.0.0/16", "Backend": {"Type": "host-gw"}}'
 
-    while ! docker run --rm $ETCD_IMG etcdctl --endpoints=$etcd_endpt set /vxlan/network/config "$flannel_conf_vxlan" >/dev/null
+    while ! docker run --rm -e ETCDCTL_API=3 $ETCD_IMG etcdctl --endpoints=$etcd_endpt put /vxlan/network/config "$flannel_conf_vxlan" >/dev/null
     do
         sleep 0.1
     done
 
-    while ! docker run --rm $ETCD_IMG etcdctl --endpoints=$etcd_endpt set /hostgw/network/config "$flannel_conf_host_gw" >/dev/null
+    while ! docker run --rm -e ETCDCTL_API=3 $ETCD_IMG etcdctl --endpoints=$etcd_endpt put /hostgw/network/config "$flannel_conf_host_gw" >/dev/null
     do
         sleep 0.1
     done
