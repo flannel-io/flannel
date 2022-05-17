@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   e2e-test:
     name: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - name: Set up Go 1.x
       uses: actions/setup-go@v2
@@ -14,5 +14,11 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
     - name: Run tests
-      run: git fetch --all --tags && make test
-
+      id: testing
+      continue-on-error: true
+      run: git fetch --all --tags && make test 2> errors.txt
+    - name: Show error message
+      if: steps.testing.outcome != 'success'
+      run: |
+            cat errors.txt
+            exit 1

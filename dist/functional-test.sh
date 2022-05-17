@@ -44,6 +44,8 @@ setup() {
 }
 
 teardown() {
+    echo "########## logs flannel-e2e-test-flannel1 for ##########" 2>&1
+    docker logs flannel-e2e-test-flannel1
     docker rm -f flannel-e2e-test-flannel1 flannel-e2e-test-flannel2 flannel-e2e-test-flannel1-iperf flannel-host1 flannel-host2 > /dev/null 2>&1
     docker run --rm $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt rm /coreos.com/network/config > /dev/null 2>&1
 }
