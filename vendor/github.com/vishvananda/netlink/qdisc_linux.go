@@ -250,7 +250,15 @@ func qdiscPayload(req *nl.NetlinkRequest, qdisc Qdisc) error {
 		if qdisc.Quantum > 0 {
 			options.AddRtAttr(nl.TCA_FQ_CODEL_QUANTUM, nl.Uint32Attr((uint32(qdisc.Quantum))))
 		}
-
+		if qdisc.CEThreshold > 0 {
+			options.AddRtAttr(nl.TCA_FQ_CODEL_CE_THRESHOLD, nl.Uint32Attr(qdisc.CEThreshold))
+		}
+		if qdisc.DropBatchSize > 0 {
+			options.AddRtAttr(nl.TCA_FQ_CODEL_DROP_BATCH_SIZE, nl.Uint32Attr(qdisc.DropBatchSize))
+		}
+		if qdisc.MemoryLimit > 0 {
+			options.AddRtAttr(nl.TCA_FQ_CODEL_MEMORY_LIMIT, nl.Uint32Attr(qdisc.MemoryLimit))
+		}
 	case *Fq:
 		options.AddRtAttr(nl.TCA_FQ_RATE_ENABLE, nl.Uint32Attr((uint32(qdisc.Pacing))))
 
@@ -460,7 +468,6 @@ func parsePrioData(qdisc Qdisc, value []byte) error {
 }
 
 func parseHtbData(qdisc Qdisc, data []syscall.NetlinkRouteAttr) error {
-	native = nl.NativeEndian()
 	htb := qdisc.(*Htb)
 	for _, datum := range data {
 		switch datum.Attr.Type {
@@ -480,7 +487,6 @@ func parseHtbData(qdisc Qdisc, data []syscall.NetlinkRouteAttr) error {
 }
 
 func parseFqCodelData(qdisc Qdisc, data []syscall.NetlinkRouteAttr) error {
-	native = nl.NativeEndian()
 	fqCodel := qdisc.(*FqCodel)
 	for _, datum := range data {
 
@@ -497,6 +503,12 @@ func parseFqCodelData(qdisc Qdisc, data []syscall.NetlinkRouteAttr) error {
 			fqCodel.Flows = native.Uint32(datum.Value)
 		case nl.TCA_FQ_CODEL_QUANTUM:
 			fqCodel.Quantum = native.Uint32(datum.Value)
+		case nl.TCA_FQ_CODEL_CE_THRESHOLD:
+			fqCodel.CEThreshold = native.Uint32(datum.Value)
+		case nl.TCA_FQ_CODEL_DROP_BATCH_SIZE:
+			fqCodel.DropBatchSize = native.Uint32(datum.Value)
+		case nl.TCA_FQ_CODEL_MEMORY_LIMIT:
+			fqCodel.MemoryLimit = native.Uint32(datum.Value)
 		}
 	}
 	return nil
@@ -504,13 +516,11 @@ func parseFqCodelData(qdisc Qdisc, data []syscall.NetlinkRouteAttr) error {
 
 func parseHfscData(qdisc Qdisc, data []byte) error {
 	Hfsc := qdisc.(*Hfsc)
-	native = nl.NativeEndian()
 	Hfsc.Defcls = native.Uint16(data)
 	return nil
 }
 
 func parseFqData(qdisc Qdisc, data []syscall.NetlinkRouteAttr) error {
-	native = nl.NativeEndian()
 	fq := qdisc.(*Fq)
 	for _, datum := range data {
 		switch datum.Attr.Type {
@@ -575,7 +585,6 @@ func parseNetemData(qdisc Qdisc, value []byte) error {
 }
 
 func parseTbfData(qdisc Qdisc, data []syscall.NetlinkRouteAttr) error {
-	native = nl.NativeEndian()
 	tbf := qdisc.(*Tbf)
 	for _, datum := range data {
 		switch datum.Attr.Type {
@@ -696,4 +705,8 @@ func latency(rate uint64, limit, buffer uint32) float64 {
 func Xmittime(rate uint64, size uint32) uint32 {
 	// https://git.kernel.org/pub/scm/network/iproute2/iproute2.git/tree/tc/tc_core.c#n62
 	return time2Tick(uint32(TIME_UNITS_PER_SEC * (float64(size) / float64(rate))))
+}
+
+func Xmitsize(rate uint64, ticks uint32) uint32 {
+	return uint32((float64(rate) * float64(tick2Time(ticks))) / TIME_UNITS_PER_SEC)
 }
