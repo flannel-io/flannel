@@ -42,6 +42,7 @@ type wgDeviceAttrs struct {
 	psk        *wgtypes.Key
 	keepalive  *time.Duration
 	name       string
+	MTU        int
 }
 
 type wgDevice struct {
@@ -127,6 +128,7 @@ func newWGDevice(devAttrs *wgDeviceAttrs, ctx context.Context, wg *sync.WaitGrou
 	// Create network device
 	la := netlink.LinkAttrs{
 		Name: devAttrs.name,
+		MTU:  devAttrs.MTU,
 	}
 	link := &netlink.GenericLink{LinkAttrs: la, LinkType: "wireguard"}
 

@@ -152,6 +152,7 @@ func IsForwardingEnabledForInterface(iface *net.Interface) (bool, error) {
 	return powerShellJsonData.Forwarding == 1, nil
 }
 
-func GetInterfaceByIP6(ip net.IP) (*net.Interface, error)         { return nil, nil }
-func GetInterfaceIP6Addrs(iface *net.Interface) ([]net.IP, error) { return nil, nil }
-func GetDefaultV6GatewayInterface() (*net.Interface, error)       { return nil, nil }
+func GetInterfaceByIP6(ip net.IP) (*net.Interface, error)                       { return nil, nil }
+func GetInterfaceIP6Addrs(iface *net.Interface) ([]net.IP, error)               { return nil, nil }
+func GetInterfaceBySpecificIPRouting(ip net.IP) (*net.Interface, net.IP, error) { return nil, nil, nil }
+func GetDefaultV6GatewayInterface() (*net.Interface, error)                     { return nil, nil }
