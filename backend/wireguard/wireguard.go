@@ -87,11 +87,12 @@ func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, enableIPv4, enableIPv6 b
 	return leaseAttrs, nil
 }
 
-func createWGDev(ctx context.Context, wg *sync.WaitGroup, name string, psk string, keepalive *time.Duration, listenPort int) (*wgDevice, error) {
+func createWGDev(ctx context.Context, wg *sync.WaitGroup, name string, psk string, keepalive *time.Duration, listenPort int, mtu int) (*wgDevice, error) {
 	devAttrs := wgDeviceAttrs{
 		keepalive:  keepalive,
 		listenPort: listenPort,
 		name:       name,
+		MTU:        mtu,
 	}
 	err := devAttrs.setupKeys(psk)
 	if err != nil {
@@ -128,21 +129,21 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	var publicKey string
 	if cfg.Mode == Separate {
 		if config.EnableIPv4 {
-			dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort)
+			dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort, be.extIface.Iface.MTU)
 			if err != nil {
 				return nil, err
 			}
 			publicKey = dev.attrs.publicKey.String()
 		}
 		if config.EnableIPv6 {
-			v6Dev, err = createWGDev(ctx, wg, "flannel-wg-v6", cfg.PSK, &keepalive, cfg.ListenPortV6)
+			v6Dev, err = createWGDev(ctx, wg, "flannel-wg-v6", cfg.PSK, &keepalive, cfg.ListenPortV6, be.extIface.Iface.MTU)
 			if err != nil {
 				return nil, err
 			}
 			publicKey = dev.attrs.publicKey.String()
 		}
 	} else if cfg.Mode == Auto || cfg.Mode == Ipv4 || cfg.Mode == Ipv6 {
-		dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort)
+		dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort, be.extIface.Iface.MTU)
 		if err != nil {
 			return nil, err
 		}
