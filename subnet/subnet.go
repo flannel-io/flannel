@@ -49,7 +49,7 @@ type Lease struct {
 	Attrs      LeaseAttrs
 	Expiration time.Time
 
-	Asof uint64
+	Asof int64
 }
 
 func (l *Lease) Key() string {

@@ -164,7 +164,7 @@ func routeAdd(route *netlink.Route, ipFamily int, addToRouteList, removeFromRout
 		// Same Dst and same Gw, keep it and do not attempt to add it.
 		log.Infof("Route to %v already exists, skipping.", route)
 	} else if err := netlink.RouteAdd(route); err != nil {
-		log.Errorf("Error adding route to %v", route)
+		log.Errorf("Error adding route to %v: %s", route, err)
 		return
 	}
 	_, err = netlink.RouteListFiltered(ipFamily, &netlink.Route{Dst: route.Dst}, netlink.RT_FILTER_DST)
