@@ -339,7 +339,7 @@ func main() {
 				os.Exit(1)
 			}
 			log.Infof("Setting up masking rules")
-			go network.SetupAndEnsureIPTables(network.MasqRules(config.Network, bn.Lease()), opts.iptablesResyncSeconds)
+			go network.SetupAndEnsureIP4Tables(network.MasqRules(config.Network, bn.Lease()), opts.iptablesResyncSeconds)
 
 		}
 		if config.EnableIPv6 {
@@ -360,7 +360,7 @@ func main() {
 	if opts.iptablesForwardRules {
 		if config.EnableIPv4 {
 			log.Infof("Changing default FORWARD chain policy to ACCEPT")
-			go network.SetupAndEnsureIPTables(network.ForwardRules(config.Network.String()), opts.iptablesResyncSeconds)
+			go network.SetupAndEnsureIP4Tables(network.ForwardRules(config.Network.String()), opts.iptablesResyncSeconds)
 		}
 		if config.EnableIPv6 {
 			log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
@@ -413,7 +413,7 @@ func recycleIPTables(nw ip.IP4Net, lease *subnet.Lease) error {
 		lease := &subnet.Lease{
 			Subnet: prevSubnet,
 		}
-		if err := network.DeleteIPTables(network.MasqRules(prevNetwork, lease)); err != nil {
+		if err := network.DeleteIP4Tables(network.MasqRules(prevNetwork, lease)); err != nil {
 			return err
 		}
 	}
