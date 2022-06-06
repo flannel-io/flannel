@@ -607,6 +607,16 @@ func EncodeActions(attr *nl.RtAttr, actions []Action) error {
 			}
 			toTcGen(action.Attrs(), &connmark.TcGen)
 			aopts.AddRtAttr(nl.TCA_CONNMARK_PARMS, connmark.Serialize())
+		case *CsumAction:
+			table := attr.AddRtAttr(tabIndex, nil)
+			tabIndex++
+			table.AddRtAttr(nl.TCA_ACT_KIND, nl.ZeroTerminated("csum"))
+			aopts := table.AddRtAttr(nl.TCA_ACT_OPTIONS, nil)
+			csum := nl.TcCsum{
+				UpdateFlags: uint32(action.UpdateFlags),
+			}
+			toTcGen(action.Attrs(), &csum.TcGen)
+			aopts.AddRtAttr(nl.TCA_CSUM_PARMS, csum.Serialize())
 		case *BpfAction:
 			table := attr.AddRtAttr(tabIndex, nil)
 			tabIndex++
@@ -675,6 +685,8 @@ func parseActions(tables []syscall.NetlinkRouteAttr) ([]Action, error) {
 					action = &BpfAction{}
 				case "connmark":
 					action = &ConnmarkAction{}
+				case "csum":
+					action = &CsumAction{}
 				case "gact":
 					action = &GenericAction{}
 				case "tunnel_key":
@@ -754,6 +766,14 @@ func parseActions(tables []syscall.NetlinkRouteAttr) ([]Action, error) {
 							action.(*ConnmarkAction).ActionAttrs = ActionAttrs{}
 							toAttrs(&connmark.TcGen, action.Attrs())
 							action.(*ConnmarkAction).Zone = connmark.Zone
+						}
+					case "csum":
+						switch adatum.Attr.Type {
+						case nl.TCA_CSUM_PARMS:
+							csum := *nl.DeserializeTcCsum(adatum.Value)
+							action.(*CsumAction).ActionAttrs = ActionAttrs{}
+							toAttrs(&csum.TcGen, action.Attrs())
+							action.(*CsumAction).UpdateFlags = CsumUpdateFlags(csum.UpdateFlags)
 						}
 					case "gact":
 						switch adatum.Attr.Type {
