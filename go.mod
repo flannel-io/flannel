@@ -23,7 +23,7 @@ require (
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go v1.0.67
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20201229170055-e5319fda7802 // indirect
-	github.com/vishvananda/netlink v1.2.0-beta
+	github.com/vishvananda/netlink v1.2.1-beta.2
 	github.com/vishvananda/netns v0.0.0-20200728191858-db3c7e526aae
 	go.uber.org/zap v1.17.0 // indirect
 	golang.org/x/net v0.0.0-20211208012354-db4efeb81f4b

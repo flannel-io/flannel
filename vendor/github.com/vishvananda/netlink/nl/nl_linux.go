@@ -504,8 +504,10 @@ func (req *NetlinkRequest) Execute(sockType int, resType uint16) ([][]byte, erro
 		if err := s.SetReceiveTimeout(&SocketTimeoutTv); err != nil {
 			return nil, err
 		}
-		if err := s.SetExtAck(EnableErrorMessageReporting); err != nil {
-			return nil, err
+		if EnableErrorMessageReporting {
+			if err := s.SetExtAck(true); err != nil {
+				return nil, err
+			}
 		}
 
 		defer s.Close()
