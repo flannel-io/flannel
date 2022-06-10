@@ -202,11 +202,8 @@ func (m *LocalManager) allocateSubnet(config *Config, leases []Lease) (ip.IP4Net
 		log.Infof("Picking ipv6 subnet in range %s ... %s", config.IPv6SubnetMin, config.IPv6SubnetMax)
 	}
 
-	type IPs struct {
-		ip  ip.IP4
-		ip6 *ip.IP6
-	}
-	var availableIPs []IPs
+	var availableIPs []ip.IP4
+	var availableIPv6s []*ip.IP6
 
 	sn := ip.IP4Net{IP: config.SubnetMin, PrefixLen: config.SubnetLen}
 	var sn6 ip.IP6Net
@@ -216,38 +213,37 @@ func (m *LocalManager) allocateSubnet(config *Config, leases []Lease) (ip.IP4Net
 
 OuterLoop:
 	for ; sn.IP <= config.SubnetMax && len(availableIPs) < 100; sn = sn.Next() {
-		if !sn6.Empty() {
-			if sn6.IP.Cmp(config.IPv6SubnetMax) >= 0 {
-				break OuterLoop
-			}
-		}
 		for _, l := range leases {
 			if sn.Overlaps(l.Subnet) {
 				continue OuterLoop
 			}
-			if !sn6.Empty() && sn6.Overlaps(l.IPv6Subnet) {
-				continue OuterLoop
-			}
 		}
+		availableIPs = append(availableIPs, sn.IP)
+	}
 
-		if !sn6.Empty() {
-			availableIPs = append(availableIPs, IPs{ip: sn.IP, ip6: sn6.IP})
-			sn6 = sn6.Next()
-		} else {
-			availableIPs = append(availableIPs, IPs{ip: sn.IP, ip6: nil})
+	if !sn6.Empty() {
+	OuterLoopv6:
+		for ; sn6.IP.Cmp(config.IPv6SubnetMax) <= 0 && len(availableIPv6s) < 100; sn6 = sn6.Next() {
+			for _, l := range leases {
+				if sn6.Overlaps(l.IPv6Subnet) {
+					continue OuterLoopv6
+				}
+			}
+			availableIPv6s = append(availableIPv6s, sn6.IP)
 		}
 	}
 
-	if len(availableIPs) == 0 {
+	if len(availableIPs) == 0 || (!sn6.Empty() && len(availableIPv6s) == 0) {
 		return ip.IP4Net{}, ip.IP6Net{}, errors.New("out of subnets")
 	} else {
 		i := randInt(0, len(availableIPs))
-		ipnet := ip.IP4Net{IP: availableIPs[i].ip, PrefixLen: config.SubnetLen}
+		ipnet := ip.IP4Net{IP: availableIPs[i], PrefixLen: config.SubnetLen}
 
-		if availableIPs[i].ip6 == nil {
+		if sn6.Empty() {
 			return ipnet, ip.IP6Net{}, nil
 		}
-		return ipnet, ip.IP6Net{IP: availableIPs[i].ip6, PrefixLen: config.IPv6SubnetLen}, nil
+		i = randInt(0, len(availableIPv6s))
+		return ipnet, ip.IP6Net{IP: availableIPv6s[i], PrefixLen: config.IPv6SubnetLen}, nil
 	}
 }
 
