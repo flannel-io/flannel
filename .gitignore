@@ -7,5 +7,4 @@ cover.out
 .idea/
 default.etcd/
 flannel.exe
-bash_unit
 dist/qemu-*

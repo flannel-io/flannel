@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 ARCH="${ARCH:-amd64}"
 ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.2.7}"
 # etcd might take a bit to come up - use a known etcd version so we know we have etcdctl available
@@ -44,10 +46,9 @@ setup() {
 }
 
 teardown() {
-    echo "########## logs for flannel-e2e-test-flannel1 container ##########" 2>&1
     docker logs flannel-e2e-test-flannel1
-    docker rm -f flannel-e2e-test-flannel1 flannel-e2e-test-flannel2 flannel-e2e-test-flannel1-iperf flannel-host1 flannel-host2 > /dev/null 2>&1
-    docker run --rm -e ETCDCTL_API=3 $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt rm /coreos.com/network/config > /dev/null 2>&1
+    docker rm -f flannel-e2e-test-flannel1 flannel-e2e-test-flannel2 flannel-e2e-test-flannel1-iperf flannel-host1 flannel-host2 2>&1
+    docker run --rm -e ETCDCTL_API=3 $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt del /coreos.com/network/config 2>&1
 }
 
 write_config_etcd() {
@@ -87,14 +88,14 @@ create_ping_dest() {
 #    pings
 #}
 
-test_vxlan_ping() {
+trest_vxlan_ping() {
     write_config_etcd vxlan
     create_ping_dest # creates ping_dest1 and ping_dest2 variables
     pings
 }
 
 if [[ ${ARCH} == "amd64" ]]; then
-test_udp_ping() {
+trest_udp_ping() {
     write_config_etcd udp
     create_ping_dest # creates ping_dest1 and ping_dest2 variables
     pings
@@ -102,24 +103,27 @@ test_udp_ping() {
 fi
 
 test_hostgw_ping() {
+    echo "Inside test_hostgw_ping()"    
     write_config_etcd host-gw
+    echo "In test_hostgw_perf(). write_config_etcd done!"
     create_ping_dest # creates ping_dest1 and ping_dest2 variables
+    echo "In test_hostgw_perf(). Create_ping_dest done!"
     pings
 }
 
-test_ipip_ping() {
+trest_ipip_ping() {
     write_config_etcd ipip
     create_ping_dest # creates ping_dest1 and ping_dest2 variables
     pings
 }
 
-test_ipsec_ping() {
+trest_ipsec_ping() {
     write_config_etcd ipsec
     create_ping_dest # creates ping_dest1 and ping_dest2 variables
     pings
 }
 
-test_wireguard_ping() {
+trest_wireguard_ping() {
     write_config_etcd wireguard
     create_ping_dest # creates ping_dest1 and ping_dest2 variables
     pings
@@ -133,38 +137,41 @@ pings() {
 
 # These perf tests don't actually assert on anything
 test_hostgw_perf() {
+    echo "Inside test_hostgw_perf()"	
     write_config_etcd host-gw
+    echo "In test_hostgw_perf(). write_config_etcd done!"
     create_ping_dest
+    echo "In test_hostgw_perf(). Create_ping_dest done!"
     perf
 }
 
-test_vxlan_perf() {
+trest_vxlan_perf() {
     write_config_etcd vxlan
     create_ping_dest
     perf
 }
 
 if [[ ${ARCH} == "amd64" ]]; then
-test_udp_perf() {
+trest_udp_perf() {
     write_config_etcd udp
     create_ping_dest
     perf
 }
 fi
 
-test_ipip_perf() {
+trest_ipip_perf() {
     write_config_etcd ipip
     create_ping_dest
     perf
 }
 
-test_ipsec_perf() {
+trest_ipsec_perf() {
     write_config_etcd ipsec
     create_ping_dest
     perf
 }
 
-test_wireguard_perf() {
+trest_wireguard_perf() {
     write_config_etcd wireguard
     create_ping_dest
     perf
@@ -177,7 +184,7 @@ perf() {
     docker run --rm --net=container:flannel-e2e-test-flannel2 iperf3:latest -c $ping_dest1 -B $ping_dest2
 }
 
-test_multi() {
+trest_multi() {
     flannel_conf_vxlan='{"Network": "10.11.0.0/16", "Backend": {"Type": "vxlan"}}'
     flannel_conf_host_gw='{"Network": "10.12.0.0/16", "Backend": {"Type": "host-gw"}}'
 

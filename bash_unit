@@ -1,0 +1,374 @@
+#!/usr/bin/env bash
+#
+#   bash unit testing enterprise edition framework for professionals
+#   Copyright (C) 2011-2016 Pascal Grange
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 3 of the License, or
+#   (at your option) any later version.
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software Foundation,
+#   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+#
+#  https://github.com/pgrange/bash_unit
+
+VERSION=v1.6.0
+
+ESCAPE=$(printf "\033")
+NOCOLOR="${ESCAPE}[0m"
+RED="${ESCAPE}[91m"
+GREEN="${ESCAPE}[92m"
+YELLOW="${ESCAPE}[93m"
+BLUE="${ESCAPE}[94m"
+
+fail() {
+  local message=$1
+  local stdout=$2
+  local stderr=$3
+
+  notify_test_failed "$__bash_unit_current_test__" "$message"
+  [[ ! -z $stdout ]] && [ -s "$stdout" ] && notify_stdout < "$stdout"
+  [[ ! -z $stderr ]] && [ -s "$stderr" ] && notify_stderr < "$stderr"
+
+  stacktrace | notify_stack
+  exit 1
+}
+
+assert() {
+  local assertion=$1
+  local message=$2
+
+  _assert_expression \
+    "$assertion" \
+    "[ \$status == 0 ]" \
+    "\"$message\""
+}
+
+assert_fails() {
+  local assertion=$1
+  local message=$2
+
+  _assert_expression \
+    "$assertion" \
+    "[ \$status != 0 ]" \
+    "\"$message\""
+}
+
+assert_fail() {
+  #deprecated, use assert_fails instead
+  assert_fails "$@"
+}
+
+assert_status_code() {
+  local expected_status=$1
+  local assertion="$2"
+  local message="$3"
+
+  _assert_expression \
+    "$assertion" \
+    "[ \$status == $expected_status ]" \
+    "\"$message\" expected status code $expected_status but was \$status"
+}
+
+_assert_expression() {
+  local assertion=$1
+  local condition=$2
+  local message=$3
+  (
+    local stdout=$(mktemp)
+    local stderr=$(mktemp)
+    trap "rm  -f \"$stdout\" \"$stderr\"" EXIT
+
+    local status
+    eval "($assertion)" >"$stdout" 2>"$stderr" && status=$? || status=$?
+    if ! eval "$condition"
+    then
+      fail "$(eval echo $message)" "$stdout" "$stderr"
+    fi
+  ) || exit $?
+}
+
+assert_equals() {
+  local expected=$1
+  local actual=$2
+  local message=$3
+  [[ -z $message ]] || message="$message\n"
+  
+  if [ "$expected" != "$actual" ]
+  then
+    fail "$message expected [$expected] but was [$actual]"
+  fi
+}
+
+assert_not_equals() {
+  local unexpected=$1
+  local actual=$2
+  local message=$3
+  [[ -z $message ]] || message="$message\n"
+
+  [ "$unexpected" != "$actual" ] || \
+    fail "$message expected different value than [$unexpected] but was the same"
+}
+
+fake() {
+  local command=$1
+  shift
+  if [ $# -gt 0 ]
+  then
+    eval "function $command() { export FAKE_PARAMS=\"\$@\" ; $@ ; }"
+  else
+    eval "function $command() { echo \"$(cat)\" ; }"
+  fi
+  export -f $command
+}
+
+stacktrace() {
+  local i=1
+  while ! [ -z "${BASH_SOURCE[$i]}" ]
+  do
+    echo ${BASH_SOURCE[$i]}:${BASH_LINENO[$((i-1))]}:${FUNCNAME[$i]}\(\)
+    i=$((i + 1))
+  done | grep -v "^$BASH_SOURCE"
+}
+
+run_test_suite() {
+  echo "AAAAAAAAAAA Inside run_test_suite()"
+  local failure=0
+
+  declare -F | grep ' setup_suite$' >/dev/null && setup_suite
+
+  for pending_test in $(set | grep  -E '^(pending|todo).* \(\)' | grep -E "$test_pattern" | sed -e 's: .*::')
+  do
+    notify_test_starting "$pending_test"
+    notify_test_pending "$pending_test"
+  done
+
+
+  for test in $(set | grep  -E '^test.* \(\)' | grep -E "$test_pattern" | sed -e 's: .*::')
+  do
+    (
+      local status=0
+      echo "AAAAAAAAAAAAAAAAAAAAAAA - This is the $test"
+      declare -F | grep ' setup$' >/dev/null && setup
+      (__bash_unit_current_test__="$test" run_test) || status=$?
+      declare -F | grep ' teardown$' >/dev/null && teardown
+      exit $status
+    )
+    failure=$(( $? || failure))
+  done
+
+  declare -F | grep ' teardown_suite$' >/dev/null && teardown_suite
+
+  return $failure
+}
+
+run_test() {
+  set -e
+  notify_test_starting "$__bash_unit_current_test__"
+  "$__bash_unit_current_test__" && notify_test_succeeded "$__bash_unit_current_test__"
+}
+
+usage() {
+  echo "$1" >&2
+  echo "$0 [-f <output format>] [-p <pattern1>] [-p <pattern2>]... <test_file1> <test_file2>..." >&2
+  echo >&2
+  echo "Runs tests in test files that match <pattern>s" >&2
+  echo "<output format> is optional only supported value is tap" >&2
+  echo "-v to get current version information" >&2
+  echo "See https://github.com/pgrange/bash_unit" >&2
+  exit 1
+}
+
+# Formating
+
+pretty_success() {
+  pretty_format "$GREEN" "\u2713" "$1"
+}
+
+pretty_warning() {
+  pretty_format "$YELLOW" "\u2717" "$1"
+}
+
+pretty_failure() {
+  pretty_format "$RED" "\u2717" "$1"
+}
+
+pretty_format() {
+  local color="$1"
+  local pretty_symbol="$2"
+  local alt_symbol="$3"
+  local term_utf8=false
+  if is_terminal && [[ "$LANG" =~ .*UTF-8.* ]]
+  then
+    term_utf8=true
+  fi
+  (
+    cat
+    if $term_utf8
+    then
+      echo -en " $pretty_symbol "
+    else
+      [[ ! -z "$alt_symbol" ]] && echo -en " $alt_symbol "
+    fi
+  ) | color "$color"
+}
+
+color() {
+  _start_color() {
+    if is_terminal ; then echo -en "$color" ; fi
+  }
+  _stop_color() {
+    if is_terminal ; then echo -en "$NOCOLOR" ; fi
+  }
+  local color=$1
+  shift
+  _start_color
+  if [ $# -gt 0 ]
+  then
+    echo $*
+  else
+    cat
+  fi
+  _stop_color
+}
+
+is_terminal() {
+  [ -t 1 ] || [[ "${FORCE_COLOR}" == true ]]
+}
+
+text_format() {
+  notify_suite_starting() {
+    local test_file="$1"
+    echo "Running tests in $test_file"
+  }
+  notify_test_starting() {
+    local test="$1"
+    echo -n "Running $test... " | color "$BLUE"
+  }
+  notify_test_pending() {
+    echo -n "PENDING" | pretty_warning
+    echo
+  }
+
+  notify_test_succeeded() {
+    echo -n "SUCCESS" | pretty_success
+    echo
+  }
+  notify_test_failed() {
+    local message="$2"
+    echo -n "FAILURE" | pretty_failure
+    echo
+    [[ -z $message  ]] || printf -- "$message\n"
+  }
+  notify_stdout() {
+    sed 's:^:out> :' | color "$GREEN"
+  }
+  notify_stderr() {
+    sed 's:^:err> :' | color "$RED"
+  }
+  notify_stack() {
+    color "$YELLOW"
+  }
+}
+
+tap_format() {
+  notify_suite_starting() {
+    local test_file="$1"
+    echo "# Running tests in $test_file"
+  }
+  notify_test_starting() {
+    echo -n
+  }
+  notify_test_pending() {
+    local test="$1"
+    echo -n "ok" | pretty_warning -
+    echo -n "$test" | color "$BLUE"
+    echo " # skip test to be written" | color "$YELLOW"
+  }
+  notify_test_succeeded() {
+    local test="$1"
+    echo -n "ok" | pretty_success -
+    echo "$test" | color "$BLUE"
+  }
+  notify_test_failed() {
+    local test="$1"
+    local message="$2"
+    echo -n "not ok" | pretty_failure -
+    echo "$test" | color "$BLUE"
+    [[ -z $message  ]] || printf -- "$message\n" | sed -u -e 's/^/# /'
+  }
+  notify_stdout() {
+    sed 's:^:# out> :' | color "$GREEN"
+  }
+  notify_stderr() {
+    sed 's:^:# err> :' | color "$RED"
+  }
+  notify_stack() {
+    sed 's:^:# :' | color "$YELLOW"
+  }
+}
+
+output_format=text
+test_pattern=""
+separator=""
+while getopts "vp:f:" option
+do
+  case "$option" in
+    p)
+      test_pattern="${test_pattern}${separator}${OPTARG}"
+      separator="|"
+      ;;
+    f)
+      output_format="${OPTARG}"
+      ;;
+    v)
+      echo "bash_unit $VERSION"
+      exit
+      ;;
+    ?|:)
+      usage
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+for test_file in "$@"
+do
+  test -e "$test_file" || usage "file does not exist: $test_file"
+  test -r "$test_file" || usage "can not read file: $test_file"
+done
+
+case "$output_format" in
+  text)
+    text_format
+    ;;
+  tap)
+    tap_format
+    ;;
+  *)
+    usage "unsupproted output format: $output_format"
+    ;;
+esac
+
+#run tests received as parameters
+failure=0
+for test_file in "$@"
+do
+  notify_suite_starting "$test_file"
+  (
+    if [[ "${STICK_TO_CWD}" != true ]]
+    then
+      cd "$(dirname "$test_file")"
+      source "$(basename "$test_file")"
+    else
+      source "$test_file"
+    fi
+    run_test_suite
+  )
+  failure=$(( $? || failure))
+done
+exit $failure

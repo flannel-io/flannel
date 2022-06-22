@@ -17,6 +17,7 @@
 package backend
 
 import (
+	"fmt"
 	"net"
 	"testing"
 
@@ -111,6 +112,9 @@ func TestV6RouteCache(t *testing.T) {
 	}
 	gw1, gw2 := ip.FromIP6(net.ParseIP("2001:db8:1::2")), ip.FromIP6(net.ParseIP("::2"))
 	subnet1 := ip.IP6Net{IP: ip.FromIP6(net.ParseIP("2001:db8:ffff::")), PrefixLen: 64}
+	linkbr, _ := netlink.LinkByName("br")
+	routes, _ := netlink.RouteList(linkbr, 6)
+	fmt.Println("ZZZZZZZZZZZZZZZZZZ These are the routes: ", routes)
 	nw.handleSubnetEvents([]subnet.Event{
 		{Type: subnet.EventAdded, Lease: subnet.Lease{
 			IPv6Subnet: subnet1, EnableIPv6: true, Attrs: subnet.LeaseAttrs{PublicIPv6: gw1, BackendType: "host-gw"}}},
@@ -122,9 +126,33 @@ func TestV6RouteCache(t *testing.T) {
 		t.Fatal(nw.v6Routes[0])
 	}
 	// change gateway of previous route
+        internetv6 := net.ParseIP("2001::2")
+        routev6, _ := netlink.RouteGet(internetv6)
+	fmt.Println("ZZZZZZZZZZ This is the route: ", routev6)
+
+	routes2, _ := netlink.RouteList(linkbr, 6)
+	fmt.Println("ZZZZZZZZZZZZZZZZZZ These are the routes: ", routes2)
+	for _, route := range(routes2) {
+		fmt.Println("YYYYYYYYYYYYY This is the length: ", len(route.Gw))
+	}
+
 	nw.handleSubnetEvents([]subnet.Event{
 		{Type: subnet.EventAdded, Lease: subnet.Lease{
 			IPv6Subnet: subnet1, EnableIPv6: true, Attrs: subnet.LeaseAttrs{PublicIPv6: gw2, BackendType: "host-gw"}}}})
+	fmt.Printf("ZZZZZZZZZZZZZZZZ - This is the len(nw.v6Routes): %v\n", len(nw.v6Routes))
+	routes3, _ := netlink.RouteList(linkbr, 6)
+	fmt.Println("ZZZZZZZZZZZZZZZZZZ These are the routes: ", routes3)
+	IsGw := ""
+	for _, route := range(routes3) {
+		if len(route.Gw) != 0 {
+			IsGw = route.Gw.String()
+		}
+	}
+	fmt.Println("OOOOOOOOOOOO", IsGw)
+
+	if IsGw != gw2.String() {
+		t.Fatal("Expected Gateway: ", gw2," is not the same as the configured gateway: ",IsGw)
+	}
 	if len(nw.v6Routes) != 1 {
 		t.Fatal(nw.v6Routes)
 	}
