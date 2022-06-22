@@ -628,3 +628,4 @@ func ReadIP6CIDRFromSubnetFile(path string, CIDRKey string) ip.IP6Net {
 	}
 	return prevCIDR
 }
+
