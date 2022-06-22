@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -xe
 
 ARCH="${ARCH:-amd64}"
 ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.2.7}"
@@ -8,7 +8,7 @@ ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.2.7}"
 ETCDCTL_IMG="quay.io/coreos/etcd:v3.2.7"
 ETCD_LOCATION="${ETCD_LOCATION:-etcd}"
 FLANNEL_NET="${FLANNEL_NET:-10.10.0.0/16}"
-TAG=`git describe --tags --dirty`
+TAG=`git describe --tags --dirty --always`
 FLANNEL_DOCKER_IMAGE="${FLANNEL_DOCKER_IMAGE:-quay.io/coreos/flannel:$TAG}"
 
 # Set the proper imagename according to architecture
@@ -46,10 +46,9 @@ setup() {
 }
 
 teardown() {
-    echo "########## logs for flannel-e2e-test-flannel1 container ##########" 2>&1
     docker logs flannel-e2e-test-flannel1
-    docker rm -f flannel-e2e-test-flannel1 flannel-e2e-test-flannel2 flannel-e2e-test-flannel1-iperf flannel-host1 flannel-host2 > /dev/null 2>&1
-    docker run --rm -e ETCDCTL_API=3 $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt rm /coreos.com/network/config > /dev/null 2>&1
+    docker rm -f flannel-e2e-test-flannel1 flannel-e2e-test-flannel2 flannel-e2e-test-flannel1-iperf flannel-host1 flannel-host2 2>&1
+    docker run --rm -e ETCDCTL_API=3 $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt del /coreos.com/network/config 2>&1
 }
 
 write_config_etcd() {
@@ -104,8 +103,11 @@ test_udp_ping() {
 fi
 
 test_hostgw_ping() {
+    echo "Inside test_hostgw_ping()"    
     write_config_etcd host-gw
+    echo "In test_hostgw_perf(). write_config_etcd done!"
     create_ping_dest # creates ping_dest1 and ping_dest2 variables
+    echo "In test_hostgw_perf(). Create_ping_dest done!"
     pings
 }
 
@@ -135,8 +137,11 @@ pings() {
 
 # These perf tests don't actually assert on anything
 test_hostgw_perf() {
+    echo "Inside test_hostgw_perf()"
     write_config_etcd host-gw
+    echo "In test_hostgw_perf(). write_config_etcd done!"
     create_ping_dest
+    echo "In test_hostgw_perf(). Create_ping_dest done!"
     perf
 }
 
