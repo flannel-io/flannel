@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -x
+#Add "set -xe" to get more information where the unit test fail
+set -xe
 
 ARCH="${ARCH:-amd64}"
 ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.2.7}"
@@ -8,7 +9,7 @@ ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.2.7}"
 ETCDCTL_IMG="quay.io/coreos/etcd:v3.2.7"
 ETCD_LOCATION="${ETCD_LOCATION:-etcd}"
 FLANNEL_NET="${FLANNEL_NET:-10.10.0.0/16}"
-TAG=`git describe --tags --dirty`
+TAG=`git describe --tags --dirty --always`
 FLANNEL_DOCKER_IMAGE="${FLANNEL_DOCKER_IMAGE:-quay.io/coreos/flannel:$TAG}"
 
 # Set the proper imagename according to architecture
@@ -49,7 +50,7 @@ teardown() {
     echo "########## logs for flannel-e2e-test-flannel1 container ##########" 2>&1
     docker logs flannel-e2e-test-flannel1
     docker rm -f flannel-e2e-test-flannel1 flannel-e2e-test-flannel2 flannel-e2e-test-flannel1-iperf flannel-host1 flannel-host2 > /dev/null 2>&1
-    docker run --rm -e ETCDCTL_API=3 $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt rm /coreos.com/network/config > /dev/null 2>&1
+    docker run --rm -e ETCDCTL_API=3 $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt del /coreos.com/network/config > /dev/null 2>&1
 }
 
 write_config_etcd() {
