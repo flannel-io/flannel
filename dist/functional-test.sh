@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 ARCH="${ARCH:-amd64}"
 ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.2.7}"
 # etcd might take a bit to come up - use a known etcd version so we know we have etcdctl available
