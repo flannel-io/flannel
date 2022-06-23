@@ -109,7 +109,7 @@ func TestV6RouteCache(t *testing.T) {
 			LinkIndex: nw.LinkIndex,
 		}
 	}
-	gw1, gw2 := ip.FromIP6(net.ParseIP("2001:db8:1::2")), ip.FromIP6(net.ParseIP("::2"))
+	gw1, gw2 := ip.FromIP6(net.ParseIP("2001:db8:1::2")), ip.FromIP6(net.ParseIP("2001:db8:1::10"))
 	subnet1 := ip.IP6Net{IP: ip.FromIP6(net.ParseIP("2001:db8:ffff::")), PrefixLen: 64}
 	nw.handleSubnetEvents([]subnet.Event{
 		{Type: subnet.EventAdded, Lease: subnet.Lease{
@@ -125,6 +125,19 @@ func TestV6RouteCache(t *testing.T) {
 	nw.handleSubnetEvents([]subnet.Event{
 		{Type: subnet.EventAdded, Lease: subnet.Lease{
 			IPv6Subnet: subnet1, EnableIPv6: true, Attrs: subnet.LeaseAttrs{PublicIPv6: gw2, BackendType: "host-gw"}}}})
+	linkbr, _ := netlink.LinkByName("br")
+	routes, _ := netlink.RouteList(linkbr, 6)
+	IsGw := ""
+	for _, route := range routes {
+		if len(route.Gw) != 0 {
+			IsGw = route.Gw.String()
+		}
+	}
+
+	if IsGw != gw2.String() {
+		t.Fatal("Expected Gateway: ", gw2, " is not the same as the configured gateway: ", IsGw)
+	}
+
 	if len(nw.v6Routes) != 1 {
 		t.Fatal(nw.v6Routes)
 	}
