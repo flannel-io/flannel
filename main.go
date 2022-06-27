@@ -265,7 +265,11 @@ func main() {
 	}
 	// Check the default interface only if no interfaces are specified
 	if len(opts.iface) == 0 && len(opts.ifaceRegex) == 0 && len(opts.ifaceCanReach) == 0 {
-		extIface, err = ipmatch.LookupExtIface(opts.publicIP, "", "", ipStack, optsPublicIP)
+		if len(opts.publicIP) > 0 {
+			extIface, err = ipmatch.LookupExtIface(opts.publicIP, "", "", ipStack, optsPublicIP)
+		} else {
+			extIface, err = ipmatch.LookupExtIface(opts.publicIPv6, "", "", ipStack, optsPublicIP)
+		}
 		if err != nil {
 			log.Error("Failed to find any valid interface to use: ", err)
 			os.Exit(1)
