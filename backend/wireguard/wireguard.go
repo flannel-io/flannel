@@ -140,7 +140,7 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 			if err != nil {
 				return nil, err
 			}
-			publicKey = dev.attrs.publicKey.String()
+			publicKey = v6Dev.attrs.publicKey.String()
 		}
 	} else if cfg.Mode == Auto || cfg.Mode == Ipv4 || cfg.Mode == Ipv6 {
 		dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort, be.extIface.Iface.MTU)
