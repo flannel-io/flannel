@@ -83,16 +83,27 @@ func LookupExtIface(ifname string, ifregexS string, ifcanreach string, ipStack i
 					return nil, fmt.Errorf("error looking up v6 interface %s: %s", ifname, err)
 				}
 			case dualStack:
-				iface, err = ip.GetInterfaceByIP(ifaceAddr)
-				if err != nil {
-					return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
+				if ifaceAddr.To4() != nil {
+					iface, err = ip.GetInterfaceByIP(ifaceAddr)
+					if err != nil {
+						return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
+					}
 				}
-				v6Iface, err := ip.GetInterfaceByIP6(ifaceAddr)
-				if err != nil {
-					return nil, fmt.Errorf("error looking up v6 interface %s: %s", ifname, err)
-				}
-				if iface.Name != v6Iface.Name {
-					return nil, fmt.Errorf("v6 interface %s must be the same with v4 interface %s", v6Iface.Name, iface.Name)
+				if len(opts.PublicIPv6) > 0 {
+					if ifaceV6Addr = net.ParseIP(opts.PublicIPv6); ifaceV6Addr != nil {
+						v6Iface, err := ip.GetInterfaceByIP6(ifaceV6Addr)
+						if err != nil {
+							return nil, fmt.Errorf("error looking up v6 interface %s: %s", opts.PublicIPv6, err)
+						}
+						if ifaceAddr.To4() == nil {
+							iface = v6Iface
+							ifaceAddr = nil
+						} else {
+							if iface.Name != v6Iface.Name {
+								return nil, fmt.Errorf("v6 interface %s must be the same with v4 interface %s", v6Iface.Name, iface.Name)
+							}
+						}
+					}
 				}
 			}
 		} else {
