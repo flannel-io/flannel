@@ -29,17 +29,18 @@ func TestRules(t *testing.T) {
 			{"-A", "INPUT", "-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"},
 		},
 	}
-	expectedPayload := `*filter
+	expectedFilterPayload := `*filter
 -A INPUT -s 127.0.0.1 -d 127.0.0.1 -j RETURN
 -A INPUT -s 127.0.0.1 ! -d 224.0.0.0/4 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully
 COMMIT
-*nat
+`
+	expectedNATPayload := `*nat
 -A INPUT -s 127.0.0.1 -d 127.0.0.1 -j RETURN
 -A INPUT -s 127.0.0.1 ! -d 224.0.0.0/4 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully
 COMMIT
 `
 	payload := buildIPTablesRestorePayload(baseRules)
-	if payload != expectedPayload {
-		t.Errorf("iptables-restore payload not as expected. Expected: %#v, Actual: %#v", expectedPayload, payload)
+	if payload != expectedFilterPayload+expectedNATPayload && payload != expectedNATPayload+expectedFilterPayload {
+		t.Errorf("iptables-restore payload not as expected. Expected: %#v, Actual: %#v", expectedFilterPayload+expectedNATPayload, payload)
 	}
 }
