@@ -96,11 +96,13 @@ cover:
 	go tool cover -html=cover.out
 
 header-check:
+	# run header-check script
 	./header-check.sh
 
 # Throw an error if gofmt finds problems.
 # "read" will return a failure return code if there is no output. This is inverted wth the "!"
 gofmt:
+	# Running gofmt... 
 	docker run --rm -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR):/go/src/github.com/flannel-io/flannel \
@@ -110,6 +112,7 @@ gofmt:
 		! gofmt -d $(PACKAGES) 2>&1 | read'
 
 verify-modules:
+	# Running verify-modules...
 	docker run --rm -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
                 -u $(shell id -u):$(shell id -g) \
                 -v $(CURDIR):/go/src/github.com/flannel-io/flannel \
