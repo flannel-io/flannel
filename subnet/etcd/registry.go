@@ -36,7 +36,7 @@ import (
 
 var (
 	errTryAgain            = errors.New("try again")
-	errKeyNotFound         = errors.New("key not found")
+	errConfigNotFound      = errors.New("flannel config not found in etcd store. Did you create your config using etcdv3 API?")
 	errNoWatchChannel      = errors.New("no watch channel")
 	errSubnetAlreadyexists = errors.New("subnet already exists")
 )
@@ -153,7 +153,7 @@ func (esr *etcdSubnetRegistry) getNetworkConfig(ctx context.Context) (string, er
 		return "", err
 	}
 	if len(resp.Kvs) == 0 {
-		return "", rpctypes.ErrGRPCKeyNotFound
+		return "", errConfigNotFound
 	}
 
 	return string(resp.Kvs[0].Value), nil
@@ -200,7 +200,7 @@ func (esr *etcdSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net, sn6 
 	}
 
 	if len(resp.Kvs) == 0 {
-		return nil, 0, errKeyNotFound
+		return nil, 0, rpctypes.ErrGRPCKeyNotFound
 	}
 
 	ttlresp, err := esr.cli.TimeToLive(ctx, etcd.LeaseID(resp.Kvs[0].Lease))
