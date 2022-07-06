@@ -106,7 +106,7 @@ func TestEtcdRegistry(t *testing.T) {
 	r, kvApi := newTestEtcdRegistry(t, ctx, client)
 
 	_, err := r.getNetworkConfig(ctx)
-	if err == nil {
+	if err != errConfigNotFound {
 		t.Fatal("Should hit error getting config")
 	}
 
