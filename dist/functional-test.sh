@@ -177,8 +177,17 @@ perf() {
     # Perf test - run iperf server on flannel1 and client on flannel2
     docker rm -f flannel-e2e-test-flannel1-iperf 2>/dev/null
     docker run -d --name flannel-e2e-test-flannel1-iperf --net=container:flannel-e2e-test-flannel1 iperf3:latest >/dev/null
+    wait_for flannel-e2e-test-flannel1-iperf
     docker run --rm --net=container:flannel-e2e-test-flannel2 iperf3:latest -c $ping_dest1 -B $ping_dest2
 }
+
+wait_for() {
+  while ! docker inspect --format='{{json .State.Status}}' $1 >/dev/null
+  do
+    sleep 1
+  done
+}
+
 
 test_multi() {
     flannel_conf_vxlan='{"Network": "10.11.0.0/16", "Backend": {"Type": "vxlan"}}'
