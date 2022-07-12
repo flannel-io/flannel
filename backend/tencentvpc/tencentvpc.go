@@ -137,7 +137,7 @@ func (be *TencentVpcBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitG
 	c, _ := vpc.NewClientWithSecretId(cfg.AccessKeyID, cfg.AccessKeySecret, region)
 	request := vpc.NewDescribeRouteTablesRequest()
 	request.Filters = []*vpc.Filter{
-		&vpc.Filter{
+		{
 			Name:   common.StringPtr("vpc-id"),
 			Values: common.StringPtrs([]string{vpcid}),
 		},
@@ -158,40 +158,55 @@ func (be *TencentVpcBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitG
 		return nil, fmt.Errorf("No suitable routing table found")
 	}
 
-	routeTable := response.RouteTableSet[0]
 	exists := false
 	gatewayType := "NORMAL_CVM"
 	routeType := "USER"
+	limit_per_table := 50
 
-	for _, route := range routeTable.RouteSet {
-		if *route.DestinationCidrBlock == l.Subnet.String() &&
-			*route.GatewayId == be.extIface.ExtAddr.String() &&
-			*route.GatewayType == gatewayType &&
-			*route.RouteType == routeType {
-			if *route.Enabled {
-				exists = true
-			} else {
-				delRouteRequest := vpc.NewDeleteRoutesRequest()
-				delRouteRequest.RouteTableId = routeTable.RouteTableId
-				delRouteRequest.Routes = []*vpc.Route{
-					&vpc.Route{
-						RouteId: route.RouteId,
-					},
-				}
+	routeTables := response.RouteTableSet
 
-				_, err := c.DeleteRoutes(delRouteRequest)
-				if err != nil {
-					return nil, err
+	for _, routeTable := range routeTables {
+		for _, route := range routeTable.RouteSet {
+			if *route.DestinationCidrBlock == l.Subnet.String() &&
+				*route.GatewayId == be.extIface.ExtAddr.String() &&
+				*route.GatewayType == gatewayType &&
+				*route.RouteType == routeType {
+				if *route.Enabled {
+					exists = true
+				} else {
+					delRouteRequest := vpc.NewDeleteRoutesRequest()
+					delRouteRequest.RouteTableId = routeTable.RouteTableId
+					delRouteRequest.Routes = []*vpc.Route{
+						{
+							RouteId: route.RouteId,
+						},
+					}
+
+					_, err := c.DeleteRoutes(delRouteRequest)
+					if err != nil {
+						return nil, err
+					}
 				}
 			}
 		}
 	}
 
 	if !exists {
+		var insertTableId *string = nil
+		for _, routeTable := range routeTables {
+			if len(routeTable.RouteSet) < limit_per_table {
+				insertTableId = routeTable.RouteTableId
+				break
+			}
+		}
+
+		if insertTableId == nil {
+			return nil, fmt.Errorf("No route table had space for new entry")
+		}
 		createRouteRequest := vpc.NewCreateRoutesRequest()
-		createRouteRequest.RouteTableId = routeTable.RouteTableId
+		createRouteRequest.RouteTableId = insertTableId
 		createRouteRequest.Routes = []*vpc.Route{
-			&vpc.Route{
+			{
 				DestinationCidrBlock: common.StringPtr(l.Subnet.String()),
 				GatewayType:          &gatewayType,
 				GatewayId:            common.StringPtr(be.extIface.ExtAddr.String()),
