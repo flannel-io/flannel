@@ -198,6 +198,9 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 
 func (ksm *kubeSubnetManager) handleAddLeaseEvent(et subnet.EventType, obj interface{}) {
 	n := obj.(*v1.Node)
+	if n.Annotations == nil {
+		return
+	}
 	if s, ok := n.Annotations[ksm.annotations.SubnetKubeManaged]; !ok || s != "true" {
 		return
 	}
@@ -213,6 +216,9 @@ func (ksm *kubeSubnetManager) handleAddLeaseEvent(et subnet.EventType, obj inter
 func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{}) {
 	o := oldObj.(*v1.Node)
 	n := newObj.(*v1.Node)
+	if n.Annotations == nil {
+		return
+	}
 	if s, ok := n.Annotations[ksm.annotations.SubnetKubeManaged]; !ok || s != "true" {
 		return
 	}
