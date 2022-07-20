@@ -40,15 +40,9 @@ Then you should be able to set the ARCH as above
 
 # Obtaining master builds
 
-A new build of flannel is created for every commit to master. They can be obtained from [https://quay.io/repository/coreos/flannel-git](https://quay.io/repository/coreos/flannel-git?tab=tags )
+A new build of flannel is created for every commit to master. They can be obtained from [https://hub.docker.com/r/flannelcni/flannel](https://hub.docker.com/r/flannelcni/flannel/tags )
 
-* `latest` is always the current HEAD of master. Use with caution
-* The image tags have a number of components e.g. `v0.7.0-109-gb366263c-amd64`
-  * The last release was `v0.7.0`
-  * This version is 109 commits newer
-  * The commit hash is `gb366263c`
+* `latest` is always the amd64 build.
+* The image tags have a number of components e.g. `v0.19.0-amd64`
+  * The last release was `v0.19.0`
   * The platform is `amd64`
-
-These builds can be useful when a particular commit is needed for a specific feature or bugfix.
-
-NOTE: the image name is `quay.io/coreos/flannel-git` for master builds. *Releases* are named `quay.io/coreos/flannel` (there is no `-git` suffix).
