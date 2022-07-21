@@ -177,3 +177,34 @@ jobs:
           docker pull ${{ steps.meta.outputs.tags }}
           docker tag ${{ steps.meta.outputs.tags }} ${{ env.REPOSITORY }}:latest
           docker push ${{ env.REPOSITORY }}:latest
+
+  build-and-push-artifacts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: go mod vendor
+        run: go mod vendor
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Build release artifacts
+        run: make release
+
+      - name: Upload release files
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/flannel*
+                    
