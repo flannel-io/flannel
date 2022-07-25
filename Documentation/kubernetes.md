@@ -28,7 +28,7 @@ Thus, you will need to restrict access to this namespace if you wish to secure y
 
 If you want to deploy `flannel` securely in a shared namespace or want more fine-grained control over the pods deployed in your cluster, you can use a 3rd-party admission controller like [Kubewarden](https://kubewarden.io). Kubewarden provides policies that can replace features of PodSecurityPolicy like [capabilities-psp-policy](https://github.com/kubewarden/capabilities-psp-policy) and [hostpaths-psp-policy](https://github.com/kubewarden/hostpaths-psp-policy).
 
-Other options include [Kyverno](https://kyverno.io/policies/pod-security/) and [OPA Gatekeepere](https://github.com/open-policy-agent/gatekeeper).
+Other options include [Kyverno](https://kyverno.io/policies/pod-security/) and [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper).
 # Annotations
 
 *  `flannel.alpha.coreos.com/public-ip-overwrite`: Allows to overwrite the public IP of a node. Useful if the public IP can not determined from the node, e.G. because it is behind a NAT. It can be automatically set to a nodes `ExternalIP` using the [flannel-node-annotator](https://github.com/alvaroaleman/flannel-node-annotator)
@@ -56,12 +56,6 @@ If you didn't apply the `kube-flannel-rbac.yml` manifest and you need to, you'll
 As of Kubernetes v1.21, the [PodSecurityPolicy API was deprecated](https://kubernetes.io/blog/2021/04/06/podsecuritypolicy-deprecation-past-present-and-future/) and it will be removed in v1.25. Thus, the `flannel` manifest does not use PodSecurityPolicy anymore.
 
 If you still wish to use it, you can use `kube-flannel-psp.yaml` instead of `kube-flannel.yaml`. Please note that if you use a Kubernetes version >= 1.21, you will see a deprecation warning for the PodSecurityPolicy API.
-
-## The flannel CNI plugin
-
-The flannel CNI plugin can be found in the CNI plugins [repository](https://github.com/containernetworking/plugins). For additional details, see the [README](https://github.com/containernetworking/plugins/tree/master/plugins/meta/flannel)
-
-Kubernetes 1.6 requires CNI plugin version 0.5.1 or later.
 
 # Troubleshooting
 
