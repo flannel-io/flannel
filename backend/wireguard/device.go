@@ -128,7 +128,7 @@ func newWGDevice(devAttrs *wgDeviceAttrs, ctx context.Context, wg *sync.WaitGrou
 	// Create network device
 	la := netlink.LinkAttrs{
 		Name: devAttrs.name,
-		MTU:  devAttrs.MTU,
+		MTU:  devAttrs.MTU - overhead,
 	}
 	link := &netlink.GenericLink{LinkAttrs: la, LinkType: "wireguard"}
 
