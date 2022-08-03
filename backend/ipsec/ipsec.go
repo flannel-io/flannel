@@ -89,9 +89,7 @@ func (be *IPSECBackend) RegisterNetwork(
 	}
 
 	if len(cfg.PSK) < minPasswordLength {
-		return nil, fmt.Errorf(
-			"config error, password should be at least %d characters long",
-			minPasswordLength)
+		return nil, fmt.Errorf("config error, password is too short")
 	}
 
 	log.Infof("IPSec config: UDPEncap=%v ESPProposal=%s", cfg.UDPEncap, cfg.ESPProposal)
