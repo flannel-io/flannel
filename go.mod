@@ -6,14 +6,11 @@ replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
 
 require (
 	github.com/Microsoft/hcsshim v0.9.2
-	github.com/aws/aws-sdk-go v1.15.11
 	github.com/bronze1man/goStrongswanVici v0.0.0-20201105010758-936f38b697fd
 	github.com/containernetworking/plugins v0.9.1
 	github.com/coreos/go-iptables v0.5.0
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f
-	github.com/denverdino/aliyungo v0.0.0-20190125010748-a747050bb1ba
-	github.com/go-ini/ini v1.28.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/btree v1.0.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
@@ -21,17 +18,15 @@ require (
 	github.com/jonboulle/clockwork v0.2.2
 	github.com/pkg/errors v0.9.1
 	github.com/soheilhy/cmux v0.1.5 // indirect
-	github.com/tencentcloud/tencentcloud-sdk-go v1.0.67
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20201229170055-e5319fda7802 // indirect
 	github.com/vishvananda/netlink v1.2.1-beta.2
 	github.com/vishvananda/netns v0.0.0-20200728191858-db3c7e526aae
 	go.uber.org/zap v1.17.0 // indirect
 	golang.org/x/net v0.0.0-20220907135653-1e95f45603a7
-	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
+	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
 	golang.zx2c4.com/wireguard v0.0.0-20220117163742-e0b8f11489c5 // indirect
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20211230205640-daad0b7ba671
-	google.golang.org/api v0.30.0
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
 	k8s.io/api v0.20.6
 	k8s.io/apimachinery v0.20.6
@@ -40,7 +35,11 @@ require (
 
 )
 
-require go.etcd.io/etcd/client/v3 v3.5.4
+require (
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.464
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.464
+	go.etcd.io/etcd/client/v3 v3.5.4
+)
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -75,7 +74,6 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.65.0 // indirect
 	github.com/BurntSushi/toml v0.4.1 // indirect
 	github.com/Microsoft/go-winio v0.4.17 // indirect
 	github.com/containerd/cgroups v1.0.1 // indirect
@@ -87,11 +85,9 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
 	github.com/googleapis/gnostic v0.4.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
-	github.com/jmespath/go-jmespath v0.0.0-20160803190731-bd40a432e4c7 // indirect
 	github.com/josharian/native v0.0.0-20200817173448-b6b71def0850 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/mdlayher/genetlink v1.1.0 // indirect

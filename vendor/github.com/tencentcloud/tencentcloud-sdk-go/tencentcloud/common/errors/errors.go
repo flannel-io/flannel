@@ -11,6 +11,9 @@ type TencentCloudSDKError struct {
 }
 
 func (e *TencentCloudSDKError) Error() string {
+	if e.RequestId == "" {
+		return fmt.Sprintf("[TencentCloudSDKError] Code=%s, Message=%s", e.Code, e.Message)
+	}
 	return fmt.Sprintf("[TencentCloudSDKError] Code=%s, Message=%s, RequestId=%s", e.Code, e.Message, e.RequestId)
 }
 

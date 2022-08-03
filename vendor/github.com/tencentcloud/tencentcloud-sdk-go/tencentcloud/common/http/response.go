@@ -56,6 +56,29 @@ func (r *BaseResponse) ParseErrorFromHTTPResponse(body []byte) (err error) {
 	return nil
 }
 
+func ParseErrorFromHTTPResponse(body []byte) (err error) {
+	resp := &ErrorResponse{}
+	err = json.Unmarshal(body, resp)
+	if err != nil {
+		msg := fmt.Sprintf("Fail to parse json content: %s, because: %s", body, err)
+		return errors.NewTencentCloudSDKError("ClientError.ParseJsonError", msg, "")
+	}
+	if resp.Response.Error.Code != "" {
+		return errors.NewTencentCloudSDKError(resp.Response.Error.Code, resp.Response.Error.Message, resp.Response.RequestId)
+	}
+
+	deprecated := &DeprecatedAPIErrorResponse{}
+	err = json.Unmarshal(body, deprecated)
+	if err != nil {
+		msg := fmt.Sprintf("Fail to parse json content: %s, because: %s", body, err)
+		return errors.NewTencentCloudSDKError("ClientError.ParseJsonError", msg, "")
+	}
+	if deprecated.Code != 0 {
+		return errors.NewTencentCloudSDKError(deprecated.CodeDesc, deprecated.Message, "")
+	}
+	return nil
+}
+
 func ParseFromHttpResponse(hr *http.Response, response Response) (err error) {
 	defer hr.Body.Close()
 	body, err := ioutil.ReadAll(hr.Body)

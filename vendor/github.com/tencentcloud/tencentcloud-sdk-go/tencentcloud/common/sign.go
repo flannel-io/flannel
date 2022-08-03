@@ -38,22 +38,22 @@ func hmacsha256(s, key string) string {
 	return string(hashed.Sum(nil))
 }
 
-func signRequest(request tchttp.Request, credential *Credential, method string) (err error) {
+func signRequest(request tchttp.Request, credential CredentialIface, method string) (err error) {
 	if method != SHA256 {
 		method = SHA1
 	}
 	checkAuthParams(request, credential, method)
 	s := getStringToSign(request)
-	signature := Sign(s, credential.SecretKey, method)
+	signature := Sign(s, credential.GetSecretKey(), method)
 	request.GetParams()["Signature"] = signature
 	return
 }
 
-func checkAuthParams(request tchttp.Request, credential *Credential, method string) {
+func checkAuthParams(request tchttp.Request, credential CredentialIface, method string) {
 	params := request.GetParams()
-	credentialParams := credential.GetCredentialParams()
-	for key, value := range credentialParams {
-		params[key] = value
+	params["SecretId"] = credential.GetSecretId()
+	if token := credential.GetToken(); len(token) != 0 {
+		params["Token"] = token
 	}
 	params["SignatureMethod"] = method
 	delete(params, "Signature")
@@ -73,17 +73,13 @@ func getStringToSign(request tchttp.Request) string {
 	params := request.GetParams()
 	// sort params
 	keys := make([]string, 0, len(params))
-	for k, _ := range params {
+	for k := range params {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 
 	for i := range keys {
 		k := keys[i]
-		// TODO: check if server side allows empty value in url.
-		if params[k] == "" {
-			continue
-		}
 		buf.WriteString(k)
 		buf.WriteString("=")
 		buf.WriteString(params[k])
