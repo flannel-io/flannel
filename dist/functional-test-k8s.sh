@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ARCH="${ARCH:-amd64}"
-ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.2.7}"
+ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.5.1}"
 ETCD_LOCATION="${ETCD_LOCATION:-etcd}"
 FLANNEL_NET="${FLANNEL_NET:-10.10.0.0/16}"
 TAG=`git describe --tags --dirty`
