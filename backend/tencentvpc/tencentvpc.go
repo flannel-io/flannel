@@ -19,7 +19,7 @@ package tencentvpc
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"sync"
@@ -60,7 +60,7 @@ func get_vm_metadata(url string) (string, error) {
 
 	defer resp.Body.Close()
 
-	metadata, _ := ioutil.ReadAll(resp.Body)
+	metadata, _ := io.ReadAll(resp.Body)
 	return string(metadata), nil
 }
 
