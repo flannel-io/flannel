@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"strconv"
@@ -101,7 +100,7 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 		}
 	}
 
-	netConf, err := ioutil.ReadFile(netConfPath)
+	netConf, err := os.ReadFile(netConfPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read net conf: %v", err)
 	}
