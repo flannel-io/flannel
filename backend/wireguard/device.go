@@ -19,7 +19,6 @@ package wireguard
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
@@ -100,7 +99,7 @@ func (devAttrs *wgDeviceAttrs) setupKeys(psk string) error {
 			return fmt.Errorf("could not write key file: %w", err)
 		}
 	} else {
-		data, err := ioutil.ReadFile(keyFile)
+		data, err := os.ReadFile(keyFile)
 		if err != nil {
 			return err
 		}

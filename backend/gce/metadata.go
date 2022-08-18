@@ -17,7 +17,7 @@
 package gce
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"path"
 	"strings"
@@ -69,7 +69,7 @@ func metadataGet(path string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
