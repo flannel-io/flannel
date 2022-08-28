@@ -161,7 +161,7 @@ func (be *IPIPBackend) configureIPIPDevice(lease *subnet.Lease, flannelnet ip.IP
 		// local and remote attribute is expected.
 		// local should be equal to the extIface.IfaceAddr and remote should be nil (or equal to 0.0.0.0)
 		if ipip.Local == nil || !ipip.Local.Equal(be.extIface.IfaceAddr) || (ipip.Remote != nil && ipip.Remote.String() != "0.0.0.0") {
-			log.Warningf("%q already exists with incompatable attributes: local=%v remote=%v; recreating device",
+			log.Warningf("%q already exists with incompatible attributes: local=%v remote=%v; recreating device",
 				tunnelName, ipip.Local, ipip.Remote)
 
 			if err = netlink.LinkDel(existing); err != nil {
