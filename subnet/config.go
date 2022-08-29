@@ -62,6 +62,9 @@ func ParseConfig(s string) (*Config, error) {
 	}
 
 	if cfg.EnableIPv4 {
+		if cfg.Network.Empty() {
+			return nil, errors.New("Please define a correct Network parameter in the flannel config")
+		}
 		if cfg.SubnetLen > 0 {
 			// SubnetLen needs to allow for a tunnel and bridge device on each host.
 			if cfg.SubnetLen > 30 {
@@ -119,6 +122,9 @@ func ParseConfig(s string) (*Config, error) {
 		}
 	}
 	if cfg.EnableIPv6 {
+		if cfg.IPv6Network.Empty() {
+			return nil, errors.New("Please define a correct IPv6Network parameter in the flannel config")
+		}
 		if cfg.IPv6SubnetLen > 0 {
 			// SubnetLen needs to allow for a tunnel and bridge device on each host.
 			if cfg.IPv6SubnetLen > 126 {
