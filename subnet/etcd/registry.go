@@ -79,7 +79,7 @@ func newTlsConfig(c *EtcdConfig) (*tls.Config, error) {
 	}
 
 	if c.Keyfile == "" || c.Certfile == "" {
-		tlscfg.InsecureSkipVerify = true
+		return nil, fmt.Errorf("can't connect to etcd: no cert file found")
 	} else {
 		cert, err := tlsutil.NewCert(c.Certfile, c.Keyfile, nil)
 		if err != nil {

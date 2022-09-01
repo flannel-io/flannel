@@ -28,7 +28,14 @@ setup_suite() {
 
     # Start etcd
     docker rm -f flannel-e2e-test-etcd >/dev/null 2>/dev/null
-    docker run --name=flannel-e2e-test-etcd -d --dns 8.8.8.8 -e ETCD_UNSUPPORTED_ARCH=${ARCH} -p 2379:2379 $ETCD_IMG $ETCD_LOCATION --listen-client-urls http://0.0.0.0:2379 --advertise-client-urls $etcd_endpt >/dev/null
+    docker run --name=flannel-e2e-test-etcd -d --dns 8.8.8.8 -v "${PWD}/test:/certs" \
+    -e ETCD_UNSUPPORTED_ARCH=${ARCH} -p 2379:2379 $ETCD_IMG $ETCD_LOCATION \
+    --listen-client-urls http://0.0.0.0:2379 \
+    --cert-file=/certs/server.pem \
+    --key-file=/certs/server-key.pem \
+    --client-cert-auth \
+    --trusted-ca-file=/certs/ca.pem \
+    --advertise-client-urls $etcd_endpt >/dev/null
 }
 
 teardown_suite() {
@@ -39,18 +46,18 @@ teardown_suite() {
 setup() {
     # rm any old flannel container that maybe running, ignore error as it might not exist
     docker rm -f flannel-e2e-test-flannel1 >/dev/null 2>/dev/null
-    assert "docker run --name=flannel-e2e-test-flannel1 -d --privileged $FLANNEL_DOCKER_IMAGE --etcd-endpoints=$etcd_endpt -v 10 >/dev/null"
+    assert "docker run -v ${PWD}/test:/certs --name=flannel-e2e-test-flannel1 -d --privileged $FLANNEL_DOCKER_IMAGE --etcd-cafile=/certs/ca.pem --etcd-certfile=/certs/client.pem --etcd-keyfile=/certs/client-key.pem --etcd-endpoints=$etcd_endpt -v 10"
 
     # rm any old flannel container that maybe running, ignore error as it might not exist
     docker rm -f flannel-e2e-test-flannel2 >/dev/null 2>/dev/null
-    assert "docker run --name=flannel-e2e-test-flannel2 -d --privileged $FLANNEL_DOCKER_IMAGE --etcd-endpoints=$etcd_endpt -v 10 >/dev/null"
+    assert "docker run -v ${PWD}/test:/certs --name=flannel-e2e-test-flannel2 -d --privileged $FLANNEL_DOCKER_IMAGE --etcd-cafile=/certs/ca.pem --etcd-certfile=/certs/client.pem --etcd-keyfile=/certs/client-key.pem --etcd-endpoints=$etcd_endpt -v 10"
 }
 
 teardown() {
     echo "########## logs for flannel-e2e-test-flannel1 container ##########" 2>&1
     docker logs flannel-e2e-test-flannel1
     docker rm -f flannel-e2e-test-flannel1 flannel-e2e-test-flannel2 flannel-e2e-test-flannel1-iperf flannel-host1 flannel-host2 > /dev/null 2>&1
-    docker run --rm -e ETCDCTL_API=3 $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt del /coreos.com/network/config > /dev/null 2>&1
+    docker run --rm -e ETCDCTL_API=3 -v "${PWD}/test:/certs" $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt --cacert=/certs/ca.pem --cert=/certs/client.pem --key=/certs/client-key.pem del /coreos.com/network/config > /dev/null 2>&1
 }
 
 write_config_etcd() {
@@ -62,7 +69,7 @@ write_config_etcd() {
         flannel_conf="{ \"Network\": \"$FLANNEL_NET\", \"Backend\": { \"Type\": \"${backend}\" } }"
     fi
 
-    while ! docker run --rm -e ETCDCTL_API=3 $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt put /coreos.com/network/config "$flannel_conf" >/dev/null
+    while ! docker run --rm -e ETCDCTL_API=3 -v "${PWD}/test:/certs" $ETCDCTL_IMG etcdctl --endpoints=$etcd_endpt --cacert=/certs/ca.pem --cert=/certs/client.pem --key=/certs/client-key.pem put /coreos.com/network/config "$flannel_conf" >/dev/null
     do
         sleep 0.1
     done
@@ -193,12 +200,12 @@ test_multi() {
     flannel_conf_vxlan='{"Network": "10.11.0.0/16", "Backend": {"Type": "vxlan"}}'
     flannel_conf_host_gw='{"Network": "10.12.0.0/16", "Backend": {"Type": "host-gw"}}'
 
-    while ! docker run --rm -e ETCDCTL_API=3 $ETCD_IMG etcdctl --endpoints=$etcd_endpt put /vxlan/network/config "$flannel_conf_vxlan" >/dev/null
+    while ! docker run --rm -e ETCDCTL_API=3 -v "${PWD}/test:/certs" $ETCD_IMG etcdctl --endpoints=$etcd_endpt --cacert=/certs/ca.pem --cert=/certs/client.pem --key=/certs/client-key.pem put /vxlan/network/config "$flannel_conf_vxlan" >/dev/null
     do
         sleep 0.1
     done
 
-    while ! docker run --rm -e ETCDCTL_API=3 $ETCD_IMG etcdctl --endpoints=$etcd_endpt put /hostgw/network/config "$flannel_conf_host_gw" >/dev/null
+    while ! docker run --rm -e ETCDCTL_API=3 -v "${PWD}/test:/certs" $ETCD_IMG etcdctl --endpoints=$etcd_endpt --cacert=/certs/ca.pem --cert=/certs/client.pem --key=/certs/client-key.pem put /hostgw/network/config "$flannel_conf_host_gw" >/dev/null
     do
         sleep 0.1
     done
@@ -208,11 +215,11 @@ test_multi() {
         docker rm -f flannel-host$host 2>/dev/null >/dev/null
 
         # Start the hosts
-        docker run --name=flannel-host$host -id --privileged --entrypoint /bin/sh $FLANNEL_DOCKER_IMAGE   >/dev/null
+        docker run -v "${PWD}/test:/certs" --name=flannel-host$host -id --privileged --entrypoint /bin/sh $FLANNEL_DOCKER_IMAGE   >/dev/null
 
         # Start two flanneld instances
-        docker exec -d flannel-host$host sh -c "/opt/bin/flanneld -v 10 -subnet-file /vxlan.env -etcd-prefix=/vxlan/network --etcd-endpoints=$etcd_endpt 2>vxlan.log"
-        docker exec -d flannel-host$host sh -c "/opt/bin/flanneld -v 10 -subnet-file /hostgw.env -etcd-prefix=/hostgw/network --etcd-endpoints=$etcd_endpt 2>hostgw.log"
+        docker exec -d flannel-host$host sh -c "/opt/bin/flanneld -v 10 -subnet-file /vxlan.env -etcd-prefix=/vxlan/network --etcd-cafile=/certs/ca.pem --etcd-certfile=/certs/client.pem --etcd-keyfile=/certs/client-key.pem --etcd-endpoints=$etcd_endpt 2>vxlan.log"
+        docker exec -d flannel-host$host sh -c "/opt/bin/flanneld -v 10 -subnet-file /hostgw.env -etcd-prefix=/hostgw/network --etcd-cafile=/certs/ca.pem --etcd-certfile=/certs/client.pem --etcd-keyfile=/certs/client-key.pem --etcd-endpoints=$etcd_endpt 2>hostgw.log"
     done
 
     for host in 1 2; do
