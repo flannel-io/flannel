@@ -92,7 +92,7 @@ func ensureLink(vxlan *netlink.Vxlan) (*netlink.Vxlan, error) {
 		}
 
 		// delete existing
-		log.Warningf("%q already exists with incompatable configuration: %v; recreating device", vxlan.Name, incompat)
+		log.Warningf("%q already exists with incompatible configuration: %v; recreating device", vxlan.Name, incompat)
 		if err = netlink.LinkDel(existing); err != nil {
 			return nil, fmt.Errorf("failed to delete interface: %v", err)
 		}
