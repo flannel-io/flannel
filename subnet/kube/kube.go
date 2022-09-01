@@ -283,48 +283,75 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		}
 	}
 
-	if (n.Annotations[ksm.annotations.BackendData] != string(bd) ||
-		n.Annotations[ksm.annotations.BackendType] != attrs.BackendType ||
-		n.Annotations[ksm.annotations.BackendPublicIP] != attrs.PublicIP.String() ||
-		n.Annotations[ksm.annotations.SubnetKubeManaged] != "true" ||
-		(n.Annotations[ksm.annotations.BackendPublicIPOverwrite] != "" && n.Annotations[ksm.annotations.BackendPublicIPOverwrite] != attrs.PublicIP.String())) ||
+	anns := ksm.annotations
+
+	var backendPublicIPOverwrite string
+	var backendPublicIPOverwriteSource string
+
+	if overwrite := n.Annotations[anns.BackendPublicIPOverwrite]; overwrite != "" {
+		backendPublicIPOverwrite = overwrite
+		backendPublicIPOverwriteSource = "annotation"
+	} else if overwrite := n.Labels[anns.BackendPublicIPOverwrite]; overwrite != "" {
+		backendPublicIPOverwrite = overwrite
+		backendPublicIPOverwriteSource = "label"
+	}
+
+	var backendPublicIPv6Overwrite string
+	var backendPublicIPv6OverwriteSource string
+
+	if overwrite := n.Annotations[anns.BackendPublicIPv6Overwrite]; overwrite != "" {
+		backendPublicIPv6Overwrite = overwrite
+		backendPublicIPv6OverwriteSource = "annotation"
+	} else if overwrite := n.Labels[anns.BackendPublicIPv6Overwrite]; overwrite != "" {
+		backendPublicIPv6Overwrite = overwrite
+		backendPublicIPv6OverwriteSource = "label"
+	}
+
+	if (n.Annotations[anns.BackendData] != string(bd) ||
+		n.Annotations[anns.BackendType] != attrs.BackendType ||
+		n.Annotations[anns.BackendPublicIP] != attrs.PublicIP.String() ||
+		n.Annotations[anns.SubnetKubeManaged] != "true" ||
+		(backendPublicIPOverwrite != "" && backendPublicIPOverwrite != attrs.PublicIP.String())) ||
 		(attrs.PublicIPv6 != nil &&
-			(n.Annotations[ksm.annotations.BackendV6Data] != string(v6Bd) ||
-				n.Annotations[ksm.annotations.BackendType] != attrs.BackendType ||
-				n.Annotations[ksm.annotations.BackendPublicIPv6] != attrs.PublicIPv6.String() ||
-				n.Annotations[ksm.annotations.SubnetKubeManaged] != "true" ||
-				(n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != "" && n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != attrs.PublicIPv6.String()))) {
-		n.Annotations[ksm.annotations.BackendType] = attrs.BackendType
+			(n.Annotations[anns.BackendV6Data] != string(v6Bd) ||
+				n.Annotations[anns.BackendType] != attrs.BackendType ||
+				n.Annotations[anns.BackendPublicIPv6] != attrs.PublicIPv6.String() ||
+				n.Annotations[anns.SubnetKubeManaged] != "true" ||
+				(backendPublicIPv6Overwrite != "" && backendPublicIPv6Overwrite != attrs.PublicIPv6.String()))) {
+
+		n.Annotations[anns.BackendType] = attrs.BackendType
 
 		//TODO -i only vxlan and host-gw backends support dual stack now.
 		if (attrs.BackendType == "vxlan" && string(bd) != "null") || (attrs.BackendType == "wireguard" && string(bd) != "null") || attrs.BackendType != "vxlan" {
-			n.Annotations[ksm.annotations.BackendData] = string(bd)
-			if n.Annotations[ksm.annotations.BackendPublicIPOverwrite] != "" {
-				if n.Annotations[ksm.annotations.BackendPublicIP] != n.Annotations[ksm.annotations.BackendPublicIPOverwrite] {
-					log.Infof("Overriding public ip with '%s' from node annotation '%s'",
-						n.Annotations[ksm.annotations.BackendPublicIPOverwrite],
-						ksm.annotations.BackendPublicIPOverwrite)
-					n.Annotations[ksm.annotations.BackendPublicIP] = n.Annotations[ksm.annotations.BackendPublicIPOverwrite]
+			n.Annotations[anns.BackendData] = string(bd)
+			if backendPublicIPOverwrite != "" {
+				if n.Annotations[anns.BackendPublicIP] != backendPublicIPOverwrite {
+					log.Infof("Overriding public ip with '%s' from node %s '%s'",
+						backendPublicIPOverwrite,
+						backendPublicIPOverwriteSource,
+						anns.BackendPublicIPOverwrite)
+					n.Annotations[anns.BackendPublicIP] = backendPublicIPOverwrite
 				}
 			} else {
-				n.Annotations[ksm.annotations.BackendPublicIP] = attrs.PublicIP.String()
+				n.Annotations[anns.BackendPublicIP] = attrs.PublicIP.String()
 			}
 		}
 
 		if (attrs.BackendType == "vxlan" && string(v6Bd) != "null") || (attrs.BackendType == "wireguard" && string(v6Bd) != "null" && attrs.PublicIPv6 != nil) || (attrs.BackendType == "host-gw" && attrs.PublicIPv6 != nil) {
-			n.Annotations[ksm.annotations.BackendV6Data] = string(v6Bd)
-			if n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != "" {
-				if n.Annotations[ksm.annotations.BackendPublicIPv6] != n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] {
-					log.Infof("Overriding public ipv6 with '%s' from node annotation '%s'",
-						n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite],
-						ksm.annotations.BackendPublicIPv6Overwrite)
-					n.Annotations[ksm.annotations.BackendPublicIPv6] = n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite]
+			n.Annotations[anns.BackendV6Data] = string(v6Bd)
+			if backendPublicIPv6Overwrite != "" {
+				if n.Annotations[anns.BackendPublicIPv6] != backendPublicIPv6Overwrite {
+					log.Infof("Overriding public ipv6 with '%s' from node %s '%s'",
+						backendPublicIPv6Overwrite,
+						backendPublicIPv6OverwriteSource,
+						anns.BackendPublicIPv6Overwrite)
+					n.Annotations[anns.BackendPublicIPv6] = backendPublicIPv6Overwrite
 				}
 			} else {
-				n.Annotations[ksm.annotations.BackendPublicIPv6] = attrs.PublicIPv6.String()
+				n.Annotations[anns.BackendPublicIPv6] = attrs.PublicIPv6.String()
 			}
 		}
-		n.Annotations[ksm.annotations.SubnetKubeManaged] = "true"
+		n.Annotations[anns.SubnetKubeManaged] = "true"
 
 		oldData, err := json.Marshal(cachedNode)
 		if err != nil {

@@ -147,7 +147,7 @@ test_ipip() {
     check_iptables
 }
 
-test_public-ip-overwrite(){
+test_public-ip-overwrite_annotation(){
   docker exec flannel-e2e-k8s-apiserver kubectl annotate node flannel1 \
     flannel.alpha.coreos.com/public-ip-overwrite=172.18.0.2 >/dev/null 2>&1
   start_flannel vxlan
@@ -157,6 +157,19 @@ test_public-ip-overwrite(){
     "Overwriting public IP via annotation does not work"
   # Remove annotation to not break all other tests
   docker exec flannel-e2e-k8s-apiserver kubectl annotate node flannel1 \
+    flannel.alpha.coreos.com/public-ip-overwrite- >/dev/null 2>&1
+}
+
+test_public-ip-overwrite_label(){
+  docker exec flannel-e2e-k8s-apiserver kubectl label node flannel1 \
+    flannel.alpha.coreos.com/public-ip-overwrite=172.18.0.2 >/dev/null 2>&1
+  start_flannel vxlan
+  assert_equals "172.18.0.2" \
+    "$(docker exec flannel-e2e-k8s-apiserver kubectl get node/flannel1 -o \
+    jsonpath='{.metadata.labels.flannel\.alpha\.coreos\.com/public-ip}' 2>/dev/null)" \
+    "Overwriting public IP via label does not work"
+  # Remove label to not break all other tests
+  docker exec flannel-e2e-k8s-apiserver kubectl label node flannel1 \
     flannel.alpha.coreos.com/public-ip-overwrite- >/dev/null 2>&1
 }
 
