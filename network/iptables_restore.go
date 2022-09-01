@@ -19,17 +19,20 @@ package network
 import (
 	"bytes"
 	"fmt"
-	"github.com/coreos/go-iptables/iptables"
 	"io"
-	log "k8s.io/klog"
 	"os/exec"
 	"regexp"
 	"strconv"
+
+	"github.com/coreos/go-iptables/iptables"
+	log "k8s.io/klog"
 )
 
 const (
 	ipTablesRestoreCmd  string = "iptables-restore"
 	ip6TablesRestoreCmd string = "ip6tables-restore"
+	ipTablesCmd         string = "iptables"
+	ip6TablesCmd        string = "ip6tables"
 )
 
 // IPTablesRestore wrapper for iptables-restore
@@ -58,7 +61,12 @@ func NewIPTablesRestoreWithProtocol(protocol iptables.Protocol) (IPTablesRestore
 	if err != nil {
 		return nil, err
 	}
-	hasWait, err := getIptablesRestoreSupport(path)
+	cmdIptables := getIptablesCommand(protocol)
+	pathIptables, err := exec.LookPath(cmdIptables)
+	if err != nil {
+		return nil, err
+	}
+	hasWait, err := getIptablesRestoreSupport(pathIptables)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +154,7 @@ func getIptablesRestoreSupport(path string) (hasWait bool, err error) {
 	return ipTablesHasWaitSupport(v1, v2, v3), nil
 }
 
-// Checks if an iptables-restore version is after 1.4.20, when --wait was added
+// Checks if an iptables-restore version is after 1.6.2, when --wait was added
 func ipTablesHasWaitSupport(v1, v2, v3 int) bool {
 	if v1 > 1 {
 		return true
@@ -204,4 +212,12 @@ func getIptablesRestoreCommand(proto iptables.Protocol) string {
 		return ip6TablesRestoreCmd
 	}
 	return ipTablesRestoreCmd
+}
+
+// getIptablesCommand returns the correct command for the given proto, either "iptables" or "ip6tables".
+func getIptablesCommand(proto iptables.Protocol) string {
+	if proto == iptables.ProtocolIPv6 {
+		return ip6TablesCmd
+	}
+	return ipTablesCmd
 }
