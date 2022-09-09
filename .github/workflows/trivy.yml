@@ -3,11 +3,20 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: build
+name: Vulnerability scan
 
 on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "master" ]
   schedule:
     - cron: '34 5 * * 2'
+
+env:
+  GO_VERSION: "1.17.2"
+  REPOSITORY: flannelcni/flannel
 
 permissions:
   contents: read
@@ -18,23 +27,27 @@ jobs:
       contents: read # for actions/checkout to fetch code
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
     name: Build
-    runs-on: "ubuntu-18.04"
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
       - name: Build an image from Dockerfile
         run: |
-          docker build -f Dockerfile.amd64 -t docker.io/flannelcni/flannel:${{ github.sha }} .
+          ARCH=amd64 TAG=${{ github.sha }} make image
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
+      - name: Run Trivy vulnerability scanner in tarball mode
+        uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'docker.io/flannelcni/flannel:${{ github.sha }}'
-          format: 'template'
-          template: '@/contrib/sarif.tpl'
-          output: 'trivy-results.sarif'
+          input: /github/workspace/dist/flanneld-${{ github.sha }}-amd64.docker
           severity: 'CRITICAL,HIGH'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
