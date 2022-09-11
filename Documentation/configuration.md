@@ -34,8 +34,8 @@ The value of the config is a JSON dictionary with the following keys:
    Defaults to the last subnet of `Ipv6Network`.
 
 * `Backend` (dictionary): Type of backend to use and specific configurations for that backend.
-   The list of available backends and the keys that can be put into the this dictionary are listed below.
-   Defaults to `udp` backend.
+   The list of available backends and the keys that can be put into the this dictionary are listed in [Backends](backends.md).
+   Defaults to `vxlan` backend.
 
 Subnet leases have a duration of 24 hours. Leases are renewed within 1 hour of their expiration,
 unless a different renewal margin is set with the ``--subnet-lease-renew-margin`` option.
