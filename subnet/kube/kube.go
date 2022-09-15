@@ -21,6 +21,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/flannel-io/flannel/pkg/ip"
@@ -346,15 +347,6 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 			return nil, err
 		}
 	}
-	if ksm.setNodeNetworkUnavailable {
-		log.Infoln("Setting NodeNetworkUnavailable")
-		err = ksm.setNodeNetworkUnavailableFalse(ctx)
-		if err != nil {
-			log.Errorf("Unable to set NodeNetworkUnavailable to False for %q: %v", ksm.nodeName, err)
-		}
-	} else {
-		log.Infoln("Skip setting NodeNetworkUnavailable")
-	}
 
 	lease := &subnet.Lease{
 		Attrs:      *attrs,
@@ -457,9 +449,14 @@ func (ksm *kubeSubnetManager) Name() string {
 	return fmt.Sprintf("Kubernetes Subnet Manager - %s", ksm.nodeName)
 }
 
-// Set Kubernetes NodeNetworkUnavailable to false when starting
+// CompleteLease Set Kubernetes NodeNetworkUnavailable to false when starting
 // https://kubernetes.io/docs/concepts/architecture/nodes/#condition
-func (ksm *kubeSubnetManager) setNodeNetworkUnavailableFalse(ctx context.Context) error {
+func (ksm *kubeSubnetManager) CompleteLease(ctx context.Context, lease *subnet.Lease, wg *sync.WaitGroup) error {
+	if !ksm.setNodeNetworkUnavailable {
+		// not set NodeNetworkUnavailable NodeCondition
+		return nil
+	}
+
 	condition := v1.NodeCondition{
 		Type:               v1.NodeNetworkUnavailable,
 		Status:             v1.ConditionFalse,

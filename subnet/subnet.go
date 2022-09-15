@@ -21,6 +21,7 @@ import (
 	"net"
 	"regexp"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/flannel-io/flannel/pkg/ip"
@@ -147,6 +148,7 @@ type Manager interface {
 	RenewLease(ctx context.Context, lease *Lease) error
 	WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (LeaseWatchResult, error)
 	WatchLeases(ctx context.Context, cursor interface{}) (LeaseWatchResult, error)
+	CompleteLease(ctx context.Context, lease *Lease, wg *sync.WaitGroup) error
 
 	Name() string
 }
