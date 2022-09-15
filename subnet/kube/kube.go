@@ -129,6 +129,8 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 	return sm, nil
 }
 
+// newKubeSubnetManager fills the kubeSubnetManager. The most important part is the controller which will
+// watch for kubernetes node updates
 func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet.Config, nodeName, prefix string) (*kubeSubnetManager, error) {
 	var err error
 	var ksm kubeSubnetManager
@@ -209,6 +211,8 @@ func (ksm *kubeSubnetManager) handleAddLeaseEvent(et subnet.EventType, obj inter
 	ksm.events <- subnet.Event{Type: et, Lease: l}
 }
 
+// handleUpdateLeaseEvent verifies if anything relevant changed in the node object: either
+// ksm.annotations.BackendData, ksm.annotations.BackendType or ksm.annotations.BackendPublicIP
 func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{}) {
 	o := oldObj.(*v1.Node)
 	n := newObj.(*v1.Node)
@@ -244,6 +248,9 @@ func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Con
 	return ksm.subnetConf, nil
 }
 
+// AcquireLease adds the flannel specific node annotations (defined in the struct LeaseAttrs) and returns a lease
+// with importany information for the backend, such as the subnet. This function is called once by the backend when
+// registering
 func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
 	cachedNode, err := ksm.nodeStore.Get(ksm.nodeName)
 	if err != nil {
@@ -386,6 +393,7 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 	return lease, nil
 }
 
+// WatchLeases waits for the kubeSubnetManager to provide an event in case something relevant changed in the node data
 func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, cursor interface{}) (subnet.LeaseWatchResult, error) {
 	select {
 	case event := <-ksm.events:
@@ -402,6 +410,7 @@ func (ksm *kubeSubnetManager) Run(ctx context.Context) {
 	ksm.nodeController.Run(ctx.Done())
 }
 
+// nodeToLease updates the lease with information fetch from the node, e.g. PodCIDR
 func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l subnet.Lease, err error) {
 	if ksm.enableIPv4 {
 		l.Attrs.PublicIP, err = ip.ParseIP4(n.Annotations[ksm.annotations.BackendPublicIP])
