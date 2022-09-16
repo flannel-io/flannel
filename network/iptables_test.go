@@ -114,7 +114,7 @@ func TestDeleteRules(t *testing.T) {
 	baseRules := MasqRules(ip.IP4Net{}, lease())
 	expectedRules := expectedTearDownIPTablesRestoreRules(baseRules)
 
-	err := ipTablesBootstrap(ipt, iptr, baseRules)
+	err := ipTablesBootstrap(ipt, iptr, baseRules, false)
 	if err != nil {
 		t.Error("Error bootstrapping up iptables")
 	}
@@ -159,7 +159,7 @@ func TestDeleteMoreRules(t *testing.T) {
 		},
 	}
 
-	err := ipTablesBootstrap(ipt, iptr, baseRules)
+	err := ipTablesBootstrap(ipt, iptr, baseRules, false)
 	if err != nil {
 		t.Error("Error bootstrapping up iptables")
 	}
@@ -192,7 +192,7 @@ func TestBootstrapRules(t *testing.T) {
 		{"nat", "POSTROUTING", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
 	}
 
-	err := ipTablesBootstrap(ipt, iptr, baseRules)
+	err := ipTablesBootstrap(ipt, iptr, baseRules, false)
 	if err != nil {
 		t.Error("Error bootstrapping up iptables")
 	}
@@ -234,7 +234,7 @@ func TestBootstrapRules(t *testing.T) {
 		},
 	}
 	// Re-run ensure has new operations
-	err = ipTablesBootstrap(ipt, iptr, baseRules)
+	err = ipTablesBootstrap(ipt, iptr, baseRules, false)
 	if err != nil {
 		t.Error("Error bootstrapping up iptables")
 	}
@@ -252,7 +252,7 @@ func TestDeleteIP6Rules(t *testing.T) {
 	// expect to have the same DELETE rules
 	expectedRules := IP6RestoreDeleteRules(ip.IP6Net{}, lease())
 
-	err := ipTablesBootstrap(ipt, iptr, baseRules)
+	err := ipTablesBootstrap(ipt, iptr, baseRules, false)
 	if err != nil {
 		t.Error("Error bootstrapping up iptables")
 	}
@@ -291,7 +291,7 @@ func TestEnsureRules(t *testing.T) {
 		{"nat", "POSTROUTING", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
 	}
 
-	err = ensureIPTables(ipt, iptr, baseRules)
+	err = ensureIPTables(ipt, iptr, baseRules, false)
 	if err != nil {
 		t.Errorf("ensureIPTables should have completed without errors")
 	}
@@ -314,7 +314,7 @@ func TestEnsureRules(t *testing.T) {
 
 	iptr.rules = []IPTablesRestoreRules{}
 	// Re-run ensure no new operations
-	err = ensureIPTables(ipt, iptr, baseRules)
+	err = ensureIPTables(ipt, iptr, baseRules, false)
 	if err != nil {
 		t.Errorf("ensureIPTables should have completed without errors")
 	}
@@ -338,7 +338,7 @@ func TestEnsureIP6Rules(t *testing.T) {
 
 	baseRules := IP6Rules(ip.IP6Net{}, lease())
 
-	err = ensureIPTables(ipt, iptr, baseRules)
+	err = ensureIPTables(ipt, iptr, baseRules, false)
 	if err != nil {
 		t.Errorf("ensureIPTables should have completed without errors")
 	}
@@ -356,7 +356,7 @@ func TestEnsureIP6Rules(t *testing.T) {
 
 	iptr.rules = []IPTablesRestoreRules{}
 	// Re-run ensure no new operations
-	err = ensureIPTables(ipt, iptr, baseRules)
+	err = ensureIPTables(ipt, iptr, baseRules, false)
 	if err != nil {
 		t.Errorf("ensureIPTables should have completed without errors")
 	}
