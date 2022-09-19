@@ -47,61 +47,12 @@ Type and options:
 
 The following options are experimental and unsupported at this time.
 
-### AliVPC
-
-Use AliVPC to create IP routes in a [alicloud VPC route table](https://vpc.console.aliyun.com) when running in an AliCloud VPC. This mitigates the need to create a separate flannel interface.
-
-Requirements:
-* Running on an ECS instance that is in an AliCloud VPC.
-* Permission require `accessid` and `keysecret`.
-    * `Type` (string): `ali-vpc`
-    * `AccessKeyID` (string): API access key ID. Can also be configured with environment ACCESS_KEY_ID.
-    * `AccessKeySecret` (string): API access key secret. Can also be configured with environment ACCESS_KEY_SECRET.
-
-Route Limits: AliCloud VPC limits the number of entries per route table to 50.
-
 ### Alloc
 
 Alloc performs subnet allocation with no forwarding of data packets.
 
 Type:
 * `Type` (string): `alloc`
-
-### AWS VPC
-
-Recommended when running within an Amazon VPC, AWS VPC creates IP routes in an [Amazon VPC route table](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Route_Tables.html). Because AWS knows about the IP, it is possible to set up ELB to route directly to that container.
-
-Requirements:
-* Running on an EC2 instance that is in an Amazon VPC.
-* Permissions required: `CreateRoute`, `DeleteRoute`,`DescribeRouteTables`, `ModifyNetworkInterfaceAttribute`, `DescribeInstances` (optional)
-
-Type and options:
-* `Type` (string): `aws-vpc`
-* `RouteTableID` (string): [optional] The ID of the VPC route table to add routes to.
-    * The route table must be in the same region as the EC2 instance that flannel is running on.
-    * Flannel can automatically detect the ID of the route table if the optional `DescribeInstances` is granted to the EC2 instance.
-
-Authentication is handled via either environment variables or the node's IAM role. If the node has insufficient privileges to modify the VPC routing table specified, ensure that appropriate `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optionally `AWS_SECURITY_TOKEN` environment variables are set when running the `flanneld` process.
-
-Route Limits: AWS [limits](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Appendix_Limits.html) the number of entries per route table to 50.
-
-### GCE
-
-Use the GCE backend When running on [Google Compute Engine Network](https://cloud.google.com/compute/docs/networking#networks). Instead of using encapsulation, GCE manipulates IP routes to achieve maximum performance. Because of this, a separate flannel interface is not created.
-
-Requirements:
-* [Enable IP forwarding for the instances](https://cloud.google.com/compute/docs/networking#canipforward).
-* [Instance service account](https://cloud.google.com/compute/docs/authentication#using) with read-write compute permissions.
-
-Type:
-* `Type` (string): `gce`
-
-Command to create a compute instance with the correct permissions and IP forwarding enabled:
-```sh
-  $ gcloud compute instances create INSTANCE --can-ip-forward --scopes compute-rw
-```
-
-Route Limits: GCE [limits](https://cloud.google.com/compute/docs/resource-quotas) the number of routes for every *project* to 100 by default.
 
 ### TencentCloud VPC
 
@@ -117,10 +68,6 @@ Requirements:
 Route Limits: TencentCloud VPC limits the number of entries per route table to 50.
 
 
-
-[alicloud-vpc]: https://github.com/flannel-io/flannel/blob/master/Documentation/alicloud-vpc-backend.md
-[amazon-vpc]: https://github.com/flannel-io/flannel/blob/master/Documentation/aws-vpc-backend.md
-[gce-backend]: https://github.com/flannel-io/flannel/blob/master/Documentation/gce-backend.md
 [tencentcloud-vpc]: https://github.com/flannel-io/flannel/blob/master/Documentation/tencentcloud-vpc-backend.md
 
 

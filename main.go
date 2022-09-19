@@ -45,11 +45,8 @@ import (
 	// Backends need to be imported for their init() to get executed and them to register
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/flannel-io/flannel/backend"
-	_ "github.com/flannel-io/flannel/backend/alivpc"
 	_ "github.com/flannel-io/flannel/backend/alloc"
-	_ "github.com/flannel-io/flannel/backend/awsvpc"
 	_ "github.com/flannel-io/flannel/backend/extension"
-	_ "github.com/flannel-io/flannel/backend/gce"
 	_ "github.com/flannel-io/flannel/backend/hostgw"
 	_ "github.com/flannel-io/flannel/backend/ipip"
 	_ "github.com/flannel-io/flannel/backend/ipsec"
