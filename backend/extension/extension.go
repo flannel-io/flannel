@@ -25,6 +25,7 @@ import (
 	"sync"
 
 	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/config"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
@@ -55,7 +56,7 @@ func (_ *ExtensionBackend) Run(ctx context.Context) {
 	<-ctx.Done()
 }
 
-func (be *ExtensionBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+func (be *ExtensionBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *config.Config) (backend.Network, error) {
 	n := &network{
 		extIface: be.extIface,
 		sm:       be.sm,

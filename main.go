@@ -31,6 +31,7 @@ import (
 
 	"github.com/coreos/pkg/flagutil"
 	"github.com/flannel-io/flannel/network"
+	"github.com/flannel-io/flannel/pkg/config"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/ipmatch"
 	"github.com/flannel-io/flannel/subnet"
@@ -452,7 +453,7 @@ func shutdownHandler(ctx context.Context, sigs chan os.Signal, cancel context.Ca
 	signal.Stop(sigs)
 }
 
-func getConfig(ctx context.Context, sm subnet.Manager) (*subnet.Config, error) {
+func getConfig(ctx context.Context, sm subnet.Manager) (*config.Config, error) {
 	// Retry every second until it succeeds
 	for {
 		config, err := sm.GetNetworkConfig(ctx)
@@ -473,7 +474,7 @@ func getConfig(ctx context.Context, sm subnet.Manager) (*subnet.Config, error) {
 	}
 }
 
-func WriteSubnetFile(path string, config *subnet.Config, ipMasq bool, bn backend.Network) error {
+func WriteSubnetFile(path string, config *config.Config, ipMasq bool, bn backend.Network) error {
 	dir, name := filepath.Split(path)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {

@@ -24,6 +24,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/flannel-io/flannel/pkg/config"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
@@ -59,7 +60,7 @@ type kubeSubnetManager struct {
 	nodeName                  string
 	nodeStore                 listers.NodeLister
 	nodeController            cache.Controller
-	subnetConf                *subnet.Config
+	subnetConf                *config.Config
 	events                    chan subnet.Event
 	setNodeNetworkUnavailable bool
 }
@@ -106,7 +107,7 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 		return nil, fmt.Errorf("failed to read net conf: %v", err)
 	}
 
-	sc, err := subnet.ParseConfig(string(netConf))
+	sc, err := config.ParseConfig(string(netConf), config.KubeType)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing subnet config: %s", err)
 	}
@@ -132,7 +133,7 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 
 // newKubeSubnetManager fills the kubeSubnetManager. The most important part is the controller which will
 // watch for kubernetes node updates
-func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet.Config, nodeName, prefix string) (*kubeSubnetManager, error) {
+func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *config.Config, nodeName, prefix string) (*kubeSubnetManager, error) {
 	var err error
 	var ksm kubeSubnetManager
 	ksm.annotations, err = newAnnotations(prefix)
@@ -245,7 +246,7 @@ func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{})
 	ksm.events <- subnet.Event{Type: subnet.EventAdded, Lease: l}
 }
 
-func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {
+func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*config.Config, error) {
 	return ksm.subnetConf, nil
 }
 

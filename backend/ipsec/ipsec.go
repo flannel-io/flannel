@@ -24,6 +24,7 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/config"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/subnet"
 	log "k8s.io/klog"
@@ -71,7 +72,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (
 }
 
 func (be *IPSECBackend) RegisterNetwork(
-	ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+	ctx context.Context, wg *sync.WaitGroup, config *config.Config) (backend.Network, error) {
 
 	cfg := struct {
 		UDPEncap    bool

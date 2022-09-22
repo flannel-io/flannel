@@ -24,6 +24,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/flannel-io/flannel/pkg/config"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"golang.org/x/net/context"
 )
@@ -143,7 +144,7 @@ func MakeSubnetKey(sn ip.IP4Net, sn6 ip.IP6Net) string {
 }
 
 type Manager interface {
-	GetNetworkConfig(ctx context.Context) (*Config, error)
+	GetNetworkConfig(ctx context.Context) (*config.Config, error)
 	AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Lease, error)
 	RenewLease(ctx context.Context, lease *Lease) error
 	WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (LeaseWatchResult, error)

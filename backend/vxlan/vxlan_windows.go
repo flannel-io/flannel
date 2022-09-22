@@ -82,7 +82,7 @@ func newSubnetAttrs(publicIP net.IP, vnid uint16, mac net.HardwareAddr) (*subnet
 	}, nil
 }
 
-func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *config.Config) (backend.Network, error) {
 	// 1. Parse configuration
 	cfg := struct {
 		Name          string

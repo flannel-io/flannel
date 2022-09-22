@@ -60,6 +60,7 @@ import (
 	"sync"
 
 	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/config"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
@@ -118,7 +119,7 @@ func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, vnid uint16, dev, v6Dev 
 	return leaseAttrs, nil
 }
 
-func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *config.Config) (backend.Network, error) {
 	// Parse our configuration
 	cfg := struct {
 		VNI           int

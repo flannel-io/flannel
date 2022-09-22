@@ -21,6 +21,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/flannel-io/flannel/pkg/config"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/subnet"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
@@ -77,13 +78,13 @@ func newLocalManager(r Registry, prevSubnet ip.IP4Net, prevIPv6Subnet ip.IP6Net,
 	}
 }
 
-func (m *LocalManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {
+func (m *LocalManager) GetNetworkConfig(ctx context.Context) (*config.Config, error) {
 	cfg, err := m.registry.getNetworkConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return subnet.ParseConfig(cfg)
+	return config.ParseConfig(cfg, config.EtcdType)
 }
 
 func (m *LocalManager) AcquireLease(ctx context.Context, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
@@ -127,7 +128,7 @@ func findLeaseBySubnet(leases []subnet.Lease, subnet ip.IP4Net) *subnet.Lease {
 	return nil
 }
 
-func (m *LocalManager) tryAcquireLease(ctx context.Context, config *subnet.Config, extIaddr ip.IP4, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
+func (m *LocalManager) tryAcquireLease(ctx context.Context, config *config.Config, extIaddr ip.IP4, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
 	leases, _, err := m.registry.getSubnets(ctx)
 	if err != nil {
 		return nil, err
@@ -204,7 +205,7 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *subnet.Confi
 	}
 }
 
-func (m *LocalManager) allocateSubnet(config *subnet.Config, leases []subnet.Lease) (ip.IP4Net, ip.IP6Net, error) {
+func (m *LocalManager) allocateSubnet(config *config.Config, leases []subnet.Lease) (ip.IP4Net, ip.IP6Net, error) {
 	log.Infof("Picking subnet in range %s ... %s", config.SubnetMin, config.SubnetMax)
 	if config.EnableIPv6 {
 		log.Infof("Picking ipv6 subnet in range %s ... %s", config.IPv6SubnetMin, config.IPv6SubnetMax)
@@ -420,7 +421,7 @@ func (m *LocalManager) leasesWatchReset(ctx context.Context) (subnet.LeaseWatchR
 	return wr, nil
 }
 
-func isSubnetConfigCompat(config *subnet.Config, sn ip.IP4Net) bool {
+func isSubnetConfigCompat(config *config.Config, sn ip.IP4Net) bool {
 	if sn.IP < config.SubnetMin || sn.IP > config.SubnetMax {
 		return false
 	}
@@ -428,7 +429,7 @@ func isSubnetConfigCompat(config *subnet.Config, sn ip.IP4Net) bool {
 	return sn.PrefixLen == config.SubnetLen
 }
 
-func isIPv6SubnetConfigCompat(config *subnet.Config, sn6 ip.IP6Net) bool {
+func isIPv6SubnetConfigCompat(config *config.Config, sn6 ip.IP6Net) bool {
 	if !config.EnableIPv6 {
 		return sn6.Empty()
 	}

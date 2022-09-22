@@ -54,7 +54,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return be, nil
 }
 
-func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *config.Config) (backend.Network, error) {
 	// 1. Parse configuration
 	cfg := struct {
 		Name          string

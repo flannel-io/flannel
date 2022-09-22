@@ -7,7 +7,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/config"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
@@ -101,7 +102,7 @@ func createWGDev(ctx context.Context, wg *sync.WaitGroup, name string, psk strin
 	return newWGDevice(&devAttrs, ctx, wg)
 }
 
-func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *config.Config) (backend.Network, error) {
 	// Parse out configuration
 	cfg := struct {
 		ListenPort                  int

@@ -25,6 +25,7 @@ import (
 	"sync"
 
 	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/config"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/subnet"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
@@ -87,7 +88,7 @@ func get_vm_vpcid() (string, error) {
 	return vpcid, nil
 }
 
-func (be *TencentVpcBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
+func (be *TencentVpcBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *config.Config) (backend.Network, error) {
 	// 1. Parse our configuration
 	cfg := struct {
 		AccessKeyID     string

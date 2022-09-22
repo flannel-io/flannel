@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package subnet
+package config
 
 import (
 	"testing"
@@ -21,7 +21,7 @@ import (
 func TestConfigDefaults(t *testing.T) {
 	s := `{ "network": "10.3.0.0/16" }`
 
-	cfg, err := ParseConfig(s)
+	cfg, err := ParseConfig(s, EtcdType)
 	if err != nil {
 		t.Fatalf("ParseConfig failed: %s", err)
 	}
@@ -47,7 +47,7 @@ func TestConfigDefaults(t *testing.T) {
 func TestIPv6ConfigDefaults(t *testing.T) {
 	s := `{ "enableIPv6": true, "ipv6Network": "fc00::/48", "enableIPv4": false }`
 
-	cfg, err := ParseConfig(s)
+	cfg, err := ParseConfig(s, EtcdType)
 	if err != nil {
 		t.Fatalf("ParseConfig failed: %s", err)
 	}
@@ -73,7 +73,7 @@ func TestIPv6ConfigDefaults(t *testing.T) {
 func TestConfigOverrides(t *testing.T) {
 	s := `{ "Network": "10.3.0.0/16", "SubnetMin": "10.3.5.0", "SubnetMax": "10.3.8.0", "SubnetLen": 28 }`
 
-	cfg, err := ParseConfig(s)
+	cfg, err := ParseConfig(s, EtcdType)
 	if err != nil {
 		t.Fatalf("ParseConfig failed: %s", err)
 	}
@@ -99,7 +99,7 @@ func TestConfigOverrides(t *testing.T) {
 func TestIPv6ConfigOverrides(t *testing.T) {
 	s := `{ "EnableIPv6": true, "IPv6Network": "fc00::/48", "IPv6SubnetMin": "fc00:0:0:1::", "IPv6SubnetMax": "fc00:0:0:f::", "IPv6SubnetLen": 124, "enableIPv4": false }`
 
-	cfg, err := ParseConfig(s)
+	cfg, err := ParseConfig(s, EtcdType)
 	if err != nil {
 		t.Fatalf("ParseConfig failed: %s", err)
 	}
