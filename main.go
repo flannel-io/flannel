@@ -186,7 +186,7 @@ func newSubnetManager(ctx context.Context) (subnet.Manager, error) {
 	prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
 	prevIPv6Subnet := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_SUBNET")
 
-	return etcd.NewLocalManager(ctx, cfg, prevSubnet, prevIPv6Subnet)
+	return etcd.NewLocalManager(ctx, cfg, prevSubnet, prevIPv6Subnet, opts.subnetLeaseRenewMargin)
 }
 
 func main() {
@@ -389,10 +389,10 @@ func main() {
 		log.Errorf("Failed to notify systemd the message READY=1 %v", err)
 	}
 
-	// Kube subnet mgr doesn't lease the subnet for this node - it just uses the podCidr that's already assigned.
-	if !opts.kubeSubnetMgr {
-		err = MonitorLease(ctx, sm, bn, &wg)
-		if err == errInterrupted {
+	err = sm.CompleteLease(ctx, bn.Lease(), &wg)
+	if err != nil {
+		log.Errorf("CompleteLease execute error err: %v", err)
+		if strings.EqualFold(err.Error(), errInterrupted.Error()) {
 			// The lease was "revoked" - shut everything down
 			cancel()
 		}
@@ -469,52 +469,6 @@ func getConfig(ctx context.Context, sm subnet.Manager) (*subnet.Config, error) {
 			return nil, errCanceled
 		case <-time.After(1 * time.Second):
 			fmt.Println("timed out")
-		}
-	}
-}
-
-func MonitorLease(ctx context.Context, sm subnet.Manager, bn backend.Network, wg *sync.WaitGroup) error {
-	// Use the subnet manager to start watching leases.
-	evts := make(chan subnet.Event)
-
-	wg.Add(1)
-	go func() {
-		l := bn.Lease()
-		subnet.WatchLease(ctx, sm, l.Subnet, l.IPv6Subnet, evts)
-		wg.Done()
-	}()
-
-	renewMargin := time.Duration(opts.subnetLeaseRenewMargin) * time.Minute
-	dur := time.Until(bn.Lease().Expiration) - renewMargin
-
-	for {
-		select {
-		case <-time.After(dur):
-			err := sm.RenewLease(ctx, bn.Lease())
-			if err != nil {
-				log.Error("Error renewing lease (trying again in 1 min): ", err)
-				dur = time.Minute
-				continue
-			}
-
-			log.Info("Lease renewed, new expiration: ", bn.Lease().Expiration)
-			dur = time.Until(bn.Lease().Expiration) - renewMargin
-
-		case e, ok := <-evts:
-			if !ok {
-				log.Infof("Stopped monitoring lease")
-				return errCanceled
-			}
-			switch e.Type {
-			case subnet.EventAdded:
-				bn.Lease().Expiration = e.Lease.Expiration
-				dur = time.Until(bn.Lease().Expiration) - renewMargin
-				log.Infof("Waiting for %s to renew lease", dur)
-
-			case subnet.EventRemoved:
-				log.Error("Lease has been revoked. Shutting down daemon.")
-				return errInterrupted
-			}
 		}
 	}
 }

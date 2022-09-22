@@ -20,9 +20,9 @@ import (
 )
 
 func NewMockManager(registry *MockSubnetRegistry) subnet.Manager {
-	return newLocalManager(registry, ip.IP4Net{}, ip.IP6Net{})
+	return newLocalManager(registry, ip.IP4Net{}, ip.IP6Net{}, 60)
 }
 
 func NewMockManagerWithSubnet(registry *MockSubnetRegistry, sn ip.IP4Net, sn6 ip.IP6Net) subnet.Manager {
-	return newLocalManager(registry, sn, sn6)
+	return newLocalManager(registry, sn, sn6, 60)
 }

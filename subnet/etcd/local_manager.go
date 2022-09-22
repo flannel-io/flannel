@@ -18,10 +18,11 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/flannel-io/flannel/pkg/ip"
-	. "github.com/flannel-io/flannel/subnet"
+	"github.com/flannel-io/flannel/subnet"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"golang.org/x/net/context"
 	log "k8s.io/klog"
@@ -32,10 +33,16 @@ const (
 	subnetTTL   = 24 * time.Hour
 )
 
+var (
+	errInterrupted = errors.New("interrupted")
+	errCanceled    = errors.New("canceled")
+)
+
 type LocalManager struct {
-	registry           Registry
-	previousSubnet     ip.IP4Net
-	previousIPv6Subnet ip.IP6Net
+	registry               Registry
+	previousSubnet         ip.IP4Net
+	previousIPv6Subnet     ip.IP6Net
+	subnetLeaseRenewMargin int
 }
 
 type watchCursor struct {
@@ -53,32 +60,33 @@ func (c watchCursor) String() string {
 	return strconv.FormatInt(c.index, 10)
 }
 
-func NewLocalManager(ctx context.Context, config *EtcdConfig, prevSubnet ip.IP4Net, prevIPv6Subnet ip.IP6Net) (Manager, error) {
+func NewLocalManager(ctx context.Context, config *EtcdConfig, prevSubnet ip.IP4Net, prevIPv6Subnet ip.IP6Net, subnetLeaseRenewMargin int) (subnet.Manager, error) {
 	r, err := newEtcdSubnetRegistry(ctx, config, nil)
 	if err != nil {
 		return nil, err
 	}
-	return newLocalManager(r, prevSubnet, prevIPv6Subnet), nil
+	return newLocalManager(r, prevSubnet, prevIPv6Subnet, subnetLeaseRenewMargin), nil
 }
 
-func newLocalManager(r Registry, prevSubnet ip.IP4Net, prevIPv6Subnet ip.IP6Net) Manager {
+func newLocalManager(r Registry, prevSubnet ip.IP4Net, prevIPv6Subnet ip.IP6Net, subnetLeaseRenewMargin int) subnet.Manager {
 	return &LocalManager{
-		registry:           r,
-		previousSubnet:     prevSubnet,
-		previousIPv6Subnet: prevIPv6Subnet,
+		registry:               r,
+		previousSubnet:         prevSubnet,
+		previousIPv6Subnet:     prevIPv6Subnet,
+		subnetLeaseRenewMargin: subnetLeaseRenewMargin,
 	}
 }
 
-func (m *LocalManager) GetNetworkConfig(ctx context.Context) (*Config, error) {
+func (m *LocalManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {
 	cfg, err := m.registry.getNetworkConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return ParseConfig(cfg)
+	return subnet.ParseConfig(cfg)
 }
 
-func (m *LocalManager) AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Lease, error) {
+func (m *LocalManager) AcquireLease(ctx context.Context, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
 	config, err := m.GetNetworkConfig(ctx)
 	if err != nil {
 		return nil, err
@@ -99,7 +107,7 @@ func (m *LocalManager) AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Le
 	return nil, errors.New("Max retries reached trying to acquire a subnet")
 }
 
-func findLeaseByIP(leases []Lease, pubIP ip.IP4) *Lease {
+func findLeaseByIP(leases []subnet.Lease, pubIP ip.IP4) *subnet.Lease {
 	for _, l := range leases {
 		if pubIP == l.Attrs.PublicIP {
 			return &l
@@ -109,7 +117,7 @@ func findLeaseByIP(leases []Lease, pubIP ip.IP4) *Lease {
 	return nil
 }
 
-func findLeaseBySubnet(leases []Lease, subnet ip.IP4Net) *Lease {
+func findLeaseBySubnet(leases []subnet.Lease, subnet ip.IP4Net) *subnet.Lease {
 	for _, l := range leases {
 		if subnet.Equal(l.Subnet) {
 			return &l
@@ -119,7 +127,7 @@ func findLeaseBySubnet(leases []Lease, subnet ip.IP4Net) *Lease {
 	return nil
 }
 
-func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extIaddr ip.IP4, attrs *LeaseAttrs) (*Lease, error) {
+func (m *LocalManager) tryAcquireLease(ctx context.Context, config *subnet.Config, extIaddr ip.IP4, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
 	leases, _, err := m.registry.getSubnets(ctx)
 	if err != nil {
 		return nil, err
@@ -181,7 +189,7 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 	switch {
 	case err == nil:
 		log.Infof("Allocated lease (ip: %v ipv6: %v) to current node (%v) ", sn, sn6, extIaddr)
-		return &Lease{
+		return &subnet.Lease{
 			EnableIPv4: true,
 			Subnet:     sn,
 			EnableIPv6: !sn6.Empty(),
@@ -196,7 +204,7 @@ func (m *LocalManager) tryAcquireLease(ctx context.Context, config *Config, extI
 	}
 }
 
-func (m *LocalManager) allocateSubnet(config *Config, leases []Lease) (ip.IP4Net, ip.IP6Net, error) {
+func (m *LocalManager) allocateSubnet(config *subnet.Config, leases []subnet.Lease) (ip.IP4Net, ip.IP6Net, error) {
 	log.Infof("Picking subnet in range %s ... %s", config.SubnetMin, config.SubnetMax)
 	if config.EnableIPv6 {
 		log.Infof("Picking ipv6 subnet in range %s ... %s", config.IPv6SubnetMin, config.IPv6SubnetMax)
@@ -247,7 +255,7 @@ OuterLoop:
 	}
 }
 
-func (m *LocalManager) RenewLease(ctx context.Context, lease *Lease) error {
+func (m *LocalManager) RenewLease(ctx context.Context, lease *subnet.Lease) error {
 	exp, err := m.registry.updateSubnet(ctx, lease.Subnet, lease.IPv6Subnet, &lease.Attrs, subnetTTL, 0)
 	if err != nil {
 		return err
@@ -275,34 +283,34 @@ func getNextIndex(cursor interface{}) (int64, error) {
 	return nextIndex, nil
 }
 
-func (m *LocalManager) leaseWatchReset(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) (LeaseWatchResult, error) {
+func (m *LocalManager) leaseWatchReset(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) (subnet.LeaseWatchResult, error) {
 	l, index, err := m.registry.getSubnet(ctx, sn, sn6)
 	if err != nil {
-		return LeaseWatchResult{}, err
+		return subnet.LeaseWatchResult{}, err
 	}
 
-	return LeaseWatchResult{
-		Snapshot: []Lease{*l},
+	return subnet.LeaseWatchResult{
+		Snapshot: []subnet.Lease{*l},
 		Cursor:   watchCursor{index},
 	}, nil
 }
 
-func (m *LocalManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (LeaseWatchResult, error) {
+func (m *LocalManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
 	if cursor == nil {
 		return m.leaseWatchReset(ctx, sn, sn6)
 	}
 
 	nextIndex, err := getNextIndex(cursor)
 	if err != nil {
-		return LeaseWatchResult{}, err
+		return subnet.LeaseWatchResult{}, err
 	}
 
 	evt, index, err := m.registry.watchSubnet(ctx, nextIndex, sn, sn6)
 
 	switch {
 	case err == nil:
-		return LeaseWatchResult{
-			Events: []Event{evt},
+		return subnet.LeaseWatchResult{
+			Events: []subnet.Event{evt},
 			Cursor: watchCursor{index},
 		}, nil
 
@@ -311,18 +319,18 @@ func (m *LocalManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6N
 		return m.leaseWatchReset(ctx, sn, sn6)
 
 	default:
-		return LeaseWatchResult{}, err
+		return subnet.LeaseWatchResult{}, err
 	}
 }
 
-func (m *LocalManager) WatchLeases(ctx context.Context, cursor interface{}) (LeaseWatchResult, error) {
+func (m *LocalManager) WatchLeases(ctx context.Context, cursor interface{}) (subnet.LeaseWatchResult, error) {
 	if cursor == nil {
 		return m.leasesWatchReset(ctx)
 	}
 
 	nextIndex, err := getNextIndex(cursor)
 	if err != nil {
-		return LeaseWatchResult{}, err
+		return subnet.LeaseWatchResult{}, err
 	}
 
 	evt, index, err := m.registry.watchSubnets(ctx, nextIndex)
@@ -330,8 +338,8 @@ func (m *LocalManager) WatchLeases(ctx context.Context, cursor interface{}) (Lea
 	case err == nil:
 		//TODO only vxlan backend and kube subnet manager support dual stack now.
 		evt.Lease.EnableIPv4 = true
-		return LeaseWatchResult{
-			Events: []Event{evt},
+		return subnet.LeaseWatchResult{
+			Events: []subnet.Event{evt},
 			Cursor: watchCursor{index},
 		}, nil
 
@@ -340,10 +348,57 @@ func (m *LocalManager) WatchLeases(ctx context.Context, cursor interface{}) (Lea
 		return m.leasesWatchReset(ctx)
 
 	case index != 0:
-		return LeaseWatchResult{Cursor: watchCursor{index}}, err
+		return subnet.LeaseWatchResult{Cursor: watchCursor{index}}, err
 
 	default:
-		return LeaseWatchResult{}, err
+		return subnet.LeaseWatchResult{}, err
+	}
+}
+
+// CompleteLease monitor lease
+func (m *LocalManager) CompleteLease(ctx context.Context, lease *subnet.Lease, wg *sync.WaitGroup) error {
+	// Use the subnet manager to start watching leases.
+	evts := make(chan subnet.Event)
+
+	wg.Add(1)
+	go func() {
+		l := lease
+		subnet.WatchLease(ctx, m, l.Subnet, l.IPv6Subnet, evts)
+		wg.Done()
+	}()
+
+	renewMargin := time.Duration(m.subnetLeaseRenewMargin) * time.Minute
+	dur := time.Until(lease.Expiration) - renewMargin
+
+	for {
+		select {
+		case <-time.After(dur):
+			err := m.RenewLease(ctx, lease)
+			if err != nil {
+				log.Error("Error renewing lease (trying again in 1 min): ", err)
+				dur = time.Minute
+				continue
+			}
+
+			log.Info("Lease renewed, new expiration: ", lease.Expiration)
+			dur = time.Until(lease.Expiration) - renewMargin
+
+		case e, ok := <-evts:
+			if !ok {
+				log.Infof("Stopped monitoring lease")
+				return errCanceled
+			}
+			switch e.Type {
+			case subnet.EventAdded:
+				lease.Expiration = e.Lease.Expiration
+				dur = time.Until(lease.Expiration) - renewMargin
+				log.Infof("Waiting for %s to renew lease", dur)
+
+			case subnet.EventRemoved:
+				log.Error("Lease has been revoked. Shutting down daemon.")
+				return errInterrupted
+			}
+		}
 	}
 }
 
@@ -352,8 +407,8 @@ func isIndexTooSmall(err error) bool {
 }
 
 // leasesWatchReset is called when incremental lease watch failed and we need to grab a snapshot
-func (m *LocalManager) leasesWatchReset(ctx context.Context) (LeaseWatchResult, error) {
-	wr := LeaseWatchResult{}
+func (m *LocalManager) leasesWatchReset(ctx context.Context) (subnet.LeaseWatchResult, error) {
+	wr := subnet.LeaseWatchResult{}
 
 	leases, index, err := m.registry.getSubnets(ctx)
 	if err != nil {
@@ -365,7 +420,7 @@ func (m *LocalManager) leasesWatchReset(ctx context.Context) (LeaseWatchResult, 
 	return wr, nil
 }
 
-func isSubnetConfigCompat(config *Config, sn ip.IP4Net) bool {
+func isSubnetConfigCompat(config *subnet.Config, sn ip.IP4Net) bool {
 	if sn.IP < config.SubnetMin || sn.IP > config.SubnetMax {
 		return false
 	}
@@ -373,7 +428,7 @@ func isSubnetConfigCompat(config *Config, sn ip.IP4Net) bool {
 	return sn.PrefixLen == config.SubnetLen
 }
 
-func isIPv6SubnetConfigCompat(config *Config, sn6 ip.IP6Net) bool {
+func isIPv6SubnetConfigCompat(config *subnet.Config, sn6 ip.IP6Net) bool {
 	if !config.EnableIPv6 {
 		return sn6.Empty()
 	}
