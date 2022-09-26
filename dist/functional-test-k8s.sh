@@ -175,32 +175,42 @@ pings() {
 check_iptables() {
   read -r -d '' POSTROUTING_RULES_FLANNEL1 << EOM
 -P POSTROUTING ACCEPT
--A POSTROUTING -s 10.10.0.0/16 -d 10.10.0.0/16 -m comment --comment "flanneld masq" -j RETURN
--A POSTROUTING -s 10.10.0.0/16 ! -d 224.0.0.0/4 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully
--A POSTROUTING ! -s 10.10.0.0/16 -d 10.10.1.0/24 -m comment --comment "flanneld masq" -j RETURN
--A POSTROUTING ! -s 10.10.0.0/16 -d 10.10.0.0/16 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully
+-A POSTROUTING -m comment --comment "flanneld masq" -j FLANNEL-POSTRTG
+-N FLANNEL-POSTRTG
+-A FLANNEL-POSTRTG -s 10.10.0.0/16 -d 10.10.0.0/16 -m comment --comment "flanneld masq" -j RETURN
+-A FLANNEL-POSTRTG -s 10.10.0.0/16 ! -d 224.0.0.0/4 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully
+-A FLANNEL-POSTRTG ! -s 10.10.0.0/16 -d 10.10.1.0/24 -m comment --comment "flanneld masq" -j RETURN
+-A FLANNEL-POSTRTG ! -s 10.10.0.0/16 -d 10.10.0.0/16 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully
 EOM
   read -r -d '' POSTROUTING_RULES_FLANNEL2 << EOM
 -P POSTROUTING ACCEPT
--A POSTROUTING -s 10.10.0.0/16 -d 10.10.0.0/16 -m comment --comment "flanneld masq" -j RETURN
--A POSTROUTING -s 10.10.0.0/16 ! -d 224.0.0.0/4 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully
--A POSTROUTING ! -s 10.10.0.0/16 -d 10.10.2.0/24 -m comment --comment "flanneld masq" -j RETURN
--A POSTROUTING ! -s 10.10.0.0/16 -d 10.10.0.0/16 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully
+-A POSTROUTING -m comment --comment "flanneld masq" -j FLANNEL-POSTRTG
+-N FLANNEL-POSTRTG
+-A FLANNEL-POSTRTG -s 10.10.0.0/16 -d 10.10.0.0/16 -m comment --comment "flanneld masq" -j RETURN
+-A FLANNEL-POSTRTG -s 10.10.0.0/16 ! -d 224.0.0.0/4 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully
+-A FLANNEL-POSTRTG ! -s 10.10.0.0/16 -d 10.10.2.0/24 -m comment --comment "flanneld masq" -j RETURN
+-A FLANNEL-POSTRTG ! -s 10.10.0.0/16 -d 10.10.0.0/16 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully
 EOM
   read -r -d '' FORWARD_RULES << EOM
 -P FORWARD ACCEPT
--A FORWARD -s 10.10.0.0/16 -m comment --comment "flanneld forward" -j ACCEPT
--A FORWARD -d 10.10.0.0/16 -m comment --comment "flanneld forward" -j ACCEPT
+-A FORWARD -m comment --comment "flanneld forward" -j FLANNEL-FWD
+-N FLANNEL-FWD
+-A FLANNEL-FWD -s 10.10.0.0/16 -m comment --comment "flanneld forward" -j ACCEPT
+-A FLANNEL-FWD -d 10.10.0.0/16 -m comment --comment "flanneld forward" -j ACCEPT
 EOM
   # check masquerade & forward rules
   assert_equals "$POSTROUTING_RULES_FLANNEL1" \
-                "$(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t nat -S POSTROUTING)" "Host 1 has not expected postrouting rules"
+                "$(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t nat -S POSTROUTING)
+$(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t nat -S FLANNEL-POSTRTG)" "Host 1 has not expected postrouting rules"
   assert_equals "$POSTROUTING_RULES_FLANNEL2" \
-                "$(docker exec --privileged flannel-e2e-test-flannel2 /sbin/iptables -t nat -S POSTROUTING)" "Host 2 has not expected postrouting rules"
+                "$(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t nat -S POSTROUTING)
+$(docker exec --privileged flannel-e2e-test-flannel2 /sbin/iptables -t nat -S FLANNEL-POSTRTG)" "Host 2 has not expected postrouting rules"
   assert_equals "$FORWARD_RULES" \
-                "$(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t filter -S FORWARD)" "Host 1 has not expected forward rules"
+                "$(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t filter -S FORWARD)
+$(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t filter -S FLANNEL-FWD)" "Host 1 has not expected forward rules"
   assert_equals "$FORWARD_RULES" \
-                "$(docker exec --privileged flannel-e2e-test-flannel2 /sbin/iptables -t filter -S FORWARD)" "Host 2 has not expected forward rules"
+                "$(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t filter -S FORWARD)
+$(docker exec --privileged flannel-e2e-test-flannel2 /sbin/iptables -t filter -S FLANNEL-FWD)" "Host 2 has not expected forward rules"
 }
 
 test_manifest() {
