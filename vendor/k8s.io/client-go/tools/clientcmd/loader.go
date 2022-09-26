@@ -18,10 +18,8 @@ package clientcmd
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"reflect"
 	goruntime "runtime"
@@ -48,24 +46,24 @@ const (
 )
 
 var (
-	RecommendedConfigDir  = path.Join(homedir.HomeDir(), RecommendedHomeDir)
-	RecommendedHomeFile   = path.Join(RecommendedConfigDir, RecommendedFileName)
-	RecommendedSchemaFile = path.Join(RecommendedConfigDir, RecommendedSchemaName)
+	RecommendedConfigDir  = filepath.Join(homedir.HomeDir(), RecommendedHomeDir)
+	RecommendedHomeFile   = filepath.Join(RecommendedConfigDir, RecommendedFileName)
+	RecommendedSchemaFile = filepath.Join(RecommendedConfigDir, RecommendedSchemaName)
 )
 
 // currentMigrationRules returns a map that holds the history of recommended home directories used in previous versions.
 // Any future changes to RecommendedHomeFile and related are expected to add a migration rule here, in order to make
 // sure existing config files are migrated to their new locations properly.
 func currentMigrationRules() map[string]string {
-	oldRecommendedHomeFile := path.Join(os.Getenv("HOME"), "/.kube/.kubeconfig")
-	oldRecommendedWindowsHomeFile := path.Join(os.Getenv("HOME"), RecommendedHomeDir, RecommendedFileName)
-
-	migrationRules := map[string]string{}
-	migrationRules[RecommendedHomeFile] = oldRecommendedHomeFile
+	var oldRecommendedHomeFileName string
 	if goruntime.GOOS == "windows" {
-		migrationRules[RecommendedHomeFile] = oldRecommendedWindowsHomeFile
+		oldRecommendedHomeFileName = RecommendedFileName
+	} else {
+		oldRecommendedHomeFileName = ".kubeconfig"
 	}
-	return migrationRules
+	return map[string]string{
+		RecommendedHomeFile: filepath.Join(os.Getenv("HOME"), RecommendedHomeDir, oldRecommendedHomeFileName),
+	}
 }
 
 type ClientConfigLoader interface {
@@ -162,8 +160,10 @@ func NewDefaultClientConfigLoadingRules() *ClientConfigLoadingRules {
 
 // Load starts by running the MigrationRules and then
 // takes the loading rules and returns a Config object based on following rules.
-//   if the ExplicitPath, return the unmerged explicit file
-//   Otherwise, return a merged config based on the Precedence slice
+//
+//	if the ExplicitPath, return the unmerged explicit file
+//	Otherwise, return a merged config based on the Precedence slice
+//
 // A missing ExplicitPath file produces an error. Empty filenames or other missing files are ignored.
 // Read errors or files with non-deserializable content produce errors.
 // The first file to set a particular map key wins and map key's value is never changed.
@@ -227,7 +227,7 @@ func (rules *ClientConfigLoadingRules) Load() (*clientcmdapi.Config, error) {
 	mapConfig := clientcmdapi.NewConfig()
 
 	for _, kubeconfig := range kubeconfigs {
-		mergo.MergeWithOverwrite(mapConfig, kubeconfig)
+		mergo.Merge(mapConfig, kubeconfig, mergo.WithOverride)
 	}
 
 	// merge all of the struct values in the reverse order so that priority is given correctly
@@ -235,14 +235,14 @@ func (rules *ClientConfigLoadingRules) Load() (*clientcmdapi.Config, error) {
 	nonMapConfig := clientcmdapi.NewConfig()
 	for i := len(kubeconfigs) - 1; i >= 0; i-- {
 		kubeconfig := kubeconfigs[i]
-		mergo.MergeWithOverwrite(nonMapConfig, kubeconfig)
+		mergo.Merge(nonMapConfig, kubeconfig, mergo.WithOverride)
 	}
 
 	// since values are overwritten, but maps values are not, we can merge the non-map config on top of the map config and
 	// get the values we expect.
 	config := clientcmdapi.NewConfig()
-	mergo.MergeWithOverwrite(config, mapConfig)
-	mergo.MergeWithOverwrite(config, nonMapConfig)
+	mergo.Merge(config, mapConfig, mergo.WithOverride)
+	mergo.Merge(config, nonMapConfig, mergo.WithOverride)
 
 	if rules.ResolvePaths() {
 		if err := ResolveLocalPaths(config); err != nil {
@@ -283,18 +283,13 @@ func (rules *ClientConfigLoadingRules) Migrate() error {
 			return fmt.Errorf("cannot migrate %v to %v because it is a directory", source, destination)
 		}
 
-		in, err := os.Open(source)
+		data, err := ioutil.ReadFile(source)
 		if err != nil {
 			return err
 		}
-		defer in.Close()
-		out, err := os.Create(destination)
+		// destination is created with mode 0666 before umask
+		err = ioutil.WriteFile(destination, data, 0666)
 		if err != nil {
-			return err
-		}
-		defer out.Close()
-
-		if _, err = io.Copy(out, in); err != nil {
 			return err
 		}
 	}

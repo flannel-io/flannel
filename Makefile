@@ -15,10 +15,10 @@ else
 endif
 
 # Go version to use for builds
-GO_VERSION=1.17.2
+GO_VERSION=1.19
 
 # K8s version used for Makefile helpers
-K8S_VERSION=v1.22.3
+K8S_VERSION=v1.24.6
 
 GOARM=7
 
@@ -211,14 +211,11 @@ release-etcd-tests: bash_unit
 release-k8s-tests: bash_unit
 	# Run the functional tests with different k8s versions. Currently these are the latest point releases.
 	# This list should be updated during the release process.
+	K8S_VERSION="1.25.2" HYPERKUBE_CMD=" " HYPERKUBE_APISERVER_CMD="kube-apiserver" ./bash_unit dist/functional-test-k8s.sh
+	K8S_VERSION="1.24.6" HYPERKUBE_CMD=" " HYPERKUBE_APISERVER_CMD="kube-apiserver" ./bash_unit dist/functional-test-k8s.sh
+	K8S_VERSION="1.23.12" HYPERKUBE_CMD=" " HYPERKUBE_APISERVER_CMD="kube-apiserver" ./bash_unit dist/functional-test-k8s.sh
+	K8S_VERSION="1.22.15" HYPERKUBE_CMD=" " HYPERKUBE_APISERVER_CMD="kube-apiserver" ./bash_unit dist/functional-test-k8s.sh
 	K8S_VERSION="1.17.3" HYPERKUBE_CMD=" " HYPERKUBE_APISERVER_CMD="kube-apiserver" ./bash_unit dist/functional-test-k8s.sh
-	K8S_VERSION="1.16.7" HYPERKUBE_CMD=" " HYPERKUBE_APISERVER_CMD="kube-apiserver" ./bash_unit dist/functional-test-k8s.sh
-	K8S_VERSION="1.15.10" HYPERKUBE_CMD=" " HYPERKUBE_APISERVER_CMD="kube-apiserver" ./bash_unit dist/functional-test-k8s.sh
-	# K8S_VERSION="1.7.6"  ./bash_unit dist/functional-test-k8s.sh
-	# K8S_VERSION="1.6.10" ./bash_unit dist/functional-test-k8s.sh
-	# K8S_VERSION="1.5.7"  ./bash_unit dist/functional-test-k8s.sh   #kube-flannel.yml is incompatible
-	# K8S_VERSION="1.4.12" ./bash_unit dist/functional-test-k8s.sh   #kube-flannel.yml is incompatible
-	# K8S_VERSION="1.3.10" ./bash_unit dist/functional-test-k8s.sh   #kube-flannel.yml is incompatible
 
 docker-push: dist/flanneld-$(TAG)-$(ARCH).docker
 	docker push $(REGISTRY):$(TAG)-$(ARCH)
