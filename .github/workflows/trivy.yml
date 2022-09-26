@@ -15,7 +15,7 @@ on:
     - cron: '34 5 * * 2'
 
 env:
-  GO_VERSION: "1.17.2"
+  GO_VERSION: "1.19"
   REPOSITORY: flannelcni/flannel
 
 permissions:

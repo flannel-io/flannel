@@ -7,7 +7,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -103,15 +103,15 @@ type wireguardLeaseAttrs struct {
 // Select the endpoint address that is most likely to allow for a successful
 // connection.
 // If both ipv4 and ipv6 addresses are provided:
-//   * Prefer ipv4 if the remote endpoint has a public ipv4 address
+//   - Prefer ipv4 if the remote endpoint has a public ipv4 address
 //     and the external iface has an ipv4 address as well. Anything with
 //     an ipv4 address can likely connect to the public internet.
-//   * Use ipv6 if the remote endpoint has a publc address and the local
+//   - Use ipv6 if the remote endpoint has a publc address and the local
 //     interface has a public address as well. In which case it's likely that
 //     a connection can be made. The local interface having just an link-local
 //     address will only have a small chance of succeeding (ipv6 masquarading is
 //     very rare)
-//   * If neither is true default to ipv4 and cross fingers.
+//   - If neither is true default to ipv4 and cross fingers.
 func (n *network) selectPublicEndpoint(ip4 *ip.IP4, ip6 *ip.IP6) string {
 	if ip4 != nil && ip6 == nil {
 		return ip4.String()
