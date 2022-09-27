@@ -4,13 +4,7 @@ Flannel may be paired with several different backends. Once set, the backend sho
 
 VXLAN is the recommended choice. host-gw is recommended for more experienced users who want the performance improvement and whose infrastructure support it (typically it can't be used in cloud environments). UDP is suggested for debugging only or for very old kernels that don't support VXLAN.
 
-AWS, GCE, and AliVPC are experimental and unsupported. Proceed at your own risk.
-
-For more information on configuration options for cloud components, see:
-* [AliCloud VPC Backend for Flannel][alicloud-vpc]
-* [Amazon VPC Backend for Flannel][amazon-vpc]
-* [GCE Backend for Flannel][gce-backend]
-* [TencentCloud VPC Backend for Flannel][tencentcloud-vpc]
+For more information on configuration options for Tencent see [TencentCloud VPC Backend for Flannel][tencentcloud-vpc]
 
 ## Recommended backends
 
