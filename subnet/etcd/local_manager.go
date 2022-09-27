@@ -83,7 +83,15 @@ func (m *LocalManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, er
 		return nil, err
 	}
 
-	return subnet.ParseConfig(cfg)
+	config, err := subnet.ParseConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	err = subnet.CheckNetworkConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	return config, nil
 }
 
 func (m *LocalManager) AcquireLease(ctx context.Context, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {

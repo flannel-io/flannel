@@ -333,25 +333,25 @@ func main() {
 	// Set up ipMasq if needed
 	if opts.ipMasq {
 		if config.EnableIPv4 {
-			if err = recycleIPTables(config.Network, bn.Lease()); err != nil {
+			if err = recycleIPTables(subnet.GetFlannelNetwork(config), bn.Lease()); err != nil {
 				log.Errorf("Failed to recycle IPTables rules, %v", err)
 				cancel()
 				wg.Wait()
 				os.Exit(1)
 			}
 			log.Infof("Setting up masking rules")
-			go network.SetupAndEnsureIP4Tables(network.MasqRules(config.Network, bn.Lease()), opts.iptablesResyncSeconds)
+			go network.SetupAndEnsureIP4Tables(network.MasqRules(subnet.GetFlannelNetwork(config), bn.Lease()), opts.iptablesResyncSeconds)
 
 		}
 		if config.EnableIPv6 {
-			if err = recycleIP6Tables(config.IPv6Network, bn.Lease()); err != nil {
+			if err = recycleIP6Tables(subnet.GetFlannelIPv6Network(config), bn.Lease()); err != nil {
 				log.Errorf("Failed to recycle IP6Tables rules, %v", err)
 				cancel()
 				wg.Wait()
 				os.Exit(1)
 			}
 			log.Infof("Setting up masking ip6 rules")
-			go network.SetupAndEnsureIP6Tables(network.MasqIP6Rules(config.IPv6Network, bn.Lease()), opts.iptablesResyncSeconds)
+			go network.SetupAndEnsureIP6Tables(network.MasqIP6Rules(subnet.GetFlannelIPv6Network(config), bn.Lease()), opts.iptablesResyncSeconds)
 		}
 	}
 
@@ -361,11 +361,11 @@ func main() {
 	if opts.iptablesForwardRules {
 		if config.EnableIPv4 {
 			log.Infof("Changing default FORWARD chain policy to ACCEPT")
-			go network.SetupAndEnsureIP4Tables(network.ForwardRules(config.Network.String()), opts.iptablesResyncSeconds)
+			go network.SetupAndEnsureIP4Tables(network.ForwardRules(subnet.GetFlannelNetwork(config).String()), opts.iptablesResyncSeconds)
 		}
 		if config.EnableIPv6 {
 			log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
-			go network.SetupAndEnsureIP6Tables(network.ForwardRules(config.IPv6Network.String()), opts.iptablesResyncSeconds)
+			go network.SetupAndEnsureIP6Tables(network.ForwardRules(subnet.GetFlannelIPv6Network(config).String()), opts.iptablesResyncSeconds)
 		}
 	}
 
