@@ -25,6 +25,10 @@ func TestConfigDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ParseConfig failed: %s", err)
 	}
+	err = CheckNetworkConfig(cfg)
+	if err != nil {
+		t.Fatalf("CheckNetworkConfig failed: %s", err)
+	}
 
 	expectedNet := "10.3.0.0/16"
 	if cfg.Network.String() != expectedNet {
@@ -50,6 +54,10 @@ func TestIPv6ConfigDefaults(t *testing.T) {
 	cfg, err := ParseConfig(s)
 	if err != nil {
 		t.Fatalf("ParseConfig failed: %s", err)
+	}
+	err = CheckNetworkConfig(cfg)
+	if err != nil {
+		t.Fatalf("CheckNetworkConfig failed: %s", err)
 	}
 
 	expectedNet := "fc00::/48"

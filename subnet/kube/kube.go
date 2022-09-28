@@ -250,7 +250,7 @@ func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Con
 }
 
 // AcquireLease adds the flannel specific node annotations (defined in the struct LeaseAttrs) and returns a lease
-// with importany information for the backend, such as the subnet. This function is called once by the backend when
+// with important information for the backend, such as the subnet. This function is called once by the backend when
 // registering
 func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
 	cachedNode, err := ksm.nodeStore.Get(ksm.nodeName)
@@ -360,19 +360,19 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		Expiration: time.Now().Add(24 * time.Hour),
 	}
 	if cidr != nil && ksm.enableIPv4 {
-		if !containsCIDR(ksm.subnetConf.Network.ToIPNet(), cidr) {
-			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q PodCIDR of the %q node.", ksm.subnetConf.Network, cidr, ksm.nodeName)
+		if !containsCIDR(subnet.GetFlannelNetwork(ksm.subnetConf).ToIPNet(), cidr) {
+			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q PodCIDR of the %q node", ksm.subnetConf.Network, cidr, ksm.nodeName)
 		}
 
 		lease.Subnet = ip.FromIPNet(cidr)
 	}
 	if ipv6Cidr != nil {
-		if ksm.subnetConf.IPv6Network.IP == nil {
-			return nil, fmt.Errorf("subnet %q specified in the PodCIDR, but doesn't exist in the flannel net config of the %q node.", ipv6Cidr, ksm.nodeName)
+		if subnet.GetFlannelIPv6Network(ksm.subnetConf).IP == nil {
+			return nil, fmt.Errorf("subnet %q specified in the PodCIDR, but doesn't exist in the flannel net config of the %q node", ipv6Cidr, ksm.nodeName)
 		}
 
-		if !containsCIDR(ksm.subnetConf.IPv6Network.ToIPNet(), ipv6Cidr) {
-			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q IPv6 PodCIDR of the %q node.", ksm.subnetConf.IPv6Network, ipv6Cidr, ksm.nodeName)
+		if !containsCIDR(subnet.GetFlannelIPv6Network(ksm.subnetConf).ToIPNet(), ipv6Cidr) {
+			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q IPv6 PodCIDR of the %q node", subnet.GetFlannelIPv6Network(ksm.subnetConf), ipv6Cidr, ksm.nodeName)
 		}
 
 		lease.IPv6Subnet = ip.FromIP6Net(ipv6Cidr)

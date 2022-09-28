@@ -82,7 +82,7 @@ func (be *UdpBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, c
 	// and not that of the individual host (e.g. /24)
 	tunNet := ip.IP4Net{
 		IP:        l.Subnet.IP,
-		PrefixLen: config.Network.PrefixLen,
+		PrefixLen: subnet.GetFlannelNetwork(config).PrefixLen,
 	}
 
 	return newNetwork(be.sm, be.extIface, cfg.Port, tunNet, l)
