@@ -39,16 +39,9 @@ type IPTablesError interface {
 
 type IPTablesRule struct {
 	table    string
+	action   string
 	chain    string
 	rulespec []string
-}
-
-var MasqChain = []IPTablesRule{
-	{"nat", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
-}
-
-var FwdChain = []IPTablesRule{
-	{"filter", "FORWARD", []string{"-m", "comment", "--comment", "flanneld forward", "-j", "FLANNEL-FWD"}},
 }
 
 func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
@@ -62,25 +55,29 @@ func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 
 	if supports_random_fully {
 		return []IPTablesRule{
+			// This rule ensure that the flannel iptables rules are executed before other rules on the node
+			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-			{"nat", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// NAT if it's not multicast traffic
-			{"nat", "FLANNEL-POSTRTG", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
 			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-			{"nat", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// Masquerade anything headed towards flannel from the host
-			{"nat", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
 		}
 	} else {
 		return []IPTablesRule{
+			// This rule ensure that the flannel iptables rules are executed before other rules on the node
+			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-			{"nat", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// NAT if it's not multicast traffic
-			{"nat", "FLANNEL-POSTRTG", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
 			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-			{"nat", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// Masquerade anything headed towards flannel from the host
-			{"nat", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
 		}
 	}
 }
@@ -96,34 +93,40 @@ func MasqIP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
 
 	if supports_random_fully {
 		return []IPTablesRule{
+			// This rule ensure that the flannel iptables rules are executed before other rules on the node
+			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-			{"nat", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// NAT if it's not multicast traffic
-			{"nat", "FLANNEL-POSTRTG", []string{"-s", n, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
 			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-			{"nat", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// Masquerade anything headed towards flannel from the host
-			{"nat", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
 		}
 	} else {
 		return []IPTablesRule{
+			// This rule ensure that the flannel iptables rules are executed before other rules on the node
+			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-			{"nat", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// NAT if it's not multicast traffic
-			{"nat", "FLANNEL-POSTRTG", []string{"-s", n, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
 			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-			{"nat", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// Masquerade anything headed towards flannel from the host
-			{"nat", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
 		}
 	}
 }
 
 func ForwardRules(flannelNetwork string) []IPTablesRule {
 	return []IPTablesRule{
+		// This rule ensure that the flannel iptables rules are executed before other rules on the node
+		{"filter", "-I", "FORWARD", []string{"-m", "comment", "--comment", "flanneld forward", "-j", "FLANNEL-FWD"}},
 		// These rules allow traffic to be forwarded if it is to or from the flannel network range.
-		{"filter", "FLANNEL-FWD", []string{"-s", flannelNetwork, "-m", "comment", "--comment", "flanneld forward", "-j", "ACCEPT"}},
-		{"filter", "FLANNEL-FWD", []string{"-d", flannelNetwork, "-m", "comment", "--comment", "flanneld forward", "-j", "ACCEPT"}},
+		{"filter", "-A", "FLANNEL-FWD", []string{"-s", flannelNetwork, "-m", "comment", "--comment", "flanneld forward", "-j", "ACCEPT"}},
+		{"filter", "-A", "FLANNEL-FWD", []string{"-d", flannelNetwork, "-m", "comment", "--comment", "flanneld forward", "-j", "ACCEPT"}},
 	}
 }
 
@@ -146,13 +149,13 @@ func CreateIP6Chain(table, chain string) {
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	if err != nil {
 		// if we can't find iptables, give up and return
-		log.Errorf("Failed to setup IPTables. iptables binary was not found: %v", err)
+		log.Errorf("Failed to setup IP6Tables. iptables binary was not found: %v", err)
 		return
 	}
 	err = ipt.ClearChain(table, chain)
 	if err != nil {
 		// if we can't find iptables, give up and return
-		log.Errorf("Failed to setup IPTables. Error on creating the chain: %v", err)
+		log.Errorf("Failed to setup IP6Tables. Error on creating the chain: %v", err)
 		return
 	}
 }
@@ -173,7 +176,7 @@ func ipTablesRulesExist(ipt IPTables, rules []IPTablesRule) (bool, error) {
 }
 
 // ipTablesCleanAndBuild create from a list of iptables rules a transaction (as string) for iptables-restore for ordering the rules that effectively running
-func ipTablesCleanAndBuild(ipt IPTables, rules []IPTablesRule, toChain bool) (IPTablesRestoreRules, error) {
+func ipTablesCleanAndBuild(ipt IPTables, rules []IPTablesRule) (IPTablesRestoreRules, error) {
 	tablesRules := IPTablesRestoreRules{}
 
 	// Build append and delete rules
@@ -190,21 +193,16 @@ func ipTablesCleanAndBuild(ipt IPTables, rules []IPTablesRule, toChain bool) (IP
 			// if the rule exists it's safer to delete it and then create them
 			tablesRules[rule.table] = append(tablesRules[rule.table], append(IPTablesRestoreRuleSpec{"-D", rule.chain}, rule.rulespec...))
 		}
-		if toChain {
-			// with iptables-restore we can ensure that all rules created are in good order and have no external rule between them
-			tablesRules[rule.table] = append(tablesRules[rule.table], append(IPTablesRestoreRuleSpec{"-I", rule.chain}, rule.rulespec...))
-		} else {
-			// with iptables-restore we can ensure that all rules created are in good order and have no external rule between them
-			tablesRules[rule.table] = append(tablesRules[rule.table], append(IPTablesRestoreRuleSpec{"-A", rule.chain}, rule.rulespec...))
-		}
+		// with iptables-restore we can ensure that all rules created are in good order and have no external rule between them
+		tablesRules[rule.table] = append(tablesRules[rule.table], append(IPTablesRestoreRuleSpec{rule.action, rule.chain}, rule.rulespec...))
 	}
 
 	return tablesRules, nil
 }
 
 // ipTablesBootstrap init iptables rules using iptables-restore (with some cleaning if some rules already exists)
-func ipTablesBootstrap(ipt IPTables, iptRestore IPTablesRestore, rules []IPTablesRule, toChain bool) error {
-	tablesRules, err := ipTablesCleanAndBuild(ipt, rules, toChain)
+func ipTablesBootstrap(ipt IPTables, iptRestore IPTablesRestore, rules []IPTablesRule) error {
+	tablesRules, err := ipTablesCleanAndBuild(ipt, rules)
 	if err != nil {
 		// if we can't find iptables or if we can check existing rules, give up and return
 		return fmt.Errorf("failed to setup iptables-restore payload: %v", err)
@@ -222,7 +220,7 @@ func ipTablesBootstrap(ipt IPTables, iptRestore IPTablesRestore, rules []IPTable
 	return nil
 }
 
-func SetupAndEnsureIP4Tables(rules []IPTablesRule, resyncPeriod int, toChain bool) {
+func SetupAndEnsureIP4Tables(rules []IPTablesRule, resyncPeriod int) {
 	ipt, err := iptables.New()
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -236,7 +234,7 @@ func SetupAndEnsureIP4Tables(rules []IPTablesRule, resyncPeriod int, toChain boo
 		return
 	}
 
-	err = ipTablesBootstrap(ipt, iptRestore, rules, toChain)
+	err = ipTablesBootstrap(ipt, iptRestore, rules)
 	if err != nil {
 		// if we can't find iptables, give up and return
 		log.Errorf("Failed to bootstrap IPTables: %v", err)
@@ -251,7 +249,7 @@ func SetupAndEnsureIP4Tables(rules []IPTablesRule, resyncPeriod int, toChain boo
 
 	for {
 		// Ensure that all the iptables rules exist every 5 seconds
-		if err := ensureIPTables(ipt, iptRestore, rules, toChain); err != nil {
+		if err := ensureIPTables(ipt, iptRestore, rules); err != nil {
 			log.Errorf("Failed to ensure iptables rules: %v", err)
 		}
 
@@ -259,7 +257,7 @@ func SetupAndEnsureIP4Tables(rules []IPTablesRule, resyncPeriod int, toChain boo
 	}
 }
 
-func SetupAndEnsureIP6Tables(rules []IPTablesRule, resyncPeriod int, toChain bool) {
+func SetupAndEnsureIP6Tables(rules []IPTablesRule, resyncPeriod int) {
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -273,7 +271,7 @@ func SetupAndEnsureIP6Tables(rules []IPTablesRule, resyncPeriod int, toChain boo
 		return
 	}
 
-	err = ipTablesBootstrap(ipt, iptRestore, rules, toChain)
+	err = ipTablesBootstrap(ipt, iptRestore, rules)
 	if err != nil {
 		// if we can't find iptables, give up and return
 		log.Errorf("Failed to bootstrap IPTables: %v", err)
@@ -288,7 +286,7 @@ func SetupAndEnsureIP6Tables(rules []IPTablesRule, resyncPeriod int, toChain boo
 
 	for {
 		// Ensure that all the iptables rules exist every 5 seconds
-		if err := ensureIPTables(ipt, iptRestore, rules, toChain); err != nil {
+		if err := ensureIPTables(ipt, iptRestore, rules); err != nil {
 			log.Errorf("Failed to ensure iptables rules: %v", err)
 		}
 
@@ -341,7 +339,7 @@ func DeleteIP6Tables(rules []IPTablesRule) error {
 	return nil
 }
 
-func ensureIPTables(ipt IPTables, iptRestore IPTablesRestore, rules []IPTablesRule, toChain bool) error {
+func ensureIPTables(ipt IPTables, iptRestore IPTablesRestore, rules []IPTablesRule) error {
 	exists, err := ipTablesRulesExist(ipt, rules)
 	if err != nil {
 		return fmt.Errorf("error checking rule existence: %v", err)
@@ -353,7 +351,7 @@ func ensureIPTables(ipt IPTables, iptRestore IPTablesRestore, rules []IPTablesRu
 	// Otherwise, teardown all the rules and set them up again
 	// We do this because the order of the rules is important
 	log.Info("Some iptables rules are missing; deleting and recreating rules")
-	err = ipTablesBootstrap(ipt, iptRestore, rules, toChain)
+	err = ipTablesBootstrap(ipt, iptRestore, rules)
 	if err != nil {
 		// if we can't find iptables, give up and return
 		return fmt.Errorf("error setting up rules: %v", err)

@@ -27,25 +27,18 @@ type IPTables interface {
 
 type IPTablesRule struct {
 	table    string
+	action   string
 	chain    string
 	rulespec []string
 }
 
-var MasqChain = []IPTablesRule{
-	{"nat", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
-}
-
-var FwdChain = []IPTablesRule{
-	{"filter", "FORWARD", []string{"-m", "comment", "--comment", "flanneld forward", "-j", "FLANNEL-FWD"}},
-}
-
-func CreateIP4Chain(table, chain string)                                           { return }
-func CreateIP6Chain(table, chain string)                                           { return }
-func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule                  { return nil }
-func ForwardRules(flannelNetwork string) []IPTablesRule                            { return nil }
-func teardownIPTables(ipt IPTables, rules []IPTablesRule)                          {}
-func SetupAndEnsureIP4Tables(rules []IPTablesRule, resyncPeriod int, toChain bool) {}
-func SetupAndEnsureIP6Tables(rules []IPTablesRule, resyncPeriod int, toChain bool) {}
-func MasqIP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule               { return nil }
-func DeleteIP4Tables(rules []IPTablesRule) error                                   { return nil }
-func DeleteIP6Tables(rules []IPTablesRule) error                                   { return nil }
+func CreateIP4Chain(table, chain string)                             { return }
+func CreateIP6Chain(table, chain string)                             { return }
+func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule    { return nil }
+func ForwardRules(flannelNetwork string) []IPTablesRule              { return nil }
+func teardownIPTables(ipt IPTables, rules []IPTablesRule)            {}
+func SetupAndEnsureIP4Tables(rules []IPTablesRule, resyncPeriod int) {}
+func SetupAndEnsureIP6Tables(rules []IPTablesRule, resyncPeriod int) {}
+func MasqIP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule { return nil }
+func DeleteIP4Tables(rules []IPTablesRule) error                     { return nil }
+func DeleteIP6Tables(rules []IPTablesRule) error                     { return nil }

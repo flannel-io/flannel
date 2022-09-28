@@ -203,13 +203,13 @@ EOM
                 "$(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t nat -S POSTROUTING)
 $(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t nat -S FLANNEL-POSTRTG)" "Host 1 has not expected postrouting rules"
   assert_equals "$POSTROUTING_RULES_FLANNEL2" \
-                "$(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t nat -S POSTROUTING)
+                "$(docker exec --privileged flannel-e2e-test-flannel2 /sbin/iptables -t nat -S POSTROUTING)
 $(docker exec --privileged flannel-e2e-test-flannel2 /sbin/iptables -t nat -S FLANNEL-POSTRTG)" "Host 2 has not expected postrouting rules"
   assert_equals "$FORWARD_RULES" \
                 "$(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t filter -S FORWARD)
 $(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t filter -S FLANNEL-FWD)" "Host 1 has not expected forward rules"
   assert_equals "$FORWARD_RULES" \
-                "$(docker exec --privileged flannel-e2e-test-flannel1 /sbin/iptables -t filter -S FORWARD)
+                "$(docker exec --privileged flannel-e2e-test-flannel2 /sbin/iptables -t filter -S FORWARD)
 $(docker exec --privileged flannel-e2e-test-flannel2 /sbin/iptables -t filter -S FLANNEL-FWD)" "Host 2 has not expected forward rules"
 }
 
