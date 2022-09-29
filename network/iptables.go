@@ -28,6 +28,7 @@ import (
 
 type IPTables interface {
 	AppendUnique(table string, chain string, rulespec ...string) error
+	ChainExists(table, chain string) (bool, error)
 	Delete(table string, chain string, rulespec ...string) error
 	Exists(table string, chain string, rulespec ...string) (bool, error)
 }
@@ -364,6 +365,25 @@ func teardownIPTables(ipt IPTables, iptr IPTablesRestore, rules []IPTablesRule) 
 
 	// Build delete rules to a transaction for iptables restore
 	for _, rule := range rules {
+		if rule.chain == "FLANNEL-FWD" || rule.rulespec[len(rule.rulespec)-1] == "FLANNEL-FWD" {
+			chainExists, err := ipt.ChainExists(rule.table, "FLANNEL-FWD")
+			if err != nil {
+				// this shouldn't ever happen
+				return fmt.Errorf("failed to check rule existence: %v", err)
+			}
+			if !chainExists {
+				continue
+			}
+		} else if rule.chain == "FLANNEL-POSTRTG" || rule.rulespec[len(rule.rulespec)-1] == "FLANNEL-POSTRTG" {
+			chainExists, err := ipt.ChainExists(rule.table, "FLANNEL-POSTRTG")
+			if err != nil {
+				// this shouldn't ever happen
+				return fmt.Errorf("failed to check rule existence: %v", err)
+			}
+			if !chainExists {
+				continue
+			}
+		}
 		exists, err := ipt.Exists(rule.table, rule.chain, rule.rulespec...)
 		if err != nil {
 			// this shouldn't ever happen

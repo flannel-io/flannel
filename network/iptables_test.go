@@ -78,6 +78,10 @@ func (mock *MockIPTables) ruleIndex(table string, chain string, rulespec []strin
 	return -1
 }
 
+func (mock *MockIPTables) ChainExists(table, chain string) (bool, error) {
+	return true, nil
+}
+
 func (mock *MockIPTables) Delete(table string, chain string, rulespec ...string) error {
 	var ruleIndex = mock.ruleIndex(table, chain, rulespec)
 	key := table + chain + strings.Join(rulespec, "")
