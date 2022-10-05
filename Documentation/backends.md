@@ -97,7 +97,7 @@ Add rules to your firewall: Open ports 50 (for ESP protocol), UDP 500 (for IKE, 
 
 #### Troubleshooting
 Logging
-* When flannel is run from a container, the Strongswan tools are installed. `swanctl` can be used for interacting with the charon and it provides a logs command.. 
+* When flannel is run from a container, the Strongswan tools are installed. `swanctl` can be used for interacting with the charon and it provides a logs command. 
 * Charon logs are also written to the stdout of the flannel process. 
 
 Troubleshooting
