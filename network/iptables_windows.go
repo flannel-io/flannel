@@ -21,16 +21,20 @@ import (
 
 type IPTables interface {
 	AppendUnique(table string, chain string, rulespec ...string) error
+	ChainExists(table, chain string) (bool, error)
 	Delete(table string, chain string, rulespec ...string) error
 	Exists(table string, chain string, rulespec ...string) (bool, error)
 }
 
 type IPTablesRule struct {
 	table    string
+	action   string
 	chain    string
 	rulespec []string
 }
 
+func CreateIP4Chain(table, chain string)                             { return }
+func CreateIP6Chain(table, chain string)                             { return }
 func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule    { return nil }
 func ForwardRules(flannelNetwork string) []IPTablesRule              { return nil }
 func teardownIPTables(ipt IPTables, rules []IPTablesRule)            {}

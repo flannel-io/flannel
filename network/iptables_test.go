@@ -78,6 +78,10 @@ func (mock *MockIPTables) ruleIndex(table string, chain string, rulespec []strin
 	return -1
 }
 
+func (mock *MockIPTables) ChainExists(table, chain string) (bool, error) {
+	return true, nil
+}
+
 func (mock *MockIPTables) Delete(table string, chain string, rulespec ...string) error {
 	var ruleIndex = mock.ruleIndex(table, chain, rulespec)
 	key := table + chain + strings.Join(rulespec, "")
@@ -122,8 +126,8 @@ func TestDeleteRules(t *testing.T) {
 	if err != nil {
 		t.Error("Error setting up iptables")
 	}
-	if len(ipt.rules) != 4 {
-		t.Errorf("Should be 4 masqRules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
+	if len(ipt.rules) != 5 {
+		t.Errorf("Should be 5 masqRules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
 	}
 
 	iptr.rules = []IPTablesRestoreRules{}
@@ -142,10 +146,10 @@ func TestDeleteMoreRules(t *testing.T) {
 	iptr := &MockIPTablesRestore{}
 
 	baseRules := []IPTablesRule{
-		{"filter", "INPUT", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
-		{"filter", "INPUT", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
-		{"nat", "POSTROUTING", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
-		{"nat", "POSTROUTING", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
+		{"filter", "-A", "INPUT", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
+		{"filter", "-A", "INPUT", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
+		{"nat", "-A", "POSTROUTING", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
+		{"nat", "-A", "POSTROUTING", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
 	}
 
 	expectedRules := IPTablesRestoreRules{
@@ -186,10 +190,10 @@ func TestBootstrapRules(t *testing.T) {
 	ipt := &MockIPTables{}
 
 	baseRules := []IPTablesRule{
-		{"filter", "INPUT", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
-		{"filter", "INPUT", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
-		{"nat", "POSTROUTING", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
-		{"nat", "POSTROUTING", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
+		{"filter", "-A", "INPUT", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
+		{"filter", "-A", "INPUT", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
+		{"nat", "-A", "POSTROUTING", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
+		{"nat", "-A", "POSTROUTING", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
 	}
 
 	err := ipTablesBootstrap(ipt, iptr, baseRules)
@@ -279,7 +283,7 @@ func TestEnsureRules(t *testing.T) {
 
 	// Ensure iptable mock has other rules
 	otherRules := []IPTablesRule{
-		{"nat", "POSTROUTING", []string{"-A", "POSTROUTING", "-j", "KUBE-POSTROUTING"}},
+		{"nat", "-A", "POSTROUTING", []string{"-A", "POSTROUTING", "-j", "KUBE-POSTROUTING"}},
 	}
 	err := setupIPTables(ipt, otherRules)
 	if err != nil {
@@ -287,8 +291,8 @@ func TestEnsureRules(t *testing.T) {
 	}
 
 	baseRules := []IPTablesRule{
-		{"nat", "POSTROUTING", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
-		{"nat", "POSTROUTING", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
+		{"nat", "-A", "POSTROUTING", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
+		{"nat", "-A", "POSTROUTING", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
 	}
 
 	err = ensureIPTables(ipt, iptr, baseRules)
@@ -329,7 +333,7 @@ func TestEnsureIP6Rules(t *testing.T) {
 
 	// Ensure iptable mock has other rules
 	otherRules := []IPTablesRule{
-		{"nat", "POSTROUTING", []string{"-A", "POSTROUTING", "-j", "KUBE-POSTROUTING"}},
+		{"nat", "-A", "POSTROUTING", []string{"-A", "POSTROUTING", "-j", "KUBE-POSTROUTING"}},
 	}
 	err := setupIPTables(ipt, otherRules)
 	if err != nil {
@@ -394,10 +398,10 @@ func IP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
 	sn := lease.IPv6Subnet.String()
 
 	return []IPTablesRule{
-		{"nat", "POSTROUTING", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-		{"nat", "POSTROUTING", []string{"-s", n, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
-		{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-		{"nat", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
+		{"nat", "-A", "POSTROUTING", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+		{"nat", "-A", "POSTROUTING", []string{"-s", n, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
+		{"nat", "-A", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+		{"nat", "-A", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
 	}
 }
 

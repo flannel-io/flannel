@@ -340,8 +340,8 @@ func main() {
 				os.Exit(1)
 			}
 			log.Infof("Setting up masking rules")
-			go network.SetupAndEnsureIP4Tables(network.MasqRules(subnet.GetFlannelNetwork(config), bn.Lease()), opts.iptablesResyncSeconds)
-
+			network.CreateIP4Chain("nat", "FLANNEL-POSTRTG")
+                        go network.SetupAndEnsureIP4Tables(network.MasqRules(subnet.GetFlannelNetwork(config), bn.Lease()), opts.iptablesResyncSeconds)
 		}
 		if config.EnableIPv6 {
 			if err = recycleIP6Tables(subnet.GetFlannelIPv6Network(config), bn.Lease()); err != nil {
@@ -351,6 +351,7 @@ func main() {
 				os.Exit(1)
 			}
 			log.Infof("Setting up masking ip6 rules")
+			network.CreateIP6Chain("nat", "FLANNEL-POSTRTG")
 			go network.SetupAndEnsureIP6Tables(network.MasqIP6Rules(subnet.GetFlannelIPv6Network(config), bn.Lease()), opts.iptablesResyncSeconds)
 		}
 	}
@@ -361,10 +362,12 @@ func main() {
 	if opts.iptablesForwardRules {
 		if config.EnableIPv4 {
 			log.Infof("Changing default FORWARD chain policy to ACCEPT")
+			network.CreateIP4Chain("filter", "FLANNEL-FWD")
 			go network.SetupAndEnsureIP4Tables(network.ForwardRules(subnet.GetFlannelNetwork(config).String()), opts.iptablesResyncSeconds)
 		}
 		if config.EnableIPv6 {
 			log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
+			network.CreateIP6Chain("filter", "FLANNEL-FWD")
 			go network.SetupAndEnsureIP6Tables(network.ForwardRules(subnet.GetFlannelIPv6Network(config).String()), opts.iptablesResyncSeconds)
 		}
 	}
