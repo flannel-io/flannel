@@ -39,4 +39,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: flannel
-    namespace: kube-system
+    namespace: kube-flannel
