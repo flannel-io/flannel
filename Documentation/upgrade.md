@@ -1,3 +1,5 @@
+# Upgrade
+
 Flannel upgrade/downgrade procedure
  
 There are two ways of changing flannel version in the running cluster:

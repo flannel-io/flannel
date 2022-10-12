@@ -40,10 +40,10 @@ Other options include [Kyverno](https://kyverno.io/policies/pod-security/) and [
 ### For Kubernetes v1.6~v1.15
 
 If you see errors saying `found invalid field...` when you try to apply `kube-flannel.yaml` then you can try the "legacy" manifest file
-* `kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/k8s-manifests/kube-flannel-legacy.yml`
+* `kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/k8s-old-manifests/kube-flannel-legacy.yml`
 
 This file does not bundle RBAC permissions. If you need those, run
-* `kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/k8s-manifests/kube-flannel-rbac.yml`
+* `kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/k8s-old-manifests/kube-flannel-rbac.yml`
 
 If you didn't apply the `kube-flannel-rbac.yml` manifest and you need to, you'll see errors in your flanneld logs about failing to connect.
 * `Failed to create SubnetManager: error retrieving pod spec...`

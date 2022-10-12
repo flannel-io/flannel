@@ -6,8 +6,8 @@ This document tracks projects that integrate with flannel. [Join the community](
 
 [Kubernetes](https://kubernetes.io/docs/admin/networking/#flannel): Container orchestration platform with options for [flannel as an overlay](https://kubernetes.io/docs/admin/networking/#flannel).
 
-[Tectonic](https://coreos.com/tectonic/): CoreOS's enterprise ready, 100% pure-upstream distribution of Kubernetes.
+[Canal](https://projectcalico.docs.tigera.io/getting-started/kubernetes/flannel/flannel): Kubernetes CNI plugin that uses Calico for network policies and intra-node communications and Flannel for inter-node communications.
 
-[Canal](https://github.com/projectcalico/canal): Policy-based networking for cloud-native apps.
+[K3s](https://k3s.io/): Kubernetes distribution with flannel embedded as CNI.
 
-[Container Linux](https://coreos.com/flannel/docs/latest/flannel-config.html): Auto-updating, minimal, and secure Linux distribution by CoreOS.
+[RKE2](https://docs.rke2.io/): Kubernetes distribution packed with Canal as default CNI.
