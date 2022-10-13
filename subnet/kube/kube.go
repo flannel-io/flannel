@@ -62,6 +62,7 @@ type kubeSubnetManager struct {
 	subnetConf                *subnet.Config
 	events                    chan subnet.Event
 	setNodeNetworkUnavailable bool
+	disableNodeInformer       bool
 }
 
 func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPath string, setNodeNetworkUnavailable bool) (subnet.Manager, error) {
@@ -116,16 +117,21 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 		return nil, fmt.Errorf("error creating network manager: %s", err)
 	}
 	sm.setNodeNetworkUnavailable = setNodeNetworkUnavailable
-	go sm.Run(context.Background())
 
-	log.Infof("Waiting %s for node controller to sync", nodeControllerSyncTimeout)
-	err = wait.Poll(time.Second, nodeControllerSyncTimeout, func() (bool, error) {
-		return sm.nodeController.HasSynced(), nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error waiting for nodeController to sync state: %v", err)
+	if sm.disableNodeInformer {
+		log.Infof("Node controller skips sync")
+	} else {
+		go sm.Run(context.Background())
+
+		log.Infof("Waiting %s for node controller to sync", nodeControllerSyncTimeout)
+		err = wait.Poll(time.Second, nodeControllerSyncTimeout, func() (bool, error) {
+			return sm.nodeController.HasSynced(), nil
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error waiting for nodeController to sync state: %v", err)
+		}
+		log.Infof("Node controller sync successful")
 	}
-	log.Infof("Node controller sync successful")
 
 	return sm, nil
 }
@@ -156,45 +162,52 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 		}
 	}
 	ksm.events = make(chan subnet.Event, scale)
-	indexer, controller := cache.NewIndexerInformer(
-		&cache.ListWatch{
-			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return ksm.client.CoreV1().Nodes().List(ctx, options)
+	// when backend type is alloc, someone else (e.g. cloud-controller-managers) is taking care of the routing, thus we do not need informer
+	// See https://github.com/flannel-io/flannel/issues/1617
+	if sc.BackendType == "alloc" {
+		ksm.disableNodeInformer = true
+	}
+	if !ksm.disableNodeInformer {
+		indexer, controller := cache.NewIndexerInformer(
+			&cache.ListWatch{
+				ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+					return ksm.client.CoreV1().Nodes().List(ctx, options)
+				},
+				WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+					return ksm.client.CoreV1().Nodes().Watch(ctx, options)
+				},
 			},
-			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return ksm.client.CoreV1().Nodes().Watch(ctx, options)
-			},
-		},
-		&v1.Node{},
-		resyncPeriod,
-		cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				ksm.handleAddLeaseEvent(subnet.EventAdded, obj)
-			},
-			UpdateFunc: ksm.handleUpdateLeaseEvent,
-			DeleteFunc: func(obj interface{}) {
-				_, isNode := obj.(*v1.Node)
-				// We can get DeletedFinalStateUnknown instead of *api.Node here and we need to handle that correctly.
-				if !isNode {
-					deletedState, ok := obj.(cache.DeletedFinalStateUnknown)
-					if !ok {
-						log.Infof("Error received unexpected object: %v", obj)
-						return
+			&v1.Node{},
+			resyncPeriod,
+			cache.ResourceEventHandlerFuncs{
+				AddFunc: func(obj interface{}) {
+					ksm.handleAddLeaseEvent(subnet.EventAdded, obj)
+				},
+				UpdateFunc: ksm.handleUpdateLeaseEvent,
+				DeleteFunc: func(obj interface{}) {
+					_, isNode := obj.(*v1.Node)
+					// We can get DeletedFinalStateUnknown instead of *api.Node here and we need to handle that correctly.
+					if !isNode {
+						deletedState, ok := obj.(cache.DeletedFinalStateUnknown)
+						if !ok {
+							log.Infof("Error received unexpected object: %v", obj)
+							return
+						}
+						node, ok := deletedState.Obj.(*v1.Node)
+						if !ok {
+							log.Infof("Error deletedFinalStateUnknown contained non-Node object: %v", deletedState.Obj)
+							return
+						}
+						obj = node
 					}
-					node, ok := deletedState.Obj.(*v1.Node)
-					if !ok {
-						log.Infof("Error deletedFinalStateUnknown contained non-Node object: %v", deletedState.Obj)
-						return
-					}
-					obj = node
-				}
-				ksm.handleAddLeaseEvent(subnet.EventRemoved, obj)
+					ksm.handleAddLeaseEvent(subnet.EventRemoved, obj)
+				},
 			},
-		},
-		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
-	)
-	ksm.nodeController = controller
-	ksm.nodeStore = listers.NewNodeLister(indexer)
+			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+		)
+		ksm.nodeController = controller
+		ksm.nodeStore = listers.NewNodeLister(indexer)
+	}
 	return &ksm, nil
 }
 
@@ -253,7 +266,13 @@ func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Con
 // with important information for the backend, such as the subnet. This function is called once by the backend when
 // registering
 func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
-	cachedNode, err := ksm.nodeStore.Get(ksm.nodeName)
+	var cachedNode *v1.Node
+	var err error
+	if ksm.disableNodeInformer {
+		cachedNode, err = ksm.client.CoreV1().Nodes().Get(ctx, ksm.nodeName, metav1.GetOptions{ResourceVersion: "0"})
+	} else {
+		cachedNode, err = ksm.nodeStore.Get(ksm.nodeName)
+	}
 	if err != nil {
 		return nil, err
 	}
