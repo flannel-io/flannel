@@ -64,16 +64,11 @@ if [ "${1:-}" != "--no-sanity-check" ]; then
     fi
 
     case "${version}" in
-    *v1.8.[012]\ *)
-        echo "ERROR: iptables 1.8.0 - 1.8.2 have compatibility bugs." 1>&2
-        echo "       Upgrade to 1.8.3 or newer." 1>&2
+    *v1.8.[0123]\ *)
+        echo "ERROR: iptables 1.8.0 - 1.8.3 have compatibility bugs." 1>&2
+        echo "       Upgrade to 1.8.4 or newer." 1>&2
         exit 1
         ;;
-    *v1.8.3\ *)
-	# 1.8.3 mostly works but can get stuck in an infinite loop if the nft
-	# kernel modules are unavailable
-	need_timeout=1
-	;;
     *)
         # 1.8.4+ are OK
         ;;
@@ -104,42 +99,37 @@ cat > "${sbin}/iptables-wrapper" <<EOF
 
 set -eu
 
-# Detect whether the base system is using iptables-legacy or
-# iptables-nft. This assumes that some non-containerized process (eg
-# kubelet) has already created some iptables rules.
-EOF
-
-if [ "${need_timeout:-0}" = 0 ]; then
-    # Write out the simpler version of legacy-vs-nft detection
-    cat >> "${sbin}/iptables-wrapper" <<EOF
-num_legacy_lines=\$( (iptables-legacy-save || true; ip6tables-legacy-save || true) 2>/dev/null | grep '^-' | wc -l)
-num_nft_lines=\$( (iptables-nft-save || true; ip6tables-nft-save || true) 2>/dev/null | grep '^-' | wc -l)
-if [ "\${num_legacy_lines}" -ge "\${num_nft_lines}" ]; then
-    mode=legacy
-else
+# In kubernetes 1.17 and later, kubelet will have created at least
+# one chain in the "mangle" table (either "KUBE-IPTABLES-HINT" or
+# "KUBE-KUBELET-CANARY"), so check that first, against
+# iptables-nft, because we can check that more efficiently and
+# it's more common these days.
+nft_kubelet_rules=\$( (iptables-nft-save -t mangle || true; ip6tables-nft-save -t mangle || true) 2>/dev/null | grep -E '^:(KUBE-IPTABLES-HINT|KUBE-KUBELET-CANARY)' | wc -l)
+if [ "\${nft_kubelet_rules}" -ne 0 ]; then
     mode=nft
-fi
-EOF
 else
-    # Write out the version of legacy-vs-nft detection with an nft timeout
-    cat >> "${sbin}/iptables-wrapper" <<EOF
-# The iptables-nft binary in this image can get stuck in an infinite
-# loop if nft is not available so we need to wrap a timeout around it
-# (and to avoid that, we don't even bother calling iptables-nft if it
-# looks like iptables-legacy is going to win).
-num_legacy_lines=\$( (iptables-legacy-save || true; ip6tables-legacy-save || true) 2>/dev/null | grep '^-' | wc -l)
-if [ "\${num_legacy_lines}" -ge 10 ]; then
-    mode=legacy
-else
-    num_nft_lines=\$( (timeout 5 sh -c "iptables-nft-save; ip6tables-nft-save" || true) 2>/dev/null | grep '^-' | wc -l)
-    if [ "\${num_legacy_lines}" -ge "\${num_nft_lines}" ]; then
+    # Check for kubernetes 1.17-or-later with iptables-legacy. We
+    # can't pass "-t mangle" to iptables-legacy-save because it would
+    # cause the kernel to create that table if it didn't already
+    # exist, which we don't want. So we have to grab all the rules
+    legacy_kubelet_rules=\$( (iptables-legacy-save || true; ip6tables-legacy-save || true) 2>/dev/null | grep -E '^:(KUBE-IPTABLES-HINT|KUBE-KUBELET-CANARY)' | wc -l)
+    if [ "\${legacy_kubelet_rules}" -ne 0 ]; then
         mode=legacy
     else
-        mode=nft
+        # With older kubernetes releases there may not be any _specific_
+        # rules we can look for, but we assume that some non-containerized process
+        # (possibly kubelet) will have created _some_ iptables rules.
+        num_legacy_lines=\$( (iptables-legacy-save || true; ip6tables-legacy-save || true) 2>/dev/null | grep '^-' | wc -l)
+        num_nft_lines=\$( (iptables-nft-save || true; ip6tables-nft-save || true) 2>/dev/null | grep '^-' | wc -l)
+        if [ "\${num_legacy_lines}" -gt "\${num_nft_lines}" ]; then
+            mode=legacy
+        else
+            mode=nft
+        fi
     fi
 fi
+
 EOF
-fi
 
 # Write out the appropriate alternatives-selection commands
 case "${altstyle}" in
