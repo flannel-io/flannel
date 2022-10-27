@@ -22,7 +22,7 @@ Flannel uses the `klog` library but only supports logging to stderr. The severit
 
 When running under systemd (e.g. on CoreOS Container Linux) the logs can be viewed with `journalctl -u flanneld`
 
-When flannel is running as a pod on Kubernetes, the logs can be viewed with `kubectl logs --namespace kube-system <POD_ID> -c kube-flannel`. You can find the pod IDs with `kubectl get pod --namespace kube-system -l app=flannel`
+When flannel is running as a pod on Kubernetes, the logs can be viewed with `kubectl logs --namespace kube-flannel <POD_ID> -c kube-flannel`. You can find the pod IDs with `kubectl get pod --namespace kube-flannel -l app=flannel`
 
 ## Interface selection and the public IP.
 Most backends require that each node has a unique "public IP" address. This address is chosen when flannel starts. Because leases are tied to the public address, if the address changes, flannel must be restarted.
