@@ -22,6 +22,7 @@ import (
 type IPTables interface {
 	AppendUnique(table string, chain string, rulespec ...string) error
 	ChainExists(table, chain string) (bool, error)
+	ClearChain(table, chain string) error
 	Delete(table string, chain string, rulespec ...string) error
 	Exists(table string, chain string, rulespec ...string) (bool, error)
 }

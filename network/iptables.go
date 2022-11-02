@@ -29,6 +29,7 @@ import (
 type IPTables interface {
 	AppendUnique(table string, chain string, rulespec ...string) error
 	ChainExists(table, chain string) (bool, error)
+	ClearChain(table, chain string) error
 	Delete(table string, chain string, rulespec ...string) error
 	Exists(table string, chain string, rulespec ...string) (bool, error)
 }
@@ -163,6 +164,23 @@ func CreateIP6Chain(table, chain string) {
 
 func ipTablesRulesExist(ipt IPTables, rules []IPTablesRule) (bool, error) {
 	for _, rule := range rules {
+		if rule.chain == "FLANNEL-FWD" || rule.rulespec[len(rule.rulespec)-1] == "FLANNEL-FWD" {
+			chainExist, err := ipt.ChainExists(rule.table, "FLANNEL-FWD")
+			if err != nil {
+				return false, fmt.Errorf("failed to check rule existence: %v", err)
+			}
+			if !chainExist {
+				return false, nil
+			}
+		} else if rule.chain == "FLANNEL-POSTRTG" || rule.rulespec[len(rule.rulespec)-1] == "FLANNEL-POSTRTG" {
+			chainExist, err := ipt.ChainExists(rule.table, "FLANNEL-POSTRTG")
+			if err != nil {
+				return false, fmt.Errorf("failed to check rule existence: %v", err)
+			}
+			if !chainExist {
+				return false, nil
+			}
+		}
 		exists, err := ipt.Exists(rule.table, rule.chain, rule.rulespec...)
 		if err != nil {
 			// this shouldn't ever happen
@@ -182,6 +200,29 @@ func ipTablesCleanAndBuild(ipt IPTables, rules []IPTablesRule) (IPTablesRestoreR
 
 	// Build append and delete rules
 	for _, rule := range rules {
+		if rule.chain == "FLANNEL-FWD" || rule.rulespec[len(rule.rulespec)-1] == "FLANNEL-FWD" {
+			chainExist, err := ipt.ChainExists(rule.table, "FLANNEL-FWD")
+			if err != nil {
+				return nil, fmt.Errorf("failed to check rule existence: %v", err)
+			}
+			if !chainExist {
+				err = ipt.ClearChain(rule.table, "FLANNEL-FWD")
+				if err != nil {
+					return nil, fmt.Errorf("failed to create rule chain: %v", err)
+				}
+			}
+		} else if rule.chain == "FLANNEL-POSTRTG" || rule.rulespec[len(rule.rulespec)-1] == "FLANNEL-POSTRTG" {
+			chainExist, err := ipt.ChainExists(rule.table, "FLANNEL-POSTRTG")
+			if err != nil {
+				return nil, fmt.Errorf("failed to check rule existence: %v", err)
+			}
+			if !chainExist {
+				err = ipt.ClearChain(rule.table, "FLANNEL-POSTRTG")
+				if err != nil {
+					return nil, fmt.Errorf("failed to create rule chain: %v", err)
+				}
+			}
+		}
 		exists, err := ipt.Exists(rule.table, rule.chain, rule.rulespec...)
 		if err != nil {
 			// this shouldn't ever happen
