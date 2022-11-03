@@ -28,7 +28,7 @@ type Int map[int]Empty
 
 // NewInt creates a Int from a list of values.
 func NewInt(items ...int) Int {
-	ss := make(Int, len(items))
+	ss := Int{}
 	ss.Insert(items...)
 	return ss
 }
@@ -87,15 +87,6 @@ func (s Int) HasAny(items ...int) bool {
 	return false
 }
 
-// Clone returns a new set which is a copy of the current set.
-func (s Int) Clone() Int {
-	result := make(Int, len(s))
-	for key := range s {
-		result.Insert(key)
-	}
-	return result
-}
-
 // Difference returns a set of objects that are not in s2
 // For example:
 // s1 = {a1, a2, a3}
@@ -119,7 +110,10 @@ func (s Int) Difference(s2 Int) Int {
 // s1.Union(s2) = {a1, a2, a3, a4}
 // s2.Union(s1) = {a1, a2, a3, a4}
 func (s1 Int) Union(s2 Int) Int {
-	result := s1.Clone()
+	result := NewInt()
+	for key := range s1 {
+		result.Insert(key)
+	}
 	for key := range s2 {
 		result.Insert(key)
 	}

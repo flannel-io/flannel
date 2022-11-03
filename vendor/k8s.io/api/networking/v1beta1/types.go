@@ -318,7 +318,7 @@ const (
 	// IngressClassParametersReferenceScopeNamespace indicates that the
 	// referenced Parameters resource is namespace-scoped.
 	IngressClassParametersReferenceScopeNamespace = "Namespace"
-	// IngressClassParametersReferenceScopeCluster indicates that the
+	// IngressClassParametersReferenceScopeNamespace indicates that the
 	// referenced Parameters resource is cluster-scoped.
 	IngressClassParametersReferenceScopeCluster = "Cluster"
 )

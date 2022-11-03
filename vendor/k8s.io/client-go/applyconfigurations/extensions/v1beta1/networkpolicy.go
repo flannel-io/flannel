@@ -32,8 +32,7 @@ import (
 type NetworkPolicyApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *NetworkPolicySpecApplyConfiguration   `json:"spec,omitempty"`
-	Status                           *NetworkPolicyStatusApplyConfiguration `json:"status,omitempty"`
+	Spec                             *NetworkPolicySpecApplyConfiguration `json:"spec,omitempty"`
 }
 
 // NetworkPolicy constructs an declarative configuration of the NetworkPolicy type for use with
@@ -123,6 +122,15 @@ func (b *NetworkPolicyApplyConfiguration) WithGenerateName(value string) *Networ
 func (b *NetworkPolicyApplyConfiguration) WithNamespace(value string) *NetworkPolicyApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Namespace = &value
+	return b
+}
+
+// WithSelfLink sets the SelfLink field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the SelfLink field is set to the value of the last call.
+func (b *NetworkPolicyApplyConfiguration) WithSelfLink(value string) *NetworkPolicyApplyConfiguration {
+	b.ensureObjectMetaApplyConfigurationExists()
+	b.SelfLink = &value
 	return b
 }
 
@@ -235,6 +243,15 @@ func (b *NetworkPolicyApplyConfiguration) WithFinalizers(values ...string) *Netw
 	return b
 }
 
+// WithClusterName sets the ClusterName field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ClusterName field is set to the value of the last call.
+func (b *NetworkPolicyApplyConfiguration) WithClusterName(value string) *NetworkPolicyApplyConfiguration {
+	b.ensureObjectMetaApplyConfigurationExists()
+	b.ClusterName = &value
+	return b
+}
+
 func (b *NetworkPolicyApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
 	if b.ObjectMetaApplyConfiguration == nil {
 		b.ObjectMetaApplyConfiguration = &v1.ObjectMetaApplyConfiguration{}
@@ -246,13 +263,5 @@ func (b *NetworkPolicyApplyConfiguration) ensureObjectMetaApplyConfigurationExis
 // If called multiple times, the Spec field is set to the value of the last call.
 func (b *NetworkPolicyApplyConfiguration) WithSpec(value *NetworkPolicySpecApplyConfiguration) *NetworkPolicyApplyConfiguration {
 	b.Spec = value
-	return b
-}
-
-// WithStatus sets the Status field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Status field is set to the value of the last call.
-func (b *NetworkPolicyApplyConfiguration) WithStatus(value *NetworkPolicyStatusApplyConfiguration) *NetworkPolicyApplyConfiguration {
-	b.Status = value
 	return b
 }

@@ -45,7 +45,7 @@ func (dec *Decoder) DisallowUnknownFields() { dec.d.disallowUnknownFields = true
 //
 // See the documentation for Unmarshal for details about
 // the conversion of JSON into a Go value.
-func (dec *Decoder) Decode(v any) error {
+func (dec *Decoder) Decode(v interface{}) error {
 	if dec.err != nil {
 		return dec.err
 	}
@@ -197,7 +197,7 @@ func NewEncoder(w io.Writer) *Encoder {
 //
 // See the documentation for Marshal for details about the
 // conversion of Go values to JSON.
-func (enc *Encoder) Encode(v any) error {
+func (enc *Encoder) Encode(v interface{}) error {
 	if enc.err != nil {
 		return enc.err
 	}
@@ -290,7 +290,7 @@ var _ Unmarshaler = (*RawMessage)(nil)
 //	string, for JSON string literals
 //	nil, for JSON null
 //
-type Token any
+type Token interface{}
 */
 
 const (
@@ -457,7 +457,7 @@ func (dec *Decoder) Token() (Token, error) {
 			if !dec.tokenValueAllowed() {
 				return dec.tokenError(c)
 			}
-			var x any
+			var x interface{}
 			if err := dec.Decode(&x); err != nil {
 				return nil, err
 			}

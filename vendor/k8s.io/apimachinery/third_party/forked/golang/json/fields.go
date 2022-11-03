@@ -28,7 +28,7 @@ const (
 // TODO: fix the returned errors to be introspectable.
 func LookupPatchMetadataForStruct(t reflect.Type, jsonField string) (
 	elemType reflect.Type, patchStrategies []string, patchMergeKey string, e error) {
-	if t.Kind() == reflect.Pointer {
+	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
 
@@ -183,7 +183,7 @@ func typeFields(t reflect.Type) []field {
 				index[len(f.index)] = i
 
 				ft := sf.Type
-				if ft.Name() == "" && ft.Kind() == reflect.Pointer {
+				if ft.Name() == "" && ft.Kind() == reflect.Ptr {
 					// Follow pointer.
 					ft = ft.Elem()
 				}

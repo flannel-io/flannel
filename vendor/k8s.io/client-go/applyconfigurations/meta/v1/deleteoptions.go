@@ -36,10 +36,7 @@ type DeleteOptionsApplyConfiguration struct {
 // DeleteOptionsApplyConfiguration constructs an declarative configuration of the DeleteOptions type for use with
 // apply.
 func DeleteOptions() *DeleteOptionsApplyConfiguration {
-	b := &DeleteOptionsApplyConfiguration{}
-	b.WithKind("DeleteOptions")
-	b.WithAPIVersion("meta.k8s.io/v1")
-	return b
+	return &DeleteOptionsApplyConfiguration{}
 }
 
 // WithKind sets the Kind field in the declarative configuration to the given value

@@ -52,9 +52,6 @@ func (a *TypeRef) Equals(b *TypeRef) bool {
 		}
 		//return true
 	}
-	if a.ElementRelationship != b.ElementRelationship {
-		return false
-	}
 	return a.Inlined.Equals(&b.Inlined)
 }
 

@@ -105,11 +105,7 @@ type atomHandler interface {
 func resolveSchema(s *schema.Schema, tr schema.TypeRef, v value.Value, ah atomHandler) ValidationErrors {
 	a, ok := s.Resolve(tr)
 	if !ok {
-		typeName := "inlined type"
-		if tr.NamedType != nil {
-			typeName = *tr.NamedType
-		}
-		return errorf("schema error: no type found matching: %v", typeName)
+		return errorf("schema error: no type found matching: %v", *tr.NamedType)
 	}
 
 	a = deduceAtom(a, v)

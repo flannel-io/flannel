@@ -42,6 +42,7 @@ import (
 	"k8s.io/client-go/pkg/apis/clientauthentication"
 	"k8s.io/client-go/pkg/apis/clientauthentication/install"
 	clientauthenticationv1 "k8s.io/client-go/pkg/apis/clientauthentication/v1"
+	clientauthenticationv1alpha1 "k8s.io/client-go/pkg/apis/clientauthentication/v1alpha1"
 	clientauthenticationv1beta1 "k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/tools/metrics"
@@ -72,8 +73,9 @@ var (
 	globalCache = newCache()
 	// The list of API versions we accept.
 	apiVersions = map[string]schema.GroupVersion{
-		clientauthenticationv1beta1.SchemeGroupVersion.String(): clientauthenticationv1beta1.SchemeGroupVersion,
-		clientauthenticationv1.SchemeGroupVersion.String():      clientauthenticationv1.SchemeGroupVersion,
+		clientauthenticationv1alpha1.SchemeGroupVersion.String(): clientauthenticationv1alpha1.SchemeGroupVersion,
+		clientauthenticationv1beta1.SchemeGroupVersion.String():  clientauthenticationv1beta1.SchemeGroupVersion,
+		clientauthenticationv1.SchemeGroupVersion.String():       clientauthenticationv1.SchemeGroupVersion,
 	}
 )
 
@@ -296,8 +298,8 @@ func (a *Authenticator) UpdateTransportConfig(c *transport.Config) error {
 	// also configured to allow client certificates for authentication. For requests
 	// like "kubectl get --token (token) pods" we should assume the intention is to
 	// use the provided token for authentication. The same can be said for when the
-	// user specifies basic auth or cert auth.
-	if c.HasTokenAuth() || c.HasBasicAuth() || c.HasCertAuth() {
+	// user specifies basic auth.
+	if c.HasTokenAuth() || c.HasBasicAuth() {
 		return nil
 	}
 
@@ -305,7 +307,7 @@ func (a *Authenticator) UpdateTransportConfig(c *transport.Config) error {
 		return &roundTripper{a, rt}
 	})
 
-	if c.HasCertCallback() {
+	if c.TLS.GetCert != nil {
 		return errors.New("can't add TLS certificate callback: transport.Config.TLS.GetCert already set")
 	}
 	c.TLS.GetCert = a.getCert.GetCert
@@ -356,7 +358,11 @@ func (r *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 	if res.StatusCode == http.StatusUnauthorized {
-		if err := r.a.maybeRefreshCreds(creds); err != nil {
+		resp := &clientauthentication.Response{
+			Header: res.Header,
+			Code:   int32(res.StatusCode),
+		}
+		if err := r.a.maybeRefreshCreds(creds, resp); err != nil {
 			klog.Errorf("refreshing credentials: %v", err)
 		}
 	}
@@ -386,7 +392,7 @@ func (a *Authenticator) getCreds() (*credentials, error) {
 		return a.cachedCreds, nil
 	}
 
-	if err := a.refreshCredsLocked(); err != nil {
+	if err := a.refreshCredsLocked(nil); err != nil {
 		return nil, err
 	}
 
@@ -395,7 +401,7 @@ func (a *Authenticator) getCreds() (*credentials, error) {
 
 // maybeRefreshCreds executes the plugin to force a rotation of the
 // credentials, unless they were rotated already.
-func (a *Authenticator) maybeRefreshCreds(creds *credentials) error {
+func (a *Authenticator) maybeRefreshCreds(creds *credentials, r *clientauthentication.Response) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
@@ -406,12 +412,12 @@ func (a *Authenticator) maybeRefreshCreds(creds *credentials) error {
 		return nil
 	}
 
-	return a.refreshCredsLocked()
+	return a.refreshCredsLocked(r)
 }
 
 // refreshCredsLocked executes the plugin and reads the credentials from
 // stdout. It must be called while holding the Authenticator's mutex.
-func (a *Authenticator) refreshCredsLocked() error {
+func (a *Authenticator) refreshCredsLocked(r *clientauthentication.Response) error {
 	interactive, err := a.interactiveFunc()
 	if err != nil {
 		return fmt.Errorf("exec plugin cannot support interactive mode: %w", err)
@@ -419,6 +425,7 @@ func (a *Authenticator) refreshCredsLocked() error {
 
 	cred := &clientauthentication.ExecCredential{
 		Spec: clientauthentication.ExecCredentialSpec{
+			Response:    r,
 			Interactive: interactive,
 		},
 	}

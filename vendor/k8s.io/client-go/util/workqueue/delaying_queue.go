@@ -33,9 +33,7 @@ type DelayingInterface interface {
 	AddAfter(item interface{}, duration time.Duration)
 }
 
-// NewDelayingQueue constructs a new workqueue with delayed queuing ability.
-// NewDelayingQueue does not emit metrics. For use with a MetricsProvider, please use
-// NewNamedDelayingQueue instead.
+// NewDelayingQueue constructs a new workqueue with delayed queuing ability
 func NewDelayingQueue() DelayingInterface {
 	return NewDelayingQueueWithCustomClock(clock.RealClock{}, "")
 }

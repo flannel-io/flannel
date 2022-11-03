@@ -18,7 +18,6 @@ package json
 
 import (
 	gojson "encoding/json"
-	"strconv"
 	"strings"
 )
 
@@ -70,83 +69,25 @@ func (d *Decoder) DisallowDuplicateFields() {
 	d.d.disallowDuplicateFields = true
 }
 
-func (d *decodeState) newFieldError(errType strictErrType, field string) *strictError {
-	if len(d.strictFieldStack) > 0 {
-		return &strictError{
-			ErrType: errType,
-			Path:    strings.Join(d.strictFieldStack, "") + "." + field,
-		}
-	} else {
-		return &strictError{
-			ErrType: errType,
-			Path:    field,
-		}
-	}
-}
-
 // saveStrictError saves a strict decoding error,
 // for reporting at the end of the unmarshal if no other errors occurred.
-func (d *decodeState) saveStrictError(err *strictError) {
+func (d *decodeState) saveStrictError(err error) {
 	// prevent excessive numbers of accumulated errors
 	if len(d.savedStrictErrors) >= 100 {
 		return
 	}
 	// dedupe accumulated strict errors
 	if d.seenStrictErrors == nil {
-		d.seenStrictErrors = map[strictError]struct{}{}
+		d.seenStrictErrors = map[string]struct{}{}
 	}
-	if _, seen := d.seenStrictErrors[*err]; seen {
+	msg := err.Error()
+	if _, seen := d.seenStrictErrors[msg]; seen {
 		return
 	}
 
 	// accumulate the error
-	d.seenStrictErrors[*err] = struct{}{}
+	d.seenStrictErrors[msg] = struct{}{}
 	d.savedStrictErrors = append(d.savedStrictErrors, err)
-}
-
-func (d *decodeState) appendStrictFieldStackKey(key string) {
-	if !d.disallowDuplicateFields && !d.disallowUnknownFields {
-		return
-	}
-	if len(d.strictFieldStack) > 0 {
-		d.strictFieldStack = append(d.strictFieldStack, ".", key)
-	} else {
-		d.strictFieldStack = append(d.strictFieldStack, key)
-	}
-}
-
-func (d *decodeState) appendStrictFieldStackIndex(i int) {
-	if !d.disallowDuplicateFields && !d.disallowUnknownFields {
-		return
-	}
-	d.strictFieldStack = append(d.strictFieldStack, "[", strconv.Itoa(i), "]")
-}
-
-type strictErrType string
-
-const (
-	unknownStrictErrType   strictErrType = "unknown field"
-	duplicateStrictErrType strictErrType = "duplicate field"
-)
-
-// strictError is a strict decoding error
-// It has an ErrType (either unknown or duplicate)
-// and a path to the erroneous field
-type strictError struct {
-	ErrType strictErrType
-	Path    string
-}
-
-func (e *strictError) Error() string {
-	return string(e.ErrType) + " " + strconv.Quote(e.Path)
-}
-
-func (e *strictError) FieldPath() string {
-	return e.Path
-}
-
-func (e *strictError) SetFieldPath(path string) {
-	e.Path = path
 }
 
 // UnmarshalStrictError holds errors resulting from use of strict disallow___ decoder directives.

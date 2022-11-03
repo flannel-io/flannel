@@ -2,7 +2,8 @@
 
 # approval on api packages bubbles to api-approvers
 reviewers:
-  - sig-auth-authenticators-approvers
-  - sig-auth-authenticators-reviewers
+- sig-auth-authenticators-approvers
+- sig-auth-authenticators-reviewers
 labels:
-  - sig/auth
+- sig/auth
+
