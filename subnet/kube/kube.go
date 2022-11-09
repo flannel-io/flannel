@@ -294,19 +294,16 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 	}
 
 	var cidr, ipv6Cidr *net.IPNet
-	_, cidr, err = net.ParseCIDR(n.Spec.PodCIDR)
-	if err != nil {
-		return nil, err
-	}
 
 	for _, podCidr := range n.Spec.PodCIDRs {
 		_, parseCidr, err := net.ParseCIDR(podCidr)
 		if err != nil {
 			return nil, err
 		}
-		if len(parseCidr.IP) == net.IPv6len {
+		if len(parseCidr.IP) == net.IPv4len {
+			cidr = parseCidr
+		} else if len(parseCidr.IP) == net.IPv6len {
 			ipv6Cidr = parseCidr
-			break
 		}
 	}
 
@@ -430,9 +427,17 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l subnet.Lease, err error)
 		}
 		l.Attrs.BackendData = json.RawMessage(n.Annotations[ksm.annotations.BackendData])
 
-		_, cidr, err := net.ParseCIDR(n.Spec.PodCIDR)
-		if err != nil {
-			return l, err
+		cidr := new(net.IPNet)
+		log.Infof("Creating the node lease for IPv4. This is the n.Spec.PodCIDRs: %v", n.Spec.PodCIDRs)
+		for _, podCidr := range n.Spec.PodCIDRs {
+			_, parseCidr, err := net.ParseCIDR(podCidr)
+			if err != nil {
+				return l, err
+			}
+			if len(parseCidr.IP) == net.IPv4len {
+				cidr = parseCidr
+				break
+			}
 		}
 		l.Subnet = ip.FromIPNet(cidr)
 		l.EnableIPv4 = ksm.enableIPv4
