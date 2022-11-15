@@ -1,4 +1,4 @@
-FROM arm64v8/alpine:3.13
+FROM arm64v8/alpine:3.16
 
 ENV FLANNEL_ARCH=arm64
 
