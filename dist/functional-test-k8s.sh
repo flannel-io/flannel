@@ -6,14 +6,14 @@ ETCD_LOCATION="${ETCD_LOCATION:-etcd}"
 FLANNEL_NET="${FLANNEL_NET:-10.10.0.0/16}"
 TAG=`git describe --tags --dirty`
 FLANNEL_DOCKER_IMAGE="${FLANNEL_DOCKER_IMAGE:-quay.io/coreos/flannel:$TAG}"
-K8S_VERSION="${K8S_VERSION:-1.13.2}"
-HYPERKUBE_IMG="gcr.io/google_containers/hyperkube-${ARCH}"
-HYPERKUBE_CMD="${HYPERKUBE_CMD:-/hyperkube}"
-HYPERKUBE_APISERVER_CMD="${HYPERKUBE_APISERVER_CMD:-apiserver}"
+K8S_VERSION="${K8S_VERSION:-1.25.2}"
+HYPERKUBE_IMG="docker.io/rancher/hyperkube"
+HYPERKUBE_CMD="${HYPERKUBE_CMD:-" "}"
+HYPERKUBE_APISERVER_CMD="${HYPERKUBE_APISERVER_CMD:-kube-apiserver}"
 
 docker_ip=$(ip -o -f inet addr show docker0 | grep -Po 'inet \K[\d.]+')
 etcd_endpt="http://$docker_ip:2379"
-k8s_endpt="http://$docker_ip:8080"
+k8s_endpt="https://$docker_ip:6443"
 
 # Set the proper imagename according to architecture
 if [[ ${ARCH} == "ppc64le" ]]; then
@@ -32,12 +32,80 @@ setup_suite() {
 
     # Start a kubernetes API server
     docker rm -f flannel-e2e-k8s-apiserver >/dev/null 2>/dev/null
-    docker run -d --net=host --name flannel-e2e-k8s-apiserver ${HYPERKUBE_IMG}:v$K8S_VERSION \
-      ${HYPERKUBE_CMD} ${HYPERKUBE_APISERVER_CMD} --etcd-servers=$etcd_endpt \
-      --service-cluster-ip-range=10.101.0.0/16 --insecure-bind-address=0.0.0.0 --allow-privileged >/dev/null
+    dir=$(mktemp -d)
+    
+    mkdir $dir/pki
+    
+    openssl genrsa -out $dir/pki/ca.key 2048
+    openssl req -new -key $dir/pki/ca.key -subj "/CN=KUBERNETES-CA/O=Kubernetes" -out $dir/pki/ca.csr
+    openssl x509 -req -in $dir/pki/ca.csr -signkey $dir/pki/ca.key -CAcreateserial  -out $dir/pki/ca.crt -days 1000
+    cat > $dir/openssl.cnf <<EOF
+[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[v3_req]
+basicConstraints = critical, CA:FALSE
+keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = kubernetes
+DNS.2 = kubernetes.default
+DNS.3 = kubernetes.default.svc
+DNS.4 = kubernetes.default.svc.cluster
+DNS.5 = kubernetes.default.svc.cluster.local
+IP.1 = $docker_ip
+IP.2 = 127.0.0.1
+EOF
+    openssl genrsa -out $dir/pki/kube-apiserver.key 2048
+    openssl req -new -key $dir/pki/kube-apiserver.key \
+    -subj "/CN=kube-apiserver/O=Kubernetes" -out $dir/pki/kube-apiserver.csr -config $dir/openssl.cnf
+    openssl x509 -req -in $dir/pki/kube-apiserver.csr \
+    -CA $dir/pki/ca.crt -CAkey $dir/pki/ca.key -CAcreateserial  -out $dir/pki/kube-apiserver.crt -extensions v3_req -extfile $dir/openssl.cnf -days 1000
+
+    openssl genrsa -out $dir/pki/service-account.key 2048
+    openssl req -new -key $dir/pki/service-account.key \
+    -subj "/CN=service-accounts/O=Kubernetes" -out $dir/pki/service-account.csr
+    openssl x509 -req -in $dir/pki/service-account.csr \
+    -CA $dir/pki/ca.crt -CAkey $dir/pki/ca.key -CAcreateserial  -out $dir/pki/service-account.crt -days 100
+
+    openssl genrsa -out $dir/pki/admin.key 2048
+    openssl req -new -key $dir/pki/admin.key -subj "/CN=admin/O=system:masters" -out $dir/pki/admin.csr
+    openssl x509 -req -in $dir/pki/admin.csr -CA $dir/pki/ca.crt -CAkey $dir/pki/ca.key -CAcreateserial  -out $dir/pki/admin.crt -days 1000
+    
+    docker run -d --net=host -v $dir:/var/lib/kubernetes --name flannel-e2e-k8s-apiserver ${HYPERKUBE_IMG}:v$K8S_VERSION-rancher1-linux-$ARCH \
+      ${HYPERKUBE_CMD} ${HYPERKUBE_APISERVER_CMD} --etcd-servers=$etcd_endpt --bind-address=$docker_ip \
+      --client-ca-file=/var/lib/kubernetes/pki/ca.crt \
+      --enable-admission-plugins=NodeRestriction,ServiceAccount \
+      --service-account-key-file=/var/lib/kubernetes/pki/service-account.crt \
+      --service-account-signing-key-file=/var/lib/kubernetes/pki/service-account.key \
+      --service-account-issuer=https://kubernetes.default.svc.local \
+      --tls-cert-file=/var/lib/kubernetes/pki/kube-apiserver.crt \
+      --tls-private-key-file=/var/lib/kubernetes/pki/kube-apiserver.key \
+      --service-cluster-ip-range=10.101.0.0/16 --allow-privileged >/dev/null
     sleep 1
 
-    while ! cat <<EOF |  docker run -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION ${HYPERKUBE_CMD} kubectl create -f - >/dev/null 2>/dev/null
+    docker exec flannel-e2e-k8s-apiserver kubectl config set-cluster kubernetes-test-flannel \
+    --certificate-authority=/var/lib/kubernetes/pki/ca.crt \
+    --embed-certs=true \
+    --server="https://$docker_ip:6443" \
+    --kubeconfig=/var/lib/kubernetes/admin.kubeconfig
+
+    docker exec flannel-e2e-k8s-apiserver kubectl config set-credentials admin \
+    --client-certificate=/var/lib/kubernetes/pki/admin.crt \
+    --client-key=/var/lib/kubernetes/pki/admin.key \
+    --embed-certs=true \
+    --kubeconfig=/var/lib/kubernetes/admin.kubeconfig
+
+    docker exec flannel-e2e-k8s-apiserver kubectl config set-context default \
+    --cluster=kubernetes-test-flannel \
+    --user=admin \
+    --kubeconfig=/var/lib/kubernetes/admin.kubeconfig
+
+    docker exec flannel-e2e-k8s-apiserver kubectl config use-context default --kubeconfig=/var/lib/kubernetes/admin.kubeconfig
+
+    while ! cat <<EOF |  docker exec -i flannel-e2e-k8s-apiserver ${HYPERKUBE_CMD} kubectl --kubeconfig=/var/lib/kubernetes/admin.kubeconfig create -f - >/dev/null 2>/dev/null
 apiVersion: v1
 kind: Node
 metadata:
@@ -51,7 +119,7 @@ do
     sleep 1
 done
 
-cat <<EOF |  docker run -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION ${HYPERKUBE_CMD} kubectl create -f - >/dev/null 2>/dev/null
+cat <<EOF |  docker exec -i flannel-e2e-k8s-apiserver ${HYPERKUBE_CMD} kubectl --kubeconfig=/var/lib/kubernetes/admin.kubeconfig create -f - >/dev/null 2>/dev/null
 apiVersion: v1
 kind: Node
 metadata:
@@ -78,18 +146,22 @@ start_flannel() {
     local backend=$1
 
     flannel_conf="{ \"Network\": \"$FLANNEL_NET\", \"Backend\": { \"Type\": \"${backend}\" } }"
+    dir=$(mktemp -d)
+
+    docker exec -i flannel-e2e-k8s-apiserver cat /var/lib/kubernetes/admin.kubeconfig > $dir/admin.kubeconfig
 
     for host_num in 1 2; do
        docker rm -f flannel-e2e-test-flannel$host_num >/dev/null 2>/dev/null
 
        docker run -id --privileged \
+	-v $dir:/var/lib/kubernetes/ \
         -e NODE_NAME=flannel$host_num \
         --name flannel-e2e-test-flannel$host_num \
         --entrypoint "/bin/sh" \
         $FLANNEL_DOCKER_IMAGE \
         -c "mkdir -p /etc/kube-flannel && \
             echo '$flannel_conf' > /etc/kube-flannel/net-conf.json && \
-            /opt/bin/flanneld --kube-subnet-mgr --ip-masq --kube-api-url $k8s_endpt" >/dev/null
+            /opt/bin/flanneld --kube-subnet-mgr --ip-masq --kubeconfig-file /var/lib/kubernetes/admin.kubeconfig --kube-api-url $k8s_endpt" >/dev/null
 
        while ! docker exec flannel-e2e-test-flannel$host_num ls /run/flannel/subnet.env >/dev/null 2>&1; do
          status=$(docker inspect --format='{{.State.Status}}' flannel-e2e-test-flannel$host_num)
@@ -148,15 +220,15 @@ test_ipip() {
 }
 
 test_public-ip-overwrite(){
-  docker exec flannel-e2e-k8s-apiserver kubectl annotate node flannel1 \
+  docker exec flannel-e2e-k8s-apiserver kubectl --kubeconfig=/var/lib/kubernetes/admin.kubeconfig annotate node flannel1 \
     flannel.alpha.coreos.com/public-ip-overwrite=172.18.0.2 >/dev/null 2>&1
   start_flannel vxlan
   assert_equals "172.18.0.2" \
-    "$(docker exec flannel-e2e-k8s-apiserver kubectl get node/flannel1 -o \
+    "$(docker exec flannel-e2e-k8s-apiserver kubectl --kubeconfig=/var/lib/kubernetes/admin.kubeconfig get node/flannel1 -o \
     jsonpath='{.metadata.annotations.flannel\.alpha\.coreos\.com/public-ip}' 2>/dev/null)" \
     "Overwriting public IP via annotation does not work"
   # Remove annotation to not break all other tests
-  docker exec flannel-e2e-k8s-apiserver kubectl annotate node flannel1 \
+  docker exec flannel-e2e-k8s-apiserver kubectl --kubeconfig=/var/lib/kubernetes/admin.kubeconfig annotate node flannel1 \
     flannel.alpha.coreos.com/public-ip-overwrite- >/dev/null 2>&1
 }
 
@@ -214,6 +286,9 @@ $(docker exec --privileged flannel-e2e-test-flannel2 /sbin/iptables -t filter -S
 }
 
 test_manifest() {
+    dir=$(mktemp -d)
+
+    docker exec -i flannel-e2e-k8s-apiserver cat /var/lib/kubernetes/admin.kubeconfig > $dir/admin.kubeconfig
     # This just tests that the API server accepts the manifest, not that it actually acts on it correctly.
-    assert "cat ../Documentation/kube-flannel.yml |  docker run -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION ${HYPERKUBE_CMD} kubectl create -f -"
+    assert "cat ../Documentation/kube-flannel.yml |  docker run -v $dir:/var/lib/kubernetes -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION-rancher1-linux-$ARCH ${HYPERKUBE_CMD} kubectl --kubeconfig=/var/lib/kubernetes/admin.kubeconfig create -f -"
 }
