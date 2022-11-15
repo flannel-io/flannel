@@ -1,4 +1,4 @@
-FROM ppc64le/alpine:3.13
+FROM ppc64le/alpine:3.16
 
 ENV FLANNEL_ARCH=ppc64le
 
