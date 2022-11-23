@@ -249,6 +249,7 @@ check_iptables() {
 -P POSTROUTING ACCEPT
 -A POSTROUTING -m comment --comment "flanneld masq" -j FLANNEL-POSTRTG
 -N FLANNEL-POSTRTG
+-A FLANNEL-POSTRTG -m mark --mark 0x4000/0x4000 -m comment --comment "flanneld masq" -j RETURN
 -A FLANNEL-POSTRTG -s 10.10.0.0/16 -d 10.10.0.0/16 -m comment --comment "flanneld masq" -j RETURN
 -A FLANNEL-POSTRTG -s 10.10.0.0/16 ! -d 224.0.0.0/4 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully
 -A FLANNEL-POSTRTG ! -s 10.10.0.0/16 -d 10.10.1.0/24 -m comment --comment "flanneld masq" -j RETURN
@@ -258,6 +259,7 @@ EOM
 -P POSTROUTING ACCEPT
 -A POSTROUTING -m comment --comment "flanneld masq" -j FLANNEL-POSTRTG
 -N FLANNEL-POSTRTG
+-A FLANNEL-POSTRTG -m mark --mark 0x4000/0x4000 -m comment --comment "flanneld masq" -j RETURN
 -A FLANNEL-POSTRTG -s 10.10.0.0/16 -d 10.10.0.0/16 -m comment --comment "flanneld masq" -j RETURN
 -A FLANNEL-POSTRTG -s 10.10.0.0/16 ! -d 224.0.0.0/4 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully
 -A FLANNEL-POSTRTG ! -s 10.10.0.0/16 -d 10.10.2.0/24 -m comment --comment "flanneld masq" -j RETURN

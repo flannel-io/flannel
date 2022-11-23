@@ -46,6 +46,8 @@ type IPTablesRule struct {
 	rulespec []string
 }
 
+const kubeProxyMark string = "0x4000/0x4000"
+
 func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 	n := ipn.String()
 	sn := lease.Subnet.String()
@@ -59,6 +61,8 @@ func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 		return []IPTablesRule{
 			// This rule ensure that the flannel iptables rules are executed before other rules on the node
 			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
+			// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
 			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// NAT if it's not multicast traffic
@@ -72,6 +76,8 @@ func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 		return []IPTablesRule{
 			// This rule ensure that the flannel iptables rules are executed before other rules on the node
 			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
+			// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
 			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// NAT if it's not multicast traffic
@@ -97,6 +103,8 @@ func MasqIP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
 		return []IPTablesRule{
 			// This rule ensure that the flannel iptables rules are executed before other rules on the node
 			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
+			// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
 			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// NAT if it's not multicast traffic
@@ -110,6 +118,8 @@ func MasqIP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
 		return []IPTablesRule{
 			// This rule ensure that the flannel iptables rules are executed before other rules on the node
 			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
+			// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
+			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
 			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// NAT if it's not multicast traffic
