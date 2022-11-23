@@ -51,13 +51,15 @@ func TestGetInterfaceByIP(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	iface, err := GetInterfaceByIP(defaultIpv4Addr)
-	if err != nil {
-		t.Fatal(err)
-	}
+	for _, addr := range defaultIpv4Addr {
+		iface, err := GetInterfaceByIP(addr)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	if iface.Index != defaultIface.Index {
-		t.Fatalf("iface.Index(%d) != defaultIface.Index(%d)", iface.Index, defaultIface.Index)
+		if iface.Index != defaultIface.Index {
+			t.Fatalf("iface.Index(%d) != defaultIface.Index(%d)", iface.Index, defaultIface.Index)
+		}
 	}
 }
 
