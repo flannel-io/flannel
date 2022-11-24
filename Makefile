@@ -18,7 +18,7 @@ endif
 GO_VERSION=1.19
 
 # K8s version used for Makefile helpers
-K8S_VERSION=v1.24.6
+K8S_VERSION=1.24.6
 
 GOARM=7
 
@@ -286,7 +286,7 @@ stop-etcd:
 run-k8s-apiserver: stop-k8s-apiserver
 	docker run --detach --net=host \
 	  --name calico-k8s-apiserver \
-	gcr.io/google_containers/hyperkube-amd64:$(K8S_VERSION) \
+	docker.io/rancher/hyperkube:v$(K8S_VERSION)-rancher1-linux-amd64 \
 		  /hyperkube apiserver --etcd-servers=http://$(LOCAL_IP_ENV):2379 \
 		  --service-cluster-ip-range=10.101.0.0/16
 
