@@ -130,8 +130,8 @@ func TestDeleteRules(t *testing.T) {
 	if err != nil {
 		t.Error("Error setting up iptables")
 	}
-	if len(ipt.rules) != 5 {
-		t.Errorf("Should be 5 masqRules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
+	if len(ipt.rules) != 6 {
+		t.Errorf("Should be 6 masqRules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
 	}
 
 	iptr.rules = []IPTablesRestoreRules{}

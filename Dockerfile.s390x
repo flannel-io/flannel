@@ -1,4 +1,4 @@
-FROM s390x/alpine:3.13
+FROM s390x/alpine:3.16
 
 ENV FLANNEL_ARCH=s390x
 

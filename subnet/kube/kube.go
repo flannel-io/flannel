@@ -294,20 +294,31 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 	}
 
 	var cidr, ipv6Cidr *net.IPNet
-	_, cidr, err = net.ParseCIDR(n.Spec.PodCIDR)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, podCidr := range n.Spec.PodCIDRs {
-		_, parseCidr, err := net.ParseCIDR(podCidr)
+	switch {
+	case len(n.Spec.PodCIDRs) == 0:
+		_, parseCidr, err := net.ParseCIDR(n.Spec.PodCIDR)
 		if err != nil {
 			return nil, err
 		}
-		if len(parseCidr.IP) == net.IPv6len {
+		if len(parseCidr.IP) == net.IPv4len {
+			cidr = parseCidr
+		} else if len(parseCidr.IP) == net.IPv6len {
 			ipv6Cidr = parseCidr
-			break
 		}
+	case len(n.Spec.PodCIDRs) < 3:
+		for _, podCidr := range n.Spec.PodCIDRs {
+			_, parseCidr, err := net.ParseCIDR(podCidr)
+			if err != nil {
+				return nil, err
+			}
+			if len(parseCidr.IP) == net.IPv4len {
+				cidr = parseCidr
+			} else if len(parseCidr.IP) == net.IPv6len {
+				ipv6Cidr = parseCidr
+			}
+		}
+	default:
+		return nil, fmt.Errorf("node %q pod cidrs should be IPv4/IPv6 only or dualstack", ksm.nodeName)
 	}
 
 	if (n.Annotations[ksm.annotations.BackendData] != string(bd) ||
@@ -430,9 +441,27 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l subnet.Lease, err error)
 		}
 		l.Attrs.BackendData = json.RawMessage(n.Annotations[ksm.annotations.BackendData])
 
-		_, cidr, err := net.ParseCIDR(n.Spec.PodCIDR)
-		if err != nil {
-			return l, err
+		var cidr *net.IPNet
+		switch {
+		case len(n.Spec.PodCIDRs) == 0:
+			_, cidr, err = net.ParseCIDR(n.Spec.PodCIDR)
+			if err != nil {
+				return l, err
+			}
+		case len(n.Spec.PodCIDRs) < 3:
+			log.Infof("Creating the node lease for IPv4. This is the n.Spec.PodCIDRs: %v", n.Spec.PodCIDRs)
+			for _, podCidr := range n.Spec.PodCIDRs {
+				_, parseCidr, err := net.ParseCIDR(podCidr)
+				if err != nil {
+					return l, err
+				}
+				if len(parseCidr.IP) == net.IPv4len {
+					cidr = parseCidr
+					break
+				}
+			}
+		default:
+			return l, fmt.Errorf("node %q pod cidrs should be IPv4/IPv6 only or dualstack", ksm.nodeName)
 		}
 		l.Subnet = ip.FromIPNet(cidr)
 		l.EnableIPv4 = ksm.enableIPv4
@@ -445,17 +474,27 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l subnet.Lease, err error)
 		}
 		l.Attrs.BackendV6Data = json.RawMessage(n.Annotations[ksm.annotations.BackendV6Data])
 
-		ipv6Cidr := new(net.IPNet)
-		log.Infof("Creating the node lease for IPv6. This is the n.Spec.PodCIDRs: %v", n.Spec.PodCIDRs)
-		for _, podCidr := range n.Spec.PodCIDRs {
-			_, parseCidr, err := net.ParseCIDR(podCidr)
+		var ipv6Cidr *net.IPNet
+		switch {
+		case len(n.Spec.PodCIDRs) == 0:
+			_, ipv6Cidr, err = net.ParseCIDR(n.Spec.PodCIDR)
 			if err != nil {
 				return l, err
 			}
-			if len(parseCidr.IP) == net.IPv6len {
-				ipv6Cidr = parseCidr
-				break
+		case len(n.Spec.PodCIDRs) < 3:
+			log.Infof("Creating the node lease for IPv6. This is the n.Spec.PodCIDRs: %v", n.Spec.PodCIDRs)
+			for _, podCidr := range n.Spec.PodCIDRs {
+				_, parseCidr, err := net.ParseCIDR(podCidr)
+				if err != nil {
+					return l, err
+				}
+				if len(parseCidr.IP) == net.IPv6len {
+					ipv6Cidr = parseCidr
+					break
+				}
 			}
+		default:
+			return l, fmt.Errorf("node %q pod cidrs should be IPv4/IPv6 only or dualstack", ksm.nodeName)
 		}
 		l.IPv6Subnet = ip.FromIP6Net(ipv6Cidr)
 		l.EnableIPv6 = ksm.enableIPv6

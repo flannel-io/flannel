@@ -43,6 +43,6 @@ Then you should be able to set the ARCH as above
 A new build of flannel is created for every commit to master. They can be obtained from [https://hub.docker.com/r/flannelcni/flannel](https://hub.docker.com/r/flannelcni/flannel/tags )
 
 * `latest` is always the amd64 build.
-* The image tags have a number of components e.g. `v0.20.1-amd64`
-  * The last release was `v0.20.1`
+* The image tags have a number of components e.g. `v0.20.2-amd64`
+  * The last release was `v0.20.2`
   * The platform is `amd64`
