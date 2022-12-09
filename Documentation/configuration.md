@@ -123,4 +123,4 @@ FLANNEL_IPMASQ=true
 
 ## IPv6 only
 
-To use an IPv6 only environment use the same configuration of the Dual-stack to enable IPv6 and add "EnableIPv4": false in the net-conf.json of the kube-flannel-cfg ConfigMap
+To use an IPv6 only environment use the same configuration of the Dual-stack to enable IPv6 and add "EnableIPv4": false in the net-conf.json of the kube-flannel-cfg ConfigMap. In case of IPv6 only setup docker.io is translated as IPv4 address when deployed on an IPv6 the image reference repo needs to be updated following the Docker documentations for IPv6 only setup (https://www.docker.com/blog/beta-ipv6-support-on-docker-hub-registry/)
