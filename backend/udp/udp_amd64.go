@@ -78,11 +78,15 @@ func (be *UdpBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, c
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
+	net, err := config.GetFlannelNetwork(&l.Subnet)
+	if err != nil {
+		return nil, err
+	}
 	// Tunnel's subnet is that of the whole overlay network (e.g. /16)
 	// and not that of the individual host (e.g. /24)
 	tunNet := ip.IP4Net{
 		IP:        l.Subnet.IP,
-		PrefixLen: subnet.GetFlannelNetwork(config).PrefixLen,
+		PrefixLen: net.PrefixLen,
 	}
 
 	return newNetwork(be.sm, be.extIface, cfg.Port, tunNet, l)

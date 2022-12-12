@@ -454,3 +454,8 @@ func (m *LocalManager) Name() string {
 	}
 	return fmt.Sprintf("Etcd Local Manager with Previous Subnet: %s", previousSubnet)
 }
+
+// For etcd subnet manager, the file never changes so we just write it once at startup
+func (m *LocalManager) HandleSubnetFile(path string, config *subnet.Config, ipMasq bool, sn ip.IP4Net, ipv6sn ip.IP6Net, mtu int) error {
+	return subnet.WriteSubnetFile(path, config, ipMasq, sn, ipv6sn, mtu)
+}

@@ -48,88 +48,85 @@ type IPTablesRule struct {
 
 const kubeProxyMark string = "0x4000/0x4000"
 
-func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
-	n := ipn.String()
-	sn := lease.Subnet.String()
-	supports_random_fully := false
+func MasqRules(cluster_cidrs []ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
+	pod_cidr := lease.Subnet.String()
 	ipt, err := iptables.New()
-	if err == nil {
-		supports_random_fully = ipt.HasRandomFully()
+	var fully_randomize string
+	if err == nil && ipt.HasRandomFully() {
+		fully_randomize = "--random-fully"
 	}
-
-	if supports_random_fully {
-		return []IPTablesRule{
-			// This rule ensure that the flannel iptables rules are executed before other rules on the node
-			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
-			// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			// NAT if it's not multicast traffic
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
-			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			// Masquerade anything headed towards flannel from the host
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
-		}
-	} else {
-		return []IPTablesRule{
-			// This rule ensure that the flannel iptables rules are executed before other rules on the node
-			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
-			// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			// NAT if it's not multicast traffic
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
-			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			// Masquerade anything headed towards flannel from the host
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
-		}
+	rules := make([]IPTablesRule, 2)
+	// This rule ensure that the flannel iptables rules are executed before other rules on the node
+	rules[0] = IPTablesRule{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}}
+	// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
+	rules[1] = IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}}
+	for _, ccidr := range cluster_cidrs {
+		cluster_cidr := ccidr.String()
+		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0), for any of the cluster_cidrs
+		rules = append(rules,
+			IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", pod_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+			IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+		)
 	}
+	for _, ccidr := range cluster_cidrs {
+		cluster_cidr := ccidr.String()
+		// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
+		rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}})
+	}
+	for _, ccidr := range cluster_cidrs {
+		cluster_cidr := ccidr.String()
+		// NAT if it's not multicast traffic
+		rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", cluster_cidr, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", fully_randomize}})
+	}
+	for _, ccidr := range cluster_cidrs {
+		cluster_cidr := ccidr.String()
+		// Masquerade anything headed towards flannel from the host
+		rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", fully_randomize}})
+	}
+	return rules
 }
 
-func MasqIP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
-	n := ipn.String()
-	sn := lease.IPv6Subnet.String()
-	supports_random_fully := false
+func MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
+	pod_cidr := lease.IPv6Subnet.String()
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
-	if err == nil {
-		supports_random_fully = ipt.HasRandomFully()
+	var fully_randomize string
+	if err == nil && ipt.HasRandomFully() {
+		fully_randomize = "--random-fully"
+	}
+	rules := make([]IPTablesRule, 2)
+
+	// This rule ensure that the flannel iptables rules are executed before other rules on the node
+	rules[0] = IPTablesRule{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}}
+	// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
+	rules[1] = IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}}
+
+	for _, ccidr := range cluster_cidrs {
+		cluster_cidr := ccidr.String()
+		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0), for any of the cluster_cidrs
+		rules = append(rules,
+			IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", pod_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+			IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+		)
+	}
+	for _, ccidr := range cluster_cidrs {
+		cluster_cidr := ccidr.String()
+		// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
+		rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}})
+	}
+	for _, ccidr := range cluster_cidrs {
+		cluster_cidr := ccidr.String()
+		// NAT if it's not multicast traffic
+		rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", cluster_cidr, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", fully_randomize}})
+
+	}
+	for _, ccidr := range cluster_cidrs {
+		cluster_cidr := ccidr.String()
+		// Masquerade anything headed towards flannel from the host
+		rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", fully_randomize}})
+
 	}
 
-	if supports_random_fully {
-		return []IPTablesRule{
-			// This rule ensure that the flannel iptables rules are executed before other rules on the node
-			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
-			// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			// NAT if it's not multicast traffic
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
-			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			// Masquerade anything headed towards flannel from the host
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
-		}
-	} else {
-		return []IPTablesRule{
-			// This rule ensure that the flannel iptables rules are executed before other rules on the node
-			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
-			// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			// NAT if it's not multicast traffic
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", n, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
-			// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			// Masquerade anything headed towards flannel from the host
-			{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}},
-		}
-	}
+	return rules
 }
 
 func ForwardRules(flannelNetwork string) []IPTablesRule {
@@ -272,7 +269,9 @@ func ipTablesBootstrap(ipt IPTables, iptRestore IPTablesRestore, rules []IPTable
 	return nil
 }
 
-func SetupAndEnsureIP4Tables(rules []IPTablesRule, resyncPeriod int) {
+func SetupAndEnsureIP4Tables(getRules func() []IPTablesRule, resyncPeriod int) {
+	rules := getRules()
+	log.Infof("generated %d rules", len(rules))
 	ipt, err := iptables.New()
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -301,7 +300,7 @@ func SetupAndEnsureIP4Tables(rules []IPTablesRule, resyncPeriod int) {
 
 	for {
 		// Ensure that all the iptables rules exist every 5 seconds
-		if err := ensureIPTables(ipt, iptRestore, rules); err != nil {
+		if err := ensureIPTables(ipt, iptRestore, getRules()); err != nil {
 			log.Errorf("Failed to ensure iptables rules: %v", err)
 		}
 
@@ -309,7 +308,8 @@ func SetupAndEnsureIP4Tables(rules []IPTablesRule, resyncPeriod int) {
 	}
 }
 
-func SetupAndEnsureIP6Tables(rules []IPTablesRule, resyncPeriod int) {
+func SetupAndEnsureIP6Tables(getRules func() []IPTablesRule, resyncPeriod int) {
+	rules := getRules()
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -338,7 +338,7 @@ func SetupAndEnsureIP6Tables(rules []IPTablesRule, resyncPeriod int) {
 
 	for {
 		// Ensure that all the iptables rules exist every 5 seconds
-		if err := ensureIPTables(ipt, iptRestore, rules); err != nil {
+		if err := ensureIPTables(ipt, iptRestore, getRules()); err != nil {
 			log.Errorf("Failed to ensure iptables rules: %v", err)
 		}
 

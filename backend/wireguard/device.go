@@ -219,12 +219,21 @@ func (dev *wgDevice) upAndAddRoute(dst *net.IPNet) error {
 		return fmt.Errorf("failed to set interface %s to UP state: %w", dev.attrs.name, err)
 	}
 
+	err = dev.addRoute(dst)
+	if err != nil {
+		return fmt.Errorf("failed to add route to destination (%s) to interface (%s): %w", dst, dev.attrs.name, err)
+	}
+	return nil
+}
+
+func (dev *wgDevice) addRoute(dst *net.IPNet) error {
 	route := netlink.Route{
 		LinkIndex: dev.link.Attrs().Index,
 		Scope:     netlink.SCOPE_LINK,
 		Dst:       dst,
 	}
-	err = netlink.RouteAdd(&route)
+
+	err := netlink.RouteAdd(&route)
 	if err != nil {
 		return fmt.Errorf("failed to add route %s: %w", dev.attrs.name, err)
 	}

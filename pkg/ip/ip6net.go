@@ -134,6 +134,14 @@ func (n IP6Net) StringSep(hexSep, prefixSep string) string {
 	return fmt.Sprintf("%s%s%d", n.IP.String(), prefixSep, n.PrefixLen)
 }
 
+func MapIP6ToString(nws []IP6Net) []string {
+	res := make([]string, len(nws))
+	for i := range nws {
+		res[i] = nws[i].String()
+	}
+	return res
+}
+
 func (n IP6Net) Network() IP6Net {
 	mask := net.CIDRMask(int(n.PrefixLen), 128)
 	return IP6Net{
@@ -194,6 +202,12 @@ func (n IP6Net) Contains(ip *IP6) bool {
 	network := big.NewInt(0).And((*big.Int)(n.IP), n.Mask())
 	subnet := big.NewInt(0).And((*big.Int)(ip), n.Mask())
 	return (IP6)(*network).String() == (IP6)(*subnet).String()
+}
+
+func (n *IP6Net) ContainsCIDR(other *IP6Net) bool {
+	ones1 := n.Mask()
+	ones2 := other.Mask()
+	return ones1.Cmp(ones2) <= 0 && n.Contains(other.IP)
 }
 
 func (n IP6Net) Empty() bool {

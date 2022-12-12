@@ -88,7 +88,7 @@ func (n *network) Run(ctx context.Context) {
 	for {
 		select {
 		case evtBatch := <-events:
-			n.handleSubnetEvents(evtBatch)
+			n.handleSubnetEvents(ctx, evtBatch)
 
 		case <-ctx.Done():
 			return
@@ -132,7 +132,7 @@ func (n *network) selectPublicEndpoint(ip4 *ip.IP4, ip6 *ip.IP6) string {
 	return ip4.String()
 }
 
-func (n *network) handleSubnetEvents(batch []subnet.Event) {
+func (n *network) handleSubnetEvents(ctx context.Context, batch []subnet.Event) {
 	for _, event := range batch {
 		switch event.Type {
 		case subnet.EventAdded:
@@ -152,7 +152,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 					}
 				}
 				wireguardAttrs = v4wireguardAttrs
-				subnets = append(subnets, event.Lease.Subnet.ToIPNet())
+				subnets = append(subnets, event.Lease.Subnet.ToIPNet()) //only used if n.mode != Separate
 			}
 
 			if event.Lease.EnableIPv6 {
@@ -163,7 +163,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 					}
 				}
 				wireguardAttrs = v6wireguardAttrs
-				subnets = append(subnets, event.Lease.IPv6Subnet.ToIPNet())
+				subnets = append(subnets, event.Lease.IPv6Subnet.ToIPNet()) //only used if n.mode != Separate
 			}
 
 			if n.mode == Separate {
@@ -176,6 +176,18 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 						[]net.IPNet{*event.Lease.Subnet.ToIPNet()}); err != nil {
 						log.Errorf("failed to setup ipv4 peer (%s): %v", v4wireguardAttrs.PublicKey, err)
 					}
+					netconf, err := n.sm.GetNetworkConfig(ctx)
+					if err != nil {
+						log.Errorf("could not read network config: %v", err)
+					}
+					flannelnet, err := netconf.GetFlannelNetwork(&event.Lease.Subnet)
+					if err != nil {
+						log.Errorf("could not get flannel network: %v", err)
+					}
+
+					if err := n.dev.addRoute(flannelnet.ToIPNet()); err != nil {
+						log.Errorf("failed to add ipv4 route to (%s): %v", flannelnet, err)
+					}
 				}
 
 				if event.Lease.EnableIPv6 {
@@ -186,6 +198,18 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 						v6wireguardAttrs.PublicKey,
 						[]net.IPNet{*event.Lease.IPv6Subnet.ToIPNet()}); err != nil {
 						log.Errorf("failed to setup ipv6 peer (%s): %v", v6wireguardAttrs.PublicKey, err)
+					}
+					netconf, err := n.sm.GetNetworkConfig(ctx)
+					if err != nil {
+						log.Errorf("could not read network config: %v", err)
+					}
+					ipv6flannelnet, err := netconf.GetFlannelIPv6Network(&event.Lease.IPv6Subnet)
+					if err != nil {
+						log.Errorf("could not get flannel network: %v", err)
+					}
+
+					if err := n.v6Dev.addRoute(ipv6flannelnet.ToIPNet()); err != nil {
+						log.Errorf("failed to add ipv6 route to (%s): %v", ipv6flannelnet, err)
 					}
 				}
 			} else {
@@ -210,6 +234,26 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 					wireguardAttrs.PublicKey,
 					peers); err != nil {
 					log.Errorf("failed to setup peer (%s): %v", v4wireguardAttrs.PublicKey, err)
+				}
+				netconf, err := n.sm.GetNetworkConfig(ctx)
+				if err != nil {
+					log.Errorf("could not read network config: %v", err)
+				}
+				flannelnet, err := netconf.GetFlannelNetwork(&event.Lease.Subnet)
+				if err != nil {
+					log.Errorf("could not get flannel network: %v", err)
+				}
+
+				if err := n.dev.addRoute(flannelnet.ToIPNet()); err != nil {
+					log.Errorf("failed to add ipv4 route to (%s): %v", flannelnet, err)
+				}
+				ipv6flannelnet, err := netconf.GetFlannelIPv6Network(&event.Lease.IPv6Subnet)
+				if err != nil {
+					log.Errorf("could not get flannel network: %v", err)
+				}
+
+				if err := n.dev.addRoute(ipv6flannelnet.ToIPNet()); err != nil {
+					log.Errorf("failed to add ipv6 route to (%s): %v", ipv6flannelnet, err)
 				}
 			}
 

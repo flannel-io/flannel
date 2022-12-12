@@ -121,6 +121,14 @@ func (n IP4Net) StringSep(octetSep, prefixSep string) string {
 	return fmt.Sprintf("%s%s%d", n.IP.StringSep(octetSep), prefixSep, n.PrefixLen)
 }
 
+func MapIP4ToString(nws []IP4Net) []string {
+	res := make([]string, len(nws))
+	for i := range nws {
+		res[i] = nws[i].String()
+	}
+	return res
+}
+
 func (n IP4Net) Network() IP4Net {
 	return IP4Net{
 		n.IP & IP4(n.Mask()),
@@ -176,6 +184,12 @@ func (n IP4Net) Mask() uint32 {
 
 func (n IP4Net) Contains(ip IP4) bool {
 	return (uint32(n.IP) & n.Mask()) == (uint32(ip) & n.Mask())
+}
+
+func (n *IP4Net) ContainsCIDR(other *IP4Net) bool {
+	ones1 := n.Mask()
+	ones2 := other.Mask()
+	return ones1 <= ones2 && n.Contains(other.IP)
 }
 
 func (n IP4Net) Empty() bool {
