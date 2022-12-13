@@ -28,6 +28,7 @@ import (
 	"github.com/flannel-io/flannel/subnet"
 	"golang.org/x/net/context"
 	v1 "k8s.io/api/core/v1"
+	networkingv1alpha1 "k8s.io/api/networking/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -51,6 +52,14 @@ const (
 	nodeControllerSyncTimeout = 10 * time.Minute
 )
 
+type subnetFileInfo struct {
+	path   string
+	ipMask bool
+	sn     ip.IP4Net
+	IPv6sn ip.IP6Net
+	mtu    int
+}
+
 type kubeSubnetManager struct {
 	enableIPv4                bool
 	enableIPv6                bool
@@ -61,11 +70,13 @@ type kubeSubnetManager struct {
 	nodeController            cache.Controller
 	subnetConf                *subnet.Config
 	events                    chan subnet.Event
+	clusterCIDRController     cache.Controller
 	setNodeNetworkUnavailable bool
 	disableNodeInformer       bool
+	snFileInfo                *subnetFileInfo
 }
 
-func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPath string, setNodeNetworkUnavailable bool) (subnet.Manager, error) {
+func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPath string, setNodeNetworkUnavailable, useMultiClusterCidr bool) (subnet.Manager, error) {
 	var cfg *rest.Config
 	var err error
 	// Try to build kubernetes config from a master url or a kubeconfig filepath. If neither masterUrl
@@ -112,7 +123,14 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 		return nil, fmt.Errorf("error parsing subnet config: %s", err)
 	}
 
-	sm, err := newKubeSubnetManager(ctx, c, sc, nodeName, prefix)
+	if useMultiClusterCidr {
+		err = readFlannelNetworksFromClusterCIDRList(ctx, c, sc)
+		if err != nil {
+			return nil, fmt.Errorf("error reading flannel networks from k8s api: %s", err)
+		}
+	}
+
+	sm, err := newKubeSubnetManager(ctx, c, sc, nodeName, prefix, useMultiClusterCidr)
 	if err != nil {
 		return nil, fmt.Errorf("error creating network manager: %s", err)
 	}
@@ -138,7 +156,7 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 
 // newKubeSubnetManager fills the kubeSubnetManager. The most important part is the controller which will
 // watch for kubernetes node updates
-func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet.Config, nodeName, prefix string) (*kubeSubnetManager, error) {
+func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet.Config, nodeName, prefix string, useMultiClusterCidr bool) (*kubeSubnetManager, error) {
 	var err error
 	var ksm kubeSubnetManager
 	ksm.annotations, err = newAnnotations(prefix)
@@ -207,6 +225,31 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 		)
 		ksm.nodeController = controller
 		ksm.nodeStore = listers.NewNodeLister(indexer)
+	}
+
+	if useMultiClusterCidr {
+		_, clusterController := cache.NewIndexerInformer(
+			&cache.ListWatch{
+				ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+					return ksm.client.NetworkingV1alpha1().ClusterCIDRs().List(ctx, options)
+				},
+				WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+					return ksm.client.NetworkingV1alpha1().ClusterCIDRs().Watch(ctx, options)
+				},
+			},
+			&networkingv1alpha1.ClusterCIDR{},
+			resyncPeriod,
+			cache.ResourceEventHandlerFuncs{
+				AddFunc: func(obj interface{}) {
+					ksm.handleAddClusterCidr(obj)
+				},
+				DeleteFunc: func(obj interface{}) {
+					ksm.handleDeleteClusterCidr(obj)
+				},
+			},
+			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+		)
+		ksm.clusterCIDRController = clusterController
 	}
 	return &ksm, nil
 }
@@ -390,19 +433,27 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		Expiration: time.Now().Add(24 * time.Hour),
 	}
 	if cidr != nil && ksm.enableIPv4 {
-		if !containsCIDR(subnet.GetFlannelNetwork(ksm.subnetConf).ToIPNet(), cidr) {
+		ipnet := ip.FromIPNet(cidr)
+		net, err := ksm.subnetConf.GetFlannelNetwork(&ipnet)
+		if err != nil {
+			return nil, err
+		}
+		// this check is still needed when we use the flannel configuration and not the MultiClusterCIDR API
+		if !containsCIDR(net.ToIPNet(), cidr) {
 			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q PodCIDR of the %q node", ksm.subnetConf.Network, cidr, ksm.nodeName)
 		}
 
 		lease.Subnet = ip.FromIPNet(cidr)
 	}
 	if ipv6Cidr != nil {
-		if subnet.GetFlannelIPv6Network(ksm.subnetConf).IP == nil {
-			return nil, fmt.Errorf("subnet %q specified in the PodCIDR, but doesn't exist in the flannel net config of the %q node", ipv6Cidr, ksm.nodeName)
+		ip6net := ip.FromIP6Net(ipv6Cidr)
+		net, err := ksm.subnetConf.GetFlannelIPv6Network(&ip6net)
+		if err != nil {
+			return nil, err
 		}
-
-		if !containsCIDR(subnet.GetFlannelIPv6Network(ksm.subnetConf).ToIPNet(), ipv6Cidr) {
-			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q IPv6 PodCIDR of the %q node", subnet.GetFlannelIPv6Network(ksm.subnetConf), ipv6Cidr, ksm.nodeName)
+		// this check is still needed when we use the flannel configuration and not the MultiClusterCIDR API
+		if !containsCIDR(net.ToIPNet(), ipv6Cidr) {
+			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q IPv6 PodCIDR of the %q node", net, ipv6Cidr, ksm.nodeName)
 		}
 
 		lease.IPv6Subnet = ip.FromIP6Net(ipv6Cidr)
@@ -519,6 +570,21 @@ func (ksm *kubeSubnetManager) Name() string {
 // CompleteLease Set Kubernetes NodeNetworkUnavailable to false when starting
 // https://kubernetes.io/docs/concepts/architecture/nodes/#condition
 func (ksm *kubeSubnetManager) CompleteLease(ctx context.Context, lease *subnet.Lease, wg *sync.WaitGroup) error {
+	if ksm.clusterCIDRController != nil {
+		//start clusterController after all subnet manager has been fully initialized
+		log.Info("starting clusterCIDR controller...")
+		go ksm.clusterCIDRController.Run(ctx.Done())
+
+		log.Infof("Waiting %s for clusterCIDR controller to sync...", nodeControllerSyncTimeout)
+		err := wait.Poll(time.Second, nodeControllerSyncTimeout, func() (bool, error) {
+			return ksm.clusterCIDRController.HasSynced(), nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("error waiting for clusterCIDR to sync state: %v", err)
+		}
+		log.Infof("clusterCIDR controller sync successful")
+	}
 	if !ksm.setNodeNetworkUnavailable {
 		// not set NodeNetworkUnavailable NodeCondition
 		return nil
@@ -545,4 +611,18 @@ func containsCIDR(ipnet1, ipnet2 *net.IPNet) bool {
 	ones1, _ := ipnet1.Mask.Size()
 	ones2, _ := ipnet2.Mask.Size()
 	return ones1 <= ones2 && ipnet1.Contains(ipnet2.IP)
+}
+
+// HandleSubnetFile writes the configuration file used by the CNI flannel plugin
+// and stores the immutable data in a dedicated struct of the subnet manager
+// so that we can update the file later when a clustercidr resource is created.
+func (m *kubeSubnetManager) HandleSubnetFile(path string, config *subnet.Config, ipMasq bool, sn ip.IP4Net, ipv6sn ip.IP6Net, mtu int) error {
+	m.snFileInfo = &subnetFileInfo{
+		path:   path,
+		ipMask: ipMasq,
+		sn:     sn,
+		IPv6sn: ipv6sn,
+		mtu:    mtu,
+	}
+	return subnet.WriteSubnetFile(path, config, ipMasq, sn, ipv6sn, mtu)
 }

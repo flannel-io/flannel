@@ -19,8 +19,11 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -142,8 +145,55 @@ func MakeSubnetKey(sn ip.IP4Net, sn6 ip.IP6Net) string {
 	}
 }
 
+func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv6sn ip.IP6Net, mtu int) error {
+	dir, name := filepath.Split(path)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		return err
+	}
+	tempFile := filepath.Join(dir, "."+name)
+	f, err := os.Create(tempFile)
+	if err != nil {
+		return err
+	}
+	if config.EnableIPv4 {
+		if config.HasNetworks() {
+			fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", strings.Join(ip.MapIP4ToString(config.Networks), ","))
+		} else {
+			fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", config.Network)
+		}
+		// Write out the first usable IP by incrementing sn.IP by one
+		sn.IncrementIP()
+
+		fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn)
+	}
+	if config.EnableIPv6 {
+		if config.HasIPv6Networks() {
+			fmt.Fprintf(f, "FLANNEL_IPV6_NETWORK=%s\n", strings.Join(ip.MapIP6ToString(config.IPv6Networks), ","))
+		} else {
+			fmt.Fprintf(f, "FLANNEL_IPV6_NETWORK=%s\n", config.IPv6Network)
+		}
+		// Write out the first usable IP by incrementing ip6Sn.IP by one
+		ipv6sn.IncrementIP()
+		fmt.Fprintf(f, "FLANNEL_IPV6_SUBNET=%s\n", ipv6sn)
+	}
+
+	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", mtu)
+	_, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", ipMasq)
+	f.Close()
+	if err != nil {
+		return err
+	}
+
+	// rename(2) the temporary file to the desired location so that it becomes
+	// atomically visible with the contents
+	return os.Rename(tempFile, path)
+	// TODO - is this safe? What if it's not on the same FS?
+}
+
 type Manager interface {
 	GetNetworkConfig(ctx context.Context) (*Config, error)
+	HandleSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv6sn ip.IP6Net, mtu int) error
 	AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Lease, error)
 	RenewLease(ctx context.Context, lease *Lease) error
 	WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (LeaseWatchResult, error)

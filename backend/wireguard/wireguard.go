@@ -149,7 +149,7 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 		}
 		publicKey = dev.attrs.publicKey.String()
 	} else {
-		return nil, fmt.Errorf("No valid Mode configured")
+		return nil, fmt.Errorf("no valid Mode configured")
 	}
 
 	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, be.extIface.ExtV6Addr, config.EnableIPv4, config.EnableIPv6, publicKey)
@@ -168,17 +168,25 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	}
 
 	if config.EnableIPv4 {
-		err = dev.Configure(lease.Subnet.IP, subnet.GetFlannelNetwork(config))
+		net, err := config.GetFlannelNetwork(&lease.Subnet)
+		if err != nil {
+			return nil, err
+		}
+		err = dev.Configure(lease.Subnet.IP, net)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if config.EnableIPv6 {
+		ipv6net, err := config.GetFlannelIPv6Network(&lease.IPv6Subnet)
+		if err != nil {
+			return nil, err
+		}
 		if cfg.Mode == Separate {
-			err = v6Dev.ConfigureV6(lease.IPv6Subnet.IP, subnet.GetFlannelIPv6Network(config))
+			err = v6Dev.ConfigureV6(lease.IPv6Subnet.IP, ipv6net)
 		} else {
-			err = dev.ConfigureV6(lease.IPv6Subnet.IP, subnet.GetFlannelIPv6Network(config))
+			err = dev.ConfigureV6(lease.IPv6Subnet.IP, ipv6net)
 		}
 		if err != nil {
 			return nil, err

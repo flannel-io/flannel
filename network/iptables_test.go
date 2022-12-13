@@ -119,7 +119,10 @@ func (mock *MockIPTables) AppendUnique(table string, chain string, rulespec ...s
 func TestDeleteRules(t *testing.T) {
 	ipt := &MockIPTables{t: t}
 	iptr := &MockIPTablesRestore{t: t}
-	baseRules := MasqRules(ip.IP4Net{}, lease())
+	baseRules := MasqRules([]ip.IP4Net{{
+		IP:        ip.MustParseIP4("10.0.1.0"),
+		PrefixLen: 16,
+	}}, lease())
 	expectedRules := expectedTearDownIPTablesRestoreRules(baseRules)
 
 	err := ipTablesBootstrap(ipt, iptr, baseRules)
@@ -130,8 +133,8 @@ func TestDeleteRules(t *testing.T) {
 	if err != nil {
 		t.Error("Error setting up iptables")
 	}
-	if len(ipt.rules) != 6 {
-		t.Errorf("Should be 6 masqRules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
+	if len(ipt.rules) != 7 {
+		t.Errorf("Should be 7 masqRules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
 	}
 
 	iptr.rules = []IPTablesRestoreRules{}

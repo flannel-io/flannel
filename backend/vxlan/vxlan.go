@@ -191,12 +191,20 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 	// This IP is just used as a source address for host to workload traffic (so
 	// the return path for the traffic has an address on the flannel network to use as the destination)
 	if config.EnableIPv4 {
-		if err := dev.Configure(ip.IP4Net{IP: lease.Subnet.IP, PrefixLen: 32}, subnet.GetFlannelNetwork(config)); err != nil {
+		net, err := config.GetFlannelNetwork(&lease.Subnet)
+		if err != nil {
+			return nil, err
+		}
+		if err := dev.Configure(ip.IP4Net{IP: lease.Subnet.IP, PrefixLen: 32}, net); err != nil {
 			return nil, fmt.Errorf("failed to configure interface %s: %w", dev.link.Attrs().Name, err)
 		}
 	}
 	if config.EnableIPv6 {
-		if err := v6Dev.ConfigureIPv6(ip.IP6Net{IP: lease.IPv6Subnet.IP, PrefixLen: 128}, subnet.GetFlannelIPv6Network(config)); err != nil {
+		net, err := config.GetFlannelIPv6Network(&lease.IPv6Subnet)
+		if err != nil {
+			return nil, err
+		}
+		if err := v6Dev.ConfigureIPv6(ip.IP6Net{IP: lease.IPv6Subnet.IP, PrefixLen: 128}, net); err != nil {
 			return nil, fmt.Errorf("failed to configure interface %s: %w", v6Dev.link.Attrs().Name, err)
 		}
 	}
