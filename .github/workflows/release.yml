@@ -61,7 +61,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.amd64
+          file: images/Dockerfile.amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}-amd64
 
@@ -70,7 +70,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.arm
+          file: images/Dockerfile.arm
           push: true
           tags: ${{ steps.meta.outputs.tags }}-arm
 
@@ -79,7 +79,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.arm64
+          file: images/Dockerfile.arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}-arm64
 
@@ -88,7 +88,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.s390x
+          file: images/Dockerfile.s390x
           push: true
           tags: ${{ steps.meta.outputs.tags }}-s390x
 
@@ -97,7 +97,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.ppc64le
+          file: images/Dockerfile.ppc64le
           push: true
           tags: ${{ steps.meta.outputs.tags }}-ppc64le
         
@@ -106,7 +106,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.mips64le
+          file: images/Dockerfile.mips64le
           push: true
           tags: ${{ steps.meta.outputs.tags }}-mips64le
 
