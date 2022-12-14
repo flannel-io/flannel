@@ -1,4 +1,4 @@
-.PHONY: test e2e-test cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all flannel-git docker-manifest-amend docker-manifest-push
+.PHONY: test e2e-test deps cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all flannel-git docker-manifest-amend docker-manifest-push
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
@@ -45,7 +45,7 @@ dist/flanneld.exe: $(shell find . -type f  -name '*.go')
 	  -ldflags '-s -w -X github.com/flannel-io/flannel/version.Version=$(TAG) -extldflags "-static"'
 
 # This will build flannel natively using golang image
-dist/flanneld-$(ARCH): dist/qemu-$(ARCH)-static
+dist/flanneld-$(ARCH): deps dist/qemu-$(ARCH)-static
 	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x mips64le]
 	docker run --rm -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) -e GOCACHE=/go \
 		-u $(shell id -u):$(shell id -g) \
@@ -69,7 +69,7 @@ ifeq ($(ARCH),amd64)
 endif
 
 ### TESTING
-test: license-check gofmt verify-modules
+test: license-check gofmt deps verify-modules
 	# Run the unit tests
 	# NET_ADMIN capacity is required to do some network operation
 	# SYS_ADMIN capacity is required to create network namespace
@@ -300,3 +300,7 @@ run-local-kube-flannel-with-prereqs: run-etcd run-k8s-apiserver dist/flanneld
 run-local-kube-flannel:
 	# Currently this requires the netconf to be in /etc/kube-flannel/net-conf.json
 	sudo NODE_NAME=test dist/flanneld --kube-subnet-mgr --kube-api-url http://127.0.0.1:8080
+
+deps:
+	go mod vendor
+	go mod tidy
