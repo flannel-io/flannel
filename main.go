@@ -29,13 +29,13 @@ import (
 	"time"
 
 	"github.com/coreos/pkg/flagutil"
-	"github.com/flannel-io/flannel/network"
+	"github.com/flannel-io/flannel/pkg/iptables"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/ipmatch"
-	"github.com/flannel-io/flannel/subnet"
-	etcd "github.com/flannel-io/flannel/subnet/etcd"
-	"github.com/flannel-io/flannel/subnet/kube"
-	"github.com/flannel-io/flannel/version"
+	"github.com/flannel-io/flannel/pkg/subnet"
+	etcd "github.com/flannel-io/flannel/pkg/subnet/etcd"
+	"github.com/flannel-io/flannel/pkg/subnet/kube"
+	"github.com/flannel-io/flannel/pkg/version"
 	"golang.org/x/net/context"
 	log "k8s.io/klog"
 
@@ -43,16 +43,16 @@ import (
 
 	// Backends need to be imported for their init() to get executed and them to register
 	"github.com/coreos/go-systemd/daemon"
-	"github.com/flannel-io/flannel/backend"
-	_ "github.com/flannel-io/flannel/backend/alloc"
-	_ "github.com/flannel-io/flannel/backend/extension"
-	_ "github.com/flannel-io/flannel/backend/hostgw"
-	_ "github.com/flannel-io/flannel/backend/ipip"
-	_ "github.com/flannel-io/flannel/backend/ipsec"
-	_ "github.com/flannel-io/flannel/backend/tencentvpc"
-	_ "github.com/flannel-io/flannel/backend/udp"
-	_ "github.com/flannel-io/flannel/backend/vxlan"
-	_ "github.com/flannel-io/flannel/backend/wireguard"
+	"github.com/flannel-io/flannel/pkg/backend"
+	_ "github.com/flannel-io/flannel/pkg/backend/alloc"
+	_ "github.com/flannel-io/flannel/pkg/backend/extension"
+	_ "github.com/flannel-io/flannel/pkg/backend/hostgw"
+	_ "github.com/flannel-io/flannel/pkg/backend/ipip"
+	_ "github.com/flannel-io/flannel/pkg/backend/ipsec"
+	_ "github.com/flannel-io/flannel/pkg/backend/tencentvpc"
+	_ "github.com/flannel-io/flannel/pkg/backend/udp"
+	_ "github.com/flannel-io/flannel/pkg/backend/vxlan"
+	_ "github.com/flannel-io/flannel/pkg/backend/wireguard"
 )
 
 type flagSlice []string
@@ -354,15 +354,15 @@ func main() {
 				os.Exit(1)
 			}
 			log.Infof("Setting up masking rules")
-			network.CreateIP4Chain("nat", "FLANNEL-POSTRTG")
-			getRules := func() []network.IPTablesRule {
+			iptables.CreateIP4Chain("nat", "FLANNEL-POSTRTG")
+			getRules := func() []iptables.IPTablesRule {
 				if config.HasNetworks() {
-					return network.MasqRules(config.Networks, bn.Lease())
+					return iptables.MasqRules(config.Networks, bn.Lease())
 				} else {
-					return network.MasqRules([]ip.IP4Net{config.Network}, bn.Lease())
+					return iptables.MasqRules([]ip.IP4Net{config.Network}, bn.Lease())
 				}
 			}
-			go network.SetupAndEnsureIP4Tables(getRules, opts.iptablesResyncSeconds)
+			go iptables.SetupAndEnsureIP4Tables(getRules, opts.iptablesResyncSeconds)
 
 		}
 		if config.EnableIPv6 {
@@ -380,15 +380,15 @@ func main() {
 				os.Exit(1)
 			}
 			log.Infof("Setting up masking ip6 rules")
-			network.CreateIP6Chain("nat", "FLANNEL-POSTRTG")
-			getRules := func() []network.IPTablesRule {
+			iptables.CreateIP6Chain("nat", "FLANNEL-POSTRTG")
+			getRules := func() []iptables.IPTablesRule {
 				if config.HasIPv6Networks() {
-					return network.MasqIP6Rules(config.IPv6Networks, bn.Lease())
+					return iptables.MasqIP6Rules(config.IPv6Networks, bn.Lease())
 				} else {
-					return network.MasqIP6Rules([]ip.IP6Net{config.IPv6Network}, bn.Lease())
+					return iptables.MasqIP6Rules([]ip.IP6Net{config.IPv6Network}, bn.Lease())
 				}
 			}
-			go network.SetupAndEnsureIP6Tables(getRules, opts.iptablesResyncSeconds)
+			go iptables.SetupAndEnsureIP6Tables(getRules, opts.iptablesResyncSeconds)
 		}
 	}
 
@@ -405,11 +405,11 @@ func main() {
 				os.Exit(1)
 			}
 			log.Infof("Changing default FORWARD chain policy to ACCEPT")
-			network.CreateIP4Chain("filter", "FLANNEL-FWD")
-			getRules := func() []network.IPTablesRule {
-				return network.ForwardRules(net.String())
+			iptables.CreateIP4Chain("filter", "FLANNEL-FWD")
+			getRules := func() []iptables.IPTablesRule {
+				return iptables.ForwardRules(net.String())
 			}
-			go network.SetupAndEnsureIP4Tables(getRules, opts.iptablesResyncSeconds)
+			go iptables.SetupAndEnsureIP4Tables(getRules, opts.iptablesResyncSeconds)
 		}
 		if config.EnableIPv6 {
 			ip6net, err := config.GetFlannelIPv6Network(&bn.Lease().IPv6Subnet)
@@ -420,11 +420,11 @@ func main() {
 				os.Exit(1)
 			}
 			log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
-			network.CreateIP6Chain("filter", "FLANNEL-FWD")
-			getRules := func() []network.IPTablesRule {
-				return network.ForwardRules(ip6net.String())
+			iptables.CreateIP6Chain("filter", "FLANNEL-FWD")
+			getRules := func() []iptables.IPTablesRule {
+				return iptables.ForwardRules(ip6net.String())
 			}
-			go network.SetupAndEnsureIP6Tables(getRules, opts.iptablesResyncSeconds)
+			go iptables.SetupAndEnsureIP6Tables(getRules, opts.iptablesResyncSeconds)
 		}
 	}
 
@@ -482,7 +482,7 @@ func recycleIPTables(nw ip.IP4Net, lease *subnet.Lease) error {
 		lease := &subnet.Lease{
 			Subnet: prevSubnet,
 		}
-		if err := network.DeleteIP4Tables(network.MasqRules(prevNetworks, lease)); err != nil {
+		if err := iptables.DeleteIP4Tables(iptables.MasqRules(prevNetworks, lease)); err != nil {
 			return err
 		}
 	}
@@ -508,7 +508,7 @@ func recycleIP6Tables(nw ip.IP6Net, lease *subnet.Lease) error {
 		lease := &subnet.Lease{
 			IPv6Subnet: prevSubnet,
 		}
-		if err := network.DeleteIP6Tables(network.MasqIP6Rules(prevNetworks, lease)); err != nil {
+		if err := iptables.DeleteIP6Tables(iptables.MasqIP6Rules(prevNetworks, lease)); err != nil {
 			return err
 		}
 	}

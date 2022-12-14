@@ -21,7 +21,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/flannel-io/flannel/backend"
+	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
 	log "k8s.io/klog"
 )
