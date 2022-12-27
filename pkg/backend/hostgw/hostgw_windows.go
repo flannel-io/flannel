@@ -23,6 +23,7 @@ import (
 	"github.com/Microsoft/hcsshim"
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/routing"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/pkg/errors"
@@ -79,16 +80,16 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 		Mtu:         be.extIface.Iface.MTU,
 		LinkIndex:   be.extIface.Iface.Index,
 	}
-	n.GetRoute = func(lease *subnet.Lease) *routing.Route {
+	n.GetRoute = func(myLease *lease.Lease) *routing.Route {
 		return &routing.Route{
-			DestinationSubnet: lease.Subnet.ToIPNet(),
-			GatewayAddress:    lease.Attrs.PublicIP.ToIP(),
+			DestinationSubnet: myLease.Subnet.ToIPNet(),
+			GatewayAddress:    myLease.Attrs.PublicIP.ToIP(),
 			InterfaceIndex:    n.LinkIndex,
 		}
 	}
 
 	// 2. Acquire the lease form subnet manager
-	attrs := subnet.LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP:    ip.FromIP(be.extIface.ExtAddr),
 		BackendType: "host-gw",
 	}

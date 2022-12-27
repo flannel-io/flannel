@@ -15,8 +15,6 @@
 package subnet
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -25,91 +23,16 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"golang.org/x/net/context"
+	log "k8s.io/klog/v2"
 )
 
 var (
-	ErrLeaseTaken  = errors.New("subnet: lease already taken")
-	ErrNoMoreTries = errors.New("subnet: no more tries")
-	subnetRegex    = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)(?:&([a-f\d:]+)-(\d+))?$`)
+	subnetRegex = regexp.MustCompile(`(\d+\.\d+.\d+.\d+)-(\d+)(?:&([a-f\d:]+)-(\d+))?$`)
 )
-
-type LeaseAttrs struct {
-	PublicIP      ip.IP4
-	PublicIPv6    *ip.IP6
-	BackendType   string          `json:",omitempty"`
-	BackendData   json.RawMessage `json:",omitempty"`
-	BackendV6Data json.RawMessage `json:",omitempty"`
-}
-
-type Lease struct {
-	EnableIPv4 bool
-	EnableIPv6 bool
-	Subnet     ip.IP4Net
-	IPv6Subnet ip.IP6Net
-	Attrs      LeaseAttrs
-	Expiration time.Time
-
-	Asof int64
-}
-
-func (l *Lease) Key() string {
-	return MakeSubnetKey(l.Subnet, l.IPv6Subnet)
-}
-
-type (
-	EventType int
-
-	Event struct {
-		Type  EventType `json:"type"`
-		Lease Lease     `json:"lease,omitempty"`
-	}
-)
-
-const (
-	EventAdded EventType = iota
-	EventRemoved
-)
-
-type LeaseWatchResult struct {
-	// Either Events or Snapshot will be set.  If Events is empty, it means
-	// the cursor was out of range and Snapshot contains the current list
-	// of items, even if empty.
-	Events   []Event     `json:"events"`
-	Snapshot []Lease     `json:"snapshot"`
-	Cursor   interface{} `json:"cursor"`
-}
-
-func (et EventType) MarshalJSON() ([]byte, error) {
-	s := ""
-
-	switch et {
-	case EventAdded:
-		s = "added"
-	case EventRemoved:
-		s = "removed"
-	default:
-		return nil, errors.New("bad event type")
-	}
-	return json.Marshal(s)
-}
-
-func (et *EventType) UnmarshalJSON(data []byte) error {
-	switch string(data) {
-	case "\"added\"":
-		*et = EventAdded
-	case "\"removed\"":
-		*et = EventRemoved
-	default:
-		fmt.Println(string(data))
-		return errors.New("bad event type")
-	}
-
-	return nil
-}
 
 func ParseSubnetKey(s string) (*ip.IP4Net, *ip.IP6Net) {
 	if parts := subnetRegex.FindStringSubmatch(s); len(parts) == 5 {
@@ -194,11 +117,92 @@ func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv
 type Manager interface {
 	GetNetworkConfig(ctx context.Context) (*Config, error)
 	HandleSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv6sn ip.IP6Net, mtu int) error
-	AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Lease, error)
-	RenewLease(ctx context.Context, lease *Lease) error
-	WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, receiver chan []LeaseWatchResult) error
-	WatchLeases(ctx context.Context, receiver chan []LeaseWatchResult) error
-	CompleteLease(ctx context.Context, lease *Lease, wg *sync.WaitGroup) error
+	AcquireLease(ctx context.Context, attrs *lease.LeaseAttrs) (*lease.Lease, error)
+	RenewLease(ctx context.Context, lease *lease.Lease) error
+	WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, receiver chan []lease.LeaseWatchResult) error
+	WatchLeases(ctx context.Context, receiver chan []lease.LeaseWatchResult) error
+	CompleteLease(ctx context.Context, lease *lease.Lease, wg *sync.WaitGroup) error
 
 	Name() string
+}
+
+// WatchLeases performs a long term watch of the given network's subnet leases
+// and communicates addition/deletion events on receiver channel. It takes care
+// of handling "fall-behind" logic where the history window has advanced too far
+// and it needs to diff the latest snapshot with its saved state and generate events
+func WatchLeases(ctx context.Context, sm Manager, ownLease *lease.Lease, receiver chan []lease.Event) {
+	lw := &lease.LeaseWatcher{
+		OwnLease: ownLease,
+	}
+
+	leaseWatchChan := make(chan []lease.LeaseWatchResult)
+	go func() {
+		err := sm.WatchLeases(ctx, leaseWatchChan)
+		if err != nil {
+			log.Errorf("could not watch leases: %s", err)
+			return
+		}
+	}()
+	for watchResults := range leaseWatchChan {
+		for _, wr := range watchResults {
+			var batch []lease.Event
+
+			if len(wr.Events) > 0 {
+				batch = lw.Update(wr.Events)
+			} else {
+				batch = lw.Reset(wr.Snapshot)
+			}
+
+			for i := range batch {
+				log.Infof("Batch elem [%d] is { %#v }", i, batch[i])
+			}
+			if len(batch) > 0 {
+				receiver <- batch
+			}
+		}
+	}
+
+	close(receiver)
+}
+
+// WatchLease performs a long term watch of the given network's subnet lease
+// and communicates addition/deletion events on receiver channel. It takes care
+// of handling "fall-behind" logic where the history window has advanced too far
+// and it needs to diff the latest snapshot with its saved state and generate events
+func WatchLease(ctx context.Context, sm Manager, sn ip.IP4Net, sn6 ip.IP6Net, receiver chan lease.Event) {
+	leaseWatchChan := make(chan []lease.LeaseWatchResult)
+
+	go func() {
+		err := sm.WatchLease(ctx, sn, sn6, leaseWatchChan)
+		if err != nil {
+			if err == context.Canceled || err == context.DeadlineExceeded {
+				log.Infof("%v, close receiver chan", err)
+				close(receiver)
+				return
+			}
+
+			log.Errorf("Subnet watch failed: %v", err)
+			close(receiver)
+			return
+		}
+
+	}()
+
+	for watchResults := range leaseWatchChan {
+		for _, wr := range watchResults {
+			if len(wr.Snapshot) > 0 {
+				receiver <- lease.Event{
+					Type:  lease.EventAdded,
+					Lease: wr.Snapshot[0],
+				}
+			} else if len(wr.Events) > 0 {
+				receiver <- wr.Events[0]
+			} else {
+				log.V(2).Info("WatchLease: empty event received")
+			}
+		}
+
+	}
+	log.Info("leaseWatchChan channel closed")
+	close(receiver)
 }

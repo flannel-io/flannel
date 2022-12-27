@@ -22,7 +22,8 @@ import (
 	"time"
 
 	"github.com/flannel-io/flannel/pkg/ip"
-	. "github.com/flannel-io/flannel/pkg/subnet"
+	"github.com/flannel-io/flannel/pkg/lease"
+	"github.com/flannel-io/flannel/pkg/subnet"
 	etcd "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/tests/v3/integration"
 	"golang.org/x/net/context"
@@ -37,13 +38,13 @@ func initTestRegistry(ctx context.Context, t *testing.T, r Registry, kvApi etcd.
 	if err != nil {
 		t.Fatal("Failed to create new entry", err)
 	}
-	attrs := LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.1.1.1"),
 	}
 
 	exp := time.Now().Add(24 * time.Hour)
 
-	subnets := []Lease{
+	subnets := []lease.Lease{
 		// leases within SubnetMin-SubnetMax range
 		{EnableIPv4: true, EnableIPv6: false, Subnet: ip.IP4Net{IP: ip.MustParseIP4("10.3.1.0"), PrefixLen: 24}, IPv6Subnet: ip.IP6Net{}, Attrs: attrs, Expiration: exp, Asof: 10},
 		{EnableIPv4: true, EnableIPv6: false, Subnet: ip.IP4Net{IP: ip.MustParseIP4("10.3.2.0"), PrefixLen: 24}, IPv6Subnet: ip.IP6Net{}, Attrs: attrs, Expiration: exp, Asof: 11},
@@ -63,13 +64,13 @@ func initTestRegistry(ctx context.Context, t *testing.T, r Registry, kvApi etcd.
 }
 
 func newDummyRegistry() *MockSubnetRegistry {
-	attrs := LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.1.1.1"),
 	}
 
 	exp := time.Time{}
 
-	subnets := []Lease{
+	subnets := []lease.Lease{
 		// leases within SubnetMin-SubnetMax range
 		{EnableIPv4: true, EnableIPv6: false, Subnet: ip.IP4Net{IP: ip.MustParseIP4("10.3.1.0"), PrefixLen: 24}, IPv6Subnet: ip.IP6Net{}, Attrs: attrs, Expiration: exp, Asof: 10},
 		{EnableIPv4: true, EnableIPv6: false, Subnet: ip.IP4Net{IP: ip.MustParseIP4("10.3.2.0"), PrefixLen: 24}, IPv6Subnet: ip.IP6Net{}, Attrs: attrs, Expiration: exp, Asof: 11},
@@ -89,7 +90,7 @@ func TestAcquireLease(t *testing.T) {
 	sm := NewMockManager(msr)
 
 	extIaddr, _ := ip.ParseIP4("1.2.3.4")
-	attrs := LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP: extIaddr,
 	}
 
@@ -142,7 +143,7 @@ func TestConfigChanged(t *testing.T) {
 	sm := NewMockManager(msr)
 
 	extIaddr, _ := ip.ParseIP4("1.2.3.4")
-	attrs := LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP: extIaddr,
 	}
 
@@ -172,9 +173,9 @@ func TestConfigChanged(t *testing.T) {
 	}
 }
 
-func acquireLease(ctx context.Context, t *testing.T, sm Manager) *Lease {
+func acquireLease(ctx context.Context, t *testing.T, sm subnet.Manager) *lease.Lease {
 	extIaddr, _ := ip.ParseIP4("1.2.3.4")
-	attrs := LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP: extIaddr,
 	}
 
@@ -202,13 +203,13 @@ func TestWatchLeaseAdded(t *testing.T) {
 
 	l := acquireLease(ctx, t, sm)
 
-	events := make(chan []Event)
-	go WatchLeases(ctx, sm, l, events)
+	events := make(chan []lease.Event)
+	go subnet.WatchLeases(ctx, sm, l, events)
 
 	select {
 	case evtBatch := <-events:
 		for _, evt := range evtBatch {
-			if evt.Lease.Key() == l.Key() {
+			if generateKey(evt.Lease.Subnet, evt.Lease.IPv6Subnet) == generateKey(l.Subnet, l.IPv6Subnet) {
 				t.Errorf("WatchLeases returned our own lease")
 			}
 		}
@@ -226,7 +227,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 		t.Fatalf("Acquired lease conflicts with one about to create")
 	}
 
-	attrs := &LeaseAttrs{
+	attrs := &lease.LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.1.1.1"),
 	}
 	_, err := r.createSubnet(ctx, expected, ip.IP6Net{}, attrs, 0)
@@ -242,7 +243,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 
 	evt := evtBatch[0]
 
-	if evt.Type != EventAdded {
+	if evt.Type != lease.EventAdded {
 		t.Fatalf("WatchLeases produced wrong event type")
 	}
 
@@ -274,8 +275,8 @@ func TestWatchLeaseRemoved(t *testing.T) {
 
 	l := acquireLease(ctx, t, sm)
 
-	events := make(chan []Event)
-	go WatchLeases(ctx, sm, l, events)
+	events := make(chan []lease.Event)
+	go subnet.WatchLeases(ctx, sm, l, events)
 
 	// evtBatch := <-events
 
@@ -291,7 +292,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 	if l.Subnet.Equal(expected) {
 		t.Fatalf("Acquired lease conflicts with one about to create")
 	}
-	attrs := LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.1.1.1"),
 	}
 	_, err = r.createSubnet(ctx, expected, ip.IP6Net{}, &attrs, time.Until(time.Now().Add(3*time.Second)))
@@ -309,7 +310,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 
 	evt := evtBatch[0]
 
-	if evt.Type != EventAdded {
+	if evt.Type != lease.EventAdded {
 		t.Fatalf("WatchLeases produced wrong event type")
 	}
 
@@ -321,7 +322,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 
 	evt = evtBatch[0]
 
-	if evt.Type != EventRemoved {
+	if evt.Type != lease.EventRemoved {
 		t.Fatalf("WatchLeases produced wrong event type")
 	}
 
@@ -347,16 +348,16 @@ func TestCompleteLease(t *testing.T) {
 
 	l := acquireLease(ctx, t, sm)
 
-	evts := make(chan Event)
+	evts := make(chan lease.Event)
 
 	go func() {
 		myLease := l
-		WatchLease(ctx, sm, myLease.Subnet, myLease.IPv6Subnet, evts)
+		subnet.WatchLease(ctx, sm, myLease.Subnet, myLease.IPv6Subnet, evts)
 	}()
 
 	event := <-evts
 	log.Infof("got event: type: %d, subnet: %s", event.Type, event.Lease.Subnet.String())
-	if event.Type != EventAdded {
+	if event.Type != lease.EventAdded {
 		t.Fatal("WatchLease: wrong event, expected EventAdded")
 	} else {
 		log.Info("WatchLease: got EventAdded (lease creation)")
@@ -369,13 +370,13 @@ func TestCompleteLease(t *testing.T) {
 
 	event = <-evts
 	log.Infof("got event: type: %d, subnet: %s", event.Type, event.Lease.Subnet.String())
-	if event.Type != EventAdded {
+	if event.Type != lease.EventAdded {
 		t.Fatal("WatchLease: wrong event, expected EventAdded")
 	} else {
 		log.Info("WatchLease: got EventAdded (lease renewal)")
 	}
 
-	leaseKey := path.Join("/coreos.com/network/", "subnets", MakeSubnetKey(l.Subnet, ip.IP6Net{}))
+	leaseKey := path.Join("/coreos.com/network/", "subnets", subnet.MakeSubnetKey(l.Subnet, ip.IP6Net{}))
 	_, err = kvApi.Delete(ctx, leaseKey)
 	if err != nil {
 		t.Errorf("could not delete lease: %s", err)
@@ -384,7 +385,7 @@ func TestCompleteLease(t *testing.T) {
 	log.Info("lease deleted manually")
 	event = <-evts
 	log.Infof("got event: type: %d, subnet: %s", event.Type, event.Lease.Subnet.String())
-	if event.Type != EventRemoved {
+	if event.Type != lease.EventRemoved {
 		t.Fatal("WatchLease: wrong event, expected EventRemoved")
 	}
 
@@ -416,7 +417,7 @@ func TestRenewLease(t *testing.T) {
 
 	// Create LeaseAttrs
 	extIaddr, _ := ip.ParseIP4("1.2.3.4")
-	expectedAttrs := LeaseAttrs{
+	expectedAttrs := lease.LeaseAttrs{
 		PublicIP:    extIaddr,
 		BackendType: "vxlan",
 	}
@@ -448,7 +449,7 @@ func TestRenewLease(t *testing.T) {
 	}
 	for _, resp := range etcdResp.Kvs {
 		log.Infof("found key: %s", resp.Key)
-		sn, _ := ParseSubnetKey(string(resp.Key))
+		sn, _ := subnet.ParseSubnetKey(string(resp.Key))
 		if sn.Equal(l.Subnet) {
 
 			ttlResp, err := client.TimeToLive(ctx, etcd.LeaseID(resp.Lease))
@@ -461,7 +462,7 @@ func TestRenewLease(t *testing.T) {
 				t.Errorf("Failed to renew lease: bad expiration; expected %v, got %v", expectedExpiration, leaseExpiration)
 			}
 			//check that the value is correct
-			attrs := &LeaseAttrs{}
+			attrs := &lease.LeaseAttrs{}
 			err = json.Unmarshal(resp.Value, attrs)
 			if err != nil {
 				t.Error("Failed to renew lease: could not unmarshal attrs")
@@ -476,11 +477,15 @@ func TestRenewLease(t *testing.T) {
 	t.Fatal("Failed to find acquired lease")
 }
 
-func inAllocatableRange(ctx context.Context, sm Manager, ipn ip.IP4Net) bool {
+func inAllocatableRange(ctx context.Context, sm subnet.Manager, ipn ip.IP4Net) bool {
 	cfg, err := sm.GetNetworkConfig(ctx)
 	if err != nil {
 		panic(err)
 	}
 
 	return ipn.IP >= cfg.SubnetMin || ipn.IP <= cfg.SubnetMax
+}
+
+func generateKey(ipv4Subnet ip.IP4Net, ipv6Subnet ip.IP6Net) string {
+	return subnet.MakeSubnetKey(ipv4Subnet, ipv6Subnet)
 }

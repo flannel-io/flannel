@@ -24,6 +24,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
@@ -47,12 +48,12 @@ type network struct {
 	v6Dev    *wgDevice
 	extIface *backend.ExternalInterface
 	mode     Mode
-	lease    *subnet.Lease
+	lease    *lease.Lease
 	sm       subnet.Manager
 	mtu      int
 }
 
-func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, dev, v6Dev *wgDevice, mode Mode, lease *subnet.Lease, mtu int) (*network, error) {
+func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, dev, v6Dev *wgDevice, mode Mode, lease *lease.Lease, mtu int) (*network, error) {
 	n := &network{
 		dev:      dev,
 		v6Dev:    v6Dev,
@@ -66,7 +67,7 @@ func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, dev, v6D
 	return n, nil
 }
 
-func (n *network) Lease() *subnet.Lease {
+func (n *network) Lease() *lease.Lease {
 	return n.lease
 }
 
@@ -78,7 +79,7 @@ func (n *network) Run(ctx context.Context) {
 	wg := sync.WaitGroup{}
 
 	log.Info("Watching for new subnet leases")
-	events := make(chan []subnet.Event)
+	events := make(chan []lease.Event)
 	wg.Add(1)
 	go func() {
 		subnet.WatchLeases(ctx, n.sm, n.lease, events)
@@ -134,10 +135,10 @@ func (n *network) selectPublicEndpoint(ip4 *ip.IP4, ip6 *ip.IP6) string {
 	return ip4.String()
 }
 
-func (n *network) handleSubnetEvents(ctx context.Context, batch []subnet.Event) {
+func (n *network) handleSubnetEvents(ctx context.Context, batch []lease.Event) {
 	for _, event := range batch {
 		switch event.Type {
-		case subnet.EventAdded:
+		case lease.EventAdded:
 
 			if event.Lease.Attrs.BackendType != "wireguard" {
 				log.Warningf("Ignoring non-wireguard subnet: type=%v", event.Lease.Attrs.BackendType)
@@ -259,7 +260,7 @@ func (n *network) handleSubnetEvents(ctx context.Context, batch []subnet.Event) 
 				}
 			}
 
-		case subnet.EventRemoved:
+		case lease.EventRemoved:
 
 			if event.Lease.Attrs.BackendType != "wireguard" {
 				log.Warningf("Ignoring non-wireguard subnet: type=%v", event.Lease.Attrs.BackendType)

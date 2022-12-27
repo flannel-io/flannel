@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/flannel-io/flannel/pkg/ip"
-	. "github.com/flannel-io/flannel/pkg/subnet"
+	"github.com/flannel-io/flannel/pkg/lease"
 	etcd "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/tests/v3/integration"
 	"golang.org/x/net/context"
@@ -48,16 +48,16 @@ func newTestEtcdRegistry(t *testing.T, ctx context.Context, client *etcd.Client)
 
 func watchSubnets(t *testing.T, r Registry, ctx context.Context, sn ip.IP4Net, nextIndex int64, result chan error) {
 	type leaseEvent struct {
-		etype  EventType
+		etype  lease.EventType
 		subnet ip.IP4Net
 		found  bool
 	}
 	expectedEvents := []leaseEvent{
-		{EventAdded, sn, false},
-		{EventRemoved, sn, false},
+		{lease.EventAdded, sn, false},
+		{lease.EventRemoved, sn, false},
 	}
 
-	receiver := make(chan []LeaseWatchResult)
+	receiver := make(chan []lease.LeaseWatchResult)
 	numFound := 0
 
 	go func() {
@@ -148,7 +148,7 @@ func TestEtcdRegistry(t *testing.T) {
 
 	startWg.Wait()
 	// Lease a subnet for the network
-	attrs := &LeaseAttrs{
+	attrs := &lease.LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.2.3.4"),
 	}
 	exp, err := r.createSubnet(ctx, sn, ip.IP6Net{}, attrs, 24*time.Hour)

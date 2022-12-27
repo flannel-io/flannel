@@ -23,6 +23,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"golang.org/x/net/context"
 )
@@ -63,7 +64,7 @@ func (be *UdpBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, c
 	}
 
 	// Acquire the lease form subnet manager
-	attrs := subnet.LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP: ip.FromIP(be.extIface.ExtAddr),
 	}
 

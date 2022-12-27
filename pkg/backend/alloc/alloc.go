@@ -20,6 +20,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"golang.org/x/net/context"
 )
@@ -42,7 +43,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 }
 
 func (be *AllocBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
-	attrs := subnet.LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP: ip.FromIP(be.extIface.ExtAddr),
 	}
 

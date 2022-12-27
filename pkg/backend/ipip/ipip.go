@@ -25,6 +25,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
@@ -74,7 +75,7 @@ func (be *IPIPBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, 
 		BackendType: backendType,
 	}
 
-	attrs := &subnet.LeaseAttrs{
+	attrs := &lease.LeaseAttrs{
 		PublicIP:    ip.FromIP(be.extIface.ExtAddr),
 		BackendType: backendType,
 	}
@@ -102,7 +103,7 @@ func (be *IPIPBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, 
 
 	n.Mtu = link.MTU
 	n.LinkIndex = link.Index
-	n.GetRoute = func(lease *subnet.Lease) *netlink.Route {
+	n.GetRoute = func(lease *lease.Lease) *netlink.Route {
 		route := netlink.Route{
 			Dst:       lease.Subnet.ToIPNet(),
 			Gw:        lease.Attrs.PublicIP.ToIP(),
@@ -129,7 +130,7 @@ func (be *IPIPBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, 
 	return n, nil
 }
 
-func (be *IPIPBackend) configureIPIPDevice(lease *subnet.Lease, flannelnet ip.IP4Net) (*netlink.Iptun, error) {
+func (be *IPIPBackend) configureIPIPDevice(lease *lease.Lease, flannelnet ip.IP4Net) (*netlink.Iptun, error) {
 	// When modprobe ipip module, a tunl0 ipip device is created automatically per network namespace by ipip kernel module.
 	// It is the namespace default IPIP device with attributes local=any and remote=any.
 	// When receiving IPIP protocol packets, kernel will forward them to tunl0 as a fallback device

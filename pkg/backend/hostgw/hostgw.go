@@ -23,6 +23,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
@@ -60,13 +61,13 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 		LinkIndex:   be.extIface.Iface.Index,
 	}
 
-	attrs := subnet.LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		BackendType: "host-gw",
 	}
 
 	if config.EnableIPv4 {
 		attrs.PublicIP = ip.FromIP(be.extIface.ExtAddr)
-		n.GetRoute = func(lease *subnet.Lease) *netlink.Route {
+		n.GetRoute = func(lease *lease.Lease) *netlink.Route {
 			return &netlink.Route{
 				Dst:       lease.Subnet.ToIPNet(),
 				Gw:        lease.Attrs.PublicIP.ToIP(),
@@ -77,7 +78,7 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 
 	if config.EnableIPv6 {
 		attrs.PublicIPv6 = ip.FromIP6(be.extIface.ExtV6Addr)
-		n.GetV6Route = func(lease *subnet.Lease) *netlink.Route {
+		n.GetV6Route = func(lease *lease.Lease) *netlink.Route {
 			return &netlink.Route{
 				Dst:       lease.IPv6Subnet.ToIPNet(),
 				Gw:        lease.Attrs.PublicIPv6.ToIP(),

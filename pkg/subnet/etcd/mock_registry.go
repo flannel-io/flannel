@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/flannel-io/flannel/pkg/ip"
-	. "github.com/flannel-io/flannel/pkg/subnet"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/jonboulle/clockwork"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"golang.org/x/net/context"
@@ -31,7 +31,7 @@ var clock clockwork.Clock = clockwork.NewRealClock()
 
 type netwk struct {
 	config        string
-	subnets       []Lease
+	subnets       []lease.Lease
 	subnetsEvents chan event
 
 	mux          sync.Mutex
@@ -53,7 +53,7 @@ func (n *netwk) sendSubnetEvent(sn ip.IP4Net, e event) {
 }
 
 type event struct {
-	evt   Event
+	evt   lease.Event
 	index int64
 }
 
@@ -63,7 +63,7 @@ type MockSubnetRegistry struct {
 	index   int64
 }
 
-func NewMockRegistry(config string, initialSubnets []Lease) *MockSubnetRegistry {
+func NewMockRegistry(config string, initialSubnets []lease.Lease) *MockSubnetRegistry {
 	msr := &MockSubnetRegistry{
 		index: 1000,
 		network: &netwk{
@@ -85,17 +85,17 @@ func (msr *MockSubnetRegistry) setConfig(config string) error {
 	return nil
 }
 
-func (msr *MockSubnetRegistry) getSubnets(ctx context.Context) ([]Lease, int64, error) {
+func (msr *MockSubnetRegistry) getSubnets(ctx context.Context) ([]lease.Lease, int64, error) {
 	msr.mux.Lock()
 	defer msr.mux.Unlock()
 
-	subs := make([]Lease, len(msr.network.subnets))
+	subs := make([]lease.Lease, len(msr.network.subnets))
 	copy(subs, msr.network.subnets)
 	return subs, msr.index, nil
 }
 
 // TODO ignores ipv6
-func (msr *MockSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) (*Lease, int64, error) {
+func (msr *MockSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) (*lease.Lease, int64, error) {
 	msr.mux.Lock()
 	defer msr.mux.Unlock()
 
@@ -108,7 +108,7 @@ func (msr *MockSubnetRegistry) getSubnet(ctx context.Context, sn ip.IP4Net, sn6 
 }
 
 // TOODO ignores ipv6
-func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error) {
+func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *lease.LeaseAttrs, ttl time.Duration) (time.Time, error) {
 	msr.mux.Lock()
 	defer msr.mux.Unlock()
 
@@ -124,7 +124,7 @@ func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, s
 		exp = clock.Now().Add(ttl)
 	}
 
-	l := Lease{
+	l := lease.Lease{
 		Subnet:     sn,
 		Attrs:      *attrs,
 		Expiration: exp,
@@ -132,8 +132,8 @@ func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, s
 	}
 	msr.network.subnets = append(msr.network.subnets, l)
 
-	evt := Event{
-		Type:  EventAdded,
+	evt := lease.Event{
+		Type:  lease.EventAdded,
 		Lease: l,
 	}
 
@@ -143,7 +143,7 @@ func (msr *MockSubnetRegistry) createSubnet(ctx context.Context, sn ip.IP4Net, s
 }
 
 // TODO ignores ipv6
-func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *LeaseAttrs, ttl time.Duration, asof int64) (time.Time, error) {
+func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *lease.LeaseAttrs, ttl time.Duration, asof int64) (time.Time, error) {
 	msr.mux.Lock()
 	defer msr.mux.Unlock()
 
@@ -164,8 +164,8 @@ func (msr *MockSubnetRegistry) updateSubnet(ctx context.Context, sn ip.IP4Net, s
 	sub.Expiration = exp
 	msr.network.subnets[i] = sub
 	msr.network.sendSubnetEvent(sn, event{
-		Event{
-			Type:  EventAdded,
+		lease.Event{
+			Type:  lease.EventAdded,
 			Lease: sub,
 		}, msr.index,
 	})
@@ -188,8 +188,8 @@ func (msr *MockSubnetRegistry) deleteSubnet(ctx context.Context, sn ip.IP4Net, s
 	msr.network.subnets = msr.network.subnets[:len(msr.network.subnets)-1]
 	sub.Asof = msr.index
 	msr.network.sendSubnetEvent(sn, event{
-		Event{
-			Type:  EventRemoved,
+		lease.Event{
+			Type:  lease.EventRemoved,
 			Lease: sub,
 		}, msr.index,
 	})
@@ -197,7 +197,7 @@ func (msr *MockSubnetRegistry) deleteSubnet(ctx context.Context, sn ip.IP4Net, s
 	return nil
 }
 
-func (msr *MockSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan chan []LeaseWatchResult, since int64) error {
+func (msr *MockSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan chan []lease.LeaseWatchResult, since int64) error {
 	log.Infof("watchSubnets started with since= [ %d]", since)
 	for {
 		msr.mux.Lock()
@@ -215,8 +215,8 @@ func (msr *MockSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan 
 
 		case e := <-msr.network.subnetsEvents:
 			if e.index > since {
-				leaseWatchChan <- []LeaseWatchResult{
-					{Events: []Event{e.evt},
+				leaseWatchChan <- []lease.LeaseWatchResult{
+					{Events: []lease.Event{e.evt},
 						Cursor: e.index}}
 			}
 		}
@@ -224,12 +224,12 @@ func (msr *MockSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan 
 }
 
 // TODO ignores ip6
-func (msr *MockSubnetRegistry) watchSubnet(ctx context.Context, since int64, sn ip.IP4Net, sn6 ip.IP6Net, leaseWatchChan chan []LeaseWatchResult) error {
+func (msr *MockSubnetRegistry) watchSubnet(ctx context.Context, since int64, sn ip.IP4Net, sn6 ip.IP6Net, leaseWatchChan chan []lease.LeaseWatchResult) error {
 	return errUnimplemented
 }
 
-func (msr *MockSubnetRegistry) leasesWatchReset(ctx context.Context) (LeaseWatchResult, error) {
-	wr := LeaseWatchResult{}
+func (msr *MockSubnetRegistry) leasesWatchReset(ctx context.Context) (lease.LeaseWatchResult, error) {
+	wr := lease.LeaseWatchResult{}
 	leases, index, err := msr.getSubnets(ctx)
 	if err != nil {
 		return wr, fmt.Errorf("failed to retrieve subnet leases: %v", err)
@@ -240,11 +240,11 @@ func (msr *MockSubnetRegistry) leasesWatchReset(ctx context.Context) (LeaseWatch
 	return wr, nil
 }
 
-func (n *netwk) findSubnet(sn ip.IP4Net) (Lease, int, error) {
+func (n *netwk) findSubnet(sn ip.IP4Net) (lease.Lease, int, error) {
 	for i, sub := range n.subnets {
 		if sub.Subnet.Equal(sn) {
 			return sub, i, nil
 		}
 	}
-	return Lease{}, 0, fmt.Errorf("subnet not found")
+	return lease.Lease{}, 0, fmt.Errorf("subnet not found")
 }
