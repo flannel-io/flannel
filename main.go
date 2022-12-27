@@ -29,9 +29,10 @@ import (
 	"time"
 
 	"github.com/coreos/pkg/flagutil"
-	"github.com/flannel-io/flannel/pkg/iptables"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/ipmatch"
+	"github.com/flannel-io/flannel/pkg/iptables"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	etcd "github.com/flannel-io/flannel/pkg/subnet/etcd"
 	"github.com/flannel-io/flannel/pkg/subnet/kube"
@@ -464,7 +465,7 @@ func main() {
 	os.Exit(0)
 }
 
-func recycleIPTables(nw ip.IP4Net, lease *subnet.Lease) error {
+func recycleIPTables(nw ip.IP4Net, myLease *lease.Lease) error {
 	prevNetworks := ReadCIDRsFromSubnetFile(opts.subnetFile, "FLANNEL_NETWORK")
 	prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
 
@@ -477,19 +478,19 @@ func recycleIPTables(nw ip.IP4Net, lease *subnet.Lease) error {
 		}
 	}
 	// recycle iptables rules only when network configured or subnet leased is not equal to current one.
-	if prevNetwork != nw && prevSubnet != lease.Subnet {
-		log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules", nw, lease.Subnet, prevNetwork, prevSubnet)
-		lease := &subnet.Lease{
+	if prevNetwork != nw && prevSubnet != myLease.Subnet {
+		log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules", nw, myLease.Subnet, prevNetwork, prevSubnet)
+		newLease := &lease.Lease{
 			Subnet: prevSubnet,
 		}
-		if err := iptables.DeleteIP4Tables(iptables.MasqRules(prevNetworks, lease)); err != nil {
+		if err := iptables.DeleteIP4Tables(iptables.MasqRules(prevNetworks, newLease)); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func recycleIP6Tables(nw ip.IP6Net, lease *subnet.Lease) error {
+func recycleIP6Tables(nw ip.IP6Net, myLease *lease.Lease) error {
 	prevNetworks := ReadIP6CIDRsFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_NETWORK")
 	prevSubnet := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_SUBNET")
 
@@ -503,9 +504,9 @@ func recycleIP6Tables(nw ip.IP6Net, lease *subnet.Lease) error {
 	}
 
 	// recycle iptables rules only when network configured or subnet leased is not equal to current one.
-	if prevNetwork.String() != nw.String() && prevSubnet.String() != lease.IPv6Subnet.String() {
-		log.Infof("Current ipv6 network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old ip6tables rules", nw, lease.IPv6Subnet, prevNetwork, prevSubnet)
-		lease := &subnet.Lease{
+	if prevNetwork.String() != nw.String() && prevSubnet.String() != myLease.IPv6Subnet.String() {
+		log.Infof("Current ipv6 network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old ip6tables rules", nw, myLease.IPv6Subnet, prevNetwork, prevSubnet)
+		lease := &lease.Lease{
 			IPv6Subnet: prevSubnet,
 		}
 		if err := iptables.DeleteIP6Tables(iptables.MasqIP6Rules(prevNetworks, lease)); err != nil {

@@ -22,12 +22,12 @@ import (
 	"net"
 	"syscall"
 
-	"github.com/flannel-io/flannel/pkg/subnet"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/vishvananda/netlink"
 	log "k8s.io/klog"
 )
 
-func AddXFRMPolicy(myLease, remoteLease *subnet.Lease, dir netlink.Dir, reqID int) error {
+func AddXFRMPolicy(myLease, remoteLease *lease.Lease, dir netlink.Dir, reqID int) error {
 	src := myLease.Subnet.ToIPNet()
 
 	dst := remoteLease.Subnet.ToIPNet()

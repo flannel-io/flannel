@@ -61,6 +61,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"golang.org/x/net/context"
 	log "k8s.io/klog"
@@ -88,8 +89,8 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return backend, nil
 }
 
-func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, vnid uint16, dev, v6Dev *vxlanDevice) (*subnet.LeaseAttrs, error) {
-	leaseAttrs := &subnet.LeaseAttrs{
+func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, vnid uint16, dev, v6Dev *vxlanDevice) (*lease.LeaseAttrs, error) {
+	leaseAttrs := &lease.LeaseAttrs{
 		BackendType: "vxlan",
 	}
 	if publicIP != nil && dev != nil {

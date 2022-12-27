@@ -24,13 +24,13 @@ import (
 	"testing"
 
 	"github.com/flannel-io/flannel/pkg/ip"
-	"github.com/flannel-io/flannel/pkg/subnet"
+	"github.com/flannel-io/flannel/pkg/lease"
 )
 
-func lease() *subnet.Lease {
+func testingLease() *lease.Lease {
 	_, ipv6Net, _ := net.ParseCIDR("fc00::/48")
 	_, net, _ := net.ParseCIDR("192.168.0.0/16")
-	return &subnet.Lease{
+	return &lease.Lease{
 		Subnet:     ip.FromIPNet(net),
 		IPv6Subnet: ip.FromIP6Net(ipv6Net),
 	}
@@ -122,7 +122,7 @@ func TestDeleteRules(t *testing.T) {
 	baseRules := MasqRules([]ip.IP4Net{{
 		IP:        ip.MustParseIP4("10.0.1.0"),
 		PrefixLen: 16,
-	}}, lease())
+	}}, testingLease())
 	expectedRules := expectedTearDownIPTablesRestoreRules(baseRules)
 
 	err := ipTablesBootstrap(ipt, iptr, baseRules)
@@ -258,10 +258,10 @@ func TestDeleteIP6Rules(t *testing.T) {
 	ipt := &MockIPTables{}
 	iptr := &MockIPTablesRestore{}
 
-	baseRules := IP6Rules(ip.IP6Net{}, lease())
+	baseRules := IP6Rules(ip.IP6Net{}, testingLease())
 
 	// expect to have the same DELETE rules
-	expectedRules := IP6RestoreDeleteRules(ip.IP6Net{}, lease())
+	expectedRules := IP6RestoreDeleteRules(ip.IP6Net{}, testingLease())
 
 	err := ipTablesBootstrap(ipt, iptr, baseRules)
 	if err != nil {
@@ -347,7 +347,7 @@ func TestEnsureIP6Rules(t *testing.T) {
 		t.Error("Error setting up iptables")
 	}
 
-	baseRules := IP6Rules(ip.IP6Net{}, lease())
+	baseRules := IP6Rules(ip.IP6Net{}, testingLease())
 
 	err = ensureIPTables(ipt, iptr, baseRules)
 	if err != nil {
@@ -359,7 +359,7 @@ func TestEnsureIP6Rules(t *testing.T) {
 		t.Error("Error setting up iptables")
 	}
 
-	expectedRules := IP6RestoreRules(ip.IP6Net{}, lease())
+	expectedRules := IP6RestoreRules(ip.IP6Net{}, testingLease())
 
 	if !reflect.DeepEqual(iptr.rules, []IPTablesRestoreRules{expectedRules}) {
 		t.Errorf("iptables rules after ensureIPTables are incorrected. Expected: %#v, Actual: %#v", expectedRules, iptr.rules)
@@ -400,7 +400,7 @@ func expectedTearDownIPTablesRestoreRules(rules []IPTablesRule) []IPTablesRestor
 	return []IPTablesRestoreRules{tablesRules}
 }
 
-func IP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
+func IP6Rules(ipn ip.IP6Net, lease *lease.Lease) []IPTablesRule {
 	n := ipn.String()
 	sn := lease.IPv6Subnet.String()
 
@@ -412,7 +412,7 @@ func IP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
 	}
 }
 
-func IP6RestoreRules(ipn ip.IP6Net, lease *subnet.Lease) IPTablesRestoreRules {
+func IP6RestoreRules(ipn ip.IP6Net, lease *lease.Lease) IPTablesRestoreRules {
 	n := ipn.String()
 	sn := lease.IPv6Subnet.String()
 	return IPTablesRestoreRules{
@@ -425,7 +425,7 @@ func IP6RestoreRules(ipn ip.IP6Net, lease *subnet.Lease) IPTablesRestoreRules {
 	}
 }
 
-func IP6RestoreDeleteRules(ipn ip.IP6Net, lease *subnet.Lease) IPTablesRestoreRules {
+func IP6RestoreDeleteRules(ipn ip.IP6Net, lease *lease.Lease) IPTablesRestoreRules {
 	n := ipn.String()
 	sn := lease.IPv6Subnet.String()
 	return IPTablesRestoreRules{

@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"golang.org/x/net/context"
 	v1 "k8s.io/api/core/v1"
@@ -69,7 +70,7 @@ type kubeSubnetManager struct {
 	nodeStore                 listers.NodeLister
 	nodeController            cache.Controller
 	subnetConf                *subnet.Config
-	events                    chan subnet.Event
+	events                    chan lease.Event
 	clusterCIDRController     cache.Controller
 	setNodeNetworkUnavailable bool
 	disableNodeInformer       bool
@@ -179,7 +180,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 			scale = n
 		}
 	}
-	ksm.events = make(chan subnet.Event, scale)
+	ksm.events = make(chan lease.Event, scale)
 	// when backend type is alloc, someone else (e.g. cloud-controller-managers) is taking care of the routing, thus we do not need informer
 	// See https://github.com/flannel-io/flannel/issues/1617
 	if sc.BackendType == "alloc" {
@@ -199,7 +200,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 			resyncPeriod,
 			cache.ResourceEventHandlerFuncs{
 				AddFunc: func(obj interface{}) {
-					ksm.handleAddLeaseEvent(subnet.EventAdded, obj)
+					ksm.handleAddLeaseEvent(lease.EventAdded, obj)
 				},
 				UpdateFunc: ksm.handleUpdateLeaseEvent,
 				DeleteFunc: func(obj interface{}) {
@@ -218,7 +219,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 						}
 						obj = node
 					}
-					ksm.handleAddLeaseEvent(subnet.EventRemoved, obj)
+					ksm.handleAddLeaseEvent(lease.EventRemoved, obj)
 				},
 			},
 			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
@@ -254,7 +255,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 	return &ksm, nil
 }
 
-func (ksm *kubeSubnetManager) handleAddLeaseEvent(et subnet.EventType, obj interface{}) {
+func (ksm *kubeSubnetManager) handleAddLeaseEvent(et lease.EventType, obj interface{}) {
 	n := obj.(*v1.Node)
 	if s, ok := n.Annotations[ksm.annotations.SubnetKubeManaged]; !ok || s != "true" {
 		return
@@ -265,7 +266,7 @@ func (ksm *kubeSubnetManager) handleAddLeaseEvent(et subnet.EventType, obj inter
 		log.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.events <- subnet.Event{Type: et, Lease: l}
+	ksm.events <- lease.Event{Type: et, Lease: l}
 }
 
 // handleUpdateLeaseEvent verifies if anything relevant changed in the node object: either
@@ -298,7 +299,7 @@ func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{})
 		log.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.events <- subnet.Event{Type: subnet.EventAdded, Lease: l}
+	ksm.events <- lease.Event{Type: lease.EventAdded, Lease: l}
 }
 
 func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {
@@ -308,7 +309,7 @@ func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Con
 // AcquireLease adds the flannel specific node annotations (defined in the struct LeaseAttrs) and returns a lease
 // with important information for the backend, such as the subnet. This function is called once by the backend when
 // registering
-func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.LeaseAttrs) (*subnet.Lease, error) {
+func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *lease.LeaseAttrs) (*lease.Lease, error) {
 	var cachedNode *v1.Node
 	var err error
 	if ksm.disableNodeInformer {
@@ -428,7 +429,7 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 		}
 	}
 
-	lease := &subnet.Lease{
+	lease := &lease.Lease{
 		Attrs:      *attrs,
 		Expiration: time.Now().Add(24 * time.Hour),
 	}
@@ -467,14 +468,14 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 }
 
 // WatchLeases waits for the kubeSubnetManager to provide an event in case something relevant changed in the node data
-func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, cursor interface{}) (subnet.LeaseWatchResult, error) {
+func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, cursor interface{}) (lease.LeaseWatchResult, error) {
 	select {
 	case event := <-ksm.events:
-		return subnet.LeaseWatchResult{
-			Events: []subnet.Event{event},
+		return lease.LeaseWatchResult{
+			Events: []lease.Event{event},
 		}, nil
 	case <-ctx.Done():
-		return subnet.LeaseWatchResult{}, context.Canceled
+		return lease.LeaseWatchResult{}, context.Canceled
 	}
 }
 
@@ -484,7 +485,7 @@ func (ksm *kubeSubnetManager) Run(ctx context.Context) {
 }
 
 // nodeToLease updates the lease with information fetch from the node, e.g. PodCIDR
-func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l subnet.Lease, err error) {
+func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l lease.Lease, err error) {
 	if ksm.enableIPv4 {
 		l.Attrs.PublicIP, err = ip.ParseIP4(n.Annotations[ksm.annotations.BackendPublicIP])
 		if err != nil {
@@ -555,12 +556,12 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l subnet.Lease, err error)
 }
 
 // RenewLease: unimplemented
-func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, lease *subnet.Lease) error {
+func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, lease *lease.Lease) error {
 	return ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
-	return subnet.LeaseWatchResult{}, ErrUnimplemented
+func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (lease.LeaseWatchResult, error) {
+	return lease.LeaseWatchResult{}, ErrUnimplemented
 }
 
 func (ksm *kubeSubnetManager) Name() string {
@@ -569,7 +570,7 @@ func (ksm *kubeSubnetManager) Name() string {
 
 // CompleteLease Set Kubernetes NodeNetworkUnavailable to false when starting
 // https://kubernetes.io/docs/concepts/architecture/nodes/#condition
-func (ksm *kubeSubnetManager) CompleteLease(ctx context.Context, lease *subnet.Lease, wg *sync.WaitGroup) error {
+func (ksm *kubeSubnetManager) CompleteLease(ctx context.Context, lease *lease.Lease, wg *sync.WaitGroup) error {
 	if ksm.clusterCIDRController != nil {
 		//start clusterController after all subnet manager has been fully initialized
 		log.Info("starting clusterCIDR controller...")

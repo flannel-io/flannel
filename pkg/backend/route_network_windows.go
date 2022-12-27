@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/routing"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"golang.org/x/net/context"
@@ -34,7 +35,7 @@ type RouteNetwork struct {
 	Name        string
 	BackendType string
 	SM          subnet.Manager
-	GetRoute    func(lease *subnet.Lease) *routing.Route
+	GetRoute    func(myLease *lease.Lease) *routing.Route
 	Mtu         int
 	LinkIndex   int
 	routes      []routing.Route
@@ -48,7 +49,7 @@ func (n *RouteNetwork) Run(ctx context.Context) {
 	wg := sync.WaitGroup{}
 
 	log.Info("Watching for new subnet leases")
-	evts := make(chan []subnet.Event)
+	evts := make(chan []lease.Event)
 	wg.Add(1)
 	go func() {
 		subnet.WatchLeases(ctx, n.SM, n.SubnetLease, evts)
@@ -76,7 +77,7 @@ func (n *RouteNetwork) Run(ctx context.Context) {
 	}
 }
 
-func (n *RouteNetwork) handleSubnetEvents(batch []subnet.Event) {
+func (n *RouteNetwork) handleSubnetEvents(batch []lease.Event) {
 	router := routing.RouterWindows{}
 
 	for _, evt := range batch {
@@ -90,7 +91,7 @@ func (n *RouteNetwork) handleSubnetEvents(batch []subnet.Event) {
 		expectedRoute := n.GetRoute(&evt.Lease)
 
 		switch evt.Type {
-		case subnet.EventAdded:
+		case lease.EventAdded:
 			log.Infof("Subnet added: %v via %v", leaseSubnet, leaseAttrs.PublicIP)
 
 			existingRoutes, _ := router.GetRoutesFromInterfaceToSubnet(expectedRoute.InterfaceIndex, expectedRoute.DestinationSubnet)
@@ -116,7 +117,7 @@ func (n *RouteNetwork) handleSubnetEvents(batch []subnet.Event) {
 
 			n.addToRouteList(expectedRoute)
 
-		case subnet.EventRemoved:
+		case lease.EventRemoved:
 			log.Infof("Subnet removed: %v", leaseSubnet)
 
 			existingRoutes, _ := router.GetRoutesFromInterfaceToSubnet(expectedRoute.InterfaceIndex, expectedRoute.DestinationSubnet)

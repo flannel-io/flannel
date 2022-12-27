@@ -16,7 +16,7 @@ package iptables
 
 import (
 	"github.com/flannel-io/flannel/pkg/ip"
-	"github.com/flannel-io/flannel/pkg/subnet"
+	"github.com/flannel-io/flannel/pkg/lease"
 )
 
 type IPTables interface {
@@ -34,13 +34,13 @@ type IPTablesRule struct {
 	rulespec []string
 }
 
-func CreateIP4Chain(table, chain string)                                         { return }
-func CreateIP6Chain(table, chain string)                                         { return }
-func MasqRules(cluster_cidrs []ip.IP4Net, lease *subnet.Lease) []IPTablesRule    { return nil }
-func ForwardRules(flannelNetwork string) []IPTablesRule                          { return nil }
-func teardownIPTables(ipt IPTables, rules []IPTablesRule)                        {}
-func SetupAndEnsureIP4Tables(getRules func() []IPTablesRule, resyncPeriod int)   {}
-func SetupAndEnsureIP6Tables(getRules func() []IPTablesRule, resyncPeriod int)   {}
-func MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *subnet.Lease) []IPTablesRule { return nil }
-func DeleteIP4Tables(rules []IPTablesRule) error                                 { return nil }
-func DeleteIP6Tables(rules []IPTablesRule) error                                 { return nil }
+func CreateIP4Chain(table, chain string)                                        { return }
+func CreateIP6Chain(table, chain string)                                        { return }
+func MasqRules(cluster_cidrs []ip.IP4Net, lease *lease.Lease) []IPTablesRule    { return nil }
+func ForwardRules(flannelNetwork string) []IPTablesRule                         { return nil }
+func teardownIPTables(ipt IPTables, rules []IPTablesRule)                       {}
+func SetupAndEnsureIP4Tables(getRules func() []IPTablesRule, resyncPeriod int)  {}
+func SetupAndEnsureIP6Tables(getRules func() []IPTablesRule, resyncPeriod int)  {}
+func MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease.Lease) []IPTablesRule { return nil }
+func DeleteIP4Tables(rules []IPTablesRule) error                                { return nil }
+func DeleteIP6Tables(rules []IPTablesRule) error                                { return nil }

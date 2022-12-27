@@ -23,6 +23,7 @@ import (
 	"github.com/Microsoft/hcsshim/hcn"
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"golang.org/x/net/context"
 	log "k8s.io/klog"
@@ -43,10 +44,10 @@ const (
 	encapOverhead = 50
 )
 
-func newNetwork(subnetMgr subnet.Manager, extIface *backend.ExternalInterface, dev *vxlanDevice, _ ip.IP4Net, lease *subnet.Lease) (*network, error) {
+func newNetwork(subnetMgr subnet.Manager, extIface *backend.ExternalInterface, dev *vxlanDevice, _ ip.IP4Net, myLease *lease.Lease) (*network, error) {
 	nw := &network{
 		SimpleNetwork: backend.SimpleNetwork{
-			SubnetLease: lease,
+			SubnetLease: myLease,
 			ExtIface:    extIface,
 		},
 		subnetMgr: subnetMgr,
@@ -60,7 +61,7 @@ func (nw *network) Run(ctx context.Context) {
 	wg := sync.WaitGroup{}
 
 	log.V(0).Info("Watching for new subnet leases")
-	events := make(chan []subnet.Event)
+	events := make(chan []lease.Event)
 	wg.Add(1)
 	go func() {
 		subnet.WatchLeases(ctx, nw.subnetMgr, nw.SubnetLease, events)
@@ -86,7 +87,7 @@ func (nw *network) MTU() int {
 	return nw.ExtIface.Iface.MTU - encapOverhead
 }
 
-func (nw *network) handleSubnetEvents(batch []subnet.Event) {
+func (nw *network) handleSubnetEvents(batch []lease.Event) {
 	for _, event := range batch {
 		leaseSubnet := event.Lease.Subnet
 		leaseAttrs := event.Lease.Attrs
@@ -130,7 +131,7 @@ func (nw *network) handleSubnetEvents(batch []subnet.Event) {
 		}
 
 		switch event.Type {
-		case subnet.EventAdded:
+		case lease.EventAdded:
 			for _, policy := range hnsnetwork.Policies {
 				if policy.Type == hcn.RemoteSubnetRoute {
 					existingPolicySettings := hcn.RemoteSubnetRoutePolicySetting{}
@@ -157,7 +158,7 @@ func (nw *network) handleSubnetEvents(batch []subnet.Event) {
 			if networkPolicySettings.DistributedRouterMacAddress != "" {
 				hnsnetwork.AddPolicy(policyNetworkRequest)
 			}
-		case subnet.EventRemoved:
+		case lease.EventRemoved:
 			if networkPolicySettings.DistributedRouterMacAddress != "" {
 				hnsnetwork.RemovePolicy(policyNetworkRequest)
 			}

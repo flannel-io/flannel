@@ -23,6 +23,7 @@ import (
 	"sync"
 
 	"github.com/flannel-io/flannel/pkg/backend"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
@@ -56,7 +57,7 @@ type network struct {
 
 func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface,
 	UDPEncap bool, password string, ikeDaemon *CharonIKEDaemon,
-	l *subnet.Lease) (*network, error) {
+	l *lease.Lease) (*network, error) {
 	n := &network{
 		SimpleNetwork: backend.SimpleNetwork{
 			SubnetLease: l,
@@ -84,7 +85,7 @@ func (n *network) Run(ctx context.Context) {
 
 	log.Info("Watching for new subnet leases")
 
-	evts := make(chan []subnet.Event)
+	evts := make(chan []lease.Event)
 
 	wg.Add(1)
 	go func() {
@@ -104,10 +105,10 @@ func (n *network) Run(ctx context.Context) {
 	}
 }
 
-func (n *network) handleSubnetEvents(batch []subnet.Event) {
+func (n *network) handleSubnetEvents(batch []lease.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
-		case subnet.EventAdded:
+		case lease.EventAdded:
 			log.Info("Subnet added: ", evt.Lease.Subnet)
 
 			if evt.Lease.Attrs.BackendType != "ipsec" {
@@ -133,7 +134,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				log.Errorf("error loading connection into IKE daemon: %v", err)
 			}
 
-		case subnet.EventRemoved:
+		case lease.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
 			if evt.Lease.Attrs.BackendType != "ipsec" {
 				log.Warningf("Ignoring non-ipsec event: type: %v", evt.Lease.Attrs.BackendType)
@@ -167,7 +168,7 @@ func (n *network) MTU() int {
 	return mtu
 }
 
-func (n *network) AddIPSECPolicies(remoteLease *subnet.Lease, reqID int) error {
+func (n *network) AddIPSECPolicies(remoteLease *lease.Lease, reqID int) error {
 	err := AddXFRMPolicy(n.SubnetLease, remoteLease, netlink.XFRM_DIR_OUT, reqID)
 	if err != nil {
 		return fmt.Errorf("error adding ipsec out policy: %v", err)

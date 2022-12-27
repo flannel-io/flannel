@@ -24,6 +24,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
@@ -41,7 +42,7 @@ const (
 	encapOverhead = 50
 )
 
-func newNetwork(subnetMgr subnet.Manager, extIface *backend.ExternalInterface, dev *vxlanDevice, v6Dev *vxlanDevice, _ ip.IP4Net, lease *subnet.Lease) (*network, error) {
+func newNetwork(subnetMgr subnet.Manager, extIface *backend.ExternalInterface, dev *vxlanDevice, v6Dev *vxlanDevice, _ ip.IP4Net, lease *lease.Lease) (*network, error) {
 	nw := &network{
 		SimpleNetwork: backend.SimpleNetwork{
 			SubnetLease: lease,
@@ -59,7 +60,7 @@ func (nw *network) Run(ctx context.Context) {
 	wg := sync.WaitGroup{}
 
 	log.V(0).Info("watching for new subnet leases")
-	events := make(chan []subnet.Event)
+	events := make(chan []lease.Event)
 	wg.Add(1)
 	go func() {
 		subnet.WatchLeases(ctx, nw.subnetMgr, nw.SubnetLease, events)
@@ -88,7 +89,7 @@ type vxlanLeaseAttrs struct {
 	VtepMAC hardwareAddr
 }
 
-func (nw *network) handleSubnetEvents(batch []subnet.Event) {
+func (nw *network) handleSubnetEvents(batch []lease.Event) {
 	for _, event := range batch {
 		sn := event.Lease.Subnet
 		v6Sn := event.Lease.IPv6Subnet
@@ -165,7 +166,7 @@ func (nw *network) handleSubnetEvents(batch []subnet.Event) {
 		}
 
 		switch event.Type {
-		case subnet.EventAdded:
+		case lease.EventAdded:
 			if event.Lease.EnableIPv4 {
 				if directRoutingOK {
 					log.V(2).Infof("Adding direct route to subnet: %s PublicIP: %s", sn, attrs.PublicIP)
@@ -254,7 +255,7 @@ func (nw *network) handleSubnetEvents(batch []subnet.Event) {
 					}
 				}
 			}
-		case subnet.EventRemoved:
+		case lease.EventRemoved:
 			if event.Lease.EnableIPv4 {
 				if directRoutingOK {
 					log.V(2).Infof("Removing direct route to subnet: %s PublicIP: %s", sn, attrs.PublicIP)

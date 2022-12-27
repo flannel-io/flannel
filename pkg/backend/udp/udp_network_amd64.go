@@ -26,6 +26,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
@@ -47,7 +48,7 @@ type network struct {
 	sm     subnet.Manager
 }
 
-func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, port int, nw ip.IP4Net, l *subnet.Lease) (*network, error) {
+func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, port int, nw ip.IP4Net, l *lease.Lease) (*network, error) {
 	n := &network{
 		SimpleNetwork: backend.SimpleNetwork{
 			SubnetLease: l,
@@ -97,7 +98,7 @@ func (n *network) Run(ctx context.Context) {
 
 	log.Info("Watching for new subnet leases")
 
-	evts := make(chan []subnet.Event)
+	evts := make(chan []lease.Event)
 
 	wg.Add(1)
 	go func() {
@@ -185,15 +186,15 @@ func configureIface(ifname string, ipn ip.IP4Net, mtu int) error {
 	return nil
 }
 
-func (n *network) processSubnetEvents(batch []subnet.Event) {
+func (n *network) processSubnetEvents(batch []lease.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
-		case subnet.EventAdded:
+		case lease.EventAdded:
 			log.Info("Subnet added: ", evt.Lease.Subnet)
 
 			setRoute(n.ctl, evt.Lease.Subnet, evt.Lease.Attrs.PublicIP, n.port)
 
-		case subnet.EventRemoved:
+		case lease.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
 
 			removeRoute(n.ctl, evt.Lease.Subnet)

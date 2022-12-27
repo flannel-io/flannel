@@ -25,6 +25,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"golang.org/x/net/context"
 )
@@ -56,7 +57,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return be, nil
 }
 
-func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, enableIPv4, enableIPv6 bool, publicKey string) (*subnet.LeaseAttrs, error) {
+func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, enableIPv4, enableIPv6 bool, publicKey string) (*lease.LeaseAttrs, error) {
 	data, err := json.Marshal(&wireguardLeaseAttrs{
 		PublicKey: publicKey,
 	})
@@ -64,7 +65,7 @@ func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, enableIPv4, enableIPv6 b
 		return nil, err
 	}
 
-	leaseAttrs := &subnet.LeaseAttrs{
+	leaseAttrs := &lease.LeaseAttrs{
 		BackendType: "wireguard",
 	}
 

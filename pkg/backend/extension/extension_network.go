@@ -23,13 +23,14 @@ import (
 	"fmt"
 
 	"github.com/flannel-io/flannel/pkg/backend"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	log "k8s.io/klog"
 )
 
 type network struct {
 	extIface            *backend.ExternalInterface
-	lease               *subnet.Lease
+	lease               *lease.Lease
 	sm                  subnet.Manager
 	preStartupCommand   string
 	postStartupCommand  string
@@ -37,7 +38,7 @@ type network struct {
 	subnetRemoveCommand string
 }
 
-func (n *network) Lease() *subnet.Lease {
+func (n *network) Lease() *lease.Lease {
 	return n.lease
 }
 
@@ -49,7 +50,7 @@ func (n *network) Run(ctx context.Context) {
 	wg := sync.WaitGroup{}
 
 	log.Info("Watching for new subnet leases")
-	evts := make(chan []subnet.Event)
+	evts := make(chan []lease.Event)
 	wg.Add(1)
 	go func() {
 		subnet.WatchLeases(ctx, n.sm, n.lease, evts)
@@ -68,10 +69,10 @@ func (n *network) Run(ctx context.Context) {
 	}
 }
 
-func (n *network) handleSubnetEvents(batch []subnet.Event) {
+func (n *network) handleSubnetEvents(batch []lease.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
-		case subnet.EventAdded:
+		case lease.EventAdded:
 			log.Infof("Subnet added: %v via %v", evt.Lease.Subnet, evt.Lease.Attrs.PublicIP)
 
 			if evt.Lease.Attrs.BackendType != "extension" {
@@ -102,7 +103,7 @@ func (n *network) handleSubnetEvents(batch []subnet.Event) {
 				}
 			}
 
-		case subnet.EventRemoved:
+		case lease.EventRemoved:
 			log.Info("Subnet removed: ", evt.Lease.Subnet)
 
 			if evt.Lease.Attrs.BackendType != "extension" {

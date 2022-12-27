@@ -21,8 +21,8 @@ import (
 	"testing"
 
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/ns"
-	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
 )
 
@@ -47,7 +47,7 @@ func TestRouteCache(t *testing.T) {
 		BackendType: "host-gw",
 		LinkIndex:   lo.Attrs().Index,
 	}
-	nw.GetRoute = func(lease *subnet.Lease) *netlink.Route {
+	nw.GetRoute = func(lease *lease.Lease) *netlink.Route {
 		return &netlink.Route{
 			Dst:       lease.Subnet.ToIPNet(),
 			Gw:        lease.Attrs.PublicIP.ToIP(),
@@ -56,9 +56,9 @@ func TestRouteCache(t *testing.T) {
 	}
 	gw1, gw2 := ip.FromIP(net.ParseIP("127.0.0.1")), ip.FromIP(net.ParseIP("127.0.0.2"))
 	subnet1 := ip.IP4Net{IP: ip.FromIP(net.ParseIP("192.168.0.0")), PrefixLen: 24}
-	nw.handleSubnetEvents([]subnet.Event{
-		{Type: subnet.EventAdded, Lease: subnet.Lease{
-			Subnet: subnet1, EnableIPv4: true, Attrs: subnet.LeaseAttrs{PublicIP: gw1, BackendType: "host-gw"}}},
+	nw.handleSubnetEvents([]lease.Event{
+		{Type: lease.EventAdded, Lease: lease.Lease{
+			Subnet: subnet1, EnableIPv4: true, Attrs: lease.LeaseAttrs{PublicIP: gw1, BackendType: "host-gw"}}},
 	})
 	if len(nw.routes) != 1 {
 		t.Fatal(nw.routes)
@@ -67,9 +67,9 @@ func TestRouteCache(t *testing.T) {
 		t.Fatal(nw.routes[0])
 	}
 	// change gateway of previous route
-	nw.handleSubnetEvents([]subnet.Event{
-		{Type: subnet.EventAdded, Lease: subnet.Lease{
-			Subnet: subnet1, EnableIPv4: true, Attrs: subnet.LeaseAttrs{PublicIP: gw2, BackendType: "host-gw"}}}})
+	nw.handleSubnetEvents([]lease.Event{
+		{Type: lease.EventAdded, Lease: lease.Lease{
+			Subnet: subnet1, EnableIPv4: true, Attrs: lease.LeaseAttrs{PublicIP: gw2, BackendType: "host-gw"}}}})
 	if len(nw.routes) != 1 {
 		t.Fatal(nw.routes)
 	}
@@ -102,7 +102,7 @@ func TestV6RouteCache(t *testing.T) {
 		BackendType: "host-gw",
 		LinkIndex:   br.Attrs().Index,
 	}
-	nw.GetV6Route = func(lease *subnet.Lease) *netlink.Route {
+	nw.GetV6Route = func(lease *lease.Lease) *netlink.Route {
 		return &netlink.Route{
 			Dst:       lease.IPv6Subnet.ToIPNet(),
 			Gw:        lease.Attrs.PublicIPv6.ToIP(),
@@ -111,9 +111,9 @@ func TestV6RouteCache(t *testing.T) {
 	}
 	gw1, gw2 := ip.FromIP6(net.ParseIP("2001:db8:1::2")), ip.FromIP6(net.ParseIP("2001:db8:1::10"))
 	subnet1 := ip.IP6Net{IP: ip.FromIP6(net.ParseIP("2001:db8:ffff::")), PrefixLen: 64}
-	nw.handleSubnetEvents([]subnet.Event{
-		{Type: subnet.EventAdded, Lease: subnet.Lease{
-			IPv6Subnet: subnet1, EnableIPv6: true, Attrs: subnet.LeaseAttrs{PublicIPv6: gw1, BackendType: "host-gw"}}},
+	nw.handleSubnetEvents([]lease.Event{
+		{Type: lease.EventAdded, Lease: lease.Lease{
+			IPv6Subnet: subnet1, EnableIPv6: true, Attrs: lease.LeaseAttrs{PublicIPv6: gw1, BackendType: "host-gw"}}},
 	})
 	if len(nw.v6Routes) != 1 {
 		t.Fatal(nw.v6Routes)
@@ -122,9 +122,9 @@ func TestV6RouteCache(t *testing.T) {
 		t.Fatal(nw.v6Routes[0])
 	}
 	// change gateway of previous route
-	nw.handleSubnetEvents([]subnet.Event{
-		{Type: subnet.EventAdded, Lease: subnet.Lease{
-			IPv6Subnet: subnet1, EnableIPv6: true, Attrs: subnet.LeaseAttrs{PublicIPv6: gw2, BackendType: "host-gw"}}}})
+	nw.handleSubnetEvents([]lease.Event{
+		{Type: lease.EventAdded, Lease: lease.Lease{
+			IPv6Subnet: subnet1, EnableIPv6: true, Attrs: lease.LeaseAttrs{PublicIPv6: gw2, BackendType: "host-gw"}}}})
 	linkbr, _ := netlink.LinkByName("br")
 	routes, _ := netlink.RouteList(linkbr, 6)
 	IsGw := ""

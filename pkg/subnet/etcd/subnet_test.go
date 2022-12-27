@@ -21,19 +21,20 @@ import (
 	"time"
 
 	"github.com/flannel-io/flannel/pkg/ip"
-	. "github.com/flannel-io/flannel/pkg/subnet"
+	"github.com/flannel-io/flannel/pkg/lease"
+	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/jonboulle/clockwork"
 	"golang.org/x/net/context"
 )
 
 func newDummyRegistry() *MockSubnetRegistry {
-	attrs := LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.1.1.1"),
 	}
 
 	exp := time.Time{}
 
-	subnets := []Lease{
+	subnets := []lease.Lease{
 		// leases within SubnetMin-SubnetMax range
 		{EnableIPv4: true, EnableIPv6: false, Subnet: ip.IP4Net{IP: ip.MustParseIP4("10.3.1.0"), PrefixLen: 24}, IPv6Subnet: ip.IP6Net{}, Attrs: attrs, Expiration: exp, Asof: 10},
 		{EnableIPv4: true, EnableIPv6: false, Subnet: ip.IP4Net{IP: ip.MustParseIP4("10.3.2.0"), PrefixLen: 24}, IPv6Subnet: ip.IP6Net{}, Attrs: attrs, Expiration: exp, Asof: 11},
@@ -53,7 +54,7 @@ func TestAcquireLease(t *testing.T) {
 	sm := NewMockManager(msr)
 
 	extIaddr, _ := ip.ParseIP4("1.2.3.4")
-	attrs := LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP: extIaddr,
 	}
 
@@ -106,7 +107,7 @@ func TestConfigChanged(t *testing.T) {
 	sm := NewMockManager(msr)
 
 	extIaddr, _ := ip.ParseIP4("1.2.3.4")
-	attrs := LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP: extIaddr,
 	}
 
@@ -136,9 +137,9 @@ func TestConfigChanged(t *testing.T) {
 	}
 }
 
-func acquireLease(ctx context.Context, t *testing.T, sm Manager) *Lease {
+func acquireLease(ctx context.Context, t *testing.T, sm subnet.Manager) *lease.Lease {
 	extIaddr, _ := ip.ParseIP4("1.2.3.4")
-	attrs := LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP: extIaddr,
 	}
 
@@ -159,12 +160,12 @@ func TestWatchLeaseAdded(t *testing.T) {
 
 	l := acquireLease(ctx, t, sm)
 
-	events := make(chan []Event)
-	go WatchLeases(ctx, sm, l, events)
+	events := make(chan []lease.Event)
+	go subnet.WatchLeases(ctx, sm, l, events)
 
 	evtBatch := <-events
 	for _, evt := range evtBatch {
-		if evt.Lease.Key() == l.Key() {
+		if subnet.MakeSubnetKey(evt.Lease.Subnet, evt.Lease.IPv6Subnet) == subnet.MakeSubnetKey(l.Subnet, l.IPv6Subnet) {
 			t.Errorf("WatchLeases returned our own lease")
 		}
 	}
@@ -179,7 +180,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 		t.Fatalf("Acquired lease conflicts with one about to create")
 	}
 
-	attrs := &LeaseAttrs{
+	attrs := &lease.LeaseAttrs{
 		PublicIP: ip.MustParseIP4("1.1.1.1"),
 	}
 	_, err := msr.createSubnet(ctx, expected, ip.IP6Net{}, attrs, 0)
@@ -195,7 +196,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 
 	evt := evtBatch[0]
 
-	if evt.Type != EventAdded {
+	if evt.Type != lease.EventAdded {
 		t.Fatalf("WatchLeases produced wrong event type")
 	}
 
@@ -214,13 +215,13 @@ func TestWatchLeaseRemoved(t *testing.T) {
 
 	l := acquireLease(ctx, t, sm)
 
-	events := make(chan []Event)
-	go WatchLeases(ctx, sm, l, events)
+	events := make(chan []lease.Event)
+	go subnet.WatchLeases(ctx, sm, l, events)
 
 	evtBatch := <-events
 
 	for _, evt := range evtBatch {
-		if evt.Lease.Key() == l.Key() {
+		if subnet.MakeSubnetKey(evt.Lease.Subnet, evt.Lease.IPv6Subnet) == subnet.MakeSubnetKey(l.Subnet, l.IPv6Subnet) {
 			t.Errorf("WatchLeases returned our own lease")
 		}
 	}
@@ -241,7 +242,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 
 	evt := evtBatch[0]
 
-	if evt.Type != EventRemoved {
+	if evt.Type != lease.EventRemoved {
 		t.Fatalf("WatchLeases produced wrong event type")
 	}
 
@@ -264,7 +265,7 @@ func TestRenewLease(t *testing.T) {
 
 	// Create LeaseAttrs
 	extIaddr, _ := ip.ParseIP4("1.2.3.4")
-	attrs := LeaseAttrs{
+	attrs := lease.LeaseAttrs{
 		PublicIP:    extIaddr,
 		BackendType: "vxlan",
 	}
@@ -314,7 +315,7 @@ func TestRenewLease(t *testing.T) {
 	t.Fatal("Failed to find acquired lease")
 }
 
-func inAllocatableRange(ctx context.Context, sm Manager, ipn ip.IP4Net) bool {
+func inAllocatableRange(ctx context.Context, sm subnet.Manager, ipn ip.IP4Net) bool {
 	cfg, err := sm.GetNetworkConfig(ctx)
 	if err != nil {
 		panic(err)
