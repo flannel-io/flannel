@@ -35,7 +35,7 @@ docker run --rm --net=host quay.io/coreos/etcd
 ```
 4. Observe that `flannel` can now talk to `etcd`, but can't find any config. So write some config. Either get `etcdctl` from the [etcd page](https://etcd.io/docs/v3.5/quickstart/), or use `docker` again.
 ```bash
-docker run --rm --net=host quay.io/coreos/etcd etcdctl set /coreos.com/network/config '{ "Network": "10.5.0.0/16", "Backend": {"Type": "vxlan"}}'
+docker run --rm -e ETCDCTL_API=3 --net=host quay.io/coreos/etcd etcdctl put /coreos.com/network/config '{ "Network": "10.5.0.0/16", "Backend": {"Type": "vxlan"}}'
 ```
 Now `flannel` is running, it has created a VXLAN tunnel device on the host and written a subnet config file
 
@@ -60,6 +60,7 @@ FLANNEL_IPMASQ=false
 ```
 etcd network value is `10.6.0.0/16`. Since `10.5.72.1/24` is outside of this network, a new lease will be allocated.
 ```bash
+export ETCDCTL_API=3
 etcdctl get /coreos.com/network/config
 { "Network": "10.6.0.0/16", "Backend": {"Type": "vxlan"}}
 ```
