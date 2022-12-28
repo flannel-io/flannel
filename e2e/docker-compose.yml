@@ -1,0 +1,41 @@
+version: "3.7"
+
+volumes:
+  kubeconfig:
+    name: e2e-local-kubeconfig
+
+services:
+
+  leader:
+    container_name: local-leader
+    image: "e2e/cluster/local/k3s"
+    build:
+      context: .
+      args:
+        - ARCH=amd64
+    command: server --no-deploy=traefik,metrics-server --flannel-backend=none
+    environment:
+      - K3S_TOKEN=e2e
+    hostname: local-leader
+    privileged: true
+    ports:
+      - "6443:6443" # k3s
+    volumes:
+      - source: kubeconfig
+        target: /etc/rancher/k3s
+        type: volume
+
+  worker:
+    depends_on:
+      - leader
+    container_name: local-worker
+    image: "e2e/cluster/local/k3s"
+    build:
+      context: .
+      args:
+        - ARCH=amd64
+    command: agent --server https://local-leader:6443
+    environment:
+      - K3S_TOKEN=e2e
+    hostname: local-worker
+    privileged: true

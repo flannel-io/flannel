@@ -189,36 +189,6 @@ create_ping_dest() {
     done
 }
 
-test_vxlan() {
-    start_flannel vxlan
-    create_ping_dest # creates ping_dest1 and ping_dest2 variables
-    pings
-    check_iptables
-}
-
-if [[ ${ARCH} == "amd64" ]]; then
-test_udp() {
-    start_flannel udp
-    create_ping_dest # creates ping_dest1 and ping_dest2 variables
-    pings
-    check_iptables
-}
-fi
-
-test_host-gw() {
-    start_flannel host-gw
-    create_ping_dest # creates ping_dest1 and ping_dest2 variables
-    pings
-    check_iptables
-}
-
-test_ipip() {
-    start_flannel ipip
-    create_ping_dest # creates ping_dest1 and ping_dest2 variables
-    pings
-    check_iptables
-}
-
 test_public-ip-overwrite(){
   docker exec flannel-e2e-k8s-apiserver kubectl --kubeconfig=/var/lib/kubernetes/admin.kubeconfig annotate node flannel1 \
     flannel.alpha.coreos.com/public-ip-overwrite=172.18.0.2 >/dev/null 2>&1
@@ -230,12 +200,6 @@ test_public-ip-overwrite(){
   # Remove annotation to not break all other tests
   docker exec flannel-e2e-k8s-apiserver kubectl --kubeconfig=/var/lib/kubernetes/admin.kubeconfig annotate node flannel1 \
     flannel.alpha.coreos.com/public-ip-overwrite- >/dev/null 2>&1
-}
-
-test_wireguard() {
-    start_flannel wireguard
-    create_ping_dest # creates ping_dest1 and ping_dest2 variables
-    pings
 }
 
 pings() {

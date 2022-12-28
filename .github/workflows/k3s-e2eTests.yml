@@ -1,0 +1,23 @@
+name: e2e tests for flannel
+
+on: [push, pull_request]
+
+env:
+  ARCH: amd64
+  GO_VERSION: "1.19"
+  KUBECONFIG: ${HOME}/.kube/config
+
+jobs:
+  k3s-e2e-tests:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: build flannel image
+        run: make image
+      - name: run e2e tests with k3s
+        run: make k3s-e2e-test

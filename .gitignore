@@ -11,3 +11,5 @@ bash_unit
 dist/qemu-*
 .vscode/*
 vendor/*
+e2e/scratch/*
+e2e/kube-flannel.yml
