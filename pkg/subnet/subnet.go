@@ -131,9 +131,11 @@ type Manager interface {
 // and communicates addition/deletion events on receiver channel. It takes care
 // of handling "fall-behind" logic where the history window has advanced too far
 // and it needs to diff the latest snapshot with its saved state and generate events
-func WatchLeases(ctx context.Context, sm Manager, ownLease *lease.Lease, receiver chan []lease.Event) {
+func WatchLeases(ctx context.Context, sm Manager, initialLease *lease.Lease, receiver chan []lease.Event) {
+
+	// LeaseWatcher is initiated with the initialLease
 	lw := &lease.LeaseWatcher{
-		OwnLease: ownLease,
+		Leases: []lease.Lease{*initialLease},
 	}
 	var cursor interface{}
 

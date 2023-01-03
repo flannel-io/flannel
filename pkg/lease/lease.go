@@ -67,48 +67,18 @@ type LeaseWatchResult struct {
 }
 
 type LeaseWatcher struct {
-	OwnLease *Lease
-	Leases   []Lease
+	Leases []Lease
 }
 
+// Reset is only called by etcd when using a snapshot. It replaces the current leases by the new ones
 func (lw *LeaseWatcher) Reset(leases []Lease) []Event {
 	batch := []Event{}
 
 	for _, nl := range leases {
-		if lw.OwnLease != nil && nl.EnableIPv4 && !nl.EnableIPv6 &&
-			nl.Subnet.Equal(lw.OwnLease.Subnet) {
-			continue
-		} else if lw.OwnLease != nil && !nl.EnableIPv4 && nl.EnableIPv6 &&
-			nl.IPv6Subnet.Equal(lw.OwnLease.IPv6Subnet) {
-			continue
-		} else if lw.OwnLease != nil && nl.EnableIPv4 && nl.EnableIPv6 &&
-			nl.Subnet.Equal(lw.OwnLease.Subnet) &&
-			nl.IPv6Subnet.Equal(lw.OwnLease.IPv6Subnet) {
-			continue
-		} else if lw.OwnLease != nil && !nl.EnableIPv4 && !nl.EnableIPv6 &&
-			nl.Subnet.Equal(lw.OwnLease.Subnet) {
-			//TODO - dual-stack temporarily only compatible with kube subnet manager
-			continue
-		}
-
 		found := false
 		for i, ol := range lw.Leases {
-			if ol.EnableIPv4 && !ol.EnableIPv6 && ol.Subnet.Equal(nl.Subnet) {
-				lw.Leases = deleteLease(lw.Leases, i)
-				found = true
-				break
-			} else if ol.EnableIPv4 && !ol.EnableIPv6 && ol.IPv6Subnet.Equal(nl.IPv6Subnet) {
-				lw.Leases = deleteLease(lw.Leases, i)
-				found = true
-				break
-			} else if ol.EnableIPv4 && ol.EnableIPv6 && ol.Subnet.Equal(nl.Subnet) &&
-				ol.IPv6Subnet.Equal(nl.IPv6Subnet) {
-				lw.Leases = deleteLease(lw.Leases, i)
-				found = true
-				break
-			} else if !ol.EnableIPv4 && !ol.EnableIPv6 && ol.Subnet.Equal(nl.Subnet) {
-				//TODO - dual-stack temporarily only compatible with kube subnet manager
-				lw.Leases = deleteLease(lw.Leases, i)
+			if sameSubnet(ol.EnableIPv4, ol.EnableIPv6, ol, nl) {
+				lw.Leases = append(lw.Leases[:i], lw.Leases[i+1:]...)
 				found = true
 				break
 			}
@@ -121,21 +91,6 @@ func (lw *LeaseWatcher) Reset(leases []Lease) []Event {
 	}
 
 	for _, l := range lw.Leases {
-		if lw.OwnLease != nil && l.EnableIPv4 && !l.EnableIPv6 &&
-			l.Subnet.Equal(lw.OwnLease.Subnet) {
-			continue
-		} else if lw.OwnLease != nil && !l.EnableIPv4 && l.EnableIPv6 &&
-			l.IPv6Subnet.Equal(lw.OwnLease.IPv6Subnet) {
-			continue
-		} else if lw.OwnLease != nil && l.EnableIPv4 && l.EnableIPv6 &&
-			l.Subnet.Equal(lw.OwnLease.Subnet) &&
-			l.IPv6Subnet.Equal(lw.OwnLease.IPv6Subnet) {
-			continue
-		} else if lw.OwnLease != nil && !l.EnableIPv4 && !l.EnableIPv6 &&
-			l.Subnet.Equal(lw.OwnLease.Subnet) {
-			//TODO - dual-stack temporarily only compatible with kube subnet manager
-			continue
-		}
 		batch = append(batch, Event{EventRemoved, l})
 	}
 
@@ -146,26 +101,11 @@ func (lw *LeaseWatcher) Reset(leases []Lease) []Event {
 	return batch
 }
 
+// Update reads the leases in the events and depending on the Type, adds them to the leases or removes them
 func (lw *LeaseWatcher) Update(events []Event) []Event {
 	batch := []Event{}
 
 	for _, e := range events {
-		if lw.OwnLease != nil && e.Lease.EnableIPv4 && !e.Lease.EnableIPv6 &&
-			e.Lease.Subnet.Equal(lw.OwnLease.Subnet) {
-			continue
-		} else if lw.OwnLease != nil && !e.Lease.EnableIPv4 && e.Lease.EnableIPv6 &&
-			e.Lease.IPv6Subnet.Equal(lw.OwnLease.IPv6Subnet) {
-			continue
-		} else if lw.OwnLease != nil && e.Lease.EnableIPv4 && e.Lease.EnableIPv6 &&
-			e.Lease.Subnet.Equal(lw.OwnLease.Subnet) &&
-			e.Lease.IPv6Subnet.Equal(lw.OwnLease.IPv6Subnet) {
-			continue
-		} else if lw.OwnLease != nil && !e.Lease.EnableIPv4 && !e.Lease.EnableIPv6 &&
-			e.Lease.Subnet.Equal(lw.OwnLease.Subnet) {
-			//TODO - dual-stack temporarily only compatible with kube subnet manager
-			continue
-		}
-
 		switch e.Type {
 		case EventAdded:
 			batch = append(batch, lw.add(&e.Lease))
@@ -178,20 +118,10 @@ func (lw *LeaseWatcher) Update(events []Event) []Event {
 	return batch
 }
 
+// add updates lw.Leases, adding the passed lease (either overwriting one with the same subnet or appending it). Making lw.Leases a set
 func (lw *LeaseWatcher) add(lease *Lease) Event {
 	for i, l := range lw.Leases {
-		if l.EnableIPv4 && !l.EnableIPv6 && l.Subnet.Equal(lease.Subnet) {
-			lw.Leases[i] = *lease
-			return Event{EventAdded, lw.Leases[i]}
-		} else if !l.EnableIPv4 && l.EnableIPv6 && l.IPv6Subnet.Equal(lease.IPv6Subnet) {
-			lw.Leases[i] = *lease
-			return Event{EventAdded, lw.Leases[i]}
-		} else if l.EnableIPv4 && l.EnableIPv6 && l.Subnet.Equal(lease.Subnet) &&
-			l.IPv6Subnet.Equal(lease.IPv6Subnet) {
-			lw.Leases[i] = *lease
-			return Event{EventAdded, lw.Leases[i]}
-		} else if !l.EnableIPv4 && !l.EnableIPv6 && l.Subnet.Equal(lease.Subnet) {
-			//TODO - dual-stack temporarily only compatible with kube subnet manager
+		if sameSubnet(l.EnableIPv4, l.EnableIPv6, l, *lease) {
 			lw.Leases[i] = *lease
 			return Event{EventAdded, lw.Leases[i]}
 		}
@@ -201,21 +131,11 @@ func (lw *LeaseWatcher) add(lease *Lease) Event {
 	return Event{EventAdded, lw.Leases[len(lw.Leases)-1]}
 }
 
+// remove updates lw.Leases, removing the passed lease
 func (lw *LeaseWatcher) remove(lease *Lease) Event {
 	for i, l := range lw.Leases {
-		if l.EnableIPv4 && !l.EnableIPv6 && l.Subnet.Equal(lease.Subnet) {
-			lw.Leases = deleteLease(lw.Leases, i)
-			return Event{EventRemoved, l}
-		} else if !l.EnableIPv4 && l.EnableIPv6 && l.IPv6Subnet.Equal(lease.IPv6Subnet) {
-			lw.Leases = deleteLease(lw.Leases, i)
-			return Event{EventRemoved, l}
-		} else if l.EnableIPv4 && l.EnableIPv6 && l.Subnet.Equal(lease.Subnet) &&
-			l.IPv6Subnet.Equal(lease.IPv6Subnet) {
-			lw.Leases = deleteLease(lw.Leases, i)
-			return Event{EventRemoved, l}
-		} else if !l.EnableIPv4 && !l.EnableIPv6 && l.Subnet.Equal(lease.Subnet) {
-			//TODO - dual-stack temporarily only compatible with kube subnet manager
-			lw.Leases = deleteLease(lw.Leases, i)
+		if sameSubnet(l.EnableIPv4, l.EnableIPv6, l, *lease) {
+			lw.Leases = append(lw.Leases[:i], lw.Leases[i+1:]...)
 			return Event{EventRemoved, l}
 		}
 	}
@@ -224,7 +144,24 @@ func (lw *LeaseWatcher) remove(lease *Lease) Event {
 	return Event{EventRemoved, *lease}
 }
 
-func deleteLease(l []Lease, i int) []Lease {
-	l = append(l[:i], l[i+1:]...)
-	return l
+// sameSubnet checks if the subnets are the same in ipv4-only, ipv6-only and dualStack cases
+func sameSubnet(ipv4Enabled, ipv6Enabled bool, firstLease, secondLease Lease) bool {
+	// ipv4 only case
+	if ipv4Enabled && !ipv6Enabled && firstLease.Subnet.Equal(secondLease.Subnet) {
+		return true
+	}
+	// ipv6 only case
+	if !ipv4Enabled && ipv6Enabled && firstLease.IPv6Subnet.Equal(secondLease.IPv6Subnet) {
+		return true
+	}
+	// dualStack case
+	if ipv4Enabled && ipv6Enabled && firstLease.Subnet.Equal(secondLease.Subnet) && firstLease.IPv6Subnet.Equal(secondLease.IPv6Subnet) {
+		return true
+	}
+	// etcd case
+	if !ipv4Enabled && !ipv6Enabled && firstLease.Subnet.Equal(secondLease.Subnet) {
+		return true
+	}
+
+	return false
 }
