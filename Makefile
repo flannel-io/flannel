@@ -90,6 +90,9 @@ e2e-test: bash_unit dist/flanneld-e2e-$(TAG)-$(ARCH).docker
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test.sh
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test-k8s.sh
 
+k3s-e2e-test: bash_unit
+	./bash_unit ./e2e/run-e2e-tests.sh
+
 cover:
 	# A single package must be given - e.g. 'PACKAGES=pkg/ip make cover'
 	go test -coverprofile cover.out $(PACKAGES_EXPANDED)
@@ -132,7 +135,7 @@ gofmt-fix:
 		gofmt -w $(PACKAGES)'
 
 bash_unit:
-	wget https://raw.githubusercontent.com/pgrange/bash_unit/v1.6.0/bash_unit
+	wget https://raw.githubusercontent.com/pgrange/bash_unit/v2.0.1/bash_unit
 	chmod +x bash_unit
 
 # This will build flannel natively using golang image
