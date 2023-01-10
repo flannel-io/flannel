@@ -40,6 +40,8 @@ If you use custom `podCIDR` (not `10.244.0.0/16`) you first need to download the
 
 See [Kubernetes](Documentation/kubernetes.md) for more details.
 
+In case a firewall is configured ensure to enable the right port used by the configured [backend][backends].
+
 ## Getting started on Docker
 
 flannel is also widely used outside of kubernetes. When deployed outside of kubernetes, etcd is always used as the datastore. For more details integrating flannel with Docker see [Running](Documentation/running.md)

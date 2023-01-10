@@ -4,6 +4,11 @@ Flannel may be paired with several different backends. Once set, the backend sho
 
 VXLAN is the recommended choice. host-gw is recommended for more experienced users who want the performance improvement and whose infrastructure support it (typically it can't be used in cloud environments). UDP is suggested for debugging only or for very old kernels that don't support VXLAN.
 
+In case `firewalld` is enabled on the node the port used by the backend needs to be enabled with `firewall-cmd`:
+```
+firewall-cmd --permanent --zone=public --add-port=[port]/udp
+```
+
 For more information on configuration options for Tencent see [TencentCloud VPC Backend for Flannel][tencentcloud-vpc]
 
 ## Recommended backends
