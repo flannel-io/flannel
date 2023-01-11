@@ -1,4 +1,4 @@
-FROM mips64le/debian:stable-20211220-slim
+FROM mips64le/debian:stable-20221219
 
 ENV FLANNEL_ARCH=mips64le
 
