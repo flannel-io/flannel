@@ -156,7 +156,7 @@ endif
 
 # Make a release after creating a tag
 # To build cross platform Docker images, the qemu-static binaries are needed. On ubuntu "apt-get install  qemu-user-static"
-release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-arm64-static dist/qemu-arm-static dist/qemu-mips64le-static #release-tests
+release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-arm64-static dist/qemu-arm-static dist/qemu-mips64le-static release-chart #release-tests
 	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.docker
 	ARCH=arm make dist/flanneld-$(TAG)-arm.docker
 	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.docker
@@ -166,6 +166,16 @@ release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-arm64-
 	@echo "Everything should be built for $(TAG)"
 	@echo "Add all flanneld-* and *.tar.gz files from dist/ to the Github release"
 	@echo "Use make docker-push-all to push the images to a registry"
+
+release-chart:
+	mkdir -p component
+	@echo "apiVersion: kustomize.config.k8s.io/v1alpha1" > component/kustomization.yaml
+	@echo "kind: Component" >> component/kustomization.yaml
+	@echo "images:" >> component/kustomization.yaml
+	@echo "- name: docker.io/flannel/flannel" >> component/kustomization.yaml
+	@echo "  newTag: $(TAG)" >> component/kustomization.yaml
+	kubectl kustomize ./Documentation/kustomization/kube-flannel/ > dist/kube-flannel.yml
+	kubectl kustomize ./Documentation/kustomization/kube-flannel-psp/ > dist/kube-flannel-psp.yml
 
 dist/qemu-%-static:
 	if [ "$(@F)" = "qemu-amd64-static" ]; then \

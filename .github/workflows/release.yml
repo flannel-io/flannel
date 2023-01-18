@@ -5,7 +5,7 @@ on:
 env:
   GO_VERSION: "1.19"
   LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le mips64le"
-  REPOSITORY: flannelcni/flannel
+  REPOSITORY: flannel/flannel
 
 jobs:
   build-and-push-images:
@@ -207,4 +207,6 @@ jobs:
         with:
           files: |
             dist/flannel*
-                    
+            dist/kube-flannel.yml
+            dist/kube-flannel-psp.yml
+

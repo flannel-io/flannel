@@ -16,7 +16,7 @@ on:
 
 env:
   GO_VERSION: "1.19"
-  REPOSITORY: flannelcni/flannel
+  REPOSITORY: flannel/flannel
 
 permissions:
   contents: read
