@@ -9,11 +9,15 @@ Use the `etcdctl` utility to set values in etcd.
 
 The value of the config is a JSON dictionary with the following keys:
 
-* `Network` (string): IPv4 network in CIDR format to use for the entire flannel network. (This is the only mandatory key.)
+* `Network` (string): IPv4 network in CIDR format to use for the entire flannel network. (Mandatory if EnableIPv4 is true)
 
 * `IPv6Network` (string): IPv6 network in CIDR format to use for the entire flannel network. (Mandatory if EnableIPv6 is true)
 
+* `EnableIPv4` (bool): Enables ipv4 support
+  Defaults to `true`
+
 * `EnableIPv6` (bool): Enables ipv6 support
+  Defaults to `false`
 
 * `SubnetLen` (integer): The size of the subnet allocated to each host.
    Defaults to 24 (i.e. /24) unless `Network` was configured to be smaller than a /22 in which case it is two less than the network.
