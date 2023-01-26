@@ -5,7 +5,7 @@ on:
 env:
   GO_VERSION: "1.19"
   LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le mips64le"
-  REPOSITORY: flannel/flannel
+  REPOSITORY: flannelcni/flannel
 
 jobs:
   build-and-push-images:
