@@ -58,57 +58,39 @@ jobs:
 
       - name: Build and push Docker image for amd64
         if: github.repository_owner == 'flannel-io'
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: images/Dockerfile.amd64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}-amd64
+        run: |
+          docker build -f images/Dockerfile.amd64 -t ${{ steps.meta.outputs.tags }}-amd64 .
+          docker push ${{ steps.meta.outputs.tags }}-amd64
 
       - name: Build and push Docker image for arm
         if: github.repository_owner == 'flannel-io'
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: images/Dockerfile.arm
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}-arm
+        run: |
+          docker build -f images/Dockerfile.arm -t ${{ steps.meta.outputs.tags }}-arm .
+          docker push ${{ steps.meta.outputs.tags }}-arm
 
       - name: Build and push Docker image for arm64
         if: github.repository_owner == 'flannel-io'
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: images/Dockerfile.arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}-arm64
+        run: |
+          docker build -f images/Dockerfile.arm64 -t ${{ steps.meta.outputs.tags }}-arm64 .
+          docker push ${{ steps.meta.outputs.tags }}-arm64
 
       - name: Build and push Docker image for s390x
         if: github.repository_owner == 'flannel-io'
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: images/Dockerfile.s390x
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}-s390x
+        run: |
+          docker build -f images/Dockerfile.s390x -t ${{ steps.meta.outputs.tags }}-s390x .
+          docker push ${{ steps.meta.outputs.tags }}-s390x
 
       - name: Build and push Docker image for ppc64le
         if: github.repository_owner == 'flannel-io'
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: images/Dockerfile.ppc64le
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}-ppc64le
+        run: |
+          docker build -f images/Dockerfile.ppc64le -t ${{ steps.meta.outputs.tags }}-ppc64le .
+          docker push ${{ steps.meta.outputs.tags }}-ppc64le
         
       - name: Build and push Docker image for mips64le
         if: github.repository_owner == 'flannel-io'
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: images/Dockerfile.mips64le
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}-mips64le
+        run: |
+          docker build -f images/Dockerfile.mips64le -t ${{ steps.meta.outputs.tags }}-mips64le .
+          docker push ${{ steps.meta.outputs.tags }}-mips64le
 
   build-and-push-multi-arch-image:
     needs: [build-and-push-images]
