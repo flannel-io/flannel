@@ -41,40 +41,40 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.amd64
+          file: images/Dockerfile.amd64
           push: false
 
       - name: Build Docker image for arm
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.arm
+          file: images/Dockerfile.arm
           push: false
 
       - name: Build Docker image for arm64
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.arm64
+          file: images/Dockerfile.arm64
           push: false
 
       - name: Build Docker image for s390x
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.s390x
+          file: images/Dockerfile.s390x
           push: false
 
       - name: Build Docker image for ppc64le
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.ppc64le
+          file: images/Dockerfile.ppc64le
           push: false
 
       - name: Build Docker image for mips64le
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.mips64le
+          file: images/Dockerfile.mips64le
           push: false

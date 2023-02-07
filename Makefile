@@ -1,4 +1,4 @@
-.PHONY: test e2e-test cover gofmt gofmt-fix header-check clean tar.gz docker-push release docker-push-all flannel-git docker-manifest-amend docker-manifest-push
+.PHONY: test e2e-test deps cover gofmt gofmt-fix license-check clean tar.gz docker-push release docker-push-all flannel-git docker-manifest-amend docker-manifest-push
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
@@ -23,9 +23,9 @@ K8S_VERSION=1.24.6
 GOARM=7
 
 # These variables can be overridden by setting an environment variable.
-TEST_PACKAGES?=pkg/ip subnet subnet/etcd subnet/kube network backend
+TEST_PACKAGES?=pkg/ip pkg/subnet pkg/subnet/etcd pkg/subnet/kube pkg/iptables pkg/backend
 TEST_PACKAGES_EXPANDED=$(TEST_PACKAGES:%=github.com/flannel-io/flannel/%)
-PACKAGES?=$(TEST_PACKAGES) network
+PACKAGES?=$(TEST_PACKAGES)
 PACKAGES_EXPANDED=$(PACKAGES:%=github.com/flannel-io/flannel/%)
 
 ### BUILDING
@@ -45,7 +45,7 @@ dist/flanneld.exe: $(shell find . -type f  -name '*.go')
 	  -ldflags '-s -w -X github.com/flannel-io/flannel/version.Version=$(TAG) -extldflags "-static"'
 
 # This will build flannel natively using golang image
-dist/flanneld-$(ARCH): dist/qemu-$(ARCH)-static
+dist/flanneld-$(ARCH): deps dist/qemu-$(ARCH)-static
 	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x mips64le]
 	docker run --rm -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) -e GOCACHE=/go \
 		-u $(shell id -u):$(shell id -g) \
@@ -60,16 +60,16 @@ dist/flanneld-$(ARCH): dist/qemu-$(ARCH)-static
 ## Create a docker image on disk for a specific arch and tag
 image:	dist/flanneld-$(TAG)-$(ARCH).docker
 dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH)
-	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
+	docker build -f images/Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
 	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY):$(TAG)-$(ARCH)
 
 # amd64 gets an image with the suffix too (i.e. it's the default)
 ifeq ($(ARCH),amd64)
-	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG) .
+	docker build -f images/Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG) .
 endif
 
 ### TESTING
-test: header-check gofmt verify-modules
+test: license-check gofmt deps verify-modules
 	# Run the unit tests
 	# NET_ADMIN capacity is required to do some network operation
 	# SYS_ADMIN capacity is required to create network namespace
@@ -95,9 +95,9 @@ cover:
 	go test -coverprofile cover.out $(PACKAGES_EXPANDED)
 	go tool cover -html=cover.out
 
-header-check:
-	# run header-check script
-	./header-check.sh
+license-check:
+	# run license-check script
+	dist/license-check.sh
 
 # Throw an error if gofmt finds problems.
 # "read" will return a failure return code if there is no output. This is inverted wth the "!"
@@ -149,7 +149,7 @@ endif
 		cd /go/src/github.com/flannel-io/flannel && \
 		make -e dist/flanneld && \
 		mv dist/flanneld dist/flanneld-$(ARCH)'
-	docker build -f Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
+	docker build -f images/Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
 
 # Make a release after creating a tag
 # To build cross platform Docker images, the qemu-static binaries are needed. On ubuntu "apt-get install  qemu-user-static"
@@ -255,7 +255,7 @@ minikube-start:
 minikube-build-image:
 	CGO_ENABLED=1 go build -v -o dist/flanneld-amd64
 	# Make sure the minikube docker is being used "eval $(minikube docker-env)"
-	sh -c 'eval $$(minikube docker-env) && docker build -f Dockerfile.amd64 -t flannel/minikube .'
+	sh -c 'eval $$(minikube docker-env) && docker build -f images/Dockerfile.amd64 -t flannel/minikube .'
 
 minikube-deploy-flannel:
 	kubectl apply -f Documentation/minikube.yml
@@ -300,3 +300,7 @@ run-local-kube-flannel-with-prereqs: run-etcd run-k8s-apiserver dist/flanneld
 run-local-kube-flannel:
 	# Currently this requires the netconf to be in /etc/kube-flannel/net-conf.json
 	sudo NODE_NAME=test dist/flanneld --kube-subnet-mgr --kube-api-url http://127.0.0.1:8080
+
+deps:
+	go mod vendor
+	go mod tidy
