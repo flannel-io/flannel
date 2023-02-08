@@ -28,6 +28,7 @@ require (
 )
 
 require (
+	github.com/avast/retry-go/v4 v4.3.2
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.464
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.464
 	go.etcd.io/etcd/client/v3 v3.5.4
