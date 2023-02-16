@@ -60,7 +60,7 @@ func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 	if supports_random_fully {
 		return []IPTablesRule{
 			// This rule ensure that the flannel iptables rules are executed before other rules on the node
-			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
+			{"nat", "-A", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
 			// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
 			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
@@ -75,7 +75,7 @@ func MasqRules(ipn ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 	} else {
 		return []IPTablesRule{
 			// This rule ensure that the flannel iptables rules are executed before other rules on the node
-			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
+			{"nat", "-A", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
 			// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
 			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
@@ -102,7 +102,7 @@ func MasqIP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
 	if supports_random_fully {
 		return []IPTablesRule{
 			// This rule ensure that the flannel iptables rules are executed before other rules on the node
-			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
+			{"nat", "-A", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
 			// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
 			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
@@ -117,7 +117,7 @@ func MasqIP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
 	} else {
 		return []IPTablesRule{
 			// This rule ensure that the flannel iptables rules are executed before other rules on the node
-			{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
+			{"nat", "-A", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}},
 			// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
 			{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
 			// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0)
@@ -135,7 +135,7 @@ func MasqIP6Rules(ipn ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
 func ForwardRules(flannelNetwork string) []IPTablesRule {
 	return []IPTablesRule{
 		// This rule ensure that the flannel iptables rules are executed before other rules on the node
-		{"filter", "-I", "FORWARD", []string{"-m", "comment", "--comment", "flanneld forward", "-j", "FLANNEL-FWD"}},
+		{"filter", "-A", "FORWARD", []string{"-m", "comment", "--comment", "flanneld forward", "-j", "FLANNEL-FWD"}},
 		// These rules allow traffic to be forwarded if it is to or from the flannel network range.
 		{"filter", "-A", "FLANNEL-FWD", []string{"-s", flannelNetwork, "-m", "comment", "--comment", "flanneld forward", "-j", "ACCEPT"}},
 		{"filter", "-A", "FLANNEL-FWD", []string{"-d", flannelNetwork, "-m", "comment", "--comment", "flanneld forward", "-j", "ACCEPT"}},
