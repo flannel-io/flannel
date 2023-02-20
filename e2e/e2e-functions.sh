@@ -30,11 +30,13 @@ e2e-wait-for-nodes() {
         # kubectl --kubeconfig="${HOME}/.kube/config" get events --sort-by='.lastTimestamp' -A
         sleep 5
     done
+    echo "*** nodes are ready:"
+    kubectl --kubeconfig="${HOME}/.kube/config" get nodes
 }
 export -f e2e-wait-for-nodes
 
 e2e-pod-ready() {
-    kubectl --kubeconfig="${HOME}/.kube/config" get pods -n kube-system -o json \
+    kubectl --kubeconfig="${HOME}/.kube/config" get pods -A -o json \
         | jq ".items[].status.containerStatuses[] | select(.name == \"$1\") | .ready" 2>/dev/null
 }
 export -f e2e-pod-ready
