@@ -77,7 +77,7 @@ test: license-check gofmt deps verify-modules
 		--cap-add=SYS_ADMIN --rm \
 		-v $(shell pwd):/go/src/github.com/flannel-io/flannel \
 		golang:$(GO_VERSION) \
-		/bin/bash -c 'cd /go/src/github.com/flannel-io/flannel && go test -v -cover $(TEST_PACKAGES_EXPANDED)'
+		/bin/bash -c 'cd /go/src/github.com/flannel-io/flannel && go test -v -cover -timeout 1m $(TEST_PACKAGES_EXPANDED)'
 
 	# Test the docker-opts script
 	cd dist; ./mk-docker-opts_tests.sh
@@ -91,6 +91,7 @@ e2e-test: bash_unit dist/flanneld-e2e-$(TAG)-$(ARCH).docker
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test-k8s.sh
 
 k3s-e2e-test: bash_unit
+	$(MAKE) -C images/iperf3 ARCH=$(ARCH)
 	./bash_unit ./e2e/run-e2e-tests.sh
 
 cover:
