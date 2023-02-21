@@ -85,7 +85,13 @@ pings() {
     # wait for test-pods to be ready
     echo "wait for test-pods to be ready..."
     timeout --foreground 1m bash -c "e2e-wait-for-test-pods"
-
+    retVal=$?
+    if [ $retVal -ne 0 ]; then
+        echo "test pods not ready in time. Checking their status..."
+        kubectl --kubeconfig="${HOME}/.kube/config" get events --sort-by='.lastTimestamp' -A
+        exit $retVal
+    fi
+    
     ip_1=$(get_pod_ip multitool1)
     ip_2=$(get_pod_ip multitool2)
 
