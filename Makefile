@@ -168,13 +168,9 @@ release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-arm64-
 	@echo "Use make docker-push-all to push the images to a registry"
 
 release-chart:
-	mkdir -p component
-	@echo "apiVersion: kustomize.config.k8s.io/v1alpha1" > component/kustomization.yaml
-	@echo "kind: Component" >> component/kustomization.yaml
-	@echo "images:" >> component/kustomization.yaml
-	@echo "- name: docker.io/flannel/flannel" >> component/kustomization.yaml
-	@echo "  newTag: $(TAG)" >> component/kustomization.yaml
+	sed -i 's/^  newTag: .*/  newTag: $(TAG)/' Documentation/kustomization/kube-flannel/kustomization.yaml
 	kubectl kustomize ./Documentation/kustomization/kube-flannel/ > dist/kube-flannel.yml
+	sed -i 's/^  newTag: .*/  newTag: $(TAG)/' Documentation/kustomization/kube-flannel-psp/kustomization.yaml
 	kubectl kustomize ./Documentation/kustomization/kube-flannel-psp/ > dist/kube-flannel-psp.yml
 
 dist/qemu-%-static:
