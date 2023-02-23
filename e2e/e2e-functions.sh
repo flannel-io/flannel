@@ -63,5 +63,22 @@ e2e-wait-for-test-pods() {
 }
 export -f e2e-wait-for-test-pods
 
+e2e-wait-for-ping() {
+    pod=$1
+    ip=$2
+
+    kubectl --kubeconfig="${HOME}/.kube/config" exec ${pod} -- ping -c 1 ${ip}
+    result=$?
+    while [ $result -ne 0 ]; do
+        echo "Waiting for ${ip} to reply to ping from ${pod}..." >&2
+        sleep 2
+        kubectl --kubeconfig="${HOME}/.kube/config" exec ${pod} -- ping -c 1 ${ip}
+        result=$?
+    done
+    echo "IP ${ip} is ready"
+    return 0
+}
+export -f e2e-wait-for-ping
+
 # ---
 

@@ -95,6 +95,11 @@ pings() {
     ip_1=$(get_pod_ip multitool1)
     ip_2=$(get_pod_ip multitool2)
 
+    echo "multitool1 IP is: ${ip_1}"
+    echo "multitool2 IP is: ${ip_2}"
+
+    timeout --foreground 1m bash -c "e2e-wait-for-ping multitool1 ${ip_2}"
+
     assert "kubectl --kubeconfig="${HOME}/.kube/config" exec multitool1 -- ping -c 5 ${ip_2}"
     assert "kubectl --kubeconfig="${HOME}/.kube/config" exec multitool2 -- ping -c 5 ${ip_1}"
 }

@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/subnet"
 	. "github.com/flannel-io/flannel/pkg/subnet"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
@@ -48,8 +49,9 @@ type Registry interface {
 	createSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *LeaseAttrs, ttl time.Duration) (time.Time, error)
 	updateSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *LeaseAttrs, ttl time.Duration, asof int64) (time.Time, error)
 	deleteSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) error
-	watchSubnets(ctx context.Context, since int64) (Event, int64, error)
-	watchSubnet(ctx context.Context, since int64, sn ip.IP4Net, sn6 ip.IP6Net) (Event, int64, error)
+	watchSubnets(ctx context.Context, leaseWatchChan chan []LeaseWatchResult, since int64) error
+	watchSubnet(ctx context.Context, since int64, sn ip.IP4Net, sn6 ip.IP6Net, leaseWatchChan chan []LeaseWatchResult) error
+	leasesWatchReset(ctx context.Context) (LeaseWatchResult, error)
 }
 
 type EtcdConfig struct {
@@ -279,30 +281,68 @@ func (esr *etcdSubnetRegistry) deleteSubnet(ctx context.Context, sn ip.IP4Net, s
 	return err
 }
 
-func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, since int64) (Event, int64, error) {
+func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan chan []LeaseWatchResult, since int64) error {
 	key := path.Join(esr.etcdCfg.Prefix, "subnets")
 
 	wctx, cancel := context.WithCancel(ctx)
 	//release context ASAP to free resources
 	defer cancel()
 
+	log.Infof("registry: watching subnets starting from rev %d", since)
 	rch := esr.cli.Watch(etcd.WithRequireLeader(wctx), key, etcd.WithPrefix(), etcd.WithRev(since))
 	if rch == nil {
-		return Event{}, 0, errNoWatchChannel
+		return errNoWatchChannel
 	}
-	// read 1 watch response
-	wresp := <-rch
-	ev := wresp.Events[0] //TODO:handle more than 1 event?
-	evt, err := parseSubnetWatchResponse(ctx, esr.cli, ev)
+	for {
+		select {
+		case <-ctx.Done():
+			esr.cli.Close()
+			close(leaseWatchChan)
+			return ctx.Err()
+		case wresp := <-rch:
+			results := make([]LeaseWatchResult, 0)
+			for _, etcdEvent := range wresp.Events {
+				subnetEvent, err := parseSubnetWatchResponse(ctx, esr.cli, etcdEvent)
+				switch {
 
-	if err != nil {
-		return Event{}, 0, err
+				case err == nil:
+					log.Infof("watchSubnets: got valid subnet event with revision %d", wresp.Header.Revision)
+					// TODO only vxlan backend and kube subnet manager support dual stack now.
+					subnetEvent.Lease.EnableIPv4 = true
+					wr := subnet.LeaseWatchResult{
+						Events: []subnet.Event{subnetEvent},
+						Cursor: watchCursor{wresp.Header.Revision},
+					}
+					results = append(results, wr)
+
+				case isIndexTooSmall(err):
+					log.Warning("Watch of subnet leases failed because etcd index outside history window")
+					wr, err := esr.leasesWatchReset(ctx)
+					if err != nil {
+						log.Errorf("error resetting etcd watch: %s", err)
+					}
+					results = append(results, wr)
+				case wresp.Header.Revision != 0:
+					log.Warning("Watch of subnet leases failed because header revision != 0")
+					results = append(results, LeaseWatchResult{Cursor: watchCursor{wresp.Header.Revision}})
+
+				default:
+					log.Warningf("Watch of subnet failed with error %s", err)
+					results = append(results, LeaseWatchResult{})
+				}
+				if err != nil {
+					log.Errorf("error parsing etcd event: %s", err)
+				}
+			}
+			if len(results) > 0 {
+				leaseWatchChan <- results
+			}
+		}
+
 	}
-
-	return evt, wresp.CompactRevision, err
 }
 
-func (esr *etcdSubnetRegistry) watchSubnet(ctx context.Context, since int64, sn ip.IP4Net, sn6 ip.IP6Net) (Event, int64, error) {
+func (esr *etcdSubnetRegistry) watchSubnet(ctx context.Context, since int64, sn ip.IP4Net, sn6 ip.IP6Net, leaseWatchChan chan []LeaseWatchResult) error {
 	key := path.Join(esr.etcdCfg.Prefix, "subnets", MakeSubnetKey(sn, sn6))
 
 	wctx, cancel := context.WithCancel(ctx)
@@ -311,18 +351,43 @@ func (esr *etcdSubnetRegistry) watchSubnet(ctx context.Context, since int64, sn 
 
 	rch := esr.cli.Watch(etcd.WithRequireLeader(wctx), key, etcd.WithPrefix(), etcd.WithRev(since))
 	if rch == nil {
-		return Event{}, 0, errNoWatchChannel
+		return errNoWatchChannel
 	}
-	//read 1 watch response
-	wresp := <-rch
-	ev := wresp.Events[0] //TODO:handle more than 1 event?
 
-	evt, err := parseSubnetWatchResponse(ctx, esr.cli, ev)
+	for {
+		select {
+		case <-ctx.Done():
+			esr.cli.Close()
+			close(leaseWatchChan)
+			return ctx.Err()
+		case wresp := <-rch:
+			batch := make([]LeaseWatchResult, 0)
+			for _, etcdEvent := range wresp.Events {
+				subnetEvent, err := parseSubnetWatchResponse(ctx, esr.cli, etcdEvent)
+				switch {
+				case err == nil:
+					wr := subnet.LeaseWatchResult{
+						Events: []subnet.Event{subnetEvent},
+						Cursor: watchCursor{wresp.Header.Revision},
+					}
+					batch = append(batch, wr)
+				case isIndexTooSmall(err):
+					log.Warning("Watch of subnet leases failed because etcd index outside history window")
+					wr, err := esr.leasesWatchReset(ctx)
+					if err != nil {
+						log.Errorf("error resetting etcd watch: %s", err)
+					}
+					batch = append(batch, wr)
+				default:
+					log.Errorf("couldn't read etcd event: %s", err)
+				}
+			}
+			if len(batch) > 0 {
+				leaseWatchChan <- batch
+			}
+		}
 
-	if err != nil {
-		return Event{}, 0, err
 	}
-	return evt, wresp.CompactRevision, err
 }
 
 func (esr *etcdSubnetRegistry) kv() etcd.KV {
@@ -410,4 +475,18 @@ func kvToIPLease(kv *mvccpb.KeyValue, ttl int64) (*Lease, error) {
 	}
 
 	return &lease, nil
+}
+
+// leasesWatchReset is called when incremental lease watch failed and we need to grab a snapshot
+func (esr *etcdSubnetRegistry) leasesWatchReset(ctx context.Context) (subnet.LeaseWatchResult, error) {
+	wr := subnet.LeaseWatchResult{}
+
+	leases, index, err := esr.getSubnets(ctx)
+	if err != nil {
+		return wr, fmt.Errorf("failed to retrieve subnet leases: %v", err)
+	}
+
+	wr.Cursor = watchCursor{index}
+	wr.Snapshot = leases
+	return wr, nil
 }

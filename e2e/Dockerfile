@@ -11,6 +11,8 @@ RUN set -x \
     curl \
     tar gzip\
     iptables \
+    iproute2 \
+    iputils \
  && if [ "${ARCH?required}" != "amd64" ]; then \
         K3S_SUFFIX="-${ARCH}"; \
     fi \

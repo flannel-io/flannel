@@ -196,8 +196,8 @@ type Manager interface {
 	HandleSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv6sn ip.IP6Net, mtu int) error
 	AcquireLease(ctx context.Context, attrs *LeaseAttrs) (*Lease, error)
 	RenewLease(ctx context.Context, lease *Lease) error
-	WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (LeaseWatchResult, error)
-	WatchLeases(ctx context.Context, cursor interface{}) (LeaseWatchResult, error)
+	WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, receiver chan []LeaseWatchResult) error
+	WatchLeases(ctx context.Context, receiver chan []LeaseWatchResult) error
 	CompleteLease(ctx context.Context, lease *Lease, wg *sync.WaitGroup) error
 
 	Name() string

@@ -467,14 +467,17 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *subnet.Le
 }
 
 // WatchLeases waits for the kubeSubnetManager to provide an event in case something relevant changed in the node data
-func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, cursor interface{}) (subnet.LeaseWatchResult, error) {
-	select {
-	case event := <-ksm.events:
-		return subnet.LeaseWatchResult{
-			Events: []subnet.Event{event},
-		}, nil
-	case <-ctx.Done():
-		return subnet.LeaseWatchResult{}, context.Canceled
+func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, receiver chan []subnet.LeaseWatchResult) error {
+	for {
+		select {
+		case event := <-ksm.events:
+			receiver <- []subnet.LeaseWatchResult{
+				{
+					Events: []subnet.Event{event},
+				}}
+		case <-ctx.Done():
+			return context.Canceled
+		}
 	}
 }
 
@@ -559,8 +562,8 @@ func (ksm *kubeSubnetManager) RenewLease(ctx context.Context, lease *subnet.Leas
 	return ErrUnimplemented
 }
 
-func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
-	return subnet.LeaseWatchResult{}, ErrUnimplemented
+func (ksm *kubeSubnetManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, receiver chan []subnet.LeaseWatchResult) error {
+	return ErrUnimplemented
 }
 
 func (ksm *kubeSubnetManager) Name() string {
