@@ -4,5 +4,6 @@ commonLabels:
   k8s-app: flannel
 resources:
 - kube-flannel.yml
-components:
-- ../../../component
+images:
+- name: docker.io/flannel/flannel
+  newTag: v0.21.2
