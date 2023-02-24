@@ -157,7 +157,7 @@ endif
 
 # Make a release after creating a tag
 # To build cross platform Docker images, the qemu-static binaries are needed. On ubuntu "apt-get install  qemu-user-static"
-release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-arm64-static dist/qemu-arm-static dist/qemu-mips64le-static release-chart #release-tests
+release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-arm64-static dist/qemu-arm-static dist/qemu-mips64le-static release-chart release-helm #release-tests
 	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.docker
 	ARCH=arm make dist/flanneld-$(TAG)-arm.docker
 	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.docker
@@ -173,6 +173,11 @@ release-chart:
 	kubectl kustomize ./Documentation/kustomization/kube-flannel/ > dist/kube-flannel.yml
 	sed -i 's/^  newTag: .*/  newTag: $(TAG)/' Documentation/kustomization/kube-flannel-psp/kustomization.yaml
 	kubectl kustomize ./Documentation/kustomization/kube-flannel-psp/ > dist/kube-flannel-psp.yml
+
+release-helm:
+	sed -i '0,/^    tag: .*/s//    tag: $(TAG)/' ./chart/kube-flannel/values.yaml
+	helm package ./chart/kube-flannel/ --destination dist/ --version $(TAG) --app-version $(TAG)
+	mv dist/flannel-$(TAG).tgz dist/flannel.tgz
 
 dist/qemu-%-static:
 	if [ "$(@F)" = "qemu-amd64-static" ]; then \

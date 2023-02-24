@@ -1,0 +1,49 @@
+---
+
+# The IPv4 cidr pool to create on startup if none exists. Pod IPs will be
+# chosen from this range.
+podCidr: "10.244.0.0/16"
+podCidrv6: ""
+
+flannel:
+  # kube-flannel image
+  image:
+    repository: docker.io/flannel/flannel
+    tag: v0.21.2
+  image_cni:
+    repository: docker.io/flannel/flannel-cni-plugin
+    tag: v1.1.2
+  # flannel command arguments
+  args:
+  - "--ip-masq"
+  - "--kube-subnet-mgr"
+  # Backend for kube-flannel. Backend should not be changed
+  # at runtime. (vxlan, host-gw, wireguard, udp)
+  # Documentation at https://github.com/flannel-io/flannel/blob/master/Documentation/backends.md
+  backend: "vxlan"
+  # Port used by the backend 0 means default value (VXLAN: 8472, Wireguard: 51821, UDP: 8285)
+  #backendPort: 0
+  # MTU to use for outgoing packets (VXLAN and Wiregurad) if not defined the MTU of the external interface is used.
+  #mtu: 1500 
+  #
+  # VXLAN Configs:
+  #
+  # VXLAN Identifier to be used. On Linux default is 1.
+  #vni: 1
+  # Enable VXLAN Group Based Policy (Default false)
+  #GBP: false
+  # Enable direct routes (default is false)
+  #directRouting: false
+  # MAC prefix to be used on Windows. (Defaults is 0E-2A)
+  #macPrefix: "0E-2A"
+  #
+  # Wireguard Configs:
+  #
+  # UDP listen port used with IPv6
+  #backendPortv6: 51821
+  # Pre shared key to use
+  #psk: 0
+  # IP version to use on Wireguard
+  #tunnelMode: "separate"
+  # Persistent keep interval to use
+  #keepaliveInterval: 0
