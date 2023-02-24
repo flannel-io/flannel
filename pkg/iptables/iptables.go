@@ -57,7 +57,7 @@ func MasqRules(cluster_cidrs []ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 	}
 	rules := make([]IPTablesRule, 2)
 	// This rule ensure that the flannel iptables rules are executed before other rules on the node
-	rules[0] = IPTablesRule{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}}
+	rules[0] = IPTablesRule{"nat", "-A", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}}
 	// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
 	rules[1] = IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}}
 	for _, ccidr := range cluster_cidrs {
@@ -96,7 +96,7 @@ func MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *subnet.Lease) []IPTablesRule
 	rules := make([]IPTablesRule, 2)
 
 	// This rule ensure that the flannel iptables rules are executed before other rules on the node
-	rules[0] = IPTablesRule{"nat", "-I", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}}
+	rules[0] = IPTablesRule{"nat", "-A", "POSTROUTING", []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}}
 	// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
 	rules[1] = IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}}
 
@@ -132,7 +132,7 @@ func MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *subnet.Lease) []IPTablesRule
 func ForwardRules(flannelNetwork string) []IPTablesRule {
 	return []IPTablesRule{
 		// This rule ensure that the flannel iptables rules are executed before other rules on the node
-		{"filter", "-I", "FORWARD", []string{"-m", "comment", "--comment", "flanneld forward", "-j", "FLANNEL-FWD"}},
+		{"filter", "-A", "FORWARD", []string{"-m", "comment", "--comment", "flanneld forward", "-j", "FLANNEL-FWD"}},
 		// These rules allow traffic to be forwarded if it is to or from the flannel network range.
 		{"filter", "-A", "FLANNEL-FWD", []string{"-s", flannelNetwork, "-m", "comment", "--comment", "flanneld forward", "-j", "ACCEPT"}},
 		{"filter", "-A", "FLANNEL-FWD", []string{"-d", flannelNetwork, "-m", "comment", "--comment", "flanneld forward", "-j", "ACCEPT"}},

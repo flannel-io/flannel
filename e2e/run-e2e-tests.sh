@@ -236,26 +236,25 @@ EOM
 EOM
   read -r -d '' FORWARD_RULES << EOM
 -P FORWARD ACCEPT
--A FORWARD -m comment --comment "kube-router netpol - TEMCG2JMHZYE7H7T" -j KUBE-ROUTER-FORWARD
--A FORWARD -m comment --comment "flanneld forward" -j FLANNEL-FWD
 -A FORWARD -m comment --comment "kubernetes forwarding rules" -j KUBE-FORWARD
 -A FORWARD -m conntrack --ctstate NEW -m comment --comment "kubernetes service portals" -j KUBE-SERVICES
 -A FORWARD -m conntrack --ctstate NEW -m comment --comment "kubernetes externally-visible service portals" -j KUBE-EXTERNAL-SERVICES
+-A FORWARD -m comment --comment "flanneld forward" -j FLANNEL-FWD
 -N FLANNEL-FWD
 -A FLANNEL-FWD -s 10.42.0.0/16 -m comment --comment "flanneld forward" -j ACCEPT
 -A FLANNEL-FWD -d 10.42.0.0/16 -m comment --comment "flanneld forward" -j ACCEPT
 EOM
   # check masquerade & forward rules
   assert_equals "$POSTROUTING_RULES_WORKER" \
-                "$(docker exec --privileged local-worker /usr/sbin/iptables -t nat -S POSTROUTING -w 5|grep FLANNEL)
-$(docker exec --privileged local-worker /usr/sbin/iptables -t nat -S FLANNEL-POSTRTG -w 5)" "Host 1 has not expected postrouting rules"
+                "$(docker exec --privileged local-worker /usr/sbin/iptables -t nat -S POSTROUTING | grep FLANNEL)
+$(docker exec --privileged local-worker /usr/sbin/iptables -t nat -S FLANNEL-POSTRTG)" "Host 1 has not expected postrouting rules"
   assert_equals "$POSTROUTING_RULES_LEADER" \
-                "$(docker exec --privileged local-leader /usr/sbin/iptables -t nat -S POSTROUTING -w 5|grep FLANNEL)
-$(docker exec --privileged local-leader /usr/sbin/iptables -t nat -S FLANNEL-POSTRTG -w 5)" "Host 2 has not expected postrouting rules"
+                "$(docker exec --privileged local-leader /usr/sbin/iptables -t nat -S POSTROUTING | grep FLANNEL)
+$(docker exec --privileged local-leader /usr/sbin/iptables -t nat -S FLANNEL-POSTRTG)" "Host 2 has not expected postrouting rules"
   assert_equals "$FORWARD_RULES" \
-                "$(docker exec --privileged local-worker /usr/sbin/iptables -t filter -S FORWARD -w 5)
+                "$(docker exec --privileged local-worker /usr/sbin/iptables -t filter -S FORWARD)
 $(docker exec --privileged local-worker /usr/sbin/iptables -t filter -S FLANNEL-FWD -w 5)" "Host 1 has not expected forward rules"
   assert_equals "$FORWARD_RULES" \
-                "$(docker exec --privileged local-leader /usr/sbin/iptables -t filter -S FORWARD -w 5)
-$(docker exec --privileged local-leader /usr/sbin/iptables -t filter -S FLANNEL-FWD -w 5)" "Host 2 has not expected forward rules"
+                "$(docker exec --privileged local-leader /usr/sbin/iptables -t filter -S FORWARD)
+$(docker exec --privileged local-leader /usr/sbin/iptables -t filter -S FLANNEL-FWD)" "Host 2 has not expected forward rules"
 }
