@@ -106,12 +106,14 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	cfg := struct {
 		ListenPort                  int
 		ListenPortV6                int
+		MTU                         int
 		PSK                         string
 		PersistentKeepaliveInterval time.Duration
 		Mode                        Mode
 	}{
 		ListenPort:                  51820,
 		ListenPortV6:                51821,
+		MTU:                         be.extIface.Iface.MTU,
 		PersistentKeepaliveInterval: 0,
 		Mode:                        Separate,
 	}
@@ -129,21 +131,21 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	var publicKey string
 	if cfg.Mode == Separate {
 		if config.EnableIPv4 {
-			dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort, be.extIface.Iface.MTU)
+			dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort, cfg.MTU)
 			if err != nil {
 				return nil, err
 			}
 			publicKey = dev.attrs.publicKey.String()
 		}
 		if config.EnableIPv6 {
-			v6Dev, err = createWGDev(ctx, wg, "flannel-wg-v6", cfg.PSK, &keepalive, cfg.ListenPortV6, be.extIface.Iface.MTU)
+			v6Dev, err = createWGDev(ctx, wg, "flannel-wg-v6", cfg.PSK, &keepalive, cfg.ListenPortV6, cfg.MTU)
 			if err != nil {
 				return nil, err
 			}
 			publicKey = v6Dev.attrs.publicKey.String()
 		}
 	} else if cfg.Mode == Auto || cfg.Mode == Ipv4 || cfg.Mode == Ipv6 {
-		dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort, be.extIface.Iface.MTU)
+		dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort, cfg.MTU)
 		if err != nil {
 			return nil, err
 		}
@@ -193,5 +195,5 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 		}
 	}
 
-	return newNetwork(be.sm, be.extIface, dev, v6Dev, cfg.Mode, lease)
+	return newNetwork(be.sm, be.extIface, dev, v6Dev, cfg.Mode, lease, cfg.MTU)
 }
