@@ -36,13 +36,14 @@ type network struct {
 	dev       *vxlanDevice
 	v6Dev     *vxlanDevice
 	subnetMgr subnet.Manager
+	mtu       int
 }
 
 const (
 	encapOverhead = 50
 )
 
-func newNetwork(subnetMgr subnet.Manager, extIface *backend.ExternalInterface, dev *vxlanDevice, v6Dev *vxlanDevice, _ ip.IP4Net, lease *subnet.Lease) (*network, error) {
+func newNetwork(subnetMgr subnet.Manager, extIface *backend.ExternalInterface, dev *vxlanDevice, v6Dev *vxlanDevice, _ ip.IP4Net, lease *subnet.Lease, mtu int) (*network, error) {
 	nw := &network{
 		SimpleNetwork: backend.SimpleNetwork{
 			SubnetLease: lease,
@@ -51,6 +52,7 @@ func newNetwork(subnetMgr subnet.Manager, extIface *backend.ExternalInterface, d
 		subnetMgr: subnetMgr,
 		dev:       dev,
 		v6Dev:     v6Dev,
+		mtu:       mtu,
 	}
 
 	return nw, nil
@@ -81,7 +83,7 @@ func (nw *network) Run(ctx context.Context) {
 }
 
 func (nw *network) MTU() int {
-	return nw.ExtIface.Iface.MTU - encapOverhead
+	return nw.mtu - encapOverhead
 }
 
 type vxlanLeaseAttrs struct {

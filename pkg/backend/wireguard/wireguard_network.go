@@ -49,9 +49,10 @@ type network struct {
 	mode     Mode
 	lease    *subnet.Lease
 	sm       subnet.Manager
+	mtu      int
 }
 
-func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, dev, v6Dev *wgDevice, mode Mode, lease *subnet.Lease) (*network, error) {
+func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, dev, v6Dev *wgDevice, mode Mode, lease *subnet.Lease, mtu int) (*network, error) {
 	n := &network{
 		dev:      dev,
 		v6Dev:    v6Dev,
@@ -59,6 +60,7 @@ func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, dev, v6D
 		mode:     mode,
 		lease:    lease,
 		sm:       sm,
+		mtu:      mtu,
 	}
 
 	return n, nil
@@ -69,7 +71,7 @@ func (n *network) Lease() *subnet.Lease {
 }
 
 func (n *network) MTU() int {
-	return n.extIface.Iface.MTU - overhead
+	return n.mtu - overhead
 }
 
 func (n *network) Run(ctx context.Context) {
