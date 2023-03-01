@@ -32,6 +32,7 @@ import (
 type vxlanDeviceAttrs struct {
 	vni       uint32
 	name      string
+	MTU       int
 	vtepIndex int
 	vtepAddr  net.IP
 	vtepPort  int
@@ -54,6 +55,7 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 		LinkAttrs: netlink.LinkAttrs{
 			Name:         devAttrs.name,
 			HardwareAddr: hardwareAddr,
+			MTU:          devAttrs.MTU - 50,
 		},
 		VxlanId:      int(devAttrs.vni),
 		VtepDevIndex: devAttrs.vtepIndex,
