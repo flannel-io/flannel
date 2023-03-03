@@ -1,0 +1,91 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: kube-flannel-cfg
+  namespace: kube-flannel
+  labels:
+    tier: node
+    app: flannel
+data:
+  cni-conf.json: |
+    {
+      "name": "cbr0",
+      "cniVersion": "0.3.1",
+      "plugins": [
+        {
+          "type": "flannel",
+          "delegate": {
+            "hairpinMode": true,
+            "isDefaultGateway": true
+          }
+        },
+        {
+          "type": "portmap",
+          "capabilities": {
+            "portMappings": true
+          }
+        }
+      ]
+    }
+  net-conf.json: |
+    {
+{{- if .Values.podCidr }}
+      "Network": {{ .Values.podCidr | quote }},
+{{- else }}
+      "EnableIPv4": false,
+{{- end }}
+{{- if .Values.podCidrv6 }}
+      "IPv6Network": {{ .Values.podCidrv6 | quote }},
+      "EnableIPv6": true,
+{{- end }}
+      "Backend": {
+{{- if eq .Values.flannel.backend "vxlan" }}
+{{- if .Values.flannel.backendPort }}
+        "Port": {{ .Values.flannel.backendPort }},
+{{- end }}
+{{- if .Values.flannel.vni }}
+        "VNI": {{ .Values.flannel.vni }},
+{{- end }}
+{{- if .Values.flannel.GBP }}
+        "GBP": {{ .Values.flannel.GBP }},
+{{- end }}
+{{- if .Values.flannel.directRouting }}
+        "DirectRouting": {{ .Values.flannel.directRouting }},
+{{- end }}
+{{- if .Values.flannel.mtu }}
+        "MTU": {{ .Values.flannel.mtu }},
+{{- end }}
+{{- if .Values.flannel.macPrefix }}
+        "MacPrefix": {{ .Values.flannel.macPrefix }},
+{{- end }}
+        "Type": {{ .Values.flannel.backend | quote }}
+{{- else if eq .Values.flannel.backend "wireguard" }}
+{{- if .Values.flannel.backendPort }}
+        "ListenPort": {{ .Values.flannel.backendPort }},
+{{- end }}
+{{- if .Values.flannel.backendPortv6 }}
+        "ListenPortV6": {{ .Values.flannel.backendPortv6 }},
+{{- end }}
+{{- if .Values.flannel.psk }}
+        "PSK": {{ .Values.flannel.psk }},
+{{- end }}
+{{- if .Values.flannel.mtu }}
+        "MTU": {{ .Values.flannel.mtu }},
+{{- end }}
+{{- if .Values.flannel.tunnelMode }}
+        "Mode": {{ .Values.flannel.tunnelMode }},
+{{- end }}
+{{- if .Values.flannel.keepaliveInterval }}
+        "PersistentKeepaliveInterval": {{ .Values.flannel.keepaliveInterval }},
+{{- end }}
+        "Type": {{ .Values.flannel.backend | quote }}
+{{- else if eq .Values.flannel.backend "udp" }}
+{{- if .Values.flannel.backendPort }}
+        "Port": {{ .Values.flannel.backendPort }},
+{{- end }}
+        "Type": {{ .Values.flannel.backend | quote }}
+{{- else }}
+        "Type": {{ .Values.flannel.backend | quote }}
+{{- end }}
+      }
+    }
