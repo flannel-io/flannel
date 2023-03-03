@@ -30,19 +30,3 @@ Then you should be able to set the ARCH as above
 3. Run the build script, ensuring that `CGO_ENABLED=1`: `cd flannel; CGO_ENABLED=1 make dist/flanneld` for linux usage.
    Run the build script, ensuring that `CGO_ENABLED=1`: `cd flannel; CGO_ENABLED=1 make dist/flanneld.exe` for windows usage.
 
-# Release Process
-
-1. Create a release on GitHub and use it to create a tag.
-2. Check the tag out and run
-    * `make release`
-3. Attach all the files in `dist` to the GitHub release.
-4. Run `make docker-push-all` to push all the images to a registry.
-
-# Obtaining master builds
-
-A new build of flannel is created for every commit to master. They can be obtained from [https://hub.docker.com/r/flannel/flannel](https://hub.docker.com/r/flannel/flannel/tags )
-
-* `latest` is always the amd64 build.
-* The image tags have a number of components e.g. `v0.21.2-amd64`
-  * The last release was `v0.21.2`
-  * The platform is `amd64`

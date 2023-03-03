@@ -48,6 +48,12 @@ helm install flannel --set podCidr="10.244.0.0/16" https://github.com/flannel-io
 See [Kubernetes](Documentation/kubernetes.md) for more details.
 
 In case a firewall is configured ensure to enable the right port used by the configured [backend][backends].
+Flannel uses `portmap` as CNI network plugin by default; when deploying Flannel ensure that the [CNI Network plugin][Network-plugins] are installed in `/opt/cni/bin` the latest binaries can be downloaded with the following commands:
+```
+mkdir -p /opt/cni/bin
+curl -O -L https://github.com/containernetworking/plugins/releases/download/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz
+tar -C /opt/cni/bin -xzf cni-plugins-linux-amd64-v1.2.0.tgz
+```
 
 ## Getting started on Docker
 
@@ -101,3 +107,4 @@ Flannel is under the Apache 2.0 license. See the [LICENSE][license] file for det
 [k3s-installer]: https://github.com/k3s-io/k3s/#quick-start---install-script
 [installing-with-kubeadm]: https://kubernetes.io/docs/getting-started-guides/kubeadm/
 [k3s]: https://k3s.io/
+[Network-plugins]: https://github.com/containernetworking/plugins
