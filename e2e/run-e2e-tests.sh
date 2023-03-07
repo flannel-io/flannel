@@ -40,6 +40,7 @@ write-flannel-conf(){
     local backend=$1
     cp ../Documentation/kube-flannel.yml ./kube-flannel.yml
     yq -i 'select(.kind == "DaemonSet").spec.template.spec.containers[0].image |= strenv(FLANNEL_IMAGE)' ./kube-flannel.yml
+    yq -i 'select(.kind == "DaemonSet").spec.template.spec.initContainers[1].image |= strenv(FLANNEL_IMAGE)' ./kube-flannel.yml
 
     export flannel_conf="{ \"Network\": \"$FLANNEL_NET\", \"Backend\": { \"Type\": \"${backend}\" } }"
 
