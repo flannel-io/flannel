@@ -34,8 +34,9 @@ const (
 )
 
 var (
-	errInterrupted = errors.New("interrupted")
-	errCanceled    = errors.New("canceled")
+	errInterrupted   = errors.New("interrupted")
+	errCanceled      = errors.New("canceled")
+	errUnimplemented = errors.New("unimplemented")
 )
 
 type LocalManager struct {
@@ -288,7 +289,7 @@ func getNextIndex(cursor interface{}) (int64, error) {
 		return 0, fmt.Errorf("internal error: watch cursor is of unknown type")
 	}
 
-	return nextIndex, nil
+	return nextIndex + 1, nil
 }
 
 func (m *LocalManager) leaseWatchReset(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) (subnet.LeaseWatchResult, error) {
@@ -303,64 +304,50 @@ func (m *LocalManager) leaseWatchReset(ctx context.Context, sn ip.IP4Net, sn6 ip
 	}, nil
 }
 
-func (m *LocalManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, cursor interface{}) (subnet.LeaseWatchResult, error) {
-	if cursor == nil {
-		return m.leaseWatchReset(ctx, sn, sn6)
-	}
-
-	nextIndex, err := getNextIndex(cursor)
+func (m *LocalManager) WatchLease(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, receiver chan []subnet.LeaseWatchResult) error {
+	wr, err := m.leaseWatchReset(ctx, sn, sn6)
 	if err != nil {
-		return subnet.LeaseWatchResult{}, err
+		return err
 	}
 
-	evt, index, err := m.registry.watchSubnet(ctx, nextIndex, sn, sn6)
+	log.Info("manager.WatchLease: sending reset results...")
+	//send the result of leaseWatchResult to allow the listener
+	//to catch-up to the current state
+	receiver <- []subnet.LeaseWatchResult{wr}
 
-	switch {
-	case err == nil:
-		return subnet.LeaseWatchResult{
-			Events: []subnet.Event{evt},
-			Cursor: watchCursor{index},
-		}, nil
-
-	case isIndexTooSmall(err):
-		log.Warning("Watch of subnet leases failed because etcd index outside history window")
-		return m.leaseWatchReset(ctx, sn, sn6)
-
-	default:
-		return subnet.LeaseWatchResult{}, err
+	nextIndex, err := getNextIndex(wr.Cursor)
+	if err != nil {
+		return err
 	}
+
+	err = m.registry.watchSubnet(ctx, nextIndex, sn, sn6, receiver)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (m *LocalManager) WatchLeases(ctx context.Context, cursor interface{}) (subnet.LeaseWatchResult, error) {
-	if cursor == nil {
-		return m.leasesWatchReset(ctx)
-	}
-
-	nextIndex, err := getNextIndex(cursor)
+func (m *LocalManager) WatchLeases(ctx context.Context, receiver chan []subnet.LeaseWatchResult) error {
+	wr, err := m.registry.leasesWatchReset(ctx)
 	if err != nil {
-		return subnet.LeaseWatchResult{}, err
+		return err
 	}
 
-	evt, index, err := m.registry.watchSubnets(ctx, nextIndex)
-	switch {
-	case err == nil:
-		//TODO only vxlan backend and kube subnet manager support dual stack now.
-		evt.Lease.EnableIPv4 = true
-		return subnet.LeaseWatchResult{
-			Events: []subnet.Event{evt},
-			Cursor: watchCursor{index},
-		}, nil
+	// send the result of leasesWatchReset to the listener
+	// to catch-up on the state if the registry
+	// before starting to watch changes
+	receiver <- []subnet.LeaseWatchResult{wr}
 
-	case isIndexTooSmall(err):
-		log.Warning("Watch of subnet leases failed because etcd index outside history window")
-		return m.leasesWatchReset(ctx)
-
-	case index != 0:
-		return subnet.LeaseWatchResult{Cursor: watchCursor{index}}, err
-
-	default:
-		return subnet.LeaseWatchResult{}, err
+	nextIndex, err := getNextIndex(wr.Cursor)
+	if err != nil {
+		return err
 	}
+
+	err = m.registry.watchSubnets(ctx, receiver, nextIndex)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // CompleteLease monitor lease
@@ -412,20 +399,6 @@ func (m *LocalManager) CompleteLease(ctx context.Context, lease *subnet.Lease, w
 
 func isIndexTooSmall(err error) bool {
 	return err == rpctypes.ErrGRPCCompacted
-}
-
-// leasesWatchReset is called when incremental lease watch failed and we need to grab a snapshot
-func (m *LocalManager) leasesWatchReset(ctx context.Context) (subnet.LeaseWatchResult, error) {
-	wr := subnet.LeaseWatchResult{}
-
-	leases, index, err := m.registry.getSubnets(ctx)
-	if err != nil {
-		return wr, fmt.Errorf("failed to retrieve subnet leases: %v", err)
-	}
-
-	wr.Cursor = watchCursor{index}
-	wr.Snapshot = leases
-	return wr, nil
 }
 
 func isSubnetConfigCompat(config *subnet.Config, sn ip.IP4Net) bool {

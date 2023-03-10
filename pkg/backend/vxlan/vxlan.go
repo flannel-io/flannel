@@ -123,11 +123,13 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 	cfg := struct {
 		VNI           int
 		Port          int
+		MTU           int
 		GBP           bool
 		Learning      bool
 		DirectRouting bool
 	}{
 		VNI: defaultVNI,
+		MTU: be.extIface.Iface.MTU,
 	}
 
 	if len(config.Backend) > 0 {
@@ -143,6 +145,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 		devAttrs := vxlanDeviceAttrs{
 			vni:       uint32(cfg.VNI),
 			name:      fmt.Sprintf("flannel.%v", cfg.VNI),
+			MTU:       cfg.MTU,
 			vtepIndex: be.extIface.Iface.Index,
 			vtepAddr:  be.extIface.IfaceAddr,
 			vtepPort:  cfg.Port,
@@ -160,6 +163,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 		v6DevAttrs := vxlanDeviceAttrs{
 			vni:       uint32(cfg.VNI),
 			name:      fmt.Sprintf("flannel-v6.%v", cfg.VNI),
+			MTU:       cfg.MTU,
 			vtepIndex: be.extIface.Iface.Index,
 			vtepAddr:  be.extIface.IfaceV6Addr,
 			vtepPort:  cfg.Port,
@@ -200,7 +204,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 			return nil, fmt.Errorf("failed to configure interface %s: %w", v6Dev.link.Attrs().Name, err)
 		}
 	}
-	return newNetwork(be.subnetMgr, be.extIface, dev, v6Dev, ip.IP4Net{}, lease)
+	return newNetwork(be.subnetMgr, be.extIface, dev, v6Dev, ip.IP4Net{}, lease, cfg.MTU)
 }
 
 // So we can make it JSON (un)marshalable

@@ -5,7 +5,8 @@ ENV FLANNEL_ARCH=mips64le
 ADD dist/qemu-$FLANNEL_ARCH-static /usr/bin/qemu-$FLANNEL_ARCH-static
 # RUN apk add --no-cache iproute2 net-tools ca-certificates iptables strongswan && update-ca-certificates
 # RUN apk add wireguard-tools --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community
-RUN apt update && \
+RUN apt-get update && \
+    apt-get -y upgrade && \
     apt-get install -y iproute2 net-tools ca-certificates iptables strongswan wireguard-tools && \
     update-ca-certificates
 COPY dist/flanneld-$FLANNEL_ARCH /opt/bin/flanneld

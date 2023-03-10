@@ -57,39 +57,43 @@ func watchSubnets(t *testing.T, r Registry, ctx context.Context, sn ip.IP4Net, n
 		{EventRemoved, sn, false},
 	}
 
+	receiver := make(chan []LeaseWatchResult)
 	numFound := 0
-	for {
-		evt, index, err := r.watchSubnets(ctx, nextIndex)
 
-		switch {
-		case err == nil:
-			nextIndex = index
-			for _, exp := range expectedEvents {
-				if evt.Type != exp.etype {
-					continue
-				}
-				if exp.found == true {
-					result <- fmt.Errorf("Subnet event type already found: %v", exp)
-					return
-				}
-				if !evt.Lease.Subnet.Equal(exp.subnet) {
-					result <- fmt.Errorf("Subnet event lease %v mismatch (expected %v)", evt.Lease.Subnet, exp.subnet)
-				}
-				exp.found = true
-				numFound += 1
-			}
-			if numFound == len(expectedEvents) {
-				// All done; success
-				result <- nil
-				return
-			}
-		case isIndexTooSmall(err):
-			nextIndex = nextIndex + 1
-
-		default:
-			result <- fmt.Errorf("Error watching subnet leases: %v", err)
+	go func() {
+		err := r.watchSubnets(ctx, receiver, nextIndex)
+		if err != nil {
+			result <- errNoWatchChannel
 			return
 		}
+	}()
+
+	for watchResults := range receiver {
+		for _, wr := range watchResults {
+			for _, evt := range wr.Events {
+				for _, exp := range expectedEvents {
+					if evt.Type != exp.etype {
+						continue
+					}
+					if exp.found == true {
+						result <- fmt.Errorf("Subnet event type already found: %v", exp)
+						return
+					}
+					if !evt.Lease.Subnet.Equal(exp.subnet) {
+						result <- fmt.Errorf("Subnet event lease %v mismatch (expected %v)", evt.Lease.Subnet, exp.subnet)
+					}
+					exp.found = true
+					numFound += 1
+				}
+				if numFound == len(expectedEvents) {
+					// All done; success
+					result <- nil
+					return
+				}
+			}
+
+		}
+
 	}
 }
 

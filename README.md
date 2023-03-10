@@ -40,6 +40,15 @@ If you use custom `podCIDR` (not `10.244.0.0/16`) you first need to download the
 
 See [Kubernetes](Documentation/kubernetes.md) for more details.
 
+In case a firewall is configured ensure to enable the right port used by the configured [backend][backends].
+
+Flannel uses `portmap` as CNI network plugin by default; when deploying Flannel ensure that the [CNI Network plugins][Network-plugins] are installed in `/opt/cni/bin` the latest binaries can be downloaded with the following commands:
+```
+mkdir -p /opt/cni/bin
+curl -O -L https://github.com/containernetworking/plugins/releases/download/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz
+tar -C /opt/cni/bin -xzf cni-plugins-linux-amd64-v1.2.0.tgz
+```
+
 ## Getting started on Docker
 
 flannel is also widely used outside of kubernetes. When deployed outside of kubernetes, etcd is always used as the datastore. For more details integrating flannel with Docker see [Running](Documentation/running.md)

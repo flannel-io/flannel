@@ -15,8 +15,6 @@
 package subnet
 
 import (
-	"time"
-
 	"github.com/flannel-io/flannel/pkg/ip"
 	"golang.org/x/net/context"
 	log "k8s.io/klog"
@@ -30,40 +28,35 @@ func WatchLeases(ctx context.Context, sm Manager, ownLease *Lease, receiver chan
 	lw := &leaseWatcher{
 		ownLease: ownLease,
 	}
-	var cursor interface{}
 
-	for {
-		res, err := sm.WatchLeases(ctx, cursor)
+	leaseWatchChan := make(chan []LeaseWatchResult)
+	go func() {
+		err := sm.WatchLeases(ctx, leaseWatchChan)
 		if err != nil {
-			if err == context.Canceled || err == context.DeadlineExceeded {
-				log.Infof("%v, close receiver chan", err)
-				close(receiver)
-				return
+			log.Errorf("could not watch leases: %s", err)
+			return
+		}
+	}()
+	for watchResults := range leaseWatchChan {
+		for _, wr := range watchResults {
+			var batch []Event
+
+			if len(wr.Events) > 0 {
+				batch = lw.update(wr.Events)
+			} else {
+				batch = lw.reset(wr.Snapshot)
 			}
 
-			if res.Cursor != nil {
-				cursor = res.Cursor
+			for i := range batch {
+				log.Infof("Batch elem [%d] is { %#v }", i, batch[i])
 			}
-
-			log.Errorf("Watch subnets: %v", err)
-			time.Sleep(time.Second)
-			continue
-		}
-
-		cursor = res.Cursor
-
-		var batch []Event
-
-		if len(res.Events) > 0 {
-			batch = lw.update(res.Events)
-		} else {
-			batch = lw.reset(res.Snapshot)
-		}
-
-		if len(batch) > 0 {
-			receiver <- batch
+			if len(batch) > 0 {
+				receiver <- batch
+			}
 		}
 	}
+
+	close(receiver)
 }
 
 type leaseWatcher struct {
@@ -235,10 +228,10 @@ func deleteLease(l []Lease, i int) []Lease {
 // of handling "fall-behind" logic where the history window has advanced too far
 // and it needs to diff the latest snapshot with its saved state and generate events
 func WatchLease(ctx context.Context, sm Manager, sn ip.IP4Net, sn6 ip.IP6Net, receiver chan Event) {
-	var cursor interface{}
+	leaseWatchChan := make(chan []LeaseWatchResult)
 
-	for {
-		wr, err := sm.WatchLease(ctx, sn, sn6, cursor)
+	go func() {
+		err := sm.WatchLease(ctx, sn, sn6, leaseWatchChan)
 		if err != nil {
 			if err == context.Canceled || err == context.DeadlineExceeded {
 				log.Infof("%v, close receiver chan", err)
@@ -247,19 +240,27 @@ func WatchLease(ctx context.Context, sm Manager, sn ip.IP4Net, sn6 ip.IP6Net, re
 			}
 
 			log.Errorf("Subnet watch failed: %v", err)
-			time.Sleep(time.Second)
-			continue
+			close(receiver)
+			return
 		}
 
-		if len(wr.Snapshot) > 0 {
-			receiver <- Event{
-				Type:  EventAdded,
-				Lease: wr.Snapshot[0],
+	}()
+
+	for watchResults := range leaseWatchChan {
+		for _, wr := range watchResults {
+			if len(wr.Snapshot) > 0 {
+				receiver <- Event{
+					Type:  EventAdded,
+					Lease: wr.Snapshot[0],
+				}
+			} else if len(wr.Events) > 0 {
+				receiver <- wr.Events[0]
+			} else {
+				log.V(2).Info("WatchLease: empty event received")
 			}
-		} else {
-			receiver <- wr.Events[0]
 		}
 
-		cursor = wr.Cursor
 	}
+	log.Info("leaseWatchChan channel closed")
+	close(receiver)
 }
