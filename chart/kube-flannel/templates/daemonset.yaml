@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: kube-flannel-ds
-  namespace: kube-flannel
+  namespace: {{ .Release.Namespace }}
   labels:
     tier: node
     app: flannel
