@@ -1,8 +1,0 @@
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: {{ .Release.Namespace }}
-  labels:
-    pod-security.kubernetes.io/enforce: privileged
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/release-name: {{ .Release.Name }}
