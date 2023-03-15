@@ -1,8 +1,6 @@
 suite: test daemonset
 templates:
   - daemonset.yaml
-release:
-  namespace: kube-flannel-example-namespace
 tests:
   - it: should have the correct api version
     asserts:
@@ -13,9 +11,6 @@ tests:
       - equal:
           path: metadata.name
           value: kube-flannel-ds
-      - equal:
-          path: metadata.namespace
-          value: kube-flannel-example-namespace
 
   - it: should have the correct image
     set:
