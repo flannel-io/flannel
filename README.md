@@ -67,7 +67,6 @@ flannel is also widely used outside of kubernetes. When deployed outside of kube
 - [Running](Documentation/running.md)
 - [Troubleshooting](Documentation/troubleshooting.md)
 - [Projects integrating with flannel](Documentation/integrations.md)
-- [Production users](Documentation/production-users.md)
 
 ## Contact
 
