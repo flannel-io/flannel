@@ -51,9 +51,9 @@ const kubeProxyMark string = "0x4000/0x4000"
 func MasqRules(cluster_cidrs []ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 	pod_cidr := lease.Subnet.String()
 	ipt, err := iptables.New()
-	var fully_randomize string
-	if err == nil && ipt.HasRandomFully() {
-		fully_randomize = "--random-fully"
+	supports_random_fully := false
+	if err == nil {
+		supports_random_fully = ipt.HasRandomFully()
 	}
 	rules := make([]IPTablesRule, 2)
 	// This rule ensure that the flannel iptables rules are executed before other rules on the node
@@ -76,12 +76,20 @@ func MasqRules(cluster_cidrs []ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 	for _, ccidr := range cluster_cidrs {
 		cluster_cidr := ccidr.String()
 		// NAT if it's not multicast traffic
-		rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", cluster_cidr, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", fully_randomize}})
+		if supports_random_fully {
+			rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", cluster_cidr, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
+		} else {
+			rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", cluster_cidr, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
+		}
 	}
 	for _, ccidr := range cluster_cidrs {
 		cluster_cidr := ccidr.String()
 		// Masquerade anything headed towards flannel from the host
-		rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", fully_randomize}})
+		if supports_random_fully {
+			rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
+		} else {
+			rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
+		}
 	}
 	return rules
 }
@@ -89,9 +97,9 @@ func MasqRules(cluster_cidrs []ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 func MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
 	pod_cidr := lease.IPv6Subnet.String()
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
-	var fully_randomize string
-	if err == nil && ipt.HasRandomFully() {
-		fully_randomize = "--random-fully"
+	supports_random_fully := false
+	if err == nil {
+		supports_random_fully = ipt.HasRandomFully()
 	}
 	rules := make([]IPTablesRule, 2)
 
@@ -116,13 +124,21 @@ func MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *subnet.Lease) []IPTablesRule
 	for _, ccidr := range cluster_cidrs {
 		cluster_cidr := ccidr.String()
 		// NAT if it's not multicast traffic
-		rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", cluster_cidr, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", fully_randomize}})
+		if supports_random_fully {
+			rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", cluster_cidr, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
+		} else {
+			rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"-s", cluster_cidr, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
+		}
 
 	}
 	for _, ccidr := range cluster_cidrs {
 		cluster_cidr := ccidr.String()
 		// Masquerade anything headed towards flannel from the host
-		rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", fully_randomize}})
+		if supports_random_fully {
+			rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
+		} else {
+			rules = append(rules, IPTablesRule{"nat", "-A", "FLANNEL-POSTRTG", []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
+		}
 
 	}
 
