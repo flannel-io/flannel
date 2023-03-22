@@ -1,0 +1,47 @@
+suite: test daemonset
+templates:
+  - daemonset.yaml
+tests:
+  - it: should have the correct api version
+    asserts:
+      - isKind:
+          of: DaemonSet
+      - isAPIVersion:
+          of: apps/v1
+      - equal:
+          path: metadata.name
+          value: kube-flannel-ds
+
+  - it: should have the correct image
+    set:
+      flannel.image.repository: cicker.io/flannel/flannel
+      flannel.image.tag: v555.44.3
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: cicker.io/flannel/flannel:v555.44.3
+      - equal:
+          path: spec.template.spec.initContainers[1].image
+          value: cicker.io/flannel/flannel:v555.44.3
+
+  - it: should have the correct cni image
+    set:
+      flannel.image_cni.repository: cicker.io/flannel/flannel-cni-plugin
+      flannel.image_cni.tag: v777.66.5
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: cicker.io/flannel/flannel-cni-plugin:v777.66.5
+
+  - it: should have the correct args
+    set:
+      flannel.args:
+        - "--ip-masq"
+        - "--kube-subnet-mgr"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].command
+          value:
+            - "/opt/bin/flanneld"
+            - "--ip-masq"
+            - "--kube-subnet-mgr"
