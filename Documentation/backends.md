@@ -26,6 +26,11 @@ Type and options:
 * `MTU` (number): Desired MTU for the outgoing packets if not defined the MTU of the external interface is used.
 * `MacPrefix` (String): Only use on Windows, set to the MAC prefix. Defaults to `0E-2A`.
 
+Starting with Ubuntu 21.10, vxlan support on Raspberry Pi has been moved into a seperate kernel module. 
+```
+sudo apt install linux-modules-extra-raspi
+```
+
 ### host-gw
 
 Use host-gw to create IP routes to subnets via remote machine IPs. Requires direct layer2 connectivity between hosts running flannel.
