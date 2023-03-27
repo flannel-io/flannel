@@ -85,7 +85,7 @@ The following configuration illustrates the use of most options with `udp` backe
 --version: print version and exit
 ```
 
-MTU is calculated and set automatically by flannel. It then reports that value in `subnet.env`. This value cannot be changed.
+MTU is calculated and set automatically by flannel. It then reports that value in `subnet.env`. This value can be changed as [backend](backends.md) config.
 
 ## Environment variables
 
