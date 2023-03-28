@@ -161,10 +161,16 @@ jobs:
           docker push ${{ env.REPOSITORY }}:latest
 
   build-and-push-artifacts:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
+      pages: write
+      id-token: write
 
     steps:
       - name: Checkout repository
@@ -192,3 +198,14 @@ jobs:
             dist/kube-flannel.yml
             dist/kube-flannel-psp.yml
 
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: 'chart/'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2

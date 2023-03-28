@@ -49,6 +49,13 @@ kubectl label --overwrite ns kube-flannel pod-security.kubernetes.io/enforce=pri
 helm install flannel --set podCidr="10.244.0.0/16" --namespace kube-flannel https://github.com/flannel-io/flannel/releases/latest/download/flannel.tgz
 ```
 
+Helm repository is located at `https://flannel-io.github.io/flannel/` and can be added through Helm
+
+```bash
+helm repo add flannel https://flannel-io.github.io/flannel/
+```
+
+
 See [Kubernetes](Documentation/kubernetes.md) for more details.
 
 In case a firewall is configured ensure to enable the right port used by the configured [backend][backends].
