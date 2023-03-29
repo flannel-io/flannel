@@ -44,17 +44,13 @@ If you use custom `podCIDR` (not `10.244.0.0/16`) you first need to download the
 #### Deploying Flannel with helm
 
 ```bash
+# Needs manual creation of namespace to avoid helm error
 kubectl create ns kube-flannel
 kubectl label --overwrite ns kube-flannel pod-security.kubernetes.io/enforce=privileged
-helm install flannel --set podCidr="10.244.0.0/16" --namespace kube-flannel https://github.com/flannel-io/flannel/releases/latest/download/flannel.tgz
-```
 
-Helm repository is located at `https://flannel-io.github.io/flannel/` and can be added through Helm
-
-```bash
 helm repo add flannel https://flannel-io.github.io/flannel/
+helm install flannel --set podCidr="10.244.0.0/16" --namespace kube-flannel flannel/flannel
 ```
-
 
 See [Kubernetes](Documentation/kubernetes.md) for more details.
 
