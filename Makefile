@@ -176,8 +176,11 @@ release-chart:
 
 release-helm:
 	sed -i '0,/^    tag: .*/s//    tag: $(TAG)/' ./chart/kube-flannel/values.yaml
-	helm package ./chart/kube-flannel/ --destination dist/ --version $(TAG) --app-version $(TAG)
-	mv dist/flannel-$(TAG).tgz dist/flannel.tgz
+	helm package ./chart/kube-flannel/ --destination chart/ --version $(TAG) --app-version $(TAG)
+	cp chart/flannel-$(TAG).tgz dist/flannel.tgz
+	mv chart/flannel-$(TAG).tgz chart/flannel.tgz
+	wget https://flannel-io.github.io/flannel/index.yaml -O chart/index.yaml
+	helm repo index --merge chart/index.yaml --url https://github.com/flannel-io/flannel/releases/download/$(TAG)/ chart/
 
 dist/qemu-%-static:
 	if [ "$(@F)" = "qemu-amd64-static" ]; then \
