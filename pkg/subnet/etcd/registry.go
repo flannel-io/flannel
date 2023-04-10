@@ -32,7 +32,7 @@ import (
 	"go.etcd.io/etcd/client/pkg/v3/tlsutil"
 	etcd "go.etcd.io/etcd/client/v3"
 	"golang.org/x/net/context"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 var (

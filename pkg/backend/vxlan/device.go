@@ -26,7 +26,7 @@ import (
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/mac"
 	"github.com/vishvananda/netlink"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 type vxlanDeviceAttrs struct {

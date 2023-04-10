@@ -26,12 +26,12 @@ import (
 	"unsafe"
 
 	"github.com/flannel-io/flannel/pkg/ip"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 func runCProxy(tun *os.File, conn *net.UDPConn, ctl *os.File, tunIP ip.IP4, tunMTU int) {
 	var log_errors int
-	if log.V(1) {
+	if log.V(1).Enabled() {
 		log_errors = 1
 	}
 

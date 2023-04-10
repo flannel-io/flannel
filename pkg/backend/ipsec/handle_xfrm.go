@@ -24,7 +24,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 func AddXFRMPolicy(myLease, remoteLease *subnet.Lease, dir netlink.Dir, reqID int) error {

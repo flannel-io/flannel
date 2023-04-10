@@ -25,7 +25,7 @@ import (
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"golang.org/x/net/context"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 const (

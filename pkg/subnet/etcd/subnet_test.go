@@ -26,7 +26,7 @@ import (
 	etcd "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/tests/v3/integration"
 	"golang.org/x/net/context"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 func initTestRegistry(ctx context.Context, t *testing.T, r Registry, kvApi etcd.KV) {

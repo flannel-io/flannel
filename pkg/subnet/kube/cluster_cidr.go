@@ -22,7 +22,7 @@ import (
 	networkingv1alpha1 "k8s.io/api/networking/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 // handleAddClusterCidr is called every time a clustercidr resource is added
