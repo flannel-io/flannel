@@ -29,7 +29,7 @@ import (
 	"golang.org/x/net/context"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/wait"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 func init() {

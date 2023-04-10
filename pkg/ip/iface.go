@@ -24,7 +24,7 @@ import (
 	"syscall"
 
 	"github.com/vishvananda/netlink"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 func getIfaceAddrs(iface *net.Interface) ([]netlink.Addr, error) {

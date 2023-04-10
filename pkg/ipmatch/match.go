@@ -23,7 +23,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 const (

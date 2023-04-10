@@ -40,7 +40,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 var (

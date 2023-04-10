@@ -25,7 +25,7 @@ import (
 	"strconv"
 
 	"github.com/coreos/go-iptables/iptables"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 const (

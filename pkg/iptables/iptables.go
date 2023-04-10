@@ -23,7 +23,7 @@ import (
 	"github.com/coreos/go-iptables/iptables"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/subnet"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 type IPTables interface {

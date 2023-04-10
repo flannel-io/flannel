@@ -24,7 +24,7 @@ import (
 	"github.com/jonboulle/clockwork"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"golang.org/x/net/context"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 var clock clockwork.Clock = clockwork.NewRealClock()

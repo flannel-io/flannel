@@ -22,7 +22,7 @@ import (
 	"net"
 
 	"github.com/flannel-io/flannel/pkg/ip"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	netutils "k8s.io/utils/net"
 )
 

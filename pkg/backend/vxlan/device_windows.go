@@ -24,7 +24,7 @@ import (
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 )
 
 type vxlanDeviceAttrs struct {

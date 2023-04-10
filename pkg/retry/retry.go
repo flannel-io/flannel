@@ -15,7 +15,7 @@
 package retry
 
 import (
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 
 	retry_v4 "github.com/avast/retry-go/v4"
 )
