@@ -37,6 +37,7 @@ func TestLookupExtIface(t *testing.T) {
 	execOrFail("sudo", "ip", "addr", "add", "172.16.30.18", "dev", "dummy0")
 	execOrFail("sudo", "ip", "addr", "add", "172.16.31.200", "dev", "dummy0")
 	execOrFail("sudo", "ip", "addr", "add", "172.16.32.100", "dev", "dummy0")
+	execOrFail("sudo", "ip", "addr", "add", "1::6", "dev", "dummy0")
 	execOrFail("sudo", "ip", "link", "set", "dummy0", "up")
 	execOrFail("sudo", "ip", "route", "add", "172.16.32.254", "via", "172.16.32.100", "dev", "dummy0")
 
@@ -102,6 +103,52 @@ func TestLookupExtIface(t *testing.T) {
 		}
 		if backendInterface.IfaceAddr.String() != "172.16.30.18" {
 			t.Fatalf("iface addr not equal, expected=%v actual=%v", "172.16.30.18", backendInterface.IfaceAddr.String())
+		}
+	})
+
+	t.Run("ByIPv4ForDualStack", func(t *testing.T) {
+		backendInterface, err := LookupExtIface("172.16.30.18", "", "", dualStack, PublicIPOpts{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("backendInterface=%+v iface=%+v", backendInterface, *backendInterface.Iface)
+
+		if backendInterface.Iface.Name != "dummy0" {
+			t.Fatalf("iface name not equal, expected=%v actual=%v", "dummy0", backendInterface.Iface.Name)
+		}
+		if backendInterface.IfaceAddr.String() != "172.16.30.18" {
+			t.Fatalf("iface addr not equal, expected=%v actual=%v", "172.16.30.18", backendInterface.IfaceAddr.String())
+		}
+		if backendInterface.IfaceV6Addr.String() != "1::6" {
+			t.Fatalf("iface addr not equal, expected=%v actual=%v", "1::6", backendInterface.IfaceV6Addr.String())
+		}
+	})
+
+	t.Run("ByIPv6ForDualStack", func(t *testing.T) {
+		backendInterface, err := LookupExtIface("1::6", "", "", dualStack, PublicIPOpts{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("backendInterface=%+v iface=%+v", backendInterface, *backendInterface.Iface)
+
+		if backendInterface.Iface.Name != "dummy0" {
+			t.Fatalf("iface name not equal, expected=%v actual=%v", "dummy0", backendInterface.Iface.Name)
+		}
+
+		var isInArray = func(s string, arr []string) bool {
+			for _, str := range arr {
+				if s == str {
+					return true
+				}
+			}
+			return false
+		}
+		expectedIPs := []string{"1.10.100.1", "192.168.200.128", "172.16.30.18", "172.16.31.200", "172.16.32.100"}
+		if !isInArray(backendInterface.IfaceAddr.String(), expectedIPs) {
+			t.Fatalf("iface addr is not in expected array, expected=%v actual=%v", expectedIPs, backendInterface.IfaceAddr.String())
+		}
+		if backendInterface.IfaceV6Addr.String() != "1::6" {
+			t.Fatalf("iface addr not equal, expected=%v actual=%v", "1::6", backendInterface.IfaceV6Addr.String())
 		}
 	})
 

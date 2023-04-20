@@ -89,6 +89,14 @@ func LookupExtIface(ifname string, ifregexS string, ifcanreach string, ipStack i
 						return nil, fmt.Errorf("error looking up interface %s: %s", ifname, err)
 					}
 				}
+				if iface == nil && ifaceAddr.To16() != nil {
+					iface, err = ip.GetInterfaceByIP6(ifaceAddr)
+					if err != nil {
+						return nil, fmt.Errorf("error looking up v6 interface %s: %s", ifname, err)
+					}
+					ifaceV6Addr = ifaceAddr
+					ifaceAddr = nil
+				}
 				if len(opts.PublicIPv6) > 0 {
 					if ifaceV6Addr = net.ParseIP(opts.PublicIPv6); ifaceV6Addr != nil {
 						v6Iface, err := ip.GetInterfaceByIP6(ifaceV6Addr)
@@ -242,17 +250,21 @@ func LookupExtIface(ifname string, ifregexS string, ifcanreach string, ipStack i
 			return nil, fmt.Errorf("failed to find IPv6 address for interface %s", iface.Name)
 		}
 		ifaceV6Addr = ifaceV6Addrs[0]
-	} else if ipStack == dualStack && ifaceAddr == nil && ifaceV6Addr == nil {
-		ifaceAddrs, err = ip.GetInterfaceIP4Addrs(iface)
-		if err != nil || len(ifaceAddrs) == 0 {
-			return nil, fmt.Errorf("failed to find IPv4 address for interface %s", iface.Name)
+	} else if ipStack == dualStack {
+		if ifaceAddr == nil {
+			ifaceAddrs, err = ip.GetInterfaceIP4Addrs(iface)
+			if err != nil || len(ifaceAddrs) == 0 {
+				return nil, fmt.Errorf("failed to find IPv4 address for interface %s", iface.Name)
+			}
+			ifaceAddr = ifaceAddrs[0]
 		}
-		ifaceAddr = ifaceAddrs[0]
-		ifaceV6Addrs, err = ip.GetInterfaceIP6Addrs(iface)
-		if err != nil || len(ifaceV6Addrs) == 0 {
-			return nil, fmt.Errorf("failed to find IPv6 address for interface %s", iface.Name)
+		if ifaceV6Addr == nil {
+			ifaceV6Addrs, err = ip.GetInterfaceIP6Addrs(iface)
+			if err != nil || len(ifaceV6Addrs) == 0 {
+				return nil, fmt.Errorf("failed to find IPv6 address for interface %s", iface.Name)
+			}
+			ifaceV6Addr = ifaceV6Addrs[0]
 		}
-		ifaceV6Addr = ifaceV6Addrs[0]
 	}
 
 	if ifaceAddr != nil {
