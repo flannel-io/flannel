@@ -14,13 +14,17 @@ This backend has the following configuration
 * `SubnetAddCommand`   (string): Command to run when a subnet is added
     * stdin - The output from `PreStartupCommand` is passed in.
     * The following environment variables are set
-        * SUBNET - The subnet of the remote host that was added.
+        * SUBNET - The ipv4 subnet of the remote host that was added.
+        * IPV6SUBNET - The ipv6 subnet of the remote host that was added.
         * PUBLIC_IP - The public IP of the remote host.
+        * PUBLIC_IPV6 - The public IPv6 of the remote host.
 * `SubnetRemoveCommand`(string): Command to run when a subnet is removed
     * stdin - The output from `PreStartupCommand` is passed in.
       * The following environment variables are set
-          * SUBNET - The subnet of the remote host that was removed.
+          * SUBNET - The ipv4 subnet of the remote host that was removed.
+          * IPV6SUBNET - The ipv6 subnet of the remote host that was removed.
           * PUBLIC_IP - The public IP of the remote host.
+          * PUBLIC_IPV6 - The public IPv6 of the remote host.
 
 All commands are run through the `sh` shell and are run with the same permissions as the flannel daemon.
 

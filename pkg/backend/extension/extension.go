@@ -117,7 +117,9 @@ func (be *ExtensionBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 		cmd_output, err := runCmd([]string{
 			fmt.Sprintf("NETWORK=%s", config.Network),
 			fmt.Sprintf("SUBNET=%s", lease.Subnet),
-			fmt.Sprintf("PUBLIC_IP=%s", attrs.PublicIP)},
+			fmt.Sprintf("IPV6SUBNET=%s", lease.IPv6Subnet),
+			fmt.Sprintf("PUBLIC_IP=%s", attrs.PublicIP),
+			fmt.Sprintf("PUBLIC_IPV6=%s", attrs.PublicIPv6)},
 			"", "sh", "-c", n.postStartupCommand)
 		if err != nil {
 			return nil, fmt.Errorf("failed to run command: %s Err: %v Output: %s", n.postStartupCommand, err, cmd_output)
