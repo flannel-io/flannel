@@ -23,6 +23,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
@@ -39,8 +40,8 @@ type RouteNetwork struct {
 	routes      []netlink.Route
 	v6Routes    []netlink.Route
 	SM          subnet.Manager
-	GetRoute    func(lease *subnet.Lease) *netlink.Route
-	GetV6Route  func(lease *subnet.Lease) *netlink.Route
+	GetRoute    func(lease *lease.Lease) *netlink.Route
+	GetV6Route  func(lease *lease.Lease) *netlink.Route
 	Mtu         int
 	LinkIndex   int
 }
@@ -53,7 +54,7 @@ func (n *RouteNetwork) Run(ctx context.Context) {
 	wg := sync.WaitGroup{}
 
 	log.Info("Watching for new subnet leases")
-	evts := make(chan []subnet.Event)
+	evts := make(chan []lease.Event)
 	wg.Add(1)
 	go func() {
 		subnet.WatchLeases(ctx, n.SM, n.SubnetLease, evts)
@@ -79,10 +80,10 @@ func (n *RouteNetwork) Run(ctx context.Context) {
 	}
 }
 
-func (n *RouteNetwork) handleSubnetEvents(batch []subnet.Event) {
+func (n *RouteNetwork) handleSubnetEvents(batch []lease.Event) {
 	for _, evt := range batch {
 		switch evt.Type {
-		case subnet.EventAdded:
+		case lease.EventAdded:
 			if evt.Lease.Attrs.BackendType != n.BackendType {
 				log.Warningf("Ignoring non-%v subnet: type=%v", n.BackendType, evt.Lease.Attrs.BackendType)
 				continue
@@ -102,7 +103,7 @@ func (n *RouteNetwork) handleSubnetEvents(batch []subnet.Event) {
 				routeAdd(route, netlink.FAMILY_V6, n.addToV6RouteList, n.removeFromV6RouteList)
 			}
 
-		case subnet.EventRemoved:
+		case lease.EventRemoved:
 			if evt.Lease.Attrs.BackendType != n.BackendType {
 				log.Warningf("Ignoring non-%v subnet: type=%v", n.BackendType, evt.Lease.Attrs.BackendType)
 				continue

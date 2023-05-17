@@ -22,7 +22,7 @@ import (
 
 	"github.com/coreos/go-iptables/iptables"
 	"github.com/flannel-io/flannel/pkg/ip"
-	"github.com/flannel-io/flannel/pkg/subnet"
+	"github.com/flannel-io/flannel/pkg/lease"
 	log "k8s.io/klog/v2"
 )
 
@@ -48,7 +48,7 @@ type IPTablesRule struct {
 
 const kubeProxyMark string = "0x4000/0x4000"
 
-func MasqRules(cluster_cidrs []ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
+func MasqRules(cluster_cidrs []ip.IP4Net, lease *lease.Lease) []IPTablesRule {
 	pod_cidr := lease.Subnet.String()
 	ipt, err := iptables.New()
 	supports_random_fully := false
@@ -94,7 +94,7 @@ func MasqRules(cluster_cidrs []ip.IP4Net, lease *subnet.Lease) []IPTablesRule {
 	return rules
 }
 
-func MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *subnet.Lease) []IPTablesRule {
+func MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease.Lease) []IPTablesRule {
 	pod_cidr := lease.IPv6Subnet.String()
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	supports_random_fully := false

@@ -33,6 +33,7 @@ import (
 	"github.com/Microsoft/hcsshim/hcn"
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
@@ -61,7 +62,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return backend, nil
 }
 
-func newSubnetAttrs(publicIP net.IP, vnid uint16, mac net.HardwareAddr) (*subnet.LeaseAttrs, error) {
+func newSubnetAttrs(publicIP net.IP, vnid uint16, mac net.HardwareAddr) (*lease.LeaseAttrs, error) {
 	var hardwareAddress hardwareAddr
 	if mac != nil {
 		hardwareAddress = hardwareAddr(mac)
@@ -75,7 +76,7 @@ func newSubnetAttrs(publicIP net.IP, vnid uint16, mac net.HardwareAddr) (*subnet
 		return nil, err
 	}
 
-	return &subnet.LeaseAttrs{
+	return &lease.LeaseAttrs{
 		PublicIP:    ip.FromIP(publicIP),
 		BackendType: "vxlan",
 		BackendData: json.RawMessage(data),
