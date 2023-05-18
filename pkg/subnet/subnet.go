@@ -131,6 +131,8 @@ type Manager interface {
 // of handling "fall-behind" logic where the history window has advanced too far
 // and it needs to diff the latest snapshot with its saved state and generate events
 func WatchLeases(ctx context.Context, sm Manager, ownLease *lease.Lease, receiver chan []lease.Event) {
+
+	// LeaseWatcher is initiated with the Lease of the local node
 	lw := &lease.LeaseWatcher{
 		OwnLease: ownLease,
 	}
