@@ -13,7 +13,7 @@ services:
       context: .
       args:
         - ARCH=amd64
-    command: server --no-deploy=traefik,metrics-server --flannel-backend=none --disable-network-policy
+    command: server --disable=traefik,metrics-server --flannel-backend=none --disable-network-policy
     environment:
       - K3S_TOKEN=e2e
     hostname: local-leader

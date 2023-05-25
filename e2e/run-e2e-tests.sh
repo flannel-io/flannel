@@ -208,7 +208,7 @@ fi
 teardown() {
     docker compose down   \
         --remove-orphans \
-        --rmi local \
+        --rmi all \
         --volumes
 }
 
@@ -237,6 +237,7 @@ EOM
 EOM
   read -r -d '' FORWARD_RULES << EOM
 -P FORWARD ACCEPT
+-A FORWARD -m conntrack --ctstate NEW -m comment --comment "kubernetes load balancer firewall" -j KUBE-PROXY-FIREWALL
 -A FORWARD -m comment --comment "kubernetes forwarding rules" -j KUBE-FORWARD
 -A FORWARD -m conntrack --ctstate NEW -m comment --comment "kubernetes service portals" -j KUBE-SERVICES
 -A FORWARD -m conntrack --ctstate NEW -m comment --comment "kubernetes externally-visible service portals" -j KUBE-EXTERNAL-SERVICES
