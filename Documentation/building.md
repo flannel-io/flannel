@@ -23,7 +23,7 @@ Then you should be able to set the ARCH as above
 
 1. Make sure you have required dependencies installed on your machine.
     * On Ubuntu, run `sudo apt-get install linux-libc-dev golang gcc`. 
-      If the golang version installed is not 1.7 or higher. Download the newest golang and install manully.
+      If the golang version installed is not 1.7 or higher. Download the newest golang and install manually.
       To build the flannel.exe on windows, mingw-w64 is also needed. Run command `sudo apt-get install mingw-w64`
     * On Fedora/Redhat, run `sudo yum install kernel-headers golang gcc glibc-static`.
 2. Git clone the flannel repo. It MUST be placed in your GOPATH under `github.com/flannel-io/flannel`: `cd $GOPATH/src; git clone https://github.com/flannel-io/flannel.git`

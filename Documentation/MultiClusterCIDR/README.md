@@ -107,7 +107,7 @@ The new nodes will be allocated a `PodCIDR` based on the configured `clustercidr
 flannel will ensure connectivity between all the pods regardless of the subnet in which the pod's IP address has been allocated.
 
 ## Notes on the subnet.env file
-flanneld writes a file (located by default at /run/flannel/subnet.env) that is used by the flannel cni plugin which is called by the kubelet every time a pod is added or removed from the node. This file changes slightly with the new API. The `FLANNEL_NETWORK` and `FLANNEL_IPV6_NETWORK` become lists of CIDRs instead of sigle CIDR entry. They will hold the list of CIDRs declared in the `clustercidr` resource of the API. The file is updated by flanneld every time a new `clustercidr` is created.
+flanneld writes a file (located by default at /run/flannel/subnet.env) that is used by the flannel cni plugin which is called by the kubelet every time a pod is added or removed from the node. This file changes slightly with the new API. The `FLANNEL_NETWORK` and `FLANNEL_IPV6_NETWORK` become lists of CIDRs instead of single CIDR entry. They will hold the list of CIDRs declared in the `clustercidr` resource of the API. The file is updated by flanneld every time a new `clustercidr` is created.
 
 As an example, it could look like this:
 ```bash
