@@ -49,7 +49,7 @@ Depending on the backend being used, flannel may need to run with super user per
 ## Performance
 
 ### Control plane
-Flannel is known to scale to a very large number of hosts. A delay in contacting pods in a newly created host may indicate control plane problems. Flannel doesn't need much CPU or RAM but the first thing to check would be that it has adaquate resources available. Flannel is also reliant on the performance of the datastore, either etcd or the Kubernetes API server. Check that they are performing well.
+Flannel is known to scale to a very large number of hosts. A delay in contacting pods in a newly created host may indicate control plane problems. Flannel doesn't need much CPU or RAM but the first thing to check would be that it has adequate resources available. Flannel is also reliant on the performance of the datastore, either etcd or the Kubernetes API server. Check that they are performing well.
 
 ### Data plane
 Flannel relies on the underlying network so that's the first thing to check if you're seeing poor data plane performance.

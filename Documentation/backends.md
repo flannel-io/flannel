@@ -26,7 +26,7 @@ Type and options:
 * `MTU` (number): Desired MTU for the outgoing packets if not defined the MTU of the external interface is used.
 * `MacPrefix` (String): Only use on Windows, set to the MAC prefix. Defaults to `0E-2A`.
 
-Starting with Ubuntu 21.10, vxlan support on Raspberry Pi has been moved into a seperate kernel module. 
+Starting with Ubuntu 21.10, vxlan support on Raspberry Pi has been moved into a separate kernel module. 
 ```
 sudo apt install linux-modules-extra-raspi
 ```

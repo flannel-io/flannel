@@ -8,7 +8,7 @@ NOTE: If `kubeadm` is used, then pass `--pod-network-cidr=10.244.0.0/16` to `kub
 
 The `flannel` manifest defines five things:
 1. A `kube-flannel` with PodSecurity level set to *privileged*. 
-2. A ClusterRole and ClusterRoleBinding for Role Based Acccess Control (RBAC).
+2. A ClusterRole and ClusterRoleBinding for Role Based Access Control (RBAC).
 3. A service account for `flannel` to use.
 4. A ConfigMap containing both a CNI configuration and a `flannel` configuration. The `network` in the `flannel` configuration should match the pod network CIDR. The choice of `backend` is also made here and defaults to VXLAN.
 5. A DaemonSet for every architecture to deploy the `flannel` pod on each Node. The pod has two containers 1) the `flannel` daemon itself, and 2) an initContainer for deploying the CNI configuration to a location that the `kubelet` can read.
