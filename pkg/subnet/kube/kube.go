@@ -393,7 +393,10 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *lease.Lea
 			}
 		}
 
-		if (attrs.BackendType == "vxlan" && string(v6Bd) != "null") || (attrs.BackendType == "wireguard" && string(v6Bd) != "null" && attrs.PublicIPv6 != nil) || (attrs.BackendType == "host-gw" && attrs.PublicIPv6 != nil) {
+		if (attrs.BackendType == "vxlan" && string(v6Bd) != "null") ||
+			(attrs.BackendType == "wireguard" && string(v6Bd) != "null" && attrs.PublicIPv6 != nil) ||
+			(attrs.BackendType == "host-gw" && attrs.PublicIPv6 != nil) ||
+			(attrs.BackendType == "extension" && attrs.PublicIPv6 != nil) {
 			n.Annotations[ksm.annotations.BackendV6Data] = string(v6Bd)
 			if n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] != "" {
 				if n.Annotations[ksm.annotations.BackendPublicIPv6] != n.Annotations[ksm.annotations.BackendPublicIPv6Overwrite] {

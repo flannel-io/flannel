@@ -97,9 +97,16 @@ func (be *ExtensionBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	}
 
 	attrs := lease.LeaseAttrs{
-		PublicIP:    ip.FromIP(be.extIface.ExtAddr),
 		BackendType: "extension",
 		BackendData: data,
+	}
+
+	if be.extIface.IfaceAddr != nil {
+		attrs.PublicIP = ip.FromIP(be.extIface.IfaceAddr)
+	}
+
+	if be.extIface.IfaceV6Addr != nil {
+		attrs.PublicIPv6 = ip.FromIP6(be.extIface.IfaceV6Addr)
 	}
 
 	lease, err := be.sm.AcquireLease(ctx, &attrs)
