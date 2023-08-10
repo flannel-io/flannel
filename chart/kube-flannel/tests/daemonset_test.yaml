@@ -35,6 +35,8 @@ tests:
 
   - it: should have the correct args
     set:
+      flannel.command:
+        - "/opt/bin/flanneld"
       flannel.args:
         - "--ip-masq"
         - "--kube-subnet-mgr"
@@ -43,5 +45,8 @@ tests:
           path: spec.template.spec.containers[0].command
           value:
             - "/opt/bin/flanneld"
+      - equal:
+          path: spec.template.spec.containers[0].args
+          value:
             - "--ip-masq"
             - "--kube-subnet-mgr"

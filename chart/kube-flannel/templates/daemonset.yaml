@@ -59,10 +59,17 @@ spec:
       containers:
       - name: kube-flannel
         image: {{ .Values.flannel.image.repository }}:{{ .Values.flannel.image.tag }}
-        command:
-        - "/opt/bin/flanneld"
+        {{- if .Values.flannel.command }}
+        command: 
+        {{- range .Values.flannel.command }}
+        - {{ . }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.flannel.args }}
+        args: 
         {{- range .Values.flannel.args }}
-        - {{ . | quote }}
+        - {{ . }}
+        {{- end }}
         {{- end }}
         resources:
           requests:

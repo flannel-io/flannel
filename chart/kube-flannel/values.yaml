@@ -13,10 +13,11 @@ flannel:
   image_cni:
     repository: docker.io/flannel/flannel-cni-plugin
     tag: v1.2.0
-  # flannel command arguments
-  args:
-  - "--ip-masq"
-  - "--kube-subnet-mgr"
+
+  # command to execute
+  command: ["/opt/bin/flanneld"]
+  # command arguments
+  args: ["--ip-masq", "--kube-subnet-mgr"]
   # Backend for kube-flannel. Backend should not be changed
   # at runtime. (vxlan, host-gw, wireguard, udp)
   # Documentation at https://github.com/flannel-io/flannel/blob/master/Documentation/backends.md
