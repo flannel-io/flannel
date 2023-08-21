@@ -130,6 +130,17 @@ func (dev *vxlanDevice) Configure(ipa ip.IP4Net, flannelnet ip.IP4Net) error {
 		return fmt.Errorf("failed to set interface %s to UP state: %s", dev.link.Attrs().Name, err)
 	}
 
+	// ensure vxlan device hadware mac
+	// See https://github.com/flannel-io/flannel/issues/1795
+	nLink, err := netlink.LinkByName(dev.link.LinkAttrs.Name)
+	if err == nil {
+		if vxlan, ok := nLink.(*netlink.Vxlan); ok {
+			if vxlan.Attrs().HardwareAddr.String() != dev.MACAddr().String() {
+				return fmt.Errorf("%s's mac address wanted: %s, but got: %v", dev.link.Name, dev.MACAddr().String(), vxlan.HardwareAddr)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -140,6 +151,17 @@ func (dev *vxlanDevice) ConfigureIPv6(ipn ip.IP6Net, flannelnet ip.IP6Net) error
 
 	if err := netlink.LinkSetUp(dev.link); err != nil {
 		return fmt.Errorf("failed to set v6 interface %s to UP state: %w", dev.link.Attrs().Name, err)
+	}
+
+	// ensure vxlan device hadware mac
+	// See https://github.com/flannel-io/flannel/issues/1795
+	nLink, err := netlink.LinkByName(dev.link.LinkAttrs.Name)
+	if err == nil {
+		if vxlan, ok := nLink.(*netlink.Vxlan); ok {
+			if vxlan.Attrs().HardwareAddr.String() != dev.MACAddr().String() {
+				return fmt.Errorf("%s's v6 mac address wanted: %s, but got: %v", dev.link.Name, dev.MACAddr().String(), vxlan.HardwareAddr)
+			}
+		}
 	}
 
 	return nil
