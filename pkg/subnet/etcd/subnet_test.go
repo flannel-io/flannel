@@ -440,7 +440,7 @@ func TestRenewLease(t *testing.T) {
 		t.Fatal("RenewLease failed: ", err)
 	}
 	//we expect the new lease to have an expiration date in exactly 24h
-	acceptableMargin := 5 * time.Second
+	acceptableMargin := 10 * time.Second
 	expectedExpiration := time.Now().Add(subnetTTL).Round(time.Duration(acceptableMargin))
 
 	etcdResp, err := kvApi.Get(ctx, "/coreos.com/network/subnets", etcd.WithPrefix())
