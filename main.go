@@ -43,7 +43,7 @@ import (
 	"github.com/joho/godotenv"
 
 	// Backends need to be imported for their init() to get executed and them to register
-	"github.com/coreos/go-systemd/daemon"
+	"github.com/coreos/go-systemd/v22/daemon"
 	"github.com/flannel-io/flannel/pkg/backend"
 	_ "github.com/flannel-io/flannel/pkg/backend/alloc"
 	_ "github.com/flannel-io/flannel/pkg/backend/extension"
