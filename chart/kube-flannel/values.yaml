@@ -9,7 +9,7 @@ flannel:
   # kube-flannel image
   image:
     repository: docker.io/flannel/flannel
-    tag: v0.22.2
+    tag: v0.22.3
   image_cni:
     repository: docker.io/flannel/flannel-cni-plugin
     tag: v1.2.0
