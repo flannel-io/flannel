@@ -5,7 +5,7 @@ REGISTRY?=quay.io/coreos/flannel
 QEMU_VERSION=v3.0.0
 
 # Default tag and architecture. Can be overridden
-TAG?=$(shell git describe --tags --dirty --always)
+TAG?=$(shell git describe --tags --always)
 ARCH?=amd64
 # Only enable CGO (and build the UDP backend) on AMD64
 ifeq ($(ARCH),amd64)
