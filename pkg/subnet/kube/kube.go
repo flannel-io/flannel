@@ -480,8 +480,7 @@ func (ksm *kubeSubnetManager) WatchLeases(ctx context.Context, receiver chan []l
 					Events: []lease.Event{event},
 				}}
 		case <-ctx.Done():
-			close(receiver)
-			return ctx.Err()
+			return context.Canceled
 		}
 	}
 }
