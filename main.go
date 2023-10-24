@@ -38,6 +38,7 @@ import (
 	"github.com/flannel-io/flannel/pkg/subnet/kube"
 	"github.com/flannel-io/flannel/pkg/version"
 	"golang.org/x/net/context"
+	"k8s.io/client-go/tools/clientcmd"
 	log "k8s.io/klog/v2"
 
 	"github.com/joho/godotenv"
@@ -54,6 +55,9 @@ import (
 	_ "github.com/flannel-io/flannel/pkg/backend/udp"
 	_ "github.com/flannel-io/flannel/pkg/backend/vxlan"
 	_ "github.com/flannel-io/flannel/pkg/backend/wireguard"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientset "k8s.io/client-go/kubernetes"
 )
 
 type flagSlice []string
@@ -95,6 +99,7 @@ type CmdLineOpts struct {
 	netConfPath               string
 	setNodeNetworkUnavailable bool
 	useMultiClusterCidr       bool
+	persistentMac             bool
 }
 
 var (
@@ -132,6 +137,7 @@ func init() {
 	flannelFlags.StringVar(&opts.netConfPath, "net-config-path", "/etc/kube-flannel/net-conf.json", "path to the network configuration file")
 	flannelFlags.BoolVar(&opts.setNodeNetworkUnavailable, "set-node-network-unavailable", true, "set NodeNetworkUnavailable after ready")
 	flannelFlags.BoolVar(&opts.useMultiClusterCidr, "use-multi-cluster-cidr", false, "use MultiClusterCIDR API (alpha)")
+	flannelFlags.BoolVar(&opts.persistentMac, "persistent-mac", false, "keep MAC address of flannel.1 interface beyond reboots (alpha)")
 
 	log.InitFlags(nil)
 
@@ -330,6 +336,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	if opts.persistentMac {
+		// edge k8s: get mac str from kube-mgr and use it to register network(flannel.1)
+		macStr := getMacStrFromNodeAnnotations(opts.kubeApiUrl, opts.kubeConfigFile)
+		if macStr != "" {
+			ctx = context.WithValue(ctx, "VtepMAC", macStr)
+		}
+	}
+
 	bn, err := be.RegisterNetwork(ctx, &wg, config)
 	if err != nil {
 		log.Errorf("Error registering network: %s", err)
@@ -488,6 +502,68 @@ func recycleIPTables(nw ip.IP4Net, myLease *lease.Lease) error {
 		}
 	}
 	return nil
+}
+
+// getMacStrFromNodeAnnotations get mac address from node annotations when flannel restart
+func getMacStrFromNodeAnnotations(apiUrl, kubeconfig string) string {
+	cfg, err := clientcmd.BuildConfigFromFlags(apiUrl, kubeconfig)
+	if err != nil {
+		log.Errorf("Failed to create k8s config for backend data: %v", err)
+		return ""
+	}
+
+	c, err := clientset.NewForConfig(cfg)
+	if err != nil {
+		log.Errorf("Failed to initialize client for backend data: %v", err)
+		return ""
+	}
+
+	// The kube subnet mgr needs to know the k8s node name that it's running on so it can annotate it.
+	// If we're running as a pod then the POD_NAME and POD_NAMESPACE will be populated and can be used to find the node
+	// name. Otherwise, the environment variable NODE_NAME can be passed in.
+	nodeName := os.Getenv("NODE_NAME")
+	if nodeName == "" {
+		podName := os.Getenv("POD_NAME")
+		podNamespace := os.Getenv("POD_NAMESPACE")
+		if podName == "" || podNamespace == "" {
+			log.Errorf("env variables POD_NAME and POD_NAMESPACE must be set")
+			return ""
+		}
+
+		pod, err := c.CoreV1().Pods(podNamespace).Get(context.TODO(), podName, metav1.GetOptions{})
+		if err != nil {
+			log.Errorf("error retrieving pod spec for '%s/%s': %v", podNamespace, podName, err)
+			return ""
+		}
+		nodeName = pod.Spec.NodeName
+		if nodeName == "" {
+			log.Errorf("node name not present in pod spec '%s/%s'", podNamespace, podName)
+			return ""
+		}
+	}
+
+	// get mac info from Name func.
+	node, err := c.CoreV1().Nodes().Get(context.TODO(), nodeName, metav1.GetOptions{})
+	if err != nil {
+		log.Errorf("Failed to get node for backend data: %v", err)
+		return ""
+	}
+
+	// node backend data format: `{"VNI":1,"VtepMAC":"12:c6:65:89:b4:e3"}`
+	// and we will return only mac addr str like 12:c6:65:89:b4:e3
+	if node != nil && node.Annotations != nil {
+		log.Infof("List of node(%s) annotations: %#+v", nodeName, node.Annotations)
+		backendData, ok := node.Annotations[fmt.Sprintf("%s/backend-data", opts.kubeAnnotationPrefix)]
+		if ok {
+			macStr := strings.Trim(backendData, "\"}")
+			macInfoSlice := strings.Split(macStr, ":\"")
+			if len(macInfoSlice) == 2 {
+				return macInfoSlice[1]
+			}
+		}
+	}
+
+	return ""
 }
 
 func recycleIP6Tables(nw ip.IP6Net, myLease *lease.Lease) error {

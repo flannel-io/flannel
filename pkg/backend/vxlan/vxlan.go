@@ -63,6 +63,7 @@ import (
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
+	"github.com/vishvananda/netlink"
 	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
 )
@@ -176,6 +177,21 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 			return nil, err
 		}
 		v6Dev.directRouting = cfg.DirectRouting
+	}
+
+	// edge k8s: when flannel is restarted, it will get mac addr from node annotations to set flannel.1 mac address
+	// in order to keep mac address for flannel.1
+	var hwAddr net.HardwareAddr
+	macStr, _ := ctx.Value("VtepMAC").(string)
+	if macStr != "" {
+		hwAddr, _ = net.ParseMAC(macStr)
+		if err := netlink.LinkSetHardwareAddr(dev.link, hwAddr); err != nil {
+			log.Errorf("Failed to ip link set mac addr(%s): %v", macStr, err)
+		} else {
+			log.Infof("Setup flannel.1 mac address to %s successfully when flannel restart", macStr)
+		}
+	} else {
+		hwAddr = dev.MACAddr()
 	}
 
 	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, be.extIface.ExtV6Addr, uint16(cfg.VNI), dev, v6Dev)
