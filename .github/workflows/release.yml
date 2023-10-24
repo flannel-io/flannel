@@ -5,7 +5,7 @@ on:
 env:
   GO_VERSION: "1.20"
   LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le mips64le"
-  REPOSITORY: flannel/flannel
+  REPOSITORY: siredmar/flannel
 
 jobs:
   build-and-push-images:
@@ -57,37 +57,37 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push Docker image for amd64
-        if: github.repository_owner == 'flannel-io'
+        if: github.repository_owner == 'siredmar'
         run: |
           docker build -f images/Dockerfile.amd64 -t ${{ steps.meta.outputs.tags }}-amd64 .
           docker push ${{ steps.meta.outputs.tags }}-amd64
 
       - name: Build and push Docker image for arm
-        if: github.repository_owner == 'flannel-io'
+        if: github.repository_owner == 'siredmar'
         run: |
           docker build -f images/Dockerfile.arm -t ${{ steps.meta.outputs.tags }}-arm .
           docker push ${{ steps.meta.outputs.tags }}-arm
 
       - name: Build and push Docker image for arm64
-        if: github.repository_owner == 'flannel-io'
+        if: github.repository_owner == 'siredmar'
         run: |
           docker build -f images/Dockerfile.arm64 -t ${{ steps.meta.outputs.tags }}-arm64 .
           docker push ${{ steps.meta.outputs.tags }}-arm64
 
       - name: Build and push Docker image for s390x
-        if: github.repository_owner == 'flannel-io'
+        if: github.repository_owner == 'siredmar'
         run: |
           docker build -f images/Dockerfile.s390x -t ${{ steps.meta.outputs.tags }}-s390x .
           docker push ${{ steps.meta.outputs.tags }}-s390x
 
       - name: Build and push Docker image for ppc64le
-        if: github.repository_owner == 'flannel-io'
+        if: github.repository_owner == 'siredmar'
         run: |
           docker build -f images/Dockerfile.ppc64le -t ${{ steps.meta.outputs.tags }}-ppc64le .
           docker push ${{ steps.meta.outputs.tags }}-ppc64le
-        
+
       - name: Build and push Docker image for mips64le
-        if: github.repository_owner == 'flannel-io'
+        if: github.repository_owner == 'siredmar'
         run: |
           docker build -f images/Dockerfile.mips64le -t ${{ steps.meta.outputs.tags }}-mips64le .
           docker push ${{ steps.meta.outputs.tags }}-mips64le
@@ -139,7 +139,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Create and push manifest for multi-arch image
-        if: github.repository_owner == 'flannel-io'
+        if: github.repository_owner == 'siredmar'
         run: |
           # get artifacts from previous steps and integrate into one multi-arch manifest
           docker pull ${{ steps.meta.outputs.tags }}-amd64
@@ -183,7 +183,7 @@ jobs:
 
       - name: go mod vendor
         run: go mod vendor
-      
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
@@ -204,7 +204,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: 'chart/'
+          path: "chart/"
 
       - name: Deploy to GitHub Pages
         id: deployment
