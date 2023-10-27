@@ -94,7 +94,6 @@ type CmdLineOpts struct {
 	iptablesForwardRules      bool
 	netConfPath               string
 	setNodeNetworkUnavailable bool
-	useMultiClusterCidr       bool
 }
 
 var (
@@ -131,7 +130,6 @@ func init() {
 	flannelFlags.BoolVar(&opts.iptablesForwardRules, "iptables-forward-rules", true, "add default accept rules to FORWARD chain in iptables")
 	flannelFlags.StringVar(&opts.netConfPath, "net-config-path", "/etc/kube-flannel/net-conf.json", "path to the network configuration file")
 	flannelFlags.BoolVar(&opts.setNodeNetworkUnavailable, "set-node-network-unavailable", true, "set NodeNetworkUnavailable after ready")
-	flannelFlags.BoolVar(&opts.useMultiClusterCidr, "use-multi-cluster-cidr", false, "use MultiClusterCIDR API (alpha)")
 
 	log.InitFlags(nil)
 
@@ -177,7 +175,7 @@ func newSubnetManager(ctx context.Context) (subnet.Manager, error) {
 			opts.kubeAnnotationPrefix,
 			opts.netConfPath,
 			opts.setNodeNetworkUnavailable,
-			opts.useMultiClusterCidr)
+			false)
 	}
 
 	cfg := &etcd.EtcdConfig{
