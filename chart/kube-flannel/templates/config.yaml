@@ -67,7 +67,7 @@ data:
         "ListenPortV6": {{ .Values.flannel.backendPortv6 }},
 {{- end }}
 {{- if .Values.flannel.psk }}
-        "PSK": {{ .Values.flannel.psk }},
+        "PSK": {{ .Values.flannel.psk | quote }},
 {{- end }}
 {{- if .Values.flannel.mtu }}
         "MTU": {{ .Values.flannel.mtu }},
