@@ -88,7 +88,7 @@ func (nw *network) MTU() int {
 }
 
 type vxlanLeaseAttrs struct {
-	VNI     uint16
+	VNI     uint32
 	VtepMAC hardwareAddr
 }
 
