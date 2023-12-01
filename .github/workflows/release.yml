@@ -4,7 +4,7 @@ on:
 
 env:
   GO_VERSION: "1.20"
-  LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le mips64le"
+  LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le mips64le riscv64"
   REPOSITORY: flannel/flannel
 
 jobs:
@@ -92,6 +92,12 @@ jobs:
           docker build -f images/Dockerfile.mips64le -t ${{ steps.meta.outputs.tags }}-mips64le .
           docker push ${{ steps.meta.outputs.tags }}-mips64le
 
+      - name: Build and push Docker image for riscv64
+        if: github.repository_owner == 'flannel-io'
+        run: |
+          docker build -f images/Dockerfile.riscv64 -t ${{ steps.meta.outputs.tags }}-riscv64 .
+          docker push ${{ steps.meta.outputs.tags }}-riscv64
+
   build-and-push-multi-arch-image:
     needs: [build-and-push-images]
     runs-on: ubuntu-latest
@@ -148,6 +154,7 @@ jobs:
           docker pull ${{ steps.meta.outputs.tags }}-ppc64le
           docker pull ${{ steps.meta.outputs.tags }}-s390x
           docker pull ${{ steps.meta.outputs.tags }}-mips64le
+          docker pull ${{ steps.meta.outputs.tags }}-riscv64
           docker manifest create ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-amd64 ${{ steps.meta.outputs.tags }}-arm64 ${{ steps.meta.outputs.tags }}-arm ${{ steps.meta.outputs.tags }}-ppc64le ${{ steps.meta.outputs.tags }}-s390x ${{ steps.meta.outputs.tags }}-mips64le
           docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-amd64 --arch amd64
           docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-arm64 --arch arm64
@@ -155,6 +162,7 @@ jobs:
           docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-ppc64le --arch ppc64le
           docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-s390x --arch s390x
           docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-mips64le --arch mips64le
+          docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-riscv64 --arch riscv64
           docker manifest push ${{ steps.meta.outputs.tags }}
           docker pull ${{ steps.meta.outputs.tags }}
           docker tag ${{ steps.meta.outputs.tags }} ${{ env.REPOSITORY }}:latest

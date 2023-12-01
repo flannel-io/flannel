@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   GO_VERSION: "1.20"
-  LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le mips64le"
+  LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le mips64le riscv64"
 
 jobs:
   build-images:
@@ -77,4 +77,11 @@ jobs:
         with:
           context: .
           file: images/Dockerfile.mips64le
+          push: false
+
+      - name: Build Docker image for riscv64
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: images/Dockerfile.riscv64
           push: false
