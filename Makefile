@@ -60,12 +60,12 @@ dist/flanneld-$(ARCH): deps dist/qemu-$(ARCH)-static
 ## Create a docker image on disk for a specific arch and tag
 image:	dist/flanneld-$(TAG)-$(ARCH).docker
 dist/flanneld-$(TAG)-$(ARCH).docker: dist/flanneld-$(ARCH)
-	docker build -f images/Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
+	docker build -f images/Dockerfile --platform=$(ARCH) --build-arg TAG=$(TAG) -t $(REGISTRY):$(TAG)-$(ARCH) .
 	docker save -o dist/flanneld-$(TAG)-$(ARCH).docker $(REGISTRY):$(TAG)-$(ARCH)
 
-# amd64 gets an image with the suffix too (i.e. it's the default)
+# amd64 gets an image without the suffix too (i.e. it's the default)
 ifeq ($(ARCH),amd64)
-	docker build -f images/Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG) .
+	docker build -f images/Dockerfile --platform=$(ARCH) --build-arg TAG=$(TAG) -t $(REGISTRY):$(TAG) .
 endif
 
 ### TESTING
@@ -153,7 +153,7 @@ endif
 		cd /go/src/github.com/flannel-io/flannel && \
 		make -e dist/flanneld && \
 		mv dist/flanneld dist/flanneld-$(ARCH)'
-	docker build -f images/Dockerfile.$(ARCH) -t $(REGISTRY):$(TAG)-$(ARCH) .
+	docker build -f images/Dockerfile --platform=$(ARCH) --build-arg TAG=$(TAG) -t $(REGISTRY):$(TAG)-$(ARCH) .
 
 # Make a release after creating a tag
 # To build cross platform Docker images, the qemu-static binaries are needed. On ubuntu "apt-get install  qemu-user-static"
