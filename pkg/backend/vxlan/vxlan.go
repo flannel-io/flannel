@@ -89,7 +89,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return backend, nil
 }
 
-func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, vnid uint16, dev, v6Dev *vxlanDevice) (*lease.LeaseAttrs, error) {
+func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, vnid uint32, dev, v6Dev *vxlanDevice) (*lease.LeaseAttrs, error) {
 	leaseAttrs := &lease.LeaseAttrs{
 		BackendType: "vxlan",
 	}
@@ -178,7 +178,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 		v6Dev.directRouting = cfg.DirectRouting
 	}
 
-	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, be.extIface.ExtV6Addr, uint16(cfg.VNI), dev, v6Dev)
+	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, be.extIface.ExtV6Addr, uint32(cfg.VNI), dev, v6Dev)
 	if err != nil {
 		return nil, err
 	}
