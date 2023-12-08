@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   GO_VERSION: "1.20"
-  LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le mips64le riscv64"
+  LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le riscv64"
   REPOSITORY: flannel/flannel
 
 jobs:
