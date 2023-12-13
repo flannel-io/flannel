@@ -29,7 +29,6 @@ import (
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"golang.org/x/net/context"
 	v1 "k8s.io/api/core/v1"
-	networkingv1alpha1 "k8s.io/api/networking/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -77,7 +76,7 @@ type kubeSubnetManager struct {
 	snFileInfo                *subnetFileInfo
 }
 
-func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPath string, setNodeNetworkUnavailable, useMultiClusterCidr bool) (subnet.Manager, error) {
+func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPath string, setNodeNetworkUnavailable bool) (subnet.Manager, error) {
 	var cfg *rest.Config
 	var err error
 	// Try to build kubernetes config from a master url or a kubeconfig filepath. If neither masterUrl
@@ -124,14 +123,7 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 		return nil, fmt.Errorf("error parsing subnet config: %s", err)
 	}
 
-	if useMultiClusterCidr {
-		err = readFlannelNetworksFromClusterCIDRList(ctx, c, sc)
-		if err != nil {
-			return nil, fmt.Errorf("error reading flannel networks from k8s api: %s", err)
-		}
-	}
-
-	sm, err := newKubeSubnetManager(ctx, c, sc, nodeName, prefix, useMultiClusterCidr)
+	sm, err := newKubeSubnetManager(ctx, c, sc, nodeName, prefix)
 	if err != nil {
 		return nil, fmt.Errorf("error creating network manager: %s", err)
 	}
@@ -157,7 +149,7 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 
 // newKubeSubnetManager fills the kubeSubnetManager. The most important part is the controller which will
 // watch for kubernetes node updates
-func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet.Config, nodeName, prefix string, useMultiClusterCidr bool) (*kubeSubnetManager, error) {
+func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet.Config, nodeName, prefix string) (*kubeSubnetManager, error) {
 	var err error
 	var ksm kubeSubnetManager
 	ksm.annotations, err = newAnnotations(prefix)
@@ -228,30 +220,6 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 		ksm.nodeStore = listers.NewNodeLister(indexer)
 	}
 
-	if useMultiClusterCidr {
-		_, clusterController := cache.NewIndexerInformer(
-			&cache.ListWatch{
-				ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-					return ksm.client.NetworkingV1alpha1().ClusterCIDRs().List(ctx, options)
-				},
-				WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-					return ksm.client.NetworkingV1alpha1().ClusterCIDRs().Watch(ctx, options)
-				},
-			},
-			&networkingv1alpha1.ClusterCIDR{},
-			resyncPeriod,
-			cache.ResourceEventHandlerFuncs{
-				AddFunc: func(obj interface{}) {
-					ksm.handleAddClusterCidr(obj)
-				},
-				DeleteFunc: func(obj interface{}) {
-					ksm.handleDeleteClusterCidr(obj)
-				},
-			},
-			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
-		)
-		ksm.clusterCIDRController = clusterController
-	}
 	return &ksm, nil
 }
 
