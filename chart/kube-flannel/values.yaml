@@ -1,4 +1,7 @@
 ---
+global:
+  imagePullSecrets:
+# - name: "a-secret-name"
 
 # The IPv4 cidr pool to create on startup if none exists. Pod IPs will be
 # chosen from this range.

@@ -45,3 +45,13 @@ tests:
             - "/opt/bin/flanneld"
             - "--ip-masq"
             - "--kube-subnet-mgr"
+
+  - it: should have the correct image pull secrets
+    set:
+      global.imagePullSecrets:
+        - name: "a-test-secret"
+    asserts:
+      - equal:
+          path: spec.template.spec.imagePullSecrets
+          value:
+            - name: "a-test-secret"
