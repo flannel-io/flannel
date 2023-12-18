@@ -174,8 +174,7 @@ func newSubnetManager(ctx context.Context) (subnet.Manager, error) {
 			opts.kubeConfigFile,
 			opts.kubeAnnotationPrefix,
 			opts.netConfPath,
-			opts.setNodeNetworkUnavailable,
-			false)
+			opts.setNodeNetworkUnavailable)
 	}
 
 	cfg := &etcd.EtcdConfig{
