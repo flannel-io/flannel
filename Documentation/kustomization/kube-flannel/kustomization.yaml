@@ -6,4 +6,4 @@ resources:
 - kube-flannel.yml
 images:
 - name: docker.io/flannel/flannel
-  newTag: v0.22.3
+  newTag: v0.24.0
