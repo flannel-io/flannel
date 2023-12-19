@@ -103,7 +103,7 @@ func (nw *network) handleSubnetEvents(batch []lease.Event) {
 		}
 
 		if vxlanAttrs.VNI < 4096 {
-			log.Error("VNI is required to greater than or equal to 4096 on Windows.")
+			log.Errorf("VNI is %d but it is required to be greater than or equal to 4096 on Windows.", vxlanAttrs.VNI)
 			continue
 		}
 
