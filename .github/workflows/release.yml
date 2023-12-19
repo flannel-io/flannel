@@ -155,7 +155,7 @@ jobs:
           docker pull ${{ steps.meta.outputs.tags }}-s390x
           docker pull ${{ steps.meta.outputs.tags }}-mips64le
           docker pull ${{ steps.meta.outputs.tags }}-riscv64
-          docker manifest create ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-amd64 ${{ steps.meta.outputs.tags }}-arm64 ${{ steps.meta.outputs.tags }}-arm ${{ steps.meta.outputs.tags }}-ppc64le ${{ steps.meta.outputs.tags }}-s390x ${{ steps.meta.outputs.tags }}-mips64le
+          docker manifest create ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-amd64 ${{ steps.meta.outputs.tags }}-arm64 ${{ steps.meta.outputs.tags }}-arm ${{ steps.meta.outputs.tags }}-ppc64le ${{ steps.meta.outputs.tags }}-s390x ${{ steps.meta.outputs.tags }}-mips64le ${{ steps.meta.outputs.tags }}-riscv64
           docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-amd64 --arch amd64
           docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-arm64 --arch arm64
           docker manifest annotate ${{ steps.meta.outputs.tags }} ${{ steps.meta.outputs.tags }}-arm --arch arm
