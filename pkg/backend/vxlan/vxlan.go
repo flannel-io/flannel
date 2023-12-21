@@ -142,6 +142,19 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 
 	var dev, v6Dev *vxlanDevice
 	var err error
+
+	// When flannel is restarted, it will get the MAC address from the node annotations to set flannel.1 MAC address
+	var hwAddr net.HardwareAddr
+
+	macStr := be.subnetMgr.GetStoredMacAddress()
+	if macStr != "" {
+		hwAddr, err = net.ParseMAC(macStr)
+		if err != nil {
+			log.Errorf("Failed to parse mac addr(%s): %v", macStr, err)
+		}
+		log.Infof("Setup flannel.1 mac address to %s when flannel restarts", macStr)
+	}
+
 	if config.EnableIPv4 {
 		devAttrs := vxlanDeviceAttrs{
 			vni:       uint32(cfg.VNI),
@@ -152,6 +165,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 			vtepPort:  cfg.Port,
 			gbp:       cfg.GBP,
 			learning:  cfg.Learning,
+			hwAddr:    hwAddr,
 		}
 
 		dev, err = newVXLANDevice(&devAttrs)
@@ -170,6 +184,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 			vtepPort:  cfg.Port,
 			gbp:       cfg.GBP,
 			learning:  cfg.Learning,
+			hwAddr:    nil,
 		}
 		v6Dev, err = newVXLANDevice(&v6DevAttrs)
 		if err != nil {

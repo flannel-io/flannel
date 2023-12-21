@@ -21,6 +21,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -64,6 +65,7 @@ type kubeSubnetManager struct {
 	enableIPv4                bool
 	enableIPv6                bool
 	annotations               annotations
+	annotationPrefix          string
 	client                    clientset.Interface
 	nodeName                  string
 	nodeStore                 listers.NodeLister
@@ -152,6 +154,7 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet.Config, nodeName, prefix string) (*kubeSubnetManager, error) {
 	var err error
 	var ksm kubeSubnetManager
+	ksm.annotationPrefix = prefix
 	ksm.annotations, err = newAnnotations(prefix)
 	if err != nil {
 		return nil, err
@@ -601,4 +604,30 @@ func (m *kubeSubnetManager) HandleSubnetFile(path string, config *subnet.Config,
 		mtu:    mtu,
 	}
 	return subnet.WriteSubnetFile(path, config, ipMasq, sn, ipv6sn, mtu)
+}
+
+// GetStoredMacAddress reads MAC address from node annotations when flannel restarts
+func (ksm *kubeSubnetManager) GetStoredMacAddress() string {
+	// get mac info from Name func.
+	node, err := ksm.client.CoreV1().Nodes().Get(context.TODO(), ksm.nodeName, metav1.GetOptions{})
+	if err != nil {
+		log.Errorf("Failed to get node for backend data: %v", err)
+		return ""
+	}
+
+	// node backend data format: `{"VNI":1,"VtepMAC":"12:c6:65:89:b4:e3"}`
+	// and we will return only mac addr str like 12:c6:65:89:b4:e3
+	if node != nil && node.Annotations != nil {
+		log.Infof("List of node(%s) annotations: %#+v", ksm.nodeName, node.Annotations)
+		backendData, ok := node.Annotations[fmt.Sprintf("%s/backend-data", ksm.annotationPrefix)]
+		if ok {
+			macStr := strings.Trim(backendData, "\"}")
+			macInfoSlice := strings.Split(macStr, ":\"")
+			if len(macInfoSlice) == 2 {
+				return macInfoSlice[1]
+			}
+		}
+	}
+
+	return ""
 }
