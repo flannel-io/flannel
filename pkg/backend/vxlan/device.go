@@ -38,6 +38,7 @@ type vxlanDeviceAttrs struct {
 	vtepPort  int
 	gbp       bool
 	learning  bool
+	hwAddr    net.HardwareAddr
 }
 
 type vxlanDevice struct {
@@ -46,9 +47,13 @@ type vxlanDevice struct {
 }
 
 func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
-	hardwareAddr, err := mac.NewHardwareAddr()
-	if err != nil {
-		return nil, err
+	var err error
+	hardwareAddr := devAttrs.hwAddr
+	if devAttrs.hwAddr == nil {
+		hardwareAddr, err = mac.NewHardwareAddr()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	link := &netlink.Vxlan{
