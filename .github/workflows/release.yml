@@ -110,6 +110,11 @@ jobs:
             dist/kube-flannel.yml
             dist/kube-flannel-psp.yml
 
+      - name: Wait for previous job
+        uses: yogeshlonkar/wait-for-jobs@v0.2.1
+        with:
+          jobs: build-and-push-images
+
       - name: Setup Pages
         uses: actions/configure-pages@v3
 
