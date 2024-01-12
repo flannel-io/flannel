@@ -25,7 +25,7 @@ import (
 	"strings"
 )
 
-//commandWrapper ensures that exceptions are written to stdout and the powershell process exit code is -1
+// commandWrapper ensures that exceptions are written to stdout and the powershell process exit code is -1
 const commandWrapper = `$ErrorActionPreference="Stop";try { %s } catch { Write-Host $_; os.Exit(-1) }`
 
 // RunCommand executes a given powershell command.
@@ -37,7 +37,7 @@ func RunCommand(command string) ([]byte, error) {
 	stdout, err := cmd.Output()
 	if err != nil {
 		if cmd.ProcessState.ExitCode() != 0 {
-			message := strings.TrimSpace(string(stdout))
+			message := fmt.Sprintf("error: %v while running the command: %v.", err, cmd) + " Command output: " + strings.TrimSpace(string(stdout))
 			return []byte{}, errors.New(message)
 		}
 
@@ -66,12 +66,12 @@ func RunCommandWithJsonResult(command string, v interface{}) error {
 
 	stdout, err := RunCommandf(wrappedCommand)
 	if err != nil {
-		return err
+		return fmt.Errorf("error while executing command: %w", err)
 	}
 
 	err = json.Unmarshal(stdout, v)
 	if err != nil {
-		return err
+		return fmt.Errorf("error while unmarshalling stdout: %w", err)
 	}
 
 	return nil
