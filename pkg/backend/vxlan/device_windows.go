@@ -18,6 +18,7 @@ package vxlan
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/Microsoft/hcsshim/hcn"
@@ -32,12 +33,17 @@ type vxlanDeviceAttrs struct {
 	name          string
 	gbp           bool
 	addressPrefix ip.IP4Net
+	interfaceName string
 }
 
 type vxlanDevice struct {
 	link          *hcn.HostComputeNetwork
 	macPrefix     string
 	directRouting bool
+}
+
+type NetAdapterNameSettings struct {
+	NetworkAdapterName string `json:"NetworkAdapterName"`
 }
 
 func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
@@ -79,6 +85,10 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 	}
 
 	network.Ipams[0].Subnets[0].Policies = append(network.Ipams[0].Subnets[0].Policies, spJson)
+
+	if devAttrs.interfaceName != "" {
+		addNetAdapterName(network, devAttrs.interfaceName)
+	}
 
 	hnsNetwork, err := ensureNetwork(network, devAttrs.addressPrefix.String())
 	if err != nil {
@@ -204,4 +214,25 @@ func createSubnet(AddressPrefix string, NextHop string, DestPrefix string) *hcn.
 			},
 		},
 	}
+}
+
+// addNetAdapterName adds a policy to the network to set the name of the network adapter
+func addNetAdapterName(network *hcn.HostComputeNetwork, netAdapterName string) error {
+	settings := NetAdapterNameSettings{
+		NetworkAdapterName: netAdapterName,
+	}
+
+	settingsJson, err := json.Marshal(settings)
+	if err != nil {
+		return fmt.Errorf("Failed to marshal settings: %w", err)
+	}
+
+	policySettings := hcn.NetworkPolicy{
+		Type:     hcn.NetAdapterName,
+		Settings: settingsJson,
+	}
+
+	network.Policies = append(network.Policies, policySettings)
+
+	return nil
 }

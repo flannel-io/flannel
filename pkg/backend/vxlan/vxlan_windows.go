@@ -148,6 +148,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 		vni:           uint32(cfg.VNI),
 		name:          cfg.Name,
 		addressPrefix: lease.Subnet,
+		interfaceName: be.extIface.Iface.Name,
 	}
 
 	dev, err := newVXLANDevice(&devAttrs)
