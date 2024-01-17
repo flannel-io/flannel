@@ -154,7 +154,7 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 			return nil, errors.Wrapf(err, "Failed to parse management ip (%s)", managementIP)
 		}
 
-		waitErr = wait.Poll(500*time.Millisecond, 5*time.Second, func() (done bool, err error) {
+		waitErr = wait.Poll(2000*time.Millisecond, 20*time.Second, func() (done bool, err error) {
 			_, lastErr = ip.GetInterfaceByIP(managementIPv4.ToIP())
 			return lastErr == nil, nil
 		})
