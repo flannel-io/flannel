@@ -56,7 +56,7 @@ data:
         "MTU": {{ .Values.flannel.mtu }},
 {{- end }}
 {{- if .Values.flannel.macPrefix }}
-        "MacPrefix": {{ .Values.flannel.macPrefix }},
+        "MacPrefix": {{ .Values.flannel.macPrefix | quote }},
 {{- end }}
         "Type": {{ .Values.flannel.backend | quote }}
 {{- else if eq .Values.flannel.backend "wireguard" }}
