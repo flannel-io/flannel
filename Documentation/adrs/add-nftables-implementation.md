@@ -11,7 +11,7 @@ At the moment, flannel uses iptables to mask and route packets.
 Our implementation is  based on the library from coreos (https://github.com/coreos/go-iptables).
 
 There are several issues with using iptables in flannel:
-* performance: packets are matched using a list so performance is O(n).
+* performance: packets are matched using a list so performance is O(n). This isn't very important for flannel because use few iptables rules anyway.
 * stability: 
 ** rules must be purged then updated every time flannel needs to change a rule to keep the correct order
 ** there can be interferences with other k8s components using iptables as well (kube-proxy, kube-router...)
@@ -45,18 +45,45 @@ Currently, flannel uses two dedicated tables for its own rules: `FLANNEL-POSTRTG
 * rules in `FLANNEL-POSTRTG` are used to manage masquerading of the traffic to/from the pods
 * rules in `FLANNEL-FWD` are used to ensure that traffic to and from the flannel network can be forwarded
 
+With nftables, flannel would have its own dedicated table (`flannel`) with arbitrary chains and rules as needed.
+
+see https://wiki.nftables.org/wiki-nftables/index.php/Performing_Network_Address_Translation_(NAT)
+```
+# !! untested example
+table flannel {
+    chain flannel-postrtg {
+        type nat hook postrouting priority 0; 
+        # kube-proxy
+        meta mark 0x4000/0x4000 return
+        # don't NAT traffic within overlay network 
+        ip saddr $pod_cidr ip daddr $cluster_cidr return 
+        ip saddr $cluster_cidr ip daddr $pod_cidr return 
+        # Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
+        ip saddr != $pod_cidr ip daddr $cluster_cidr return 
+        # NAT if it's not multicast traffic
+        ip saddr $cluster_cidr ip daddr != 224.0.0.0/4 nat 
+        # Masquerade anything headed towards flannel from the host
+        ip saddr != $cluster_cidr ip daddr $cluster_cidr nat 
+    }
+
+    chain flannel-fwd {
+        type filter hook input priority 0; policy drop;
+        # allow traffic to be forwarded if it is to or from the flannel network range
+        ip saddr flannelNetwork accept
+        ip daddr flannelNetwork accept
+    }
+}
+```
+
 ## nftables library
+We can either:
 * call the `nft` executable directly
-* https://github.com/kubernetes-sigs/knftables
+* use https://github.com/kubernetes-sigs/knftables which is developed for kube-proxy and should cover our use case
 
 ## Implementation steps
-### alpha
 * refactor current iptables code to better encapsulate iptables calls in the dedicated package
-* remove code for managing multiple networks that was added for the deprecated MultiClusterCIDR feature?
-** => this is optional but would help to simplify the code
 * implement nftables mode that is the exact equivalent of the current iptables code
 * add similar unit tests and e2e test coverage
-### beta
 * try to optimize the code using nftables-specific feature
 * integrate the new flag in k3s
 
