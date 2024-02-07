@@ -31,11 +31,12 @@ import (
 	"github.com/coreos/pkg/flagutil"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/ipmatch"
-	"github.com/flannel-io/flannel/pkg/iptables"
 	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	etcd "github.com/flannel-io/flannel/pkg/subnet/etcd"
 	"github.com/flannel-io/flannel/pkg/subnet/kube"
+	"github.com/flannel-io/flannel/pkg/trafficmngr"
+	"github.com/flannel-io/flannel/pkg/trafficmngr/iptables"
 	"github.com/flannel-io/flannel/pkg/version"
 	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
@@ -335,6 +336,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	//Create TrafficManager and instanciate it based on whether we use iptables or nftables
+	trafficMngr := newTrafficManager()
 	// Set up ipMasq if needed
 	if opts.ipMasq {
 		if config.EnableIPv4 {
@@ -345,22 +348,22 @@ func main() {
 				wg.Wait()
 				os.Exit(1)
 			}
-			if err = recycleIPTables(net, bn.Lease()); err != nil {
+			if err = recycleIPTables(trafficMngr, net, bn.Lease()); err != nil {
 				log.Errorf("Failed to recycle IPTables rules, %v", err)
 				cancel()
 				wg.Wait()
 				os.Exit(1)
 			}
 			log.Infof("Setting up masking rules")
-			iptables.CreateIP4Chain("nat", "FLANNEL-POSTRTG")
-			getRules := func() []iptables.IPTablesRule {
+			trafficMngr.CreateIP4Chain("nat", "FLANNEL-POSTRTG")
+			getRules := func() []trafficmngr.IPTablesRule {
 				if config.HasNetworks() {
-					return iptables.MasqRules(config.Networks, bn.Lease())
+					return trafficMngr.MasqRules(config.Networks, bn.Lease())
 				} else {
-					return iptables.MasqRules([]ip.IP4Net{config.Network}, bn.Lease())
+					return trafficMngr.MasqRules([]ip.IP4Net{config.Network}, bn.Lease())
 				}
 			}
-			go iptables.SetupAndEnsureIP4Tables(getRules, opts.iptablesResyncSeconds)
+			go trafficMngr.SetupAndEnsureIP4Tables(getRules, opts.iptablesResyncSeconds)
 
 		}
 		if config.EnableIPv6 {
@@ -371,22 +374,22 @@ func main() {
 				wg.Wait()
 				os.Exit(1)
 			}
-			if err = recycleIP6Tables(ip6net, bn.Lease()); err != nil {
+			if err = recycleIP6Tables(trafficMngr, ip6net, bn.Lease()); err != nil {
 				log.Errorf("Failed to recycle IP6Tables rules, %v", err)
 				cancel()
 				wg.Wait()
 				os.Exit(1)
 			}
 			log.Infof("Setting up masking ip6 rules")
-			iptables.CreateIP6Chain("nat", "FLANNEL-POSTRTG")
-			getRules := func() []iptables.IPTablesRule {
+			trafficMngr.CreateIP6Chain("nat", "FLANNEL-POSTRTG")
+			getRules := func() []trafficmngr.IPTablesRule {
 				if config.HasIPv6Networks() {
-					return iptables.MasqIP6Rules(config.IPv6Networks, bn.Lease())
+					return trafficMngr.MasqIP6Rules(config.IPv6Networks, bn.Lease())
 				} else {
-					return iptables.MasqIP6Rules([]ip.IP6Net{config.IPv6Network}, bn.Lease())
+					return trafficMngr.MasqIP6Rules([]ip.IP6Net{config.IPv6Network}, bn.Lease())
 				}
 			}
-			go iptables.SetupAndEnsureIP6Tables(getRules, opts.iptablesResyncSeconds)
+			go trafficMngr.SetupAndEnsureIP6Tables(getRules, opts.iptablesResyncSeconds)
 		}
 	}
 
@@ -403,11 +406,11 @@ func main() {
 				os.Exit(1)
 			}
 			log.Infof("Changing default FORWARD chain policy to ACCEPT")
-			iptables.CreateIP4Chain("filter", "FLANNEL-FWD")
-			getRules := func() []iptables.IPTablesRule {
-				return iptables.ForwardRules(net.String())
+			trafficMngr.CreateIP4Chain("filter", "FLANNEL-FWD")
+			getRules := func() []trafficmngr.IPTablesRule {
+				return trafficMngr.ForwardRules(net.String())
 			}
-			go iptables.SetupAndEnsureIP4Tables(getRules, opts.iptablesResyncSeconds)
+			go trafficMngr.SetupAndEnsureIP4Tables(getRules, opts.iptablesResyncSeconds)
 		}
 		if config.EnableIPv6 {
 			ip6net, err := config.GetFlannelIPv6Network(&bn.Lease().IPv6Subnet)
@@ -418,11 +421,11 @@ func main() {
 				os.Exit(1)
 			}
 			log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
-			iptables.CreateIP6Chain("filter", "FLANNEL-FWD")
-			getRules := func() []iptables.IPTablesRule {
-				return iptables.ForwardRules(ip6net.String())
+			trafficMngr.CreateIP6Chain("filter", "FLANNEL-FWD")
+			getRules := func() []trafficmngr.IPTablesRule {
+				return trafficMngr.ForwardRules(ip6net.String())
 			}
-			go iptables.SetupAndEnsureIP6Tables(getRules, opts.iptablesResyncSeconds)
+			go trafficMngr.SetupAndEnsureIP6Tables(getRules, opts.iptablesResyncSeconds)
 		}
 	}
 
@@ -462,7 +465,7 @@ func main() {
 	os.Exit(0)
 }
 
-func recycleIPTables(nw ip.IP4Net, myLease *lease.Lease) error {
+func recycleIPTables(tm trafficmngr.TrafficManager, nw ip.IP4Net, myLease *lease.Lease) error {
 	prevNetworks := ReadCIDRsFromSubnetFile(opts.subnetFile, "FLANNEL_NETWORK")
 	prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
 
@@ -480,14 +483,14 @@ func recycleIPTables(nw ip.IP4Net, myLease *lease.Lease) error {
 		newLease := &lease.Lease{
 			Subnet: prevSubnet,
 		}
-		if err := iptables.DeleteIP4Tables(iptables.MasqRules(prevNetworks, newLease)); err != nil {
+		if err := tm.DeleteIP4Tables(tm.MasqRules(prevNetworks, newLease)); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func recycleIP6Tables(nw ip.IP6Net, myLease *lease.Lease) error {
+func recycleIP6Tables(tm trafficmngr.TrafficManager, nw ip.IP6Net, myLease *lease.Lease) error {
 	prevNetworks := ReadIP6CIDRsFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_NETWORK")
 	prevSubnet := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_SUBNET")
 
@@ -506,7 +509,7 @@ func recycleIP6Tables(nw ip.IP6Net, myLease *lease.Lease) error {
 		lease := &lease.Lease{
 			IPv6Subnet: prevSubnet,
 		}
-		if err := iptables.DeleteIP6Tables(iptables.MasqIP6Rules(prevNetworks, lease)); err != nil {
+		if err := tm.DeleteIP6Tables(tm.MasqIP6Rules(prevNetworks, lease)); err != nil {
 			return err
 		}
 	}
@@ -655,4 +658,8 @@ func ReadIP6CIDRsFromSubnetFile(path string, CIDRKey string) []ip.IP6Net {
 		}
 	}
 	return prevCIDRs
+}
+
+func newTrafficManager() trafficmngr.TrafficManager {
+	return iptables.IPTablesManager{}
 }
