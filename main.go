@@ -31,7 +31,6 @@ import (
 	"github.com/coreos/pkg/flagutil"
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/ipmatch"
-	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	etcd "github.com/flannel-io/flannel/pkg/subnet/etcd"
 	"github.com/flannel-io/flannel/pkg/subnet/kube"
@@ -338,58 +337,45 @@ func main() {
 
 	//Create TrafficManager and instanciate it based on whether we use iptables or nftables
 	trafficMngr := newTrafficManager()
+	flannelIPv4Net := ip.IP4Net{}
+	flannelIpv6Net := ip.IP6Net{}
+	if config.EnableIPv4 {
+		flannelIPv4Net, err = config.GetFlannelNetwork(&bn.Lease().Subnet)
+		if err != nil {
+			log.Error(err)
+			cancel()
+			wg.Wait()
+			os.Exit(1)
+		}
+	}
+	if config.EnableIPv6 {
+		flannelIpv6Net, err = config.GetFlannelIPv6Network(&bn.Lease().IPv6Subnet)
+		if err != nil {
+			log.Error(err)
+			cancel()
+			wg.Wait()
+			os.Exit(1)
+		}
+	}
 	// Set up ipMasq if needed
 	if opts.ipMasq {
-		if config.EnableIPv4 {
-			net, err := config.GetFlannelNetwork(&bn.Lease().Subnet)
-			if err != nil {
-				log.Error(err)
-				cancel()
-				wg.Wait()
-				os.Exit(1)
-			}
-			if err = recycleIPTables(trafficMngr, net, bn.Lease()); err != nil {
-				log.Errorf("Failed to recycle IPTables rules, %v", err)
-				cancel()
-				wg.Wait()
-				os.Exit(1)
-			}
-			log.Infof("Setting up masking rules")
-			trafficMngr.CreateIP4Chain("nat", "FLANNEL-POSTRTG")
-			getRules := func() []trafficmngr.IPTablesRule {
-				if config.HasNetworks() {
-					return trafficMngr.MasqRules(config.Networks, bn.Lease())
-				} else {
-					return trafficMngr.MasqRules([]ip.IP4Net{config.Network}, bn.Lease())
-				}
-			}
-			go trafficMngr.SetupAndEnsureIP4Tables(getRules, opts.iptablesResyncSeconds)
+		prevNetworks := ReadCIDRsFromSubnetFile(opts.subnetFile, "FLANNEL_NETWORK")
+		prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
 
-		}
-		if config.EnableIPv6 {
-			ip6net, err := config.GetFlannelIPv6Network(&bn.Lease().IPv6Subnet)
-			if err != nil {
-				log.Error(err)
-				cancel()
-				wg.Wait()
-				os.Exit(1)
-			}
-			if err = recycleIP6Tables(trafficMngr, ip6net, bn.Lease()); err != nil {
-				log.Errorf("Failed to recycle IP6Tables rules, %v", err)
-				cancel()
-				wg.Wait()
-				os.Exit(1)
-			}
-			log.Infof("Setting up masking ip6 rules")
-			trafficMngr.CreateIP6Chain("nat", "FLANNEL-POSTRTG")
-			getRules := func() []trafficmngr.IPTablesRule {
-				if config.HasIPv6Networks() {
-					return trafficMngr.MasqIP6Rules(config.IPv6Networks, bn.Lease())
-				} else {
-					return trafficMngr.MasqIP6Rules([]ip.IP6Net{config.IPv6Network}, bn.Lease())
-				}
-			}
-			go trafficMngr.SetupAndEnsureIP6Tables(getRules, opts.iptablesResyncSeconds)
+		prevIPv6Networks := ReadIP6CIDRsFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_NETWORK")
+		prevIPv6Subnet := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_SUBNET")
+
+		err = trafficMngr.SetupAndEnsureMasqRules(flannelIPv4Net, prevSubnet,
+			prevNetworks,
+			flannelIpv6Net, prevIPv6Subnet,
+			prevIPv6Networks,
+			bn.Lease(),
+			opts.iptablesResyncSeconds)
+		if err != nil {
+			log.Errorf("Failed to setup masq rules, %v", err)
+			cancel()
+			wg.Wait()
+			os.Exit(1)
 		}
 	}
 
@@ -397,36 +383,10 @@ func main() {
 	// In Docker 1.12 and earlier, the default FORWARD chain policy was ACCEPT.
 	// In Docker 1.13 and later, Docker sets the default policy of the FORWARD chain to DROP.
 	if opts.iptablesForwardRules {
-		if config.EnableIPv4 {
-			net, err := config.GetFlannelNetwork(&bn.Lease().Subnet)
-			if err != nil {
-				log.Error(err)
-				cancel()
-				wg.Wait()
-				os.Exit(1)
-			}
-			log.Infof("Changing default FORWARD chain policy to ACCEPT")
-			trafficMngr.CreateIP4Chain("filter", "FLANNEL-FWD")
-			getRules := func() []trafficmngr.IPTablesRule {
-				return trafficMngr.ForwardRules(net.String())
-			}
-			go trafficMngr.SetupAndEnsureIP4Tables(getRules, opts.iptablesResyncSeconds)
-		}
-		if config.EnableIPv6 {
-			ip6net, err := config.GetFlannelIPv6Network(&bn.Lease().IPv6Subnet)
-			if err != nil {
-				log.Error(err)
-				cancel()
-				wg.Wait()
-				os.Exit(1)
-			}
-			log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
-			trafficMngr.CreateIP6Chain("filter", "FLANNEL-FWD")
-			getRules := func() []trafficmngr.IPTablesRule {
-				return trafficMngr.ForwardRules(ip6net.String())
-			}
-			go trafficMngr.SetupAndEnsureIP6Tables(getRules, opts.iptablesResyncSeconds)
-		}
+		trafficMngr.SetupAndEnsureForwardRules(
+			flannelIPv4Net,
+			flannelIpv6Net,
+			opts.iptablesResyncSeconds)
 	}
 
 	if err := sm.HandleSubnetFile(opts.subnetFile, config, opts.ipMasq, bn.Lease().Subnet, bn.Lease().IPv6Subnet, bn.MTU()); err != nil {
@@ -463,57 +423,6 @@ func main() {
 	wg.Wait()
 	log.Info("Exiting cleanly...")
 	os.Exit(0)
-}
-
-func recycleIPTables(tm trafficmngr.TrafficManager, nw ip.IP4Net, myLease *lease.Lease) error {
-	prevNetworks := ReadCIDRsFromSubnetFile(opts.subnetFile, "FLANNEL_NETWORK")
-	prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
-
-	//Find the cidr in FLANNEL_NETWORK which contains the podCIDR (i.e. FLANNEL_SUBNET) of this node
-	prevNetwork := ip.IP4Net{}
-	for _, net := range prevNetworks {
-		if net.ContainsCIDR(&prevSubnet) {
-			prevNetwork = net
-			break
-		}
-	}
-	// recycle iptables rules only when network configured or subnet leased is not equal to current one.
-	if prevNetwork != nw && prevSubnet != myLease.Subnet {
-		log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules", nw, myLease.Subnet, prevNetwork, prevSubnet)
-		newLease := &lease.Lease{
-			Subnet: prevSubnet,
-		}
-		if err := tm.DeleteIP4Tables(tm.MasqRules(prevNetworks, newLease)); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func recycleIP6Tables(tm trafficmngr.TrafficManager, nw ip.IP6Net, myLease *lease.Lease) error {
-	prevNetworks := ReadIP6CIDRsFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_NETWORK")
-	prevSubnet := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_SUBNET")
-
-	//Find the cidr in FLANNEL_IPV6_NETWORK which contains the podCIDR (i.e. FLANNEL_IPV6_SUBNET) of this node
-	prevNetwork := ip.IP6Net{}
-	for _, net := range prevNetworks {
-		if net.ContainsCIDR(&prevSubnet) {
-			prevNetwork = net
-			break
-		}
-	}
-
-	// recycle iptables rules only when network configured or subnet leased is not equal to current one.
-	if prevNetwork.String() != nw.String() && prevSubnet.String() != myLease.IPv6Subnet.String() {
-		log.Infof("Current ipv6 network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old ip6tables rules", nw, myLease.IPv6Subnet, prevNetwork, prevSubnet)
-		lease := &lease.Lease{
-			IPv6Subnet: prevSubnet,
-		}
-		if err := tm.DeleteIP6Tables(tm.MasqIP6Rules(prevNetworks, lease)); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func shutdownHandler(ctx context.Context, sigs chan os.Signal, cancel context.CancelFunc) {

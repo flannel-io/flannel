@@ -121,7 +121,7 @@ func TestDeleteRules(t *testing.T) {
 	ipt := &MockIPTables{t: t}
 	iptr := &MockIPTablesRestore{t: t}
 	iptm := IPTablesManager{}
-	baseRules := iptm.MasqRules([]ip.IP4Net{{
+	baseRules := iptm.masqRules([]ip.IP4Net{{
 		IP:        ip.MustParseIP4("10.0.1.0"),
 		PrefixLen: 16,
 	}}, testingLease())

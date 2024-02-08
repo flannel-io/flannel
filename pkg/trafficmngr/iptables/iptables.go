@@ -44,7 +44,74 @@ type IPTablesManager struct{}
 
 const kubeProxyMark string = "0x4000/0x4000"
 
-func (iptm IPTablesManager) MasqRules(cluster_cidrs []ip.IP4Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
+func (iptm IPTablesManager) SetupAndEnsureMasqRules(flannelIPv4Net, prevSubnet ip.IP4Net,
+	prevNetworks []ip.IP4Net,
+	flannelIPv6Net, prevIPv6Subnet ip.IP6Net,
+	prevIPv6Networks []ip.IP6Net,
+	currentlease *lease.Lease,
+	resyncPeriod int) error {
+	if flannelIPv4Net.String() != "" {
+		//Find the cidr in FLANNEL_NETWORK which contains the podCIDR (i.e. FLANNEL_SUBNET) of this node
+		prevNetwork := ip.IP4Net{}
+		for _, net := range prevNetworks {
+			if net.ContainsCIDR(&prevSubnet) {
+				prevNetwork = net
+				break
+			}
+		}
+		// recycle iptables rules only when network configured or subnet leased is not equal to current one.
+		if prevNetwork != flannelIPv4Net && prevSubnet != currentlease.Subnet {
+			log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules",
+				flannelIPv4Net, currentlease.Subnet, prevNetwork, prevSubnet)
+			newLease := &lease.Lease{
+				Subnet: prevSubnet,
+			}
+			if err := iptm.deleteIP4Tables(iptm.masqRules(prevNetworks, newLease)); err != nil {
+				return err
+			}
+		}
+
+		log.Infof("Setting up masking rules")
+		iptm.CreateIP4Chain("nat", "FLANNEL-POSTRTG")
+		//Note: doesn't work for multiple networks but we disabled MultiClusterCIDR anyway
+		getRules := func() []trafficmngr.IPTablesRule {
+			return iptm.masqRules([]ip.IP4Net{flannelIPv4Net}, currentlease)
+		}
+		go iptm.setupAndEnsureIP4Tables(getRules, resyncPeriod)
+	}
+	if flannelIPv6Net.String() != "" {
+		//Find the cidr in FLANNEL_IPV6_NETWORK which contains the podCIDR (i.e. FLANNEL_IPV6_SUBNET) of this node
+		prevIPv6Network := ip.IP6Net{}
+		for _, net := range prevIPv6Networks {
+			if net.ContainsCIDR(&prevIPv6Subnet) {
+				prevIPv6Network = net
+				break
+			}
+		}
+		// recycle iptables rules only when network configured or subnet leased is not equal to current one.
+		if prevIPv6Network != flannelIPv6Net && prevIPv6Subnet != currentlease.IPv6Subnet {
+			log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules",
+				flannelIPv6Net, currentlease.IPv6Subnet, prevIPv6Network, prevIPv6Subnet)
+			newLease := &lease.Lease{
+				IPv6Subnet: prevIPv6Subnet,
+			}
+			if err := iptm.deleteIP6Tables(iptm.masqIP6Rules(prevIPv6Networks, newLease)); err != nil {
+				return err
+			}
+		}
+
+		log.Infof("Setting up masking rules for IPv6")
+		iptm.CreateIP6Chain("nat", "FLANNEL-POSTRTG")
+		//Note: doesn't work for multiple networks but we disabled MultiClusterCIDR anyway
+		getRules := func() []trafficmngr.IPTablesRule {
+			return iptm.masqIP6Rules([]ip.IP6Net{flannelIPv6Net}, currentlease)
+		}
+		go iptm.setupAndEnsureIP6Tables(getRules, resyncPeriod)
+	}
+	return nil
+}
+
+func (iptm IPTablesManager) masqRules(cluster_cidrs []ip.IP4Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
 	pod_cidr := lease.Subnet.String()
 	ipt, err := iptables.New()
 	supports_random_fully := false
@@ -90,7 +157,7 @@ func (iptm IPTablesManager) MasqRules(cluster_cidrs []ip.IP4Net, lease *lease.Le
 	return rules
 }
 
-func (iptm IPTablesManager) MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
+func (iptm IPTablesManager) masqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
 	pod_cidr := lease.IPv6Subnet.String()
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	supports_random_fully := false
@@ -141,7 +208,26 @@ func (iptm IPTablesManager) MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease
 	return rules
 }
 
-func (iptm IPTablesManager) ForwardRules(flannelNetwork string) []trafficmngr.IPTablesRule {
+func (iptm IPTablesManager) SetupAndEnsureForwardRules(flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) {
+	if flannelIPv4Network.String() != "" {
+		log.Infof("Changing default FORWARD chain policy to ACCEPT")
+		iptm.CreateIP4Chain("filter", "FLANNEL-FWD")
+		getRules := func() []trafficmngr.IPTablesRule {
+			return iptm.forwardRules(flannelIPv4Network.String())
+		}
+		go iptm.setupAndEnsureIP4Tables(getRules, resyncPeriod)
+	}
+	if flannelIPv6Network.String() != "" {
+		log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
+		iptm.CreateIP6Chain("filter", "FLANNEL-FWD")
+		getRules := func() []trafficmngr.IPTablesRule {
+			return iptm.forwardRules(flannelIPv6Network.String())
+		}
+		go iptm.setupAndEnsureIP6Tables(getRules, resyncPeriod)
+	}
+}
+
+func (iptm IPTablesManager) forwardRules(flannelNetwork string) []trafficmngr.IPTablesRule {
 	return []trafficmngr.IPTablesRule{
 		// This rule ensure that the flannel iptables rules are executed before other rules on the node
 		{Table: "filter", Action: "-A", Chain: "FORWARD", Rulespec: []string{"-m", "comment", "--comment", "flanneld forward", "-j", "FLANNEL-FWD"}},
@@ -281,7 +367,7 @@ func ipTablesBootstrap(ipt IPTables, iptRestore IPTablesRestore, rules []traffic
 	return nil
 }
 
-func (iptm IPTablesManager) SetupAndEnsureIP4Tables(getRules func() []trafficmngr.IPTablesRule, resyncPeriod int) {
+func (iptm IPTablesManager) setupAndEnsureIP4Tables(getRules func() []trafficmngr.IPTablesRule, resyncPeriod int) {
 	rules := getRules()
 	log.Infof("generated %d rules", len(rules))
 	ipt, err := iptables.New()
@@ -320,7 +406,7 @@ func (iptm IPTablesManager) SetupAndEnsureIP4Tables(getRules func() []trafficmng
 	}
 }
 
-func (iptm IPTablesManager) SetupAndEnsureIP6Tables(getRules func() []trafficmngr.IPTablesRule, resyncPeriod int) {
+func (iptm IPTablesManager) setupAndEnsureIP6Tables(getRules func() []trafficmngr.IPTablesRule, resyncPeriod int) {
 	rules := getRules()
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	if err != nil {
@@ -358,8 +444,8 @@ func (iptm IPTablesManager) SetupAndEnsureIP6Tables(getRules func() []trafficmng
 	}
 }
 
-// DeleteIP4Tables delete specified iptables rules
-func (iptm IPTablesManager) DeleteIP4Tables(rules []trafficmngr.IPTablesRule) error {
+// deleteIP4Tables delete specified iptables rules
+func (iptm IPTablesManager) deleteIP4Tables(rules []trafficmngr.IPTablesRule) error {
 	ipt, err := iptables.New()
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -380,8 +466,8 @@ func (iptm IPTablesManager) DeleteIP4Tables(rules []trafficmngr.IPTablesRule) er
 	return nil
 }
 
-// DeleteIP6Tables delete specified iptables rules
-func (iptm IPTablesManager) DeleteIP6Tables(rules []trafficmngr.IPTablesRule) error {
+// deleteIP6Tables delete specified iptables rules
+func (iptm IPTablesManager) deleteIP6Tables(rules []trafficmngr.IPTablesRule) error {
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	if err != nil {
 		// if we can't find iptables, give up and return
