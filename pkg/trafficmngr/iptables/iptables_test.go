@@ -25,6 +25,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
+	"github.com/flannel-io/flannel/pkg/trafficmngr"
 )
 
 func testingLease() *lease.Lease {
@@ -37,7 +38,7 @@ func testingLease() *lease.Lease {
 }
 
 type MockIPTables struct {
-	rules    []IPTablesRule
+	rules    []trafficmngr.IPTablesRule
 	t        *testing.T
 	failures map[string]*MockIPTablesError
 }
@@ -71,7 +72,7 @@ func (mock *MockIPTablesRestore) ApplyWithoutFlush(rules IPTablesRestoreRules) e
 
 func (mock *MockIPTables) ruleIndex(table string, chain string, rulespec []string) int {
 	for i, rule := range mock.rules {
-		if rule.table == table && rule.chain == chain && reflect.DeepEqual(rule.rulespec, rulespec) {
+		if rule.Table == table && rule.Chain == chain && reflect.DeepEqual(rule.Rulespec, rulespec) {
 			return i
 		}
 	}
@@ -111,7 +112,7 @@ func (mock *MockIPTables) Exists(table string, chain string, rulespec ...string)
 func (mock *MockIPTables) AppendUnique(table string, chain string, rulespec ...string) error {
 	var ruleIndex = mock.ruleIndex(table, chain, rulespec)
 	if ruleIndex == -1 {
-		mock.rules = append(mock.rules, IPTablesRule{table: table, chain: chain, rulespec: rulespec})
+		mock.rules = append(mock.rules, trafficmngr.IPTablesRule{Table: table, Chain: chain, Rulespec: rulespec})
 	}
 	return nil
 }
@@ -119,7 +120,8 @@ func (mock *MockIPTables) AppendUnique(table string, chain string, rulespec ...s
 func TestDeleteRules(t *testing.T) {
 	ipt := &MockIPTables{t: t}
 	iptr := &MockIPTablesRestore{t: t}
-	baseRules := MasqRules([]ip.IP4Net{{
+	iptm := IPTablesManager{}
+	baseRules := iptm.MasqRules([]ip.IP4Net{{
 		IP:        ip.MustParseIP4("10.0.1.0"),
 		PrefixLen: 16,
 	}}, testingLease())
@@ -152,21 +154,21 @@ func TestDeleteMoreRules(t *testing.T) {
 	ipt := &MockIPTables{}
 	iptr := &MockIPTablesRestore{}
 
-	baseRules := []IPTablesRule{
-		{"filter", "-A", "INPUT", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
-		{"filter", "-A", "INPUT", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
-		{"nat", "-A", "POSTROUTING", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
-		{"nat", "-A", "POSTROUTING", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
+	baseRules := []trafficmngr.IPTablesRule{
+		{Table: "filter", Action: "-A", Chain: "INPUT", Rulespec: []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
+		{Table: "filter", Action: "-A", Chain: "INPUT", Rulespec: []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
+		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
+		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
 	}
 
 	expectedRules := IPTablesRestoreRules{
 		"filter": []IPTablesRestoreRuleSpec{
-			IPTablesRestoreRuleSpec{"-D", "INPUT", "-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"},
-			IPTablesRestoreRuleSpec{"-D", "INPUT", "-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"},
+			{"-D", "INPUT", "-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"},
+			{"-D", "INPUT", "-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"},
 		},
 		"nat": []IPTablesRestoreRuleSpec{
-			IPTablesRestoreRuleSpec{"-D", "POSTROUTING", "-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"},
-			IPTablesRestoreRuleSpec{"-D", "POSTROUTING", "-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"},
+			{"-D", "POSTROUTING", "-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"},
+			{"-D", "POSTROUTING", "-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"},
 		},
 	}
 
@@ -196,11 +198,11 @@ func TestBootstrapRules(t *testing.T) {
 	iptr := &MockIPTablesRestore{}
 	ipt := &MockIPTables{}
 
-	baseRules := []IPTablesRule{
-		{"filter", "-A", "INPUT", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
-		{"filter", "-A", "INPUT", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
-		{"nat", "-A", "POSTROUTING", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
-		{"nat", "-A", "POSTROUTING", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
+	baseRules := []trafficmngr.IPTablesRule{
+		{Table: "filter", Action: "-A", Chain: "INPUT", Rulespec: []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
+		{Table: "filter", Action: "-A", Chain: "INPUT", Rulespec: []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
+		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
+		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
 	}
 
 	err := ipTablesBootstrap(ipt, iptr, baseRules)
@@ -289,17 +291,17 @@ func TestEnsureRules(t *testing.T) {
 	ipt := &MockIPTables{}
 
 	// Ensure iptable mock has other rules
-	otherRules := []IPTablesRule{
-		{"nat", "-A", "POSTROUTING", []string{"-A", "POSTROUTING", "-j", "KUBE-POSTROUTING"}},
+	otherRules := []trafficmngr.IPTablesRule{
+		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-A", "POSTROUTING", "-j", "KUBE-POSTROUTING"}},
 	}
 	err := setupIPTables(ipt, otherRules)
 	if err != nil {
 		t.Error("Error setting up iptables")
 	}
 
-	baseRules := []IPTablesRule{
-		{"nat", "-A", "POSTROUTING", []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
-		{"nat", "-A", "POSTROUTING", []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
+	baseRules := []trafficmngr.IPTablesRule{
+		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
+		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
 	}
 
 	err = ensureIPTables(ipt, iptr, baseRules)
@@ -339,8 +341,8 @@ func TestEnsureIP6Rules(t *testing.T) {
 	ipt := &MockIPTables{}
 
 	// Ensure iptable mock has other rules
-	otherRules := []IPTablesRule{
-		{"nat", "-A", "POSTROUTING", []string{"-A", "POSTROUTING", "-j", "KUBE-POSTROUTING"}},
+	otherRules := []trafficmngr.IPTablesRule{
+		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-A", "POSTROUTING", "-j", "KUBE-POSTROUTING"}},
 	}
 	err := setupIPTables(ipt, otherRules)
 	if err != nil {
@@ -377,9 +379,9 @@ func TestEnsureIP6Rules(t *testing.T) {
 
 }
 
-func setupIPTables(ipt IPTables, rules []IPTablesRule) error {
+func setupIPTables(ipt IPTables, rules []trafficmngr.IPTablesRule) error {
 	for _, rule := range rules {
-		err := ipt.AppendUnique(rule.table, rule.chain, rule.rulespec...)
+		err := ipt.AppendUnique(rule.Table, rule.Chain, rule.Rulespec...)
 		if err != nil {
 			return fmt.Errorf("failed to insert IPTables rule: %v", err)
 		}
@@ -388,27 +390,27 @@ func setupIPTables(ipt IPTables, rules []IPTablesRule) error {
 	return nil
 }
 
-func expectedTearDownIPTablesRestoreRules(rules []IPTablesRule) []IPTablesRestoreRules {
+func expectedTearDownIPTablesRestoreRules(rules []trafficmngr.IPTablesRule) []IPTablesRestoreRules {
 	tablesRules := IPTablesRestoreRules{}
 	for _, rule := range rules {
-		if _, ok := tablesRules[rule.table]; !ok {
-			tablesRules[rule.table] = []IPTablesRestoreRuleSpec{}
+		if _, ok := tablesRules[rule.Table]; !ok {
+			tablesRules[rule.Table] = []IPTablesRestoreRuleSpec{}
 		}
-		tablesRules[rule.table] = append(tablesRules[rule.table], append(IPTablesRestoreRuleSpec{"-D", rule.chain}, rule.rulespec...))
+		tablesRules[rule.Table] = append(tablesRules[rule.Table], append(IPTablesRestoreRuleSpec{"-D", rule.Chain}, rule.Rulespec...))
 	}
 
 	return []IPTablesRestoreRules{tablesRules}
 }
 
-func IP6Rules(ipn ip.IP6Net, lease *lease.Lease) []IPTablesRule {
+func IP6Rules(ipn ip.IP6Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
 	n := ipn.String()
 	sn := lease.IPv6Subnet.String()
 
-	return []IPTablesRule{
-		{"nat", "-A", "POSTROUTING", []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-		{"nat", "-A", "POSTROUTING", []string{"-s", n, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
-		{"nat", "-A", "POSTROUTING", []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-		{"nat", "-A", "POSTROUTING", []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
+	return []trafficmngr.IPTablesRule{
+		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-s", n, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
+		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"!", "-s", n, "-d", sn, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"!", "-s", n, "-d", n, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}},
 	}
 }
 
