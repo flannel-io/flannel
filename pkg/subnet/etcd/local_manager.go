@@ -79,7 +79,7 @@ func newLocalManager(r Registry, prevSubnet ip.IP4Net, prevIPv6Subnet ip.IP6Net,
 	}
 }
 
-func (m *LocalManager) GetStoredMacAddress() string {
+func (m *LocalManager) GetStoredMacAddress(ctx context.Context) string {
 	return ""
 }
 

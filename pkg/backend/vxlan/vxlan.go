@@ -146,7 +146,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 	// When flannel is restarted, it will get the MAC address from the node annotations to set flannel.1 MAC address
 	var hwAddr net.HardwareAddr
 
-	macStr := be.subnetMgr.GetStoredMacAddress()
+	macStr := be.subnetMgr.GetStoredMacAddress(ctx)
 	if macStr != "" {
 		hwAddr, err = net.ParseMAC(macStr)
 		if err != nil {
