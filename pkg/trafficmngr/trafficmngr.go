@@ -27,13 +27,22 @@ type IPTablesRule struct {
 }
 
 type TrafficManager interface {
-	CreateIP4Chain(table, chain string)
-	CreateIP6Chain(table, chain string)
-	MasqRules(cluster_cidrs []ip.IP4Net, lease *lease.Lease) []IPTablesRule
-	MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease.Lease) []IPTablesRule
-	ForwardRules(flannelNetwork string) []IPTablesRule
-	SetupAndEnsureIP4Tables(getRules func() []IPTablesRule, resyncPeriod int)
-	SetupAndEnsureIP6Tables(getRules func() []IPTablesRule, resyncPeriod int)
-	DeleteIP4Tables(rules []IPTablesRule) error
-	DeleteIP6Tables(rules []IPTablesRule) error
+	// Install kernel rules to forward the traffic to and from the flannel network range.
+	// This is done for IPv4 and/or IPv6 based on whether flannelIPv4Network and flannelIPv6Network are set.
+	// SetupAndEnsureForwardRules starts a go routine that
+	// rewrites these rules every resyncPeriod seconds if needed
+	SetupAndEnsureForwardRules(flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int)
+	// Install kernel rules to setup NATing of packets sent to the flannel interface
+	// This is done for IPv4 and/or IPv6 based on whether flannelIPv4Network and flannelIPv6Network are set.
+	// prevSubnet,prevNetworks, prevIPv6Subnet, prevIPv6Networks are used
+	// to determine whether the existing rules need to be replaced.
+	// SetupAndEnsureMasqRules starts a go routine that
+	// rewrites these rules every resyncPeriod seconds if needed
+	SetupAndEnsureMasqRules(
+		flannelIPv4Net, prevSubnet ip.IP4Net,
+		prevNetworks []ip.IP4Net,
+		flannelIPv6Net, prevIPv6Subnet ip.IP6Net,
+		prevIPv6Networks []ip.IP6Net,
+		currentlease *lease.Lease,
+		resyncPeriod int) error
 }

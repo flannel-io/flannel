@@ -303,3 +303,19 @@ func (c *Config) HasIPv6Networks() bool {
 		return false
 	}
 }
+
+func (c *Config) GetNetworks() []ip.IP4Net {
+	if len(c.Networks) > 0 {
+		return c.Networks
+	} else {
+		return []ip.IP4Net{c.Network}
+	}
+}
+
+func (c *Config) GeIPv6tNetworks() []ip.IP6Net {
+	if len(c.Networks) > 0 {
+		return c.IPv6Networks
+	} else {
+		return []ip.IP6Net{c.IPv6Network}
+	}
+}

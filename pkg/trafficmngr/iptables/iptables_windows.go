@@ -17,7 +17,6 @@ package iptables
 import (
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
-	"github.com/flannel-io/flannel/pkg/trafficmngr"
 )
 
 type IPTablesManager struct{}
@@ -30,21 +29,14 @@ type IPTables interface {
 	Exists(table string, chain string, rulespec ...string) (bool, error)
 }
 
-func (iptm IPTablesManager) CreateIP4Chain(table, chain string) { return }
-func (iptm IPTablesManager) CreateIP6Chain(table, chain string) { return }
-func (iptm IPTablesManager) MasqRules(cluster_cidrs []ip.IP4Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
+func (iptm IPTablesManager) SetupAndEnsureForwardRules(flannelIPv4Network, flannelIPv6Network string, resyncPeriod int) {
+}
+
+func (iptm IPTablesManager) SetupAndEnsureMasqRules(flannelIPv4Net, prevSubnet ip.IP4Net,
+	prevNetworks []ip.IP4Net,
+	currentlease *lease.Lease,
+	flannelIPv6Net, prevIPv6Subnet ip.IP6Net,
+	prevIPv6Networks []ip.IP6Net,
+	resyncPeriod int) error {
 	return nil
 }
-func (iptm IPTablesManager) ForwardRules(flannelNetwork string) []trafficmngr.IPTablesRule {
-	return nil
-}
-func teardownIPTables(ipt IPTables, rules []trafficmngr.IPTablesRule) {}
-func (iptm IPTablesManager) SetupAndEnsureIP4Tables(getRules func() []trafficmngr.IPTablesRule, resyncPeriod int) {
-}
-func (iptm IPTablesManager) SetupAndEnsureIP6Tables(getRules func() []trafficmngr.IPTablesRule, resyncPeriod int) {
-}
-func (iptm IPTablesManager) MasqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
-	return nil
-}
-func (iptm IPTablesManager) DeleteIP4Tables(rules []trafficmngr.IPTablesRule) error { return nil }
-func (iptm IPTablesManager) DeleteIP6Tables(rules []trafficmngr.IPTablesRule) error { return nil }
