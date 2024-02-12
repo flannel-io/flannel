@@ -19,6 +19,9 @@ The value of the config is a JSON dictionary with the following keys:
 * `EnableIPv6` (bool): Enables ipv6 support
   Defaults to `false`
 
+* `EnableNFTables` (bool): (EXPERIMENTAL) If set to true, flannel uses nftables instead of iptables to masquerade the traffic.
+   Default to `false`
+
 * `SubnetLen` (integer): The size of the subnet allocated to each host.
    Defaults to 24 (i.e. /24) unless `Network` was configured to be smaller than a /22 in which case it is two less than the network.
 
@@ -128,3 +131,22 @@ FLANNEL_IPMASQ=true
 ## IPv6 only
 
 To use an IPv6-only environment use the same configuration of the Dual-stack section to enable IPv6 and add "EnableIPv4": false in the net-conf.json of the kube-flannel-cfg ConfigMap. In case of IPv6-only setup, please use the docker.io IPv6-only endpoint as described in the following link: https://www.docker.com/blog/beta-ipv6-support-on-docker-hub-registry/
+
+## nftables mode
+To enable `nftables` mode in flannel, set `EnableNFTables` to true in flannel configuration.
+
+Note: to test with kube-proxy, use kubeadm with the following configuration:
+```yaml
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+kubernetesVersion: v1.29.0
+controllerManager:
+  extraArgs:
+    feature-gates: NFTablesProxyMode=true
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "nftables"
+featureGates:
+  NFTablesProxyMode: true
+```

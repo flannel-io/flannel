@@ -27,20 +27,21 @@ import (
 )
 
 type Config struct {
-	EnableIPv4    bool
-	EnableIPv6    bool
-	Network       ip.IP4Net
-	IPv6Network   ip.IP6Net
-	Networks      []ip.IP4Net
-	IPv6Networks  []ip.IP6Net
-	SubnetMin     ip.IP4
-	SubnetMax     ip.IP4
-	IPv6SubnetMin *ip.IP6
-	IPv6SubnetMax *ip.IP6
-	SubnetLen     uint
-	IPv6SubnetLen uint
-	BackendType   string          `json:"-"`
-	Backend       json.RawMessage `json:",omitempty"`
+	EnableIPv4     bool
+	EnableIPv6     bool
+	EnableNFTables bool
+	Network        ip.IP4Net
+	IPv6Network    ip.IP6Net
+	Networks       []ip.IP4Net
+	IPv6Networks   []ip.IP6Net
+	SubnetMin      ip.IP4
+	SubnetMax      ip.IP4
+	IPv6SubnetMin  *ip.IP6
+	IPv6SubnetMax  *ip.IP6
+	SubnetLen      uint
+	IPv6SubnetLen  uint
+	BackendType    string          `json:"-"`
+	Backend        json.RawMessage `json:",omitempty"`
 }
 
 func parseBackendType(be json.RawMessage) (string, error) {
