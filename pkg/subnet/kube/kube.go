@@ -134,7 +134,7 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 	if sm.disableNodeInformer {
 		log.Infof("Node controller skips sync")
 	} else {
-		go sm.Run(context.Background())
+		go sm.Run(ctx)
 
 		log.Infof("Waiting %s for node controller to sync", nodeControllerSyncTimeout)
 		err = wait.Poll(time.Second, nodeControllerSyncTimeout, func() (bool, error) {
@@ -607,9 +607,9 @@ func (m *kubeSubnetManager) HandleSubnetFile(path string, config *subnet.Config,
 }
 
 // GetStoredMacAddress reads MAC address from node annotations when flannel restarts
-func (ksm *kubeSubnetManager) GetStoredMacAddress() string {
+func (ksm *kubeSubnetManager) GetStoredMacAddress(ctx context.Context) string {
 	// get mac info from Name func.
-	node, err := ksm.client.CoreV1().Nodes().Get(context.TODO(), ksm.nodeName, metav1.GetOptions{})
+	node, err := ksm.client.CoreV1().Nodes().Get(ctx, ksm.nodeName, metav1.GetOptions{})
 	if err != nil {
 		log.Errorf("Failed to get node for backend data: %v", err)
 		return ""

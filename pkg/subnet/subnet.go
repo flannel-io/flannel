@@ -123,7 +123,7 @@ type Manager interface {
 	WatchLeases(ctx context.Context, receiver chan []lease.LeaseWatchResult) error
 	CompleteLease(ctx context.Context, lease *lease.Lease, wg *sync.WaitGroup) error
 
-	GetStoredMacAddress() string
+	GetStoredMacAddress(ctx context.Context) string
 	Name() string
 }
 
