@@ -12,7 +12,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/joho/godotenv v0.0.0-20161216230537-726cc8b906e3
+	github.com/joho/godotenv v1.5.1
 	github.com/jonboulle/clockwork v0.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/vishvananda/netlink v1.2.1-beta.2
