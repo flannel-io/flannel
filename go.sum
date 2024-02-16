@@ -709,8 +709,9 @@ github.com/syndtr/gocapability v0.0.0-20170704070218-db04d3cc01c8/go.mod h1:hkRG
 github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/tchap/go-patricia v2.2.6+incompatible/go.mod h1:bmLyhP68RS6kStMGxByiQ23RP/odRBOTVjwp2cDyi6I=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.464 h1:n3On2O+pDu1WnfmUTEEStnB5zg0cwfJ60CB0Tc3aaNA=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.464/go.mod h1:7sCQWVkxcsR38nffDW057DRGk8mUjK1Ing/EFOK8s8Y=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.857 h1:6TxCHz3zSG67cLDDu8w3TkFm/FwiyiAWBhcidGXWH/0=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.857/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.464 h1:RVY1ivN7xRhCNfzPFyMXyFn+OE2PSCW8bwrBJtSUE7w=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.464/go.mod h1:u1LkEGpBlSXWsYA1nn6oIO9ZvPKipjcz8vU78obEYlo=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
