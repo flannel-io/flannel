@@ -33,6 +33,9 @@ COPY --from=build /build/dist/flanneld /opt/bin/flanneld
 COPY dist/mk-docker-opts.sh /opt/bin/
 COPY --from=build /iptables-wrapper/iptables-wrapper-installer.sh /
 COPY --from=build /iptables-wrapper/bin/iptables-wrapper /
+# check manually that iptables-legacy and iptables-nft are present since
+# iptables-wrapper-installer.sh sanity check doesn't work for multi-arch build
+RUN which iptables-legacy && which iptables-nft
 RUN /iptables-wrapper-installer.sh --no-sanity-check
 
 
