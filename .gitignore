@@ -2,6 +2,7 @@ dist/*.tar.gz
 dist/flanneld*
 dist/*.docker
 dist/here.txt
+dist/flannel_oci.tar
 cover.out
 .editorconfig
 .idea/
