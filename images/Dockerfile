@@ -27,7 +27,7 @@ RUN export GOOS=$(xx-info os) &&\
 
 FROM alpine:20231219
 RUN apk update && apk upgrade
-RUN apk add --no-cache iproute2 net-tools ca-certificates iptables strongswan iptables-legacy && update-ca-certificates
+RUN apk add --no-cache iproute2 ca-certificates iptables strongswan iptables-legacy && update-ca-certificates
 RUN apk add wireguard-tools --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community
 COPY --from=build /build/dist/flanneld /opt/bin/flanneld
 COPY dist/mk-docker-opts.sh /opt/bin/
