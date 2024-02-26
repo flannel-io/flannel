@@ -29,14 +29,14 @@ type IPTables interface {
 	Exists(table string, chain string, rulespec ...string) (bool, error)
 }
 
-func (iptm IPTablesManager) SetupAndEnsureForwardRules(flannelIPv4Network, flannelIPv6Network string, resyncPeriod int) {
+func (iptm IPTablesManager) SetupAndEnsureForwardRules(flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) {
 }
 
 func (iptm IPTablesManager) SetupAndEnsureMasqRules(flannelIPv4Net, prevSubnet ip.IP4Net,
 	prevNetworks []ip.IP4Net,
-	currentlease *lease.Lease,
 	flannelIPv6Net, prevIPv6Subnet ip.IP6Net,
 	prevIPv6Networks []ip.IP6Net,
+	currentlease *lease.Lease,
 	resyncPeriod int) error {
 	return nil
 }
