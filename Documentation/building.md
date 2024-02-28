@@ -19,6 +19,22 @@ If you want to cross-compile for a different platform (e.g. you're running `amd6
 Then you should be able to set the ARCH as above
 * ARCH=arm make image
 
+## Building a multi-arch image
+
+To build the multi-arch image of flannel locally, you need to install [Docker buildx](https://github.com/docker/buildx).
+Then you can use the following target:
+```
+make build-multi-arch
+```
+
+If you don't already have a builder running locally, you can this target to start it:
+```
+make buildx-create-builder
+```
+
+See the [buildx documentation](https://docs.docker.com/reference/cli/docker/buildx/) for more details.
+
+
 ## Building manually
 
 1. Make sure you have required dependencies installed on your machine.

@@ -31,15 +31,6 @@ jobs:
       - name: go mod vendor
         run: go mod vendor
 
-      - name: build linux
-        run: |
-          set -e
-          for arch in ${LINUX_ARCHES}; do
-            echo "Building for arch $arch"
-            ARCH=$arch make dist/flanneld-$arch
-            file dist/flanneld-$arch
-          done
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
