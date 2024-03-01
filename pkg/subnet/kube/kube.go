@@ -493,6 +493,9 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l lease.Lease, err error) 
 		default:
 			return l, fmt.Errorf("node %q pod cidrs should be IPv4/IPv6 only or dualstack", ksm.nodeName)
 		}
+		if cidr == nil {
+			return l, fmt.Errorf("Missing IPv4 address on n.Spec.PodCIDRs")
+		}
 		l.Subnet = ip.FromIPNet(cidr)
 		l.EnableIPv4 = ksm.enableIPv4
 	}
@@ -525,6 +528,9 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l lease.Lease, err error) 
 			}
 		default:
 			return l, fmt.Errorf("node %q pod cidrs should be IPv4/IPv6 only or dualstack", ksm.nodeName)
+		}
+		if ipv6Cidr == nil {
+			return l, fmt.Errorf("Missing IPv6 address on n.Spec.PodCIDRs")
 		}
 		l.IPv6Subnet = ip.FromIP6Net(ipv6Cidr)
 		l.EnableIPv6 = ksm.enableIPv6
