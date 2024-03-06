@@ -12,10 +12,10 @@ flannel:
   # kube-flannel image
   image:
     repository: docker.io/flannel/flannel
-    tag: v0.24.2
+    tag: v0.24.3
   image_cni:
     repository: docker.io/flannel/flannel-cni-plugin
-    tag: v1.2.0
+    tag: v1.4.0-flannel1
   # flannel command arguments
   args:
   - "--ip-masq"
