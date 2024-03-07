@@ -3,6 +3,7 @@
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
 QEMU_VERSION=v3.0.0
+BASH_UNIT_VERSION=v2.3.0
 
 # Default tag and architecture. Can be overridden
 TAG?=$(shell git describe --tags --always)
@@ -128,7 +129,7 @@ verify-modules:
 
 
 bash_unit:
-	wget https://raw.githubusercontent.com/pgrange/bash_unit/v2.0.1/bash_unit
+	wget https://raw.githubusercontent.com/pgrange/bash_unit/$(BASH_UNIT_VERSION)/bash_unit
 	chmod +x bash_unit
 
 # This will build flannel natively using golang image

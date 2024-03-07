@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ARCH="${ARCH:-amd64}"
-ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.5.1}"
+ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.5.12}"
 ETCD_LOCATION="${ETCD_LOCATION:-etcd}"
 FLANNEL_NET="${FLANNEL_NET:-10.10.0.0/16}"
 TAG=`git describe --tags --dirty`
 FLANNEL_DOCKER_IMAGE="${FLANNEL_DOCKER_IMAGE:-quay.io/coreos/flannel:$TAG}"
-K8S_VERSION="${K8S_VERSION:-1.25.2}"
+K8S_VERSION="${K8S_VERSION:-1.28.7}"
 HYPERKUBE_IMG="docker.io/rancher/hyperkube"
 HYPERKUBE_CMD="${HYPERKUBE_CMD:-" "}"
 HYPERKUBE_APISERVER_CMD="${HYPERKUBE_APISERVER_CMD:-kube-apiserver}"
