@@ -171,25 +171,17 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	}
 
 	if config.EnableIPv4 {
-		net, err := config.GetFlannelNetwork(&lease.Subnet)
-		if err != nil {
-			return nil, err
-		}
-		err = dev.Configure(lease.Subnet.IP, net)
+		err = dev.Configure(lease.Subnet.IP, config.Network)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if config.EnableIPv6 {
-		ipv6net, err := config.GetFlannelIPv6Network(&lease.IPv6Subnet)
-		if err != nil {
-			return nil, err
-		}
 		if cfg.Mode == Separate {
-			err = v6Dev.ConfigureV6(lease.IPv6Subnet.IP, ipv6net)
+			err = v6Dev.ConfigureV6(lease.IPv6Subnet.IP, config.IPv6Network)
 		} else {
-			err = dev.ConfigureV6(lease.IPv6Subnet.IP, ipv6net)
+			err = dev.ConfigureV6(lease.IPv6Subnet.IP, config.IPv6Network)
 		}
 		if err != nil {
 			return nil, err

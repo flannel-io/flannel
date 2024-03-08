@@ -90,12 +90,7 @@ func (be *IPIPBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, 
 		return nil, fmt.Errorf("failed to acquire lease: %v", err)
 	}
 
-	net, err := config.GetFlannelNetwork(&n.SubnetLease.Subnet)
-	if err != nil {
-		return nil, err
-	}
-
-	link, err := be.configureIPIPDevice(n.SubnetLease, net)
+	link, err := be.configureIPIPDevice(n.SubnetLease, config.Network)
 
 	if err != nil {
 		return nil, err

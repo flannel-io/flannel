@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/flannel-io/flannel/pkg/ip"
@@ -80,22 +79,14 @@ func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv
 		return err
 	}
 	if config.EnableIPv4 {
-		if config.HasNetworks() {
-			fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", strings.Join(ip.MapIP4ToString(config.Networks), ","))
-		} else {
-			fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", config.Network)
-		}
+		fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", config.Network)
 		// Write out the first usable IP by incrementing sn.IP by one
 		sn.IncrementIP()
 
 		fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn)
 	}
 	if config.EnableIPv6 {
-		if config.HasIPv6Networks() {
-			fmt.Fprintf(f, "FLANNEL_IPV6_NETWORK=%s\n", strings.Join(ip.MapIP6ToString(config.IPv6Networks), ","))
-		} else {
-			fmt.Fprintf(f, "FLANNEL_IPV6_NETWORK=%s\n", config.IPv6Network)
-		}
+		fmt.Fprintf(f, "FLANNEL_IPV6_NETWORK=%s\n", config.IPv6Network)
 		// Write out the first usable IP by incrementing ip6Sn.IP by one
 		ipv6sn.IncrementIP()
 		fmt.Fprintf(f, "FLANNEL_IPV6_SUBNET=%s\n", ipv6sn)

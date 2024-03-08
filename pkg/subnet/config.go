@@ -19,11 +19,8 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"net"
 
 	"github.com/flannel-io/flannel/pkg/ip"
-	"k8s.io/klog/v2"
-	netutils "k8s.io/utils/net"
 )
 
 type Config struct {
@@ -32,8 +29,6 @@ type Config struct {
 	EnableNFTables bool
 	Network        ip.IP4Net
 	IPv6Network    ip.IP6Net
-	Networks       []ip.IP4Net
-	IPv6Networks   []ip.IP6Net
 	SubnetMin      ip.IP4
 	SubnetMax      ip.IP4
 	IPv6SubnetMin  *ip.IP6
@@ -72,9 +67,6 @@ func ParseConfig(s string) (*Config, error) {
 		return nil, err
 	}
 	cfg.BackendType = bt
-
-	cfg.Networks = make([]ip.IP4Net, 0)
-	cfg.IPv6Networks = make([]ip.IP6Net, 0)
 
 	return cfg, nil
 }
@@ -203,120 +195,4 @@ func CheckNetworkConfig(config *Config) error {
 		}
 	}
 	return nil
-}
-
-// GetFlannelNetwork returns the relevant IPv4 network (i.e. clusterCIDR) for subnet sn
-// If Networks is not empty, GetFlannelNetwork returns the first networks that contains subnet sn.
-// If Networks is empty, this means we are not using the MultiClusterCIDR API
-// so GetFlannelNetwork falls back to the standard behavior and returns the single Network entry
-func (c *Config) GetFlannelNetwork(sn *ip.IP4Net) (ip.IP4Net, error) {
-	if c.HasNetworks() {
-		for _, net := range c.Networks {
-			if net.ContainsCIDR(sn) {
-				return net, nil
-			}
-		}
-		return ip.IP4Net{}, fmt.Errorf("could not find flannel networks matching subnet %s", sn)
-	} else {
-		emptyNet := ip.IP4Net{}
-		if c.Network != emptyNet {
-			return c.Network, nil
-		} else {
-			return emptyNet, fmt.Errorf("could not find an ipv4 network in the flannel configuration")
-		}
-	}
-}
-
-// GetFlannelIPv6Network returns the relevant IPv6 network (i.e. clusterCIDR) for subnet sn
-// If Networks is not empty, GetFlannelIPv6Network returns the first networks that contains subnet sn.
-// If Networks is empty, this means we are not using the MultiClusterCIDR API
-// so GetFlannelIPv6Network falls back to the standard behavior and returns the single IPv6Network entry
-func (c *Config) GetFlannelIPv6Network(sn *ip.IP6Net) (ip.IP6Net, error) {
-	if c.HasIPv6Networks() {
-		for _, net := range c.IPv6Networks {
-			if net.ContainsCIDR(sn) {
-				return net, nil
-			}
-		}
-		return ip.IP6Net{}, fmt.Errorf("could not find flannel ipv6 networks matching subnet %s", sn)
-	} else {
-		emptyNet := ip.IP6Net{}
-		if c.IPv6Network != emptyNet {
-			return c.IPv6Network, nil
-		} else {
-			return emptyNet, fmt.Errorf("could not find an ipv6 network in the flannel configuration")
-		}
-
-	}
-}
-
-// AddNetwork adds net to either c.Networks or c.IPv6Networks depending on its type
-func (c *Config) AddNetwork(net *net.IPNet) {
-	if netutils.IsIPv4CIDR(net) {
-		ip4net := ip.FromIPNet(net)
-		if !c.containsIPv4Network(ip4net) {
-			c.Networks = append(c.Networks, ip4net)
-		}
-	} else if netutils.IsIPv6CIDR(net) {
-		ip6net := ip.FromIP6Net(net)
-		if !c.containsIPv6Network(ip6net) {
-			c.IPv6Networks = append(c.IPv6Networks, ip6net)
-		}
-	} else {
-		klog.Warningf("cannot add unknown CIDR to config: %s", net)
-	}
-}
-
-func (c *Config) containsIPv4Network(net ip.IP4Net) bool {
-	for _, ip4net := range c.Networks {
-		if net.Equal(ip4net) {
-			return true
-		}
-	}
-	return false
-}
-
-func (c *Config) containsIPv6Network(net ip.IP6Net) bool {
-	for _, ip6net := range c.IPv6Networks {
-		if net.Equal(ip6net) {
-			return true
-		}
-	}
-	return false
-}
-
-// HasNetworks returns true if there is at least 1 IPv4 network in the flannel config,
-// false otherwise
-func (c *Config) HasNetworks() bool {
-	if c.Networks != nil {
-		return len(c.Networks) > 0
-	} else {
-		return false
-	}
-}
-
-// HasIPv6Networks returns true if there is at least 1 IPv6 network in the flannel config,
-// false otherwise
-func (c *Config) HasIPv6Networks() bool {
-	if c.IPv6Networks != nil {
-		return len(c.IPv6Networks) > 0
-	} else {
-		return false
-	}
-}
-
-func (c *Config) GetNetworks() []ip.IP4Net {
-	if len(c.Networks) > 0 {
-		return c.Networks
-	} else {
-		return []ip.IP4Net{c.Network}
-	}
-}
-
-func (c *Config) GeIPv6tNetworks() []ip.IP6Net {
-	if len(c.Networks) > 0 {
-		return c.IPv6Networks
-	} else {
-		return []ip.IP6Net{c.IPv6Network}
-	}
 }
