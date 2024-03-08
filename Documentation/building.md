@@ -34,6 +34,8 @@ make buildx-create-builder
 
 See the [buildx documentation](https://docs.docker.com/reference/cli/docker/buildx/) for more details.
 
+## Running the tests locally
+To run the end-to-end tests locally, you need to installl [Docker compose](https://docs.docker.com/compose/install/).
 
 ## Building manually
 
