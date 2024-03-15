@@ -27,9 +27,10 @@ spec:
                 - linux
       hostNetwork: true
       priorityClassName: system-node-critical
+      {{- with .Values.flannel.tolerations }}
       tolerations:
-      - operator: Exists
-        effect: NoSchedule
+        {{- toYaml . | trim | nindent 8 }}
+      {{- end }}
       serviceAccountName: flannel
       initContainers:
       - name: install-cni-plugin
