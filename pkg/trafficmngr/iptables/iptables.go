@@ -50,7 +50,8 @@ func (iptm IPTablesManager) SetupAndEnsureMasqRules(flannelIPv4Net, prevSubnet i
 	prevIPv6Networks []ip.IP6Net,
 	currentlease *lease.Lease,
 	resyncPeriod int) error {
-	if flannelIPv4Net.String() != "" {
+
+	if !flannelIPv4Net.Empty() {
 		//Find the cidr in FLANNEL_NETWORK which contains the podCIDR (i.e. FLANNEL_SUBNET) of this node
 		prevNetwork := ip.IP4Net{}
 		for _, net := range prevNetworks {
@@ -79,7 +80,7 @@ func (iptm IPTablesManager) SetupAndEnsureMasqRules(flannelIPv4Net, prevSubnet i
 		}
 		go iptm.setupAndEnsureIP4Tables(getRules, resyncPeriod)
 	}
-	if flannelIPv6Net.String() != "" {
+	if !flannelIPv6Net.Empty() {
 		//Find the cidr in FLANNEL_IPV6_NETWORK which contains the podCIDR (i.e. FLANNEL_IPV6_SUBNET) of this node
 		prevIPv6Network := ip.IP6Net{}
 		for _, net := range prevIPv6Networks {
@@ -209,7 +210,7 @@ func (iptm IPTablesManager) masqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease
 }
 
 func (iptm IPTablesManager) SetupAndEnsureForwardRules(flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) {
-	if flannelIPv4Network.String() != "" {
+	if !flannelIPv4Network.Empty() {
 		log.Infof("Changing default FORWARD chain policy to ACCEPT")
 		iptm.CreateIP4Chain("filter", "FLANNEL-FWD")
 		getRules := func() []trafficmngr.IPTablesRule {
@@ -217,7 +218,7 @@ func (iptm IPTablesManager) SetupAndEnsureForwardRules(flannelIPv4Network ip.IP4
 		}
 		go iptm.setupAndEnsureIP4Tables(getRules, resyncPeriod)
 	}
-	if flannelIPv6Network.String() != "" {
+	if !flannelIPv6Network.Empty() {
 		log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
 		iptm.CreateIP6Chain("filter", "FLANNEL-FWD")
 		getRules := func() []trafficmngr.IPTablesRule {
