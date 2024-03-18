@@ -335,7 +335,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	//Create TrafficManager and instanciate it based on whether we use iptables or nftables
+	//Create TrafficManager and instantiate it based on whether we use iptables or nftables
 	trafficMngr := newTrafficManager()
 	flannelIPv4Net := ip.IP4Net{}
 	flannelIpv6Net := ip.IP6Net{}
