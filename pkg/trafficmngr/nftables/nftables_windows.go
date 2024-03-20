@@ -1,4 +1,4 @@
-// Copyright 2015 flannel authors
+// Copyright 2024 flannel authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package iptables
+package nftables
 
 import (
 	"context"
@@ -25,24 +25,19 @@ import (
 	"github.com/flannel-io/flannel/pkg/trafficmngr"
 )
 
-type IPTablesManager struct{}
-
-type IPTables interface {
-	AppendUnique(table string, chain string, rulespec ...string) error
-	ChainExists(table, chain string) (bool, error)
-	ClearChain(table, chain string) error
-	Delete(table string, chain string, rulespec ...string) error
-	Exists(table string, chain string, rulespec ...string) (bool, error)
+type NFTablesManager struct {
 }
 
-func (iptm IPTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
-	return trafficmngr.ErrUnimplemented
+func (nftm *NFTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
+	log.Error(trafficmngr.ErrUnimplemented)
+	return nil
 }
 
-func (iptm *IPTablesManager) SetupAndEnsureForwardRules(ctx context.Context, flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) {
+func (nftm *NFTablesManager) SetupAndEnsureForwardRules(ctx context.Context,
+	flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) {
 }
 
-func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flannelIPv4Net, prevSubnet ip.IP4Net,
+func (nftm *NFTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flannelIPv4Net, prevSubnet ip.IP4Net,
 	prevNetworks []ip.IP4Net,
 	flannelIPv6Net, prevIPv6Subnet ip.IP6Net,
 	prevIPv6Networks []ip.IP6Net,

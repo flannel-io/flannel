@@ -36,6 +36,7 @@ import (
 	"github.com/flannel-io/flannel/pkg/subnet/kube"
 	"github.com/flannel-io/flannel/pkg/trafficmngr"
 	"github.com/flannel-io/flannel/pkg/trafficmngr/iptables"
+	"github.com/flannel-io/flannel/pkg/trafficmngr/nftables"
 	"github.com/flannel-io/flannel/pkg/version"
 	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
@@ -336,7 +337,15 @@ func main() {
 	}
 
 	//Create TrafficManager and instantiate it based on whether we use iptables or nftables
-	trafficMngr := newTrafficManager()
+	trafficMngr := newTrafficManager(config.EnableNFTables)
+	err = trafficMngr.Init(ctx, &wg)
+	if err != nil {
+		log.Error(err)
+		cancel()
+		wg.Wait()
+		os.Exit(1)
+	}
+
 	flannelIPv4Net := ip.IP4Net{}
 	flannelIpv6Net := ip.IP6Net{}
 	if config.EnableIPv4 {
@@ -365,7 +374,8 @@ func main() {
 		prevIPv6Networks := ReadIP6CIDRsFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_NETWORK")
 		prevIPv6Subnet := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_SUBNET")
 
-		err = trafficMngr.SetupAndEnsureMasqRules(flannelIPv4Net, prevSubnet,
+		err = trafficMngr.SetupAndEnsureMasqRules(ctx,
+			flannelIPv4Net, prevSubnet,
 			prevNetworks,
 			flannelIpv6Net, prevIPv6Subnet,
 			prevIPv6Networks,
@@ -383,7 +393,7 @@ func main() {
 	// In Docker 1.12 and earlier, the default FORWARD chain policy was ACCEPT.
 	// In Docker 1.13 and later, Docker sets the default policy of the FORWARD chain to DROP.
 	if opts.iptablesForwardRules {
-		trafficMngr.SetupAndEnsureForwardRules(
+		trafficMngr.SetupAndEnsureForwardRules(ctx,
 			flannelIPv4Net,
 			flannelIpv6Net,
 			opts.iptablesResyncSeconds)
@@ -569,6 +579,13 @@ func ReadIP6CIDRsFromSubnetFile(path string, CIDRKey string) []ip.IP6Net {
 	return prevCIDRs
 }
 
-func newTrafficManager() trafficmngr.TrafficManager {
-	return iptables.IPTablesManager{}
+func newTrafficManager(useNftables bool) trafficmngr.TrafficManager {
+	if useNftables {
+		log.Info("Starting flannel in nftables mode")
+		return &nftables.NFTablesManager{}
+	} else {
+		log.Info("Starting flannel in iptables mode")
+		return &iptables.IPTablesManager{}
+
+	}
 }

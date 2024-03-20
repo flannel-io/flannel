@@ -11,6 +11,7 @@ RUN set -x \
     curl \
     tar gzip\
     iptables \
+    nftables \
     iproute2 \
     iputils \
  && if [ "${ARCH?required}" != "amd64" ]; then \

@@ -6,7 +6,7 @@ QEMU_VERSION=v3.0.0
 BASH_UNIT_VERSION=v2.3.0
 
 # Default tag and architecture. Can be overridden
-TAG?=$(shell git describe --tags --always)
+TAG?=$(shell git describe --tags --dirty --always)
 ARCH?=amd64
 # Only enable CGO (and build the UDP backend) on AMD64
 ifeq ($(ARCH),amd64)

@@ -17,7 +17,9 @@
 package iptables
 
 import (
+	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/coreos/go-iptables/iptables"
@@ -40,11 +42,67 @@ type IPTablesError interface {
 	Error() string
 }
 
-type IPTablesManager struct{}
+type IPTablesManager struct {
+	ipv4Rules []trafficmngr.IPTablesRule
+	ipv6Rules []trafficmngr.IPTablesRule
+}
 
-const kubeProxyMark string = "0x4000/0x4000"
+func (iptm *IPTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
+	iptm.ipv4Rules = make([]trafficmngr.IPTablesRule, 0, 10)
+	iptm.ipv6Rules = make([]trafficmngr.IPTablesRule, 0, 10)
+	wg.Add(1)
+	go func() {
+		<-ctx.Done()
+		time.Sleep(time.Second)
+		err := iptm.cleanUp()
+		if err != nil {
+			log.Errorf("iptables: error while cleaning-up: %v", err)
+		}
+		wg.Done()
+	}()
 
-func (iptm IPTablesManager) SetupAndEnsureMasqRules(flannelIPv4Net, prevSubnet ip.IP4Net,
+	return nil
+}
+
+func (iptm *IPTablesManager) cleanUp() error {
+	if len(iptm.ipv4Rules) > 0 {
+		ipt, err := iptables.New()
+		if err != nil {
+			// if we can't find iptables, give up and return
+			return fmt.Errorf("failed to setup IPTables. iptables binary was not found: %v", err)
+		}
+		iptRestore, err := NewIPTablesRestoreWithProtocol(iptables.ProtocolIPv4)
+		if err != nil {
+			// if we can't find iptables-restore, give up and return
+			return fmt.Errorf("failed to setup IPTables. iptables-restore binary was not found: %v", err)
+		}
+		log.Info("iptables (ipv4): cleaning-up before exiting flannel...")
+		err = teardownIPTables(ipt, iptRestore, iptm.ipv4Rules)
+		if err != nil {
+			log.Errorf("Failed to tear down IPTables: %v", err)
+		}
+	}
+	if len(iptm.ipv6Rules) > 0 {
+		ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
+		if err != nil {
+			// if we can't find iptables, give up and return
+			return fmt.Errorf("failed to setup IPTables. iptables binary was not found: %v", err)
+		}
+		iptRestore, err := NewIPTablesRestoreWithProtocol(iptables.ProtocolIPv6)
+		if err != nil {
+			// if we can't find iptables-restore, give up and return
+			return fmt.Errorf("failed to setup IPTables. iptables-restore binary was not found: %v", err)
+		}
+		log.Info("iptables (ipv6): cleaning-up before exiting flannel...")
+		err = teardownIPTables(ipt, iptRestore, iptm.ipv6Rules)
+		if err != nil {
+			log.Errorf("Failed to tear down IPTables: %v", err)
+		}
+	}
+	return nil
+}
+
+func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flannelIPv4Net, prevSubnet ip.IP4Net,
 	prevNetworks []ip.IP4Net,
 	flannelIPv6Net, prevIPv6Subnet ip.IP6Net,
 	prevIPv6Networks []ip.IP6Net,
@@ -78,7 +136,7 @@ func (iptm IPTablesManager) SetupAndEnsureMasqRules(flannelIPv4Net, prevSubnet i
 		getRules := func() []trafficmngr.IPTablesRule {
 			return iptm.masqRules([]ip.IP4Net{flannelIPv4Net}, currentlease)
 		}
-		go iptm.setupAndEnsureIP4Tables(getRules, resyncPeriod)
+		go iptm.setupAndEnsureIP4Tables(ctx, getRules, resyncPeriod)
 	}
 	if !flannelIPv6Net.Empty() {
 		//Find the cidr in FLANNEL_IPV6_NETWORK which contains the podCIDR (i.e. FLANNEL_IPV6_SUBNET) of this node
@@ -107,12 +165,12 @@ func (iptm IPTablesManager) SetupAndEnsureMasqRules(flannelIPv4Net, prevSubnet i
 		getRules := func() []trafficmngr.IPTablesRule {
 			return iptm.masqIP6Rules([]ip.IP6Net{flannelIPv6Net}, currentlease)
 		}
-		go iptm.setupAndEnsureIP6Tables(getRules, resyncPeriod)
+		go iptm.setupAndEnsureIP6Tables(ctx, getRules, resyncPeriod)
 	}
 	return nil
 }
 
-func (iptm IPTablesManager) masqRules(cluster_cidrs []ip.IP4Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
+func (iptm *IPTablesManager) masqRules(cluster_cidrs []ip.IP4Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
 	pod_cidr := lease.Subnet.String()
 	ipt, err := iptables.New()
 	supports_random_fully := false
@@ -123,7 +181,7 @@ func (iptm IPTablesManager) masqRules(cluster_cidrs []ip.IP4Net, lease *lease.Le
 	// This rule ensure that the flannel iptables rules are executed before other rules on the node
 	rules[0] = trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}}
 	// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
-	rules[1] = trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}}
+	rules[1] = trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-m", "mark", "--mark", trafficmngr.KubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}}
 	for _, ccidr := range cluster_cidrs {
 		cluster_cidr := ccidr.String()
 		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0), for any of the cluster_cidrs
@@ -158,7 +216,7 @@ func (iptm IPTablesManager) masqRules(cluster_cidrs []ip.IP4Net, lease *lease.Le
 	return rules
 }
 
-func (iptm IPTablesManager) masqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
+func (iptm *IPTablesManager) masqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
 	pod_cidr := lease.IPv6Subnet.String()
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	supports_random_fully := false
@@ -170,7 +228,7 @@ func (iptm IPTablesManager) masqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease
 	// This rule ensure that the flannel iptables rules are executed before other rules on the node
 	rules[0] = trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}}
 	// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
-	rules[1] = trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-m", "mark", "--mark", kubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}}
+	rules[1] = trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-m", "mark", "--mark", trafficmngr.KubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}}
 
 	for _, ccidr := range cluster_cidrs {
 		cluster_cidr := ccidr.String()
@@ -209,14 +267,14 @@ func (iptm IPTablesManager) masqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease
 	return rules
 }
 
-func (iptm IPTablesManager) SetupAndEnsureForwardRules(flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) {
+func (iptm *IPTablesManager) SetupAndEnsureForwardRules(ctx context.Context, flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) {
 	if !flannelIPv4Network.Empty() {
 		log.Infof("Changing default FORWARD chain policy to ACCEPT")
 		iptm.CreateIP4Chain("filter", "FLANNEL-FWD")
 		getRules := func() []trafficmngr.IPTablesRule {
 			return iptm.forwardRules(flannelIPv4Network.String())
 		}
-		go iptm.setupAndEnsureIP4Tables(getRules, resyncPeriod)
+		go iptm.setupAndEnsureIP4Tables(ctx, getRules, resyncPeriod)
 	}
 	if !flannelIPv6Network.Empty() {
 		log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
@@ -224,11 +282,11 @@ func (iptm IPTablesManager) SetupAndEnsureForwardRules(flannelIPv4Network ip.IP4
 		getRules := func() []trafficmngr.IPTablesRule {
 			return iptm.forwardRules(flannelIPv6Network.String())
 		}
-		go iptm.setupAndEnsureIP6Tables(getRules, resyncPeriod)
+		go iptm.setupAndEnsureIP6Tables(ctx, getRules, resyncPeriod)
 	}
 }
 
-func (iptm IPTablesManager) forwardRules(flannelNetwork string) []trafficmngr.IPTablesRule {
+func (iptm *IPTablesManager) forwardRules(flannelNetwork string) []trafficmngr.IPTablesRule {
 	return []trafficmngr.IPTablesRule{
 		// This rule ensure that the flannel iptables rules are executed before other rules on the node
 		{Table: "filter", Action: "-A", Chain: "FORWARD", Rulespec: []string{"-m", "comment", "--comment", "flanneld forward", "-j", "FLANNEL-FWD"}},
@@ -238,7 +296,7 @@ func (iptm IPTablesManager) forwardRules(flannelNetwork string) []trafficmngr.IP
 	}
 }
 
-func (iptm IPTablesManager) CreateIP4Chain(table, chain string) {
+func (iptm *IPTablesManager) CreateIP4Chain(table, chain string) {
 	ipt, err := iptables.New()
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -253,7 +311,7 @@ func (iptm IPTablesManager) CreateIP4Chain(table, chain string) {
 	}
 }
 
-func (iptm IPTablesManager) CreateIP6Chain(table, chain string) {
+func (iptm *IPTablesManager) CreateIP6Chain(table, chain string) {
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -368,9 +426,8 @@ func ipTablesBootstrap(ipt IPTables, iptRestore IPTablesRestore, rules []traffic
 	return nil
 }
 
-func (iptm IPTablesManager) setupAndEnsureIP4Tables(getRules func() []trafficmngr.IPTablesRule, resyncPeriod int) {
+func (iptm *IPTablesManager) setupAndEnsureIP4Tables(ctx context.Context, getRules func() []trafficmngr.IPTablesRule, resyncPeriod int) {
 	rules := getRules()
-	log.Infof("generated %d rules", len(rules))
 	ipt, err := iptables.New()
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -390,24 +447,23 @@ func (iptm IPTablesManager) setupAndEnsureIP4Tables(getRules func() []trafficmng
 		log.Errorf("Failed to bootstrap IPTables: %v", err)
 	}
 
-	defer func() {
-		err := teardownIPTables(ipt, iptRestore, rules)
-		if err != nil {
-			log.Errorf("Failed to tear down IPTables: %v", err)
-		}
-	}()
-
+	iptm.ipv4Rules = append(iptm.ipv4Rules, rules...)
 	for {
-		// Ensure that all the iptables rules exist every 5 seconds
-		if err := ensureIPTables(ipt, iptRestore, getRules()); err != nil {
-			log.Errorf("Failed to ensure iptables rules: %v", err)
+		select {
+		case <-ctx.Done():
+			//clean-up is setup in Init
+			return
+		case <-time.After(time.Duration(resyncPeriod) * time.Second):
+			// Ensure that all the iptables rules exist every 5 seconds
+			if err := ensureIPTables(ipt, iptRestore, rules); err != nil {
+				log.Errorf("Failed to ensure iptables rules: %v", err)
+			}
 		}
 
-		time.Sleep(time.Duration(resyncPeriod) * time.Second)
 	}
 }
 
-func (iptm IPTablesManager) setupAndEnsureIP6Tables(getRules func() []trafficmngr.IPTablesRule, resyncPeriod int) {
+func (iptm *IPTablesManager) setupAndEnsureIP6Tables(ctx context.Context, getRules func() []trafficmngr.IPTablesRule, resyncPeriod int) {
 	rules := getRules()
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	if err != nil {
@@ -427,26 +483,24 @@ func (iptm IPTablesManager) setupAndEnsureIP6Tables(getRules func() []trafficmng
 		// if we can't find iptables, give up and return
 		log.Errorf("Failed to bootstrap IPTables: %v", err)
 	}
-
-	defer func() {
-		err := teardownIPTables(ipt, iptRestore, rules)
-		if err != nil {
-			log.Errorf("Failed to tear down IPTables: %v", err)
-		}
-	}()
+	iptm.ipv6Rules = append(iptm.ipv6Rules, rules...)
 
 	for {
-		// Ensure that all the iptables rules exist every 5 seconds
-		if err := ensureIPTables(ipt, iptRestore, getRules()); err != nil {
-			log.Errorf("Failed to ensure iptables rules: %v", err)
+		select {
+		case <-ctx.Done():
+			//clean-up is setup in Init
+			return
+		case <-time.After(time.Duration(resyncPeriod) * time.Second):
+			// Ensure that all the iptables rules exist every 5 seconds
+			if err := ensureIPTables(ipt, iptRestore, getRules()); err != nil {
+				log.Errorf("Failed to ensure iptables rules: %v", err)
+			}
 		}
-
-		time.Sleep(time.Duration(resyncPeriod) * time.Second)
 	}
 }
 
 // deleteIP4Tables delete specified iptables rules
-func (iptm IPTablesManager) deleteIP4Tables(rules []trafficmngr.IPTablesRule) error {
+func (iptm *IPTablesManager) deleteIP4Tables(rules []trafficmngr.IPTablesRule) error {
 	ipt, err := iptables.New()
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -468,7 +522,7 @@ func (iptm IPTablesManager) deleteIP4Tables(rules []trafficmngr.IPTablesRule) er
 }
 
 // deleteIP6Tables delete specified iptables rules
-func (iptm IPTablesManager) deleteIP6Tables(rules []trafficmngr.IPTablesRule) error {
+func (iptm *IPTablesManager) deleteIP6Tables(rules []trafficmngr.IPTablesRule) error {
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -539,6 +593,7 @@ func teardownIPTables(ipt IPTables, iptr IPTablesRestore, rules []trafficmngr.IP
 			// this shouldn't ever happen
 			return fmt.Errorf("failed to check rule existence: %v", err)
 		}
+
 		if exists {
 			if _, ok := tablesRules[rule.Table]; !ok {
 				tablesRules[rule.Table] = []IPTablesRestoreRuleSpec{}
