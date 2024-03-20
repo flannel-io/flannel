@@ -108,14 +108,6 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 	resyncPeriod int) error {
 
 	if !flannelIPv4Net.Empty() {
-		//Find the cidr in FLANNEL_NETWORK which contains the podCIDR (i.e. FLANNEL_SUBNET) of this node
-		prevNetwork := ip.IP4Net{}
-		for _, net := range prevNetworks {
-			if net.ContainsCIDR(&prevSubnet) {
-				prevNetwork = net
-				break
-			}
-		}
 		// recycle iptables rules only when network configured or subnet leased is not equal to current one.
 		if prevNetwork != flannelIPv4Net && prevSubnet != currentlease.Subnet {
 			log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules",
@@ -133,14 +125,6 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 		go iptm.setupAndEnsureIP4Tables(ctx, iptm.masqRules(flannelIPv4Net, currentlease), resyncPeriod)
 	}
 	if !flannelIPv6Net.Empty() {
-		//Find the cidr in FLANNEL_IPV6_NETWORK which contains the podCIDR (i.e. FLANNEL_IPV6_SUBNET) of this node
-		prevIPv6Network := ip.IP6Net{}
-		for _, net := range prevIPv6Networks {
-			if net.ContainsCIDR(&prevIPv6Subnet) {
-				prevIPv6Network = net
-				break
-			}
-		}
 		// recycle iptables rules only when network configured or subnet leased is not equal to current one.
 		if prevIPv6Network != flannelIPv6Net && prevIPv6Subnet != currentlease.IPv6Subnet {
 			log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules",
