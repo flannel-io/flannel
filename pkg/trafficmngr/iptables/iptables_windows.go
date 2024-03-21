@@ -42,10 +42,8 @@ func (iptm IPTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error 
 func (iptm *IPTablesManager) SetupAndEnsureForwardRules(ctx context.Context, flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) {
 }
 
-func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flannelIPv4Net, prevSubnet ip.IP4Net,
-	prevNetworks []ip.IP4Net,
-	flannelIPv6Net, prevIPv6Subnet ip.IP6Net,
-	prevIPv6Networks []ip.IP6Net,
+func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flannelIPv4Net, prevSubnet, prevNetwork ip.IP4Net,
+	flannelIPv6Net, prevIPv6Subnet, prevIPv6Network ip.IP6Net,
 	currentlease *lease.Lease,
 	resyncPeriod int) error {
 	log.Error(trafficmngr.ErrUnimplemented)

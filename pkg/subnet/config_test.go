@@ -15,7 +15,6 @@
 package subnet
 
 import (
-	"net"
 	"testing"
 )
 
@@ -128,26 +127,5 @@ func TestIPv6ConfigOverrides(t *testing.T) {
 
 	if cfg.IPv6SubnetLen != 124 {
 		t.Errorf("IPv6SubnetLen mismatch: expected 124, got %d", cfg.IPv6SubnetLen)
-	}
-}
-
-func TestIPv6ConfigNetworks(t *testing.T) {
-	s := `{ "EnableIPv6": true, "IPv6Network": "fc00::/48", "enableIPv4": false }`
-
-	cfg, err := ParseConfig(s)
-	if err != nil {
-		t.Fatalf("ParseConfig failed: %s", err)
-	}
-	ipv6 := net.ParseIP("fc00::")
-
-	cfg.AddNetwork(&net.IPNet{IP: ipv6, Mask: net.CIDRMask(48, 128)})
-	if len(cfg.IPv6Networks) >= 2 {
-		t.Fatalf("too many elements in IPv6Networks: %s", cfg.IPv6Networks)
-	}
-	ipv6 = net.ParseIP("fc01::")
-
-	cfg.AddNetwork(&net.IPNet{IP: ipv6, Mask: net.CIDRMask(48, 128)})
-	if len(cfg.IPv6Networks) != 2 {
-		t.Fatalf("IPv6 network not added properly to IPv6Networks: %s", cfg.IPv6Networks)
 	}
 }

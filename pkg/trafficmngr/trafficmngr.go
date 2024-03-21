@@ -51,10 +51,8 @@ type TrafficManager interface {
 	// SetupAndEnsureMasqRules starts a go routine that
 	// rewrites these rules every resyncPeriod seconds if needed
 	SetupAndEnsureMasqRules(ctx context.Context,
-		flannelIPv4Net, prevSubnet ip.IP4Net,
-		prevNetworks []ip.IP4Net,
-		flannelIPv6Net, prevIPv6Subnet ip.IP6Net,
-		prevIPv6Networks []ip.IP6Net,
+		flannelIPv4Net, prevSubnet, prevNetwork ip.IP4Net,
+		flannelIPv6Net, prevIPv6Subnet, prevIPv6Network ip.IP6Net,
 		currentlease *lease.Lease,
 		resyncPeriod int) error
 }

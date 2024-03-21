@@ -183,13 +183,9 @@ func (n *network) handleSubnetEvents(ctx context.Context, batch []lease.Event) {
 					if err != nil {
 						log.Errorf("could not read network config: %v", err)
 					}
-					flannelnet, err := netconf.GetFlannelNetwork(&event.Lease.Subnet)
-					if err != nil {
-						log.Errorf("could not get flannel network: %v", err)
-					}
 
-					if err := n.dev.addRoute(flannelnet.ToIPNet()); err != nil {
-						log.Errorf("failed to add ipv4 route to (%s): %v", flannelnet, err)
+					if err := n.dev.addRoute(netconf.Network.ToIPNet()); err != nil {
+						log.Errorf("failed to add ipv4 route to (%s): %v", netconf.Network, err)
 					}
 				}
 
@@ -206,13 +202,9 @@ func (n *network) handleSubnetEvents(ctx context.Context, batch []lease.Event) {
 					if err != nil {
 						log.Errorf("could not read network config: %v", err)
 					}
-					ipv6flannelnet, err := netconf.GetFlannelIPv6Network(&event.Lease.IPv6Subnet)
-					if err != nil {
-						log.Errorf("could not get flannel network: %v", err)
-					}
 
-					if err := n.v6Dev.addRoute(ipv6flannelnet.ToIPNet()); err != nil {
-						log.Errorf("failed to add ipv6 route to (%s): %v", ipv6flannelnet, err)
+					if err := n.v6Dev.addRoute(netconf.IPv6Network.ToIPNet()); err != nil {
+						log.Errorf("failed to add ipv6 route to (%s): %v", netconf.IPv6Network, err)
 					}
 				}
 			} else {
@@ -242,21 +234,13 @@ func (n *network) handleSubnetEvents(ctx context.Context, batch []lease.Event) {
 				if err != nil {
 					log.Errorf("could not read network config: %v", err)
 				}
-				flannelnet, err := netconf.GetFlannelNetwork(&event.Lease.Subnet)
-				if err != nil {
-					log.Errorf("could not get flannel network: %v", err)
+
+				if err := n.dev.addRoute(netconf.Network.ToIPNet()); err != nil {
+					log.Errorf("failed to add ipv4 route to (%s): %v", netconf.Network, err)
 				}
 
-				if err := n.dev.addRoute(flannelnet.ToIPNet()); err != nil {
-					log.Errorf("failed to add ipv4 route to (%s): %v", flannelnet, err)
-				}
-				ipv6flannelnet, err := netconf.GetFlannelIPv6Network(&event.Lease.IPv6Subnet)
-				if err != nil {
-					log.Errorf("could not get flannel network: %v", err)
-				}
-
-				if err := n.dev.addRoute(ipv6flannelnet.ToIPNet()); err != nil {
-					log.Errorf("failed to add ipv6 route to (%s): %v", ipv6flannelnet, err)
+				if err := n.dev.addRoute(netconf.IPv6Network.ToIPNet()); err != nil {
+					log.Errorf("failed to add ipv6 route to (%s): %v", netconf.IPv6Network, err)
 				}
 			}
 

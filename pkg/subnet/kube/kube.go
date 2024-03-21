@@ -408,27 +408,21 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *lease.Lea
 		Expiration: time.Now().Add(24 * time.Hour),
 	}
 	if cidr != nil && ksm.enableIPv4 {
-		ipnet := ip.FromIPNet(cidr)
-		net, err := ksm.subnetConf.GetFlannelNetwork(&ipnet)
 		if err != nil {
 			return nil, err
 		}
-		// this check is still needed when we use the flannel configuration and not the MultiClusterCIDR API
-		if !containsCIDR(net.ToIPNet(), cidr) {
+		if !containsCIDR(ksm.subnetConf.Network.ToIPNet(), cidr) {
 			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q PodCIDR of the %q node", ksm.subnetConf.Network, cidr, ksm.nodeName)
 		}
 
 		lease.Subnet = ip.FromIPNet(cidr)
 	}
 	if ipv6Cidr != nil {
-		ip6net := ip.FromIP6Net(ipv6Cidr)
-		net, err := ksm.subnetConf.GetFlannelIPv6Network(&ip6net)
 		if err != nil {
 			return nil, err
 		}
-		// this check is still needed when we use the flannel configuration and not the MultiClusterCIDR API
-		if !containsCIDR(net.ToIPNet(), ipv6Cidr) {
-			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q IPv6 PodCIDR of the %q node", net, ipv6Cidr, ksm.nodeName)
+		if !containsCIDR(ksm.subnetConf.IPv6Network.ToIPNet(), ipv6Cidr) {
+			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q IPv6 PodCIDR of the %q node", ksm.subnetConf.IPv6Network, ipv6Cidr, ksm.nodeName)
 		}
 
 		lease.IPv6Subnet = ip.FromIP6Net(ipv6Cidr)

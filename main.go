@@ -346,39 +346,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	flannelIPv4Net := ip.IP4Net{}
-	flannelIpv6Net := ip.IP6Net{}
-	if config.EnableIPv4 {
-		flannelIPv4Net, err = config.GetFlannelNetwork(&bn.Lease().Subnet)
-		if err != nil {
-			log.Error(err)
-			cancel()
-			wg.Wait()
-			os.Exit(1)
-		}
-	}
-	if config.EnableIPv6 {
-		flannelIpv6Net, err = config.GetFlannelIPv6Network(&bn.Lease().IPv6Subnet)
-		if err != nil {
-			log.Error(err)
-			cancel()
-			wg.Wait()
-			os.Exit(1)
-		}
-	}
 	// Set up ipMasq if needed
 	if opts.ipMasq {
-		prevNetworks := ReadCIDRsFromSubnetFile(opts.subnetFile, "FLANNEL_NETWORK")
+		prevNetwork := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_NETWORK")
 		prevSubnet := ReadCIDRFromSubnetFile(opts.subnetFile, "FLANNEL_SUBNET")
 
-		prevIPv6Networks := ReadIP6CIDRsFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_NETWORK")
+		prevIPv6Network := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_NETWORK")
 		prevIPv6Subnet := ReadIP6CIDRFromSubnetFile(opts.subnetFile, "FLANNEL_IPV6_SUBNET")
 
 		err = trafficMngr.SetupAndEnsureMasqRules(ctx,
-			flannelIPv4Net, prevSubnet,
-			prevNetworks,
-			flannelIpv6Net, prevIPv6Subnet,
-			prevIPv6Networks,
+			config.Network, prevSubnet,
+			prevNetwork,
+			config.IPv6Network, prevIPv6Subnet,
+			prevIPv6Network,
 			bn.Lease(),
 			opts.iptablesResyncSeconds)
 		if err != nil {
@@ -394,8 +374,8 @@ func main() {
 	// In Docker 1.13 and later, Docker sets the default policy of the FORWARD chain to DROP.
 	if opts.iptablesForwardRules {
 		trafficMngr.SetupAndEnsureForwardRules(ctx,
-			flannelIPv4Net,
-			flannelIpv6Net,
+			config.Network,
+			config.IPv6Network,
 			opts.iptablesResyncSeconds)
 	}
 

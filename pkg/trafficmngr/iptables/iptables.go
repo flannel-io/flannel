@@ -102,22 +102,12 @@ func (iptm *IPTablesManager) cleanUp() error {
 	return nil
 }
 
-func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flannelIPv4Net, prevSubnet ip.IP4Net,
-	prevNetworks []ip.IP4Net,
-	flannelIPv6Net, prevIPv6Subnet ip.IP6Net,
-	prevIPv6Networks []ip.IP6Net,
+func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flannelIPv4Net, prevSubnet, prevNetwork ip.IP4Net,
+	flannelIPv6Net, prevIPv6Subnet, prevIPv6Network ip.IP6Net,
 	currentlease *lease.Lease,
 	resyncPeriod int) error {
 
 	if !flannelIPv4Net.Empty() {
-		//Find the cidr in FLANNEL_NETWORK which contains the podCIDR (i.e. FLANNEL_SUBNET) of this node
-		prevNetwork := ip.IP4Net{}
-		for _, net := range prevNetworks {
-			if net.ContainsCIDR(&prevSubnet) {
-				prevNetwork = net
-				break
-			}
-		}
 		// recycle iptables rules only when network configured or subnet leased is not equal to current one.
 		if prevNetwork != flannelIPv4Net && prevSubnet != currentlease.Subnet {
 			log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules",
@@ -125,28 +115,16 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 			newLease := &lease.Lease{
 				Subnet: prevSubnet,
 			}
-			if err := iptm.deleteIP4Tables(iptm.masqRules(prevNetworks, newLease)); err != nil {
+			if err := iptm.deleteIP4Tables(iptm.masqRules(prevNetwork, newLease)); err != nil {
 				return err
 			}
 		}
 
 		log.Infof("Setting up masking rules")
 		iptm.CreateIP4Chain("nat", "FLANNEL-POSTRTG")
-		//Note: doesn't work for multiple networks but we disabled MultiClusterCIDR anyway
-		getRules := func() []trafficmngr.IPTablesRule {
-			return iptm.masqRules([]ip.IP4Net{flannelIPv4Net}, currentlease)
-		}
-		go iptm.setupAndEnsureIP4Tables(ctx, getRules, resyncPeriod)
+		go iptm.setupAndEnsureIP4Tables(ctx, iptm.masqRules(flannelIPv4Net, currentlease), resyncPeriod)
 	}
 	if !flannelIPv6Net.Empty() {
-		//Find the cidr in FLANNEL_IPV6_NETWORK which contains the podCIDR (i.e. FLANNEL_IPV6_SUBNET) of this node
-		prevIPv6Network := ip.IP6Net{}
-		for _, net := range prevIPv6Networks {
-			if net.ContainsCIDR(&prevIPv6Subnet) {
-				prevIPv6Network = net
-				break
-			}
-		}
 		// recycle iptables rules only when network configured or subnet leased is not equal to current one.
 		if prevIPv6Network != flannelIPv6Net && prevIPv6Subnet != currentlease.IPv6Subnet {
 			log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules",
@@ -154,23 +132,21 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 			newLease := &lease.Lease{
 				IPv6Subnet: prevIPv6Subnet,
 			}
-			if err := iptm.deleteIP6Tables(iptm.masqIP6Rules(prevIPv6Networks, newLease)); err != nil {
+			if err := iptm.deleteIP6Tables(iptm.masqIP6Rules(prevIPv6Network, newLease)); err != nil {
 				return err
 			}
 		}
 
 		log.Infof("Setting up masking rules for IPv6")
 		iptm.CreateIP6Chain("nat", "FLANNEL-POSTRTG")
-		//Note: doesn't work for multiple networks but we disabled MultiClusterCIDR anyway
-		getRules := func() []trafficmngr.IPTablesRule {
-			return iptm.masqIP6Rules([]ip.IP6Net{flannelIPv6Net}, currentlease)
-		}
-		go iptm.setupAndEnsureIP6Tables(ctx, getRules, resyncPeriod)
+		go iptm.setupAndEnsureIP6Tables(ctx, iptm.masqIP6Rules(flannelIPv6Net, currentlease), resyncPeriod)
 	}
 	return nil
 }
 
-func (iptm *IPTablesManager) masqRules(cluster_cidrs []ip.IP4Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
+func (iptm *IPTablesManager) masqRules(ccidr ip.IP4Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
+	cluster_cidr := ccidr.String()
+
 	pod_cidr := lease.Subnet.String()
 	ipt, err := iptables.New()
 	supports_random_fully := false
@@ -182,41 +158,30 @@ func (iptm *IPTablesManager) masqRules(cluster_cidrs []ip.IP4Net, lease *lease.L
 	rules[0] = trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-m", "comment", "--comment", "flanneld masq", "-j", "FLANNEL-POSTRTG"}}
 	// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
 	rules[1] = trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-m", "mark", "--mark", trafficmngr.KubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}}
-	for _, ccidr := range cluster_cidrs {
-		cluster_cidr := ccidr.String()
-		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0), for any of the cluster_cidrs
-		rules = append(rules,
-			trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", pod_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-		)
+	// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0), for any of the cluster_cidrs
+	rules = append(rules,
+		trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", pod_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+		trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+	)
+	// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
+	rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}})
+	// NAT if it's not multicast traffic
+	if supports_random_fully {
+		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
+	} else {
+		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
 	}
-	for _, ccidr := range cluster_cidrs {
-		cluster_cidr := ccidr.String()
-		// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}})
-	}
-	for _, ccidr := range cluster_cidrs {
-		cluster_cidr := ccidr.String()
-		// NAT if it's not multicast traffic
-		if supports_random_fully {
-			rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
-		} else {
-			rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
-		}
-	}
-	for _, ccidr := range cluster_cidrs {
-		cluster_cidr := ccidr.String()
-		// Masquerade anything headed towards flannel from the host
-		if supports_random_fully {
-			rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
-		} else {
-			rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
-		}
+	// Masquerade anything headed towards flannel from the host
+	if supports_random_fully {
+		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
+	} else {
+		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
 	}
 	return rules
 }
 
-func (iptm *IPTablesManager) masqIP6Rules(cluster_cidrs []ip.IP6Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
+func (iptm *IPTablesManager) masqIP6Rules(ccidr ip.IP6Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
+	cluster_cidr := ccidr.String()
 	pod_cidr := lease.IPv6Subnet.String()
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	supports_random_fully := false
@@ -230,38 +195,25 @@ func (iptm *IPTablesManager) masqIP6Rules(cluster_cidrs []ip.IP6Net, lease *leas
 	// This rule will not masquerade traffic marked by the kube-proxy to avoid double NAT bug on some kernel version
 	rules[1] = trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-m", "mark", "--mark", trafficmngr.KubeProxyMark, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}}
 
-	for _, ccidr := range cluster_cidrs {
-		cluster_cidr := ccidr.String()
-		// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0), for any of the cluster_cidrs
-		rules = append(rules,
-			trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", pod_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-			trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
-		)
+	// This rule makes sure we don't NAT traffic within overlay network (e.g. coming out of docker0), for any of the cluster_cidrs
+	rules = append(rules,
+		trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", pod_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+		trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}},
+	)
+	// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
+	rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}})
+	// NAT if it's not multicast traffic
+	if supports_random_fully {
+		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
+	} else {
+		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
 	}
-	for _, ccidr := range cluster_cidrs {
-		cluster_cidr := ccidr.String()
-		// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
-		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}})
-	}
-	for _, ccidr := range cluster_cidrs {
-		cluster_cidr := ccidr.String()
-		// NAT if it's not multicast traffic
-		if supports_random_fully {
-			rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
-		} else {
-			rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
-		}
 
-	}
-	for _, ccidr := range cluster_cidrs {
-		cluster_cidr := ccidr.String()
-		// Masquerade anything headed towards flannel from the host
-		if supports_random_fully {
-			rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
-		} else {
-			rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
-		}
-
+	// Masquerade anything headed towards flannel from the host
+	if supports_random_fully {
+		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
+	} else {
+		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
 	}
 
 	return rules
@@ -271,18 +223,12 @@ func (iptm *IPTablesManager) SetupAndEnsureForwardRules(ctx context.Context, fla
 	if !flannelIPv4Network.Empty() {
 		log.Infof("Changing default FORWARD chain policy to ACCEPT")
 		iptm.CreateIP4Chain("filter", "FLANNEL-FWD")
-		getRules := func() []trafficmngr.IPTablesRule {
-			return iptm.forwardRules(flannelIPv4Network.String())
-		}
-		go iptm.setupAndEnsureIP4Tables(ctx, getRules, resyncPeriod)
+		go iptm.setupAndEnsureIP4Tables(ctx, iptm.forwardRules(flannelIPv4Network.String()), resyncPeriod)
 	}
 	if !flannelIPv6Network.Empty() {
 		log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
 		iptm.CreateIP6Chain("filter", "FLANNEL-FWD")
-		getRules := func() []trafficmngr.IPTablesRule {
-			return iptm.forwardRules(flannelIPv6Network.String())
-		}
-		go iptm.setupAndEnsureIP6Tables(ctx, getRules, resyncPeriod)
+		go iptm.setupAndEnsureIP6Tables(ctx, iptm.forwardRules(flannelIPv6Network.String()), resyncPeriod)
 	}
 }
 
@@ -426,8 +372,7 @@ func ipTablesBootstrap(ipt IPTables, iptRestore IPTablesRestore, rules []traffic
 	return nil
 }
 
-func (iptm *IPTablesManager) setupAndEnsureIP4Tables(ctx context.Context, getRules func() []trafficmngr.IPTablesRule, resyncPeriod int) {
-	rules := getRules()
+func (iptm *IPTablesManager) setupAndEnsureIP4Tables(ctx context.Context, rules []trafficmngr.IPTablesRule, resyncPeriod int) {
 	ipt, err := iptables.New()
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -463,8 +408,7 @@ func (iptm *IPTablesManager) setupAndEnsureIP4Tables(ctx context.Context, getRul
 	}
 }
 
-func (iptm *IPTablesManager) setupAndEnsureIP6Tables(ctx context.Context, getRules func() []trafficmngr.IPTablesRule, resyncPeriod int) {
-	rules := getRules()
+func (iptm *IPTablesManager) setupAndEnsureIP6Tables(ctx context.Context, rules []trafficmngr.IPTablesRule, resyncPeriod int) {
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -492,7 +436,7 @@ func (iptm *IPTablesManager) setupAndEnsureIP6Tables(ctx context.Context, getRul
 			return
 		case <-time.After(time.Duration(resyncPeriod) * time.Second):
 			// Ensure that all the iptables rules exist every 5 seconds
-			if err := ensureIPTables(ipt, iptRestore, getRules()); err != nil {
+			if err := ensureIPTables(ipt, iptRestore, rules); err != nil {
 				log.Errorf("Failed to ensure iptables rules: %v", err)
 			}
 		}
