@@ -54,13 +54,7 @@ flannel:
   # General daemonset configs
   #
   tolerations:
-  - key: "node.kubernetes.io/not-ready"
-    effect: "NoSchedule"
-  - key: "node-role.kubernetes.io/control-plane"
-    effect: "NoSchedule"
-  - key: "node.cloudprovider.kubernetes.io/uninitialized"
-    effect: "NoSchedule"
-    value: "true"
-  - key: "node-role.kubernetes.io/etcd"
-    operator: "Exists"
-    effect: "NoExecute"
+  - effect: NoExecute
+    operator: Exists
+  - effect: NoSchedule
+    operator: Exists
