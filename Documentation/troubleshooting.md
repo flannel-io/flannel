@@ -39,6 +39,27 @@ Vagrant typically assigns two interfaces to all VMs. The first, for which all ho
 
 This may lead to problems with flannel. By default, flannel selects the first interface on a host. This leads to all hosts thinking they have the same public IP address. To prevent this issue, pass the `--iface=eth1` flag to flannel so that the second interface is chosen.
 
+## NAT
+When the public IP is behind NAT, the UDP checksum fields of the VXLAN packets can be corrupted.
+In that case, try running the following commands to avoid corrupted checksums:
+
+```bash
+/usr/sbin/ethtool -K flannel.1 tx-checksum-ip-generic off
+```
+
+To automate the command above via udev, create `/etc/udev/rules.d/90-flannel.rules` as follows:
+
+```
+SUBSYSTEM=="net", ACTION=="add|change|move", ENV{INTERFACE}=="flannel.1", RUN+="/usr/sbin/ethtool -K flannel.1 tx-checksum-ip-generic off"
+```
+
+<!--
+ref:
+- https://github.com/flannel-io/flannel/issues/1279
+- https://github.com/kubernetes/kops/pull/9074
+- https://github.com/karmab/kcli/commit/b1a8eff658d17cf4e28162f0fa2c8b2b10e5ad00
+-->
+
 ## Permissions
 Depending on the backend being used, flannel may need to run with super user permissions. Examples include creating VXLAN devices or programming routes.  If you see errors similar to the following, confirm that the user running flannel has the right permissions (or try running with `sudo)`.
  * `Error adding route...`
