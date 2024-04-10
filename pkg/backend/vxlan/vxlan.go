@@ -24,7 +24,7 @@ package vxlan
 // - The flannel daemon knows which flannel host the packet is destined for so it can supply the VTEP MAC to use.
 //   This is stored in the ARP table (with a timeout) to avoid constantly looking it up.
 // - The packet can then be encapsulated but the host needs to know where to send it. This creates another callout from
-//   the kernal vxlan code to the flannel daemon to get the public IP that should be used for that VTEP (this gets called
+//   the kernel vxlan code to the flannel daemon to get the public IP that should be used for that VTEP (this gets called
 //   an L3 miss). The L2/L3 miss hooks are registered when the vxlan device is created. At the same time a device route
 //   is created to the whole flannel network so that non-local traffic is sent over the vxlan device.
 //
@@ -37,7 +37,7 @@ package vxlan
 // during startup or when it's created), flannel simply adds the required entries so that no further lookup/callout is required.
 //
 //
-// The latest version of the vxlan backend  removes the need for the L2MISS too, which means that the flannel deamon is not
+// The latest version of the vxlan backend  removes the need for the L2MISS too, which means that the flannel daemon is not
 // listening for any netlink messages anymore. This improves reliability (no problems with timeouts if
 // flannel crashes or restarts) and simplifies upgrades.
 //
