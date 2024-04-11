@@ -9,7 +9,7 @@ ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.5.12}"
 ETCDCTL_IMG="quay.io/coreos/etcd:v3.5.12"
 ETCD_LOCATION="${ETCD_LOCATION:-etcd}"
 FLANNEL_NET="${FLANNEL_NET:-10.10.0.0/16}"
-TAG=`git describe --tags --dirty --always`
+TAG=`git describe --tags --always`
 FLANNEL_DOCKER_IMAGE="${FLANNEL_DOCKER_IMAGE:-quay.io/coreos/flannel:$TAG}"
 
 # Set the proper imagename according to architecture
