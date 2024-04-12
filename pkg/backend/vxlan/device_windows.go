@@ -146,20 +146,9 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 			return nil, errors.Wrapf(lastErr, "timeout, failed to get management IP from HostComputeNetwork %s", networkName)
 		}
 
-		managementIP := getManagementIP(newNetwork)
-		// Wait for the interface with the management IP
-		log.Infof("Waiting to get net interface for HostComputeNetwork %s (%s)", networkName, managementIP)
-		managementIPv4, err := ip.ParseIP4(managementIP)
+		err = checkHostNetworkReady(newNetwork)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to parse management ip (%s)", managementIP)
-		}
-
-		waitErr = wait.Poll(2000*time.Millisecond, 20*time.Second, func() (done bool, err error) {
-			_, lastErr = ip.GetInterfaceByIP(managementIPv4.ToIP())
-			return lastErr == nil, nil
-		})
-		if waitErr == wait.ErrWaitTimeout {
-			return nil, errors.Wrapf(lastErr, "timeout, failed to get net interface for HostComputeNetwork %s (%s)", networkName, managementIP)
+			return nil, errors.Wrapf(err, "Interface bound to %s took too long to get ready. Please check your network host configuration", networkName)
 		}
 
 		log.Infof("Created HostComputeNetwork %s", networkName)
@@ -234,5 +223,30 @@ func addNetAdapterName(network *hcn.HostComputeNetwork, netAdapterName string) e
 
 	network.Policies = append(network.Policies, policySettings)
 
+	return nil
+}
+
+// checkHostNetworkReady waits for the host network to be ready: the main interface must be up and have an IP address
+func checkHostNetworkReady(network *hcn.HostComputeNetwork) error {
+	managementIP := getManagementIP(network)
+	// Wait for the interface with the management IP
+	log.Infof("Waiting to get net interface for HostComputeNetwork %s (%s)", network.Name, managementIP)
+	managementIPv4, err := ip.ParseIP4(managementIP)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to parse management ip (%s)", managementIP)
+	}
+
+	waitErr := wait.Poll(3*time.Second, 25*time.Second, func() (done bool, err error) {
+		iface, lastErr := ip.GetInterfaceByIP(managementIPv4.ToIP())
+		if lastErr == nil {
+			log.V(2).Infof("Host interface: %s bound by %s ready", iface.Name, network.Name)
+			return true, nil
+		}
+		log.V(2).Infof("Host interface bound by %s not ready", network.Name)
+		return false, nil
+	})
+	if waitErr == wait.ErrWaitTimeout {
+		return errors.Wrapf(waitErr, "timeout, failed to get net interface for HostComputeNetwork %s (%s)", network.Name, managementIP)
+	}
 	return nil
 }

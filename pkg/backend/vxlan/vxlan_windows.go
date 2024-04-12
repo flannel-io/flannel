@@ -73,7 +73,7 @@ func newSubnetAttrs(publicIP net.IP, vnid uint16, mac net.HardwareAddr) (*lease.
 	}
 	data, err := json.Marshal(&leaseAttrs)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to marshal vxlanLeaseAttrs: %w", err)
 	}
 
 	return &lease.LeaseAttrs{
@@ -153,7 +153,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 
 	dev, err := newVXLANDevice(&devAttrs)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create VXLAN network: %w", err)
 	}
 	dev.directRouting = cfg.DirectRouting
 	dev.macPrefix = cfg.MacPrefix
@@ -165,7 +165,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 
 	hcnNetwork, err := hcn.GetNetworkByName(cfg.Name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get HNS network: %w", err)
 	}
 
 	var newDrMac string
@@ -174,7 +174,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 			policySettings := hcn.DrMacAddressNetworkPolicySetting{}
 			err = json.Unmarshal(policy.Settings, &policySettings)
 			if err != nil {
-				return nil, fmt.Errorf("Failed to unmarshal settings")
+				return nil, fmt.Errorf("failed to unmarshal settings")
 			}
 			newDrMac = policySettings.Address
 		}
@@ -182,7 +182,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 
 	mac, err := net.ParseMAC(string(newDrMac))
 	if err != nil {
-		return nil, fmt.Errorf("Cannot parse DR MAC %v: %+v", newDrMac, err)
+		return nil, fmt.Errorf("cannot parse DR MAC %v: %+v", newDrMac, err)
 	}
 
 	subnetAttrs, err = newSubnetAttrs(be.extIface.ExtAddr, uint16(cfg.VNI), mac)
@@ -190,9 +190,15 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 		return nil, err
 	}
 
+	// Before contacting the lease server (e.g. kube-api), we verify that the physical interface is ready
+	err = checkHostNetworkReady(hcnNetwork)
+	if err != nil {
+		return nil, fmt.Errorf("interface bound to %s took too long to get ready. Please check your network host configuration", hcnNetwork.Name)
+	}
+
 	lease, err = be.subnetMgr.AcquireLease(ctx, subnetAttrs)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to acquire lease: %w", err)
 	}
 	network.SubnetLease = lease
 	return network, nil
