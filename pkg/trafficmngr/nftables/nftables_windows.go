@@ -29,7 +29,7 @@ type NFTablesManager struct {
 }
 
 func (nftm *NFTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
-	log.Error(trafficmngr.ErrUnimplemented)
+	log.Warning(trafficmngr.ErrUnimplemented)
 	return nil
 }
 
@@ -41,6 +41,6 @@ func (nftm *NFTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 	flannelIPv6Net, prevIPv6Subnet, prevIPv6Network ip.IP6Net,
 	currentlease *lease.Lease,
 	resyncPeriod int) error {
-	log.Error(trafficmngr.ErrUnimplemented)
+	log.Warning(trafficmngr.ErrUnimplemented)
 	return nil
 }
