@@ -36,7 +36,8 @@ type IPTables interface {
 }
 
 func (iptm IPTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
-	return trafficmngr.ErrUnimplemented
+	log.Warning(trafficmngr.ErrUnimplemented)
+	return nil
 }
 
 func (iptm *IPTablesManager) SetupAndEnsureForwardRules(ctx context.Context, flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) {
@@ -46,6 +47,6 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 	flannelIPv6Net, prevIPv6Subnet, prevIPv6Network ip.IP6Net,
 	currentlease *lease.Lease,
 	resyncPeriod int) error {
-	log.Error(trafficmngr.ErrUnimplemented)
+	log.Warning(trafficmngr.ErrUnimplemented)
 	return nil
 }
