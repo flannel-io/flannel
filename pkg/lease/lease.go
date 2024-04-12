@@ -45,7 +45,7 @@ type LeaseAttrs struct {
 	BackendV6Data json.RawMessage `json:",omitempty"`
 }
 
-// Lease includes information about the lease 
+// Lease includes information about the lease
 type Lease struct {
 	EnableIPv4 bool
 	EnableIPv6 bool
@@ -67,7 +67,7 @@ type LeaseWatchResult struct {
 }
 
 type LeaseWatcher struct {
-	OwnLease *Lease //Lease with the subnet of the local node
+	OwnLease *Lease  //Lease with the subnet of the local node
 	Leases   []Lease //Leases with subnets from other nodes
 }
 
