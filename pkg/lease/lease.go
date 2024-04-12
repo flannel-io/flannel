@@ -15,7 +15,9 @@
 package lease
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/flannel-io/flannel/pkg/ip"
@@ -69,6 +71,35 @@ type LeaseWatchResult struct {
 type LeaseWatcher struct {
 	OwnLease *Lease //Lease with the subnet of the local node
 	Leases   []Lease //Leases with subnets from other nodes
+}
+
+func (la *LeaseAttrs) String() string {
+	var buffer bytes.Buffer
+	buffer.WriteString(fmt.Sprintf("BackendType: %s, PublicIP: %s, ", la.BackendType, la.PublicIP.String()))
+	if la.PublicIPv6 != nil {
+		buffer.WriteString(fmt.Sprintf("PublicIPv6: %s, ", la.PublicIPv6.String()))
+	} else {
+		buffer.WriteString("PublicIPv6: (nil), ")
+	}
+	if la.BackendData != nil {
+		j, err := json.Marshal(la.BackendData)
+		if err != nil {
+			buffer.WriteString("BackendData: (nil), ")
+		}
+		buffer.WriteString(fmt.Sprintf("BackendData: %s, ", string(j)))
+	} else {
+		buffer.WriteString("BackendData: (nil), ")
+	}
+	if la.BackendV6Data != nil {
+		j, err := json.Marshal(la.BackendV6Data)
+		if err != nil {
+			buffer.WriteString("BackendV6Data: (nil)")
+		}
+		buffer.WriteString(fmt.Sprintf("BackendV6Data: %s", string(j)))
+	} else {
+		buffer.WriteString("BackendV6Data: (nil)")
+	}
+	return buffer.String()
 }
 
 // Reset is called by etcd-subnet when using a snapshot

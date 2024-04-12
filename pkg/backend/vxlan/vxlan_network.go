@@ -97,6 +97,7 @@ func (nw *network) handleSubnetEvents(batch []lease.Event) {
 		sn := event.Lease.Subnet
 		v6Sn := event.Lease.IPv6Subnet
 		attrs := event.Lease.Attrs
+		log.Infof("Received Subnet Event with VxLan: %s", attrs.String())
 		if attrs.BackendType != "vxlan" {
 			log.Warningf("ignoring non-vxlan v4Subnet(%s) v6Subnet(%s): type=%v", sn, v6Sn, attrs.BackendType)
 			continue
