@@ -144,21 +144,21 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 	var err error
 
 	// When flannel is restarted, it will get the MAC address from the node annotations to set flannel.1 MAC address
-	var hwAddr net.HardwareAddr
+	var hwAddr, hwAddrv6 net.HardwareAddr
 
-	macStr := be.subnetMgr.GetStoredMacAddress(ctx)
+	macStr, macStrv6 := be.subnetMgr.GetStoredMacAddresses(ctx)
 	if macStr != "" {
 		hwAddr, err = net.ParseMAC(macStr)
 		if err != nil {
 			log.Errorf("Failed to parse mac addr(%s): %v", macStr, err)
 		}
-		log.Infof("Setup flannel.1 mac address to %s when flannel restarts", macStr)
+		log.Infof("Interface flannel.%d mac address set to: %s", cfg.VNI, macStr)
 	}
 
 	if config.EnableIPv4 {
 		devAttrs := vxlanDeviceAttrs{
 			vni:       uint32(cfg.VNI),
-			name:      fmt.Sprintf("flannel.%v", cfg.VNI),
+			name:      fmt.Sprintf("flannel.%d", cfg.VNI),
 			MTU:       cfg.MTU,
 			vtepIndex: be.extIface.Iface.Index,
 			vtepAddr:  be.extIface.IfaceAddr,
@@ -174,17 +174,26 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 		}
 		dev.directRouting = cfg.DirectRouting
 	}
+
+	if macStrv6 != "" {
+		hwAddrv6, err = net.ParseMAC(macStrv6)
+		if err != nil {
+			log.Errorf("Failed to parse mac addr(%s): %v", macStrv6, err)
+		}
+		log.Infof("Interface flannel-v6.%d mac address set to: %s", cfg.VNI, macStrv6)
+	}
+
 	if config.EnableIPv6 {
 		v6DevAttrs := vxlanDeviceAttrs{
 			vni:       uint32(cfg.VNI),
-			name:      fmt.Sprintf("flannel-v6.%v", cfg.VNI),
+			name:      fmt.Sprintf("flannel-v6.%d", cfg.VNI),
 			MTU:       cfg.MTU,
 			vtepIndex: be.extIface.Iface.Index,
 			vtepAddr:  be.extIface.IfaceV6Addr,
 			vtepPort:  cfg.Port,
 			gbp:       cfg.GBP,
 			learning:  cfg.Learning,
-			hwAddr:    nil,
+			hwAddr:    hwAddrv6,
 		}
 		v6Dev, err = newVXLANDevice(&v6DevAttrs)
 		if err != nil {

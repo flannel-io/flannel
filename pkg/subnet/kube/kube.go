@@ -606,13 +606,14 @@ func (m *kubeSubnetManager) HandleSubnetFile(path string, config *subnet.Config,
 	return subnet.WriteSubnetFile(path, config, ipMasq, sn, ipv6sn, mtu)
 }
 
-// GetStoredMacAddress reads MAC address from node annotations when flannel restarts
-func (ksm *kubeSubnetManager) GetStoredMacAddress(ctx context.Context) string {
+// GetStoredMacAddresses reads MAC addresses from node annotations when flannel restarts
+func (ksm *kubeSubnetManager) GetStoredMacAddresses(ctx context.Context) (string, string) {
+	var macv4, macv6 string
 	// get mac info from Name func.
 	node, err := ksm.client.CoreV1().Nodes().Get(ctx, ksm.nodeName, metav1.GetOptions{})
 	if err != nil {
 		log.Errorf("Failed to get node for backend data: %v", err)
-		return ""
+		return "", ""
 	}
 
 	// node backend data format: `{"VNI":1,"VtepMAC":"12:c6:65:89:b4:e3"}`
@@ -624,10 +625,19 @@ func (ksm *kubeSubnetManager) GetStoredMacAddress(ctx context.Context) string {
 			macStr := strings.Trim(backendData, "\"}")
 			macInfoSlice := strings.Split(macStr, ":\"")
 			if len(macInfoSlice) == 2 {
-				return macInfoSlice[1]
+				macv4 = macInfoSlice[1]
 			}
 		}
+		backendDatav6, okv6 := node.Annotations[fmt.Sprintf("%s/backend-v6-data", ksm.annotationPrefix)]
+		if okv6 {
+			macStr := strings.Trim(backendDatav6, "\"}")
+			macInfoSlice := strings.Split(macStr, ":\"")
+			if len(macInfoSlice) == 2 {
+				macv6 = macInfoSlice[1]
+			}
+		}
+		return macv4, macv6
 	}
 
-	return ""
+	return "", ""
 }
