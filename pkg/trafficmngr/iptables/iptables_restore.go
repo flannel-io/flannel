@@ -114,7 +114,7 @@ func (iptr *ipTablesRestore) runWithOutput(args []string, stdin io.Reader) (stri
 	cmd.Stdin = stdin
 
 	if err := cmd.Run(); err != nil {
-		return "", "", err
+		return stdout.String(), stderr.String(), err
 	}
 
 	return stdout.String(), stderr.String(), nil
