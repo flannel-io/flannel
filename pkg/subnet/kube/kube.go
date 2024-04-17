@@ -641,3 +641,22 @@ func (ksm *kubeSubnetManager) GetStoredMacAddresses(ctx context.Context) (string
 
 	return "", ""
 }
+
+// GetStoredPublicIP reads if there are any public IP configured as annotation when flannel starts
+func (ksm *kubeSubnetManager) GetStoredPublicIP(ctx context.Context) (string, string) {
+	// get mac info from Name func.
+	node, err := ksm.client.CoreV1().Nodes().Get(ctx, ksm.nodeName, metav1.GetOptions{})
+	if err != nil {
+		log.Errorf("Failed to get node for backend data: %v", err)
+		return "", ""
+	}
+
+	if node != nil && node.Annotations != nil {
+		log.Infof("List of node(%s) annotations: %#+v", ksm.nodeName, node.Annotations)
+		publicIP := node.Annotations[ksm.annotations.BackendPublicIP]
+		publicIPv6 := node.Annotations[ksm.annotations.BackendPublicIPv6]
+		return publicIP, publicIPv6
+	}
+
+	return "", ""
+}

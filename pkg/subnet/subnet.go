@@ -115,6 +115,7 @@ type Manager interface {
 	CompleteLease(ctx context.Context, lease *lease.Lease, wg *sync.WaitGroup) error
 
 	GetStoredMacAddresses(ctx context.Context) (string, string)
+	GetStoredPublicIP(ctx context.Context) (string, string)
 	Name() string
 }
 
