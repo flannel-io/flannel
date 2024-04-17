@@ -29,7 +29,7 @@ type NFTablesManager struct {
 }
 
 func (nftm *NFTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
-	log.Warning(trafficmngr.ErrUnimplemented)
+	log.Info("Starting flannel in windows mode...")
 	return nil
 }
 

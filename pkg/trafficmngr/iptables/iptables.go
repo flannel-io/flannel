@@ -48,6 +48,8 @@ type IPTablesManager struct {
 }
 
 func (iptm *IPTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
+	log.Info("Starting flannel in iptables mode...")
+
 	iptm.ipv4Rules = make([]trafficmngr.IPTablesRule, 0, 10)
 	iptm.ipv6Rules = make([]trafficmngr.IPTablesRule, 0, 10)
 	wg.Add(1)

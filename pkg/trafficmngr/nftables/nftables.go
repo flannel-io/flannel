@@ -44,6 +44,7 @@ type NFTablesManager struct {
 }
 
 func (nftm *NFTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
+	log.Info("Starting flannel in nftables mode...")
 	var err error
 	nftm.nftv4, err = initTable(ctx, knftables.IPv4Family, ipv4Table)
 	if err != nil {
