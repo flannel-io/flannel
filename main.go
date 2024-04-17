@@ -262,6 +262,15 @@ func main() {
 
 	// Work out which interface to use
 	var extIface *backend.ExternalInterface
+
+	annotatedPublicIP, annotatedPublicIPv6 := sm.GetStoredPublicIP(ctx)
+	if annotatedPublicIP != "" {
+		opts.publicIP = annotatedPublicIP
+	}
+	if annotatedPublicIPv6 != "" {
+		opts.publicIPv6 = annotatedPublicIPv6
+	}
+
 	optsPublicIP := ipmatch.PublicIPOpts{
 		PublicIP:   opts.publicIP,
 		PublicIPv6: opts.publicIPv6,

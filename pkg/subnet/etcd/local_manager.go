@@ -83,6 +83,10 @@ func (m *LocalManager) GetStoredMacAddresses(ctx context.Context) (string, strin
 	return "", ""
 }
 
+func (m *LocalManager) GetStoredPublicIP(ctx context.Context) (string, string) {
+	return "", ""
+}
+
 func (m *LocalManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {
 	cfg, err := m.registry.getNetworkConfig(ctx)
 	if err != nil {
