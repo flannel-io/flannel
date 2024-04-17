@@ -79,8 +79,8 @@ func newLocalManager(r Registry, prevSubnet ip.IP4Net, prevIPv6Subnet ip.IP6Net,
 	}
 }
 
-func (m *LocalManager) GetStoredMacAddress(ctx context.Context) string {
-	return ""
+func (m *LocalManager) GetStoredMacAddresses(ctx context.Context) (string, string) {
+	return "", ""
 }
 
 func (m *LocalManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {
