@@ -112,8 +112,8 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.13
-	go.etcd.io/etcd/client/pkg/v3 v3.5.12
-	go.etcd.io/etcd/client/v3 v3.5.12
+	go.etcd.io/etcd/client/pkg/v3 v3.5.13
+	go.etcd.io/etcd/client/v3 v3.5.13
 	go.etcd.io/etcd/tests/v3 v3.5.12
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
