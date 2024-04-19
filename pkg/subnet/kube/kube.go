@@ -137,7 +137,7 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 		go sm.Run(ctx)
 
 		log.Infof("Waiting %s for node controller to sync", nodeControllerSyncTimeout)
-		err = wait.Poll(time.Second, nodeControllerSyncTimeout, func() (bool, error) {
+		err = wait.PollUntilContextTimeout(ctx, time.Second, nodeControllerSyncTimeout, true, func(context.Context) (bool, error) {
 			return sm.nodeController.HasSynced(), nil
 		})
 		if err != nil {
@@ -555,7 +555,7 @@ func (ksm *kubeSubnetManager) CompleteLease(ctx context.Context, lease *lease.Le
 		go ksm.clusterCIDRController.Run(ctx.Done())
 
 		log.Infof("Waiting %s for clusterCIDR controller to sync...", nodeControllerSyncTimeout)
-		err := wait.Poll(time.Second, nodeControllerSyncTimeout, func() (bool, error) {
+		err := wait.PollUntilContextTimeout(ctx, time.Second, nodeControllerSyncTimeout, true, func(context.Context) (bool, error) {
 			return ksm.clusterCIDRController.HasSynced(), nil
 		})
 
