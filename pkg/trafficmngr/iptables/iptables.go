@@ -48,6 +48,8 @@ type IPTablesManager struct {
 }
 
 func (iptm *IPTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
+	log.Info("Starting flannel in iptables mode...")
+
 	iptm.ipv4Rules = make([]trafficmngr.IPTablesRule, 0, 10)
 	iptm.ipv6Rules = make([]trafficmngr.IPTablesRule, 0, 10)
 	wg.Add(1)
@@ -109,7 +111,7 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 
 	if !flannelIPv4Net.Empty() {
 		// recycle iptables rules only when network configured or subnet leased is not equal to current one.
-		if prevNetwork != flannelIPv4Net && prevSubnet != currentlease.Subnet {
+		if !(flannelIPv4Net.Equal(prevNetwork) && prevSubnet.Equal(currentlease.Subnet)) {
 			log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules",
 				flannelIPv4Net, currentlease.Subnet, prevNetwork, prevSubnet)
 			newLease := &lease.Lease{
@@ -126,7 +128,7 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 	}
 	if !flannelIPv6Net.Empty() {
 		// recycle iptables rules only when network configured or subnet leased is not equal to current one.
-		if prevIPv6Network != flannelIPv6Net && prevIPv6Subnet != currentlease.IPv6Subnet {
+		if !(flannelIPv6Net.Equal(prevIPv6Network) && prevIPv6Subnet.Equal(currentlease.IPv6Subnet)) {
 			log.Infof("Current network or subnet (%v, %v) is not equal to previous one (%v, %v), trying to recycle old iptables rules",
 				flannelIPv6Net, currentlease.IPv6Subnet, prevIPv6Network, prevIPv6Subnet)
 			newLease := &lease.Lease{

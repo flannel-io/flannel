@@ -570,11 +570,8 @@ func ReadIP6CIDRsFromSubnetFile(path string, CIDRKey string) []ip.IP6Net {
 
 func newTrafficManager(useNftables bool) trafficmngr.TrafficManager {
 	if useNftables {
-		log.Info("Starting flannel in nftables mode")
 		return &nftables.NFTablesManager{}
 	} else {
-		log.Info("Starting flannel in iptables mode")
 		return &iptables.IPTablesManager{}
-
 	}
 }
