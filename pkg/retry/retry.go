@@ -35,7 +35,7 @@ func Do(f func() error) error {
 
 }
 
-func DoUntil(f func() error, ctx context.Context, timeout time.Duration) error {
+func DoUntil(ctx context.Context, f func() error, timeout time.Duration) error {
 	toctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	return retry_v4.Do(f,

@@ -98,17 +98,16 @@ func (iptr *ipTablesRestore) ApplyWithoutFlush(ctx context.Context, rules IPTabl
 
 	log.V(6).Infof("trying to run iptables-restore with payload %s", payload)
 
-	err := retry.DoUntil(func() error {
-		stdout, stderr, err := iptr.runWithOutput([]string{"--noflush"}, bytes.NewBuffer([]byte(payload)))
-		if err != nil {
-			log.Errorf("iptables-restore finished with error: %v", err)
-			log.Errorf("stdout: %s", stdout)
-			log.Errorf("stderr: %s", stderr)
-
-		}
-		return err
-	},
-		ctx,
+	err := retry.DoUntil(ctx,
+		func() error {
+			stdout, stderr, err := iptr.runWithOutput([]string{"--noflush"}, bytes.NewBuffer([]byte(payload)))
+			if err != nil {
+				log.Errorf("iptables-restore finished with error: %v", err)
+				log.Errorf("stdout: %s", stdout)
+				log.Errorf("stderr: %s", stderr)
+			}
+			return err
+		},
 		iptRestoreTimeout*time.Second)
 
 	if err != nil {
