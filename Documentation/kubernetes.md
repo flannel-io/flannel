@@ -32,7 +32,8 @@ Other options include [Kyverno](https://kyverno.io/policies/pod-security/) and [
 # Annotations
 
 *  `flannel.alpha.coreos.com/public-ip`, `flannel.alpha.coreos.com/public-ipv6`: Define the used public IP of the node. If configured when Flannel starts it'll be used as the `public-ip` and `public-ipv6` flag.
-*  `flannel.alpha.coreos.com/public-ip-overwrite`, `flannel.alpha.coreos.com/public-ipv6-overwrite`: Allows to overwrite the public IP of a node. Useful if the public IP can not determined from the node, e.G. because it is behind a NAT. It can be automatically set to a nodes `ExternalIP` using the [flannel-node-annotator](https://github.com/alvaroaleman/flannel-node-annotator)
+*  `flannel.alpha.coreos.com/public-ip-overwrite`, `flannel.alpha.coreos.com/public-ipv6-overwrite`: Allows to overwrite the public IP of a node. Useful if the public IP can not determined from the node, e.G. because it is behind a NAT. It can be automatically set to a nodes `ExternalIP` using the [flannel-node-annotator](https://github.com/alvaroaleman/flannel-node-annotator).
+   See also the "NAT" section in [troubleshooting](./troubleshooting.md) if UDP checksums seem corrupted.
 
 ## Older versions of Kubernetes
 
