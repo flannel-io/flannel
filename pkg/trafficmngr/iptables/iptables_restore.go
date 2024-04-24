@@ -18,6 +18,7 @@ package iptables
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os/exec"
@@ -39,7 +40,7 @@ const (
 // IPTablesRestore wrapper for iptables-restore
 type IPTablesRestore interface {
 	// ApplyWithoutFlush apply without flush chains
-	ApplyWithoutFlush(rules IPTablesRestoreRules) error
+	ApplyWithoutFlush(ctx context.Context, rules IPTablesRestoreRules) error
 }
 
 // ipTablesRestore internal type
@@ -86,7 +87,7 @@ func NewIPTablesRestoreWithProtocol(protocol iptables.Protocol) (IPTablesRestore
 }
 
 // ApplyWithoutFlush apply without flush chains
-func (iptr *ipTablesRestore) ApplyWithoutFlush(rules IPTablesRestoreRules) error {
+func (iptr *ipTablesRestore) ApplyWithoutFlush(ctx context.Context, rules IPTablesRestoreRules) error {
 	iptr.mu.Lock()
 	defer iptr.mu.Unlock()
 	payload := buildIPTablesRestorePayload(rules)

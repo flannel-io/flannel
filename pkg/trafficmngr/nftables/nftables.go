@@ -26,6 +26,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
+	"github.com/flannel-io/flannel/pkg/trafficmngr"
 	"sigs.k8s.io/knftables"
 )
 
@@ -34,8 +35,6 @@ const (
 	ipv6Table    = "flannel-ipv6"
 	forwardChain = "forward"
 	postrtgChain = "postrtg"
-	//maximum delay in second to clean-up when the context is cancelled
-	cleanUpDeadline = 15
 )
 
 type NFTablesManager struct {
@@ -60,7 +59,7 @@ func (nftm *NFTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error
 		<-ctx.Done()
 		log.Info("Cleaning-up flannel tables...")
 
-		cleanupCtx, cleanUpCancelFunc := context.WithTimeout(context.Background(), cleanUpDeadline*time.Second)
+		cleanupCtx, cleanUpCancelFunc := context.WithTimeout(context.Background(), trafficmngr.CleanUpDeadline*time.Second)
 		defer cleanUpCancelFunc()
 		err := nftm.cleanUp(cleanupCtx)
 		log.Errorf("nftables: error while cleaning-up: %v", err)

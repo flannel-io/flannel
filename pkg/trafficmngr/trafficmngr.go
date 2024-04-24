@@ -34,7 +34,11 @@ var (
 	ErrUnimplemented = errors.New("unimplemented")
 )
 
-const KubeProxyMark string = "0x4000/0x4000"
+const (
+	KubeProxyMark string = "0x4000/0x4000"
+	//maximum delay in second to clean-up when the context is cancelled
+	CleanUpDeadline = 15
+)
 
 type TrafficManager interface {
 	// Initialize the TrafficManager, including the go routine to clean-up when flanneld is closed

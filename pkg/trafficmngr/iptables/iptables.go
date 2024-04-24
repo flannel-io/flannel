@@ -56,7 +56,9 @@ func (iptm *IPTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error
 	go func() {
 		<-ctx.Done()
 		time.Sleep(time.Second)
-		err := iptm.cleanUp()
+		cleanupCtx, cleanUpCancelFunc := context.WithTimeout(context.Background(), trafficmngr.CleanUpDeadline*time.Second)
+		defer cleanUpCancelFunc()
+		err := iptm.cleanUp(cleanupCtx)
 		if err != nil {
 			log.Errorf("iptables: error while cleaning-up: %v", err)
 		}
@@ -66,7 +68,7 @@ func (iptm *IPTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error
 	return nil
 }
 
-func (iptm *IPTablesManager) cleanUp() error {
+func (iptm *IPTablesManager) cleanUp(ctx context.Context) error {
 	if len(iptm.ipv4Rules) > 0 {
 		ipt, err := iptables.New()
 		if err != nil {
@@ -79,7 +81,7 @@ func (iptm *IPTablesManager) cleanUp() error {
 			return fmt.Errorf("failed to setup IPTables. iptables-restore binary was not found: %v", err)
 		}
 		log.Info("iptables (ipv4): cleaning-up before exiting flannel...")
-		err = teardownIPTables(ipt, iptRestore, iptm.ipv4Rules)
+		err = teardownIPTables(ctx, ipt, iptRestore, iptm.ipv4Rules)
 		if err != nil {
 			log.Errorf("Failed to tear down IPTables: %v", err)
 		}
@@ -96,7 +98,7 @@ func (iptm *IPTablesManager) cleanUp() error {
 			return fmt.Errorf("failed to setup IPTables. iptables-restore binary was not found: %v", err)
 		}
 		log.Info("iptables (ipv6): cleaning-up before exiting flannel...")
-		err = teardownIPTables(ipt, iptRestore, iptm.ipv6Rules)
+		err = teardownIPTables(ctx, ipt, iptRestore, iptm.ipv6Rules)
 		if err != nil {
 			log.Errorf("Failed to tear down IPTables: %v", err)
 		}
@@ -117,7 +119,7 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 			newLease := &lease.Lease{
 				Subnet: prevSubnet,
 			}
-			if err := iptm.deleteIP4Tables(iptm.masqRules(prevNetwork, newLease)); err != nil {
+			if err := iptm.deleteIP4Tables(ctx, iptm.masqRules(prevNetwork, newLease)); err != nil {
 				return err
 			}
 		}
@@ -134,7 +136,7 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 			newLease := &lease.Lease{
 				IPv6Subnet: prevIPv6Subnet,
 			}
-			if err := iptm.deleteIP6Tables(iptm.masqIP6Rules(prevIPv6Network, newLease)); err != nil {
+			if err := iptm.deleteIP6Tables(ctx, iptm.masqIP6Rules(prevIPv6Network, newLease)); err != nil {
 				return err
 			}
 		}
@@ -355,7 +357,7 @@ func ipTablesCleanAndBuild(ipt IPTables, rules []trafficmngr.IPTablesRule) (IPTa
 }
 
 // ipTablesBootstrap init iptables rules using iptables-restore (with some cleaning if some rules already exists)
-func ipTablesBootstrap(ipt IPTables, iptRestore IPTablesRestore, rules []trafficmngr.IPTablesRule) error {
+func ipTablesBootstrap(ctx context.Context, ipt IPTables, iptRestore IPTablesRestore, rules []trafficmngr.IPTablesRule) error {
 	tablesRules, err := ipTablesCleanAndBuild(ipt, rules)
 	if err != nil {
 		// if we can't find iptables or if we can check existing rules, give up and return
@@ -364,7 +366,7 @@ func ipTablesBootstrap(ipt IPTables, iptRestore IPTablesRestore, rules []traffic
 
 	log.V(6).Infof("trying to run iptables-restore < %+v", tablesRules)
 
-	err = iptRestore.ApplyWithoutFlush(tablesRules)
+	err = iptRestore.ApplyWithoutFlush(ctx, tablesRules)
 	if err != nil {
 		return fmt.Errorf("failed to apply partial iptables-restore %v", err)
 	}
@@ -388,7 +390,7 @@ func (iptm *IPTablesManager) setupAndEnsureIP4Tables(ctx context.Context, rules 
 		return
 	}
 
-	err = ipTablesBootstrap(ipt, iptRestore, rules)
+	err = ipTablesBootstrap(ctx, ipt, iptRestore, rules)
 	if err != nil {
 		// if we can't find iptables, give up and return
 		log.Errorf("Failed to bootstrap IPTables: %v", err)
@@ -402,7 +404,7 @@ func (iptm *IPTablesManager) setupAndEnsureIP4Tables(ctx context.Context, rules 
 			return
 		case <-time.After(time.Duration(resyncPeriod) * time.Second):
 			// Ensure that all the iptables rules exist every 5 seconds
-			if err := ensureIPTables(ipt, iptRestore, rules); err != nil {
+			if err := ensureIPTables(ctx, ipt, iptRestore, rules); err != nil {
 				log.Errorf("Failed to ensure iptables rules: %v", err)
 			}
 		}
@@ -424,7 +426,7 @@ func (iptm *IPTablesManager) setupAndEnsureIP6Tables(ctx context.Context, rules 
 		return
 	}
 
-	err = ipTablesBootstrap(ipt, iptRestore, rules)
+	err = ipTablesBootstrap(ctx, ipt, iptRestore, rules)
 	if err != nil {
 		// if we can't find iptables, give up and return
 		log.Errorf("Failed to bootstrap IPTables: %v", err)
@@ -438,7 +440,7 @@ func (iptm *IPTablesManager) setupAndEnsureIP6Tables(ctx context.Context, rules 
 			return
 		case <-time.After(time.Duration(resyncPeriod) * time.Second):
 			// Ensure that all the iptables rules exist every 5 seconds
-			if err := ensureIPTables(ipt, iptRestore, rules); err != nil {
+			if err := ensureIPTables(ctx, ipt, iptRestore, rules); err != nil {
 				log.Errorf("Failed to ensure iptables rules: %v", err)
 			}
 		}
@@ -446,7 +448,7 @@ func (iptm *IPTablesManager) setupAndEnsureIP6Tables(ctx context.Context, rules 
 }
 
 // deleteIP4Tables delete specified iptables rules
-func (iptm *IPTablesManager) deleteIP4Tables(rules []trafficmngr.IPTablesRule) error {
+func (iptm *IPTablesManager) deleteIP4Tables(ctx context.Context, rules []trafficmngr.IPTablesRule) error {
 	ipt, err := iptables.New()
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -459,7 +461,7 @@ func (iptm *IPTablesManager) deleteIP4Tables(rules []trafficmngr.IPTablesRule) e
 		log.Errorf("Failed to setup iptables-restore: %v", err)
 		return err
 	}
-	err = teardownIPTables(ipt, iptRestore, rules)
+	err = teardownIPTables(ctx, ipt, iptRestore, rules)
 	if err != nil {
 		log.Errorf("Failed to teardown iptables: %v", err)
 		return err
@@ -468,7 +470,7 @@ func (iptm *IPTablesManager) deleteIP4Tables(rules []trafficmngr.IPTablesRule) e
 }
 
 // deleteIP6Tables delete specified iptables rules
-func (iptm *IPTablesManager) deleteIP6Tables(rules []trafficmngr.IPTablesRule) error {
+func (iptm *IPTablesManager) deleteIP6Tables(ctx context.Context, rules []trafficmngr.IPTablesRule) error {
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
 	if err != nil {
 		// if we can't find iptables, give up and return
@@ -482,7 +484,7 @@ func (iptm *IPTablesManager) deleteIP6Tables(rules []trafficmngr.IPTablesRule) e
 		log.Errorf("Failed to setup iptables-restore: %v", err)
 		return err
 	}
-	err = teardownIPTables(ipt, iptRestore, rules)
+	err = teardownIPTables(ctx, ipt, iptRestore, rules)
 	if err != nil {
 		log.Errorf("Failed to teardown iptables: %v", err)
 		return err
@@ -490,7 +492,7 @@ func (iptm *IPTablesManager) deleteIP6Tables(rules []trafficmngr.IPTablesRule) e
 	return nil
 }
 
-func ensureIPTables(ipt IPTables, iptRestore IPTablesRestore, rules []trafficmngr.IPTablesRule) error {
+func ensureIPTables(ctx context.Context, ipt IPTables, iptRestore IPTablesRestore, rules []trafficmngr.IPTablesRule) error {
 	exists, err := ipTablesRulesExist(ipt, rules)
 	if err != nil {
 		return fmt.Errorf("error checking rule existence: %v", err)
@@ -502,7 +504,7 @@ func ensureIPTables(ipt IPTables, iptRestore IPTablesRestore, rules []trafficmng
 	// Otherwise, teardown all the rules and set them up again
 	// We do this because the order of the rules is important
 	log.Info("Some iptables rules are missing; deleting and recreating rules")
-	err = ipTablesBootstrap(ipt, iptRestore, rules)
+	err = ipTablesBootstrap(ctx, ipt, iptRestore, rules)
 	if err != nil {
 		// if we can't find iptables, give up and return
 		return fmt.Errorf("error setting up rules: %v", err)
@@ -510,7 +512,7 @@ func ensureIPTables(ipt IPTables, iptRestore IPTablesRestore, rules []trafficmng
 	return nil
 }
 
-func teardownIPTables(ipt IPTables, iptr IPTablesRestore, rules []trafficmngr.IPTablesRule) error {
+func teardownIPTables(ctx context.Context, ipt IPTables, iptr IPTablesRestore, rules []trafficmngr.IPTablesRule) error {
 	tablesRules := IPTablesRestoreRules{}
 
 	// Build delete rules to a transaction for iptables restore
@@ -547,7 +549,7 @@ func teardownIPTables(ipt IPTables, iptr IPTablesRestore, rules []trafficmngr.IP
 			tablesRules[rule.Table] = append(tablesRules[rule.Table], append(IPTablesRestoreRuleSpec{"-D", rule.Chain}, rule.Rulespec...))
 		}
 	}
-	err := iptr.ApplyWithoutFlush(tablesRules) // ApplyWithoutFlush make a diff, Apply make a replace (desired state)
+	err := iptr.ApplyWithoutFlush(ctx, tablesRules) // ApplyWithoutFlush make a diff, Apply make a replace (desired state)
 	if err != nil {
 		return fmt.Errorf("unable to teardown iptables: %v", err)
 	}
