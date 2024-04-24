@@ -25,8 +25,10 @@ import (
 	"regexp"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/coreos/go-iptables/iptables"
+	"github.com/flannel-io/flannel/pkg/retry"
 	log "k8s.io/klog/v2"
 )
 
@@ -35,6 +37,8 @@ const (
 	ip6TablesRestoreCmd string = "ip6tables-restore"
 	ipTablesCmd         string = "iptables"
 	ip6TablesCmd        string = "ip6tables"
+	//maximum delay in seconds before iptables-restore is considered in error
+	iptRestoreTimeout = 15
 )
 
 // IPTablesRestore wrapper for iptables-restore
@@ -92,11 +96,25 @@ func (iptr *ipTablesRestore) ApplyWithoutFlush(ctx context.Context, rules IPTabl
 	defer iptr.mu.Unlock()
 	payload := buildIPTablesRestorePayload(rules)
 
-	log.V(6).Infof("trying to run with payload %s", payload)
-	stdout, stderr, err := iptr.runWithOutput([]string{"--noflush"}, bytes.NewBuffer([]byte(payload)))
+	log.V(6).Infof("trying to run iptables-restore with payload %s", payload)
+
+	err := retry.DoUntil(func() error {
+		stdout, stderr, err := iptr.runWithOutput([]string{"--noflush"}, bytes.NewBuffer([]byte(payload)))
+		if err != nil {
+			log.Errorf("iptables-restore finished with error: %v", err)
+			log.Errorf("stdout: %s", stdout)
+			log.Errorf("stderr: %s", stderr)
+
+		}
+		return err
+	},
+		ctx,
+		iptRestoreTimeout*time.Second)
+
 	if err != nil {
-		return fmt.Errorf("unable to run iptables-restore (%s, %s): %v", stdout, stderr, err)
+		return fmt.Errorf("unable to run iptables-restore : %v", err)
 	}
+
 	return nil
 }
 

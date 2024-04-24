@@ -15,6 +15,9 @@
 package retry
 
 import (
+	"context"
+	"time"
+
 	log "k8s.io/klog/v2"
 
 	retry_v4 "github.com/avast/retry-go/v4"
@@ -29,5 +32,26 @@ func Do(f func() error) error {
 			log.Errorf("#%d: %s\n", n, err)
 		}),
 	)
+
+}
+
+func DoUntil(f func() error, ctx context.Context, timeout time.Duration) error {
+	toctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	return retry_v4.Do(f,
+		retry_v4.Context(toctx),
+		retry_v4.OnRetry(func(n uint, err error) {
+			log.Errorf("#%d: %s\n", n, err)
+		}),
+		retry_v4.Attempts(0),
+		retry_v4.WrapContextErrorWithLastError(true))
+}
+
+// DoWithOptions executes f until it does not return an error
+// By default, the number of attempts is 10 with increasing delay between each
+// It also accept Options from the retry package
+func DoWithOptions(f func() error, opts ...retry_v4.Option) error {
+
+	return retry_v4.Do(f, opts...)
 
 }
