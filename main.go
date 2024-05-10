@@ -18,6 +18,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"math/big"
 	"net"
 	"net/http"
 	"os"
@@ -502,10 +503,10 @@ func ReadCIDRFromSubnetFile(path string, CIDRKey string) ip.IP4Net {
 	prevCIDRs := ReadCIDRsFromSubnetFile(path, CIDRKey)
 	if len(prevCIDRs) == 0 {
 		log.Warningf("no subnet found for key: %s in file: %s", CIDRKey, path)
-		return ip.IP4Net{}
+		return ip.IP4Net{IP: 0, PrefixLen: 0}
 	} else if len(prevCIDRs) > 1 {
 		log.Errorf("error reading subnet: more than 1 entry found for key: %s in file %s: ", CIDRKey, path)
-		return ip.IP4Net{}
+		return ip.IP4Net{IP: 0, PrefixLen: 0}
 	} else {
 		return prevCIDRs[0]
 	}
@@ -537,10 +538,10 @@ func ReadIP6CIDRFromSubnetFile(path string, CIDRKey string) ip.IP6Net {
 	prevCIDRs := ReadIP6CIDRsFromSubnetFile(path, CIDRKey)
 	if len(prevCIDRs) == 0 {
 		log.Warningf("no subnet found for key: %s in file: %s", CIDRKey, path)
-		return ip.IP6Net{}
+		return ip.IP6Net{IP: (*ip.IP6)(big.NewInt(0)), PrefixLen: 0}
 	} else if len(prevCIDRs) > 1 {
 		log.Errorf("error reading subnet: more than 1 entry found for key: %s in file %s: ", CIDRKey, path)
-		return ip.IP6Net{}
+		return ip.IP6Net{IP: (*ip.IP6)(big.NewInt(0)), PrefixLen: 0}
 	} else {
 		return prevCIDRs[0]
 	}
