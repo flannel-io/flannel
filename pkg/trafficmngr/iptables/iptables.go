@@ -126,7 +126,10 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 
 		log.Infof("Setting up masking rules")
 		iptm.CreateIP4Chain("nat", "FLANNEL-POSTRTG")
-		go iptm.setupAndEnsureIP4Tables(ctx, iptm.masqRules(flannelIPv4Net, currentlease), resyncPeriod)
+
+		if err := iptm.setupAndEnsureIP4Tables(ctx, iptm.masqRules(flannelIPv4Net, currentlease)); err != nil {
+			return err
+		}
 	}
 	if !flannelIPv6Net.Empty() {
 		// recycle iptables rules only when network configured or subnet leased is not equal to current one.
@@ -223,17 +226,20 @@ func (iptm *IPTablesManager) masqIP6Rules(ccidr ip.IP6Net, lease *lease.Lease) [
 	return rules
 }
 
-func (iptm *IPTablesManager) SetupAndEnsureForwardRules(ctx context.Context, flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) {
+func (iptm *IPTablesManager) SetupAndEnsureForwardRules(ctx context.Context, flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) error {
 	if !flannelIPv4Network.Empty() {
 		log.Infof("Changing default FORWARD chain policy to ACCEPT")
 		iptm.CreateIP4Chain("filter", "FLANNEL-FWD")
-		go iptm.setupAndEnsureIP4Tables(ctx, iptm.forwardRules(flannelIPv4Network.String()), resyncPeriod)
+		if err := iptm.setupAndEnsureIP4Tables(ctx, iptm.forwardRules(flannelIPv4Network.String())); err != nil {
+			return err
+		}
 	}
 	if !flannelIPv6Network.Empty() {
 		log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
 		iptm.CreateIP6Chain("filter", "FLANNEL-FWD")
 		go iptm.setupAndEnsureIP6Tables(ctx, iptm.forwardRules(flannelIPv6Network.String()), resyncPeriod)
 	}
+	return nil
 }
 
 func (iptm *IPTablesManager) forwardRules(flannelNetwork string) []trafficmngr.IPTablesRule {
@@ -376,40 +382,26 @@ func ipTablesBootstrap(ctx context.Context, ipt IPTables, iptRestore IPTablesRes
 	return nil
 }
 
-func (iptm *IPTablesManager) setupAndEnsureIP4Tables(ctx context.Context, rules []trafficmngr.IPTablesRule, resyncPeriod int) {
+func (iptm *IPTablesManager) setupAndEnsureIP4Tables(ctx context.Context, rules []trafficmngr.IPTablesRule) error {
 	ipt, err := iptables.New()
 	if err != nil {
 		// if we can't find iptables, give up and return
-		log.Errorf("Failed to setup IPTables. iptables binary was not found: %v", err)
-		return
+		return fmt.Errorf("Failed to setup IPTables. iptables binary was not found: %v", err)
 	}
 	iptRestore, err := NewIPTablesRestoreWithProtocol(iptables.ProtocolIPv4)
 	if err != nil {
 		// if we can't find iptables-restore, give up and return
-		log.Errorf("Failed to setup IPTables. iptables-restore binary was not found: %v", err)
-		return
+		return fmt.Errorf("Failed to setup IPTables. iptables-restore binary was not found: %v", err)
 	}
 
 	err = ipTablesBootstrap(ctx, ipt, iptRestore, rules)
 	if err != nil {
 		// if we can't find iptables, give up and return
-		log.Errorf("Failed to bootstrap IPTables: %v", err)
+		return fmt.Errorf("Failed to bootstrap IPTables: %v", err)
 	}
 
 	iptm.ipv4Rules = append(iptm.ipv4Rules, rules...)
-	for {
-		select {
-		case <-ctx.Done():
-			//clean-up is setup in Init
-			return
-		case <-time.After(time.Duration(resyncPeriod) * time.Second):
-			// Ensure that all the iptables rules exist every 5 seconds
-			if err := ensureIPTables(ctx, ipt, iptRestore, rules); err != nil {
-				log.Errorf("Failed to ensure iptables rules: %v", err)
-			}
-		}
-
-	}
+	return ensureIPTables(ctx, ipt, iptRestore, rules)
 }
 
 func (iptm *IPTablesManager) setupAndEnsureIP6Tables(ctx context.Context, rules []trafficmngr.IPTablesRule, resyncPeriod int) {

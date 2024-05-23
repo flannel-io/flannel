@@ -47,7 +47,7 @@ type TrafficManager interface {
 	// This is done for IPv4 and/or IPv6 based on whether flannelIPv4Network and flannelIPv6Network are set.
 	// SetupAndEnsureForwardRules starts a go routine that
 	// rewrites these rules every resyncPeriod seconds if needed
-	SetupAndEnsureForwardRules(ctx context.Context, flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int)
+	SetupAndEnsureForwardRules(ctx context.Context, flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) error
 	// Install kernel rules to setup NATing of packets sent to the flannel interface
 	// This is done for IPv4 and/or IPv6 based on whether flannelIPv4Network and flannelIPv6Network are set.
 	// prevSubnet,prevNetworks, prevIPv6Subnet, prevIPv6Networks are used

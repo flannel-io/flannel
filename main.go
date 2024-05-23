@@ -400,10 +400,15 @@ func main() {
 	// In Docker 1.12 and earlier, the default FORWARD chain policy was ACCEPT.
 	// In Docker 1.13 and later, Docker sets the default policy of the FORWARD chain to DROP.
 	if opts.iptablesForwardRules {
-		trafficMngr.SetupAndEnsureForwardRules(ctx,
+		if err := trafficMngr.SetupAndEnsureForwardRules(ctx,
 			config.Network,
 			config.IPv6Network,
-			opts.iptablesResyncSeconds)
+			opts.iptablesResyncSeconds); err != nil {
+			log.Errorf("Failed to setup forward rules, %v", err)
+			cancel()
+			wg.Wait()
+			os.Exit(1)
+		}
 	}
 
 	if err := sm.HandleSubnetFile(opts.subnetFile, config, opts.ipMasq, bn.Lease().Subnet, bn.Lease().IPv6Subnet, bn.MTU()); err != nil {

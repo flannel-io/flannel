@@ -89,7 +89,7 @@ func initTable(ctx context.Context, ipFamily knftables.Family, name string) (knf
 // It is needed when using nftables? accept seems to be the default
 // warning: never add a default 'drop' policy on the forwardChain as it breaks connectivity to the node
 func (nftm *NFTablesManager) SetupAndEnsureForwardRules(ctx context.Context,
-	flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) {
+	flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int) error {
 	if !flannelIPv4Network.Empty() {
 		log.Infof("Changing default FORWARD chain policy to ACCEPT")
 		tx := nftm.nftv4.NewTransaction()
@@ -121,7 +121,7 @@ func (nftm *NFTablesManager) SetupAndEnsureForwardRules(ctx context.Context,
 		})
 		err := nftm.nftv4.Run(ctx, tx)
 		if err != nil {
-			log.Errorf("nftables: couldn't setup forward rules: %v", err)
+			return fmt.Errorf("nftables: couldn't setup forward rules: %v", err)
 		}
 	}
 	if !flannelIPv6Network.Empty() {
@@ -155,9 +155,10 @@ func (nftm *NFTablesManager) SetupAndEnsureForwardRules(ctx context.Context,
 		})
 		err := nftm.nftv6.Run(ctx, tx)
 		if err != nil {
-			log.Errorf("nftables: couldn't setup forward rules (ipv6): %v", err)
+			return fmt.Errorf("nftables: couldn't setup forward rules (ipv6): %v", err)
 		}
 	}
+	return nil
 }
 
 func (nftm *NFTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flannelIPv4Net, prevSubnet, prevNetwork ip.IP4Net,
