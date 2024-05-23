@@ -233,7 +233,7 @@ func (dev *wgDevice) addRoute(dst *net.IPNet) error {
 		Dst:       dst,
 	}
 
-	err := netlink.RouteAdd(&route)
+	err := netlink.RouteReplace(&route)
 	if err != nil {
 		return fmt.Errorf("failed to add route %s: %w", dev.attrs.name, err)
 	}
