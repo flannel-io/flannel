@@ -151,7 +151,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 		interfaceName: be.extIface.Iface.Name,
 	}
 
-	dev, err := newVXLANDevice(&devAttrs)
+	dev, err := newVXLANDevice(ctx, &devAttrs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create VXLAN network: %w", err)
 	}
@@ -191,7 +191,7 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 	}
 
 	// Before contacting the lease server (e.g. kube-api), we verify that the physical interface is ready
-	err = checkHostNetworkReady(hcnNetwork)
+	err = checkHostNetworkReady(ctx, hcnNetwork)
 	if err != nil {
 		return nil, fmt.Errorf("interface bound to %s took too long to get ready. Please check your network host configuration", hcnNetwork.Name)
 	}
