@@ -283,13 +283,20 @@ func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Con
 func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *lease.LeaseAttrs) (*lease.Lease, error) {
 	var cachedNode *v1.Node
 	var err error
-	if ksm.disableNodeInformer {
-		cachedNode, err = ksm.client.CoreV1().Nodes().Get(ctx, ksm.nodeName, metav1.GetOptions{ResourceVersion: "0"})
-	} else {
-		cachedNode, err = ksm.nodeStore.Get(ksm.nodeName)
-	}
-	if err != nil {
-		return nil, err
+	waitErr := wait.PollUntilContextTimeout(ctx, 3*time.Second, 30*time.Second, true, func(context.Context) (done bool, err error) {
+		if ksm.disableNodeInformer {
+			cachedNode, err = ksm.client.CoreV1().Nodes().Get(ctx, ksm.nodeName, metav1.GetOptions{ResourceVersion: "0"})
+		} else {
+			cachedNode, err = ksm.nodeStore.Get(ksm.nodeName)
+		}
+		if err != nil {
+			log.V(2).Infof("Failed to get node %q: %v", ksm.nodeName, err)
+			return false, nil
+		}
+		return true, nil
+	})
+	if waitErr != nil {
+		return nil, fmt.Errorf("timeout contacting kube-api, failed to patch node %q. Error: %v", ksm.nodeName, waitErr)
 	}
 
 	n := cachedNode.DeepCopy()
@@ -397,9 +404,16 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *lease.Lea
 			return nil, fmt.Errorf("failed to create patch for node %q: %v", ksm.nodeName, err)
 		}
 
-		_, err = ksm.client.CoreV1().Nodes().Patch(ctx, ksm.nodeName, types.StrategicMergePatchType, patchBytes, metav1.PatchOptions{}, "status")
-		if err != nil {
-			return nil, err
+		waitErr := wait.PollUntilContextTimeout(ctx, 3*time.Second, 30*time.Second, true, func(context.Context) (done bool, err error) {
+			_, err = ksm.client.CoreV1().Nodes().Patch(ctx, ksm.nodeName, types.StrategicMergePatchType, patchBytes, metav1.PatchOptions{}, "status")
+			if err != nil {
+				log.V(2).Infof("Failed to patch node %q: %v", ksm.nodeName, err)
+				return false, nil
+			}
+			return true, nil
+		})
+		if waitErr != nil {
+			return nil, fmt.Errorf("timeout contacting kube-api, failed to patch node %q. Error: %v", ksm.nodeName, waitErr)
 		}
 	}
 

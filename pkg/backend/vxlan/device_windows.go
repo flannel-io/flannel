@@ -17,6 +17,7 @@
 package vxlan
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -46,7 +47,7 @@ type NetAdapterNameSettings struct {
 	NetworkAdapterName string `json:"NetworkAdapterName"`
 }
 
-func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
+func newVXLANDevice(ctx context.Context, devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 	subnet := createSubnet(devAttrs.addressPrefix.String(), (devAttrs.addressPrefix.IP + 1).String(), "0.0.0.0/0")
 	network := &hcn.HostComputeNetwork{
 		Type: "Overlay",
@@ -90,7 +91,7 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 		addNetAdapterName(network, devAttrs.interfaceName)
 	}
 
-	hnsNetwork, err := ensureNetwork(network, devAttrs.addressPrefix.String())
+	hnsNetwork, err := ensureNetwork(ctx, network, devAttrs.addressPrefix.String())
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +101,7 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 	}, nil
 }
 
-func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefix string) (*hcn.HostComputeNetwork, error) {
+func ensureNetwork(ctx context.Context, expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefix string) (*hcn.HostComputeNetwork, error) {
 	createNetwork := true
 	networkName := expectedNetwork.Name
 
@@ -134,11 +135,11 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 		// Wait for the network to populate Management IP
 		log.Infof("Waiting to get ManagementIP from HostComputeNetwork %s", networkName)
 		var newNetworkID = newNetwork.Id
-		waitErr = wait.Poll(500*time.Millisecond, 5*time.Second, func() (done bool, err error) {
+		waitErr = wait.PollUntilContextTimeout(ctx, 500*time.Millisecond, 5*time.Second, true, func(context.Context) (done bool, err error) {
 			newNetwork, lastErr = hcn.GetNetworkByID(newNetworkID)
 			return newNetwork != nil && len(getManagementIP(newNetwork)) != 0, nil
 		})
-		if waitErr == wait.ErrWaitTimeout {
+		if waitErr != nil {
 			// Do not swallow the root cause
 			if lastErr != nil {
 				waitErr = lastErr
@@ -146,7 +147,7 @@ func ensureNetwork(expectedNetwork *hcn.HostComputeNetwork, expectedAddressPrefi
 			return nil, errors.Wrapf(lastErr, "timeout, failed to get management IP from HostComputeNetwork %s", networkName)
 		}
 
-		err = checkHostNetworkReady(newNetwork)
+		err = checkHostNetworkReady(ctx, newNetwork)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Interface bound to %s took too long to get ready. Please check your network host configuration", networkName)
 		}
@@ -227,7 +228,7 @@ func addNetAdapterName(network *hcn.HostComputeNetwork, netAdapterName string) e
 }
 
 // checkHostNetworkReady waits for the host network to be ready: the main interface must be up and have an IP address
-func checkHostNetworkReady(network *hcn.HostComputeNetwork) error {
+func checkHostNetworkReady(ctx context.Context, network *hcn.HostComputeNetwork) error {
 	managementIP := getManagementIP(network)
 	// Wait for the interface with the management IP
 	log.Infof("Waiting to get net interface for HostComputeNetwork %s (%s)", network.Name, managementIP)
@@ -236,16 +237,16 @@ func checkHostNetworkReady(network *hcn.HostComputeNetwork) error {
 		return errors.Wrapf(err, "Failed to parse management ip (%s)", managementIP)
 	}
 
-	waitErr := wait.Poll(3*time.Second, 25*time.Second, func() (done bool, err error) {
+	waitErr := wait.PollUntilContextTimeout(ctx, 3*time.Second, 25*time.Second, true, func(context.Context) (done bool, err error) {
 		iface, lastErr := ip.GetInterfaceByIP(managementIPv4.ToIP())
 		if lastErr == nil {
 			log.V(2).Infof("Host interface: %s bound by %s ready", iface.Name, network.Name)
-			return true, nil
+			return false, nil
 		}
 		log.V(2).Infof("Host interface bound by %s not ready", network.Name)
-		return false, nil
+		return true, nil
 	})
-	if waitErr == wait.ErrWaitTimeout {
+	if waitErr != nil {
 		return errors.Wrapf(waitErr, "timeout, failed to get net interface for HostComputeNetwork %s (%s)", network.Name, managementIP)
 	}
 	return nil

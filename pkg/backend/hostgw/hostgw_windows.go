@@ -161,11 +161,11 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 		// Wait for the network to populate Management IP
 		log.Infof("Waiting to get ManagementIP from HNSNetwork %s", networkName)
 		var newNetworkID = newNetwork.Id
-		waitErr = wait.Poll(500*time.Millisecond, 30*time.Second, func() (done bool, err error) {
+		waitErr := wait.PollUntilContextTimeout(ctx, 500*time.Millisecond, 5*time.Second, true, func(context.Context) (done bool, err error) {
 			newNetwork, lastErr = hcsshim.HNSNetworkRequest("GET", newNetworkID, "")
 			return newNetwork != nil && len(newNetwork.ManagementIP) != 0, nil
 		})
-		if waitErr == wait.ErrWaitTimeout {
+		if waitErr != nil {
 			// Do not swallow the root cause
 			if lastErr != nil {
 				waitErr = lastErr
@@ -179,12 +179,11 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 		if err != nil {
 			return nil, errors.Wrapf(err, "Failed to parse management ip (%s)", newNetwork.ManagementIP)
 		}
-
-		waitErr = wait.Poll(500*time.Millisecond, 5*time.Second, func() (done bool, err error) {
+		waitErr = wait.PollUntilContextTimeout(ctx, 500*time.Millisecond, 5*time.Second, true, func(context.Context) (done bool, err error) {
 			_, lastErr = ip.GetInterfaceByIP(managementIP.ToIP())
 			return lastErr == nil, nil
 		})
-		if waitErr == wait.ErrWaitTimeout {
+		if waitErr != nil {
 			return nil, errors.Wrapf(lastErr, "timeout, failed to get net interface for HNSNetwork %s (%s)", networkName, newNetwork.ManagementIP)
 		}
 
@@ -227,19 +226,19 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 
 	// Wait for the bridgeEndpoint to attach to the host
 	log.Infof("Waiting to attach bridge endpoint %s to host", bridgeEndpointName)
-	waitErr = wait.Poll(500*time.Millisecond, 5*time.Second, func() (done bool, err error) {
+	waitErr = wait.PollUntilContextTimeout(ctx, 500*time.Millisecond, 5*time.Second, true, func(context.Context) (done bool, err error) {
 		lastErr = expectedBridgeEndpoint.HostAttach(1)
 		if lastErr == nil {
-			return true, nil
+			return false, nil
 		}
 		// See https://github.com/flannel-io/flannel/issues/1391 and
 		// hcsshim lacks some validations to detect the error, so we judge it by error message.
 		if strings.Contains(lastErr.Error(), "This endpoint is already attached to the switch.") {
-			return true, nil
+			return false, nil
 		}
-		return false, nil
+		return true, nil
 	})
-	if waitErr == wait.ErrWaitTimeout {
+	if waitErr != nil {
 		return nil, errors.Wrapf(lastErr, "failed to hot attach bridge HNSEndpoint %s to host compartment", bridgeEndpointName)
 	}
 	log.Infof("Attached bridge endpoint %s to host successfully", bridgeEndpointName)
