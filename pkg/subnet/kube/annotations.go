@@ -27,6 +27,8 @@ type annotations struct {
 	BackendType                string
 	BackendPublicIP            string
 	BackendPublicIPv6          string
+	BackendNodePublicIP        string
+	BackendNodePublicIPv6      string
 	BackendPublicIPOverwrite   string
 	BackendPublicIPv6Overwrite string
 }
@@ -63,8 +65,10 @@ func newAnnotations(prefix string) (annotations, error) {
 		BackendV6Data:              prefix + "backend-v6-data",
 		BackendType:                prefix + "backend-type",
 		BackendPublicIP:            prefix + "public-ip",
+		BackendNodePublicIP:        prefix + "node-public-ip",
 		BackendPublicIPOverwrite:   prefix + "public-ip-overwrite",
 		BackendPublicIPv6:          prefix + "public-ipv6",
+		BackendNodePublicIPv6:      prefix + "node-public-ipv6",
 		BackendPublicIPv6Overwrite: prefix + "public-ipv6-overwrite",
 	}
 

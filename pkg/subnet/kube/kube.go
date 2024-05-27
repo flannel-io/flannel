@@ -667,8 +667,8 @@ func (ksm *kubeSubnetManager) GetStoredPublicIP(ctx context.Context) (string, st
 
 	if node != nil && node.Annotations != nil {
 		log.Infof("List of node(%s) annotations: %#+v", ksm.nodeName, node.Annotations)
-		publicIP := node.Annotations[ksm.annotations.BackendPublicIP]
-		publicIPv6 := node.Annotations[ksm.annotations.BackendPublicIPv6]
+		publicIP := node.Annotations[ksm.annotations.BackendNodePublicIP]
+		publicIPv6 := node.Annotations[ksm.annotations.BackendNodePublicIPv6]
 		return publicIP, publicIPv6
 	}
 
