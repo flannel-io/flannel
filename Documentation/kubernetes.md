@@ -31,8 +31,9 @@ If you want to deploy `flannel` securely in a shared namespace or want more fine
 Other options include [Kyverno](https://kyverno.io/policies/pod-security/) and [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper).
 # Annotations
 
-*  `flannel.alpha.coreos.com/public-ip`, `flannel.alpha.coreos.com/public-ipv6`: Define the used public IP of the node. If configured when Flannel starts it'll be used as the `public-ip` and `public-ipv6` flag.
-*  `flannel.alpha.coreos.com/public-ip-overwrite`, `flannel.alpha.coreos.com/public-ipv6-overwrite`: Allows to overwrite the public IP of a node. Useful if the public IP can not determined from the node, e.G. because it is behind a NAT. It can be automatically set to a nodes `ExternalIP` using the [flannel-node-annotator](https://github.com/alvaroaleman/flannel-node-annotator).
+Additional annotations can be configured on a specific node as parameters used when Flannel starts on that specific node
+*  `flannel.alpha.coreos.com/node-public-ip`, `flannel.alpha.coreos.com/node-public-ipv6`: Define the used IP of the node in case the node has multiple interface it selects the interface with the configured IP for the backend tunnel. If configured when Flannel starts it'll be used as the `public-ip` and `public-ipv6` flag.
+*  `flannel.alpha.coreos.com/public-ip-overwrite`, `flannel.alpha.coreos.com/public-ipv6-overwrite`: Allows to overwrite the public IP of a node that IP can be not configured on the node. Useful if the public IP can not determined from the node, e.G. because it is behind a NAT and the other nodes need to use it to create the tunnel. It can be automatically set to a nodes `ExternalIP` using the [flannel-node-annotator](https://github.com/alvaroaleman/flannel-node-annotator).
    See also the "NAT" section in [troubleshooting](./troubleshooting.md) if UDP checksums seem corrupted.
 
 ## Older versions of Kubernetes
