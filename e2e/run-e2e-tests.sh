@@ -323,6 +323,7 @@ check_nftables() {
   read -d '' POSTROUTING_RULES_WORKER << EOM
 table ip flannel-ipv4 {
 	chain postrtg {
+		comment "chain to manage traffic masquerading by flannel"
 		type nat hook postrouting priority srcnat; policy accept;
 		meta mark 0x00004000 return
 		ip saddr ${worker_podcidr} ip daddr 10.42.0.0/16 return
@@ -336,6 +337,7 @@ EOM
   read -r -d '' POSTROUTING_RULES_LEADER << EOM
 table ip flannel-ipv4 {
 	chain postrtg {
+		comment "chain to manage traffic masquerading by flannel"
 		type nat hook postrouting priority srcnat; policy accept;
 		meta mark 0x00004000 return
 		ip saddr ${leader_podcidr} ip daddr 10.42.0.0/16 return
@@ -349,6 +351,7 @@ EOM
   read -r -d '' FORWARD_RULES << EOM
 table ip flannel-ipv4 {
 	chain forward {
+		comment "chain to accept flannel traffic"
 		type filter hook forward priority filter; policy accept;
 		ip saddr 10.42.0.0/16 accept
 		ip daddr 10.42.0.0/16 accept
