@@ -237,14 +237,14 @@ func checkHostNetworkReady(ctx context.Context, network *hcn.HostComputeNetwork)
 		return errors.Wrapf(err, "Failed to parse management ip (%s)", managementIP)
 	}
 
-	waitErr := wait.PollUntilContextTimeout(ctx, 3*time.Second, 25*time.Second, true, func(context.Context) (done bool, err error) {
+	waitErr := wait.PollUntilContextTimeout(ctx, 5*time.Second, 45*time.Second, true, func(context.Context) (done bool, err error) {
 		iface, lastErr := ip.GetInterfaceByIP(managementIPv4.ToIP())
 		if lastErr == nil {
-			log.V(2).Infof("Host interface: %s bound by %s ready", iface.Name, network.Name)
-			return false, nil
+			log.Infof("Host interface: %s bound by %s ready", iface.Name, network.Name)
+			return true, nil
 		}
 		log.V(2).Infof("Host interface bound by %s not ready", network.Name)
-		return true, nil
+		return false, nil
 	})
 	if waitErr != nil {
 		return errors.Wrapf(waitErr, "timeout, failed to get net interface for HostComputeNetwork %s (%s)", network.Name, managementIP)
