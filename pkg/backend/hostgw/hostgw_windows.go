@@ -229,14 +229,14 @@ func (be *HostgwBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup
 	waitErr = wait.PollUntilContextTimeout(ctx, 500*time.Millisecond, 5*time.Second, true, func(context.Context) (done bool, err error) {
 		lastErr = expectedBridgeEndpoint.HostAttach(1)
 		if lastErr == nil {
-			return false, nil
+			return true, nil
 		}
 		// See https://github.com/flannel-io/flannel/issues/1391 and
 		// hcsshim lacks some validations to detect the error, so we judge it by error message.
 		if strings.Contains(lastErr.Error(), "This endpoint is already attached to the switch.") {
-			return false, nil
+			return true, nil
 		}
-		return true, nil
+		return false, nil
 	})
 	if waitErr != nil {
 		return nil, errors.Wrapf(lastErr, "failed to hot attach bridge HNSEndpoint %s to host compartment", bridgeEndpointName)
