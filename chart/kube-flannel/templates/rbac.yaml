@@ -7,12 +7,8 @@ rules:
   - ""
   resources:
   - pods
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  resources:
   - nodes
+  - namespaces
   verbs:
   - get
   - list
@@ -23,13 +19,23 @@ rules:
   - nodes/status
   verbs:
   - patch
+{{- if .Values.netpol.enabled }}
 - apiGroups:
   - "networking.k8s.io"
   resources:
-  - clustercidrs
+  - networkpolicies
   verbs:
   - list
   - watch
+- apiGroups:
+  - "policy.networking.k8s.io"
+  resources:
+  - adminnetworkpolicies
+  - baselineadminnetworkpolicies
+  verbs:
+  - list
+  - watch
+{{- end }}
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1

@@ -38,6 +38,9 @@ data:
       "IPv6Network": {{ .Values.podCidrv6 | quote }},
       "EnableIPv6": true,
 {{- end }}
+{{- if .Values.flannel.enableNFTables }}
+      "EnableNFTables": true,
+{{- end }}
       "Backend": {
 {{- if eq .Values.flannel.backend "vxlan" }}
 {{- if .Values.flannel.backendPort }}

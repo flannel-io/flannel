@@ -91,7 +91,33 @@ spec:
           mountPath: /etc/kube-flannel/
         - name: xtables-lock
           mountPath: /run/xtables.lock
+{{- if .Values.netpol.enabled }}
+      - name: kube-network-policies
+        image: {{ .Values.netpol.image.repository }}:{{ .Values.netpol.image.tag }}
+        command:
+        - "/bin/netpol"
+        {{- range .Values.netpol.args }}
+        - {{ . | quote }}
+        {{- end }}
+        volumeMounts:
+        - name: lib-modules
+          mountPath: /lib/modules
+          readOnly: true
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "50Mi"
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+{{- end }}
       volumes:
+{{- if .Values.netpol.enabled }}
+      - name: lib-modules
+        hostPath:
+          path: /lib/modules
+{{- end }}
       - name: run
         hostPath:
           path: /run/flannel
