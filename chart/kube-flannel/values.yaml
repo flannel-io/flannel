@@ -17,6 +17,7 @@ flannel:
     repository: docker.io/flannel/flannel-cni-plugin
     tag: v1.5.1-flannel1
   # flannel command arguments
+  enableNFTables: false,
   args:
   - "--ip-masq"
   - "--kube-subnet-mgr"
@@ -58,3 +59,12 @@ flannel:
     operator: Exists
   - effect: NoSchedule
     operator: Exists
+
+netpol:
+  enabled: false
+  args:
+  - "--hostname-override=$(MY_NODE_NAME)"
+  - "--v=2"
+  image:
+    repository: registry.k8s.io/networking/kube-network-policies
+    tag: v0.4.0
