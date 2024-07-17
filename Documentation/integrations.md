@@ -4,7 +4,7 @@ This document tracks projects that integrate with flannel. [Join the community](
 
 ## Projects
 
-[Kubernetes](https://kubernetes.io/docs/admin/networking/#flannel): Container orchestration platform with options for [flannel as an overlay](https://kubernetes.io/docs/admin/networking/#flannel).
+[Kubernetes](https://kubernetes.io/docs/concepts/cluster-administration/addons/#networking-and-network-policy): Container orchestration platform with options for [flannel as an overlay](https://kubernetes.io/docs/concepts/cluster-administration/addons/#networking-and-network-policy).
 
 [Canal](https://projectcalico.docs.tigera.io/getting-started/kubernetes/flannel/flannel): Kubernetes CNI plugin that uses Calico for network policies and intra-node communications and Flannel for inter-node communications.
 
