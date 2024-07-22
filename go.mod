@@ -7,7 +7,7 @@ go 1.21
 require (
 	github.com/Microsoft/hcsshim v0.12.3
 	github.com/bronze1man/goStrongswanVici v0.0.0-20221114103242-3f6dc524986c
-	github.com/containernetworking/plugins v1.4.1
+	github.com/containernetworking/plugins v1.5.1
 	github.com/coreos/go-iptables v0.7.0
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f
