@@ -17,7 +17,7 @@ flannel:
     repository: docker.io/flannel/flannel-cni-plugin
     tag: v1.5.1-flannel1
   # flannel command arguments
-  enableNFTables: false,
+  enableNFTables: false
   args:
   - "--ip-masq"
   - "--kube-subnet-mgr"
