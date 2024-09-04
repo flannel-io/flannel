@@ -16,7 +16,7 @@ else
 endif
 
 # Go version to use for builds
-GO_VERSION=1.21
+GO_VERSION=1.22
 
 # K8s version used for Makefile helpers
 K8S_VERSION=1.24.6
