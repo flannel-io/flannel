@@ -1,4 +1,4 @@
-.PHONY: test e2e-test deps cover gofmt gofmt-fix license-check clean tar.gz release buildx-create-builder build-multi-arch
+.PHONY: test unit-test e2e-test deps cover gofmt gofmt-fix license-check clean tar.gz release buildx-create-builder build-multi-arch
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
@@ -16,7 +16,7 @@ else
 endif
 
 # Go version to use for builds
-GO_VERSION=1.21
+GO_VERSION=1.22
 
 # K8s version used for Makefile helpers
 K8S_VERSION=1.24.6
@@ -71,6 +71,15 @@ endif
 
 ### TESTING
 test: license-check gofmt deps verify-modules
+	make unit-test
+
+	# Test the docker-opts script
+	cd dist; ./mk-docker-opts_tests.sh
+
+	# Run the functional tests
+	make e2e-test
+
+unit-test: 
 	# Run the unit tests
 	# NET_ADMIN capacity is required to do some network operation
 	# SYS_ADMIN capacity is required to create network namespace
@@ -79,12 +88,6 @@ test: license-check gofmt deps verify-modules
 		-v $(shell pwd):/go/src/github.com/flannel-io/flannel \
 		golang:$(GO_VERSION) \
 		/bin/bash -c 'cd /go/src/github.com/flannel-io/flannel && go test -v -cover -timeout 5m $(TEST_PACKAGES_EXPANDED)'
-
-	# Test the docker-opts script
-	cd dist; ./mk-docker-opts_tests.sh
-
-	# Run the functional tests
-	make e2e-test
 
 e2e-test: bash_unit dist/flanneld-e2e-$(TAG)-$(ARCH).docker
 	$(MAKE) -C images/iperf3 ARCH=$(ARCH)
@@ -214,8 +217,8 @@ install:
 	CGO_ENABLED=$(CGO_ENABLED) go install -v github.com/flannel-io/flannel
 
 deps:
-	go mod vendor
 	go mod tidy
+	go mod vendor
 
 buildx-create-builder:
 	docker buildx create --name mybuilder --use --bootstrap

@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   ARCH: amd64
-  GO_VERSION: "1.21"
+  GO_VERSION: "1.22"
   KUBECONFIG: ${HOME}/.kube/config
 
 jobs:
