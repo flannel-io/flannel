@@ -125,8 +125,8 @@ func TestV6RouteCache(t *testing.T) {
 	nw.handleSubnetEvents([]lease.Event{
 		{Type: lease.EventAdded, Lease: lease.Lease{
 			IPv6Subnet: subnet1, EnableIPv6: true, Attrs: lease.LeaseAttrs{PublicIPv6: gw2, BackendType: "host-gw"}}}})
-	linkbr, _ := netlink.LinkByName("br")
-	routes, _ := netlink.RouteList(linkbr, 6)
+	linkbr, _ := netlink.LinkByName(la.Name)
+	routes, _ := netlink.RouteList(linkbr, netlink.FAMILY_V6)
 	IsGw := ""
 	for _, route := range routes {
 		if len(route.Gw) != 0 {
