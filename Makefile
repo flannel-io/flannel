@@ -19,7 +19,7 @@ endif
 GO_VERSION=1.22
 
 # K8s version used for Makefile helpers
-K8S_VERSION=1.24.6
+K8S_VERSION=1.29.8
 
 GOARM=7
 

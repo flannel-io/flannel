@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ARCH="${ARCH:-amd64}"
-ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.5.12}"
+ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.5.15}"
 ETCD_LOCATION="${ETCD_LOCATION:-etcd}"
 FLANNEL_NET="${FLANNEL_NET:-10.10.0.0/16}"
 TAG=`git describe --tags --always`
 FLANNEL_DOCKER_IMAGE="${FLANNEL_DOCKER_IMAGE:-quay.io/coreos/flannel:$TAG}"
-K8S_VERSION="${K8S_VERSION:-1.28.7}"
+K8S_VERSION="${K8S_VERSION:-1.29.8}"
 HYPERKUBE_IMG="docker.io/rancher/hyperkube"
 HYPERKUBE_CMD="${HYPERKUBE_CMD:-" "}"
 HYPERKUBE_APISERVER_CMD="${HYPERKUBE_APISERVER_CMD:-kube-apiserver}"
@@ -74,7 +74,7 @@ EOF
     openssl req -new -key $dir/pki/admin.key -subj "/CN=admin/O=system:masters" -out $dir/pki/admin.csr
     openssl x509 -req -in $dir/pki/admin.csr -CA $dir/pki/ca.crt -CAkey $dir/pki/ca.key -CAcreateserial  -out $dir/pki/admin.crt -days 1000
     
-    docker run -d --net=host -v $dir:/var/lib/kubernetes --name flannel-e2e-k8s-apiserver ${HYPERKUBE_IMG}:v$K8S_VERSION-rancher1-linux-$ARCH \
+    docker run -d --net=host -v $dir:/var/lib/kubernetes --name flannel-e2e-k8s-apiserver ${HYPERKUBE_IMG}:v$K8S_VERSION-rancher1 \
       ${HYPERKUBE_CMD} ${HYPERKUBE_APISERVER_CMD} --etcd-servers=$etcd_endpt --bind-address=$docker_ip \
       --client-ca-file=/var/lib/kubernetes/pki/ca.crt \
       --enable-admission-plugins=NodeRestriction,ServiceAccount \
@@ -258,5 +258,5 @@ test_manifest() {
 
     docker exec -i flannel-e2e-k8s-apiserver cat /var/lib/kubernetes/admin.kubeconfig > $dir/admin.kubeconfig
     # This just tests that the API server accepts the manifest, not that it actually acts on it correctly.
-    assert "cat ../Documentation/kube-flannel.yml |  docker run -v $dir:/var/lib/kubernetes -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION-rancher1-linux-$ARCH ${HYPERKUBE_CMD} kubectl --kubeconfig=/var/lib/kubernetes/admin.kubeconfig create -f -"
+    assert "cat ../Documentation/kube-flannel.yml |  docker run -v $dir:/var/lib/kubernetes -i --rm --net=host ${HYPERKUBE_IMG}:v$K8S_VERSION-rancher1 ${HYPERKUBE_CMD} kubectl --kubeconfig=/var/lib/kubernetes/admin.kubeconfig create -f -"
 }
