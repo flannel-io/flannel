@@ -6,6 +6,7 @@ jobs:
   e2e-test:
     name: test
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
     - name: Set up Go 1.x
       uses: actions/setup-go@v5
