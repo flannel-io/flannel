@@ -94,7 +94,7 @@ e2e-test: bash_unit dist/flanneld-e2e-$(TAG)-$(ARCH).docker
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test.sh
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test-k8s.sh
 
-k3s-e2e-test: bash_unit
+k3s-e2e-test: bash_unit dist/flanneld-e2e-$(TAG)-$(ARCH).docker
 	$(MAKE) -C images/iperf3 ARCH=$(ARCH)
 	./bash_unit ./e2e/run-e2e-tests.sh
 
