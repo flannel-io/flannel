@@ -83,6 +83,7 @@ func LookupExtIface(ifname string, ifregexS string, ifcanreach string, ipStack i
 				if err != nil {
 					return nil, fmt.Errorf("error looking up v6 interface %s: %s", ifname, err)
 				}
+				ifaceV6Addr = ifaceAddr
 			case dualStack:
 				if ifaceAddr.To4() != nil {
 					iface, err = ip.GetInterfaceByIP(ifaceAddr)
