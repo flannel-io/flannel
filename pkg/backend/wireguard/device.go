@@ -306,12 +306,6 @@ func (dev *wgDevice) addPeer(publicEndpoint string, peerPublicKeyRaw string, pee
 		return fmt.Errorf("failed to configure device %w", err)
 	}
 
-	// Remove peers from this endpoint with different public keys
-//	err = dev.cleanupEndpointPeers(udpEndpoint, peerPublicKeyRaw)
-//	if err != nil {
-//		return fmt.Errorf("failed to clean up endpoint peers %w", err)
-//	}
-
 	return nil
 }
 
