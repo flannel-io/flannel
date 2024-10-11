@@ -171,6 +171,10 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	}
 
 	if config.EnableIPv4 {
+		if lease.Subnet.Empty() {
+			return nil, fmt.Errorf("failed to configure wg interface: IPv4 is enabled but the lease has no IPv4")
+		}
+
 		err = dev.Configure(lease.Subnet.IP, config.Network)
 		if err != nil {
 			return nil, err
@@ -178,6 +182,10 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	}
 
 	if config.EnableIPv6 {
+		if lease.IPv6Subnet.Empty() {
+			return nil, fmt.Errorf("failed to configure wg interface: IPv6 is enabled but the lease has no IPv6")
+		}
+
 		if cfg.Mode == Separate {
 			err = v6Dev.ConfigureV6(lease.IPv6Subnet.IP, config.IPv6Network)
 		} else {
