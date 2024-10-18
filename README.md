@@ -70,6 +70,8 @@ curl -O -L https://github.com/containernetworking/plugins/releases/download/v1.5
 tar -C /opt/cni/bin -xzf cni-plugins-linux-$ARCH-v1.5.1.tgz
 ```
 
+Flannel requires the br_netfilter module to start and from version 1.30 kubeadm doesn't check if the module is installed and Flannel will not rightly start in case the module is missing.
+
 ## Getting started on Docker
 
 flannel is also widely used outside of kubernetes. When deployed outside of kubernetes, etcd is always used as the datastore. For more details integrating flannel with Docker see [Running](Documentation/running.md)
