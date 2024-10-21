@@ -5,7 +5,7 @@ on:
     types: [published]
 
 env:
-  GO_VERSION: "1.22"
+  GO_VERSION: "1.23"
   LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le riscv64"
   REPOSITORY: flannel/flannel
 
