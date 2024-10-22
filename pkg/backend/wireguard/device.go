@@ -306,52 +306,6 @@ func (dev *wgDevice) addPeer(publicEndpoint string, peerPublicKeyRaw string, pee
 		return fmt.Errorf("failed to configure device %w", err)
 	}
 
-	// Remove peers from this endpoint with different public keys
-	err = dev.cleanupEndpointPeers(udpEndpoint, peerPublicKeyRaw)
-	if err != nil {
-		return fmt.Errorf("failed to clean up endpoint peers %w", err)
-	}
-
-	return nil
-}
-
-func (dev *wgDevice) cleanupEndpointPeers(udpEndpoint *net.UDPAddr, latestPublicKeyRaw string) error {
-	client, err := wgctrl.New()
-	if err != nil {
-		return fmt.Errorf("failed to open wgctrl: %w", err)
-	}
-	defer client.Close()
-
-	currentDev, err := client.Device(dev.attrs.name)
-	if err != nil {
-		return fmt.Errorf("failed to open device: %w", err)
-	}
-
-	peers := []wgtypes.PeerConfig{}
-	for _, peer := range currentDev.Peers {
-		if peer.Endpoint.IP.Equal(udpEndpoint.IP) {
-			if peer.PublicKey.String() != latestPublicKeyRaw {
-				removePeer := wgtypes.PeerConfig{
-					PublicKey: peer.PublicKey,
-					Remove:    true,
-				}
-				peers = append(peers, removePeer)
-			}
-		}
-	}
-
-	wgcfg := wgtypes.Config{
-		PrivateKey:   dev.attrs.privateKey,
-		ListenPort:   &dev.attrs.listenPort,
-		ReplacePeers: false,
-		Peers:        peers,
-	}
-
-	err = client.ConfigureDevice(dev.attrs.name, wgcfg)
-	if err != nil {
-		return fmt.Errorf("failed to cleanup peers %w", err)
-	}
-
 	return nil
 }
 
