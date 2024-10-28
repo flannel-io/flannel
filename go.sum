@@ -8,8 +8,8 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
-github.com/Microsoft/hcsshim v0.12.7 h1:MP6R1spmjxTE4EU4J3YsrTxn8CjvN9qwjTKJXldFaRg=
-github.com/Microsoft/hcsshim v0.12.7/go.mod h1:HPbAuJ9BvQYYZbB4yEQcyGIsTP5L4yHKeO9XO149AEM=
+github.com/Microsoft/hcsshim v0.12.8 h1:BtDWYlFMcWhorrvSSo2M7z0csPdw6t7no/C3FsSvqiI=
+github.com/Microsoft/hcsshim v0.12.8/go.mod h1:cibQ4BqhJ32FXDwPdQhKhwrwophnh3FuT4nwQZF907w=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/avast/retry-go/v4 v4.6.0 h1:K9xNA+KeB8HHc2aWFuLb25Offp+0iVRXEvFx8IinRJA=
 github.com/avast/retry-go/v4 v4.6.0/go.mod h1:gvWlPhBVsvBbLkVGDg/KwvBv0bEkCOLRRSHKIr2PyOE=
@@ -30,8 +30,10 @@ github.com/cockroachdb/datadriven v1.0.2 h1:H9MtNqVoVhvd9nCBwOyDjUEdZCREqbIdCJD9
 github.com/cockroachdb/datadriven v1.0.2/go.mod h1:a9RdTaap04u637JoCzcUoIcDmvwSUtcUFtT/C3kJlTU=
 github.com/containerd/cgroups/v3 v3.0.3 h1:S5ByHZ/h9PMe5IOQoN7E+nMc2UcLEM/V48DGDJ9kip0=
 github.com/containerd/cgroups/v3 v3.0.3/go.mod h1:8HBe7V3aWGLFPd/k03swSIsGjZhHI2WzJmticMgVuz0=
-github.com/containerd/errdefs v0.1.0 h1:m0wCRBiu1WJT/Fr+iOoQHMQS/eP5myQ8lCv4Dz5ZURM=
-github.com/containerd/errdefs v0.1.0/go.mod h1:YgWiiHtLmSeBrvpw+UfPijzbLaB77mEG1WwJTDETIV0=
+github.com/containerd/containerd v1.7.23 h1:H2CClyUkmpKAGlhQp95g2WXHfLYc7whAuvZGBNYOOwQ=
+github.com/containerd/containerd v1.7.23/go.mod h1:7QUzfURqZWCZV7RLNEn1XjUCQLEf0bkaK4GjUaZehxw=
+github.com/containerd/errdefs v0.3.0 h1:FSZgGOeK4yuT/+DnF07/Olde/q4KBoMsaamhXxIMDp4=
+github.com/containerd/errdefs v0.3.0/go.mod h1:+YBYIdtsnF4Iw6nWZhJcqGSg/dwvV7tyJ/kCkyJ2k+M=
 github.com/containernetworking/cni v1.2.3 h1:hhOcjNVUQTnzdRJ6alC5XF+wd9mfGIUaj8FuJbEslXM=
 github.com/containernetworking/cni v1.2.3/go.mod h1:DuLgF+aPd3DzcTQTtp/Nvl1Kim23oFKdm2okJzBQA5M=
 github.com/containernetworking/plugins v1.6.0 h1:lrsUrLF7QODLx6gncHOqk/pnCiC7c6bvDAskV4KUifQ=
