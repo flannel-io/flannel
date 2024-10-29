@@ -5,7 +5,7 @@ go 1.23
 // replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
 
 require (
-	github.com/Microsoft/hcsshim v0.12.7
+	github.com/Microsoft/hcsshim v0.12.8
 	github.com/bronze1man/goStrongswanVici v0.0.0-20231128135937-211cef3b0b20
 	github.com/containernetworking/plugins v1.6.0
 	github.com/coreos/go-iptables v0.8.0
@@ -43,7 +43,8 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/containerd/cgroups/v3 v3.0.3 // indirect
-	github.com/containerd/errdefs v0.1.0 // indirect
+	github.com/containerd/containerd v1.7.23 // indirect
+	github.com/containerd/errdefs v0.3.0 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
