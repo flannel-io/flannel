@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -261,17 +262,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	// From Kubernetes 1.30 kubeadm doesn't check if the br_netfilter module is loaded and in case it's missing Flannel wrongly starts
-	if config.EnableIPv4 {
-		if _, err = os.Stat("/proc/sys/net/bridge/bridge-nf-call-iptables"); os.IsNotExist(err) {
-			log.Error("Failed to check br_netfilter: ", err)
-			os.Exit(1)
+	if runtime.GOOS != "windows" {
+		// From Kubernetes 1.30 kubeadm doesn't check if the br_netfilter module is loaded and in case it's missing Flannel wrongly starts
+		if config.EnableIPv4 {
+			if _, err = os.Stat("/proc/sys/net/bridge/bridge-nf-call-iptables"); os.IsNotExist(err) {
+				log.Error("Failed to check br_netfilter: ", err)
+				os.Exit(1)
+			}
 		}
-	}
-	if config.EnableIPv6 {
-		if _, err = os.Stat("/proc/sys/net/bridge/bridge-nf-call-ip6tables"); os.IsNotExist(err) {
-			log.Error("Failed to check br_netfilter: ", err)
-			os.Exit(1)
+		if config.EnableIPv6 {
+			if _, err = os.Stat("/proc/sys/net/bridge/bridge-nf-call-ip6tables"); os.IsNotExist(err) {
+				log.Error("Failed to check br_netfilter: ", err)
+				os.Exit(1)
+			}
 		}
 	}
 
