@@ -15,7 +15,7 @@ flannel:
     tag: v0.26.1
   image_cni:
     repository: docker.io/flannel/flannel-cni-plugin
-    tag: v1.5.1-flannel2
+    tag: v1.6.0-flannel1
   # flannel command arguments
   enableNFTables: false
   args:
