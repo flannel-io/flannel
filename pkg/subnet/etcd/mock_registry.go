@@ -15,6 +15,7 @@
 package etcd
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -23,7 +24,6 @@ import (
 	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/jonboulle/clockwork"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
-	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
 )
 

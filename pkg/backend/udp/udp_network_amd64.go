@@ -18,6 +18,7 @@
 package udp
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -29,7 +30,6 @@ import (
 	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
-	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
 )
 

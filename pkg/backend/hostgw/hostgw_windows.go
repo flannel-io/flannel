@@ -15,6 +15,7 @@
 package hostgw
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -27,7 +28,6 @@ import (
 	"github.com/flannel-io/flannel/pkg/routing"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/pkg/errors"
-	"golang.org/x/net/context"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/wait"
 	log "k8s.io/klog/v2"

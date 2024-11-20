@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -40,10 +41,8 @@ import (
 	"github.com/flannel-io/flannel/pkg/trafficmngr/iptables"
 	"github.com/flannel-io/flannel/pkg/trafficmngr/nftables"
 	"github.com/flannel-io/flannel/pkg/version"
-	"golang.org/x/net/context"
-	log "k8s.io/klog/v2"
-
 	"github.com/joho/godotenv"
+	log "k8s.io/klog/v2"
 
 	// Backends need to be imported for their init() to get executed and them to register
 	"github.com/coreos/go-systemd/v22/daemon"
@@ -508,7 +507,8 @@ func mustRunHealthz(stopChan <-chan struct{}, wg *sync.WaitGroup) {
 		<-stopChan
 
 		// create new context with timeout for http server to shutdown gracefully
-		ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
 		if err := server.Shutdown(ctx); err != nil {
 			log.Errorf("Shutdown healthz server error. %v", err)
 		}

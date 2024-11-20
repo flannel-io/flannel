@@ -15,12 +15,12 @@
 package backend
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
 
 	"github.com/flannel-io/flannel/pkg/subnet"
-	"golang.org/x/net/context"
 )
 
 var constructors = make(map[string]BackendCtor)

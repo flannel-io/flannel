@@ -17,11 +17,10 @@
 package ipsec
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sync"
-
-	"golang.org/x/net/context"
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
