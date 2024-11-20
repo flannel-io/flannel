@@ -15,6 +15,7 @@
 package subnet
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -25,7 +26,6 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
-	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
 )
 

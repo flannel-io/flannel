@@ -16,6 +16,7 @@ package etcd
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"sync"
 	"testing"
@@ -25,7 +26,6 @@ import (
 	"github.com/flannel-io/flannel/pkg/lease"
 	etcd "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/tests/v3/integration"
-	"golang.org/x/net/context"
 )
 
 func newTestEtcdRegistry(t *testing.T, ctx context.Context, client *etcd.Client) (Registry, etcd.KV) {
@@ -105,7 +105,7 @@ func TestEtcdRegistry(t *testing.T) {
 
 	client := clus.RandClient()
 
-	ctx, _ := context.WithCancel(context.Background())
+	ctx := context.Background()
 
 	r, kvApi := newTestEtcdRegistry(t, ctx, client)
 

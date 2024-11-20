@@ -15,12 +15,10 @@
 package extension
 
 import (
+	"context"
 	"encoding/json"
-	"sync"
-
-	"golang.org/x/net/context"
-
 	"fmt"
+	"sync"
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/lease"

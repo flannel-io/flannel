@@ -18,6 +18,7 @@
 package hostgw
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -26,7 +27,6 @@ import (
 	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
-	"golang.org/x/net/context"
 )
 
 func init() {

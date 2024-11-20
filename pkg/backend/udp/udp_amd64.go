@@ -17,6 +17,7 @@
 package udp
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -25,7 +26,6 @@ import (
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
-	"golang.org/x/net/context"
 )
 
 func init() {

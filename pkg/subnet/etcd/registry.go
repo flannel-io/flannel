@@ -15,6 +15,7 @@
 package etcd
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -31,7 +32,6 @@ import (
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"go.etcd.io/etcd/client/pkg/v3/tlsutil"
 	etcd "go.etcd.io/etcd/client/v3"
-	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
 )
 

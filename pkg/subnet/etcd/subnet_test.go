@@ -15,6 +15,7 @@
 package etcd
 
 import (
+	"context"
 	"encoding/json"
 	"path"
 	"reflect"
@@ -26,7 +27,6 @@ import (
 	"github.com/flannel-io/flannel/pkg/subnet"
 	etcd "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/tests/v3/integration"
-	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
 )
 
@@ -195,7 +195,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 
 	client := clus.RandClient()
 
-	ctx, _ := context.WithCancel(context.Background())
+	ctx := context.Background()
 
 	r, kvApi := newTestEtcdRegistry(t, ctx, client)
 	initTestRegistry(ctx, t, r, kvApi)
@@ -262,7 +262,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 
 	client := clus.RandClient()
 
-	ctx, _ := context.WithCancel(context.Background())
+	ctx := context.Background()
 
 	r, kvApi := newTestEtcdRegistry(t, ctx, client)
 	netKey := "/coreos.com/network/config"
@@ -340,7 +340,7 @@ func TestCompleteLease(t *testing.T) {
 
 	client := clus.RandClient()
 
-	ctx, _ := context.WithCancel(context.Background())
+	ctx := context.Background()
 
 	r, kvApi := newTestEtcdRegistry(t, ctx, client)
 	initTestRegistry(ctx, t, r, kvApi)
@@ -404,7 +404,7 @@ func TestRenewLease(t *testing.T) {
 
 	client := clus.RandClient()
 
-	ctx, _ := context.WithCancel(context.Background())
+	ctx := context.Background()
 
 	r, kvApi := newTestEtcdRegistry(t, ctx, client)
 	netKey := "/coreos.com/network/config"

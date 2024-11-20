@@ -17,6 +17,7 @@
 package vxlan
 
 import (
+	"context"
 	"encoding/json"
 	"net"
 	"sync"
@@ -28,7 +29,6 @@ import (
 	"github.com/flannel-io/flannel/pkg/retry"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
-	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
 )
 

@@ -15,6 +15,7 @@
 package backend
 
 import (
+	"context"
 	"strings"
 	"sync"
 	"time"
@@ -22,7 +23,6 @@ import (
 	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/routing"
 	"github.com/flannel-io/flannel/pkg/subnet"
-	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
 )
 

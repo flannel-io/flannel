@@ -54,6 +54,7 @@ package vxlan
 // this is called "directRouting"
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -63,7 +64,6 @@ import (
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
-	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
 )
 

@@ -22,8 +22,10 @@ package vxlan
 // In this scheme the scaling of table entries (per host) is:
 //  - 1 network entry for the overlay network
 //  - 1 endpoint per local container
-//  - N remote endpoints remote node (total endpoints =
+//  - N remote endpoints remote node (total endpoints = N * number of remote nodes)
+
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -35,7 +37,6 @@ import (
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
-	"golang.org/x/net/context"
 	log "k8s.io/klog/v2"
 )
 

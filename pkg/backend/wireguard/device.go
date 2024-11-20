@@ -17,6 +17,7 @@
 package wireguard
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -28,7 +29,6 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/vishvananda/netlink"
-	"golang.org/x/net/context"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	log "k8s.io/klog/v2"
