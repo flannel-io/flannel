@@ -7,7 +7,7 @@ go 1.23
 require (
 	github.com/Microsoft/hcsshim v0.12.9
 	github.com/bronze1man/goStrongswanVici v0.0.0-20231128135937-211cef3b0b20
-	github.com/containernetworking/plugins v1.6.0
+	github.com/containernetworking/plugins v1.6.1
 	github.com/coreos/go-iptables v0.8.0
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/coreos/pkg v0.0.0-20240122114842-bbd7aa9bf6fb
@@ -124,7 +124,7 @@ require (
 	golang.org/x/term v0.26.0 // indirect
 	golang.org/x/text v0.20.0 // indirect
 	google.golang.org/grpc v1.67.0 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
+	google.golang.org/protobuf v1.35.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20240903163716-9e1beecbcb38 // indirect
