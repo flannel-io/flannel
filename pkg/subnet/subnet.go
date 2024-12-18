@@ -166,18 +166,26 @@ func WatchLeases(ctx context.Context, sm Manager, ownLease *lease.Lease, receive
 // and it needs to diff the latest snapshot with its saved state and generate events
 func WatchLease(ctx context.Context, sm Manager, sn ip.IP4Net, sn6 ip.IP6Net, receiver chan lease.Event) {
 	leaseWatchChan := make(chan []lease.LeaseWatchResult)
+	var closeOnce sync.Once
+
+	// Helper function to close the receiver channel safely
+	closeReceiver := func() {
+		closeOnce.Do(func() {
+			close(receiver)
+		})
+	}
 
 	go func() {
 		err := sm.WatchLease(ctx, sn, sn6, leaseWatchChan)
 		if err != nil {
 			if err == context.Canceled || err == context.DeadlineExceeded {
 				log.Infof("%v, close receiver chan", err)
-				close(receiver)
+				closeReceiver()
 				return
 			}
 
 			log.Errorf("Subnet watch failed: %v", err)
-			close(receiver)
+			closeReceiver()
 			return
 		}
 
@@ -199,5 +207,5 @@ func WatchLease(ctx context.Context, sm Manager, sn ip.IP4Net, sn6 ip.IP6Net, re
 
 	}
 	log.Info("leaseWatchChan channel closed")
-	close(receiver)
+	closeReceiver()
 }
