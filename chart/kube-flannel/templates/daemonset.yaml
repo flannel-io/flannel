@@ -99,6 +99,11 @@ spec:
         {{- range .Values.netpol.args }}
         - {{ . | quote }}
         {{- end }}
+        env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
         volumeMounts:
         - name: lib-modules
           mountPath: /lib/modules
