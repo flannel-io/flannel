@@ -24,9 +24,9 @@ require (
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173 // indirect
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
 	google.golang.org/genproto v0.0.0-20240903143218-8af14fe29dc1 // indirect
-	k8s.io/api v0.28.13
-	k8s.io/apimachinery v0.28.13
-	k8s.io/client-go v0.28.13
+	k8s.io/api v0.29.12
+	k8s.io/apimachinery v0.29.12
+	k8s.io/client-go v0.29.12
 	k8s.io/klog/v2 v2.130.1
 
 )
@@ -56,7 +56,7 @@ require (
 	github.com/google/btree v1.0.1 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
