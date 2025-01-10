@@ -55,3 +55,21 @@ tests:
           path: spec.template.spec.imagePullSecrets
           value:
             - name: "a-test-secret"
+
+  - it: should add the install-cni init container when default values are used
+    asserts:
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: install-cni
+          any: true
+
+  - it: should not add the install-cni init container when skipCNIConfigInstallation is set
+    set:
+      flannel.skipCNIConfigInstallation: true
+    asserts:
+      - notContains:
+          path: spec.template.spec.initContainers
+          content:
+            name: install-cni
+          any: true

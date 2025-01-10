@@ -16,6 +16,9 @@ flannel:
   image_cni:
     repository: docker.io/flannel/flannel-cni-plugin
     tag: v1.6.0-flannel1
+  # skipCNIConfigInstallation skips the installation of the flannel CNI config. This is useful when the CNI config is
+  # provided externally.
+  skipCNIConfigInstallation: false
   # flannel command arguments
   enableNFTables: false
   args:
