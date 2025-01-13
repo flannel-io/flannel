@@ -7,7 +7,7 @@ go 1.23
 require (
 	github.com/Microsoft/hcsshim v0.12.9
 	github.com/bronze1man/goStrongswanVici v0.0.0-20231128135937-211cef3b0b20
-	github.com/containernetworking/plugins v1.6.1
+	github.com/containernetworking/plugins v1.6.2
 	github.com/coreos/go-iptables v0.8.0
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/coreos/pkg v0.0.0-20240122114842-bbd7aa9bf6fb
