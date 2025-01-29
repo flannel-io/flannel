@@ -11,11 +11,11 @@ podCidrv6: ""
 flannel:
   # kube-flannel image
   image:
-    repository: docker.io/flannel/flannel
+    repository: ghcr.io/flannel-io/flannel
     tag: v0.26.3
   image_cni:
-    repository: docker.io/flannel/flannel-cni-plugin
-    tag: v1.6.0-flannel1
+    repository: ghcr.io/flannel-io/flannel-cni-plugin
+    tag: v1.6.2-flannel1
   # skipCNIConfigInstallation skips the installation of the flannel CNI config. This is useful when the CNI config is
   # provided externally.
   skipCNIConfigInstallation: false

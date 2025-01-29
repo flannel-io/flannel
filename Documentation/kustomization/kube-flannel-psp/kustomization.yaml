@@ -5,5 +5,5 @@ commonLabels:
 resources:
 - kube-flannel-psp.yml
 images:
-- name: docker.io/flannel/flannel
+- name: ghcr.io/flannel-io/flannel
   newTag: v0.22.1
