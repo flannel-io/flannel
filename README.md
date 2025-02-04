@@ -66,8 +66,8 @@ ARCH=$(uname -m)
     x86_64) ARCH="amd64";;
   esac
 mkdir -p /opt/cni/bin
-curl -O -L https://github.com/containernetworking/plugins/releases/download/v1.6.0/cni-plugins-linux-$ARCH-v1.6.0.tgz
-tar -C /opt/cni/bin -xzf cni-plugins-linux-$ARCH-v1.6.0.tgz
+curl -O -L https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-$ARCH-v1.6.2.tgz
+tar -C /opt/cni/bin -xzf cni-plugins-linux-$ARCH-v1.6.2.tgz
 ```
 
 Flannel requires the br_netfilter module to start and from version 1.30 kubeadm doesn't check if the module is installed and Flannel will not rightly start in case the module is missing.

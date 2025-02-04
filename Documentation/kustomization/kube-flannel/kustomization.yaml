@@ -6,4 +6,4 @@ resources:
 - kube-flannel.yml
 images:
 - name: ghcr.io/flannel-io/flannel
-  newTag: v0.26.3
+  newTag: v0.26.4
