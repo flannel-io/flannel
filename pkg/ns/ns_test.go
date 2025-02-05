@@ -16,3 +16,25 @@
 // limitations under the License.
 
 package ns
+
+import (
+	"runtime"
+	"testing"
+
+	"github.com/vishvananda/netns"
+)
+
+func TestSetUpNetlink(t *testing.T) {
+	// new temporary namespace so we don't pollute the host
+	// lock thread since the namespace is thread local
+	runtime.LockOSThread()
+	var err error
+	ns, err := netns.New()
+	if err != nil {
+		t.Fatalf("Failed to create newns: %v", err)
+	}
+
+	defer ns.Close()
+	defer runtime.UnlockOSThread()
+
+}
