@@ -17,6 +17,7 @@
 package iptables
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"reflect"
@@ -65,7 +66,7 @@ func (mock *MockIPTablesRestore) ApplyFully(rules IPTablesRestoreRules) error {
 	return nil
 }
 
-func (mock *MockIPTablesRestore) ApplyWithoutFlush(rules IPTablesRestoreRules) error {
+func (mock *MockIPTablesRestore) ApplyWithoutFlush(ctx context.Context, rules IPTablesRestoreRules) error {
 	mock.rules = append(mock.rules, rules)
 	return nil
 }
@@ -127,8 +128,8 @@ func TestDeleteRules(t *testing.T) {
 			PrefixLen: 16,
 		}, testingLease())
 	expectedRules := expectedTearDownIPTablesRestoreRules(baseRules)
-
-	err := ipTablesBootstrap(ipt, iptr, baseRules)
+	ctx := context.TODO()
+	err := ipTablesBootstrap(ctx, ipt, iptr, baseRules)
 	if err != nil {
 		t.Error("Error bootstrapping up iptables")
 	}
@@ -141,7 +142,7 @@ func TestDeleteRules(t *testing.T) {
 	}
 
 	iptr.rules = []IPTablesRestoreRules{}
-	err = teardownIPTables(ipt, iptr, baseRules)
+	err = teardownIPTables(ctx, ipt, iptr, baseRules)
 	if err != nil {
 		t.Error("Error tearing down iptables")
 	}
@@ -154,7 +155,7 @@ func TestDeleteRules(t *testing.T) {
 func TestDeleteMoreRules(t *testing.T) {
 	ipt := &MockIPTables{}
 	iptr := &MockIPTablesRestore{}
-
+	ctx := context.TODO()
 	baseRules := []trafficmngr.IPTablesRule{
 		{Table: "filter", Action: "-A", Chain: "INPUT", Rulespec: []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
 		{Table: "filter", Action: "-A", Chain: "INPUT", Rulespec: []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
@@ -173,7 +174,7 @@ func TestDeleteMoreRules(t *testing.T) {
 		},
 	}
 
-	err := ipTablesBootstrap(ipt, iptr, baseRules)
+	err := ipTablesBootstrap(ctx, ipt, iptr, baseRules)
 	if err != nil {
 		t.Error("Error bootstrapping up iptables")
 	}
@@ -186,7 +187,7 @@ func TestDeleteMoreRules(t *testing.T) {
 	}
 
 	iptr.rules = []IPTablesRestoreRules{}
-	err = teardownIPTables(ipt, iptr, baseRules)
+	err = teardownIPTables(ctx, ipt, iptr, baseRules)
 	if err != nil {
 		t.Error("Error tearing down iptables")
 	}
@@ -198,7 +199,7 @@ func TestDeleteMoreRules(t *testing.T) {
 func TestBootstrapRules(t *testing.T) {
 	iptr := &MockIPTablesRestore{}
 	ipt := &MockIPTables{}
-
+	ctx := context.TODO()
 	baseRules := []trafficmngr.IPTablesRule{
 		{Table: "filter", Action: "-A", Chain: "INPUT", Rulespec: []string{"-s", "127.0.0.1", "-d", "127.0.0.1", "-j", "RETURN"}},
 		{Table: "filter", Action: "-A", Chain: "INPUT", Rulespec: []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
@@ -206,7 +207,7 @@ func TestBootstrapRules(t *testing.T) {
 		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
 	}
 
-	err := ipTablesBootstrap(ipt, iptr, baseRules)
+	err := ipTablesBootstrap(ctx, ipt, iptr, baseRules)
 	if err != nil {
 		t.Error("Error bootstrapping up iptables")
 	}
@@ -248,7 +249,7 @@ func TestBootstrapRules(t *testing.T) {
 		},
 	}
 	// Re-run ensure has new operations
-	err = ipTablesBootstrap(ipt, iptr, baseRules)
+	err = ipTablesBootstrap(ctx, ipt, iptr, baseRules)
 	if err != nil {
 		t.Error("Error bootstrapping up iptables")
 	}
@@ -260,13 +261,14 @@ func TestBootstrapRules(t *testing.T) {
 func TestDeleteIP6Rules(t *testing.T) {
 	ipt := &MockIPTables{}
 	iptr := &MockIPTablesRestore{}
+	ctx := context.TODO()
 
 	baseRules := IP6Rules(ip.IP6Net{}, testingLease())
 
 	// expect to have the same DELETE rules
 	expectedRules := IP6RestoreDeleteRules(ip.IP6Net{}, testingLease())
 
-	err := ipTablesBootstrap(ipt, iptr, baseRules)
+	err := ipTablesBootstrap(ctx, ipt, iptr, baseRules)
 	if err != nil {
 		t.Error("Error bootstrapping up iptables")
 	}
@@ -278,7 +280,7 @@ func TestDeleteIP6Rules(t *testing.T) {
 		t.Errorf("Should be 4 masqRules, there are actually %d: %#v", len(ipt.rules), ipt.rules)
 	}
 	iptr.rules = []IPTablesRestoreRules{}
-	err = teardownIPTables(ipt, iptr, baseRules)
+	err = teardownIPTables(ctx, ipt, iptr, baseRules)
 	if err != nil {
 		t.Error("Error tearing down iptables")
 	}
@@ -290,6 +292,7 @@ func TestDeleteIP6Rules(t *testing.T) {
 func TestEnsureRules(t *testing.T) {
 	iptr := &MockIPTablesRestore{}
 	ipt := &MockIPTables{}
+	ctx := context.TODO()
 
 	// Ensure iptable mock has other rules
 	otherRules := []trafficmngr.IPTablesRule{
@@ -305,7 +308,7 @@ func TestEnsureRules(t *testing.T) {
 		{Table: "nat", Action: "-A", Chain: "POSTROUTING", Rulespec: []string{"-s", "127.0.0.1", "!", "-d", "224.0.0.0/4", "-j", "MASQUERADE", "--random-fully"}},
 	}
 
-	err = ensureIPTables(ipt, iptr, baseRules)
+	err = ensureIPTables(ctx, ipt, iptr, baseRules)
 	if err != nil {
 		t.Errorf("ensureIPTables should have completed without errors")
 	}
@@ -328,7 +331,7 @@ func TestEnsureRules(t *testing.T) {
 
 	iptr.rules = []IPTablesRestoreRules{}
 	// Re-run ensure no new operations
-	err = ensureIPTables(ipt, iptr, baseRules)
+	err = ensureIPTables(ctx, ipt, iptr, baseRules)
 	if err != nil {
 		t.Errorf("ensureIPTables should have completed without errors")
 	}
@@ -340,6 +343,7 @@ func TestEnsureRules(t *testing.T) {
 func TestEnsureIP6Rules(t *testing.T) {
 	iptr := &MockIPTablesRestore{}
 	ipt := &MockIPTables{}
+	ctx := context.TODO()
 
 	// Ensure iptable mock has other rules
 	otherRules := []trafficmngr.IPTablesRule{
@@ -352,7 +356,7 @@ func TestEnsureIP6Rules(t *testing.T) {
 
 	baseRules := IP6Rules(ip.IP6Net{}, testingLease())
 
-	err = ensureIPTables(ipt, iptr, baseRules)
+	err = ensureIPTables(ctx, ipt, iptr, baseRules)
 	if err != nil {
 		t.Errorf("ensureIPTables should have completed without errors")
 	}
@@ -370,7 +374,7 @@ func TestEnsureIP6Rules(t *testing.T) {
 
 	iptr.rules = []IPTablesRestoreRules{}
 	// Re-run ensure no new operations
-	err = ensureIPTables(ipt, iptr, baseRules)
+	err = ensureIPTables(ctx, ipt, iptr, baseRules)
 	if err != nil {
 		t.Errorf("ensureIPTables should have completed without errors")
 	}
