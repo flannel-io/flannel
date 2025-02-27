@@ -130,10 +130,10 @@ spec:
           path: /run/flannel
       - name: cni-plugin
         hostPath:
-          path: /opt/cni/bin
+          path: {{ .Values.flannel.cniBinDir }}
       - name: cni
         hostPath:
-          path: /etc/cni/net.d
+          path: {{ .Values.flannel.cniConfDir }}
       - name: flannel-cfg
         configMap:
           name: kube-flannel-cfg
