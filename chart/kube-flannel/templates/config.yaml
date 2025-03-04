@@ -7,26 +7,7 @@ metadata:
     tier: node
     app: flannel
 data:
-  cni-conf.json: |
-    {
-      "name": "cbr0",
-      "cniVersion": "0.3.1",
-      "plugins": [
-        {
-          "type": "flannel",
-          "delegate": {
-            "hairpinMode": true,
-            "isDefaultGateway": true
-          }
-        },
-        {
-          "type": "portmap",
-          "capabilities": {
-            "portMappings": true
-          }
-        }
-      ]
-    }
+  cni-conf.json: {{ .Values.flannel.cniConf | toJson }}
   net-conf.json: |
     {
 {{- if .Values.podCidr }}
