@@ -21,13 +21,10 @@ import (
 	"net"
 	"testing"
 
-	"github.com/flannel-io/flannel/pkg/ns"
 	"github.com/vishvananda/netlink"
 )
 
 func TestEnsureV4AddressOnLink(t *testing.T) {
-	teardown := ns.SetUpNetlinkTest(t)
-	defer teardown()
 	lo, err := netlink.LinkByName("lo")
 	if err != nil {
 		t.Fatal(err)
@@ -65,8 +62,6 @@ func TestEnsureV4AddressOnLink(t *testing.T) {
 }
 
 func TestEnsureV6AddressOnLink(t *testing.T) {
-	teardown := ns.SetUpNetlinkTest(t)
-	defer teardown()
 	lo, err := netlink.LinkByName("lo")
 	if err != nil {
 		t.Fatal(err)
