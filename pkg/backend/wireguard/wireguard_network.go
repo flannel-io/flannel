@@ -17,6 +17,7 @@
 package wireguard
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -101,6 +102,7 @@ func (n *network) Run(ctx context.Context) {
 
 type wireguardLeaseAttrs struct {
 	PublicKey string
+	Port      uint16
 }
 
 // Select the endpoint address that is most likely to allow for a successful
@@ -115,24 +117,20 @@ type wireguardLeaseAttrs struct {
 //     address will only have a small chance of succeeding (ipv6 masquarading is
 //     very rare)
 //   - If neither is true default to ipv4 and cross fingers.
-func (n *network) selectPublicEndpoint(ip4 *ip.IP4, ip6 *ip.IP6) string {
+func (n *network) autoMode(ip4 *ip.IP4, ip6 *ip.IP6) Mode {
 	if ip4 != nil && ip6 == nil {
-		return ip4.String()
+		return Ipv4
 	}
-
 	if ip4 == nil && ip6 != nil {
-		return fmt.Sprintf("[%s]", ip6.String())
+		return Ipv6
 	}
-
 	if !ip4.IsPrivate() && n.extIface.ExtAddr != nil {
-		return ip4.String()
+		return Ipv4
 	}
-
 	if !ip6.IsPrivate() && n.extIface.ExtV6Addr != nil && !ip.FromIP6(n.extIface.ExtV6Addr).IsPrivate() {
-		return fmt.Sprintf("[%s]", ip6.String())
+		return Ipv6
 	}
-
-	return ip4.String()
+	return Ipv4
 }
 
 func (n *network) handleSubnetEvents(ctx context.Context, batch []lease.Event) {
@@ -169,12 +167,18 @@ func (n *network) handleSubnetEvents(ctx context.Context, batch []lease.Event) {
 				subnets = append(subnets, event.Lease.IPv6Subnet.ToIPNet()) //only used if n.mode != Separate
 			}
 
+			// default to the port in the attr, but use the device's listen port
+			// if it's not set for backwards compatibility with older flannel
+			// versions.
+			v4Port := cmp.Or(v4wireguardAttrs.Port, uint16(n.dev.attrs.listenPort))
+			v6Port := cmp.Or(v6wireguardAttrs.Port, uint16(n.v6Dev.attrs.listenPort))
+			v4PeerEndpoint := fmt.Sprintf("%s:%d", event.Lease.Attrs.PublicIP.String(), v4Port)
+			v6PeerEndpoint := fmt.Sprintf("%s:%d", event.Lease.Attrs.PublicIPv6.String(), v6Port)
 			if n.mode == Separate {
 				if event.Lease.EnableIPv4 {
-					publicEndpoint := fmt.Sprintf("%s:%d", event.Lease.Attrs.PublicIP.String(), n.dev.attrs.listenPort)
-					log.Infof("Subnet added: %v via %v", event.Lease.Subnet, publicEndpoint)
+					log.Infof("Subnet added: %v via %v", event.Lease.Subnet, v4PeerEndpoint)
 					if err := n.dev.addPeer(
-						publicEndpoint,
+						v4PeerEndpoint,
 						v4wireguardAttrs.PublicKey,
 						[]net.IPNet{*event.Lease.Subnet.ToIPNet()}); err != nil {
 						log.Errorf("failed to setup ipv4 peer (%s): %v", v4wireguardAttrs.PublicKey, err)
@@ -190,10 +194,9 @@ func (n *network) handleSubnetEvents(ctx context.Context, batch []lease.Event) {
 				}
 
 				if event.Lease.EnableIPv6 {
-					publicEndpoint := fmt.Sprintf("[%s]:%d", event.Lease.Attrs.PublicIPv6.String(), n.v6Dev.attrs.listenPort)
-					log.Infof("Subnet added: %v via %v", event.Lease.IPv6Subnet, publicEndpoint)
+					log.Infof("Subnet added: %v via %v", event.Lease.IPv6Subnet, v6PeerEndpoint)
 					if err := n.v6Dev.addPeer(
-						publicEndpoint,
+						v6PeerEndpoint,
 						v6wireguardAttrs.PublicKey,
 						[]net.IPNet{*event.Lease.IPv6Subnet.ToIPNet()}); err != nil {
 						log.Errorf("failed to setup ipv6 peer (%s): %v", v6wireguardAttrs.PublicKey, err)
@@ -209,14 +212,17 @@ func (n *network) handleSubnetEvents(ctx context.Context, batch []lease.Event) {
 				}
 			} else {
 				var publicEndpoint string
-				if n.mode == Ipv4 {
-					publicEndpoint = fmt.Sprintf("%s:%d", event.Lease.Attrs.PublicIP.String(), n.dev.attrs.listenPort)
-				} else if n.mode == Ipv6 {
-					publicEndpoint = fmt.Sprintf("[%s]:%d", event.Lease.Attrs.PublicIPv6.String(), n.dev.attrs.listenPort)
-				} else { // Auto mode
-					publicEndpoint = fmt.Sprintf("%s:%d",
-						n.selectPublicEndpoint(&event.Lease.Attrs.PublicIP, event.Lease.Attrs.PublicIPv6),
-						n.dev.attrs.listenPort)
+				mode := n.mode
+				if mode == Auto {
+					mode = n.autoMode(&event.Lease.Attrs.PublicIP, event.Lease.Attrs.PublicIPv6)
+				}
+				switch mode {
+				case Ipv4:
+					publicEndpoint = v4PeerEndpoint
+				case Ipv6:
+					publicEndpoint = v6PeerEndpoint
+				default:
+					panic(fmt.Sprintf("inexhaustive match: %v", mode))
 				}
 
 				log.Infof("Subnet(s) added: %v via %v", subnets, publicEndpoint)

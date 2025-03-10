@@ -57,9 +57,17 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return be, nil
 }
 
-func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, enableIPv4, enableIPv6 bool, publicKey string) (*lease.LeaseAttrs, error) {
-	data, err := json.Marshal(&wireguardLeaseAttrs{
+func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, enableIPv4, enableIPv6 bool, publicKey string, v4Port, v6Port uint16) (*lease.LeaseAttrs, error) {
+	v4Data, err := json.Marshal(&wireguardLeaseAttrs{
 		PublicKey: publicKey,
+		Port:      v4Port,
+	})
+	if err != nil {
+		return nil, err
+	}
+	v6Data, err := json.Marshal(&wireguardLeaseAttrs{
+		PublicKey: publicKey,
+		Port:      v6Port,
 	})
 	if err != nil {
 		return nil, err
@@ -74,7 +82,7 @@ func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, enableIPv4, enableIPv6 b
 	}
 
 	if enableIPv4 {
-		leaseAttrs.BackendData = json.RawMessage(data)
+		leaseAttrs.BackendData = json.RawMessage(v4Data)
 	}
 
 	if publicIPv6 != nil {
@@ -82,7 +90,7 @@ func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, enableIPv4, enableIPv6 b
 	}
 
 	if enableIPv6 {
-		leaseAttrs.BackendV6Data = json.RawMessage(data)
+		leaseAttrs.BackendV6Data = json.RawMessage(v6Data)
 	}
 
 	return leaseAttrs, nil
@@ -155,7 +163,7 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 		return nil, fmt.Errorf("no valid Mode configured")
 	}
 
-	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, be.extIface.ExtV6Addr, config.EnableIPv4, config.EnableIPv6, publicKey)
+	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, be.extIface.ExtV6Addr, config.EnableIPv4, config.EnableIPv6, publicKey, uint16(cfg.ListenPort), uint16(cfg.ListenPortV6))
 	if err != nil {
 		return nil, err
 	}
