@@ -1,4 +1,4 @@
-.PHONY: test unit-test e2e-test deps cover gofmt gofmt-fix license-check clean tar.gz release buildx-create-builder build-multi-arch
+.PHONY: test unit-test e2e-test deps cover gofmt gofmt-fix license-check clean tar.gz release buildx-create-builder build-multi-arch release-chart release-helm
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
@@ -153,7 +153,7 @@ endif
 
 # Make a release after creating a tag
 # To build cross platform Docker images, the qemu-static binaries are needed. On ubuntu "apt-get install  qemu-user-static"
-release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-arm64-static dist/qemu-arm-static dist/qemu-riscv64-static release-chart release-helm
+release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-arm64-static dist/qemu-arm-static dist/qemu-riscv64-static
 	ARCH=amd64 make dist/flanneld-$(TAG)-amd64.docker
 	ARCH=arm make dist/flanneld-$(TAG)-arm.docker
 	ARCH=arm64 make dist/flanneld-$(TAG)-arm64.docker
