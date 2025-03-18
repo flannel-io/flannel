@@ -128,10 +128,6 @@ jobs:
           push-to-registry: true
 
   build-and-push-artifacts:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -158,17 +154,25 @@ jobs:
         run: make release
 
       - name: Upload release files
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            dist/flannel*
-            dist/kube-flannel.yml
-            dist/kube-flannel-psp.yml
+        run: gh release upload ${{ env.GIT_TAG }} dist/flannel* dist/kube-flannel.yml dist/kube-flannel-psp.yml
 
-      - name: Wait for previous job
-        uses: yogeshlonkar/wait-for-jobs@v0.2.1
-        with:
-          jobs: build-and-push-images
+  publish-chart:
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    needs: build-and-push-images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Package chart
+        run: make release-chart release-helm
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
