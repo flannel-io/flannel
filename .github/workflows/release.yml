@@ -132,8 +132,6 @@ jobs:
     permissions:
       contents: write
       packages: write
-      pages: write
-      id-token: write
 
     steps:
       - name: Checkout repository
@@ -158,6 +156,8 @@ jobs:
 
   publish-chart:
     permissions:
+      contents: write
+      packages: write
       pages: write      # to deploy to Pages
       id-token: write   # to verify the deployment originates from an appropriate source
 
@@ -173,6 +173,9 @@ jobs:
 
       - name: Package chart
         run: make release-chart release-helm
+
+      - name: Upload chart with release files
+        run: gh release upload ${{ env.GIT_TAG }} dist/flannel.tgz
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
