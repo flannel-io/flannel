@@ -152,6 +152,8 @@ jobs:
         run: make release
 
       - name: Upload release files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload ${{ env.GIT_TAG }} dist/flannel* dist/kube-flannel.yml dist/kube-flannel-psp.yml
 
   publish-chart:
@@ -175,6 +177,8 @@ jobs:
         run: make release-chart release-helm
 
       - name: Upload chart with release files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload ${{ env.GIT_TAG }} dist/flannel.tgz
 
       - name: Setup Pages
