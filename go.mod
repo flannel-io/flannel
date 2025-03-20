@@ -33,8 +33,8 @@ require (
 
 require (
 	github.com/avast/retry-go/v4 v4.6.1
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1111
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.1111
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1125
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.1125
 	sigs.k8s.io/knftables v0.0.18
 )
 
