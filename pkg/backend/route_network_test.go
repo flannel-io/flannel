@@ -22,13 +22,10 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
-	"github.com/flannel-io/flannel/pkg/ns"
 	"github.com/vishvananda/netlink"
 )
 
 func TestRouteCache(t *testing.T) {
-	teardown := ns.SetUpNetlinkTest(t)
-	defer teardown()
 
 	lo, err := netlink.LinkByName("lo")
 	if err != nil {
@@ -79,8 +76,6 @@ func TestRouteCache(t *testing.T) {
 }
 
 func TestV6RouteCache(t *testing.T) {
-	teardown := ns.SetUpNetlinkTest(t)
-	defer teardown()
 
 	la := netlink.NewLinkAttrs()
 	la.Name = "br"
