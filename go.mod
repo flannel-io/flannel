@@ -1,6 +1,7 @@
 module github.com/flannel-io/flannel
 
 go 1.23.7
+toolchain go1.24.1
 
 // replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
 
@@ -33,7 +34,7 @@ require (
 
 require (
 	github.com/avast/retry-go/v4 v4.6.1
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1129
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1134
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.1125
 	sigs.k8s.io/knftables v0.0.18
 )
