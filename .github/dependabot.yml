@@ -13,6 +13,23 @@ updates:
     directory: "/" 
     schedule:
       interval: "weekly"
+    groups:
+      k8s:
+        patterns: [ "k8s.io/*", "sigs.k8s.io/*" ]
+        update-types: [ "major", "minor", "patch" ]
+      etcd:
+        patterns: [ "go.etcd.io/*" ]
+        update-types: [ "major", "minor", "patch" ]
+      tencent:
+        patterns: [ "github.com/tencentcloud/*" ]
+        update-types: [ "major", "minor", "patch" ]
+      other-go-modules:
+        patterns: [ "*" ]
+        exclude-patterns: 
+          - "k8s.io/*"
+          - "sigs.k8s.io/*"
+          - "go.etcd.io/*"
+          - "github.com/tencentcloud/*"
   - package-ecosystem: "github-actions" 
     directory: ".github"
     schedule:
