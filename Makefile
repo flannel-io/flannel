@@ -1,4 +1,4 @@
-.PHONY: test unit-test e2e-test deps cover gofmt gofmt-fix license-check clean tar.gz release buildx-create-builder build-multi-arch release-chart release-helm
+.PHONY: test unit-test e2e-test deps cover gofmt gofmt-fix license-check clean tar.gz release buildx-create-builder build-multi-arch release-manifest release-helm
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
@@ -164,7 +164,7 @@ release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-arm64-
 	@echo "Add all flanneld-* and *.tar.gz files from dist/ to the Github release"
 	@echo "Use make docker-push-all to push the images to a registry"
 
-release-chart:
+release-manifest:
 	sed -i 's/^  newTag: .*/  newTag: $(TAG)/' Documentation/kustomization/kube-flannel/kustomization.yaml
 	kubectl kustomize ./Documentation/kustomization/kube-flannel/ > dist/kube-flannel.yml
 	sed -i 's/^  newTag: .*/  newTag: $(TAG)/' Documentation/kustomization/kube-flannel-psp/kustomization.yaml
