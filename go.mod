@@ -1,6 +1,6 @@
 module github.com/flannel-io/flannel
 
-go 1.23.7
+go 1.23.6
 
 // replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
 
