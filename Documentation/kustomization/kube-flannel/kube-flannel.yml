@@ -124,7 +124,7 @@ spec:
       serviceAccountName: flannel
       initContainers:
       - name: install-cni-plugin
-        image: ghcr.io/flannel-io/flannel-cni-plugin:v1.6.2-flannel1
+        image: ghcr.io/flannel-io/flannel-cni-plugin:v1.7.1-flannel1
         command:
         - cp
         args:
