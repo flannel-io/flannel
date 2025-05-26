@@ -16,7 +16,6 @@ package iptables
 
 import (
 	"context"
-	"sync"
 
 	log "k8s.io/klog/v2"
 
@@ -35,8 +34,12 @@ type IPTables interface {
 	Exists(table string, chain string, rulespec ...string) (bool, error)
 }
 
-func (iptm IPTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
+func (iptm IPTablesManager) Init(ctx context.Context) error {
 	log.Info("Starting flannel in windows mode...")
+	return nil
+}
+
+func (iptm *IPTablesManager) CleanUp(ctx context.Context) error {
 	return nil
 }
 

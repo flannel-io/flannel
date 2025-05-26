@@ -362,9 +362,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Instanciate a TrafficManager to clean-up the rules of the backend we don't use
+	// This is to ensure a clean state in case flannel is restarted with a different choice
+	log.Info("Cleaning-up unused traffic manager rules")
+	cleanupMngr := newTrafficManager(!config.EnableNFTables)
+	err = cleanupMngr.CleanUp(ctx)
+	if err != nil {
+		log.Error(err)
+		cancel()
+		wg.Wait()
+		os.Exit(1)
+	}
 	//Create TrafficManager and instantiate it based on whether we use iptables or nftables
 	trafficMngr := newTrafficManager(config.EnableNFTables)
-	err = trafficMngr.Init(ctx, &wg)
+	err = trafficMngr.Init(ctx)
 	if err != nil {
 		log.Error(err)
 		cancel()

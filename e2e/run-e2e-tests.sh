@@ -176,7 +176,6 @@ test_vxlan() {
     pings
     check_iptables
     delete-flannel
-    check_iptables_removed
 }
 
 test_vxlan_nft() {
@@ -184,7 +183,6 @@ test_vxlan_nft() {
     pings
     check_nftables
     delete-flannel
-    check_nftables_removed
 }
 
 test_wireguard() {
@@ -192,7 +190,6 @@ test_wireguard() {
     pings
     check_iptables
     delete-flannel
-    check_iptables_removed
 }
 
 test_host-gw() {
@@ -200,7 +197,6 @@ test_host-gw() {
     pings
     check_iptables
     delete-flannel
-    check_iptables_removed
 }
 
 if [[ ${ARCH} == "amd64" ]]; then
@@ -209,7 +205,6 @@ test_udp() {
     pings
     check_iptables
     delete-flannel
-    check_iptables_removed
 }
 fi
 
@@ -218,7 +213,6 @@ test_ipip() {
     pings
     check_iptables
     delete-flannel
-    check_iptables_removed
 }
 
 test_perf_vxlan() {

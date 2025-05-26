@@ -17,7 +17,6 @@ package trafficmngr
 import (
 	"context"
 	"errors"
-	"sync"
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
@@ -37,8 +36,10 @@ var (
 const KubeProxyMark string = "0x4000/0x4000"
 
 type TrafficManager interface {
-	// Initialize the TrafficManager, including the go routine to clean-up when flanneld is closed
-	Init(ctx context.Context, wg *sync.WaitGroup) error
+	// Initialize the TrafficManager
+	Init(ctx context.Context) error
+	// Clean-up existing tables and rules
+	CleanUp(ctx context.Context) error
 	// Install kernel rules to forward the traffic to and from the flannel network range.
 	// This is done for IPv4 and/or IPv6 based on whether flannelIPv4Network and flannelIPv6Network are set.
 	// SetupAndEnsureForwardRules starts a go routine that
