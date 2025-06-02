@@ -1,6 +1,6 @@
 name: e2e tests for flannel
 
-on: [push, pull_request]
+on: pull_request
 
 env:
   ARCH: amd64
