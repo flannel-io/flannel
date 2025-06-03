@@ -1,4 +1,4 @@
-name: e2e tests for flannel
+name: k3s e2e tests for flannel
 
 on: pull_request
 
@@ -19,6 +19,9 @@ jobs:
         uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b #v5.4.0
         with:
           go-version: ${{ env.GO_VERSION }}
+
+      - name: set up modules
+        run: sudo modprobe br_netfilter overlay
 
       - name: build flannel image
         run: make image
