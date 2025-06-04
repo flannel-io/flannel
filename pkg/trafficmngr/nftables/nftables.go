@@ -19,8 +19,6 @@ package nftables
 import (
 	"context"
 	"fmt"
-	"sync"
-	"time"
 
 	log "k8s.io/klog/v2"
 
@@ -34,8 +32,6 @@ const (
 	ipv6Table    = "flannel-ipv6"
 	forwardChain = "forward"
 	postrtgChain = "postrtg"
-	//maximum delay in second to clean-up when the context is cancelled
-	cleanUpDeadline = 15
 )
 
 type NFTablesManager struct {
@@ -43,7 +39,7 @@ type NFTablesManager struct {
 	nftv6 knftables.Interface
 }
 
-func (nftm *NFTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
+func (nftm *NFTablesManager) Init(ctx context.Context) error {
 	log.Info("Starting flannel in nftables mode...")
 	var err error
 	nftm.nftv4, err = initTable(ctx, knftables.IPv4Family, ipv4Table)
@@ -55,17 +51,6 @@ func (nftm *NFTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error
 		return err
 	}
 
-	wg.Add(1)
-	go func() {
-		<-ctx.Done()
-		log.Info("Cleaning-up flannel tables...")
-
-		cleanupCtx, cleanUpCancelFunc := context.WithTimeout(context.Background(), cleanUpDeadline*time.Second)
-		defer cleanUpCancelFunc()
-		err := nftm.cleanUp(cleanupCtx)
-		log.Errorf("nftables: error while cleaning-up: %v", err)
-		wg.Done()
-	}()
 	return nil
 }
 
@@ -289,7 +274,8 @@ func (nftm *NFTablesManager) addMasqRules(ctx context.Context,
 }
 
 // clean-up all nftables states created by flannel by deleting all related tables
-func (nftm *NFTablesManager) cleanUp(ctx context.Context) error {
+func (nftm *NFTablesManager) CleanUp(ctx context.Context) error {
+	log.Info("Cleaning-up nftables rules...")
 	nft, err := knftables.New(knftables.IPv4Family, ipv4Table)
 	if err == nil {
 		tx := nft.NewTransaction()
@@ -297,7 +283,7 @@ func (nftm *NFTablesManager) cleanUp(ctx context.Context) error {
 		err = nft.Run(ctx, tx)
 	}
 	if err != nil {
-		return fmt.Errorf("nftables: couldn't delete table: %v", err)
+		log.V(2).Infof("nftables: couldn't delete table: %v", err)
 	}
 
 	nft, err = knftables.New(knftables.IPv6Family, ipv6Table)
@@ -307,7 +293,7 @@ func (nftm *NFTablesManager) cleanUp(ctx context.Context) error {
 		err = nft.Run(ctx, tx)
 	}
 	if err != nil {
-		return fmt.Errorf("nftables (ipv6): couldn't delete table: %v", err)
+		log.V(2).Infof("nftables (ipv6): couldn't delete table: %v", err)
 	}
 
 	return nil

@@ -16,7 +16,6 @@ package nftables
 
 import (
 	"context"
-	"sync"
 
 	log "k8s.io/klog/v2"
 
@@ -28,8 +27,12 @@ import (
 type NFTablesManager struct {
 }
 
-func (nftm *NFTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
+func (nftm *NFTablesManager) Init(ctx context.Context) error {
 	log.Info("Starting flannel in windows mode...")
+	return nil
+}
+
+func (nftm *NFTablesManager) CleanUp(ctx context.Context) error {
 	return nil
 }
 

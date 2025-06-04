@@ -19,7 +19,6 @@ package iptables
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/coreos/go-iptables/iptables"
@@ -47,59 +46,45 @@ type IPTablesManager struct {
 	ipv6Rules []trafficmngr.IPTablesRule
 }
 
-func (iptm *IPTablesManager) Init(ctx context.Context, wg *sync.WaitGroup) error {
+func (iptm *IPTablesManager) Init(ctx context.Context) error {
 	log.Info("Starting flannel in iptables mode...")
 
 	iptm.ipv4Rules = make([]trafficmngr.IPTablesRule, 0, 10)
 	iptm.ipv6Rules = make([]trafficmngr.IPTablesRule, 0, 10)
-	wg.Add(1)
-	go func() {
-		<-ctx.Done()
-		time.Sleep(time.Second)
-		err := iptm.cleanUp()
-		if err != nil {
-			log.Errorf("iptables: error while cleaning-up: %v", err)
-		}
-		wg.Done()
-	}()
 
 	return nil
 }
 
-func (iptm *IPTablesManager) cleanUp() error {
-	if len(iptm.ipv4Rules) > 0 {
-		ipt, err := iptables.New()
-		if err != nil {
-			// if we can't find iptables, give up and return
-			return fmt.Errorf("failed to setup IPTables. iptables binary was not found: %v", err)
-		}
-		iptRestore, err := NewIPTablesRestoreWithProtocol(iptables.ProtocolIPv4)
-		if err != nil {
-			// if we can't find iptables-restore, give up and return
-			return fmt.Errorf("failed to setup IPTables. iptables-restore binary was not found: %v", err)
-		}
-		log.Info("iptables (ipv4): cleaning-up before exiting flannel...")
-		err = teardownIPTables(ipt, iptRestore, iptm.ipv4Rules)
-		if err != nil {
-			log.Errorf("Failed to tear down IPTables: %v", err)
-		}
+func (iptm *IPTablesManager) CleanUp(ctx context.Context) error {
+	log.Info("Cleaning-up iptables rules...")
+	//IPv4
+	ipt, err := iptables.New()
+	if err != nil {
+		// if we can't find iptables, give up and return
+		return fmt.Errorf("failed to setup IPTables. iptables binary was not found: %v", err)
 	}
-	if len(iptm.ipv6Rules) > 0 {
-		ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
-		if err != nil {
-			// if we can't find iptables, give up and return
-			return fmt.Errorf("failed to setup IPTables. iptables binary was not found: %v", err)
-		}
-		iptRestore, err := NewIPTablesRestoreWithProtocol(iptables.ProtocolIPv6)
-		if err != nil {
-			// if we can't find iptables-restore, give up and return
-			return fmt.Errorf("failed to setup IPTables. iptables-restore binary was not found: %v", err)
-		}
-		log.Info("iptables (ipv6): cleaning-up before exiting flannel...")
-		err = teardownIPTables(ipt, iptRestore, iptm.ipv6Rules)
-		if err != nil {
-			log.Errorf("Failed to tear down IPTables: %v", err)
-		}
+	err = ipt.ClearAndDeleteChain("nat", "FLANNEL-POSTRTG")
+	if err != nil {
+		log.V(2).Infof("could not clean-up FLANNEL-POSTRTG (IPv4): %v", err)
+	}
+	err = ipt.ClearAndDeleteChain("nat", "FLANNEL-FWD")
+	if err != nil {
+		log.V(2).Infof("could not clean-up FLANNEL-FWD (IPv4): %v", err)
+	}
+
+	//IPv6
+	ipt6, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
+	if err != nil {
+		// if we can't find iptables, give up and return
+		return fmt.Errorf("failed to setup IPTables. ip6tables binary was not found: %v", err)
+	}
+	err = ipt6.ClearAndDeleteChain("nat", "FLANNEL-POSTRTG")
+	if err != nil {
+		log.V(2).Infof("could not clean-up FLANNEL-POSTRTG (IPv6): %v", err)
+	}
+	err = ipt6.ClearAndDeleteChain("nat", "FLANNEL-FWD")
+	if err != nil {
+		log.V(2).Infof("could not clean-up FLANNEL-FWD (IPv6): %v", err)
 	}
 	return nil
 }
