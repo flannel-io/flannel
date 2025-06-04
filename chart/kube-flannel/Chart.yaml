@@ -1,9 +1,9 @@
 apiVersion: v1
-appVersion: v0.26.7
+appVersion: v0.27.0
 description: Install Flannel Network Plugin.
 keywords:
 - Flannel
 name: flannel
 sources:
 - https://github.com/flannel-io/flannel
-version: v0.26.7
+version: v0.27.0
