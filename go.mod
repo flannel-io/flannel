@@ -28,13 +28,12 @@ require (
 	k8s.io/apimachinery v0.29.12
 	k8s.io/client-go v0.29.12
 	k8s.io/klog/v2 v2.130.1
-
 )
 
 require (
 	github.com/avast/retry-go/v4 v4.6.1
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1146
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.1146
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1179
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.1177
 	sigs.k8s.io/knftables v0.0.18
 )
 
