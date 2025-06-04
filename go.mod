@@ -24,9 +24,9 @@ require (
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173 // indirect
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
 	google.golang.org/genproto v0.0.0-20240903143218-8af14fe29dc1 // indirect
-	k8s.io/api v0.29.12
-	k8s.io/apimachinery v0.29.12
-	k8s.io/client-go v0.29.12
+	k8s.io/api v0.30.13
+	k8s.io/apimachinery v0.30.13
+	k8s.io/client-go v0.30.13
 	k8s.io/klog/v2 v2.130.1
 )
 
