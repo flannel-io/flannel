@@ -83,7 +83,10 @@ get_pod_cidr() {
     kubectl --kubeconfig="${HOME}/.kube/config" get node ${node_name} --template '{{.spec.podCIDR}}'
 }
 
-# get_flannel_logs() 
+get_pod_logs() {
+    local pod_name=$1
+    kubectl --kubeconfig="${HOME}/.kube/config" logs $pod_name -n kube-flannel
+}
 
 pings() {
     create_test_pod multitool1 local-worker
@@ -96,6 +99,10 @@ pings() {
     if [ $retVal -ne 0 ]; then
         echo "test pods not ready in time. Checking their status..."
         kubectl --kubeconfig="${HOME}/.kube/config" get events --sort-by='.lastTimestamp' -A
+        echo "*****************************"
+        echo "flannel pod log:"
+        flannel_pod=$(e2e-get-flannel-pod local-worker)
+        echo "$(get_pod_logs $flannel_pod)"
         exit $retVal
     fi
     
@@ -136,8 +143,19 @@ prepare_test() {
     write-flannel-conf ${backend} ${enable_nftables}
     
     install-flannel
+    
     # wait for nodes to be ready
     timeout --foreground 5m bash -c "e2e-wait-for-nodes"
+    retVal=$?
+    if [ $retVal -ne 0 ]; then
+        echo "test nodes not ready in time. Checking their status..."
+        kubectl --kubeconfig="${HOME}/.kube/config" get events --sort-by='.lastTimestamp' -A
+        echo "*****************************"
+        echo "flannel pod log:"
+        flannel_pod=$(e2e-get-flannel-pod local-worker)
+        echo "$(get_pod_logs $flannel_pod)"
+        exit $retVal
+    fi
     # wait for services to be ready
     echo "wait for services to be ready..."
     timeout --foreground 5m bash -c "e2e-wait-for-services"

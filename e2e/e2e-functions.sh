@@ -52,6 +52,12 @@ e2e-wait-for-services() {
 }
 export -f e2e-wait-for-services
 
+e2e-get-flannel-pod() {
+    local node_name=$1
+    kubectl --kubeconfig="${HOME}/.kube/config" get pods --field-selector "spec.nodeName=${node_name}" -n kube-flannel --no-headers
+}
+export -f e2e-get-flannel-pod
+
 e2e-wait-for-test-pods() {
     for pod in ${WAIT_FOR_PODS:="multitool1 multitool2"}; do
         while [[ "$(e2e-pod-ready $pod)" != 'true' ]]; do
