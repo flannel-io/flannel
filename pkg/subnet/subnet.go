@@ -94,9 +94,11 @@ func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv
 
 	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", mtu)
 	_, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", ipMasq)
-	f.Close()
 	if err != nil {
 		return err
+	}
+	if err := f.Close(); err != nil {
+		return er
 	}
 
 	// rename(2) the temporary file to the desired location so that it becomes
