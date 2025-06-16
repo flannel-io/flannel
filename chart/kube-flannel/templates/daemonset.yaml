@@ -67,10 +67,10 @@ spec:
         {{- range .Values.flannel.args }}
         - {{ . | quote }}
         {{- end }}
+        {{- with .Values.flannel.resources }}
         resources:
-          requests:
-            cpu: "100m"
-            memory: "50Mi"
+          {{- toYaml . | trim | nindent 10 }}
+        {{- end }}
         securityContext:
           privileged: false
           capabilities:
