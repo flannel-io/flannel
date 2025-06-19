@@ -72,6 +72,7 @@ type kubeSubnetManager struct {
 	nodeController            cache.Controller
 	subnetConf                *subnet.Config
 	events                    chan lease.Event
+	maxAsyncSend            chan struct{}
 	clusterCIDRController     cache.Controller
 	setNodeNetworkUnavailable bool
 	disableNodeInformer       bool
@@ -138,10 +139,23 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 
 		log.Infof("Waiting %s for node controller to sync", nodeControllerSyncTimeout)
 		err = wait.PollUntilContextTimeout(ctx, time.Second, nodeControllerSyncTimeout, true, func(context.Context) (bool, error) {
-			return sm.nodeController.HasSynced(), nil
+			ch := make(chan bool, 1)
+			go func() {
+				ch <- sm.nodeController.HasSynced()
+			}()
+			select {
+			case synced := <-ch:
+				return synced, nil
+			case <-ctx.Done():
+				return false, ctx.Err()
+			case <-time.After(time.Second):
+				return false, nil // or error to break
+			}
 		})
+
 		if err != nil {
-			return nil, fmt.Errorf("error waiting for nodeController to sync state: %v", err)
+			log.Error("Node controller sync not completed yet ", err)
+			return sm, fmt.Errorf("error waiting for nodeController to sync state: %w", err)
 		}
 		log.Infof("Node controller sync successful")
 	}
@@ -176,6 +190,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 		}
 	}
 	ksm.events = make(chan lease.Event, scale)
+	ksm.maxAsyncSend = make(chan struct{}, 100)
 	// when backend type is alloc, someone else (e.g. cloud-controller-managers) is taking care of the routing, thus we do not need informer
 	// See https://github.com/flannel-io/flannel/issues/1617
 	if sc.BackendType == "alloc" {
@@ -226,6 +241,36 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 	return &ksm, nil
 }
 
+func (ksm *kubeSubnetManager) enqueueLeaseEvent(evt lease.Event, nodeName string) {
+	// Try to send immediately
+	select {
+	case ksm.events <- evt:
+		return
+	default:
+		log.Infof("Channel buffer full, add event asynchronously")
+	}
+
+	// Instead of select with default, *block* until a slot is free
+	ksm.maxAsyncSend <- struct{}{} // acquire a slot, block if none available
+
+	go func() {
+		defer func() { <-ksm.maxAsyncSend }() // release slot when done
+
+		ticker := time.NewTicker(100 * time.Millisecond)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			select {
+			case ksm.events <- evt:
+				log.Infof("Async requeued lease event for node %q", nodeName)
+				return
+			default:
+				// events channel still full, retry after ticker interval
+			}
+		}
+	}()
+}
+
 func (ksm *kubeSubnetManager) handleAddLeaseEvent(et lease.EventType, obj interface{}) {
 	n := obj.(*v1.Node)
 	if s, ok := n.Annotations[ksm.annotations.SubnetKubeManaged]; !ok || s != "true" {
@@ -237,7 +282,7 @@ func (ksm *kubeSubnetManager) handleAddLeaseEvent(et lease.EventType, obj interf
 		log.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.events <- lease.Event{Type: et, Lease: l}
+	ksm.enqueueLeaseEvent(lease.Event{Type: et, Lease: l}, n.ObjectMeta.Name)
 }
 
 // handleUpdateLeaseEvent verifies if anything relevant changed in the node object: either
@@ -270,7 +315,7 @@ func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{})
 		log.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.events <- lease.Event{Type: lease.EventAdded, Lease: l}
+	ksm.enqueueLeaseEvent(lease.Event{Type: lease.EventAdded, Lease: l}, n.ObjectMeta.Name)
 }
 
 func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {

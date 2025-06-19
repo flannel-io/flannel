@@ -225,8 +225,13 @@ func main() {
 
 	sm, err := newSubnetManager(ctx)
 	if err != nil {
-		log.Error("Failed to create SubnetManager: ", err)
-		os.Exit(1)
+		if errors.Is(err, context.DeadlineExceeded) {
+			log.Error("Timed out waiting for node controller sync. Continuing anyway.")
+			// Don't exit — continue with startup
+		} else {
+			log.Error("Failed to create SubnetManager: ", err)
+			os.Exit(1)
+		}
 	}
 	log.Infof("Created subnet manager: %s", sm.Name())
 
