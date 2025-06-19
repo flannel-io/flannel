@@ -154,7 +154,7 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 		})
 
 		if err != nil {
-			log.Error("Node controller sync not completed yet ", err)
+			log.Errorf("Node controller sync not completed within 1s: %v", err)
 			return sm, fmt.Errorf("error waiting for nodeController to sync state: %w", err)
 		}
 		log.Infof("Node controller sync successful")
