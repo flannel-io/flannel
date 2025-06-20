@@ -72,7 +72,7 @@ type kubeSubnetManager struct {
 	nodeController            cache.Controller
 	subnetConf                *subnet.Config
 	events                    chan lease.Event
-	maxAsyncSend            chan struct{}
+	maxAsyncSend              chan struct{}
 	clusterCIDRController     cache.Controller
 	setNodeNetworkUnavailable bool
 	disableNodeInformer       bool
@@ -141,6 +141,10 @@ func NewSubnetManager(ctx context.Context, apiUrl, kubeconfig, prefix, netConfPa
 		err = wait.PollUntilContextTimeout(ctx, time.Second, nodeControllerSyncTimeout, true, func(context.Context) (bool, error) {
 			ch := make(chan bool, 1)
 			go func() {
+				// HasSynced() is a blocking call waiting on
+				// the DeltaFIFO mutex that's also used by other
+				// cache controller callbacks calling wait or Update
+				// use a channel/select to not block the main thread
 				ch <- sm.nodeController.HasSynced()
 			}()
 			select {
