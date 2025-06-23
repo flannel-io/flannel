@@ -265,16 +265,24 @@ func (ksm *kubeSubnetManager) enqueueLeaseEvent(evt lease.Event, nodeName string
 	go func() {
 		defer func() { ksm.asyncSendSemaphore.Release(1) }() // release slot when done
 
-		ticker := time.NewTicker(100 * time.Millisecond)
-		defer ticker.Stop()
+		backoff := 100 * time.Millsecond
+		maxBackoff := 5 * time.Second
 
-		for range ticker.C {
+		for {
+
+			ticker := time.NewTicker(backoff)
 			select {
 			case ksm.events <- evt:
 				log.Infof("Async requeued lease event for node %q", nodeName)
+				ticker.Stop()
 				return
 			default:
-				// events channel still full, retry after ticker interval
+				// events channel still full, retry with exp backoff
+				ticker.Stop()
+				backoff *= 2
+				if backoff > maxBackoff {
+					backoff = maxBackoff
+				}
 			}
 		}
 	}()
