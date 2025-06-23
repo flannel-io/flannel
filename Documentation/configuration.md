@@ -99,6 +99,8 @@ Any command line option can be turned into an environment variable by prefixing 
 
 `EVENT_QUEUE_DEPTH` is another environment variable to indicate the kubernetes scale. Set `EVENT_QUEUE_DEPTH` to adapter your cluster node numbers. If not set, default value is 5000. 
 
+`CONT_WHEN_CACHE_NOT_READY` is environment variable to indicate if flanneld should continue even when the node informer cache is not fully sync'd yet. This can happen for large clusters (clusters with node capacity higher than `EVENT_QUEUE_DEPTH`). Set `CONT_WHEN_CACHE_NOT_READY` to "true" to let flanneld not fail startup for such large capacity clusters.
+
 ## Health Check
 
 Flannel provides a health check http endpoint `healthz`. Currently this endpoint will blindly

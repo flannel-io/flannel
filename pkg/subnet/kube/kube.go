@@ -29,6 +29,7 @@ import (
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
+	"golang.org/x/sync/semaphore"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -72,7 +73,7 @@ type kubeSubnetManager struct {
 	nodeController            cache.Controller
 	subnetConf                *subnet.Config
 	events                    chan lease.Event
-	maxAsyncSend              chan struct{}
+	asyncSendSemaphore        *semaphore.Weighted
 	clusterCIDRController     cache.Controller
 	setNodeNetworkUnavailable bool
 	disableNodeInformer       bool
@@ -194,7 +195,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 		}
 	}
 	ksm.events = make(chan lease.Event, scale)
-	ksm.maxAsyncSend = make(chan struct{}, 100)
+	ksm.asyncSendSemaphore = semaphore.NewWeighted(100)
 	// when backend type is alloc, someone else (e.g. cloud-controller-managers) is taking care of the routing, thus we do not need informer
 	// See https://github.com/flannel-io/flannel/issues/1617
 	if sc.BackendType == "alloc" {
@@ -255,10 +256,14 @@ func (ksm *kubeSubnetManager) enqueueLeaseEvent(evt lease.Event, nodeName string
 	}
 
 	// Instead of select with default, *block* until a slot is free
-	ksm.maxAsyncSend <- struct{}{} // acquire a slot, block if none available
+	// Use a context with no timeout to block until a slot is available
+	if err := ksm.asyncSendSemaphore.Acquire(context.Background(), 1); err != nil {
+		log.Errorf("error in acquiring semaphore for async event send, dropping event: %v", err)
+		return
+	}
 
 	go func() {
-		defer func() { <-ksm.maxAsyncSend }() // release slot when done
+		defer func() { ksm.asyncSendSemaphore.Release(1) }() // release slot when done
 
 		ticker := time.NewTicker(100 * time.Millisecond)
 		defer ticker.Stop()

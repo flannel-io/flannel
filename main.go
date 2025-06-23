@@ -225,7 +225,8 @@ func main() {
 
 	sm, err := newSubnetManager(ctx)
 	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
+		contCacheNotReady := os.Getenv("CONT_WHEN_CACHE_NOT_READY")
+		if contCacheNotReady == "true" && errors.Is(err, context.DeadlineExceeded) {
 			log.Error("Timed out waiting for node controller sync. Continuing anyway.")
 			// Don't exit — continue with startup
 		} else {
