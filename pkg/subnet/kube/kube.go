@@ -215,9 +215,11 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 			resyncPeriod,
 			cache.ResourceEventHandlerFuncs{
 				AddFunc: func(obj interface{}) {
-					ksm.handleAddLeaseEvent(lease.EventAdded, obj)
+					ksm.handleAddLeaseEvent(ctx, lease.EventAdded, obj)
 				},
-				UpdateFunc: ksm.handleUpdateLeaseEvent,
+				UpdateFunc: func(oldObj, newObj interface{}) {
+					ksm.handleUpdateLeaseEvent(ctx, oldObj, newObj)
+				},
 				DeleteFunc: func(obj interface{}) {
 					_, isNode := obj.(*v1.Node)
 					// We can get DeletedFinalStateUnknown instead of *api.Node here and we need to handle that correctly.
@@ -234,7 +236,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 						}
 						obj = node
 					}
-					ksm.handleAddLeaseEvent(lease.EventRemoved, obj)
+					ksm.handleAddLeaseEvent(ctx, lease.EventRemoved, obj)
 				},
 			},
 			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
@@ -246,7 +248,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 	return &ksm, nil
 }
 
-func (ksm *kubeSubnetManager) enqueueLeaseEvent(evt lease.Event, nodeName string) {
+func (ksm *kubeSubnetManager) enqueueLeaseEvent(ctx context.Context, evt lease.Event, nodeName string) {
 	// Try to send immediately
 	select {
 	case ksm.events <- evt:
@@ -257,7 +259,7 @@ func (ksm *kubeSubnetManager) enqueueLeaseEvent(evt lease.Event, nodeName string
 
 	// Instead of select with default, *block* until a slot is free
 	// Use a context with no timeout to block until a slot is available
-	if err := ksm.asyncSendSemaphore.Acquire(context.Background(), 1); err != nil {
+	if err := ksm.asyncSendSemaphore.Acquire(ctx, 1); err != nil {
 		log.Errorf("error in acquiring semaphore for async event send, dropping event: %v", err)
 		return
 	}
@@ -265,13 +267,17 @@ func (ksm *kubeSubnetManager) enqueueLeaseEvent(evt lease.Event, nodeName string
 	go func() {
 		defer func() { ksm.asyncSendSemaphore.Release(1) }() // release slot when done
 
-		backoff := 100 * time.Millsecond
+		backoff := 100 * time.Millisecond
 		maxBackoff := 5 * time.Second
 
 		for {
 
 			ticker := time.NewTicker(backoff)
 			select {
+			case <-ctx.Done():
+				log.Errorf("Context cancelled while retrying lease event for node %q", nodeName)
+				ticker.Stop()
+				return
 			case ksm.events <- evt:
 				log.Infof("Async requeued lease event for node %q", nodeName)
 				ticker.Stop()
@@ -288,7 +294,7 @@ func (ksm *kubeSubnetManager) enqueueLeaseEvent(evt lease.Event, nodeName string
 	}()
 }
 
-func (ksm *kubeSubnetManager) handleAddLeaseEvent(et lease.EventType, obj interface{}) {
+func (ksm *kubeSubnetManager) handleAddLeaseEvent(ctx context.Context, et lease.EventType, obj interface{}) {
 	n := obj.(*v1.Node)
 	if s, ok := n.Annotations[ksm.annotations.SubnetKubeManaged]; !ok || s != "true" {
 		return
@@ -299,12 +305,12 @@ func (ksm *kubeSubnetManager) handleAddLeaseEvent(et lease.EventType, obj interf
 		log.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.enqueueLeaseEvent(lease.Event{Type: et, Lease: l}, n.ObjectMeta.Name)
+	ksm.enqueueLeaseEvent(ctx, lease.Event{Type: et, Lease: l}, n.ObjectMeta.Name)
 }
 
 // handleUpdateLeaseEvent verifies if anything relevant changed in the node object: either
 // ksm.annotations.BackendData, ksm.annotations.BackendType or ksm.annotations.BackendPublicIP
-func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{}) {
+func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(ctx context.Context, oldObj, newObj interface{}) {
 	o := oldObj.(*v1.Node)
 	n := newObj.(*v1.Node)
 	if s, ok := n.Annotations[ksm.annotations.SubnetKubeManaged]; !ok || s != "true" {
@@ -332,7 +338,7 @@ func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(oldObj, newObj interface{})
 		log.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
 		return
 	}
-	ksm.enqueueLeaseEvent(lease.Event{Type: lease.EventAdded, Lease: l}, n.ObjectMeta.Name)
+	ksm.enqueueLeaseEvent(ctx, lease.Event{Type: lease.EventAdded, Lease: l}, n.ObjectMeta.Name)
 }
 
 func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {
