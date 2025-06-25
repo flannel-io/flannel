@@ -15,6 +15,7 @@
 package subnet
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net"
@@ -74,28 +75,25 @@ func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv
 		return err
 	}
 	tempFile := filepath.Join(dir, "."+name)
-	f, err := os.Create(tempFile)
-	if err != nil {
-		return err
-	}
+	var b bytes.Buffer
 	if config.EnableIPv4 {
-		fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", config.Network)
+		fmt.Fprintf(&b, "FLANNEL_NETWORK=%s\n", config.Network)
 		// Write out the first usable IP by incrementing sn.IP by one
 		sn.IncrementIP()
 
-		fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn)
+		fmt.Fprintf(&b, "FLANNEL_SUBNET=%s\n", sn)
 	}
 	if config.EnableIPv6 {
-		fmt.Fprintf(f, "FLANNEL_IPV6_NETWORK=%s\n", config.IPv6Network)
+		fmt.Fprintf(&b, "FLANNEL_IPV6_NETWORK=%s\n", config.IPv6Network)
 		// Write out the first usable IP by incrementing ip6Sn.IP by one
 		ipv6sn.IncrementIP()
-		fmt.Fprintf(f, "FLANNEL_IPV6_SUBNET=%s\n", ipv6sn)
+		fmt.Fprintf(&b, "FLANNEL_IPV6_SUBNET=%s\n", ipv6sn)
 	}
 
-	fmt.Fprintf(f, "FLANNEL_MTU=%d\n", mtu)
-	_, err = fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", ipMasq)
-	f.Close()
-	if err != nil {
+	fmt.Fprintf(&b, "FLANNEL_MTU=%d\n", mtu)
+	fmt.Fprintf(&b, "FLANNEL_IPMASQ=%v\n", ipMasq)
+
+	if err := os.WriteFile(tempFile, b.Bytes(), 0644); err != nil {
 		return err
 	}
 
