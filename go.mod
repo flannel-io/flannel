@@ -34,6 +34,7 @@ require (
 	github.com/avast/retry-go/v4 v4.6.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1192
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.1186
+	golang.org/x/sync v0.13.0
 	sigs.k8s.io/knftables v0.0.18
 )
 
@@ -84,7 +85,6 @@ require (
 	go.opentelemetry.io/otel/sdk v1.31.0 // indirect
 	go.opentelemetry.io/otel/trace v1.31.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
-	golang.org/x/sync v0.13.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20241015192408-796eee8c2d53 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
