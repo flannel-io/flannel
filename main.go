@@ -94,6 +94,7 @@ type CmdLineOpts struct {
 	healthzPort               int
 	iptablesResyncSeconds     int
 	iptablesForwardRules      bool
+	blackholeRoute            bool
 	netConfPath               string
 	setNodeNetworkUnavailable bool
 }
@@ -130,6 +131,7 @@ func init() {
 	flannelFlags.IntVar(&opts.healthzPort, "healthz-port", 0, "the port for healthz server to listen(0 to disable)")
 	flannelFlags.IntVar(&opts.iptablesResyncSeconds, "iptables-resync", 5, "resync period for iptables rules, in seconds")
 	flannelFlags.BoolVar(&opts.iptablesForwardRules, "iptables-forward-rules", true, "add default accept rules to FORWARD chain in iptables")
+	flannelFlags.BoolVar(&opts.blackholeRoute, "ip-blackhole-route", false, "add blackroute route ont the node for the local podCIDR")
 	flannelFlags.StringVar(&opts.netConfPath, "net-config-path", "/etc/kube-flannel/net-conf.json", "path to the network configuration file")
 	flannelFlags.BoolVar(&opts.setNodeNetworkUnavailable, "set-node-network-unavailable", true, "set NodeNetworkUnavailable after ready")
 
@@ -420,6 +422,38 @@ func main() {
 			config.Network,
 			config.IPv6Network,
 			opts.iptablesResyncSeconds)
+	}
+
+	//Add blackhole route for the local CIDR in case the bridge plugin is not enable (e.g. Canal)
+	if opts.blackholeRoute {
+		if config.EnableIPv4 {
+			go func() {
+				for {
+					select {
+					case <-ctx.Done():
+					     break
+				     	case <-time.After(time.Duration(opts.iptablesResyncSeconds) * time.Second):
+						if err := ip.AddBlackholeV4Route(bn.Lease().Subnet.ToIPNet()); err != nil {
+							log.Errorf("Failed to setup blackhole route, %v", err)
+						}
+					}
+				}
+			}()
+		}
+		if config.EnableIPv6 {
+			go func() {
+				for {
+					select {
+					case <-ctx.Done():
+					     break
+				     	case <-time.After(time.Duration(opts.iptablesResyncSeconds) * time.Second):
+						if err := ip.AddBlackholeV6Route(bn.Lease().IPv6Subnet.ToIPNet()); err != nil {
+							log.Errorf("Failed to setup blackhole route, %v", err)
+						}
+					}
+				}
+			}()
+		}
 	}
 
 	if err := sm.HandleSubnetFile(opts.subnetFile, config, opts.ipMasq, bn.Lease().Subnet, bn.Lease().IPv6Subnet, bn.MTU()); err != nil {
