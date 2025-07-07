@@ -24,6 +24,7 @@ import (
 	"syscall"
 
 	"github.com/vishvananda/netlink"
+	"golang.org/x/sys/unix"
 	log "k8s.io/klog/v2"
 )
 
@@ -328,4 +329,22 @@ func EnsureV6AddressOnLink(ipa IP6Net, ipn IP6Net, link netlink.Link) error {
 	}
 
 	return nil
+}
+
+func AddBlackholeV4Route(ipV4Dest *net.IPNet) error {
+	route := netlink.Route{Dst: ipV4Dest, Type: unix.RTN_BLACKHOLE, Family: netlink.FAMILY_V4}
+	routes, err := netlink.RouteListFiltered(netlink.FAMILY_V4, &route, netlink.RT_FILTER_DST|netlink.RT_FILTER_TYPE)
+	if err != nil && len(routes) == 0 {
+		err = netlink.RouteAdd(&route)
+	}
+	return err
+}
+
+func AddBlackholeV6Route(ipV6Dest *net.IPNet) error {
+	route := netlink.Route{Dst: ipV6Dest, Type: unix.RTN_BLACKHOLE, Family: netlink.FAMILY_V6}
+	routes, err := netlink.RouteListFiltered(netlink.FAMILY_V6, &route, netlink.RT_FILTER_DST|netlink.RT_FILTER_TYPE)
+	if err != nil && len(routes) == 0 {
+		err = netlink.RouteAdd(&route)
+	}
+	return err
 }

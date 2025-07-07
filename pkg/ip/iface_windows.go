@@ -156,3 +156,5 @@ func GetInterfaceByIP6(ip net.IP) (*net.Interface, error)                       
 func GetInterfaceIP6Addrs(iface *net.Interface) ([]net.IP, error)               { return nil, nil }
 func GetInterfaceBySpecificIPRouting(ip net.IP) (*net.Interface, net.IP, error) { return nil, nil, nil }
 func GetDefaultV6GatewayInterface() (*net.Interface, error)                     { return nil, nil }
+func AddBlackholeV4Route(ipV4Dest *net.IPNet) error                             { return nil }
+func AddBlackholeV6Route(ipV6Dest *net.IPNet) error                             { return nil }
