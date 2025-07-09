@@ -73,3 +73,12 @@ tests:
           content:
             name: install-cni
           any: true
+
+  - it: should render nodeSelector when set
+    set:
+      flannel.nodeSelector:
+        eks.amazonaws.com/compute-type: hybrid
+    asserts:
+      - equal:
+          path: spec.template.spec.nodeSelector["eks.amazonaws.com/compute-type"]
+          value: hybrid
