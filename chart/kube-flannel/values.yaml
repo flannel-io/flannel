@@ -91,6 +91,7 @@ flannel:
     operator: Exists
   - effect: NoSchedule
     operator: Exists
+  nodeSelector: {}
 
 netpol:
   enabled: false

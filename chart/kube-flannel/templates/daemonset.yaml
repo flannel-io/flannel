@@ -31,6 +31,10 @@ spec:
       tolerations:
         {{- toYaml . | trim | nindent 8 }}
       {{- end }}
+      {{- with .Values.flannel.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: flannel
       initContainers:
       - name: install-cni-plugin
