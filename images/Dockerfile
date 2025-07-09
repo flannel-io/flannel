@@ -25,7 +25,7 @@ RUN export GOOS=$(xx-info os) &&\
     export ARCH=$(xx-info arch) &&\
     make build
 
-FROM alpine:20250108
+FROM alpine:3.22.0
 RUN apk update && apk upgrade
 RUN apk add --no-cache iproute2 ca-certificates nftables iptables strongswan iptables-legacy && update-ca-certificates
 RUN apk add wireguard-tools --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community
