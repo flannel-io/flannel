@@ -34,7 +34,7 @@ require (
 	github.com/avast/retry-go/v4 v4.6.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1192
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.1186
-	golang.org/x/sync v0.15.0
+	golang.org/x/sync v0.16.0
 	sigs.k8s.io/knftables v0.0.18
 )
 
@@ -119,7 +119,7 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/sys v0.32.0
+	golang.org/x/sys v0.34.0
 	golang.org/x/term v0.30.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	google.golang.org/grpc v1.69.0 // indirect
