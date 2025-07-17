@@ -32,13 +32,11 @@ import (
 	"golang.org/x/sync/semaphore"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/apimachinery/pkg/watch"
 	clientset "k8s.io/client-go/kubernetes"
-	listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
@@ -69,7 +67,7 @@ type kubeSubnetManager struct {
 	annotationPrefix          string
 	client                    clientset.Interface
 	nodeName                  string
-	nodeStore                 listers.NodeLister
+	nodeStore                 cache.Store
 	nodeController            cache.Controller
 	subnetConf                *subnet.Config
 	events                    chan lease.Event
@@ -202,47 +200,48 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 		ksm.disableNodeInformer = true
 	}
 	if !ksm.disableNodeInformer {
-		indexer, controller := cache.NewIndexerInformer(
-			&cache.ListWatch{
-				ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-					return ksm.client.CoreV1().Nodes().List(ctx, options)
-				},
-				WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-					return ksm.client.CoreV1().Nodes().Watch(ctx, options)
-				},
+		listerWatcher := cache.NewListWatchFromClient(
+			ksm.client.CoreV1().RESTClient(),
+			"nodes",
+			"",
+			fields.Everything())
+
+		handler := cache.ResourceEventHandlerFuncs{
+			AddFunc: func(obj interface{}) {
+				ksm.handleAddLeaseEvent(ctx, lease.EventAdded, obj)
 			},
-			&v1.Node{},
-			resyncPeriod,
-			cache.ResourceEventHandlerFuncs{
-				AddFunc: func(obj interface{}) {
-					ksm.handleAddLeaseEvent(ctx, lease.EventAdded, obj)
-				},
-				UpdateFunc: func(oldObj, newObj interface{}) {
-					ksm.handleUpdateLeaseEvent(ctx, oldObj, newObj)
-				},
-				DeleteFunc: func(obj interface{}) {
-					_, isNode := obj.(*v1.Node)
-					// We can get DeletedFinalStateUnknown instead of *api.Node here and we need to handle that correctly.
-					if !isNode {
-						deletedState, ok := obj.(cache.DeletedFinalStateUnknown)
-						if !ok {
-							log.Infof("Error received unexpected object: %v", obj)
-							return
-						}
-						node, ok := deletedState.Obj.(*v1.Node)
-						if !ok {
-							log.Infof("Error deletedFinalStateUnknown contained non-Node object: %v", deletedState.Obj)
-							return
-						}
-						obj = node
+			UpdateFunc: func(oldObj, newObj interface{}) {
+				ksm.handleUpdateLeaseEvent(ctx, oldObj, newObj)
+			},
+			DeleteFunc: func(obj interface{}) {
+				_, isNode := obj.(*v1.Node)
+				// We can get DeletedFinalStateUnknown instead of *api.Node here and we need to handle that correctly.
+				if !isNode {
+					deletedState, ok := obj.(cache.DeletedFinalStateUnknown)
+					if !ok {
+						log.Infof("Error received unexpected object: %v", obj)
+						return
 					}
-					ksm.handleAddLeaseEvent(ctx, lease.EventRemoved, obj)
-				},
+					node, ok := deletedState.Obj.(*v1.Node)
+					if !ok {
+						log.Infof("Error deletedFinalStateUnknown contained non-Node object: %v", deletedState.Obj)
+						return
+					}
+					obj = node
+				}
+				ksm.handleAddLeaseEvent(ctx, lease.EventRemoved, obj)
 			},
-			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
-		)
+		}
+		store, controller := cache.NewInformerWithOptions(cache.InformerOptions{
+			ListerWatcher: listerWatcher,
+			ObjectType:    &v1.Node{},
+			ResyncPeriod:  resyncPeriod,
+			Handler:       handler,
+			Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+		})
+
 		ksm.nodeController = controller
-		ksm.nodeStore = listers.NewNodeLister(indexer)
+		ksm.nodeStore = store
 	}
 
 	return &ksm, nil
@@ -350,16 +349,23 @@ func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Con
 // registering
 func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *lease.LeaseAttrs) (*lease.Lease, error) {
 	var cachedNode *v1.Node
-	var err error
 	waitErr := wait.PollUntilContextTimeout(ctx, 3*time.Second, 30*time.Second, true, func(context.Context) (done bool, err error) {
 		if ksm.disableNodeInformer {
 			cachedNode, err = ksm.client.CoreV1().Nodes().Get(ctx, ksm.nodeName, metav1.GetOptions{ResourceVersion: "0"})
+			if err != nil {
+				log.V(2).Infof("Failed to get node %q: %v", ksm.nodeName, err)
+				return false, nil
+			}
 		} else {
-			cachedNode, err = ksm.nodeStore.Get(ksm.nodeName)
-		}
-		if err != nil {
-			log.V(2).Infof("Failed to get node %q: %v", ksm.nodeName, err)
-			return false, nil
+			nodeIface, exists, err := ksm.nodeStore.GetByKey(ksm.nodeName)
+			if err != nil {
+				log.V(2).Infof("failed to get node %q: %v", ksm.nodeName, err)
+				return false, nil
+			} else if !exists {
+				log.V(2).Infof("node %q does not exist ", ksm.nodeName)
+				return false, nil
+			}
+			cachedNode = nodeIface.(*v1.Node)
 		}
 		return true, nil
 	})
@@ -373,7 +379,7 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *lease.Lea
 	}
 
 	var bd, v6Bd []byte
-	bd, err = attrs.BackendData.MarshalJSON()
+	bd, err := attrs.BackendData.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
@@ -490,9 +496,6 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *lease.Lea
 		Expiration: time.Now().Add(24 * time.Hour),
 	}
 	if cidr != nil && ksm.enableIPv4 {
-		if err != nil {
-			return nil, err
-		}
 		if !containsCIDR(ksm.subnetConf.Network.ToIPNet(), cidr) {
 			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q PodCIDR of the %q node", ksm.subnetConf.Network, cidr, ksm.nodeName)
 		}
@@ -500,9 +503,6 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *lease.Lea
 		lease.Subnet = ip.FromIPNet(cidr)
 	}
 	if ipv6Cidr != nil {
-		if err != nil {
-			return nil, err
-		}
 		if !containsCIDR(ksm.subnetConf.IPv6Network.ToIPNet(), ipv6Cidr) {
 			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q IPv6 PodCIDR of the %q node", ksm.subnetConf.IPv6Network, ipv6Cidr, ksm.nodeName)
 		}
@@ -570,7 +570,7 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l lease.Lease, err error) 
 			return l, fmt.Errorf("node %q pod cidrs should be IPv4/IPv6 only or dualstack", ksm.nodeName)
 		}
 		if cidr == nil {
-			return l, fmt.Errorf("Missing IPv4 address on n.Spec.PodCIDRs")
+			return l, fmt.Errorf("missing IPv4 address on n.Spec.PodCIDRs")
 		}
 		l.Subnet = ip.FromIPNet(cidr)
 		l.EnableIPv4 = ksm.enableIPv4
@@ -606,7 +606,7 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l lease.Lease, err error) 
 			return l, fmt.Errorf("node %q pod cidrs should be IPv4/IPv6 only or dualstack", ksm.nodeName)
 		}
 		if ipv6Cidr == nil {
-			return l, fmt.Errorf("Missing IPv6 address on n.Spec.PodCIDRs")
+			return l, fmt.Errorf("missing IPv6 address on n.Spec.PodCIDRs")
 		}
 		l.IPv6Subnet = ip.FromIP6Net(ipv6Cidr)
 		l.EnableIPv6 = ksm.enableIPv6
