@@ -26,7 +26,7 @@ import (
 	"github.com/flannel-io/flannel/pkg/lease"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	etcd "go.etcd.io/etcd/client/v3"
-	"go.etcd.io/etcd/tests/v3/integration"
+	"go.etcd.io/etcd/tests/v3/framework/integration"
 	log "k8s.io/klog/v2"
 )
 
@@ -190,7 +190,7 @@ func acquireLease(ctx context.Context, t *testing.T, sm subnet.Manager) *lease.L
 func TestWatchLeaseAdded(t *testing.T) {
 	integration.BeforeTestExternal(t)
 
-	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1})
+	clus := integration.NewCluster(t, &integration.ClusterConfig{Size: 1})
 	defer clus.Terminate(t)
 
 	client := clus.RandClient()
@@ -257,7 +257,7 @@ func TestWatchLeaseAdded(t *testing.T) {
 func TestWatchLeaseRemoved(t *testing.T) {
 	integration.BeforeTestExternal(t)
 
-	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1})
+	clus := integration.NewCluster(t, &integration.ClusterConfig{Size: 1})
 	defer clus.Terminate(t)
 
 	client := clus.RandClient()
@@ -335,7 +335,7 @@ func TestWatchLeaseRemoved(t *testing.T) {
 func TestCompleteLease(t *testing.T) {
 	integration.BeforeTestExternal(t)
 
-	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1})
+	clus := integration.NewCluster(t, &integration.ClusterConfig{Size: 1})
 	defer clus.Terminate(t)
 
 	client := clus.RandClient()
@@ -399,7 +399,7 @@ func TestRenewLease(t *testing.T) {
 
 	integration.BeforeTestExternal(t)
 
-	clus := integration.NewClusterV3(t, &integration.ClusterConfig{Size: 1})
+	clus := integration.NewCluster(t, &integration.ClusterConfig{Size: 1})
 	defer clus.Terminate(t)
 
 	client := clus.RandClient()
