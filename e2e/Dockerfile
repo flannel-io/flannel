@@ -3,7 +3,7 @@
 ARG SLES="registry.suse.com/suse/sle15:15.6"
 FROM ${SLES} AS k3s
 ARG ARCH
-ARG K3S_VERSION="v1.29.8+k3s1"
+ARG K3S_VERSION="v1.32.6+k3s1"
 ARG CNI_VERSION="v1.7.1"
 RUN set -x \
  && zypper -n in \
