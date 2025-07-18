@@ -4,9 +4,9 @@
 set -xe
 
 ARCH="${ARCH:-amd64}"
-ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.5.15}"
+ETCD_IMG="${ETCD_IMG:-quay.io/coreos/etcd:v3.6.2}"
 # etcd might take a bit to come up - use a known etcd version so we know we have etcdctl available
-ETCDCTL_IMG="quay.io/coreos/etcd:v3.5.15"
+ETCDCTL_IMG="quay.io/coreos/etcd:v3.6.2"
 ETCD_LOCATION="${ETCD_LOCATION:-etcd}"
 FLANNEL_NET="${FLANNEL_NET:-10.10.0.0/16}"
 TAG=`git describe --tags --always`
