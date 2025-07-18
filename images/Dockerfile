@@ -1,18 +1,26 @@
-FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
+ARG XX_IMAGE=tonistiigi/xx:1.6.1
+ARG GO_IMAGE=golang:alpine3.22
+ARG RUN_IMAGE=alpine:3.22.0
 
-FROM --platform=$BUILDPLATFORM golang:alpine AS build
+FROM --platform=$BUILDPLATFORM ${XX_IMAGE}  AS xx
+
+FROM --platform=$BUILDPLATFORM ${GO_IMAGE} AS base-builder
 # copy xx scripts to your build stage
 COPY --from=xx / /
+RUN apk add bash file make git clang lld patch linux-headers
 ARG TARGETPLATFORM
-ARG BUILDPLATFORM
-ARG TAG
-RUN apk --no-cache add bash make gcc musl-dev git linux-headers git
+RUN set -x && \
+    xx-apk --no-cache add gcc musl-dev 
+
+FROM --platform=$BUILDPLATFORM base-builder AS flannel-builder
 COPY Makefile go.mod go.sum *.go /build/
 COPY pkg /build/pkg
 WORKDIR /build
 RUN mkdir dist
+RUN go mod download
+
+ARG TARGETPLATFORM
 RUN xx-info env
-RUN make deps
 RUN export GOOS=$(xx-info os) &&\
     export GOARCH=$(xx-info arch) &&\
     export ARCH=$(xx-info arch) &&\
@@ -25,14 +33,14 @@ RUN export GOOS=$(xx-info os) &&\
     export ARCH=$(xx-info arch) &&\
     make build
 
-FROM alpine:3.22.0
+FROM ${RUN_IMAGE}
 RUN apk update && apk upgrade
 RUN apk add --no-cache iproute2 ca-certificates nftables iptables strongswan iptables-legacy && update-ca-certificates
 RUN apk add wireguard-tools --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community
-COPY --from=build /build/dist/flanneld /opt/bin/flanneld
+COPY --from=flannel-builder /build/dist/flanneld /opt/bin/flanneld
 COPY dist/mk-docker-opts.sh /opt/bin/
-COPY --from=build /iptables-wrapper/iptables-wrapper-installer.sh /
-COPY --from=build /iptables-wrapper/bin/iptables-wrapper /
+COPY --from=flannel-builder /iptables-wrapper/iptables-wrapper-installer.sh /
+COPY --from=flannel-builder /iptables-wrapper/bin/iptables-wrapper /
 # check manually that iptables-legacy and iptables-nft are present since
 # iptables-wrapper-installer.sh sanity check doesn't work for multi-arch build
 RUN which iptables-legacy && which iptables-nft
