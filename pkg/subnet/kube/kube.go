@@ -204,7 +204,7 @@ func newKubeSubnetManager(ctx context.Context, c clientset.Interface, sc *subnet
 			ksm.client.CoreV1().RESTClient(),
 			"nodes",
 			"",
-			fields.Everything())
+			fields.OneTermEqualSelector("metadata.name", ksm.nodeName))
 
 		handler := cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
