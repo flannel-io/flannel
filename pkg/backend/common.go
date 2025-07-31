@@ -25,6 +25,7 @@ import (
 
 type ExternalInterface struct {
 	Iface       *net.Interface
+	IfaceName   string
 	IfaceAddr   net.IP
 	IfaceV6Addr net.IP
 	ExtAddr     net.IP

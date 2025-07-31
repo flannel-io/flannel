@@ -19,9 +19,11 @@ package vxlan
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/flannel-io/flannel/pkg/backend"
 	"github.com/flannel-io/flannel/pkg/ip"
@@ -29,6 +31,7 @@ import (
 	"github.com/flannel-io/flannel/pkg/retry"
 	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
+	"golang.org/x/sys/unix"
 	log "k8s.io/klog/v2"
 )
 
@@ -60,27 +63,189 @@ func newNetwork(subnetMgr subnet.Manager, extIface *backend.ExternalInterface, d
 }
 
 func (nw *network) Run(ctx context.Context) {
-	wg := sync.WaitGroup{}
+	var wg sync.WaitGroup
 
 	log.V(0).Info("watching for new subnet leases")
-	events := make(chan []lease.Event)
+	leaseEvents := make(chan []lease.Event)
+	vxlanMissingChan := make(chan bool, 1) // buffered to avoid blocking
+
 	wg.Add(1)
 	go func() {
-		subnet.WatchLeases(ctx, nw.subnetMgr, nw.SubnetLease, events)
+		subnet.WatchLeases(ctx, nw.subnetMgr, nw.SubnetLease, leaseEvents)
 		log.V(1).Info("WatchLeases exited")
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		nw.watchVXLANDevice(ctx, vxlanMissingChan)
+		log.V(1).Info("WatchVXLANDevice exited")
 		wg.Done()
 	}()
 
 	defer wg.Wait()
 
 	for {
-		evtBatch, ok := <-events
-		if !ok {
-			log.Infof("evts chan closed")
-			return
+		select {
+		case evtBatch, ok := <-leaseEvents:
+			if !ok {
+				log.Infof("leaseEvents chan closed")
+				return
+			}
+			nw.handleSubnetEvents(evtBatch)
+
+		case _, ok := <-vxlanMissingChan:
+			if !ok {
+				log.Infof("vxlanMissingChan closed")
+				return
+			}
+			log.Info("vxlan device missing, attempting to recreate...")
+
+			// Offload recreate so this loop doesn’t block handleSubnetEvents
+			go func() {
+				if err := nw.reCreateVxlan(ctx); err != nil {
+					log.Errorf("failed to recreate vxlan: %v", err)
+				}
+			}()
 		}
-		nw.handleSubnetEvents(evtBatch)
 	}
+}
+
+func (nw *network) watchVXLANDevice(ctx context.Context, vxlanMissingChan chan<- bool) {
+	log.Info("starting vxlan device watcher")
+	if nw.dev == nil {
+		log.Error("vxlan device is nil, cannot watch for events")
+		return
+	}
+
+	updates := make(chan netlink.LinkUpdate)
+	done := make(chan struct{})
+
+	if err := netlink.LinkSubscribe(updates, done); err != nil {
+		log.Fatalf("failed to subscribe to netlink: %v", err)
+	}
+	defer close(done)
+
+	name := nw.dev.link.Attrs().Name
+	defer close(vxlanMissingChan)
+	for {
+		select {
+		case <-ctx.Done():
+			log.Info("stopping vxlan device watcher")
+			return
+
+		case update := <-updates:
+			if update.Attrs() == nil {
+				continue
+			}
+			// Detect deletion
+			if update.Attrs().Name == name && update.Header.Type == unix.RTM_DELLINK {
+				log.Infof("Interface %s deleted", name)
+				select {
+				case vxlanMissingChan <- true:
+				default:
+					// Skip if signal already queued
+				}
+			}
+		}
+	}
+}
+
+func (nw *network) reCreateVxlan(ctx context.Context) error {
+	backoff := time.Second
+	maxBackoff := 30 * time.Second
+
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("context canceled, stopping vxlan recreate")
+		default:
+		}
+
+		extIface, _ := net.InterfaceByName(nw.ExtIface.IfaceName)
+		if extIface == nil {
+			log.Infof("external interface %s not found, retrying in %s", nw.ExtIface.IfaceName, backoff)
+			retryAfterBackoff(&backoff, maxBackoff)
+			continue
+		}
+
+		config, err := nw.subnetMgr.GetNetworkConfig(ctx)
+		if err != nil {
+			log.Errorf("failed to get network config: %v", err)
+			retryAfterBackoff(&backoff, maxBackoff)
+			continue
+		}
+
+		cfg, err := parseVXLANConfig(config.Backend, extIface.MTU)
+		if err != nil {
+			log.Errorf("failed to parse vxlan config: %v", err)
+			retryAfterBackoff(&backoff, maxBackoff)
+			continue
+		}
+
+		var ifaceAddrs, ifaceAddrsV6 []net.IP
+
+		if config.EnableIPv4 {
+			ifaceAddrs, err = ip.GetInterfaceIP4Addrs(extIface)
+			if err != nil {
+				log.Errorf("error getting IPv4 addresses for %s: %v", extIface.Name, err)
+				retryAfterBackoff(&backoff, maxBackoff)
+				continue
+			}
+			if len(ifaceAddrs) == 0 {
+				log.Warningf("no IPv4 addresses found for interface %s, retrying", extIface.Name)
+				retryAfterBackoff(&backoff, maxBackoff)
+				continue
+			}
+		}
+
+		if config.EnableIPv6 {
+			ifaceAddrsV6, err = ip.GetInterfaceIP6Addrs(extIface)
+			if err != nil {
+				log.Errorf("error getting IPv6 addresses for %s: %v", extIface.Name, err)
+				retryAfterBackoff(&backoff, maxBackoff)
+				continue
+			}
+			if len(ifaceAddrsV6) == 0 {
+				log.Warningf("no IPv6 addresses found for interface %s, retrying", extIface.Name)
+				retryAfterBackoff(&backoff, maxBackoff)
+				continue
+			}
+		}
+
+		// Create the VXLAN device
+		dev, v6Dev, err := createVXLANDevice(ctx, config, cfg, nw.subnetMgr, extIface.Index, ifaceAddrs[0], ifaceAddrsV6[0])
+		if err != nil {
+			log.Errorf("failed to create vxlan device: %v", err)
+			retryAfterBackoff(&backoff, maxBackoff)
+			continue
+		}
+
+		if err := configureDeviceIPv4IPv6(dev, v6Dev, nw.SubnetLease, config); err != nil {
+			log.Errorf("failed to configure vxlan device: %v", err)
+			retryAfterBackoff(&backoff, maxBackoff)
+			continue
+		}
+
+		nw.dev = dev
+		nw.v6Dev = v6Dev
+		nw.mtu = dev.link.Attrs().MTU
+		log.Infof("VXLAN device %s recreated successfully", dev.link.Attrs().Name)
+		return nil
+	}
+}
+
+func retryAfterBackoff(backoff *time.Duration, maxBackoff time.Duration) {
+	time.Sleep(*backoff)
+	*backoff = minDuration(*backoff*2, maxBackoff)
+}
+
+// helper to cap exponential backoff
+func minDuration(a, b time.Duration) time.Duration {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func (nw *network) MTU() int {
