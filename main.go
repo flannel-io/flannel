@@ -303,6 +303,7 @@ func main() {
 		PublicIPv6: opts.publicIPv6,
 	}
 	// Check the default interface only if no interfaces are specified
+
 	if len(opts.iface) == 0 && len(opts.ifaceRegex) == 0 && len(opts.ifaceCanReach) == 0 {
 		if len(opts.publicIP) > 0 {
 			extIface, err = ipmatch.LookupExtIface(opts.publicIP, "", "", ipStack, optsPublicIP)
@@ -434,8 +435,8 @@ func main() {
 				for {
 					select {
 					case <-ctx.Done():
-					     break
-				     	case <-time.After(time.Duration(opts.iptablesResyncSeconds) * time.Second):
+						break
+					case <-time.After(time.Duration(opts.iptablesResyncSeconds) * time.Second):
 						if err := ip.AddBlackholeV4Route(bn.Lease().Subnet.ToIPNet()); err != nil {
 							log.Errorf("Failed to setup blackhole route, %v", err)
 						}
@@ -448,8 +449,8 @@ func main() {
 				for {
 					select {
 					case <-ctx.Done():
-					     break
-				     	case <-time.After(time.Duration(opts.iptablesResyncSeconds) * time.Second):
+						break
+					case <-time.After(time.Duration(opts.iptablesResyncSeconds) * time.Second):
 						if err := ip.AddBlackholeV6Route(bn.Lease().IPv6Subnet.ToIPNet()); err != nil {
 							log.Errorf("Failed to setup blackhole route, %v", err)
 						}

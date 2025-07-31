@@ -302,6 +302,7 @@ func LookupExtIface(ifname string, ifregexS string, ifcanreach string, ipStack i
 
 	return &backend.ExternalInterface{
 		Iface:       iface,
+		IfaceName:   iface.Name,
 		IfaceAddr:   ifaceAddr,
 		IfaceV6Addr: ifaceV6Addr,
 		ExtAddr:     extAddr,
