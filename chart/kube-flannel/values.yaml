@@ -12,7 +12,7 @@ flannel:
   # kube-flannel image
   image:
     repository: ghcr.io/flannel-io/flannel
-    tag: v0.27.2
+    tag: v0.27.3
   image_cni:
     repository: ghcr.io/flannel-io/flannel-cni-plugin
     tag: v1.7.1-flannel1
