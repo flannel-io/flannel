@@ -121,85 +121,15 @@ func newSubnetAttrs(publicIP net.IP, publicIPv6 net.IP, vnid uint32, dev, v6Dev 
 
 func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup, config *subnet.Config) (backend.Network, error) {
 	// Parse our configuration
-	cfg := struct {
-		VNI           int
-		Port          int
-		MTU           int
-		GBP           bool
-		Learning      bool
-		DirectRouting bool
-	}{
-		VNI: defaultVNI,
-		MTU: be.extIface.Iface.MTU,
-	}
-
-	if len(config.Backend) > 0 {
-		if err := json.Unmarshal(config.Backend, &cfg); err != nil {
-			return nil, fmt.Errorf("error decoding VXLAN backend config: %v", err)
-		}
+	cfg, err := parseVXLANConfig(config.Backend, be.extIface.Iface.MTU)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding VXLAN backend config: %w", err)
 	}
 	log.Infof("VXLAN config: VNI=%d Port=%d GBP=%v Learning=%v DirectRouting=%v", cfg.VNI, cfg.Port, cfg.GBP, cfg.Learning, cfg.DirectRouting)
 
-	var dev, v6Dev *vxlanDevice
-	var err error
-
-	// When flannel is restarted, it will get the MAC address from the node annotations to set flannel.1 MAC address
-	var hwAddr, hwAddrv6 net.HardwareAddr
-
-	macStr, macStrv6 := be.subnetMgr.GetStoredMacAddresses(ctx)
-	if macStr != "" {
-		hwAddr, err = net.ParseMAC(macStr)
-		if err != nil {
-			log.Errorf("Failed to parse mac addr(%s): %v", macStr, err)
-		}
-		log.Infof("Interface flannel.%d mac address set to: %s", cfg.VNI, macStr)
-	}
-
-	if config.EnableIPv4 {
-		devAttrs := vxlanDeviceAttrs{
-			vni:       uint32(cfg.VNI),
-			name:      fmt.Sprintf("flannel.%d", cfg.VNI),
-			MTU:       cfg.MTU,
-			vtepIndex: be.extIface.Iface.Index,
-			vtepAddr:  be.extIface.IfaceAddr,
-			vtepPort:  cfg.Port,
-			gbp:       cfg.GBP,
-			learning:  cfg.Learning,
-			hwAddr:    hwAddr,
-		}
-
-		dev, err = newVXLANDevice(&devAttrs)
-		if err != nil {
-			return nil, err
-		}
-		dev.directRouting = cfg.DirectRouting
-	}
-
-	if macStrv6 != "" {
-		hwAddrv6, err = net.ParseMAC(macStrv6)
-		if err != nil {
-			log.Errorf("Failed to parse mac addr(%s): %v", macStrv6, err)
-		}
-		log.Infof("Interface flannel-v6.%d mac address set to: %s", cfg.VNI, macStrv6)
-	}
-
-	if config.EnableIPv6 {
-		v6DevAttrs := vxlanDeviceAttrs{
-			vni:       uint32(cfg.VNI),
-			name:      fmt.Sprintf("flannel-v6.%d", cfg.VNI),
-			MTU:       cfg.MTU,
-			vtepIndex: be.extIface.Iface.Index,
-			vtepAddr:  be.extIface.IfaceV6Addr,
-			vtepPort:  cfg.Port,
-			gbp:       cfg.GBP,
-			learning:  cfg.Learning,
-			hwAddr:    hwAddrv6,
-		}
-		v6Dev, err = newVXLANDevice(&v6DevAttrs)
-		if err != nil {
-			return nil, err
-		}
-		v6Dev.directRouting = cfg.DirectRouting
+	dev, v6Dev, err := createVXLANDevice(ctx, config, cfg, be.subnetMgr, be.extIface.Iface.Index, be.extIface.ExtAddr, be.extIface.ExtV6Addr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create vxlan device: %w", err)
 	}
 
 	subnetAttrs, err := newSubnetAttrs(be.extIface.ExtAddr, be.extIface.ExtV6Addr, uint32(cfg.VNI), dev, v6Dev)
@@ -219,23 +149,128 @@ func (be *VXLANBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGroup,
 	// Ensure that the device has a /32 address so that no broadcast routes are created.
 	// This IP is just used as a source address for host to workload traffic (so
 	// the return path for the traffic has an address on the flannel network to use as the destination)
+	if err := configureDeviceIPv4IPv6(dev, v6Dev, lease, config); err != nil {
+		return nil, err
+	}
+
+	return newNetwork(be.subnetMgr, be.extIface, dev, v6Dev, ip.IP4Net{}, lease, cfg.MTU)
+}
+
+type VXLANConfig struct {
+	VNI           int  `json:"vni"`
+	Port          int  `json:"port"`
+	MTU           int  `json:"mtu"`
+	GBP           bool `json:"gbp"`
+	Learning      bool `json:"learning"`
+	DirectRouting bool `json:"directRouting"`
+}
+
+func parseVXLANConfig(config json.RawMessage, defaultMTU int) (VXLANConfig, error) {
+	cfg := VXLANConfig{
+		VNI: defaultVNI,
+		MTU: defaultMTU,
+	}
+
+	if len(config) > 0 {
+		if err := json.Unmarshal(config, &cfg); err != nil {
+			return VXLANConfig{}, err
+		}
+	}
+	return cfg, nil
+}
+
+func createVXLANDevice(ctx context.Context,
+	config *subnet.Config,
+	cfg VXLANConfig,
+	subnetMgr subnet.Manager,
+	extIfaceID int,
+	extIfaceIP net.IP,
+	extIfaceV6IP net.IP,
+) (dev, v6Dev *vxlanDevice, err error) {
+	// When flannel is restarted, it will get the MAC address from the node annotations to set flannel.1 MAC address
+	var hwAddr, hwAddrv6 net.HardwareAddr
+
+	macStr, macStrv6 := subnetMgr.GetStoredMacAddresses(ctx)
+	if macStr != "" {
+		hwAddr, err = net.ParseMAC(macStr)
+		if err != nil {
+			log.Errorf("Failed to parse mac addr(%s): %v", macStr, err)
+		}
+		log.Infof("Interface flannel.%d mac address set to: %s", cfg.VNI, macStr)
+	}
+
+	if config.EnableIPv4 {
+		devAttrs := vxlanDeviceAttrs{
+			vni:       uint32(cfg.VNI),
+			name:      fmt.Sprintf("flannel.%d", cfg.VNI),
+			MTU:       cfg.MTU,
+			vtepIndex: extIfaceID,
+			vtepAddr:  extIfaceIP,
+			vtepPort:  cfg.Port,
+			gbp:       cfg.GBP,
+			learning:  cfg.Learning,
+			hwAddr:    hwAddr,
+		}
+
+		dev, err = newVXLANDevice(&devAttrs)
+		if err != nil {
+			return nil, nil, err
+		}
+		dev.directRouting = cfg.DirectRouting
+	}
+
+	if macStrv6 != "" {
+		hwAddrv6, err = net.ParseMAC(macStrv6)
+		if err != nil {
+			log.Errorf("Failed to parse mac addr(%s): %v", macStrv6, err)
+		}
+		log.Infof("Interface flannel-v6.%d mac address set to: %s", cfg.VNI, macStrv6)
+	}
+
+	if config.EnableIPv6 {
+		v6DevAttrs := vxlanDeviceAttrs{
+			vni:       uint32(cfg.VNI),
+			name:      fmt.Sprintf("flannel-v6.%d", cfg.VNI),
+			MTU:       cfg.MTU,
+			vtepIndex: extIfaceID,
+			vtepAddr:  extIfaceV6IP,
+			vtepPort:  cfg.Port,
+			gbp:       cfg.GBP,
+			learning:  cfg.Learning,
+			hwAddr:    hwAddrv6,
+		}
+		v6Dev, err = newVXLANDevice(&v6DevAttrs)
+		if err != nil {
+			return nil, nil, err
+		}
+		v6Dev.directRouting = cfg.DirectRouting
+	}
+
+	return dev, v6Dev, nil
+}
+
+func configureDeviceIPv4IPv6(dev *vxlanDevice, v6Dev *vxlanDevice, lease *lease.Lease, config *subnet.Config) error {
+	// Configure IPv4 if enabled
 	if config.EnableIPv4 {
 		if lease.Subnet.Empty() {
-			return nil, fmt.Errorf("failed to configure interface %s: IPv4 is enabled but the lease has no IPv4", dev.link.Attrs().Name)
+			return fmt.Errorf("failed to configure interface %s: IPv4 is enabled but the lease has no IPv4", dev.link.Attrs().Name)
 		}
 		if err := dev.Configure(ip.IP4Net{IP: lease.Subnet.IP, PrefixLen: 32}, config.Network); err != nil {
-			return nil, fmt.Errorf("failed to configure interface %s: %w", dev.link.Attrs().Name, err)
+			return fmt.Errorf("failed to configure interface %s: %w", dev.link.Attrs().Name, err)
 		}
 	}
+
+	// Configure IPv6 if enabled
 	if config.EnableIPv6 {
 		if lease.IPv6Subnet.Empty() {
-			return nil, fmt.Errorf("failed to configure interface %s: IPv6 is enabled but the lease has no IPv6", v6Dev.link.Attrs().Name)
+			return fmt.Errorf("failed to configure interface %s: IPv6 is enabled but the lease has no IPv6", v6Dev.link.Attrs().Name)
 		}
 		if err := v6Dev.ConfigureIPv6(ip.IP6Net{IP: lease.IPv6Subnet.IP, PrefixLen: 128}, config.IPv6Network); err != nil {
-			return nil, fmt.Errorf("failed to configure interface %s: %w", v6Dev.link.Attrs().Name, err)
+			return fmt.Errorf("failed to configure interface %s: %w", v6Dev.link.Attrs().Name, err)
 		}
 	}
-	return newNetwork(be.subnetMgr, be.extIface, dev, v6Dev, ip.IP4Net{}, lease, cfg.MTU)
+
+	return nil
 }
 
 // So we can make it JSON (un)marshalable
