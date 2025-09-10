@@ -85,6 +85,7 @@ type CmdLineOpts struct {
 	iface                     flagSlice
 	ifaceRegex                flagSlice
 	ipMasq                    bool
+	ipMasqRandomFullyDisable  bool
 	ifaceCanReach             string
 	subnetFile                string
 	publicIP                  string
@@ -122,6 +123,7 @@ func init() {
 	flannelFlags.StringVar(&opts.publicIPv6, "public-ipv6", "", "IPv6 accessible by other nodes for inter-host communication")
 	flannelFlags.IntVar(&opts.subnetLeaseRenewMargin, "subnet-lease-renew-margin", 60, "subnet lease renewal margin, in minutes, ranging from 1 to 1439")
 	flannelFlags.BoolVar(&opts.ipMasq, "ip-masq", false, "setup IP masquerade rule for traffic destined outside of overlay network")
+	flannelFlags.BoolVar(&opts.ipMasqRandomFullyDisable, "ip-masq-fully-random-disable", false, "disable fully-random mode for MASQUERADE")
 	flannelFlags.BoolVar(&opts.kubeSubnetMgr, "kube-subnet-mgr", false, "contact the Kubernetes API for subnet assignment instead of etcd.")
 	flannelFlags.StringVar(&opts.kubeApiUrl, "kube-api-url", "", "Kubernetes API server URL. Does not need to be specified if flannel is running in a pod.")
 	flannelFlags.StringVar(&opts.kubeAnnotationPrefix, "kube-annotation-prefix", "flannel.alpha.coreos.com", `Kubernetes annotation prefix. Can contain single slash "/", otherwise it will be appended at the end.`)
@@ -405,7 +407,8 @@ func main() {
 			config.IPv6Network, prevIPv6Subnet,
 			prevIPv6Network,
 			bn.Lease(),
-			opts.iptablesResyncSeconds)
+			opts.iptablesResyncSeconds,
+			opts.ipMasqRandomFullyDisable)
 		if err != nil {
 			log.Errorf("Failed to setup masq rules, %v", err)
 			cancel()
