@@ -92,7 +92,8 @@ func (iptm *IPTablesManager) CleanUp(ctx context.Context) error {
 func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flannelIPv4Net, prevSubnet, prevNetwork ip.IP4Net,
 	flannelIPv6Net, prevIPv6Subnet, prevIPv6Network ip.IP6Net,
 	currentlease *lease.Lease,
-	resyncPeriod int) error {
+	resyncPeriod int,
+	ipMasqRandomFullyDisable bool) error {
 
 	if !flannelIPv4Net.Empty() {
 		// recycle iptables rules only when network configured or subnet leased is not equal to current one.
@@ -102,14 +103,14 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 			newLease := &lease.Lease{
 				Subnet: prevSubnet,
 			}
-			if err := iptm.deleteIP4Tables(iptm.masqRules(prevNetwork, newLease)); err != nil {
+			if err := iptm.deleteIP4Tables(iptm.masqRules(prevNetwork, newLease, ipMasqRandomFullyDisable)); err != nil {
 				return err
 			}
 		}
 
 		log.Infof("Setting up masking rules")
 		iptm.CreateIP4Chain("nat", "FLANNEL-POSTRTG")
-		go iptm.setupAndEnsureIP4Tables(ctx, iptm.masqRules(flannelIPv4Net, currentlease), resyncPeriod)
+		go iptm.setupAndEnsureIP4Tables(ctx, iptm.masqRules(flannelIPv4Net, currentlease, ipMasqRandomFullyDisable), resyncPeriod)
 	}
 	if !flannelIPv6Net.Empty() {
 		// recycle iptables rules only when network configured or subnet leased is not equal to current one.
@@ -119,19 +120,19 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 			newLease := &lease.Lease{
 				IPv6Subnet: prevIPv6Subnet,
 			}
-			if err := iptm.deleteIP6Tables(iptm.masqIP6Rules(prevIPv6Network, newLease)); err != nil {
+			if err := iptm.deleteIP6Tables(iptm.masqIP6Rules(prevIPv6Network, newLease, ipMasqRandomFullyDisable)); err != nil {
 				return err
 			}
 		}
 
 		log.Infof("Setting up masking rules for IPv6")
 		iptm.CreateIP6Chain("nat", "FLANNEL-POSTRTG")
-		go iptm.setupAndEnsureIP6Tables(ctx, iptm.masqIP6Rules(flannelIPv6Net, currentlease), resyncPeriod)
+		go iptm.setupAndEnsureIP6Tables(ctx, iptm.masqIP6Rules(flannelIPv6Net, currentlease, ipMasqRandomFullyDisable), resyncPeriod)
 	}
 	return nil
 }
 
-func (iptm *IPTablesManager) masqRules(ccidr ip.IP4Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
+func (iptm *IPTablesManager) masqRules(ccidr ip.IP4Net, lease *lease.Lease, ipMasqRandomFullyDisable bool) []trafficmngr.IPTablesRule {
 	cluster_cidr := ccidr.String()
 
 	pod_cidr := lease.Subnet.String()
@@ -153,13 +154,13 @@ func (iptm *IPTablesManager) masqRules(ccidr ip.IP4Net, lease *lease.Lease) []tr
 	// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
 	rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}})
 	// NAT if it's not multicast traffic
-	if supports_random_fully {
+	if supports_random_fully && !ipMasqRandomFullyDisable {
 		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
 	} else {
 		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "!", "-d", "224.0.0.0/4", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
 	}
 	// Masquerade anything headed towards flannel from the host
-	if supports_random_fully {
+	if supports_random_fully && !ipMasqRandomFullyDisable {
 		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
 	} else {
 		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
@@ -167,7 +168,7 @@ func (iptm *IPTablesManager) masqRules(ccidr ip.IP4Net, lease *lease.Lease) []tr
 	return rules
 }
 
-func (iptm *IPTablesManager) masqIP6Rules(ccidr ip.IP6Net, lease *lease.Lease) []trafficmngr.IPTablesRule {
+func (iptm *IPTablesManager) masqIP6Rules(ccidr ip.IP6Net, lease *lease.Lease, ipMasqRandomFullyDisable bool) []trafficmngr.IPTablesRule {
 	cluster_cidr := ccidr.String()
 	pod_cidr := lease.IPv6Subnet.String()
 	ipt, err := iptables.NewWithProtocol(iptables.ProtocolIPv6)
@@ -190,14 +191,14 @@ func (iptm *IPTablesManager) masqIP6Rules(ccidr ip.IP6Net, lease *lease.Lease) [
 	// Prevent performing Masquerade on external traffic which arrives from a Node that owns the container/pod IP address
 	rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", pod_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "RETURN"}})
 	// NAT if it's not multicast traffic
-	if supports_random_fully {
+	if supports_random_fully && !ipMasqRandomFullyDisable {
 		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
 	} else {
 		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"-s", cluster_cidr, "!", "-d", "ff00::/8", "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})
 	}
 
 	// Masquerade anything headed towards flannel from the host
-	if supports_random_fully {
+	if supports_random_fully && !ipMasqRandomFullyDisable {
 		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE", "--random-fully"}})
 	} else {
 		rules = append(rules, trafficmngr.IPTablesRule{Table: "nat", Action: "-A", Chain: "FLANNEL-POSTRTG", Rulespec: []string{"!", "-s", cluster_cidr, "-d", cluster_cidr, "-m", "comment", "--comment", "flanneld masq", "-j", "MASQUERADE"}})

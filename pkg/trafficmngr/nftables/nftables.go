@@ -149,7 +149,8 @@ func (nftm *NFTablesManager) SetupAndEnsureForwardRules(ctx context.Context,
 func (nftm *NFTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flannelIPv4Net, prevSubnet, prevNetwork ip.IP4Net,
 	flannelIPv6Net, prevIPv6Subnet, prevIPv6Network ip.IP6Net,
 	currentlease *lease.Lease,
-	resyncPeriod int) error {
+	resyncPeriod int,
+	ipMasqRandomFullyDisable bool) error {
 	if !flannelIPv4Net.Empty() {
 		log.Infof("nftables: setting up masking rules (ipv4)")
 		tx := nftm.nftv4.NewTransaction()
@@ -166,7 +167,7 @@ func (nftm *NFTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 		tx.Flush(&knftables.Chain{
 			Name: postrtgChain,
 		})
-		err := nftm.addMasqRules(ctx, tx, flannelIPv4Net.String(), currentlease.Subnet.String(), knftables.IPv4Family)
+		err := nftm.addMasqRules(ctx, tx, flannelIPv4Net.String(), currentlease.Subnet.String(), knftables.IPv4Family, ipMasqRandomFullyDisable)
 		if err != nil {
 			return fmt.Errorf("nftables: couldn't setup masq rules: %v", err)
 		}
@@ -191,7 +192,7 @@ func (nftm *NFTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 		tx.Flush(&knftables.Chain{
 			Name: postrtgChain,
 		})
-		err := nftm.addMasqRules(ctx, tx, flannelIPv6Net.String(), currentlease.IPv6Subnet.String(), knftables.IPv6Family)
+		err := nftm.addMasqRules(ctx, tx, flannelIPv6Net.String(), currentlease.IPv6Subnet.String(), knftables.IPv6Family, ipMasqRandomFullyDisable)
 		if err != nil {
 			return fmt.Errorf("nftables: couldn't setup masq rules: %v", err)
 		}
@@ -207,9 +208,10 @@ func (nftm *NFTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 func (nftm *NFTablesManager) addMasqRules(ctx context.Context,
 	tx *knftables.Transaction,
 	clusterCidr, podCidr string,
-	family knftables.Family) error {
+	family knftables.Family,
+	ipMasqRandomFullyDisable bool) error {
 	masquerade := "masquerade fully-random"
-	if !nftm.checkRandomfully(ctx) {
+	if !nftm.checkRandomfully(ctx) || ipMasqRandomFullyDisable {
 		masquerade = "masquerade"
 	}
 

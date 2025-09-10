@@ -49,7 +49,8 @@ func (iptm *IPTablesManager) SetupAndEnsureForwardRules(ctx context.Context, fla
 func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flannelIPv4Net, prevSubnet, prevNetwork ip.IP4Net,
 	flannelIPv6Net, prevIPv6Subnet, prevIPv6Network ip.IP6Net,
 	currentlease *lease.Lease,
-	resyncPeriod int) error {
+	resyncPeriod int,
+	ipMasqRandomFullyDisable bool) error {
 	log.Warning(trafficmngr.ErrUnimplemented)
 	return nil
 }
