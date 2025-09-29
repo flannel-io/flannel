@@ -125,7 +125,7 @@ func TestDeleteRules(t *testing.T) {
 		ip.IP4Net{
 			IP:        ip.MustParseIP4("10.0.1.0"),
 			PrefixLen: 16,
-		}, testingLease())
+		}, testingLease(), false)
 	expectedRules := expectedTearDownIPTablesRestoreRules(baseRules)
 
 	err := ipTablesBootstrap(ipt, iptr, baseRules)
