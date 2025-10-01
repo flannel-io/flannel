@@ -185,7 +185,7 @@ jobs:
       - name: Upload chart and manifests to the release page
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ env.GIT_TAG }} dist/flannel.tgz dist/kube-flannel.yml dist/kube-flannel-psp.yml
+        run: gh release upload ${{ env.GIT_TAG }} dist/flannel.tgz dist/kube-flannel.yml
 
       - name: Setup Pages
         uses: actions/configure-pages@1f0c5cde4bc74cd7e1254d0cb4de8d49e9068c7d #v4.0.0

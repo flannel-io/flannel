@@ -167,8 +167,6 @@ release: tar.gz dist/qemu-s390x-static dist/qemu-ppc64le-static dist/qemu-arm64-
 release-manifest:
 	sed -i 's/^  newTag: .*/  newTag: $(TAG)/' Documentation/kustomization/kube-flannel/kustomization.yaml
 	kubectl kustomize ./Documentation/kustomization/kube-flannel/ > dist/kube-flannel.yml
-	sed -i 's/^  newTag: .*/  newTag: $(TAG)/' Documentation/kustomization/kube-flannel-psp/kustomization.yaml
-	kubectl kustomize ./Documentation/kustomization/kube-flannel-psp/ > dist/kube-flannel-psp.yml
 
 release-helm:
 	sed -i '0,/^    tag: .*/s//    tag: $(TAG)/' ./chart/kube-flannel/values.yaml
