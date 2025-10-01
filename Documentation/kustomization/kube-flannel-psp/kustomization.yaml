@@ -6,4 +6,4 @@ resources:
 - kube-flannel-psp.yml
 images:
 - name: ghcr.io/flannel-io/flannel
-  newTag: v0.22.1
+  newTag: v0.27.4

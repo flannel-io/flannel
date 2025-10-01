@@ -1,11 +1,10 @@
 reviewers:
-  - ksubrmnn (Kalya Subramanian)
-  - madhanrm (Madhan Raj Mookkandy)
-  - rajatchopra (Rajat Chopra)
-  - Oats87 (Chris Kim)
-  - luthermonson (Luther Monson)
-  - AleksandrNull (Aleksandr Shaposhnikov)
   - manuelbuil (Manuel Buil)
+  - mgfritch (Michael Fritch)
+  - rbrtbnfgl (Roberto Bonafiglia)
+  - thomasferrandiz (Thomas Ferrandiz)
 approvers:
-  - rajatchopra
-  - tomdee
+  - manuelbuil
+  - mgfritch 
+  - rbrtbnfgl 
+  - thomasferrandiz
