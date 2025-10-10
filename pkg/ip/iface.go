@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"slices"
 	"syscall"
 
 	"github.com/vishvananda/netlink"
@@ -53,29 +54,17 @@ func GetInterfaceIP4Addrs(iface *net.Interface) ([]net.IP, error) {
 		return nil, err
 	}
 
+	// sort addresses in preferred usage order
+	slices.SortFunc(addrs, compareAddrs)
+
+	// map rich ip information from netlink into the stdlib data structure
+	// while filtering addresses that aren't relevant or usable
 	ipAddrs := make([]net.IP, 0)
-
-	// prefer non link-local addr
-	ll := make([]net.IP, 0)
-
-	for _, addr := range addrs {
-		if addr.IP.To4() == nil {
-			continue
+	for _, i := range addrs {
+		// address must be IPv4, global unicast or link-local unicast and non-deprecated
+		if i.IP.To4() != nil && (i.IP.IsGlobalUnicast() || i.IP.IsLinkLocalUnicast()) && i.Flags&syscall.IFA_F_DEPRECATED == 0 {
+			ipAddrs = append(ipAddrs, i.IP)
 		}
-
-		if addr.IP.IsGlobalUnicast() {
-			ipAddrs = append(ipAddrs, addr.IP)
-			continue
-		}
-
-		if addr.IP.IsLinkLocalUnicast() {
-			ll = append(ll, addr.IP)
-		}
-	}
-
-	if len(ll) > 0 {
-		// didn't find global but found link-local. it'll do.
-		ipAddrs = append(ipAddrs, ll...)
 	}
 
 	if len(ipAddrs) > 0 {
@@ -91,29 +80,17 @@ func GetInterfaceIP6Addrs(iface *net.Interface) ([]net.IP, error) {
 		return nil, err
 	}
 
+	// sort addresses in preferred usage order
+	slices.SortFunc(addrs, compareAddrs)
+
+	// map rich ip information from netlink into the stdlib data structure
+	// while filtering addresses that aren't relevant or usable
 	ipAddrs := make([]net.IP, 0)
-
-	// prefer non link-local addr
-	ll := make([]net.IP, 0)
-
-	for _, addr := range addrs {
-		if addr.IP.To16() == nil {
-			continue
+	for _, i := range addrs {
+		// address must be IPv6, global unicast or link-local unicast and non-deprecated
+		if i.IP.To16() != nil && (i.IP.IsGlobalUnicast() || i.IP.IsLinkLocalUnicast()) && i.Flags&syscall.IFA_F_DEPRECATED == 0 {
+			ipAddrs = append(ipAddrs, i.IP)
 		}
-
-		if addr.IP.IsGlobalUnicast() {
-			ipAddrs = append(ipAddrs, addr.IP)
-			continue
-		}
-
-		if addr.IP.IsLinkLocalUnicast() {
-			ll = append(ll, addr.IP)
-		}
-	}
-
-	if len(ll) > 0 {
-		// didn't find global but found link-local. it'll do.
-		ipAddrs = append(ipAddrs, ll...)
 	}
 
 	if len(ipAddrs) > 0 {
@@ -328,4 +305,32 @@ func EnsureV6AddressOnLink(ipa IP6Net, ipn IP6Net, link netlink.Link) error {
 	}
 
 	return nil
+}
+
+// compareAddrs compares two netlink address in terms of which one should be used preferably.
+// Addresses which are supposed to be completely disregarded are not considered specially and should be filtered separately
+func compareAddrs(a, b netlink.Addr) int {
+	// global unicast addresses are preferable to link-local addresses because they probably have better reachability
+	if a.IP.IsGlobalUnicast() && b.IP.IsLinkLocalUnicast() {
+		return -1
+	} else if a.IP.IsLinkLocalUnicast() && b.IP.IsGlobalUnicast() {
+		return 1
+	}
+
+	// manually assigned addresses are preferable to auto-assigned or generated addresses
+	if a.Flags&syscall.IFA_F_PERMANENT == syscall.IFA_F_PERMANENT && b.Flags&syscall.IFA_F_PERMANENT == 0 {
+		return -1
+	} else if a.Flags&syscall.IFA_F_PERMANENT == 0 && b.Flags&syscall.IFA_F_PERMANENT == syscall.IFA_F_PERMANENT {
+		return 1
+	}
+
+	// non-temporary address are preferable to temporary addresses
+	if a.Flags&syscall.IFA_F_TEMPORARY == 0 && b.Flags&syscall.IFA_F_TEMPORARY == syscall.IFA_F_TEMPORARY {
+		return -1
+	} else if a.Flags&syscall.IFA_F_TEMPORARY == syscall.IFA_F_TEMPORARY && b.Flags&syscall.IFA_F_TEMPORARY == 0 {
+		return 1
+	}
+
+	// anything else doesn't really matter
+	return 0
 }
