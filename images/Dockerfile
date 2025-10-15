@@ -20,6 +20,7 @@ RUN mkdir dist
 RUN go mod download
 
 ARG TARGETPLATFORM
+ARG TAG
 RUN xx-info env
 RUN export GOOS=$(xx-info os) &&\
     export GOARCH=$(xx-info arch) &&\
