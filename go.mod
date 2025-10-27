@@ -1,6 +1,6 @@
 module github.com/flannel-io/flannel
 
-go 1.23.6
+go 1.24.0
 
 // replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
 
@@ -23,9 +23,9 @@ require (
 	golang.org/x/time v0.9.0 // indirect
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173 // indirect
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
-	k8s.io/api v0.31.11
-	k8s.io/apimachinery v0.31.11
-	k8s.io/client-go v0.31.11
+	k8s.io/api v0.34.1
+	k8s.io/apimachinery v0.34.1
+	k8s.io/client-go v0.34.1
 	k8s.io/klog/v2 v2.130.1
 )
 
@@ -34,7 +34,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.1.37
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.1.32
 	golang.org/x/sync v0.16.0
-	sigs.k8s.io/knftables v0.0.18
+	sigs.k8s.io/knftables v0.0.19
 )
 
 require (
@@ -49,18 +49,18 @@ require (
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/typeurl/v2 v2.2.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
+	github.com/emicklei/go-restful/v3 v3.12.2 // indirect
 	github.com/fatih/color v1.18.0 // indirect
-	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
+	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/google/btree v1.1.3 // indirect
-	github.com/google/gnostic-models v0.6.8 // indirect
+	github.com/google/gnostic-models v0.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.0.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0 // indirect
@@ -101,11 +101,16 @@ require (
 	go.opentelemetry.io/otel/sdk v1.34.0 // indirect
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.5.0 // indirect
+	go.yaml.in/yaml/v2 v2.4.2 // indirect
+	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250303144028-a0af3efb3deb // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250303144028-a0af3efb3deb // indirect
+	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
+	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect
+	sigs.k8s.io/randfill v1.0.0 // indirect
+	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 )
 
 require (
@@ -116,15 +121,13 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/josharian/native v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mdlayher/genetlink v1.3.2 // indirect
 	github.com/mdlayher/netlink v1.7.2 // indirect
 	github.com/mdlayher/socket v0.5.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	go.etcd.io/etcd/api/v3 v3.6.4
@@ -140,9 +143,7 @@ require (
 	google.golang.org/grpc v1.71.1 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20240903163716-9e1beecbcb38 // indirect
-	k8s.io/utils v0.0.0-20240902221715-702e33fdd3c3 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
-	sigs.k8s.io/yaml v1.4.0 // indirect
+	k8s.io/kube-openapi v0.0.0-20250710124328-f3f2b991d03b // indirect
+	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397 // indirect
+	sigs.k8s.io/yaml v1.6.0 // indirect
 )
