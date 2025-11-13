@@ -41,7 +41,7 @@ kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/
 
 If you use custom `podCIDR` (not `10.244.0.0/16`) you first need to download the above manifest and modify the network to match your one.
 
-#### Deploying Flannel with helm
+#### Deploying Flannel with Helm
 
 ```bash
 # Needs manual creation of namespace to avoid helm error
