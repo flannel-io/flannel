@@ -31,6 +31,6 @@ updates:
           - "go.etcd.io/*"
           - "github.com/tencentcloud/*"
   - package-ecosystem: "github-actions" 
-    directory: ".github"
+    directory: "/"
     schedule:
       interval: "weekly"
