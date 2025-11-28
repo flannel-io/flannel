@@ -496,14 +496,14 @@ func (ksm *kubeSubnetManager) AcquireLease(ctx context.Context, attrs *lease.Lea
 		Expiration: time.Now().Add(24 * time.Hour),
 	}
 	if cidr != nil && ksm.enableIPv4 {
-		if !containsCIDR(ksm.subnetConf.Network.ToIPNet(), cidr) {
+		if ksm.subnetConf.Network.Empty() || !containsCIDR(ksm.subnetConf.Network.ToIPNet(), cidr) {
 			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q PodCIDR of the %q node", ksm.subnetConf.Network, cidr, ksm.nodeName)
 		}
 
 		lease.Subnet = ip.FromIPNet(cidr)
 	}
-	if ipv6Cidr != nil {
-		if !containsCIDR(ksm.subnetConf.IPv6Network.ToIPNet(), ipv6Cidr) {
+	if ipv6Cidr != nil && ksm.enableIPv6 {
+		if ksm.subnetConf.IPv6Network.Empty() || !containsCIDR(ksm.subnetConf.IPv6Network.ToIPNet(), ipv6Cidr) {
 			return nil, fmt.Errorf("subnet %q specified in the flannel net config doesn't contain %q IPv6 PodCIDR of the %q node", ksm.subnetConf.IPv6Network, ipv6Cidr, ksm.nodeName)
 		}
 
