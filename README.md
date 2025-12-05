@@ -95,7 +95,7 @@ flannel is also widely used outside of kubernetes. When deployed outside of kube
 
 ## Community Meeting
 
-The Flannel Maintainer Community runs a meeting on every other Thursday at 8:30 AM PST. This meeting is used to discuss issues, open pull requests, and other topics related to Flannel should the need arise.
+The Flannel Maintainer Community runs a meeting on the third Thursday of each month at 8:30 AM PST (16:30 UTC). This meeting is used to discuss issues, open pull requests, and other topics related to Flannel should the need arise.
 
 The meeting agenda and Teams link can be found here: [Flannel Community Meeting Agenda](https://docs.google.com/document/d/1kPMMFDhljWL8_CUZajrfL8Q9sdntd9vvUpe-UGhX5z8)
 
