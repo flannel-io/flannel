@@ -41,10 +41,10 @@ kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/
 
 If you use custom `podCIDR` (not `10.244.0.0/16`) you first need to download the above manifest and modify the network to match your one.
 
-#### Deploying Flannel with helm
+#### Deploying Flannel with Helm
 
 ```bash
-# Needs manual creation of namespace to avoid helm error
+# Needs manual creation of namespace to avoid Helm error
 kubectl create ns kube-flannel
 kubectl label --overwrite ns kube-flannel pod-security.kubernetes.io/enforce=privileged
 
@@ -74,7 +74,7 @@ Flannel requires the br_netfilter module to start and from version 1.30 kubeadm 
 
 ## Getting started on Docker
 
-flannel is also widely used outside of kubernetes. When deployed outside of kubernetes, etcd is always used as the datastore. For more details integrating flannel with Docker see [Running](Documentation/running.md)
+flannel is also widely used outside of Kubernetes. When deployed outside of Kubernetes, etcd is always used as the datastore. For more details integrating flannel with Docker see [Running](Documentation/running.md)
 
 ## Documentation
 
