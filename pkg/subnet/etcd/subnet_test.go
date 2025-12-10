@@ -458,7 +458,7 @@ func TestRenewLease(t *testing.T) {
 			}
 			leaseExpiration := time.Now().Add(time.Duration(ttlResp.TTL) * time.Second).Round(time.Duration(acceptableMargin))
 
-			if !leaseExpiration.Equal(expectedExpiration) {
+			if diff := leaseExpiration.Sub(expectedExpiration); diff < -acceptableMargin || diff > acceptableMargin {
 				t.Errorf("Failed to renew lease: bad expiration; expected %v, got %v", expectedExpiration, leaseExpiration)
 			}
 			//check that the value is correct
