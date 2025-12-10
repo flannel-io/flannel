@@ -125,7 +125,12 @@ func (charon *CharonIKEDaemon) LoadSharedKey(remotePublicIP, password string) er
 		return err
 	}
 
-	defer client.Close()
+	defer func() {
+		err := client.Close()
+		if err != nil {
+			log.Errorf("Failed to close Vici client: %v", err)
+		}
+	}()
 
 	sharedKey := &goStrongswanVici.Key{
 		Typ:    "IKE",
@@ -157,7 +162,12 @@ func (charon *CharonIKEDaemon) LoadConnection(localLease, remoteLease *lease.Lea
 		log.Errorf("Failed to acquire Vici client: %s", err)
 		return err
 	}
-	defer client.Close()
+	defer func() {
+		err := client.Close()
+		if err != nil {
+			log.Errorf("Failed to close Vici client: %v", err)
+		}
+	}()
 
 	childConfMap := make(map[string]goStrongswanVici.ChildSAConf)
 	childSAConf := goStrongswanVici.ChildSAConf{
@@ -216,7 +226,12 @@ func (charon *CharonIKEDaemon) UnloadCharonConnection(localLease,
 		log.Errorf("Failed to acquire Vici client: %s", err)
 		return err
 	}
-	defer client.Close()
+	defer func() {
+		err := client.Close()
+		if err != nil {
+			log.Errorf("Failed to close Vici client: %v", err)
+		}
+	}()
 
 	connectionName := formatConnectionName(localLease, remoteLease)
 	unloadConnRequest := &goStrongswanVici.UnloadConnRequest{
@@ -253,12 +268,12 @@ func findExecPath() (string, error) {
 	for _, path := range paths {
 		path, err := exec.LookPath(path)
 		if err != nil {
-			log.Warningf("No valid charon executable found at path %s: %v", path, err)
+			log.Warningf("no valid charon executable found at path %s: %v", path, err)
 			continue
 		}
 		return path, nil
 	}
 
-	err := fmt.Errorf("No valid charon executable found at paths %v", paths)
+	err := fmt.Errorf("no valid charon executable found at paths %v", paths)
 	return "", err
 }

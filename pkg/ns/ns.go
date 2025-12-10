@@ -35,7 +35,10 @@ func SetUpNetlinkTest(t *testing.T) func() {
 	}
 
 	return func() {
-		ns.Close()
+		err := ns.Close()
+		if err != nil {
+			t.Errorf("Failed to close netns: %v", err)
+		}
 		runtime.UnlockOSThread()
 	}
 }

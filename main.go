@@ -435,7 +435,7 @@ func main() {
 				for {
 					select {
 					case <-ctx.Done():
-						break
+						return
 					case <-time.After(time.Duration(opts.iptablesResyncSeconds) * time.Second):
 						if err := ip.AddBlackholeV4Route(bn.Lease().Subnet.ToIPNet()); err != nil {
 							log.Errorf("Failed to setup blackhole route, %v", err)
@@ -449,7 +449,7 @@ func main() {
 				for {
 					select {
 					case <-ctx.Done():
-						break
+						return
 					case <-time.After(time.Duration(opts.iptablesResyncSeconds) * time.Second):
 						if err := ip.AddBlackholeV6Route(bn.Lease().IPv6Subnet.ToIPNet()); err != nil {
 							log.Errorf("Failed to setup blackhole route, %v", err)

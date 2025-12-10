@@ -123,7 +123,10 @@ func newEtcdClient(ctx context.Context, c *EtcdConfig) (*etcd.Client, etcd.KV, e
 	//make sure the Client is closed properly
 	go func() {
 		<-ctx.Done()
-		cli.Close()
+		err := cli.Close()
+		if err != nil {
+			log.Errorf("Failed to close etcd client: %v", err)
+		}
 	}()
 	return cli, kv, nil
 }
@@ -304,7 +307,10 @@ func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan 
 		for {
 			select {
 			case <-ctx.Done():
-				esr.cli.Close()
+				err := esr.cli.Close()
+				if err != nil {
+					log.Errorf("Failed to close etcd client: %v", err)
+				}
 				close(leaseWatchChan)
 				return ctx.Err()
 			case wresp, ok := <-rch:
@@ -386,7 +392,10 @@ func (esr *etcdSubnetRegistry) watchSubnet(ctx context.Context, since int64, sn 
 		for {
 			select {
 			case <-ctx.Done():
-				esr.cli.Close()
+				err := esr.cli.Close()
+				if err != nil {
+					log.Errorf("Failed to close etcd client: %v", err)
+				}
 				close(leaseWatchChan)
 				return ctx.Err()
 			case wresp, ok := <-rch:

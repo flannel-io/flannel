@@ -51,7 +51,7 @@ func New(sm subnet.Manager, extIface *backend.ExternalInterface) (backend.Backen
 	return be, nil
 }
 
-func (_ *ExtensionBackend) Run(ctx context.Context) {
+func (*ExtensionBackend) Run(ctx context.Context) {
 	<-ctx.Done()
 }
 
@@ -159,7 +159,10 @@ func runCmd(env []string, stdin string, name string, arg ...string) (string, err
 	if err != nil {
 		return "", err
 	}
-	stdinpipe.Close()
+	err = stdinpipe.Close()
+	if err != nil {
+		return "", err
+	}
 
 	output, err := cmd.CombinedOutput()
 

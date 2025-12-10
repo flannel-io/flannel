@@ -22,7 +22,6 @@ import "C"
 import (
 	"net"
 	"os"
-	"reflect"
 	"unsafe"
 
 	"github.com/flannel-io/flannel/pkg/ip"
@@ -40,7 +39,12 @@ func runCProxy(tun *os.File, conn *net.UDPConn, ctl *os.File, tunIP ip.IP4, tunM
 		log.Error("Converting UDPConn to File failed: ", err)
 		return
 	}
-	defer c.Close()
+	defer func() {
+		err := c.Close()
+		if err != nil {
+			log.Errorf("Failed to close UDPConn file: %v", err)
+		}
+	}()
 
 	C.run_proxy(
 		C.int(tun.Fd()),
@@ -53,14 +57,10 @@ func runCProxy(tun *os.File, conn *net.UDPConn, ctl *os.File, tunIP ip.IP4, tunM
 }
 
 func writeCommand(f *os.File, cmd *C.command) {
-	hdr := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(cmd)),
-		Len:  int(unsafe.Sizeof(*cmd)),
-		Cap:  int(unsafe.Sizeof(*cmd)),
-	}
-	buf := *(*[]byte)(unsafe.Pointer(&hdr))
+	ptr := (*byte)(unsafe.Pointer(cmd))
+	sli := unsafe.Slice(ptr, unsafe.Sizeof(*cmd))
 
-	_, err := f.Write(buf)
+	_, err := f.Write(sli)
 	if err != nil {
 		log.Errorf("Error while writing the command %v. Error: %v", cmd, err)
 	}

@@ -122,7 +122,7 @@ func (m *LocalManager) AcquireLease(ctx context.Context, attrs *lease.LeaseAttrs
 		}
 	}
 
-	return nil, errors.New("Max retries reached trying to acquire a subnet")
+	return nil, errors.New("max retries reached trying to acquire a subnet")
 }
 
 func findLeaseByIP(leases []lease.Lease, pubIP ip.IP4) *lease.Lease {

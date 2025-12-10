@@ -41,7 +41,7 @@ func FromIP6(ip net.IP) *IP6 {
 func ParseIP6(s string) (*IP6, error) {
 	ip := net.ParseIP(s)
 	if ip == nil {
-		return (*IP6)(big.NewInt(0)), errors.New("Invalid IP address format")
+		return (*IP6)(big.NewInt(0)), errors.New("invalid IP address format")
 	}
 	return FromIP6(ip), nil
 }

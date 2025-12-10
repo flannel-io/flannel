@@ -43,7 +43,7 @@ func FromIP(ip net.IP) IP4 {
 func ParseIP4(s string) (IP4, error) {
 	ip := net.ParseIP(s)
 	if ip == nil {
-		return IP4(0), errors.New("Invalid IP address format")
+		return IP4(0), errors.New("invalid IP address format")
 	}
 	return FromIP(ip), nil
 }

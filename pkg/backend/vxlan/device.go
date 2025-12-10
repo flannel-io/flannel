@@ -137,7 +137,7 @@ func (dev *vxlanDevice) Configure(ipa ip.IP4Net, flannelnet ip.IP4Net) error {
 
 	// ensure vxlan device hadware mac
 	// See https://github.com/flannel-io/flannel/issues/1795
-	nLink, err := netlink.LinkByName(dev.link.LinkAttrs.Name)
+	nLink, err := netlink.LinkByName(dev.link.Name)
 	if err == nil {
 		if vxlan, ok := nLink.(*netlink.Vxlan); ok {
 			if vxlan.Attrs().HardwareAddr.String() != dev.MACAddr().String() {
@@ -160,7 +160,7 @@ func (dev *vxlanDevice) ConfigureIPv6(ipn ip.IP6Net, flannelnet ip.IP6Net) error
 
 	// ensure vxlan device hadware mac
 	// See https://github.com/flannel-io/flannel/issues/1795
-	nLink, err := netlink.LinkByName(dev.link.LinkAttrs.Name)
+	nLink, err := netlink.LinkByName(dev.link.Name)
 	if err == nil {
 		if vxlan, ok := nLink.(*netlink.Vxlan); ok {
 			if vxlan.Attrs().HardwareAddr.String() != dev.MACAddr().String() {

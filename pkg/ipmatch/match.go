@@ -197,7 +197,7 @@ func LookupExtIface(ifname string, ifregexS string, ifcanreach string, ipStack i
 				availableFaces = append(availableFaces, fmt.Sprintf("%s:%v", f.Name, ipaddr))
 			}
 
-			return nil, fmt.Errorf("Could not match pattern %s to any of the available network interfaces (%s)", ifregexS, strings.Join(availableFaces, ", "))
+			return nil, fmt.Errorf("could not match pattern %s to any of the available network interfaces (%s)", ifregexS, strings.Join(availableFaces, ", "))
 		}
 	} else if len(ifcanreach) > 0 {
 		if runtime.GOOS == "windows" {
