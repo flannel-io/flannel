@@ -116,6 +116,7 @@ Requirements:
 * Nodes must have an ipv4 and ipv6 address in the main interface
 * Nodes must have an ipv4 and ipv6 address default route
 * vxlan support ipv6 tunnel require kernel version >= 3.12
+* When public IPv6 addresses are used, routing of the "IPv6Network" towards the cluster must be configured externally from flannel (see [#2289](https://github.com/flannel-io/flannel/issues/2289) for details)
 
 Configuration:
 * Set "EnableIPv6": true and the "IPv6Network", for example "IPv6Network": * "2001:cafe:42:0::/56" in the net-conf.json of the kube-flannel-cfg ConfigMap or in `/coreos.com/network/config` for etcd
