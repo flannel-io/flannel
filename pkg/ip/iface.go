@@ -74,7 +74,7 @@ func GetInterfaceIP4Addrs(iface *net.Interface) ([]net.IP, error) {
 		return ipAddrs, nil
 	}
 
-	return nil, errors.New("No IPv4 address found for given interface")
+	return nil, errors.New("no IPv4 address found for given interface")
 }
 
 func GetInterfaceIP6Addrs(iface *net.Interface) ([]net.IP, error) {
@@ -102,7 +102,7 @@ func GetInterfaceIP6Addrs(iface *net.Interface) ([]net.IP, error) {
 		return ipAddrs, nil
 	}
 
-	return nil, errors.New("No IPv6 address found for given interface")
+	return nil, errors.New("no IPv6 address found for given interface")
 }
 
 func GetInterfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) error {
@@ -121,7 +121,7 @@ func GetInterfaceIP4AddrMatch(iface *net.Interface, matchAddr net.IP) error {
 		}
 	}
 
-	return errors.New("No IPv4 address found for given interface")
+	return errors.New("no IPv4 address found for given interface")
 }
 
 func GetInterfaceIP6AddrMatch(iface *net.Interface, matchAddr net.IP) error {
@@ -140,7 +140,7 @@ func GetInterfaceIP6AddrMatch(iface *net.Interface, matchAddr net.IP) error {
 		}
 	}
 
-	return errors.New("No IPv6 address found for given interface")
+	return errors.New("no IPv6 address found for given interface")
 }
 
 func GetDefaultGatewayInterface() (*net.Interface, error) {
@@ -152,13 +152,13 @@ func GetDefaultGatewayInterface() (*net.Interface, error) {
 	for _, route := range routes {
 		if route.Dst == nil || route.Dst.String() == "0.0.0.0/0" {
 			if route.LinkIndex <= 0 {
-				return nil, errors.New("Found default route but could not determine interface")
+				return nil, errors.New("found default route but could not determine interface")
 			}
 			return net.InterfaceByIndex(route.LinkIndex)
 		}
 	}
 
-	return nil, errors.New("Unable to find default route")
+	return nil, errors.New("unable to find default route")
 }
 
 func GetDefaultV6GatewayInterface() (*net.Interface, error) {
@@ -170,13 +170,13 @@ func GetDefaultV6GatewayInterface() (*net.Interface, error) {
 	for _, route := range routes {
 		if route.Dst == nil || route.Dst.String() == "::/0" {
 			if route.LinkIndex <= 0 {
-				return nil, errors.New("Found default v6 route but could not determine interface")
+				return nil, errors.New("found default v6 route but could not determine interface")
 			}
 			return net.InterfaceByIndex(route.LinkIndex)
 		}
 	}
 
-	return nil, errors.New("Unable to find default v6 route")
+	return nil, errors.New("unable to find default v6 route")
 }
 
 func GetInterfaceByIP(ip net.IP) (*net.Interface, error) {
@@ -192,7 +192,7 @@ func GetInterfaceByIP(ip net.IP) (*net.Interface, error) {
 		}
 	}
 
-	return nil, errors.New("No interface with given IP found")
+	return nil, errors.New("no interface with given IP found")
 }
 
 func GetInterfaceByIP6(ip net.IP) (*net.Interface, error) {
@@ -208,7 +208,7 @@ func GetInterfaceByIP6(ip net.IP) (*net.Interface, error) {
 		}
 	}
 
-	return nil, errors.New("No interface with given IPv6 found")
+	return nil, errors.New("no interface with given IPv6 found")
 }
 
 func GetInterfaceBySpecificIPRouting(ip net.IP) (*net.Interface, net.IP, error) {
@@ -226,7 +226,7 @@ func GetInterfaceBySpecificIPRouting(ip net.IP) (*net.Interface, net.IP, error) 
 		}
 	}
 
-	return nil, nil, errors.New("No interface with given IP found")
+	return nil, nil, errors.New("no interface with given IP found")
 }
 
 func DirectRouting(ip net.IP) (bool, error) {

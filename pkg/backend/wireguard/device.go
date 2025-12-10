@@ -71,7 +71,10 @@ func writePrivateKey(path string, content string) error {
 		return err
 	}
 
-	f.Close()
+	err = f.Close()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -152,7 +155,12 @@ func newWGDevice(devAttrs *wgDeviceAttrs, ctx context.Context, wg *sync.WaitGrou
 	if err != nil {
 		return nil, fmt.Errorf("failed to open wgctrl: %w", err)
 	}
-	defer client.Close()
+	defer func() {
+		err := client.Close()
+		if err != nil {
+			log.Errorf("failed to close wgctrl client: %v", err)
+		}
+	}()
 
 	err = client.ConfigureDevice(dev.attrs.name, wgcfg)
 	if err != nil {
@@ -299,7 +307,12 @@ func (dev *wgDevice) addPeer(publicEndpoint string, peerPublicKeyRaw string, pee
 	if err != nil {
 		return fmt.Errorf("failed to open wgctrl: %w", err)
 	}
-	defer client.Close()
+	defer func() {
+		err := client.Close()
+		if err != nil {
+			log.Errorf("failed to close wgctrl client: %v", err)
+		}
+	}()
 
 	err = client.ConfigureDevice(dev.attrs.name, wgcfg)
 	if err != nil {
@@ -328,7 +341,12 @@ func (dev *wgDevice) removePeer(peerPublicKeyRaw string) error {
 	if err != nil {
 		return fmt.Errorf("failed to open wgctrl: %w", err)
 	}
-	defer client.Close()
+	defer func() {
+		err := client.Close()
+		if err != nil {
+			log.Errorf("failed to close wgctrl client: %v", err)
+		}
+	}()
 
 	err = client.ConfigureDevice(dev.attrs.name, wgcfg)
 	if err != nil {

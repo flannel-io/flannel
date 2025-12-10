@@ -33,6 +33,6 @@ func (n *SimpleNetwork) MTU() int {
 	return n.ExtIface.Iface.MTU
 }
 
-func (_ *SimpleNetwork) Run(ctx context.Context) {
+func (*SimpleNetwork) Run(ctx context.Context) {
 	<-ctx.Done()
 }

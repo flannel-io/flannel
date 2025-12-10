@@ -301,10 +301,10 @@ func (ksm *kubeSubnetManager) handleAddLeaseEvent(ctx context.Context, et lease.
 
 	l, err := ksm.nodeToLease(*n)
 	if err != nil {
-		log.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
+		log.Infof("Error turning node %q to lease: %v", n.Name, err)
 		return
 	}
-	ksm.enqueueLeaseEvent(ctx, lease.Event{Type: et, Lease: l}, n.ObjectMeta.Name)
+	ksm.enqueueLeaseEvent(ctx, lease.Event{Type: et, Lease: l}, n.Name)
 }
 
 // handleUpdateLeaseEvent verifies if anything relevant changed in the node object: either
@@ -334,10 +334,10 @@ func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(ctx context.Context, oldObj
 
 	l, err := ksm.nodeToLease(*n)
 	if err != nil {
-		log.Infof("Error turning node %q to lease: %v", n.ObjectMeta.Name, err)
+		log.Infof("Error turning node %q to lease: %v", n.Name, err)
 		return
 	}
-	ksm.enqueueLeaseEvent(ctx, lease.Event{Type: lease.EventAdded, Lease: l}, n.ObjectMeta.Name)
+	ksm.enqueueLeaseEvent(ctx, lease.Event{Type: lease.EventAdded, Lease: l}, n.Name)
 }
 
 func (ksm *kubeSubnetManager) GetNetworkConfig(ctx context.Context) (*subnet.Config, error) {

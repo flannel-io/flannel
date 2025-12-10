@@ -59,7 +59,12 @@ func get_vm_metadata(url string) (string, error) {
 		return "", fmt.Errorf("get vm region error: %v", err)
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.Errorf("Failed to close response body: %v", err)
+		}
+	}()
 
 	metadata, _ := io.ReadAll(resp.Body)
 	return string(metadata), nil
@@ -156,7 +161,7 @@ func (be *TencentVpcBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitG
 	response := res.Response
 
 	if len(response.RouteTableSet) <= 0 {
-		return nil, fmt.Errorf("No suitable routing table found")
+		return nil, fmt.Errorf("no suitable routing table found")
 	}
 
 	routeTable := response.RouteTableSet[0]

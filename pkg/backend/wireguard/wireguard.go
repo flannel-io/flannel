@@ -138,7 +138,8 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 	var err error
 	var dev, v6Dev *wgDevice
 	var publicKey string
-	if cfg.Mode == Separate {
+	switch cfg.Mode {
+	case Separate:
 		if config.EnableIPv4 {
 			dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort, cfg.MTU)
 			if err != nil {
@@ -153,13 +154,13 @@ func (be *WireguardBackend) RegisterNetwork(ctx context.Context, wg *sync.WaitGr
 			}
 			publicKey = v6Dev.attrs.publicKey.String()
 		}
-	} else if cfg.Mode == Auto || cfg.Mode == Ipv4 || cfg.Mode == Ipv6 {
+	case Auto, Ipv4, Ipv6:
 		dev, err = createWGDev(ctx, wg, "flannel-wg", cfg.PSK, &keepalive, cfg.ListenPort, cfg.MTU)
 		if err != nil {
 			return nil, err
 		}
 		publicKey = dev.attrs.publicKey.String()
-	} else {
+	default:
 		return nil, fmt.Errorf("no valid Mode configured")
 	}
 

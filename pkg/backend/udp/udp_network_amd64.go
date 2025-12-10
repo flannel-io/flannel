@@ -80,10 +80,22 @@ func newNetwork(sm subnet.Manager, extIface *backend.ExternalInterface, port int
 
 func (n *network) Run(ctx context.Context) {
 	defer func() {
-		n.tun.Close()
-		n.conn.Close()
-		n.ctl.Close()
-		n.ctl2.Close()
+		err := n.tun.Close()
+		if err != nil {
+			log.Errorf("Failed to close tun device: %v", err)
+		}
+		err = n.conn.Close()
+		if err != nil {
+			log.Errorf("Failed to close UDP connection: %v", err)
+		}
+		err = n.ctl.Close()
+		if err != nil {
+			log.Errorf("Failed to close control socket: %v", err)
+		}
+		err = n.ctl2.Close()
+		if err != nil {
+			log.Errorf("Failed to close control socket: %v", err)
+		}
 	}()
 
 	// one for each goroutine below
