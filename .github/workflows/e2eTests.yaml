@@ -11,7 +11,7 @@ jobs:
     - name: Set up Go 1.x
       uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b #v5.4.0
       with:
-        go-version: ^1.23
+        go-version: ^1.24
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1

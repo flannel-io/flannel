@@ -3,7 +3,7 @@ name: build flannel
 on: pull_request
 
 env:
-  GO_VERSION: "1.23"
+  GO_VERSION: "1.24"
   LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le riscv64"
   REPOSITORY: flannel/flannel
 
