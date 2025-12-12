@@ -271,7 +271,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if runtime.GOOS != "windows" {
+	if runtime.GOOS != "windows" && !config.EnableNFTables {
 		// From Kubernetes 1.30 kubeadm doesn't check if the br_netfilter module is loaded and in case it's missing Flannel wrongly starts
 		if config.EnableIPv4 {
 			if _, err = os.Stat("/proc/sys/net/bridge/bridge-nf-call-iptables"); os.IsNotExist(err) {
