@@ -40,7 +40,7 @@ jobs:
           ARCH=amd64 TAG=${{ github.sha }} make image
 
       - name: Run Trivy vulnerability scanner in tarball mode
-        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 #v0.30.0
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 #v0.33.1
         with:
           input: ./dist/flanneld-${{ github.sha }}-amd64.docker
           severity: 'CRITICAL,HIGH'
