@@ -57,7 +57,7 @@ jobs:
 
       - name: Build and push Docker image
         if: github.repository_owner == 'flannel-io' && success()
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 #v5.4.0
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 #v6.18.0
         with:
           context: .
           file: images/Dockerfile
@@ -110,7 +110,7 @@ jobs:
 
       - name: Build and push Docker image
         id: push
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 #v5.4.0
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 #v6.18.0
         with:
           context: .
           file: images/Dockerfile
