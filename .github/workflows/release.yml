@@ -121,7 +121,7 @@ jobs:
           build-args: TAG=${{ env.GIT_TAG }}
 
       - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2 #v2.2.3
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a #v3.0.0
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.push.outputs.digest }}
