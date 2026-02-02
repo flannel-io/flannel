@@ -9,7 +9,7 @@ require (
 	github.com/bronze1man/goStrongswanVici v0.0.0-20231128135937-211cef3b0b20
 	github.com/containernetworking/plugins v1.9.0
 	github.com/coreos/go-iptables v0.8.0
-	github.com/coreos/go-systemd/v22 v22.6.0
+	github.com/coreos/go-systemd/v22 v22.7.0
 	github.com/coreos/pkg v0.0.0-20240122114842-bbd7aa9bf6fb
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/joho/godotenv v1.5.1
