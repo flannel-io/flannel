@@ -7,6 +7,9 @@ env:
   LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le riscv64"
   REPOSITORY: flannel/flannel
 
+permissions:
+  contents: read
+
 jobs:
   build-images:
     runs-on: ubuntu-latest
