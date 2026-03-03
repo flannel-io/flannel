@@ -3,6 +3,7 @@
 ![flannel Logo](logos/flannel-horizontal-color.png)
 
 ![Build Status](https://github.com/flannel-io/flannel/actions/workflows/build.yaml/badge.svg?branch=master)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/flannel-io/flannel/badge)](https://scorecard.dev/viewer/?uri=github.com%2Fflannel-io%2Fflannel)
 
 Flannel is a simple and easy way to configure a layer 3 network fabric designed for Kubernetes.
 
