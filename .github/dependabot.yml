@@ -34,3 +34,18 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+
+  - package-ecosystem: docker
+    directory: /e2e
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /images
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /images/iperf3
+    schedule:
+      interval: daily

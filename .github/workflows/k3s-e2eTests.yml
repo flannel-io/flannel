@@ -7,6 +7,9 @@ env:
   GO_VERSION: "1.24"
   KUBECONFIG: ${HOME}/.kube/config
 
+permissions:
+  contents: read
+
 jobs:
   k3s-e2e-tests:
     name: test

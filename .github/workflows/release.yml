@@ -11,6 +11,9 @@ env:
   IMAGE_NAME: flannel-io/flannel
   REGISTRY: ghcr.io
 
+permissions:
+  contents: read
+
 jobs:
   build-and-push-images:
     runs-on: ubuntu-latest
