@@ -41,6 +41,16 @@ We follow a **coordinated disclosure** process:
 If a vulnerability is not resolved within 90 days, we encourage reporters to
 disclose publicly while coordinating with the maintainers to minimize user risk.
 
+## Embargoed Vulnerability Announcements
+
+To receive advance notifications of embargoed security vulnerabilities before
+public disclosure, subscribe to the flannel distributors mailing list:
+
+**[flannel-distributors-announce@googlegroups.com](https://groups.google.com/g/flannel-distributors-announce)**
+
+This list is intended for distributors and downstream consumers of flannel who
+need early access to security information to prepare patches or advisories.
+
 ## Security Advisories
 
 Published security advisories for flannel can be found at:
