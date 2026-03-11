@@ -19,7 +19,7 @@ responsible disclosure.
 **Please do not report security vulnerabilities through public GitHub issues.**
 
 To report a vulnerability, use **GitHub private vulnerability reporting**:
-[https://github.com/flannel-io/flannel/security/advisories/new](https://github.com/flannel-io/flannel/security/advisories/new)
+https://github.com/flannel-io/flannel/security/advisories/new
 
 Please include as much detail as possible in your report:
 
@@ -54,7 +54,7 @@ need early access to security information to prepare patches or advisories.
 ## Security Advisories
 
 Published security advisories for flannel can be found at:
-[https://github.com/flannel-io/flannel/security/advisories](https://github.com/flannel-io/flannel/security/advisories)
+https://github.com/flannel-io/flannel/security/advisories
 
 ## Scope
 
