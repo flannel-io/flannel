@@ -1,6 +1,6 @@
 module github.com/flannel-io/flannel
 
-go 1.24.7
+go 1.25.0
 
 // replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
 
@@ -33,7 +33,7 @@ require (
 	github.com/avast/retry-go/v4 v4.7.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.51
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.3.49
-	golang.org/x/sync v0.19.0
+	golang.org/x/sync v0.20.0
 	sigs.k8s.io/knftables v0.0.18
 )
 
@@ -134,7 +134,7 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/sys v0.41.0
+	golang.org/x/sys v0.42.0
 	golang.org/x/term v0.37.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
 	google.golang.org/grpc v1.71.1 // indirect
