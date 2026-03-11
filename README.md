@@ -104,9 +104,11 @@ The meeting agenda and Teams link can be found here: [Flannel Community Meeting 
 
 See [CONTRIBUTING][contributing] for details on submitting patches and the contribution workflow.
 
-## Reporting bugs
+## Reporting bugs & security vulnerabilities
 
 See [reporting bugs][reporting] for details about reporting any issues.
+
+For security issues, please first check our [security policy](SECURITY.md).
 
 ## Licensing
 
