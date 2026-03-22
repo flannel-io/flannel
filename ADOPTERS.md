@@ -16,6 +16,7 @@ These organizations have strong, verifiable evidence of using Flannel in product
 | Tencent Cloud | Custom [Tencent VPC backend](pkg/backend/tencentvpc/) for Flannel running on Tencent Cloud infrastructure | https://cloud.tencent.com |
 | Microsoft | Flannel support for Windows worker nodes in Kubernetes clusters (contributed Windows networking features) | https://www.microsoft.com |
 | LinkedIn | Large-scale Kubernetes cluster networking (engineers contributed production fixes for large clusters) | https://www.linkedin.com |
+| NVIDIA | CNI for [nvidia/openshell](https://github.com/nvidia/openshell) using [K3s](https://k3s.io) | https://github.com/nvidia/openshell |
 
 ## Organizations that Have Contributed to Flannel
 
