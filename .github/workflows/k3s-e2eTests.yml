@@ -27,7 +27,7 @@ jobs:
         run: sudo modprobe br_netfilter overlay
 
       - name: Log in to Docker Hub
-        if: github.repository_owner == 'flannel-io' && success()
+        if: github.repository_owner == 'flannel-io' && github.event_name != 'pull_request' && success()
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 #v4.0.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
