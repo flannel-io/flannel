@@ -5,7 +5,12 @@ set -e -o pipefail
 source $(dirname $0)/version.sh
 
 RELEASE="$(curl -sSL https://dl.k8s.io/release/stable.txt)"
-pushd /usr/local/bin
-sudo curl -L --remote-name-all https://dl.k8s.io/release/${RELEASE}/bin/linux/${ARCH:-amd64}/kubectl
-sudo chmod +x kubectl
-popd
+ARCH="${ARCH:-amd64}"
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "${TMP_DIR}"' EXIT
+
+curl -fsSLo "${TMP_DIR}/kubectl" "https://dl.k8s.io/release/${RELEASE}/bin/linux/${ARCH}/kubectl"
+curl -fsSLo "${TMP_DIR}/kubectl.sha256" "https://dl.k8s.io/release/${RELEASE}/bin/linux/${ARCH}/kubectl.sha256"
+echo "$(cat "${TMP_DIR}/kubectl.sha256")  ${TMP_DIR}/kubectl" | sha256sum --check --status
+
+sudo install -m 0755 "${TMP_DIR}/kubectl" /usr/local/bin/kubectl
