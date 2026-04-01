@@ -2,8 +2,30 @@
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
-QEMU_VERSION=v3.0.0
+QEMU_VERSION=v7.2.0-1
 BASH_UNIT_VERSION=v2.3.0
+
+# Fill these with expected SHA256 values for each qemu static binary.
+QEMU_SHA256_AMD64?=7132ffd39aef71c26d3344cc0c7dffc530e10e3e720c58c8279a97ef6fdd7784
+QEMU_SHA256_ARM?=9f07762a3cd0f8a199cb5471a92402a4765f8e2fcb7fe91a87ee75da9616a806
+QEMU_SHA256_ARM64?=dce64b2dc6b005485c7aa735a7ea39cb0006bf7e5badc28b324b2cd0c73d883f
+QEMU_SHA256_PPC64LE?=a8855b9a9cdefbe2163d9f7851fb71c77207d816451237caed616eb9b03229ac
+QEMU_SHA256_S390X?=a438ab2f7c2e0f0ffe63992bccedaf60d789cfb1849e035c0764bda7d9e73a9a
+QEMU_SHA256_RISCV64?=3d25c6ec0523cf36e51ccd32ecefebed1752958ef384d10ba84c059ac26a4b3c
+
+QEMU_ASSET_amd64=qemu-x86_64-static
+QEMU_ASSET_arm=qemu-arm-static
+QEMU_ASSET_arm64=qemu-aarch64-static
+QEMU_ASSET_ppc64le=qemu-ppc64le-static
+QEMU_ASSET_s390x=qemu-s390x-static
+QEMU_ASSET_riscv64=qemu-riscv64-static
+
+QEMU_SHA256_amd64=$(QEMU_SHA256_AMD64)
+QEMU_SHA256_arm=$(QEMU_SHA256_ARM)
+QEMU_SHA256_arm64=$(QEMU_SHA256_ARM64)
+QEMU_SHA256_ppc64le=$(QEMU_SHA256_PPC64LE)
+QEMU_SHA256_s390x=$(QEMU_SHA256_S390X)
+QEMU_SHA256_riscv64=$(QEMU_SHA256_RISCV64)
 
 # Default tag and architecture. Can be overridden
 TAG?=$(shell git describe --tags --always)
@@ -19,7 +41,7 @@ endif
 GO_VERSION=1.24.7
 
 # K8s version used for Makefile helpers
-K8S_VERSION=1.32.5
+K8S_VERSION=1.34.6
 
 GOARM=7
 
@@ -177,13 +199,16 @@ release-helm:
 	helm repo index --merge chart/index.yaml --url https://github.com/flannel-io/flannel/releases/download/$(TAG)/ chart/
 
 dist/qemu-%-static:
-	if [ "$(@F)" = "qemu-amd64-static" ]; then \
-		wget -O dist/qemu-amd64-static https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-x86_64-static; \
-	elif [ "$(@F)" = "qemu-arm64-static" ]; then \
-		wget -O dist/qemu-arm64-static https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-aarch64-static; \
-	else \
-		wget -O dist/$(@F) https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/$(@F); \
-	fi 
+	@if [ -z "$(QEMU_ASSET_$*)" ]; then \
+		echo "Unsupported qemu target: $(@F)"; \
+		exit 1; \
+	fi
+	@if [ -z "$(QEMU_SHA256_$*)" ]; then \
+		echo "Missing SHA256 for $(@F). Set the corresponding QEMU_SHA256_* variable."; \
+		exit 1; \
+	fi
+	@wget -O dist/$(@F) https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/$(QEMU_ASSET_$*)
+	@echo "$(QEMU_SHA256_$*)  dist/$(@F)" | sha256sum --check --status
 
 ## Build a .tar.gz for the amd64 ppc64le arm arm64 riscv64 flanneld binary
 tar.gz:
