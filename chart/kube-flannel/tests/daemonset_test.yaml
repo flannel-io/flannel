@@ -26,8 +26,8 @@ tests:
 
   - it: should have the correct cni image
     set:
-      flannel.image_cni.repository: cicker.io/flannel/flannel-cni-plugin
-      flannel.image_cni.tag: v777.66.5
+      flannel.flannel_cni.image.repository: cicker.io/flannel/flannel-cni-plugin
+      flannel.flannel_cni.image.tag: v777.66.5
     asserts:
       - equal:
           path: spec.template.spec.initContainers[0].image

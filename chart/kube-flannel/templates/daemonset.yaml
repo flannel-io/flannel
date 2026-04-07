@@ -38,7 +38,7 @@ spec:
       serviceAccountName: flannel
       initContainers:
       - name: install-cni-plugin
-        image: {{ .Values.flannel.image_cni.repository }}:{{ .Values.flannel.image_cni.tag }}
+        image: {{ .Values.flannel.flannel_cni.image.repository }}:{{ .Values.flannel.flannel_cni.image.tag }}
         command:
         - cp
         args:

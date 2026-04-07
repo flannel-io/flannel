@@ -13,9 +13,10 @@ flannel:
   image:
     repository: ghcr.io/flannel-io/flannel
     tag: v0.28.2
-  image_cni:
-    repository: ghcr.io/flannel-io/flannel-cni-plugin
-    tag: v1.9.0-flannel1
+  flannel_cni:
+    image:
+      repository: ghcr.io/flannel-io/flannel-cni-plugin
+      tag: v1.9.0-flannel1
   # cniBinDir is the directory to which the flannel CNI binary is installed.
   cniBinDir: "/opt/cni/bin"
   # cniConfDir is the directory where the CNI configuration is located.

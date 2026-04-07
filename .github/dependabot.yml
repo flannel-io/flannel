@@ -46,6 +46,21 @@ updates:
       interval: daily
 
   - package-ecosystem: docker
+    directory: /chart/kube-flannel/
+    schedule:
+      interval: weekly
+    allow:
+      - dependency-name: "flannel-cni-plugin"
+      - dependency-name: "kube-network-policies"
+
+  - package-ecosystem: "docker"
+    directory: "/Documentation/kustomization/kube-flannel"
+    schedule:
+      interval: "weekly"
+    allow:
+      - dependency-name: "ghcr.io/flannel-io/flannel-cni-plugin"
+
+  - package-ecosystem: docker
     directory: /images/iperf3
     schedule:
       interval: daily
