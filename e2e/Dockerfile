@@ -4,7 +4,7 @@ ARG SLES="registry.suse.com/suse/sle15:15.7"
 FROM ${SLES} AS k3s
 ARG ARCH
 ARG K3S_VERSION="v1.34.6+k3s1"
-ARG CNI_VERSION="v1.9.0"
+ARG CNI_VERSION="v1.9.1"
 RUN set -x \
  && zypper -n in \
     ca-certificates \
@@ -34,16 +34,16 @@ RUN set -x \
 RUN mkdir -p /opt/cni/bin \
  && CNI_TGZ="cni-plugins-linux-${ARCH}-${CNI_VERSION}.tgz" \
  && case "${ARCH}" in \
-      amd64) CNI_SHA256="58c03705426e929658f45a851df15a86d06ef680cacbf3f2dc127731ca265c28" ;; \
-      arm)   CNI_SHA256="bdfe1cce5f74fe6c2b00e9f318bec93050900799a84926657db047f6ef5e002a" ;; \
-      arm64) CNI_SHA256="2596ef56329dd1269026f46b8df262f09ba43c92dbfb940e1e69fbccccd30a29" ;; \
+      amd64) CNI_SHA256="b98f74a0f8522f0a83867178729c1aa70f2158f90c45a2ca8fa791db1c76b303" ;; \
+      arm)   CNI_SHA256="21416880bea0541d78afaf106373d6dbb471edb92c0114fa263494fe4aec8d3b" ;; \
+      arm64) CNI_SHA256="56171987d3947707c3563db2f4001bccaf50fd63468611b9f3cbecb1375ee7ec" ;; \
       *) echo "unsupported ARCH for CNI plugins: ${ARCH}" >&2; exit 1 ;; \
     esac \
  && curl -fsSL "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/${CNI_TGZ}" -o "/tmp/${CNI_TGZ}" \
  && printf '%s  %s\n' "${CNI_SHA256}" "/tmp/${CNI_TGZ}" | sha256sum -c - \
  && tar -xzf "/tmp/${CNI_TGZ}" -C /opt/cni/bin \
  && rm -f "/tmp/${CNI_TGZ}"
-  
+
 COPY scratch/*.tar /var/lib/rancher/k3s/agent/images/
 RUN ls -l /var/lib/rancher/k3s/agent/images/
 #ADD https://github.com/rancher/k3s/releases/download/${K3S_VERSION}/k3s-airgap-images-${ARCH}.tar /var/lib/rancher/k3s/agent/images/
