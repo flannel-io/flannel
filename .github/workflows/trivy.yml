@@ -13,7 +13,7 @@ on:
     - cron: '34 5 * * 2'
 
 env:
-  GO_VERSION: "1.24"
+  GO_VERSION: "1.25.9"
   REPOSITORY: flannel/flannel
 
 permissions:
@@ -48,6 +48,6 @@ jobs:
           output: 'trivy-results.sarif'
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13
         with:
           sarif_file: 'trivy-results.sarif'

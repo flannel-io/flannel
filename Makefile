@@ -38,7 +38,7 @@ else
 endif
 
 # Go version to use for builds
-GO_VERSION=1.24.7
+GO_VERSION=1.25.9
 
 # K8s version used for Makefile helpers
 K8S_VERSION=1.34.6
@@ -101,7 +101,7 @@ test: license-check gofmt deps verify-modules
 	# Run the functional tests
 	make e2e-test
 
-unit-test: 
+unit-test:
 	# Run the unit tests
 	# NET_ADMIN capacity is required to do some network operation
 	# SYS_ADMIN capacity is required to create network namespace
@@ -132,7 +132,7 @@ license-check:
 # Throw an error if gofmt finds problems.
 # "read" will return a failure return code if there is no output. This is inverted wth the "!"
 gofmt:
-	# Running gofmt... 
+	# Running gofmt...
 	docker run --rm -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) \
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR):/go/src/github.com/flannel-io/flannel \
@@ -248,4 +248,3 @@ buildx-create-builder:
 
 build-multi-arch:
 	docker buildx build  --platform linux/amd64,linux/arm64,linux/arm,linux/s390x,linux/ppc64le,linux/riscv64 -t $(REGISTRY):$(TAG) -f images/Dockerfile --build-arg TAG=$(TAG) -o type=oci,dest=dist/flannel_oci.tar --progress plain .
-

@@ -1,11 +1,11 @@
 name: release flannel and upload docker images
-  
+
 on:
   release:
     types: [published]
 
 env:
-  GO_VERSION: "1.24"
+  GO_VERSION: "1.25.9"
   LINUX_ARCHES: "amd64 arm arm64 s390x ppc64le riscv64"
   REPOSITORY: flannel/flannel
   IMAGE_NAME: flannel-io/flannel
@@ -25,7 +25,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
-      - name: set tag 
+      - name: set tag
         run: echo "GIT_TAG=$(git describe --tags --always)" >> $GITHUB_ENV
 
       - name: Set up Go 1.x
@@ -150,7 +150,7 @@ jobs:
 
       - name: go mod vendor
         run: go mod vendor
-      
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a #v4.0.0
 
@@ -160,7 +160,7 @@ jobs:
       - name: Upload flannel binaries to the release page
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ env.GIT_TAG }} dist/flannel* 
+        run: gh release upload ${{ env.GIT_TAG }} dist/flannel*
 
   publish-chart:
     permissions:
@@ -201,4 +201,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 #v5.0.0
-
