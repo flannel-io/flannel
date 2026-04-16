@@ -26,8 +26,5 @@ jobs:
       - name: set up modules
         run: sudo modprobe br_netfilter overlay
 
-      - name: build flannel image
-        run: make image
-
       - name: run e2e tests with k3s
         run: make k3s-e2e-test

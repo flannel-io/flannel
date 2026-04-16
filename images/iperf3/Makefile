@@ -14,9 +14,15 @@ ifeq ($(ARCH),ppc64le)
 	BASEIMAGE=ppc64le/alpine:3.16
 endif
 
+.PHONY: all container
+
 all: container
 
 container:
-	cp ./* $(TEMP_DIR)
-	cd $(TEMP_DIR) && sed -i 's|BASEIMAGE|$(BASEIMAGE)|g' Dockerfile
-	docker build --pull -t $(IPERF_IMG) -f $(TEMP_DIR)/Dockerfile $(TEMP_DIR)
+	@echo "Copying files to $(TEMP_DIR)..."
+	@cp ./* $(TEMP_DIR) || { echo "ERROR: Failed to copy files"; exit 1; }
+	@echo "Preparing Dockerfile..."
+	@cd $(TEMP_DIR) && sed -i 's|BASEIMAGE|$(BASEIMAGE)|g' Dockerfile || { echo "ERROR: Failed to prepare Dockerfile"; exit 1; }
+	@echo "Building iperf3 container image..."
+	@docker build --pull -t $(IPERF_IMG) -f $(TEMP_DIR)/Dockerfile $(TEMP_DIR) || { echo "ERROR: Docker build failed for iperf3"; exit 1; }
+	@echo "Successfully built iperf3 image: $(IPERF_IMG)"

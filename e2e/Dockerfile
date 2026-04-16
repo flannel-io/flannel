@@ -5,7 +5,7 @@ FROM ${SLES} AS k3s
 ARG ARCH
 ARG K3S_VERSION="v1.34.6+k3s1"
 ARG CNI_VERSION="v1.9.1"
-RUN set -x \
+RUN set -e -x \
  && zypper -n in \
     ca-certificates \
     curl \
@@ -25,13 +25,14 @@ RUN set -x \
       *) echo "unsupported ARCH: ${ARCH}" >&2; exit 1 ;; \
     esac \
  && curl -fsSL "https://github.com/rancher/k3s/releases/download/${K3S_VERSION}/${K3S_BIN}" -o /bin/k3s \
- && printf '%s  %s\n' "${K3S_SHA256}" "/bin/k3s" | sha256sum -c - \
+ && { printf '%s  %s\n' "${K3S_SHA256}" "/bin/k3s" | sha256sum -c - || { echo "ERROR: K3S checksum verification failed for ${ARCH}. Expected: ${K3S_SHA256}"; exit 1; }; } \
  && chmod +x /bin/k3s \
  && ln -s /bin/k3s /bin/kubectl \
  && ln -s /bin/k3s /bin/ctr \
  && k3s --version
 #install cni plugins manually since we will only install flannel later
-RUN mkdir -p /opt/cni/bin \
+RUN set -e -x \
+ && mkdir -p /opt/cni/bin \
  && CNI_TGZ="cni-plugins-linux-${ARCH}-${CNI_VERSION}.tgz" \
  && case "${ARCH}" in \
       amd64) CNI_SHA256="b98f74a0f8522f0a83867178729c1aa70f2158f90c45a2ca8fa791db1c76b303" ;; \
@@ -40,7 +41,7 @@ RUN mkdir -p /opt/cni/bin \
       *) echo "unsupported ARCH for CNI plugins: ${ARCH}" >&2; exit 1 ;; \
     esac \
  && curl -fsSL "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/${CNI_TGZ}" -o "/tmp/${CNI_TGZ}" \
- && printf '%s  %s\n' "${CNI_SHA256}" "/tmp/${CNI_TGZ}" | sha256sum -c - \
+ && { printf '%s  %s\n' "${CNI_SHA256}" "/tmp/${CNI_TGZ}" | sha256sum -c - || { echo "ERROR: CNI plugins checksum verification failed for ${ARCH}. Expected: ${CNI_SHA256}"; exit 1; }; } \
  && tar -xzf "/tmp/${CNI_TGZ}" -C /opt/cni/bin \
  && rm -f "/tmp/${CNI_TGZ}"
 

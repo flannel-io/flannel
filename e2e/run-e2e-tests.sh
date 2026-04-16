@@ -18,6 +18,12 @@ setup_suite() {
     cp $(dirname $0)/../dist/${FLANNEL_IMAGE_FILE}.docker $(dirname $0)/scratch/${FLANNEL_IMAGE_FILE}.tar
 
     $(dirname $0)/download-kubectl.sh
+
+    # build docker compose images before running any tests; a failure here
+    # causes bash_unit to abort the entire test suite immediately
+    pushd $(dirname $0) > /dev/null
+    docker compose build || { popd > /dev/null; return 1; }
+    popd > /dev/null
 }
 
 create_test_pod() {
@@ -164,7 +170,7 @@ prepare_test() {
 setup() {
     # start k3s cluster
     echo "starting k3s cluster..."
-    docker compose up -d
+    docker compose up --detach --wait --wait-timeout 300
     # get kubeconfig for the k3s cluster
     echo "waiting for kubeconfig to be available..."
     ./get-kubeconfig.sh

@@ -1,11 +1,8 @@
-version: "3.7"
-
 volumes:
   kubeconfig:
     name: e2e-local-kubeconfig
 
 services:
-
   leader:
     container_name: local-leader
     image: "e2e/cluster/local/k3s"

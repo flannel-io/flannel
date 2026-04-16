@@ -111,13 +111,15 @@ unit-test:
 		golang:$(GO_VERSION) \
 		/bin/bash -c 'cd /go/src/github.com/flannel-io/flannel && go test -v -cover -timeout 5m $(TEST_PACKAGES_EXPANDED)'
 
-e2e-test: bash_unit dist/flanneld-e2e-$(TAG)-$(ARCH).docker
+e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
 	$(MAKE) -C images/iperf3 ARCH=$(ARCH)
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test.sh
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test-k8s.sh
 
-k3s-e2e-test: bash_unit dist/flanneld-e2e-$(TAG)-$(ARCH).docker
-	$(MAKE) -C images/iperf3 ARCH=$(ARCH)
+k3s-e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
+	@echo "Building iperf3 image for $(ARCH)..."
+	$(MAKE) -C images/iperf3 ARCH=$(ARCH) || { echo "ERROR: Failed to build iperf3 image for $(ARCH)"; exit 1; }
+	@echo "Running k3s e2e tests..."
 	./bash_unit ./e2e/run-e2e-tests.sh
 
 cover:
@@ -157,21 +159,6 @@ bash_unit:
 	wget https://raw.githubusercontent.com/pgrange/bash_unit/$(BASH_UNIT_VERSION)/bash_unit
 	chmod +x bash_unit
 
-# This will build flannel natively using golang image
-dist/flanneld-e2e-$(TAG)-$(ARCH).docker:
-ifneq ($(ARCH),amd64)
-	$(MAKE) dist/qemu-$(ARCH)-static
-endif
-	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x riscv64]
-	docker run --rm -e GOARM=$(GOARM) -e CGO_ENABLED=$(CGO_ENABLED) -e GOCACHE=/go \
-		-u $(shell id -u):$(shell id -g) \
-		-v $(CURDIR):/go/src/github.com/flannel-io/flannel:ro \
-		-v $(CURDIR)/dist:/go/src/github.com/flannel-io/flannel/dist \
-		golang:$(GO_VERSION) /bin/bash -c '\
-		cd /go/src/github.com/flannel-io/flannel && \
-		make -e dist/flanneld && \
-		mv dist/flanneld dist/flanneld-$(ARCH)'
-	docker build -f images/Dockerfile --platform=$(ARCH) --build-arg TAG=$(TAG) -t $(REGISTRY):$(TAG)-$(ARCH) .
 
 # Make a release after creating a tag
 # To build cross platform Docker images, the qemu-static binaries are needed. On ubuntu "apt-get install  qemu-user-static"
