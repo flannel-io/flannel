@@ -213,8 +213,16 @@ func (nw *network) reCreateVxlan(ctx context.Context) error {
 			}
 		}
 
-		// Create the VXLAN device
-		dev, v6Dev, err := createVXLANDevice(ctx, config, cfg, nw.subnetMgr, extIface.Index, ifaceAddrs[0], ifaceAddrsV6[0])
+		// Create the VXLAN device. On IPv4-only setups EnableIPv6 is
+		// false so ifaceAddrsV6 is never populated; ifaceAddrsV6[0]
+		// used to panic with 'index out of range [0] with length 0'
+		// here during vxlan recreate. Pass nil instead — the v6 code
+		// path in createVXLANDevice is gated on config.EnableIPv6.
+		var v6Addr net.IP
+		if len(ifaceAddrsV6) > 0 {
+			v6Addr = ifaceAddrsV6[0]
+		}
+		dev, v6Dev, err := createVXLANDevice(ctx, config, cfg, nw.subnetMgr, extIface.Index, ifaceAddrs[0], v6Addr)
 		if err != nil {
 			log.Errorf("failed to create vxlan device: %v", err)
 			retryAfterBackoff(&backoff, maxBackoff)
