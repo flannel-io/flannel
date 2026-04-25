@@ -183,46 +183,43 @@ func (nw *network) reCreateVxlan(ctx context.Context) error {
 			continue
 		}
 
-		var ifaceAddrs, ifaceAddrsV6 []net.IP
+		var ifaceAddr, ifaceAddrV6 net.IP
 
 		if config.EnableIPv4 {
-			ifaceAddrs, err = ip.GetInterfaceIP4Addrs(extIface)
+			addrs, err := ip.GetInterfaceIP4Addrs(extIface)
 			if err != nil {
 				log.Errorf("error getting IPv4 addresses for %s: %v", extIface.Name, err)
 				retryAfterBackoff(&backoff, maxBackoff)
 				continue
 			}
-			if len(ifaceAddrs) == 0 {
+			if len(addrs) == 0 {
 				log.Warningf("no IPv4 addresses found for interface %s, retrying", extIface.Name)
 				retryAfterBackoff(&backoff, maxBackoff)
 				continue
 			}
+			ifaceAddr = addrs[0]
 		}
 
 		if config.EnableIPv6 {
-			ifaceAddrsV6, err = ip.GetInterfaceIP6Addrs(extIface)
+			addrs, err := ip.GetInterfaceIP6Addrs(extIface)
 			if err != nil {
 				log.Errorf("error getting IPv6 addresses for %s: %v", extIface.Name, err)
 				retryAfterBackoff(&backoff, maxBackoff)
 				continue
 			}
-			if len(ifaceAddrsV6) == 0 {
+			if len(addrs) == 0 {
 				log.Warningf("no IPv6 addresses found for interface %s, retrying", extIface.Name)
 				retryAfterBackoff(&backoff, maxBackoff)
 				continue
 			}
+			ifaceAddrV6 = addrs[0]
 		}
 
-		// Create the VXLAN device. On IPv4-only setups EnableIPv6 is
-		// false so ifaceAddrsV6 is never populated; ifaceAddrsV6[0]
-		// used to panic with 'index out of range [0] with length 0'
-		// here during vxlan recreate. Pass nil instead — the v6 code
-		// path in createVXLANDevice is gated on config.EnableIPv6.
-		var v6Addr net.IP
-		if len(ifaceAddrsV6) > 0 {
-			v6Addr = ifaceAddrsV6[0]
-		}
-		dev, v6Dev, err := createVXLANDevice(ctx, config, cfg, nw.subnetMgr, extIface.Index, ifaceAddrs[0], v6Addr)
+		// Create the VXLAN device. ifaceAddr / ifaceAddrV6 stay nil
+		// when their family is disabled, so the v4-only and v6-only
+		// paths see the same shape: createVXLANDevice already gates
+		// the v4 / v6 code paths on config.EnableIPv4 / EnableIPv6.
+		dev, v6Dev, err := createVXLANDevice(ctx, config, cfg, nw.subnetMgr, extIface.Index, ifaceAddr, ifaceAddrV6)
 		if err != nil {
 			log.Errorf("failed to create vxlan device: %v", err)
 			retryAfterBackoff(&backoff, maxBackoff)
