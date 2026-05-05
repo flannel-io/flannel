@@ -6,6 +6,13 @@ metadata:
   labels:
     tier: node
     app: flannel
+    {{- with merge .Values.flannel.daemonSet.labels .Values.global.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with merge .Values.flannel.daemonSet.annotations .Values.global.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   selector:
     matchLabels:
@@ -15,6 +22,13 @@ spec:
       labels:
         tier: node
         app: flannel
+        {{- with merge .Values.flannel.podLabels .Values.global.commonLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with merge .Values.flannel.podAnnotations .Values.global.commonAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
       affinity:
         nodeAffinity:

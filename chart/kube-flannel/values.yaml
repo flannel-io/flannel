@@ -2,6 +2,10 @@
 global:
   imagePullSecrets:
 # - name: "a-secret-name"
+  # Labels to be applied to all deployed resources
+  commonLabels: {}
+  # Annotations to be applied to all deployed resources
+  commonAnnotations: {}
 
 # The IPv4 cidr pool to create on startup if none exists. Pod IPs will be
 # chosen from this range.
@@ -35,7 +39,7 @@ flannel:
   backend: "vxlan"
   # Port used by the backend 0 means default value (VXLAN: 8472, Wireguard: 51821, UDP: 8285)
   #backendPort: 0
-  # MTU to use for outgoing packets (VXLAN and Wiregurad) if not defined the MTU of the external interface is used.
+  # MTU to use for outgoing packets (VXLAN and WireGuard) if not defined the MTU of the external interface is used.
   # mtu: 1500
   #
   # VXLAN Configs:
@@ -49,13 +53,13 @@ flannel:
   # MAC prefix to be used on Windows. (Defaults is 0E-2A)
   # macPrefix: "0E-2A"
   #
-  # Wireguard Configs:
+  # WireGuard Configs:
   #
   # UDP listen port used with IPv6
   # backendPortv6: 51821
   # Pre shared key to use
   # psk: 0
-  # IP version to use on Wireguard
+  # IP version to use on WireGuard
   # tunnelMode: "separate"
   # Persistent keep interval to use
   # keepaliveInterval: 0
@@ -93,6 +97,46 @@ flannel:
   - effect: NoSchedule
     operator: Exists
   nodeSelector: {}
+
+  configMap:
+    # Additional labels to add to the ConfigMap
+    labels: {}
+    # Additional annotations to add to the ConfigMap
+    annotations: {}
+
+  # Labels to be applied to the deployed pods
+  podLabels: {}
+  # Annotations to be applied to the deployed pods
+  podAnnotations: {}
+
+  daemonSet:
+    # Additional labels to add to the DaemonSet
+    labels: {}
+    # Additional annotations to add to the DaemonSet
+    annotations: {}
+
+  serviceAccount:
+    # Additional labels to add to the service account
+    labels: {}
+    # Additional annotations to add to the service account
+    annotations: {}
+
+  rbac:
+    # Additional labels to add to all RBAC-related resources
+    labels: {}
+    # Additional annotations to add to all RBAC-related resources
+    annotations: {}
+    clusterRole:
+      # Additional labels to add to the ClusterRole
+      labels: {}
+      # Additional annotations to add to the ClusterRole
+      annotations: {}
+    clusterRoleBinding:
+      # Additional labels to add to the ClusterRoleBinding
+      labels: {}
+      # Additional annotations to add to the ClusterRoleBinding
+      annotations: {}
+
 
 netpol:
   enabled: false
