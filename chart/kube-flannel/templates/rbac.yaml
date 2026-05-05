@@ -2,6 +2,14 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
+  labels:
+    {{- with (merge .Values.flannel.rbac.clusterRole.labels .Values.flannel.rbac.labels .Values.global.commonLabels) }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with (merge .Values.flannel.rbac.clusterRole.annotations .Values.flannel.rbac.annotations .Values.global.commonAnnotations) }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 rules:
 - apiGroups:
   - ""
@@ -41,6 +49,14 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
+  labels:
+    {{- with (merge .Values.flannel.rbac.clusterRoleBinding.labels .Values.flannel.rbac.labels .Values.global.commonLabels) }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with (merge .Values.flannel.rbac.clusterRoleBinding.annotations .Values.flannel.rbac.annotations .Values.global.commonAnnotations) }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

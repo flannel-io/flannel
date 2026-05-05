@@ -6,6 +6,13 @@ metadata:
   labels:
     tier: node
     app: flannel
+    {{- with merge .Values.flannel.configMap.labels .Values.global.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with merge .Values.flannel.configMap.annotations .Values.global.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 data:
   cni-conf.json: {{ .Values.flannel.cniConf | toJson }}
   net-conf.json: |
