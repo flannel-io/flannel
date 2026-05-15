@@ -4,9 +4,8 @@ metadata:
   name: kube-flannel-cfg
   namespace: {{ .Release.Namespace }}
   labels:
-    tier: node
-    app: flannel
-    {{- with merge .Values.flannel.configMap.labels .Values.global.commonLabels }}
+    {{- include "flannel.labels" . | nindent 4 }}
+    {{- with .Values.flannel.configMap.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
   {{- with merge .Values.flannel.configMap.annotations .Values.global.commonAnnotations }}
