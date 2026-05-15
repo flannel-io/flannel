@@ -4,9 +4,8 @@ metadata:
   name: kube-flannel-ds
   namespace: {{ .Release.Namespace }}
   labels:
-    tier: node
-    app: flannel
-    {{- with merge .Values.flannel.daemonSet.labels .Values.global.commonLabels }}
+    {{- include "flannel.labels" . | nindent 4 }}
+    {{- with .Values.flannel.daemonSet.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
   {{- with merge .Values.flannel.daemonSet.annotations .Values.global.commonAnnotations }}
@@ -16,13 +15,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: flannel
+      {{- include "flannel.labels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        tier: node
-        app: flannel
-        {{- with merge .Values.flannel.podLabels .Values.global.commonLabels }}
+        {{- include "flannel.labels" . | nindent 8 }}
+        {{- with .Values.flannel.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       {{- with merge .Values.flannel.podAnnotations .Values.global.commonAnnotations }}

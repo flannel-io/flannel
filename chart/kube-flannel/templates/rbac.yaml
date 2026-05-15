@@ -3,7 +3,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
   labels:
-    {{- with (merge .Values.flannel.rbac.clusterRole.labels .Values.flannel.rbac.labels .Values.global.commonLabels) }}
+    {{- include "flannel.labels" . | nindent 4 }}
+    {{- with (merge .Values.flannel.rbac.clusterRole.labels .Values.flannel.rbac.labels) }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
   {{- with (merge .Values.flannel.rbac.clusterRole.annotations .Values.flannel.rbac.annotations .Values.global.commonAnnotations) }}
@@ -50,7 +51,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
   labels:
-    {{- with (merge .Values.flannel.rbac.clusterRoleBinding.labels .Values.flannel.rbac.labels .Values.global.commonLabels) }}
+    {{- include "flannel.labels" . | nindent 4 }}
+    {{- with (merge .Values.flannel.rbac.clusterRoleBinding.labels .Values.flannel.rbac.labels) }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
   {{- with (merge .Values.flannel.rbac.clusterRoleBinding.annotations .Values.flannel.rbac.annotations .Values.global.commonAnnotations) }}
