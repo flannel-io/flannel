@@ -216,3 +216,104 @@ func TestEtcdRegistry(t *testing.T) {
 
 	// TODO: watchSubnet and watchNetworks
 }
+
+// TestWatchSubnetsRecoversFromCompaction exercises the case where a subnet watch
+// falls behind etcd's compaction horizon. Before the fix, watchSubnets reconnected
+// at the same now-compacted revision forever (hot-looping on "required revision has
+// been compacted" and never delivering anything). The fix re-lists at a fresh
+// revision and resumes, so the watch must deliver a snapshot followed by live events.
+func TestWatchSubnetsRecoversFromCompaction(t *testing.T) {
+	integration.BeforeTestExternal(t)
+
+	clus := integration.NewCluster(t, &integration.ClusterConfig{Size: 1})
+	defer clus.Terminate(t)
+
+	client := clus.RandClient()
+	// Use a non-cancelable context like TestEtcdRegistry: cancelling drives
+	// watchSubnets to Close() the etcd client, which is shared with the test
+	// cluster harness and would break Terminate.
+	ctx := context.Background()
+
+	r, kvApi := newTestEtcdRegistry(t, ctx, client)
+
+	if _, err := kvApi.Put(ctx, "/coreos.com/network/config",
+		`{ "Network": "10.1.0.0/16", "Backend": { "Type": "host-gw" } }`); err != nil {
+		t.Fatal("Failed to put network config", err)
+	}
+
+	// An existing lease so the recovery re-list has something to snapshot.
+	sn := ip.IP4Net{IP: ip.MustParseIP4("10.1.5.0"), PrefixLen: 24}
+	attrs := &lease.LeaseAttrs{PublicIP: ip.MustParseIP4("1.2.3.4")}
+	if _, err := r.createSubnet(ctx, sn, ip.IP6Net{}, attrs, 24*time.Hour); err != nil {
+		t.Fatal("Failed to create subnet lease", err)
+	}
+
+	// Advance the store revision, then compact past it so that watching from an
+	// old revision is guaranteed to hit "required revision has been compacted".
+	var compactRev int64
+	for i := 0; i < 5; i++ {
+		resp, err := kvApi.Put(ctx, "/coreos.com/network/_bump", fmt.Sprintf("%d", i))
+		if err != nil {
+			t.Fatal("Failed to bump revision", err)
+		}
+		compactRev = resp.Header.Revision
+	}
+	if _, err := client.Compact(ctx, compactRev); err != nil {
+		t.Fatal("Failed to compact etcd", err)
+	}
+
+	// Start the watch from rev 1, now below the compaction horizon.
+	receiver := make(chan []lease.LeaseWatchResult, 16)
+	go func() { _ = r.watchSubnets(ctx, receiver, 1) }()
+
+	// Recovery must surface a re-list snapshot that includes the existing lease.
+	if !waitForSnapshot(receiver, sn, 10*time.Second) {
+		t.Fatal("watchSubnets did not recover from compaction with a re-list snapshot")
+	}
+
+	// A live event for a newly created lease proves the watch resumed at a current
+	// revision instead of staying stuck on the compacted one.
+	sn2 := ip.IP4Net{IP: ip.MustParseIP4("10.1.6.0"), PrefixLen: 24}
+	if _, err := r.createSubnet(ctx, sn2, ip.IP6Net{}, attrs, 24*time.Hour); err != nil {
+		t.Fatal("Failed to create second subnet lease", err)
+	}
+	if !waitForEvent(receiver, lease.EventAdded, sn2, 10*time.Second) {
+		t.Fatal("watchSubnets did not resume delivering live events after recovery")
+	}
+}
+
+func waitForSnapshot(receiver chan []lease.LeaseWatchResult, sn ip.IP4Net, timeout time.Duration) bool {
+	deadline := time.After(timeout)
+	for {
+		select {
+		case batch := <-receiver:
+			for _, wr := range batch {
+				for _, l := range wr.Snapshot {
+					if l.Subnet.Equal(sn) {
+						return true
+					}
+				}
+			}
+		case <-deadline:
+			return false
+		}
+	}
+}
+
+func waitForEvent(receiver chan []lease.LeaseWatchResult, etype lease.EventType, sn ip.IP4Net, timeout time.Duration) bool {
+	deadline := time.After(timeout)
+	for {
+		select {
+		case batch := <-receiver:
+			for _, wr := range batch {
+				for _, ev := range wr.Events {
+					if ev.Type == etype && ev.Lease.Subnet.Equal(sn) {
+						return true
+					}
+				}
+			}
+		case <-deadline:
+			return false
+		}
+	}
+}
