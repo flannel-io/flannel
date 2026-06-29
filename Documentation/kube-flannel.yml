@@ -146,9 +146,8 @@ spec:
       - name: install-cni
         image: ghcr.io/flannel-io/flannel:v0.28.5
         command:
-        - cp
+        - /opt/bin/install-conf
         args:
-        - -f
         - /etc/kube-flannel/cni-conf.json
         - /etc/cni/net.d/10-flannel.conflist
         volumeMounts:

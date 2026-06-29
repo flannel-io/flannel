@@ -15,6 +15,7 @@ RUN set -x && \
 FROM --platform=$BUILDPLATFORM base-builder AS flannel-builder
 COPY Makefile go.mod go.sum *.go /build/
 COPY pkg /build/pkg
+COPY cmd /build/cmd
 WORKDIR /build
 RUN mkdir dist
 RUN go mod download
@@ -26,6 +27,9 @@ RUN export GOOS=$(xx-info os) &&\
     export GOARCH=$(xx-info arch) &&\
     export ARCH=$(xx-info arch) &&\
     make dist/flanneld
+RUN export GOOS=$(xx-info os) &&\
+    export GOARCH=$(xx-info arch) &&\
+    CGO_ENABLED=0 go build -o dist/install-conf ./cmd/install_conf/
 RUN git clone https://github.com/kubernetes-sigs/iptables-wrappers.git /iptables-wrapper
 WORKDIR /iptables-wrapper
 RUN git checkout bfef9e5087a198b50a4124bb9ce9d2c7c99025dd
@@ -39,6 +43,7 @@ RUN apk update && apk upgrade
 RUN apk add --no-cache iproute2 ca-certificates nftables iptables strongswan iptables-legacy && update-ca-certificates
 RUN apk add wireguard-tools --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community
 COPY --from=flannel-builder /build/dist/flanneld /opt/bin/flanneld
+COPY --from=flannel-builder /build/dist/install-conf /opt/bin/install-conf
 COPY dist/mk-docker-opts.sh /opt/bin/
 COPY --from=flannel-builder /iptables-wrapper/bin/iptables-wrapper /usr/sbin
 # check manually that iptables-legacy and iptables-nft are present since
