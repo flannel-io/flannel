@@ -293,7 +293,7 @@ func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan 
 	for {
 		wctx, cancel := context.WithCancel(ctx)
 		defer cancel()
-		log.Infof("registry: watching subnets starting from rev %d", since)
+		log.V(4).Infof("registry: watching subnets starting from rev %d", since)
 		rch := esr.cli.Watch(etcd.WithRequireLeader(wctx), key, etcd.WithPrefix(), etcd.WithRev(since))
 		if rch == nil {
 			log.Errorf("Failed to establish etcd watch channel")
@@ -316,17 +316,35 @@ func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan 
 			case wresp, ok := <-rch:
 				err := wresp.Err()
 				if !ok || err != nil {
-					if err != nil {
-						log.Warningf("etcd watch channel for %s closed with error %v, reconnecting...", key, err)
-					} else {
-						log.Warningf("etcd watch channel for %s closed, reconnecting...", key)
-					}
 					cancel()
+					// If the watch fell behind etcd's compaction horizon, reconnecting
+					// at the same revision fails identically forever (mvcc: required
+					// revision has been compacted). Re-list to grab a fresh snapshot at
+					// a current revision and resume from there instead of hot-looping.
+					if isCompacted(wresp) {
+						log.Warningf("etcd watch for %s fell behind compaction, re-listing and resuming", key)
+						next, rerr := esr.resyncWatch(ctx, leaseWatchChan)
+						if rerr != nil {
+							log.Errorf("failed to re-list subnets after compaction: %v", rerr)
+							time.Sleep(exponentialBackoff)
+							exponentialBackoff = min(exponentialBackoff*2, maxBackoff)
+							break innerLoop
+						}
+						since = next
+						exponentialBackoff = initialBackoff
+						break innerLoop
+					}
+					log.Warningf("etcd watch channel for %s closed (%v), reconnecting from rev %d...", key, err, since)
 					time.Sleep(exponentialBackoff)
 					exponentialBackoff = min(exponentialBackoff*2, maxBackoff)
 					break innerLoop
 				}
 				exponentialBackoff = initialBackoff // Reset backoff on success
+				// Advance the resume revision so a future reconnect picks up where we
+				// left off rather than replaying from the original start revision.
+				if wresp.Header.Revision != 0 {
+					since = wresp.Header.Revision + 1
+				}
 				results := make([]lease.LeaseWatchResult, 0)
 				for _, etcdEvent := range wresp.Events {
 					subnetEvent, err := parseSubnetWatchResponse(ctx, esr.cli, etcdEvent)
@@ -526,6 +544,25 @@ func kvToIPLease(kv *mvccpb.KeyValue, ttl int64) (*lease.Lease, error) {
 	}
 
 	return &lease, nil
+}
+
+// isCompacted reports whether a watch response failed because its start revision
+// has been compacted away by etcd. Reconnecting at the same revision would fail
+// identically forever, so the caller must re-list at a fresh revision instead.
+func isCompacted(wresp etcd.WatchResponse) bool {
+	return wresp.CompactRevision != 0 || errors.Is(wresp.Err(), rpctypes.ErrCompacted)
+}
+
+// resyncWatch re-lists all subnet leases, emits the fresh snapshot on ch, and
+// returns the revision the caller should resume watching from. Used to recover a
+// watch that has fallen behind etcd's compaction horizon.
+func (esr *etcdSubnetRegistry) resyncWatch(ctx context.Context, ch chan []lease.LeaseWatchResult) (int64, error) {
+	wr, err := esr.leasesWatchReset(ctx)
+	if err != nil {
+		return 0, err
+	}
+	ch <- []lease.LeaseWatchResult{wr}
+	return getNextIndex(wr.Cursor)
 }
 
 // leasesWatchReset is called when incremental lease watch failed and we need to grab a snapshot
