@@ -322,17 +322,22 @@ func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan 
 					// revision has been compacted). Re-list to grab a fresh snapshot at
 					// a current revision and resume from there instead of hot-looping.
 					if isCompacted(wresp) {
-						log.Warningf("etcd watch for %s fell behind compaction, re-listing and resuming", key)
-						next, rerr := esr.resyncWatch(ctx, leaseWatchChan)
-						if rerr != nil {
+						log.Warningf("etcd watch for %s fell behind compaction horizon (compact rev %d), re-listing and resuming", key, wresp.CompactRevision)
+						for {
+							next, rerr := esr.resyncWatch(ctx, leaseWatchChan)
+							if rerr == nil {
+								since = next
+								exponentialBackoff = initialBackoff
+								break innerLoop
+							}
 							log.Errorf("failed to re-list subnets after compaction: %v", rerr)
-							time.Sleep(exponentialBackoff)
+							select {
+							case <-ctx.Done():
+								break innerLoop
+							case <-time.After(exponentialBackoff):
+							}
 							exponentialBackoff = min(exponentialBackoff*2, maxBackoff)
-							break innerLoop
 						}
-						since = next
-						exponentialBackoff = initialBackoff
-						break innerLoop
 					}
 					log.Warningf("etcd watch channel for %s closed (%v), reconnecting from rev %d...", key, err, since)
 					time.Sleep(exponentialBackoff)
@@ -561,7 +566,11 @@ func (esr *etcdSubnetRegistry) resyncWatch(ctx context.Context, ch chan []lease.
 	if err != nil {
 		return 0, err
 	}
-	ch <- []lease.LeaseWatchResult{wr}
+	select {
+	case ch <- []lease.LeaseWatchResult{wr}:
+	case <-ctx.Done():
+		return 0, ctx.Err()
+	}
 	return getNextIndex(wr.Cursor)
 }
 
