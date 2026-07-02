@@ -4,8 +4,14 @@ metadata:
   name: kube-flannel-cfg
   namespace: {{ .Release.Namespace }}
   labels:
-    tier: node
-    app: flannel
+    {{- include "flannel.labels" . | nindent 4 }}
+    {{- with .Values.flannel.configMap.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with merge .Values.flannel.configMap.annotations .Values.global.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 data:
   cni-conf.json: {{ .Values.flannel.cniConf | toJson }}
   net-conf.json: |
