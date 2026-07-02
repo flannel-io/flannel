@@ -608,6 +608,7 @@ func ReadCIDRsFromSubnetFile(path string, CIDRKey string) []ip.IP4Net {
 				_, cidr, err := net.ParseCIDR(cidrs[i])
 				if err != nil {
 					log.Errorf("Couldn't parse previous %s from subnet file at %s: %s", CIDRKey, path, err)
+					continue
 				}
 				prevCIDRs = append(prevCIDRs, ip.FromIPNet(cidr))
 			}
@@ -643,6 +644,7 @@ func ReadIP6CIDRsFromSubnetFile(path string, CIDRKey string) []ip.IP6Net {
 				_, cidr, err := net.ParseCIDR(cidrs[i])
 				if err != nil {
 					log.Errorf("Couldn't parse previous %s from subnet file at %s: %s", CIDRKey, path, err)
+					continue
 				}
 				prevCIDRs = append(prevCIDRs, ip.FromIP6Net(cidr))
 			}
