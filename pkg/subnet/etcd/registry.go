@@ -331,10 +331,17 @@ func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan 
 								break innerLoop
 							}
 							log.Errorf("failed to re-list subnets after compaction: %v", rerr)
+							timer := time.NewTimer(exponentialBackoff)
 							select {
 							case <-ctx.Done():
-								break innerLoop
-							case <-time.After(exponentialBackoff):
+								timer.Stop()
+								err := esr.cli.Close()
+								if err != nil {
+									log.Errorf("Failed to close etcd client: %v", err)
+								}
+								close(leaseWatchChan)
+								return ctx.Err()
+							case <-timer.C:
 							}
 							exponentialBackoff = min(exponentialBackoff*2, maxBackoff)
 						}

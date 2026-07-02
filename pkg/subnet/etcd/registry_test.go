@@ -282,6 +282,59 @@ func TestWatchSubnetsRecoversFromCompaction(t *testing.T) {
 	}
 }
 
+// TestResyncWatchCancelWithBlockedReceiver is a regression test for the
+// ctx-aware send in resyncWatch. Before the fix, a blocked receiver caused
+// resyncWatch to hang indefinitely. After the fix it must return
+// context.Canceled promptly.
+func TestResyncWatchCancelWithBlockedReceiver(t *testing.T) {
+	integration.BeforeTestExternal(t)
+
+	clus := integration.NewCluster(t, &integration.ClusterConfig{Size: 1})
+	defer clus.Terminate(t)
+
+	client := clus.RandClient()
+	ctx := context.Background()
+	r, kvApi := newTestEtcdRegistry(t, ctx, client)
+
+	if _, err := kvApi.Put(ctx, "/coreos.com/network/config",
+		`{ "Network": "10.1.0.0/16", "Backend": { "Type": "host-gw" } }`); err != nil {
+		t.Fatal("seed config:", err)
+	}
+
+	sn := ip.IP4Net{IP: ip.MustParseIP4("10.1.5.0"), PrefixLen: 24}
+	attrs := &lease.LeaseAttrs{PublicIP: ip.MustParseIP4("1.2.3.4")}
+	if _, err := r.createSubnet(ctx, sn, ip.IP6Net{}, attrs, 24*time.Hour); err != nil {
+		t.Fatal("seed subnet:", err)
+	}
+
+	// Unbuffered receiver: resyncWatch's send blocks until a reader arrives
+	// or the context is canceled.
+	receiver := make(chan []lease.LeaseWatchResult)
+	watchCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	done := make(chan error, 1)
+	go func() {
+		esr := r.(*etcdSubnetRegistry)
+		_, err := esr.resyncWatch(watchCtx, receiver)
+		done <- err
+	}()
+
+	// 500 ms is generous for a re-list over loopback; by then the goroutine
+	// should be blocked in the select waiting to send to the unbuffered receiver.
+	time.Sleep(500 * time.Millisecond)
+	cancel()
+
+	select {
+	case err := <-done:
+		if err != context.Canceled {
+			t.Fatalf("resyncWatch returned %v, want context.Canceled", err)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("resyncWatch did not exit within 3s after context cancellation with blocked receiver")
+	}
+}
+
 func waitForSnapshot(receiver chan []lease.LeaseWatchResult, sn ip.IP4Net, timeout time.Duration) bool {
 	deadline := time.After(timeout)
 	for {
