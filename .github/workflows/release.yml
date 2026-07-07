@@ -49,7 +49,7 @@ jobs:
           images: ${{ env.REPOSITORY }}
           flavor: latest=false
           tags: |
-            type=ref,event=tag
+            type=semver,pattern={{version}}
 
       - name: Log in to Docker Hub
         if: github.repository_owner == 'flannel-io' && success()
