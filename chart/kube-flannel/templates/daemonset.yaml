@@ -52,9 +52,8 @@ spec:
       - name: install-cni
         image: {{ .Values.flannel.image.repository }}:{{ .Values.flannel.image.tag }}
         command:
-        - cp
+        - /opt/bin/install-conf
         args:
-        - -f
         - /etc/kube-flannel/cni-conf.json
         - /etc/cni/net.d/10-flannel.conflist
         volumeMounts:
