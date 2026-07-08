@@ -15,7 +15,6 @@
 package subnet
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net"
@@ -70,37 +69,96 @@ func MakeSubnetKey(sn ip.IP4Net, sn6 ip.IP6Net) string {
 
 func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv6sn ip.IP6Net, mtu int) error {
 	dir, name := filepath.Split(path)
+	if dir == "" {
+		dir = "."
+	}
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
-		return err
+		return fmt.Errorf("mkdir subnet directory: %w", err)
 	}
-	tempFile := filepath.Join(dir, "."+name)
-	var b bytes.Buffer
-	if config.EnableIPv4 {
-		fmt.Fprintf(&b, "FLANNEL_NETWORK=%s\n", config.Network)
-		// Write out the first usable IP by incrementing sn.IP by one
-		sn.IncrementIP()
 
-		fmt.Fprintf(&b, "FLANNEL_SUBNET=%s\n", sn)
+	// Preserve original file permissions if the file already exists
+	perm := os.FileMode(0644)
+	if info, err := os.Stat(path); err == nil {
+		perm = info.Mode().Perm()
+	}
+
+	f, err := os.CreateTemp(dir, "."+name+".")
+	if err != nil {
+		return fmt.Errorf("create temp file: %w", err)
+	}
+	tempFile := f.Name()
+	// Remove the temp file on any early exit
+	// After a successful rename the file no longer exists so
+	// this is a harmless no-op
+	defer os.Remove(tempFile)
+	// Close the file descriptor on any early exit.
+	// On the success path the explicit Close below will run first,
+	// and double-closing a file is harmless.
+	defer f.Close()
+
+	if err := f.Chmod(perm); err != nil {
+		return fmt.Errorf("chmod temp file: %w", err)
+	}
+
+	if config.EnableIPv4 {
+		// Save the CIDR assigned
+		if _, err := fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", config.Network); err != nil {
+			return fmt.Errorf("failed to write FLANNEL_NETWORK: %w", err)
+		}
+		// Save the first usable address in the node's subnet
+		sn.IncrementIP()
+		if _, err := fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn); err != nil {
+			return fmt.Errorf("failed to write FLANNEL_SUBNET: %w", err)
+		}
 	}
 	if config.EnableIPv6 {
-		fmt.Fprintf(&b, "FLANNEL_IPV6_NETWORK=%s\n", config.IPv6Network)
-		// Write out the first usable IP by incrementing ip6Sn.IP by one
+		// Save the CIDR assigned
+		if _, err := fmt.Fprintf(f, "FLANNEL_IPV6_NETWORK=%s\n", config.IPv6Network); err != nil {
+			return fmt.Errorf("failed to write FLANNEL_IPV6_NETWORK: %w", err)
+		}
+		// Save the first usable address in the node's subnet
 		ipv6sn.IncrementIP()
-		fmt.Fprintf(&b, "FLANNEL_IPV6_SUBNET=%s\n", ipv6sn)
+		if _, err := fmt.Fprintf(f, "FLANNEL_IPV6_SUBNET=%s\n", ipv6sn); err != nil {
+			return fmt.Errorf("failed to write FLANNEL_IPV6_SUBNET: %w", err)
+		}
 	}
 
-	fmt.Fprintf(&b, "FLANNEL_MTU=%d\n", mtu)
-	fmt.Fprintf(&b, "FLANNEL_IPMASQ=%v\n", ipMasq)
-
-	if err := os.WriteFile(tempFile, b.Bytes(), 0644); err != nil {
-		return err
+	// 1. Write
+	if _, err := fmt.Fprintf(f, "FLANNEL_MTU=%d\n", mtu); err != nil {
+		return fmt.Errorf("failed to write FLANNEL_MTU: %w", err)
+	}
+	if _, err := fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", ipMasq); err != nil {
+		return fmt.Errorf("failed to write FLANNEL_IPMASQ: %w", err)
 	}
 
-	// rename(2) the temporary file to the desired location so that it becomes
-	// atomically visible with the contents
-	return os.Rename(tempFile, path)
-	// TODO - is this safe? What if it's not on the same FS?
+	// 2. Fsync(file)
+	if err := f.Sync(); err != nil {
+		return fmt.Errorf("failed to sync subnet file: %w", err)
+	}
+
+	// 3. Close
+	if err := f.Close(); err != nil {
+		return fmt.Errorf("failed to close subnet file: %w", err)
+	}
+
+	// 4. Rename the temporary file to the desired location so that it becomes
+	// atomically visible with the contents (same directory keeps it on the same FS)
+	if err := os.Rename(tempFile, path); err != nil {
+		return fmt.Errorf("failed to rename subnet file: %w", err)
+	}
+
+	// 5. Fsync(directory)
+	dirFile, err := os.Open(dir)
+	if err != nil {
+		return fmt.Errorf("failed to open subnet directory: %w", err)
+	}
+	defer dirFile.Close()
+	if err := dirFile.Sync(); err != nil {
+		return fmt.Errorf("failed to sync subnet directory: %w", err)
+	}
+
+	return nil
 }
 
 type Manager interface {
