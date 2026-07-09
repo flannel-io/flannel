@@ -26,6 +26,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
+	"github.com/google/renameio"
 	log "k8s.io/klog/v2"
 )
 
@@ -68,7 +69,7 @@ func MakeSubnetKey(sn ip.IP4Net, sn6 ip.IP6Net) string {
 }
 
 func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv6sn ip.IP6Net, mtu int) error {
-	dir, name := filepath.Split(path)
+	dir, _ := filepath.Split(path)
 	if dir == "" {
 		dir = "."
 	}
@@ -83,19 +84,11 @@ func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv
 		perm = info.Mode().Perm()
 	}
 
-	f, err := os.CreateTemp(dir, "."+name+".")
+	f, err := renameio.TempFile(dir, path)
 	if err != nil {
 		return fmt.Errorf("create temp file: %w", err)
 	}
-	tempFile := f.Name()
-	// Remove the temp file on any early exit
-	// After a successful rename the file no longer exists so
-	// this is a harmless no-op
-	defer os.Remove(tempFile)
-	// Close the file descriptor on any early exit.
-	// On the success path the explicit Close below will run first,
-	// and double-closing a file is harmless.
-	defer f.Close()
+	defer f.Cleanup()
 
 	if err := f.Chmod(perm); err != nil {
 		return fmt.Errorf("chmod temp file: %w", err)
@@ -124,7 +117,7 @@ func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv
 		}
 	}
 
-	// 1. Write
+	// 1. write
 	if _, err := fmt.Fprintf(f, "FLANNEL_MTU=%d\n", mtu); err != nil {
 		return fmt.Errorf("failed to write FLANNEL_MTU: %w", err)
 	}
@@ -132,33 +125,8 @@ func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv
 		return fmt.Errorf("failed to write FLANNEL_IPMASQ: %w", err)
 	}
 
-	// 2. Fsync(file)
-	if err := f.Sync(); err != nil {
-		return fmt.Errorf("failed to sync subnet file: %w", err)
-	}
-
-	// 3. Close
-	if err := f.Close(); err != nil {
-		return fmt.Errorf("failed to close subnet file: %w", err)
-	}
-
-	// 4. Rename the temporary file to the desired location so that it becomes
-	// atomically visible with the contents (same directory keeps it on the same FS)
-	if err := os.Rename(tempFile, path); err != nil {
-		return fmt.Errorf("failed to rename subnet file: %w", err)
-	}
-
-	// 5. Fsync(directory)
-	dirFile, err := os.Open(dir)
-	if err != nil {
-		return fmt.Errorf("failed to open subnet directory: %w", err)
-	}
-	defer dirFile.Close()
-	if err := dirFile.Sync(); err != nil {
-		return fmt.Errorf("failed to sync subnet directory: %w", err)
-	}
-
-	return nil
+	// CloseAtomicallyReplace does steps 2-5: fsync, close, rename, dir fsync.
+	return f.CloseAtomicallyReplace()
 }
 
 type Manager interface {
