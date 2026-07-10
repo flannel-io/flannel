@@ -78,7 +78,6 @@ func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv
 		return fmt.Errorf("mkdir subnet directory: %w", err)
 	}
 
-	// Preserve original file permissions if the file already exists
 	perm := os.FileMode(0644)
 	if info, err := os.Stat(path); err == nil {
 		perm = info.Mode().Perm()
@@ -95,29 +94,24 @@ func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv
 	}
 
 	if config.EnableIPv4 {
-		// Save the CIDR assigned
 		if _, err := fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", config.Network); err != nil {
 			return fmt.Errorf("failed to write FLANNEL_NETWORK: %w", err)
 		}
-		// Save the first usable address in the node's subnet
 		sn.IncrementIP()
 		if _, err := fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn); err != nil {
 			return fmt.Errorf("failed to write FLANNEL_SUBNET: %w", err)
 		}
 	}
 	if config.EnableIPv6 {
-		// Save the CIDR assigned
 		if _, err := fmt.Fprintf(f, "FLANNEL_IPV6_NETWORK=%s\n", config.IPv6Network); err != nil {
 			return fmt.Errorf("failed to write FLANNEL_IPV6_NETWORK: %w", err)
 		}
-		// Save the first usable address in the node's subnet
 		ipv6sn.IncrementIP()
 		if _, err := fmt.Fprintf(f, "FLANNEL_IPV6_SUBNET=%s\n", ipv6sn); err != nil {
 			return fmt.Errorf("failed to write FLANNEL_IPV6_SUBNET: %w", err)
 		}
 	}
 
-	// 1. write
 	if _, err := fmt.Fprintf(f, "FLANNEL_MTU=%d\n", mtu); err != nil {
 		return fmt.Errorf("failed to write FLANNEL_MTU: %w", err)
 	}
@@ -125,7 +119,6 @@ func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv
 		return fmt.Errorf("failed to write FLANNEL_IPMASQ: %w", err)
 	}
 
-	// CloseAtomicallyReplace does steps 2-5: fsync, close, rename, dir fsync.
 	return f.CloseAtomicallyReplace()
 }
 
