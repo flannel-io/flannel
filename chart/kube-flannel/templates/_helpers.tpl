@@ -1,8 +1,12 @@
+{{- define "flannel.selectorLabels" -}}
+app: "flannel"
+tier: "node"
+{{- end -}}
+
 {{/* Labels common to all resources */}}
 {{- define "flannel.labels" -}}
-app: {{ .Chart.Name | quote }}
-tier: node
+{{ include "flannel.selectorLabels" . }}
 {{- with .Values.global.commonLabels }}
 {{ toYaml . }}
-{{- end }}
+{{- end -}}
 {{- end -}}

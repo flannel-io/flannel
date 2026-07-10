@@ -3,11 +3,10 @@ apiVersion: v1
 metadata:
   name: kube-flannel-cfg
   namespace: {{ .Release.Namespace }}
+  {{- with (merge .Values.flannel.configMap.labels (include "flannel.labels" . | fromYaml)) }}
   labels:
-    {{- include "flannel.labels" . | nindent 4 }}
-    {{- with .Values.flannel.configMap.labels }}
     {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- end }}
   {{- with merge .Values.flannel.configMap.annotations .Values.global.commonAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
