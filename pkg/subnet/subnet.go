@@ -26,7 +26,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
-	"github.com/google/renameio"
+	"github.com/google/renameio/v2"
 	log "k8s.io/klog/v2"
 )
 

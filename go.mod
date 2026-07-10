@@ -31,6 +31,7 @@ require (
 
 require (
 	github.com/avast/retry-go/v4 v4.7.0
+	github.com/google/renameio/v2 v2.0.2
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.128
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.3.128
 	golang.org/x/sync v0.21.0
@@ -59,7 +60,6 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
-	github.com/google/renameio v1.0.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
