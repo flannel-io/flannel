@@ -16,17 +16,13 @@ package subnet
 
 import (
 	"context"
-	"fmt"
 	"net"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"sync"
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
-	"github.com/google/renameio/v2"
 	log "k8s.io/klog/v2"
 )
 
@@ -66,60 +62,6 @@ func MakeSubnetKey(sn ip.IP4Net, sn6 ip.IP6Net) string {
 	} else {
 		return sn.StringSep(".", "-") + "&" + sn6.StringSep(":", "-")
 	}
-}
-
-func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv6sn ip.IP6Net, mtu int) error {
-	dir, _ := filepath.Split(path)
-	if dir == "" {
-		dir = "."
-	}
-	err := os.MkdirAll(dir, 0755)
-	if err != nil {
-		return fmt.Errorf("mkdir subnet directory: %w", err)
-	}
-
-	perm := os.FileMode(0644)
-	if info, err := os.Stat(path); err == nil {
-		perm = info.Mode().Perm()
-	}
-
-	f, err := renameio.TempFile(dir, path)
-	if err != nil {
-		return fmt.Errorf("create temp file: %w", err)
-	}
-	defer f.Cleanup()
-
-	if err := f.Chmod(perm); err != nil {
-		return fmt.Errorf("chmod temp file: %w", err)
-	}
-
-	if config.EnableIPv4 {
-		if _, err := fmt.Fprintf(f, "FLANNEL_NETWORK=%s\n", config.Network); err != nil {
-			return fmt.Errorf("failed to write FLANNEL_NETWORK: %w", err)
-		}
-		sn.IncrementIP()
-		if _, err := fmt.Fprintf(f, "FLANNEL_SUBNET=%s\n", sn); err != nil {
-			return fmt.Errorf("failed to write FLANNEL_SUBNET: %w", err)
-		}
-	}
-	if config.EnableIPv6 {
-		if _, err := fmt.Fprintf(f, "FLANNEL_IPV6_NETWORK=%s\n", config.IPv6Network); err != nil {
-			return fmt.Errorf("failed to write FLANNEL_IPV6_NETWORK: %w", err)
-		}
-		ipv6sn.IncrementIP()
-		if _, err := fmt.Fprintf(f, "FLANNEL_IPV6_SUBNET=%s\n", ipv6sn); err != nil {
-			return fmt.Errorf("failed to write FLANNEL_IPV6_SUBNET: %w", err)
-		}
-	}
-
-	if _, err := fmt.Fprintf(f, "FLANNEL_MTU=%d\n", mtu); err != nil {
-		return fmt.Errorf("failed to write FLANNEL_MTU: %w", err)
-	}
-	if _, err := fmt.Fprintf(f, "FLANNEL_IPMASQ=%v\n", ipMasq); err != nil {
-		return fmt.Errorf("failed to write FLANNEL_IPMASQ: %w", err)
-	}
-
-	return f.CloseAtomicallyReplace()
 }
 
 type Manager interface {
