@@ -2,7 +2,8 @@
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
-HELM_UNITTEST_VERSION?=1.1.1
+HELM_UNITTEST_VERSION?=v1.1.1
+HELM_UNITTEST_VERSION_NUMBER:=$(patsubst v%,%,$(HELM_UNITTEST_VERSION))
 QEMU_VERSION=v7.2.0-1
 BASH_UNIT_VERSION=v2.3.0
 
@@ -118,9 +119,9 @@ e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test-k8s.sh
 
 chart-test:
-	@if ! helm plugin list | awk 'NR>1 && $$1 == "unittest" && $$2 == "$(HELM_UNITTEST_VERSION)" { found=1 } END { exit !found }'; then \
+	@if ! helm plugin list | grep -Eq '^unittest[[:space:]]+$(HELM_UNITTEST_VERSION_NUMBER)[[:space:]]'; then \
 		if helm plugin list | awk 'NR>1 {print $$1}' | grep -qx unittest; then helm plugin uninstall unittest; fi; \
-		helm plugin install --version v$(HELM_UNITTEST_VERSION) https://github.com/helm-unittest/helm-unittest; \
+		helm plugin install --version $(HELM_UNITTEST_VERSION) https://github.com/helm-unittest/helm-unittest; \
 	fi
 	helm unittest ./chart/kube-flannel
 
