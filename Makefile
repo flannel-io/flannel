@@ -1,7 +1,9 @@
-.PHONY: test unit-test e2e-test deps cover gofmt gofmt-fix license-check clean tar.gz release buildx-create-builder build-multi-arch release-manifest release-helm
+.PHONY: test unit-test e2e-test chart-test deps cover gofmt gofmt-fix license-check clean tar.gz release buildx-create-builder build-multi-arch release-manifest release-helm
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
+HELM_UNITTEST_VERSION?=v1.1.1
+HELM_UNITTEST_VERSION_NUMBER:=$(patsubst v%,%,$(HELM_UNITTEST_VERSION))
 QEMU_VERSION=v7.2.0-1
 BASH_UNIT_VERSION=v2.3.0
 
@@ -115,6 +117,16 @@ e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
 	$(MAKE) -C images/iperf3 ARCH=$(ARCH)
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test.sh
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test-k8s.sh
+
+chart-test:
+	@set -e; \
+	plugin_list=$$(helm plugin list); \
+	installed_version=$$(printf '%s\n' "$$plugin_list" | awk 'NR>1 && $$1 == "unittest" { print $$2; exit }'); \
+	if [ "$$installed_version" != "$(HELM_UNITTEST_VERSION_NUMBER)" ]; then \
+		if [ -n "$$installed_version" ]; then helm plugin uninstall unittest; fi; \
+		helm plugin install --version $(HELM_UNITTEST_VERSION) https://github.com/helm-unittest/helm-unittest; \
+	fi
+	helm unittest ./chart/kube-flannel
 
 k3s-e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
 	@echo "Building iperf3 image for $(ARCH)..."

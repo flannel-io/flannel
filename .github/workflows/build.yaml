@@ -11,6 +11,21 @@ permissions:
   contents: read
 
 jobs:
+  chart-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
+
+      - name: Set up Helm
+        uses: Azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 #v4
+        with:
+          version: '3.19.0'
+
+      - name: Run chart tests
+        run: make chart-test
+
   build-images:
     runs-on: ubuntu-latest
 
