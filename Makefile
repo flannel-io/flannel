@@ -1,4 +1,4 @@
-.PHONY: test unit-test e2e-test deps cover gofmt gofmt-fix license-check clean tar.gz release buildx-create-builder build-multi-arch release-manifest release-helm
+.PHONY: test unit-test e2e-test chart-test deps cover gofmt gofmt-fix license-check clean tar.gz release buildx-create-builder build-multi-arch release-manifest release-helm
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
@@ -115,6 +115,12 @@ e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
 	$(MAKE) -C images/iperf3 ARCH=$(ARCH)
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test.sh
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test-k8s.sh
+
+chart-test:
+	@if ! helm plugin list | awk 'NR>1 {print $$1}' | grep -qx unittest; then \
+		helm plugin install --verify=false https://github.com/helm-unittest/helm-unittest; \
+	fi
+	helm unittest ./chart/kube-flannel
 
 k3s-e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
 	@echo "Building iperf3 image for $(ARCH)..."
