@@ -119,7 +119,7 @@ e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
 	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test-k8s.sh
 
 chart-test:
-	@if ! helm plugin list | grep -Eq '^unittest[[:space:]]+$(HELM_UNITTEST_VERSION_NUMBER)[[:space:]]'; then \
+	@if ! helm plugin list | grep -Eq '^unittest[[:space:]]+$(HELM_UNITTEST_VERSION_NUMBER)([[:space:]]|$$)'; then \
 		if helm plugin list | awk 'NR>1 {print $$1}' | grep -qx unittest; then helm plugin uninstall unittest; fi; \
 		helm plugin install --version $(HELM_UNITTEST_VERSION) https://github.com/helm-unittest/helm-unittest; \
 	fi
