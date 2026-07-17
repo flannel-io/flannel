@@ -15,7 +15,6 @@
 package subnet
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net"
@@ -69,38 +68,27 @@ func MakeSubnetKey(sn ip.IP4Net, sn6 ip.IP6Net) string {
 }
 
 func WriteSubnetFile(path string, config *Config, ipMasq bool, sn ip.IP4Net, ipv6sn ip.IP6Net, mtu int) error {
-	dir, name := filepath.Split(path)
+	dir := filepath.Dir(path)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		return err
 	}
-	tempFile := filepath.Join(dir, "."+name)
-	var b bytes.Buffer
+	b := []byte{}
+
 	if config.EnableIPv4 {
-		fmt.Fprintf(&b, "FLANNEL_NETWORK=%s\n", config.Network)
 		// Write out the first usable IP by incrementing sn.IP by one
 		sn.IncrementIP()
-
-		fmt.Fprintf(&b, "FLANNEL_SUBNET=%s\n", sn)
+		b = fmt.Appendf(b, "FLANNEL_NETWORK=%s\nFLANNEL_SUBNET=%s\n", config.Network, sn)
 	}
 	if config.EnableIPv6 {
-		fmt.Fprintf(&b, "FLANNEL_IPV6_NETWORK=%s\n", config.IPv6Network)
 		// Write out the first usable IP by incrementing ip6Sn.IP by one
 		ipv6sn.IncrementIP()
-		fmt.Fprintf(&b, "FLANNEL_IPV6_SUBNET=%s\n", ipv6sn)
+		b = fmt.Appendf(b, "FLANNEL_IPV6_NETWORK=%s\nFLANNEL_IPV6_SUBNET=%s\n", config.IPv6Network, ipv6sn)
 	}
 
-	fmt.Fprintf(&b, "FLANNEL_MTU=%d\n", mtu)
-	fmt.Fprintf(&b, "FLANNEL_IPMASQ=%v\n", ipMasq)
+	b = fmt.Appendf(b, "FLANNEL_MTU=%d\nFLANNEL_IPMASQ=%t\n", mtu, ipMasq)
 
-	if err := os.WriteFile(tempFile, b.Bytes(), 0644); err != nil {
-		return err
-	}
-
-	// rename(2) the temporary file to the desired location so that it becomes
-	// atomically visible with the contents
-	return os.Rename(tempFile, path)
-	// TODO - is this safe? What if it's not on the same FS?
+	return writeFile(path, b, 0644)
 }
 
 type Manager interface {

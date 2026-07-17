@@ -31,6 +31,7 @@ require (
 
 require (
 	github.com/avast/retry-go/v4 v4.7.0
+	github.com/google/renameio/v2 v2.0.2
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.128
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.3.128
 	golang.org/x/sync v0.21.0
