@@ -34,7 +34,7 @@ require (
 	github.com/google/renameio/v2 v2.0.2
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.128
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.3.128
-	golang.org/x/sync v0.21.0
+	golang.org/x/sync v0.22.0
 	sigs.k8s.io/knftables v0.0.18
 )
 
@@ -134,7 +134,7 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.52.0 // indirect
-	golang.org/x/sys v0.46.0
+	golang.org/x/sys v0.47.0
 	golang.org/x/term v0.43.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	google.golang.org/grpc v1.79.3 // indirect
