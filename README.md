@@ -20,7 +20,16 @@ The advantage of this model is that it removes the port mapping complexities tha
 
 Flannel is responsible for providing a layer 3 IPv4 network between multiple nodes in a cluster. Flannel does not control how containers are networked to the host, only how the traffic is transported between hosts. However, flannel does provide a CNI plugin for Kubernetes and a guidance on integrating with Docker.
 
-Flannel is focused on networking. For network policy, other projects such as [Calico][calico] can be used.
+Flannel is focused on networking. While the `flanneld` binary does not natively enforce Network Policies, the Flannel project provides ways to add policy support to your cluster.
+
+### Network Policy
+
+For Network Policy enforcement, options include:
+
+* **Integrated controller:** The [Flannel Helm chart](https://github.com/flannel-io/flannel/tree/master/chart/kube-flannel) has a `netpol.enabled` option that deploys the [Kubernetes SIGs network policy controller](https://github.com/kubernetes-sigs/kube-network-policies) alongside Flannel.
+* **Third-party controllers:** Use Flannel for connectivity and another project for policy, for example [Calico](https://docs.tigera.io/calico/latest/getting-started/kubernetes/flannel/install-for-flannel) or CNI chaining with [Cilium](https://docs.cilium.io/en/stable/installation/cni-chaining/).
+
+See [Documentation/netpol.md](Documentation/netpol.md) for configuration details.
 
 ## Getting started on Kubernetes
 
