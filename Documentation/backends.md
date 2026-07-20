@@ -19,12 +19,14 @@ Use in-kernel VXLAN to encapsulate the packets.
 
 Type and options:
 * `Type` (string): `vxlan`
-* `VNI` (number): VXLAN Identifier (VNI) to be used. On Linux, defaults to 1. On Windows should be greater than or equal to 4096. 
+* `VNI` (number): VXLAN Identifier (VNI) to be used. On Linux, defaults to 1. On Windows should be greater than or equal to 4096.
 * `Port` (number): UDP port to use for sending encapsulated packets. On Linux, defaults to kernel default, currently 8472, but on Windows, must be 4789.
-* `GBP` (Boolean): Enable [VXLAN Group Based Policy](https://github.com/torvalds/linux/commit/3511494ce2f3d3b77544c79b87511a4ddb61dc89).  Defaults to `false`. GBP is not supported on Windows
+* `GBP` (Boolean): Enable [VXLAN Group Based Policy](https://github.com/torvalds/linux/commit/3511494ce2f3d3b77544c79b87511a4ddb61dc89). Defaults to `false`. GBP is not supported on Windows.
 * `DirectRouting` (Boolean): Enable direct routes (like `host-gw`) when the hosts are on the same subnet. VXLAN will only be used to encapsulate packets to hosts on different subnets. Defaults to `false`. DirectRouting is not supported on Windows.
-* `MTU` (number): Desired MTU for the outgoing packets if not defined the MTU of the external interface is used.
-* `MacPrefix` (String): Only use on Windows, set to the MAC prefix. Defaults to `0E-2A`.
+* `Learning` (Boolean): Linux only. Controls whether the VXLAN device uses MAC learning (`learning` on the kernel link). Defaults to `false`.
+* `MTU` (number): Desired MTU for the outgoing packets. If not defined, the MTU of the external interface is used. Linux only.
+* `MacPrefix` (String): Windows only. MAC address prefix for the VXLAN interface, format `xx-xx`. Defaults to `0E-2A`.
+* `Name` (String): Windows only. Name of the VXLAN network interface. Defaults to `flannel.<VNI>` (for example `flannel.4096`).
 
 Starting with Ubuntu 21.10, vxlan support on Raspberry Pi has been moved into a separate kernel module. 
 ```
