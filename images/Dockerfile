@@ -1,6 +1,6 @@
 ARG XX_IMAGE=tonistiigi/xx:1.8.0
-ARG GO_IMAGE=golang:alpine3.22
-ARG RUN_IMAGE=alpine:3.22.2
+ARG GO_IMAGE=golang:alpine3.24
+ARG RUN_IMAGE=alpine:3.24
 
 FROM --platform=$BUILDPLATFORM ${XX_IMAGE}  AS xx
 
