@@ -26,8 +26,13 @@ e2e-wait-for-nodes() {
         echo 'Waiting for nodes to be ready...' >&2
         echo "*** nodes:"
         kubectl --kubeconfig="${HOME}/.kube/config" get nodes
-        # echo "*** events:"
-        # kubectl --kubeconfig="${HOME}/.kube/config" get events --sort-by='.lastTimestamp' -A
+        echo "*** pods (all namespaces):"
+        kubectl --kubeconfig="${HOME}/.kube/config" get pods -A -o wide
+        echo "*** flannel pod logs:"
+        kubectl --kubeconfig="${HOME}/.kube/config" get pods -n kube-flannel -o wide 2>/dev/null | tail -n +2 | awk '{print $1}' | while read pod; do
+            echo "--- flannel pod $pod ---"
+            kubectl --kubeconfig="${HOME}/.kube/config" logs "$pod" -n kube-flannel --all-containers 2>/dev/null || true
+        done
         sleep 5
     done
     echo "*** nodes are ready:"
@@ -42,9 +47,23 @@ e2e-pod-ready() {
 export -f e2e-pod-ready
 
 e2e-wait-for-services() {
-    for svc in ${WAIT_FOR_SERVICES:="coredns local-path-provisioner"}; do
-        while [[ "$(e2e-pod-ready $svc)" != 'true' ]]; do
+    for svc in ${WAIT_FOR_SERVICES:="coredns"}; do
+        while true; do
+            ready_output=$(e2e-pod-ready "$svc")
+            # At least one pod must be ready, and none must be not-ready.
+            # e2e-pod-ready returns one 'true'/'false' line per matching container,
+            # so a simple != 'true' comparison breaks with multiple replicas.
+            if echo "$ready_output" | grep -q "true" && ! echo "$ready_output" | grep -q "false"; then
+                break
+            fi
             echo "Waiting for service '$svc' to be ready..." >&2
+            echo "*** pod status for '$svc':"
+            kubectl --kubeconfig="${HOME}/.kube/config" get pods -A | grep "$svc" || true
+            echo "*** describe pods '$svc':"
+            kubectl --kubeconfig="${HOME}/.kube/config" describe pods -A -l k8s-app="$svc" 2>/dev/null \
+                || kubectl --kubeconfig="${HOME}/.kube/config" describe pods -A 2>/dev/null | grep -A 30 "Name:.*${svc}" || true
+            echo "*** recent events:"
+            kubectl --kubeconfig="${HOME}/.kube/config" get events --sort-by='.lastTimestamp' -A | tail -20
             sleep 5
         done
         echo "Service '$svc' is ready"
@@ -60,8 +79,16 @@ export -f e2e-get-flannel-pod
 
 e2e-wait-for-test-pods() {
     for pod in ${WAIT_FOR_PODS:="multitool1 multitool2"}; do
-        while [[ "$(e2e-pod-ready $pod)" != 'true' ]]; do
+        while true; do
+            ready_output=$(e2e-pod-ready "$pod")
+            if echo "$ready_output" | grep -q "true" && ! echo "$ready_output" | grep -q "false"; then
+                break
+            fi
             echo "Waiting for pod '$pod' to be ready..." >&2
+            echo "*** pod status:"
+            kubectl --kubeconfig="${HOME}/.kube/config" get pod "$pod" -o wide 2>/dev/null || true
+            echo "*** pod events:"
+            kubectl --kubeconfig="${HOME}/.kube/config" describe pod "$pod" 2>/dev/null | grep -A 20 "^Events:" || true
             sleep 5
         done
         echo "Pod '$pod' is ready"

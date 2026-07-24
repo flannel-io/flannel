@@ -1,4 +1,4 @@
-.PHONY: test unit-test e2e-test chart-test deps cover gofmt gofmt-fix license-check clean tar.gz release buildx-create-builder build-multi-arch release-manifest release-helm
+.PHONY: test unit-test e2e-test chart-test kind-e2e-test deps cover gofmt gofmt-fix license-check clean tar.gz release buildx-create-builder build-multi-arch release-manifest release-helm
 
 # Registry used for publishing images
 REGISTRY?=quay.io/coreos/flannel
@@ -128,10 +128,10 @@ chart-test:
 	fi
 	helm unittest ./chart/kube-flannel
 
-k3s-e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
+kind-e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
 	@echo "Building iperf3 image for $(ARCH)..."
 	$(MAKE) -C images/iperf3 ARCH=$(ARCH) || { echo "ERROR: Failed to build iperf3 image for $(ARCH)"; exit 1; }
-	@echo "Running k3s e2e tests..."
+	@echo "Running kind e2e tests..."
 	./bash_unit ./e2e/run-e2e-tests.sh
 
 cover:
