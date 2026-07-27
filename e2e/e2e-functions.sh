@@ -24,14 +24,8 @@ export -f e2e-count-ready-nodes
 e2e-wait-for-nodes() {
     while [[ $(e2e-count-ready-nodes) -lt 2 ]]; do
         echo 'Waiting for nodes to be ready...' >&2
-        echo "*** nodes:"
-        kubectl --kubeconfig="${HOME}/.kube/config" get nodes
-        # echo "*** events:"
-        # kubectl --kubeconfig="${HOME}/.kube/config" get events --sort-by='.lastTimestamp' -A
         sleep 5
     done
-    echo "*** nodes are ready:"
-    kubectl --kubeconfig="${HOME}/.kube/config" get nodes
 }
 export -f e2e-wait-for-nodes
 
@@ -42,8 +36,15 @@ e2e-pod-ready() {
 export -f e2e-pod-ready
 
 e2e-wait-for-services() {
-    for svc in ${WAIT_FOR_SERVICES:="coredns local-path-provisioner"}; do
-        while [[ "$(e2e-pod-ready $svc)" != 'true' ]]; do
+    for svc in ${WAIT_FOR_SERVICES:="coredns"}; do
+        while true; do
+            ready_output=$(e2e-pod-ready "$svc")
+            # At least one pod must be ready, and none must be not-ready.
+            # e2e-pod-ready returns one 'true'/'false' line per matching container,
+            # so a simple != 'true' comparison breaks with multiple replicas.
+            if echo "$ready_output" | grep -q "true" && ! echo "$ready_output" | grep -q "false"; then
+                break
+            fi
             echo "Waiting for service '$svc' to be ready..." >&2
             sleep 5
         done
@@ -60,7 +61,11 @@ export -f e2e-get-flannel-pod
 
 e2e-wait-for-test-pods() {
     for pod in ${WAIT_FOR_PODS:="multitool1 multitool2"}; do
-        while [[ "$(e2e-pod-ready $pod)" != 'true' ]]; do
+        while true; do
+            ready_output=$(e2e-pod-ready "$pod")
+            if echo "$ready_output" | grep -q "true" && ! echo "$ready_output" | grep -q "false"; then
+                break
+            fi
             echo "Waiting for pod '$pod' to be ready..." >&2
             sleep 5
         done
