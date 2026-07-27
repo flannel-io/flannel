@@ -135,7 +135,7 @@ Manages forwarding rules and masquerading using either iptables or nftables.
 
 **Unit tests**: Run in Docker with NET_ADMIN and SYS_ADMIN capabilities to test network operations and namespace creation.
 
-**E2E tests**: Use bash_unit framework with Docker Compose. Build test images with `dist/flanneld-e2e-$(TAG)-$(ARCH).docker` target.
+**E2E tests**: Two suites. The kind-based suite (`make kind-e2e-test`) is a native Ginkgo v2 + Gomega suite in `e2e/` (build tag `e2e`) that drives a kind cluster via the `sigs.k8s.io/kind` library and Kubernetes via client-go. The etcd/docker functional suite (`make e2e-test`) still uses the bash_unit framework (`dist/functional-test.sh`, `dist/functional-test-k8s.sh`).
 
 **Functional tests**: Located in `dist/functional-test.sh` and `dist/functional-test-k8s.sh`.
 

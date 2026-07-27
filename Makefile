@@ -128,11 +128,12 @@ chart-test:
 	fi
 	helm unittest ./chart/kube-flannel
 
-kind-e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
+kind-e2e-test: dist/flanneld-$(TAG)-$(ARCH).docker
 	@echo "Building iperf3 image for $(ARCH)..."
 	$(MAKE) -C images/iperf3 ARCH=$(ARCH) || { echo "ERROR: Failed to build iperf3 image for $(ARCH)"; exit 1; }
-	@echo "Running kind e2e tests..."
-	./bash_unit ./e2e/run-e2e-tests.sh
+	@echo "Running kind e2e tests with Ginkgo..."
+	cd e2e && FLANNEL_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ARCH=$(ARCH) TAG=$(TAG) \
+		go test -tags e2e -timeout 60m -v ./...
 
 cover:
 	# A single package must be given - e.g. 'PACKAGES=pkg/ip make cover'
