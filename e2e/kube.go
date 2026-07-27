@@ -24,6 +24,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -79,6 +80,20 @@ func (kc *kindCluster) createIperfClientPod(ctx context.Context, name, node stri
 func (kc *kindCluster) createPinnedPod(ctx context.Context, pod *corev1.Pod) error {
 	_, err := kc.client.CoreV1().Pods("default").Create(ctx, pod, metav1.CreateOptions{})
 	return err
+}
+
+// deleteTestPods removes the well-known test pods left over from a prior spec.
+// Called at the start of prepareTest so that the shared cluster starts clean
+// for each backend, matching the bash suite's single-cluster approach.
+func (kc *kindCluster) deleteTestPods(ctx context.Context) error {
+	testPods := []string{"multitool1", "multitool2", "iperf3-server", "iperf3-client"}
+	for _, name := range testPods {
+		err := kc.client.CoreV1().Pods("default").Delete(ctx, name, metav1.DeleteOptions{})
+		if err != nil && !errors.IsNotFound(err) {
+			return fmt.Errorf("deleting pod %s: %w", name, err)
+		}
+	}
+	return nil
 }
 
 // podIP mirrors get_pod_ip.

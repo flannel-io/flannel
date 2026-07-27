@@ -46,41 +46,30 @@ var _ = Describe("flannel backends", func() {
 		spec := backendSpecs[i]
 
 		Context(spec.name, Ordered, func() {
-			var kc *kindCluster
-
 			BeforeAll(func() {
 				if spec.amd64Only && arch != "amd64" {
 					Skip("backend " + spec.backend + " is only tested on amd64")
-				}
-				var err error
-				kc, err = createCluster()
-				Expect(err).NotTo(HaveOccurred(), "creating kind cluster")
-			})
-
-			AfterAll(func() {
-				if kc != nil {
-					Expect(kc.delete()).To(Succeed())
 				}
 			})
 
 			AfterEach(func(ctx SpecContext) {
 				if CurrentSpecReport().Failed() {
-					kc.dumpDebugInfo(ctx)
+					sharedCluster.dumpDebugInfo(ctx)
 				}
 			})
 
 			It("provides pod-to-pod connectivity", func(ctx SpecContext) {
-				prepareTest(ctx, kc, spec.backend, spec.enableNFT)
-				pings(ctx, kc)
-				kc.checkRules(ctx, spec.enableNFT)
-				Expect(kc.deleteFlannel(ctx)).To(Succeed())
+				prepareTest(ctx, sharedCluster, spec.backend, spec.enableNFT)
+				pings(ctx, sharedCluster)
+				sharedCluster.checkRules(ctx, spec.enableNFT)
+				Expect(sharedCluster.deleteFlannel(ctx)).To(Succeed())
 			})
 
 			if spec.hasPerf {
 				It("passes iperf3 throughput test", func(ctx SpecContext) {
-					prepareTest(ctx, kc, spec.backend, spec.enableNFT)
-					perf(ctx, kc)
-					Expect(kc.deleteFlannel(ctx)).To(Succeed())
+					prepareTest(ctx, sharedCluster, spec.backend, spec.enableNFT)
+					perf(ctx, sharedCluster)
+					Expect(sharedCluster.deleteFlannel(ctx)).To(Succeed())
 				})
 			}
 		})
@@ -91,6 +80,9 @@ var _ = Describe("flannel backends", func() {
 // the bash prepare_test function.
 func prepareTest(ctx context.Context, kc *kindCluster, backend string, enableNFT bool) {
 	GinkgoHelper()
+
+	By("cleaning up test pods from prior spec")
+	Expect(kc.deleteTestPods(ctx)).To(Succeed())
 
 	By("installing flannel with backend " + backend)
 	Expect(kc.installFlannel(ctx, backend, enableNFT)).To(Succeed())

@@ -42,6 +42,10 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+// sharedCluster is created once for the entire suite and shared across all
+// backend tests, matching the bash suite's single setup()/teardown() lifecycle.
+var sharedCluster *kindCluster
+
 const (
 	kindClusterName  = "e2e"
 	kindControlPlane = kindClusterName + "-control-plane"
@@ -89,4 +93,14 @@ var _ = BeforeSuite(func() {
 
 	// CNI plugins must be present on the host so the kind nodes can wire pods.
 	Expect(installCNIPlugins(arch)).To(Succeed(), "installing CNI plugins")
+
+	var err error
+	sharedCluster, err = createCluster()
+	Expect(err).NotTo(HaveOccurred(), "creating kind cluster")
+})
+
+var _ = AfterSuite(func() {
+	if sharedCluster != nil {
+		Expect(sharedCluster.delete()).To(Succeed())
+	}
 })
