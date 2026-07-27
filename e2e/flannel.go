@@ -1,5 +1,18 @@
 //go:build e2e
 
+// Copyright 2026 flannel authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package e2e
 
 import (
@@ -14,6 +27,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 
 	appsv1 "k8s.io/api/apps/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -87,9 +101,11 @@ func (kc *kindCluster) deleteFlannel(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	applied := append([]appliedObject(nil), kc.applied...)
+
 	// Delete in reverse creation order.
-	for i := len(kc.applied) - 1; i >= 0; i-- {
-		o := kc.applied[i]
+	for i := len(applied) - 1; i >= 0; i-- {
+		o := applied[i]
 		var ri dynamic.ResourceInterface
 		if o.namespace != "" {
 			ri = dyn.Resource(o.gvr).Namespace(o.namespace)
@@ -100,8 +116,30 @@ func (kc *kindCluster) deleteFlannel(ctx context.Context) error {
 			fmt.Fprintf(GinkgoWriter, "warning: deleting %s/%s: %v\n", o.namespace, o.name, err)
 		}
 	}
+	if err := kc.waitForFlannelDeletion(ctx, dyn, applied, 2*time.Minute); err != nil {
+		return err
+	}
 	kc.applied = nil
 	return nil
+}
+
+func (kc *kindCluster) waitForFlannelDeletion(ctx context.Context, dyn dynamic.Interface, applied []appliedObject, timeout time.Duration) error {
+	return wait.PollUntilContextTimeout(ctx, 2*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+		for _, o := range applied {
+			var ri dynamic.ResourceInterface
+			if o.namespace != "" {
+				ri = dyn.Resource(o.gvr).Namespace(o.namespace)
+			} else {
+				ri = dyn.Resource(o.gvr)
+			}
+			if _, err := ri.Get(ctx, o.name, metav1.GetOptions{}); err == nil {
+				return false, nil
+			} else if !apierrors.IsNotFound(err) {
+				return false, err
+			}
+		}
+		return true, nil
+	})
 }
 
 // waitForFlannelRollout waits for the flannel DaemonSet to be fully available,
