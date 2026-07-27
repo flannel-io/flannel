@@ -160,7 +160,7 @@ func (kc *kindCluster) checkNftables(ctx context.Context) {
 }
 
 // dumpDebugInfo prints cluster state for troubleshooting, mirroring
-// dump_debug_info. It is invoked from AfterEach on failure.
+// dump_debug_info from the bash suite. Invoked from AfterEach on failure.
 func (kc *kindCluster) dumpDebugInfo(ctx context.Context) {
 	if kc == nil || kc.client == nil {
 		return
@@ -168,31 +168,72 @@ func (kc *kindCluster) dumpDebugInfo(ctx context.Context) {
 	w := GinkgoWriter
 	fmt.Fprintln(w, "======== DEBUG INFO ========")
 
+	fmt.Fprintln(w, "--- nodes ---")
 	nodes, err := kc.client.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err == nil {
-		fmt.Fprintln(w, "--- nodes ---")
 		for _, n := range nodes.Items {
 			fmt.Fprintf(w, "%s\n", n.Name)
 		}
 	}
 
-	fmt.Fprintln(w, "--- flannel pod logs ---")
-	pods, err := kc.client.CoreV1().Pods(flannelNamespace).List(ctx, metav1.ListOptions{})
+	fmt.Fprintln(w, "--- all pods ---")
+	allPods, err := kc.client.CoreV1().Pods("").List(ctx, metav1.ListOptions{})
 	if err == nil {
-		for _, p := range pods.Items {
-			fmt.Fprintf(w, "--- pod %s ---\n", p.Name)
-			logs, lerr := kc.client.CoreV1().Pods(flannelNamespace).
-				GetLogs(p.Name, &corev1.PodLogOptions{}).DoRaw(ctx)
-			if lerr == nil {
-				fmt.Fprintln(w, string(logs))
+		for _, p := range allPods.Items {
+			fmt.Fprintf(w, "%-40s %-15s %s\n", p.Namespace+"/"+p.Name, string(p.Status.Phase), p.Status.PodIP)
+		}
+	}
+
+	fmt.Fprintln(w, "--- flannel pod describes ---")
+	flannelPods, err := kc.client.CoreV1().Pods(flannelNamespace).List(ctx, metav1.ListOptions{})
+	if err == nil {
+		for _, p := range flannelPods.Items {
+			fmt.Fprintf(w, "--- pod %s: phase=%s conditions=%v ---\n", p.Name, p.Status.Phase, p.Status.Conditions)
+			for _, cs := range p.Status.ContainerStatuses {
+				fmt.Fprintf(w, "  container %s ready=%v restarts=%d state=%v\n", cs.Name, cs.Ready, cs.RestartCount, cs.State)
+			}
+		}
+	}
+
+	fmt.Fprintln(w, "--- flannel pod logs (current + previous) ---")
+	if err == nil {
+		for _, p := range flannelPods.Items {
+			for _, previous := range []bool{false, true} {
+				suffix := ""
+				if previous {
+					suffix = " (previous)"
+				}
+				logs, lerr := kc.client.CoreV1().Pods(flannelNamespace).
+					GetLogs(p.Name, &corev1.PodLogOptions{Previous: previous}).DoRaw(ctx)
+				if lerr == nil {
+					fmt.Fprintf(w, "--- pod %s%s ---\n%s\n", p.Name, suffix, logs)
+				}
 			}
 		}
 	}
 
 	fmt.Fprintln(w, "--- flannel files on kind nodes ---")
 	for _, node := range []string{kindControlPlane, kindWorker} {
-		out, _ := kc.execOnNode(node, "cat", "/run/flannel/subnet.env")
-		fmt.Fprintf(w, "--- %s:/run/flannel/subnet.env ---\n%s\n", node, out)
+		out, _ := kc.execOnNode(node, "ls", "-al", "/run/flannel")
+		fmt.Fprintf(w, "--- %s:/run/flannel ---\n%s\n", node, out)
+		out, _ = kc.execOnNode(node, "cat", "/run/flannel/subnet.env")
+		fmt.Fprintf(w, "subnet.env:\n%s\n", out)
 	}
+
+	fmt.Fprintln(w, "--- flannel-related images on kind nodes ---")
+	for _, node := range []string{kindControlPlane, kindWorker} {
+		out, _ := kc.execOnNode(node, "crictl", "images")
+		fmt.Fprintf(w, "--- %s ---\n%s\n", node, out)
+	}
+
+	fmt.Fprintln(w, "--- events (all namespaces) ---")
+	events, err := kc.client.CoreV1().Events("").List(ctx, metav1.ListOptions{})
+	if err == nil {
+		for _, e := range events.Items {
+			fmt.Fprintf(w, "%s  %s/%s  %s: %s\n",
+				e.LastTimestamp.String(), e.Namespace, e.InvolvedObject.Name, e.Reason, e.Message)
+		}
+	}
+
 	fmt.Fprintln(w, "======== END DEBUG INFO ========")
 }

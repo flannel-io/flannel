@@ -16,7 +16,6 @@
 package e2e
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -48,11 +47,9 @@ var cniPluginSHA256 = map[string]string{
 
 const cniPluginsVersion = "v1.9.1"
 
-// installCNIPlugins downloads and extracts the CNI plugins into /opt/cni/bin,
-// mirroring the former install_cni_plugins bash helper. It is a host-side step
-// (kind nodes bind-mount the host's /opt/cni/bin is not used; instead the kind
-// image ships plugins, but the flannel manifest relies on the host set), kept
-// for parity with the previous suite.
+// installCNIPlugins downloads and extracts the CNI plugins into /opt/cni/bin.
+// kind-config.yaml bind-mounts the host's /opt/cni/bin into every kind node, so
+// this host-side install is required for the flannel manifest to find the plugins.
 func installCNIPlugins(arch string) error {
 	sum, ok := cniPluginSHA256[arch]
 	if !ok {
@@ -81,7 +78,8 @@ func installCNIPlugins(arch string) error {
 }
 
 func downloadFile(url, dst string) error {
-	resp, err := http.Get(url)
+	client := &http.Client{Timeout: 5 * time.Minute}
+	resp, err := client.Get(url)
 	if err != nil {
 		return err
 	}
@@ -165,34 +163,32 @@ func createCluster() (*kindCluster, error) {
 	return kc, nil
 }
 
-// loadImage saves a docker image to a tar stream and imports it into every kind
-// node, equivalent to `kind load docker-image`.
+// loadImage saves a docker image to a temporary tar file and imports it into
+// every kind node, equivalent to `kind load docker-image`. Using a temp file
+// avoids buffering the entire archive in memory (images can be hundreds of MB).
 func (kc *kindCluster) loadImage(image string) error {
 	nodeList, err := kc.provider.ListInternalNodes(kc.name)
 	if err != nil {
 		return err
 	}
 
-	save := exec.Command("docker", "save", image)
-	stdout, err := save.StdoutPipe()
+	tmp, err := os.CreateTemp("", "kind-image-*.tar")
 	if err != nil {
 		return err
 	}
-	if err := save.Start(); err != nil {
-		return err
-	}
+	defer os.Remove(tmp.Name())
+	defer tmp.Close()
 
-	// Buffer the archive so it can be replayed to each node.
-	data, err := io.ReadAll(stdout)
-	if err != nil {
-		return err
-	}
-	if err := save.Wait(); err != nil {
-		return fmt.Errorf("docker save %s: %w", image, err)
+	save := exec.Command("docker", "save", "-o", tmp.Name(), image)
+	if out, err := save.CombinedOutput(); err != nil {
+		return fmt.Errorf("docker save %s: %w: %s", image, err, out)
 	}
 
 	for _, n := range nodeList {
-		if err := nodeutils.LoadImageArchive(n, bytes.NewReader(data)); err != nil {
+		if _, err := tmp.Seek(0, io.SeekStart); err != nil {
+			return err
+		}
+		if err := nodeutils.LoadImageArchive(n, tmp); err != nil {
 			return fmt.Errorf("importing image into node %s: %w", n, err)
 		}
 	}
