@@ -88,8 +88,20 @@ func (kc *kindCluster) installFlannel(ctx context.Context, backend string, enabl
 			ns = obj.GetNamespace()
 		}
 		By(fmt.Sprintf("applying %s %s/%s", gvk.Kind, ns, obj.GetName()))
-		if _, err := dynamicResource(dyn, mapping.Resource, ns).Create(ctx, obj, metav1.CreateOptions{}); err != nil {
-			return fmt.Errorf("creating %s %s: %w", gvk.Kind, obj.GetName(), err)
+		ri := dynamicResource(dyn, mapping.Resource, ns)
+		if _, err := ri.Create(ctx, obj, metav1.CreateOptions{}); err != nil {
+			if !apierrors.IsAlreadyExists(err) {
+				return fmt.Errorf("creating %s %s: %w", gvk.Kind, obj.GetName(), err)
+			}
+			// Resource already exists (e.g. from a previous partial run); update it.
+			existing, getErr := ri.Get(ctx, obj.GetName(), metav1.GetOptions{})
+			if getErr != nil {
+				return fmt.Errorf("getting existing %s %s: %w", gvk.Kind, obj.GetName(), getErr)
+			}
+			obj.SetResourceVersion(existing.GetResourceVersion())
+			if _, err := ri.Update(ctx, obj, metav1.UpdateOptions{}); err != nil {
+				return fmt.Errorf("updating %s %s: %w", gvk.Kind, obj.GetName(), err)
+			}
 		}
 		kc.applied = append(kc.applied, appliedObject{
 			gvr:       mapping.Resource,
@@ -213,7 +225,10 @@ func patchFlannelDaemonSet(obj *unstructured.Unstructured, backend string) error
 		return err
 	}
 	if len(containers) > 0 {
-		c := containers[0].(map[string]interface{})
+		c, ok := containers[0].(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("containers[0] has unexpected type %T", containers[0])
+		}
 		c["image"] = flannelImage
 		// udp backend needs privileged mode to access /dev/net/tun.
 		if backend == "udp" {
@@ -235,7 +250,10 @@ func patchFlannelDaemonSet(obj *unstructured.Unstructured, backend string) error
 		return err
 	}
 	if len(initContainers) > 1 {
-		ic := initContainers[1].(map[string]interface{})
+		ic, ok := initContainers[1].(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("initContainers[1] has unexpected type %T", initContainers[1])
+		}
 		ic["image"] = flannelImage
 	}
 	return unstructured.SetNestedSlice(obj.Object, initContainers, "spec", "template", "spec", "initContainers")

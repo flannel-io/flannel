@@ -172,24 +172,32 @@ func (kc *kindCluster) loadImage(image string) error {
 		return err
 	}
 
-	tmp, err := os.CreateTemp("", "kind-image-*.tar")
+	tmp, err := os.CreateTemp(".", "kind-image-*.tar")
 	if err != nil {
 		return err
 	}
-	defer os.Remove(tmp.Name())
-	defer tmp.Close()
+	tmpPath := tmp.Name()
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+	defer os.Remove(tmpPath)
 
-	save := exec.Command("docker", "save", "-o", tmp.Name(), image)
+	save := exec.Command("docker", "save", "-o", tmpPath, image)
 	if out, err := save.CombinedOutput(); err != nil {
 		return fmt.Errorf("docker save %s: %w: %s", image, err, out)
 	}
 
 	for _, n := range nodeList {
-		if _, err := tmp.Seek(0, io.SeekStart); err != nil {
+		archive, err := os.Open(tmpPath)
+		if err != nil {
 			return err
 		}
-		if err := nodeutils.LoadImageArchive(n, tmp); err != nil {
+		if err := nodeutils.LoadImageArchive(n, archive); err != nil {
+			archive.Close()
 			return fmt.Errorf("importing image into node %s: %w", n, err)
+		}
+		if err := archive.Close(); err != nil {
+			return err
 		}
 	}
 	return nil
