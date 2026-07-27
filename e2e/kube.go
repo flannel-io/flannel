@@ -88,10 +88,29 @@ func (kc *kindCluster) createPinnedPod(ctx context.Context, pod *corev1.Pod) err
 func (kc *kindCluster) deleteTestPods(ctx context.Context) error {
 	testPods := []string{"multitool1", "multitool2", "iperf3-server", "iperf3-client"}
 	for _, name := range testPods {
-		err := kc.client.CoreV1().Pods("default").Delete(ctx, name, metav1.DeleteOptions{})
+		gracePeriodSeconds := int64(0)
+		err := kc.client.CoreV1().Pods("default").Delete(ctx, name, metav1.DeleteOptions{
+			GracePeriodSeconds: &gracePeriodSeconds,
+		})
 		if err != nil && !errors.IsNotFound(err) {
 			return fmt.Errorf("deleting pod %s: %w", name, err)
 		}
+	}
+	if err := wait.PollUntilContextTimeout(ctx, 2*time.Second, time.Minute, true, func(ctx context.Context) (bool, error) {
+		for _, name := range testPods {
+			_, err := kc.client.CoreV1().Pods("default").Get(ctx, name, metav1.GetOptions{})
+			switch {
+			case errors.IsNotFound(err):
+				continue
+			case err != nil:
+				return false, err
+			default:
+				return false, nil
+			}
+		}
+		return true, nil
+	}); err != nil {
+		return fmt.Errorf("waiting for test pod deletion: %w", err)
 	}
 	return nil
 }

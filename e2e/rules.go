@@ -147,12 +147,12 @@ func expectedNftForward() string {
 // checkNftables asserts the nftables masquerade and forward chains on both nodes.
 func (kc *kindCluster) checkNftables(ctx context.Context) {
 	for node, cidr := range kc.nodeCIDRs(ctx) {
-		post, err := kc.execOnNode(node, "/usr/sbin/nft", "list", "chain", "flannel-ipv4", "postrtg")
+		post, err := kc.execOnNode(node, "/usr/sbin/nft", "list", "chain", "ip", "flannel-ipv4", "postrtg")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(strings.TrimRight(post, "\n")).To(Equal(expectedNftPostrouting(cidr)),
 			"node %s has unexpected nftables postrouting rules", node)
 
-		fwd, err := kc.execOnNode(node, "/usr/sbin/nft", "list", "chain", "flannel-ipv4", "forward")
+		fwd, err := kc.execOnNode(node, "/usr/sbin/nft", "list", "chain", "ip", "flannel-ipv4", "forward")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(strings.TrimRight(fwd, "\n")).To(Equal(expectedNftForward()),
 			"node %s has unexpected nftables forward rules", node)
