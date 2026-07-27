@@ -48,6 +48,15 @@ type appliedObject struct {
 	name      string
 }
 
+// dynamicResource returns the resource client for a GVR, scoped to a namespace
+// when one is set (empty namespace means a cluster-scoped resource).
+func dynamicResource(dyn dynamic.Interface, gvr schema.GroupVersionResource, namespace string) dynamic.ResourceInterface {
+	if namespace != "" {
+		return dyn.Resource(gvr).Namespace(namespace)
+	}
+	return dyn.Resource(gvr)
+}
+
 // installFlannel renders the shipped kube-flannel.yml as a template (patching
 // the flannel image, net-conf.json and, for the udp backend, the privileged
 // flag) and applies it via the dynamic client. It replaces write-flannel-conf +
@@ -74,15 +83,12 @@ func (kc *kindCluster) installFlannel(ctx context.Context, backend string, enabl
 		if err != nil {
 			return fmt.Errorf("mapping %s: %w", gvk, err)
 		}
-		ns := obj.GetNamespace()
-		var ri dynamic.ResourceInterface
-		if mapping.Scope.Name() == "namespace" {
-			ri = dyn.Resource(mapping.Resource).Namespace(ns)
-		} else {
-			ri = dyn.Resource(mapping.Resource)
+		ns := ""
+		if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
+			ns = obj.GetNamespace()
 		}
 		By(fmt.Sprintf("applying %s %s/%s", gvk.Kind, ns, obj.GetName()))
-		if _, err := ri.Create(ctx, obj, metav1.CreateOptions{}); err != nil {
+		if _, err := dynamicResource(dyn, mapping.Resource, ns).Create(ctx, obj, metav1.CreateOptions{}); err != nil {
 			return fmt.Errorf("creating %s %s: %w", gvk.Kind, obj.GetName(), err)
 		}
 		kc.applied = append(kc.applied, appliedObject{
@@ -106,13 +112,7 @@ func (kc *kindCluster) deleteFlannel(ctx context.Context) error {
 	// Delete in reverse creation order.
 	for i := len(applied) - 1; i >= 0; i-- {
 		o := applied[i]
-		var ri dynamic.ResourceInterface
-		if o.namespace != "" {
-			ri = dyn.Resource(o.gvr).Namespace(o.namespace)
-		} else {
-			ri = dyn.Resource(o.gvr)
-		}
-		if err := ri.Delete(ctx, o.name, metav1.DeleteOptions{}); err != nil {
+		if err := dynamicResource(dyn, o.gvr, o.namespace).Delete(ctx, o.name, metav1.DeleteOptions{}); err != nil {
 			fmt.Fprintf(GinkgoWriter, "warning: deleting %s/%s: %v\n", o.namespace, o.name, err)
 		}
 	}
@@ -126,13 +126,7 @@ func (kc *kindCluster) deleteFlannel(ctx context.Context) error {
 func (kc *kindCluster) waitForFlannelDeletion(ctx context.Context, dyn dynamic.Interface, applied []appliedObject, timeout time.Duration) error {
 	return wait.PollUntilContextTimeout(ctx, 2*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
 		for _, o := range applied {
-			var ri dynamic.ResourceInterface
-			if o.namespace != "" {
-				ri = dyn.Resource(o.gvr).Namespace(o.namespace)
-			} else {
-				ri = dyn.Resource(o.gvr)
-			}
-			if _, err := ri.Get(ctx, o.name, metav1.GetOptions{}); err == nil {
+			if _, err := dynamicResource(dyn, o.gvr, o.namespace).Get(ctx, o.name, metav1.GetOptions{}); err == nil {
 				return false, nil
 			} else if !apierrors.IsNotFound(err) {
 				return false, err

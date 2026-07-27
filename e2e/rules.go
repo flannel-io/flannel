@@ -56,21 +56,34 @@ func expectedIptablesForward() string {
 	}, "\n")
 }
 
+// checkRules asserts flannel's masquerade and forward rules on both nodes, using
+// nftables when enableNFT is set and iptables otherwise.
+func (kc *kindCluster) checkRules(ctx context.Context, enableNFT bool) {
+	if enableNFT {
+		kc.checkNftables(ctx)
+	} else {
+		kc.checkIptables(ctx)
+	}
+}
+
+// nodeCIDRs returns the pod CIDR of each node keyed by node name.
+func (kc *kindCluster) nodeCIDRs(ctx context.Context) map[string]string {
+	cidrs := map[string]string{}
+	for _, node := range []string{kindWorker, kindControlPlane} {
+		cidr, err := kc.podCIDR(ctx, node)
+		Expect(err).NotTo(HaveOccurred())
+		cidrs[node] = cidr
+	}
+	return cidrs
+}
+
 // checkIptables asserts the masquerade and forward rules on both nodes, mirroring
 // the bash check_iptables helper.
 func (kc *kindCluster) checkIptables(ctx context.Context) {
-	workerCIDR, err := kc.podCIDR(ctx, kindWorker)
-	Expect(err).NotTo(HaveOccurred())
-	leaderCIDR, err := kc.podCIDR(ctx, kindControlPlane)
-	Expect(err).NotTo(HaveOccurred())
-
-	for node, cidr := range map[string]string{kindWorker: workerCIDR, kindControlPlane: leaderCIDR} {
-		post := kc.iptablesNatFlannel(node)
-		Expect(post).To(Equal(expectedIptablesPostrouting(cidr)),
+	for node, cidr := range kc.nodeCIDRs(ctx) {
+		Expect(kc.iptablesNatFlannel(node)).To(Equal(expectedIptablesPostrouting(cidr)),
 			"node %s has unexpected postrouting rules", node)
-
-		fwd := kc.iptablesFilterForward(node)
-		Expect(fwd).To(Equal(expectedIptablesForward()),
+		Expect(kc.iptablesFilterForward(node)).To(Equal(expectedIptablesForward()),
 			"node %s has unexpected forward rules", node)
 	}
 }
@@ -133,12 +146,7 @@ func expectedNftForward() string {
 
 // checkNftables asserts the nftables masquerade and forward chains on both nodes.
 func (kc *kindCluster) checkNftables(ctx context.Context) {
-	workerCIDR, err := kc.podCIDR(ctx, kindWorker)
-	Expect(err).NotTo(HaveOccurred())
-	leaderCIDR, err := kc.podCIDR(ctx, kindControlPlane)
-	Expect(err).NotTo(HaveOccurred())
-
-	for node, cidr := range map[string]string{kindWorker: workerCIDR, kindControlPlane: leaderCIDR} {
+	for node, cidr := range kc.nodeCIDRs(ctx) {
 		post, err := kc.execOnNode(node, "/usr/sbin/nft", "list", "chain", "flannel-ipv4", "postrtg")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(strings.TrimRight(post, "\n")).To(Equal(expectedNftPostrouting(cidr)),

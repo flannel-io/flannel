@@ -25,21 +25,20 @@ import (
 
 // backendSpec describes a flannel backend under test.
 type backendSpec struct {
-	name       string
-	backend    string // flannel backend type (name without the _nft suffix)
-	enableNFT  bool
-	amd64Only  bool
-	checkRules func(kc *kindCluster, ctx context.Context)
-	hasPerf    bool
+	name      string
+	backend   string // flannel backend type (name without the -nftables suffix)
+	enableNFT bool
+	amd64Only bool
+	hasPerf   bool
 }
 
 var backendSpecs = []backendSpec{
-	{name: "vxlan", backend: "vxlan", checkRules: func(kc *kindCluster, ctx context.Context) { kc.checkIptables(ctx) }, hasPerf: true},
-	{name: "vxlan-nftables", backend: "vxlan", enableNFT: true, checkRules: func(kc *kindCluster, ctx context.Context) { kc.checkNftables(ctx) }},
-	{name: "wireguard", backend: "wireguard", checkRules: func(kc *kindCluster, ctx context.Context) { kc.checkIptables(ctx) }, hasPerf: true},
-	{name: "host-gw", backend: "host-gw", checkRules: func(kc *kindCluster, ctx context.Context) { kc.checkIptables(ctx) }, hasPerf: true},
-	{name: "ipip", backend: "ipip", checkRules: func(kc *kindCluster, ctx context.Context) { kc.checkIptables(ctx) }, hasPerf: true},
-	{name: "udp", backend: "udp", amd64Only: true, checkRules: func(kc *kindCluster, ctx context.Context) { kc.checkIptables(ctx) }, hasPerf: true},
+	{name: "vxlan", backend: "vxlan", hasPerf: true},
+	{name: "vxlan-nftables", backend: "vxlan", enableNFT: true},
+	{name: "wireguard", backend: "wireguard", hasPerf: true},
+	{name: "host-gw", backend: "host-gw", hasPerf: true},
+	{name: "ipip", backend: "ipip", hasPerf: true},
+	{name: "udp", backend: "udp", amd64Only: true, hasPerf: true},
 }
 
 var _ = Describe("flannel backends", func() {
@@ -73,9 +72,7 @@ var _ = Describe("flannel backends", func() {
 			It("provides pod-to-pod connectivity", func(ctx SpecContext) {
 				prepareTest(ctx, kc, spec.backend, spec.enableNFT)
 				pings(ctx, kc)
-				if spec.checkRules != nil {
-					spec.checkRules(kc, ctx)
-				}
+				kc.checkRules(ctx, spec.enableNFT)
 				Expect(kc.deleteFlannel(ctx)).To(Succeed())
 			})
 
