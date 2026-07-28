@@ -60,6 +60,7 @@ func FuzzParseIP6(f *testing.F) {
 func FuzzIP4UnmarshalJSON(f *testing.F) {
 	f.Add([]byte(`"10.0.0.1"`))
 	f.Add([]byte(`10.0.0.1`))
+	f.Add([]byte(`"2001:db8::1"`))
 	f.Add([]byte(`""`))
 
 	f.Fuzz(func(t *testing.T, j []byte) {
@@ -83,6 +84,7 @@ func FuzzIP6UnmarshalJSON(f *testing.F) {
 // FuzzIP4NetUnmarshalJSON fuzzes the json.Unmarshaler implementation for IP4Net.
 func FuzzIP4NetUnmarshalJSON(f *testing.F) {
 	f.Add([]byte(`"10.0.0.0/8"`))
+	f.Add([]byte(`"2001:db8::/64"`))
 	f.Add([]byte(`"10.0.0.0/33"`))
 	f.Add([]byte(`""`))
 
