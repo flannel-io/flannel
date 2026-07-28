@@ -550,9 +550,12 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l lease.Lease, err error) 
 		var cidr *net.IPNet
 		switch {
 		case len(n.Spec.PodCIDRs) == 0:
-			_, cidr, err = net.ParseCIDR(n.Spec.PodCIDR)
+			_, parseCidr, err := net.ParseCIDR(n.Spec.PodCIDR)
 			if err != nil {
 				return l, err
+			}
+			if len(parseCidr.IP) == net.IPv4len {
+				cidr = parseCidr
 			}
 		case len(n.Spec.PodCIDRs) < 3:
 			log.Infof("Creating the node lease for IPv4. This is the n.Spec.PodCIDRs: %v", n.Spec.PodCIDRs)
@@ -586,9 +589,12 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l lease.Lease, err error) 
 		var ipv6Cidr *net.IPNet
 		switch {
 		case len(n.Spec.PodCIDRs) == 0:
-			_, ipv6Cidr, err = net.ParseCIDR(n.Spec.PodCIDR)
+			_, parseCidr, err := net.ParseCIDR(n.Spec.PodCIDR)
 			if err != nil {
 				return l, err
+			}
+			if len(parseCidr.IP) == net.IPv6len {
+				ipv6Cidr = parseCidr
 			}
 		case len(n.Spec.PodCIDRs) < 3:
 			log.Infof("Creating the node lease for IPv6. This is the n.Spec.PodCIDRs: %v", n.Spec.PodCIDRs)
