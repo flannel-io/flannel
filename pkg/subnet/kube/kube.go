@@ -554,7 +554,7 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l lease.Lease, err error) 
 			if err != nil {
 				return l, err
 			}
-			if len(parseCidr.IP) == net.IPv4len {
+			if parseCidr.IP.To4() != nil {
 				cidr = parseCidr
 			}
 		case len(n.Spec.PodCIDRs) < 3:
@@ -564,7 +564,7 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l lease.Lease, err error) 
 				if err != nil {
 					return l, err
 				}
-				if len(parseCidr.IP) == net.IPv4len {
+				if parseCidr.IP.To4() != nil {
 					cidr = parseCidr
 					break
 				}
@@ -593,7 +593,7 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l lease.Lease, err error) 
 			if err != nil {
 				return l, err
 			}
-			if len(parseCidr.IP) == net.IPv6len {
+			if parseCidr.IP.To4() == nil {
 				ipv6Cidr = parseCidr
 			}
 		case len(n.Spec.PodCIDRs) < 3:
@@ -603,7 +603,7 @@ func (ksm *kubeSubnetManager) nodeToLease(n v1.Node) (l lease.Lease, err error) 
 				if err != nil {
 					return l, err
 				}
-				if len(parseCidr.IP) == net.IPv6len {
+				if parseCidr.IP.To4() == nil {
 					ipv6Cidr = parseCidr
 					break
 				}

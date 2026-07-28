@@ -11,7 +11,9 @@ on:
     - cron: '15 4 * * *'
   workflow_dispatch:
 
-permissions: read-all
+permissions:
+  contents: read
+  actions: write
 
 jobs:
   BatchFuzzing:
