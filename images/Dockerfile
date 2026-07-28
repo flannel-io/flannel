@@ -1,6 +1,6 @@
-ARG XX_IMAGE=tonistiigi/xx:1.8.0
-ARG GO_IMAGE=golang:alpine3.24
-ARG RUN_IMAGE=alpine:3.24
+ARG XX_IMAGE=tonistiigi/xx:1.8.0@sha256:add602d55daca18914838a78221f6bbe4284114b452c86a48f96d59aeb00f5c6
+ARG GO_IMAGE=golang:alpine3.24@sha256:0178a641fbb4858c5f1b48e34bdaabe0350a330a1b1149aabd498d0699ff5fb2
+ARG RUN_IMAGE=alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
 
 FROM --platform=$BUILDPLATFORM ${XX_IMAGE}  AS xx
 
