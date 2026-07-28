@@ -1,0 +1,6 @@
+# GO-2026-5932: golang.org/x/crypto/openpgp is unmaintained and unsafe.
+# Flannel does not import or use the openpgp sub-package; only curve25519,
+# chacha20, chacha20poly1305, and cryptobyte are compiled into the binary.
+# This is a false positive — Trivy flags the whole module because it contains
+# the openpgp package, even though it is never referenced by flannel.
+GO-2026-5932
