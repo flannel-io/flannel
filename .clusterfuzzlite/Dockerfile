@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/oss-fuzz-base/base-builder-go@sha256:da01cfabf7f4b558ce57eedca2209b865b0f070e4ec8e809b137b567e054b318 # latest
+# base-builder-go latest, pinned by digest for reproducible builds.
+FROM gcr.io/oss-fuzz-base/base-builder-go@sha256:da01cfabf7f4b558ce57eedca2209b865b0f070e4ec8e809b137b567e054b318
 
 # Copy the whole repository into $SRC so build.sh can compile the fuzzers.
 COPY . $SRC/flannel
