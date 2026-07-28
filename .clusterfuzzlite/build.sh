@@ -34,6 +34,7 @@ targets=(
   "./pkg/subnet::FuzzParseConfig::fuzz_parse_config"
   "./pkg/subnet::FuzzParseSubnetKey::fuzz_parse_subnet_key"
   "./pkg/subnet/kube::FuzzNodeToLease::fuzz_node_to_lease"
+  "./pkg/subnet/etcd::FuzzKvToIPLease::fuzz_kv_to_ip_lease"
   "./pkg/ip::FuzzParseIP4::fuzz_parse_ip4"
   "./pkg/ip::FuzzParseIP6::fuzz_parse_ip6"
   "./pkg/ip::FuzzIP4UnmarshalJSON::fuzz_ip4_unmarshal_json"

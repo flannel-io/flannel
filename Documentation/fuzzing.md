@@ -16,6 +16,7 @@ The fuzz targets live next to the code they exercise, in standard `*_test.go` fi
 | `FuzzParseConfig` | `pkg/subnet` | `ParseConfig` (network config JSON) |
 | `FuzzParseSubnetKey` | `pkg/subnet` | `ParseSubnetKey` (subnet keys like `10.5.1.0-24`) |
 | `FuzzNodeToLease` | `pkg/subnet/kube` | `nodeToLease` (Node annotations + PodCIDR from the k8s API) |
+| `FuzzKvToIPLease` | `pkg/subnet/etcd` | `kvToIPLease` (etcd subnet key + LeaseAttrs JSON) |
 | `FuzzParseIP4` / `FuzzParseIP6` | `pkg/ip` | `ParseIP4` / `ParseIP6` |
 | `FuzzIP4UnmarshalJSON` / `FuzzIP6UnmarshalJSON` | `pkg/ip` | `IP4.UnmarshalJSON` / `IP6.UnmarshalJSON` |
 | `FuzzIP4NetUnmarshalJSON` / `FuzzIP6NetUnmarshalJSON` | `pkg/ip` | `IP4Net.UnmarshalJSON` / `IP6Net.UnmarshalJSON` |
