@@ -2,16 +2,14 @@ IPERF_IMG ?= iperf3:latest
 
 ARCH ?= amd64
 
-TEMP_DIR := $(shell mktemp -d)
-
 ifeq ($(ARCH),amd64)
-        BASEIMAGE=amd64/alpine:3.24
+        BASEIMAGE=amd64/alpine:3.24@sha256:a0a65670a97d4d6ffc87eed1175c9c7d699813489e0913d96c7b917d7b51e456
 endif
 ifeq ($(ARCH),arm64)
-	BASEIMAGE=arm64v8/alpine:3.24
+	BASEIMAGE=arm64v8/alpine:3.24@sha256:65b6d5e8cc3010146b8b28cad29473b67883635fbedc9851f05ac83fb713ebdb
 endif
 ifeq ($(ARCH),ppc64le)
-	BASEIMAGE=ppc64le/alpine:3.24
+	BASEIMAGE=ppc64le/alpine:3.24@sha256:2b2dcda826915dfbd61de6b3b09d7dd6eb4252800b90c2ffa8ae9b040f6f4806
 endif
 
 .PHONY: all container
@@ -19,10 +17,6 @@ endif
 all: container
 
 container:
-	@echo "Copying files to $(TEMP_DIR)..."
-	@cp ./* $(TEMP_DIR) || { echo "ERROR: Failed to copy files"; exit 1; }
-	@echo "Preparing Dockerfile..."
-	@cd $(TEMP_DIR) && sed -i 's|BASEIMAGE|$(BASEIMAGE)|g' Dockerfile || { echo "ERROR: Failed to prepare Dockerfile"; exit 1; }
 	@echo "Building iperf3 container image..."
-	@docker build --pull -t $(IPERF_IMG) -f $(TEMP_DIR)/Dockerfile $(TEMP_DIR) || { echo "ERROR: Docker build failed for iperf3"; exit 1; }
+	@docker build --pull -t $(IPERF_IMG) --build-arg BASEIMAGE=$(BASEIMAGE) -f Dockerfile . || { echo "ERROR: Docker build failed for iperf3"; exit 1; }
 	@echo "Successfully built iperf3 image: $(IPERF_IMG)"
