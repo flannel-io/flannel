@@ -26,6 +26,9 @@ cd "$SRC/flannel"
 export GOOS=linux
 export CGO_ENABLED=1
 
+# compile_native_go_fuzzer generates a wrapper that imports this helper package.
+go get github.com/AdamKorcz/go-118-fuzz-build/testing@v0.0.0-20250520111509-a70c2aa677fa
+
 # package_path::FuzzFuncName::output_name
 targets=(
   "./pkg/subnet::FuzzParseConfig::fuzz_parse_config"
