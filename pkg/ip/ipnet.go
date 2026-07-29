@@ -45,6 +45,9 @@ func ParseIP4(s string) (IP4, error) {
 	if ip == nil {
 		return IP4(0), errors.New("invalid IP address format")
 	}
+	if ip.To4() == nil {
+		return IP4(0), errors.New("invalid IPv4 address format")
+	}
 	return FromIP(ip), nil
 }
 
@@ -206,6 +209,8 @@ func (n *IP4Net) UnmarshalJSON(j []byte) error {
 	j = bytes.Trim(j, "\"")
 	if _, val, err := net.ParseCIDR(string(j)); err != nil {
 		return err
+	} else if val.IP.To4() == nil {
+		return errors.New("invalid IPv4 CIDR format")
 	} else {
 		*n = FromIPNet(val)
 		return nil

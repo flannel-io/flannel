@@ -66,6 +66,10 @@ func TestIP4(t *testing.T) {
 		t.Error("StringSep failed")
 	}
 
+	if _, err := ParseIP4("2001:db8::1"); err == nil {
+		t.Error("ParseIP4 should reject IPv6 addresses")
+	}
+
 	j, err := json.Marshal(ip)
 	if err != nil {
 		t.Error("Marshal of IP4 failed: ", err)
@@ -140,6 +144,10 @@ func TestIP4Net(t *testing.T) {
 		t.Error("Marshal of IP4Net failed: ", err)
 	} else if string(j) != `"1.2.3.0/24"` {
 		t.Error("Marshal of IP4Net failed with unexpected value: ", j)
+	}
+
+	if err := n1.UnmarshalJSON([]byte(`"2001:db8::/64"`)); err == nil {
+		t.Error("UnmarshalJSON should reject IPv6 CIDRs for IP4Net")
 	}
 
 	n1.IncrementIP()
