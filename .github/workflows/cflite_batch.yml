@@ -13,11 +13,13 @@ on:
 
 permissions:
   contents: read
-  actions: write
 
 jobs:
   BatchFuzzing:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     strategy:
       fail-fast: false
       matrix:
