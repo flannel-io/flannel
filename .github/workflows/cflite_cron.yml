@@ -13,11 +13,13 @@ on:
 
 permissions:
   contents: read
-  actions: write
 
 jobs:
   Pruning:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Build Fuzzers
         id: build
@@ -34,6 +36,9 @@ jobs:
 
   Coverage:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Build Fuzzers
         id: build

@@ -11,12 +11,14 @@ on:
 
 permissions:
   contents: read
-  actions: read
-  security-events: write
 
 jobs:
   PR:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.sanitizer }}-${{ github.ref }}
       cancel-in-progress: true

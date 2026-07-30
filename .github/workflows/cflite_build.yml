@@ -15,11 +15,13 @@ on:
 
 permissions:
   contents: read
-  actions: write
 
 jobs:
   Build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.sanitizer }}-${{ github.ref }}
       cancel-in-progress: true
