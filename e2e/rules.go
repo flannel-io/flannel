@@ -18,14 +18,23 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"io"
 	"strings"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	ginkgo "github.com/onsi/ginkgo/v2"
+	gomega "github.com/onsi/gomega"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+func writef(w io.Writer, format string, args ...any) {
+	_, _ = fmt.Fprintf(w, format, args...)
+}
+
+func writeln(w io.Writer, args ...any) {
+	_, _ = fmt.Fprintln(w, args...)
+}
 
 // expectedIptablesPostrouting builds the golden FLANNEL-POSTRTG rule set for a
 // node with the given pod CIDR, mirroring check_iptables.
@@ -71,7 +80,7 @@ func (kc *kindCluster) nodeCIDRs(ctx context.Context) map[string]string {
 	cidrs := map[string]string{}
 	for _, node := range []string{kindWorker, kindControlPlane} {
 		cidr, err := kc.podCIDR(ctx, node)
-		Expect(err).NotTo(HaveOccurred())
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		cidrs[node] = cidr
 	}
 	return cidrs
@@ -81,18 +90,18 @@ func (kc *kindCluster) nodeCIDRs(ctx context.Context) map[string]string {
 // the bash check_iptables helper.
 func (kc *kindCluster) checkIptables(ctx context.Context) {
 	for node, cidr := range kc.nodeCIDRs(ctx) {
-		Expect(kc.iptablesNatFlannel(node)).To(Equal(expectedIptablesPostrouting(cidr)),
+		gomega.Expect(kc.iptablesNatFlannel(node)).To(gomega.Equal(expectedIptablesPostrouting(cidr)),
 			"node %s has unexpected postrouting rules", node)
-		Expect(kc.iptablesFilterForward(node)).To(Equal(expectedIptablesForward()),
+		gomega.Expect(kc.iptablesFilterForward(node)).To(gomega.Equal(expectedIptablesForward()),
 			"node %s has unexpected forward rules", node)
 	}
 }
 
 func (kc *kindCluster) iptablesNatFlannel(node string) string {
 	post, err := kc.execOnNode(node, "/usr/sbin/iptables", "-t", "nat", "-S", "POSTROUTING")
-	Expect(err).NotTo(HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	chain, err := kc.execOnNode(node, "/usr/sbin/iptables", "-t", "nat", "-S", "FLANNEL-POSTRTG")
-	Expect(err).NotTo(HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	var lines []string
 	for _, l := range strings.Split(strings.TrimRight(post, "\n"), "\n") {
@@ -106,9 +115,9 @@ func (kc *kindCluster) iptablesNatFlannel(node string) string {
 
 func (kc *kindCluster) iptablesFilterForward(node string) string {
 	fwd, err := kc.execOnNode(node, "/usr/sbin/iptables", "-t", "filter", "-S", "FORWARD")
-	Expect(err).NotTo(HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	chain, err := kc.execOnNode(node, "/usr/sbin/iptables", "-t", "filter", "-S", "FLANNEL-FWD")
-	Expect(err).NotTo(HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return strings.TrimRight(fwd, "\n") + "\n" + strings.TrimRight(chain, "\n")
 }
 
@@ -148,13 +157,13 @@ func expectedNftForward() string {
 func (kc *kindCluster) checkNftables(ctx context.Context) {
 	for node, cidr := range kc.nodeCIDRs(ctx) {
 		post, err := kc.execOnNode(node, "/usr/sbin/nft", "list", "chain", "ip", "flannel-ipv4", "postrtg")
-		Expect(err).NotTo(HaveOccurred())
-		Expect(strings.TrimRight(post, "\n")).To(Equal(expectedNftPostrouting(cidr)),
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(strings.TrimRight(post, "\n")).To(gomega.Equal(expectedNftPostrouting(cidr)),
 			"node %s has unexpected nftables postrouting rules", node)
 
 		fwd, err := kc.execOnNode(node, "/usr/sbin/nft", "list", "chain", "ip", "flannel-ipv4", "forward")
-		Expect(err).NotTo(HaveOccurred())
-		Expect(strings.TrimRight(fwd, "\n")).To(Equal(expectedNftForward()),
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(strings.TrimRight(fwd, "\n")).To(gomega.Equal(expectedNftForward()),
 			"node %s has unexpected nftables forward rules", node)
 	}
 }
@@ -165,37 +174,37 @@ func (kc *kindCluster) dumpDebugInfo(ctx context.Context) {
 	if kc == nil || kc.client == nil {
 		return
 	}
-	w := GinkgoWriter
-	fmt.Fprintln(w, "======== DEBUG INFO ========")
+	w := ginkgo.GinkgoWriter
+	writeln(w, "======== DEBUG INFO ========")
 
-	fmt.Fprintln(w, "--- nodes ---")
+	writeln(w, "--- nodes ---")
 	nodes, err := kc.client.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err == nil {
 		for _, n := range nodes.Items {
-			fmt.Fprintf(w, "%s\n", n.Name)
+			writef(w, "%s\n", n.Name)
 		}
 	}
 
-	fmt.Fprintln(w, "--- all pods ---")
+	writeln(w, "--- all pods ---")
 	allPods, err := kc.client.CoreV1().Pods("").List(ctx, metav1.ListOptions{})
 	if err == nil {
 		for _, p := range allPods.Items {
-			fmt.Fprintf(w, "%-40s %-15s %s\n", p.Namespace+"/"+p.Name, string(p.Status.Phase), p.Status.PodIP)
+			writef(w, "%-40s %-15s %s\n", p.Namespace+"/"+p.Name, string(p.Status.Phase), p.Status.PodIP)
 		}
 	}
 
-	fmt.Fprintln(w, "--- flannel pod describes ---")
+	writeln(w, "--- flannel pod describes ---")
 	flannelPods, err := kc.client.CoreV1().Pods(flannelNamespace).List(ctx, metav1.ListOptions{})
 	if err == nil {
 		for _, p := range flannelPods.Items {
-			fmt.Fprintf(w, "--- pod %s: phase=%s conditions=%v ---\n", p.Name, p.Status.Phase, p.Status.Conditions)
+			writef(w, "--- pod %s: phase=%s conditions=%v ---\n", p.Name, p.Status.Phase, p.Status.Conditions)
 			for _, cs := range p.Status.ContainerStatuses {
-				fmt.Fprintf(w, "  container %s ready=%v restarts=%d state=%v\n", cs.Name, cs.Ready, cs.RestartCount, cs.State)
+				writef(w, "  container %s ready=%v restarts=%d state=%v\n", cs.Name, cs.Ready, cs.RestartCount, cs.State)
 			}
 		}
 	}
 
-	fmt.Fprintln(w, "--- flannel pod logs (current + previous) ---")
+	writeln(w, "--- flannel pod logs (current + previous) ---")
 	if err == nil {
 		for _, p := range flannelPods.Items {
 			for _, previous := range []bool{false, true} {
@@ -206,34 +215,34 @@ func (kc *kindCluster) dumpDebugInfo(ctx context.Context) {
 				logs, lerr := kc.client.CoreV1().Pods(flannelNamespace).
 					GetLogs(p.Name, &corev1.PodLogOptions{Previous: previous}).DoRaw(ctx)
 				if lerr == nil {
-					fmt.Fprintf(w, "--- pod %s%s ---\n%s\n", p.Name, suffix, logs)
+					writef(w, "--- pod %s%s ---\n%s\n", p.Name, suffix, logs)
 				}
 			}
 		}
 	}
 
-	fmt.Fprintln(w, "--- flannel files on kind nodes ---")
+	writeln(w, "--- flannel files on kind nodes ---")
 	for _, node := range []string{kindControlPlane, kindWorker} {
 		out, _ := kc.execOnNode(node, "ls", "-al", "/run/flannel")
-		fmt.Fprintf(w, "--- %s:/run/flannel ---\n%s\n", node, out)
+		writef(w, "--- %s:/run/flannel ---\n%s\n", node, out)
 		out, _ = kc.execOnNode(node, "cat", "/run/flannel/subnet.env")
-		fmt.Fprintf(w, "subnet.env:\n%s\n", out)
+		writef(w, "subnet.env:\n%s\n", out)
 	}
 
-	fmt.Fprintln(w, "--- flannel-related images on kind nodes ---")
+	writeln(w, "--- flannel-related images on kind nodes ---")
 	for _, node := range []string{kindControlPlane, kindWorker} {
 		out, _ := kc.execOnNode(node, "crictl", "images")
-		fmt.Fprintf(w, "--- %s ---\n%s\n", node, out)
+		writef(w, "--- %s ---\n%s\n", node, out)
 	}
 
-	fmt.Fprintln(w, "--- events (all namespaces) ---")
+	writeln(w, "--- events (all namespaces) ---")
 	events, err := kc.client.CoreV1().Events("").List(ctx, metav1.ListOptions{})
 	if err == nil {
 		for _, e := range events.Items {
-			fmt.Fprintf(w, "%s  %s/%s  %s: %s\n",
+			writef(w, "%s  %s/%s  %s: %s\n",
 				e.LastTimestamp.String(), e.Namespace, e.InvolvedObject.Name, e.Reason, e.Message)
 		}
 	}
 
-	fmt.Fprintln(w, "======== END DEBUG INFO ========")
+	writeln(w, "======== END DEBUG INFO ========")
 }

@@ -21,8 +21,6 @@ import (
 	"fmt"
 	"time"
 
-	. "github.com/onsi/ginkgo/v2"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -239,7 +237,7 @@ func (kc *kindCluster) waitForSubnetEnv(ctx context.Context, timeout time.Durati
 			return fmt.Errorf("timed out waiting for /run/flannel/subnet.env on %s: %w", node, err)
 		}
 		out, _ := kc.execOnNode(node, "cat", "/run/flannel/subnet.env")
-		fmt.Fprintf(GinkgoWriter, "subnet.env on %s:\n%s\n", node, out)
+		logf("subnet.env on %s:\n%s\n", node, out)
 	}
 	return nil
 }

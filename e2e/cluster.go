@@ -25,7 +25,7 @@ import (
 	"os/exec"
 	"time"
 
-	. "github.com/onsi/ginkgo/v2"
+	ginkgo "github.com/onsi/ginkgo/v2"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -47,6 +47,22 @@ var cniPluginSHA256 = map[string]string{
 
 const cniPluginsVersion = "v1.9.1"
 
+func logf(format string, args ...any) {
+	_, _ = fmt.Fprintf(ginkgo.GinkgoWriter, format, args...)
+}
+
+func removeFile(path string) {
+	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+		logf("warning: removing %s: %v\n", path, err)
+	}
+}
+
+func closeOnReturn(c io.Closer, errp *error) {
+	if closeErr := c.Close(); *errp == nil && closeErr != nil {
+		*errp = closeErr
+	}
+}
+
 // installCNIPlugins downloads and extracts the CNI plugins into /opt/cni/bin.
 // kind-config.yaml bind-mounts the host's /opt/cni/bin into every kind node, so
 // this host-side install is required for the flannel manifest to find the plugins.
@@ -62,7 +78,7 @@ func installCNIPlugins(arch string) error {
 	if err := downloadFile(url, dst); err != nil {
 		return fmt.Errorf("downloading CNI plugins: %w", err)
 	}
-	defer os.Remove(dst)
+	defer removeFile(dst)
 
 	if err := verifySHA256(dst, sum); err != nil {
 		return err
@@ -77,13 +93,13 @@ func installCNIPlugins(arch string) error {
 	return nil
 }
 
-func downloadFile(url, dst string) error {
+func downloadFile(url, dst string) (err error) {
 	client := &http.Client{Timeout: 5 * time.Minute}
 	resp, err := client.Get(url)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer closeOnReturn(resp.Body, &err)
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unexpected status %s downloading %s", resp.Status, url)
 	}
@@ -91,17 +107,17 @@ func downloadFile(url, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer closeOnReturn(f, &err)
 	_, err = io.Copy(f, resp.Body)
 	return err
 }
 
-func verifySHA256(path, want string) error {
+func verifySHA256(path, want string) (err error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer closeOnReturn(f, &err)
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
 		return err
@@ -128,7 +144,7 @@ type kindCluster struct {
 func createCluster() (*kindCluster, error) {
 	provider := cluster.NewProvider(cluster.ProviderWithLogger(kindcmd.NewLogger()))
 
-	By("creating kind cluster " + kindClusterName)
+	ginkgo.By("creating kind cluster " + kindClusterName)
 	if err := provider.Create(
 		kindClusterName,
 		cluster.CreateWithConfigFile("kind-config.yaml"),
@@ -139,7 +155,7 @@ func createCluster() (*kindCluster, error) {
 
 	kc := &kindCluster{provider: provider, name: kindClusterName}
 
-	By("loading images into kind cluster")
+	ginkgo.By("loading images into kind cluster")
 	for _, img := range []string{flannelImage, iperf3Image} {
 		if err := kc.loadImage(img); err != nil {
 			return kc, fmt.Errorf("loading image %s: %w", img, err)
@@ -180,7 +196,7 @@ func (kc *kindCluster) loadImage(image string) error {
 	if err := tmp.Close(); err != nil {
 		return err
 	}
-	defer os.Remove(tmpPath)
+	defer removeFile(tmpPath)
 
 	save := exec.Command("docker", "save", "-o", tmpPath, image)
 	if out, err := save.CombinedOutput(); err != nil {
@@ -193,7 +209,9 @@ func (kc *kindCluster) loadImage(image string) error {
 			return err
 		}
 		if err := nodeutils.LoadImageArchive(n, archive); err != nil {
-			archive.Close()
+			if closeErr := archive.Close(); closeErr != nil {
+				return fmt.Errorf("importing image into node %s: %v (closing archive: %w)", n, err, closeErr)
+			}
 			return fmt.Errorf("importing image into node %s: %w", n, err)
 		}
 		if err := archive.Close(); err != nil {
@@ -208,7 +226,7 @@ func (kc *kindCluster) delete() error {
 	if kc == nil || kc.provider == nil {
 		return nil
 	}
-	By("deleting kind cluster " + kc.name)
+	ginkgo.By("deleting kind cluster " + kc.name)
 	return kc.provider.Delete(kc.name, "")
 }
 

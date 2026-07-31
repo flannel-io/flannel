@@ -59,10 +59,10 @@ var _ = Describe("flannel backends", func() {
 			})
 
 			It("provides pod-to-pod connectivity", func(ctx SpecContext) {
-					prepareTest(ctx, sharedCluster, spec.backend, spec.enableNFT)
-					pings(ctx, sharedCluster)
-					sharedCluster.checkRules(ctx, spec.enableNFT)
-					Expect(sharedCluster.deleteFlannel(ctx)).To(Succeed())
+				prepareTest(ctx, sharedCluster, spec.backend, spec.enableNFT)
+				pings(ctx, sharedCluster)
+				sharedCluster.checkRules(ctx, spec.enableNFT)
+				Expect(sharedCluster.deleteFlannel(ctx)).To(Succeed())
 			})
 
 			if spec.hasPerf {

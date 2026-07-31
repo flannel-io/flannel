@@ -24,7 +24,7 @@ import (
 	"os"
 	"time"
 
-	. "github.com/onsi/ginkgo/v2"
+	ginkgo "github.com/onsi/ginkgo/v2"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -87,7 +87,7 @@ func (kc *kindCluster) installFlannel(ctx context.Context, backend string, enabl
 		if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
 			ns = obj.GetNamespace()
 		}
-		By(fmt.Sprintf("applying %s %s/%s", gvk.Kind, ns, obj.GetName()))
+		ginkgo.By(fmt.Sprintf("applying %s %s/%s", gvk.Kind, ns, obj.GetName()))
 		ri := dynamicResource(dyn, mapping.Resource, ns)
 		if _, err := ri.Create(ctx, obj, metav1.CreateOptions{}); err != nil {
 			if !apierrors.IsAlreadyExists(err) {
@@ -125,7 +125,7 @@ func (kc *kindCluster) deleteFlannel(ctx context.Context) error {
 	for i := len(applied) - 1; i >= 0; i-- {
 		o := applied[i]
 		if err := dynamicResource(dyn, o.gvr, o.namespace).Delete(ctx, o.name, metav1.DeleteOptions{}); err != nil {
-			fmt.Fprintf(GinkgoWriter, "warning: deleting %s/%s: %v\n", o.namespace, o.name, err)
+			logf("warning: deleting %s/%s: %v\n", o.namespace, o.name, err)
 		}
 	}
 	if err := kc.waitForFlannelDeletion(ctx, dyn, applied, 2*time.Minute); err != nil {
