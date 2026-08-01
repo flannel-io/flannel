@@ -4,9 +4,6 @@
 
 {{- define "flannel.selectorLabels" -}}
 app: "flannel"
-tier: "node"
-app.kubernetes.io/name: {{ include "flannel.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "flannel.chart" -}}
@@ -15,9 +12,12 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{/* Labels common to all resources */}}
 {{- define "flannel.labels" -}}
+tier: "node"
 helm.sh/chart: {{ include "flannel.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/name: {{ include "flannel.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name | trunc 63 | trimSuffix "-" }}
 {{ include "flannel.selectorLabels" . }}
 {{- with .Values.global.commonLabels }}
 {{ toYaml . }}

@@ -17,7 +17,7 @@ spec:
       {{- include "flannel.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with (merge .Values.flannel.podLabels (include "flannel.labels" . | fromYaml)) }}
+      {{- with (merge (include "flannel.labels" . | fromYaml) .Values.flannel.podLabels) }}
       labels:
         {{- toYaml . | nindent 8 }}
       {{- end }}

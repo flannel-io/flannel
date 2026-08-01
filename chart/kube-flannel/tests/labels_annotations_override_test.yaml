@@ -68,14 +68,14 @@ tests:
     set:
       flannel.rbac.labels:
         rbac-non-overridden-label: "rbac label should not be overridden"
-        rbac-overrridden-label: "rbac label should be overridden"
+        rbac-overridden-label: "rbac label should be overridden"
       flannel.rbac.clusterRole.labels:
         rbac-overridden-label: "rbac label has been overridden"
       flannel.rbac.clusterRoleBinding.labels:
         rbac-overridden-label: "rbac label has been overridden"
       flannel.rbac.annotations:
         rbac-non-overridden-annotation: "rbac annotation should not be overridden"
-        rbac-overrridden-annotation: "rbac annotation should be overridden"
+        rbac-overridden-annotation: "rbac annotation should be overridden"
       flannel.rbac.clusterRole.annotations:
         rbac-overridden-annotation: "rbac annotation has been overridden"
       flannel.rbac.clusterRoleBinding.annotations:
@@ -93,3 +93,30 @@ tests:
       - equal:
           path: metadata.annotations.rbac-overridden-annotation
           value: "rbac annotation has been overridden"
+  - it: selector.matchLabels must not change (helm upgrade is immutable)
+    templates:
+      - daemonset.yaml
+    set:
+      global.commonLabels:
+        should-not-appear-selector: "selector labels should not change"
+      flannel.podLabels:
+        should-not-appear-selector: "selector labels should not change"
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app: flannel
+  - it: selector labels should not be overridden by user
+    templates:
+      - daemonset.yaml
+    set:
+      flannel.podLabels:
+        app: "user tries to override selector label"
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app: flannel
+      - equal:
+          path: spec.template.metadata.labels.app
+          value: "flannel"
