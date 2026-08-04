@@ -45,6 +45,43 @@ tests:
             - "/opt/bin/flanneld"
             - "--ip-masq"
             - "--kube-subnet-mgr"
+            - "--healthz-port=8081"
+
+  - it: should render the healthz port and probes by default
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].ports[0]
+          value:
+            name: healthz
+            containerPort: 8081
+            protocol: TCP
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet
+          value:
+            path: /healthz
+            port: healthz
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet
+          value:
+            path: /readyz
+            port: healthz
+
+  - it: should not render healthz settings when disabled
+    set:
+      flannel.healthz.port: 0
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].command
+          value:
+            - "/opt/bin/flanneld"
+            - "--ip-masq"
+            - "--kube-subnet-mgr"
+      - notExists:
+          path: spec.template.spec.containers[0].ports
+      - notExists:
+          path: spec.template.spec.containers[0].livenessProbe
+      - notExists:
+          path: spec.template.spec.containers[0].readinessProbe
 
   - it: should have the correct image pull secrets
     set:
