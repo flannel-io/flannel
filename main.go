@@ -28,6 +28,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -105,6 +106,8 @@ var (
 	errInterrupted = errors.New("interrupted")
 	errCanceled    = errors.New("canceled")
 	flannelFlags   = flag.NewFlagSet("flannel", flag.ExitOnError)
+	// isReady is set to true once subnet.env has been written and traffic rules are in place.
+	isReady atomic.Bool
 )
 
 func init() {
@@ -476,6 +479,9 @@ func main() {
 		log.Warningf("Failed to write subnet file: %s", err)
 	} else {
 		log.Infof("Wrote subnet file to %s", opts.subnetFile)
+		// Traffic rules are set up and subnet.env is written: flannel is ready.
+		isReady.Store(true)
+		log.Info("flannel is ready")
 	}
 
 	// Start "Running" the backend network. This will block until the context is done so run in another goroutine.
@@ -553,6 +559,22 @@ func mustRunHealthz(stopChan <-chan struct{}, wg *sync.WaitGroup) {
 		if err != nil {
 			log.Errorf("Handling /healthz error. %v", err)
 			panic(err)
+		}
+	})
+
+	http.HandleFunc("/readyz", func(w http.ResponseWriter, r *http.Request) {
+		if isReady.Load() {
+			w.WriteHeader(http.StatusOK)
+			_, err := w.Write([]byte("flanneld is ready"))
+			if err != nil {
+				log.Errorf("Handling /readyz error. %v", err)
+			}
+		} else {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, err := w.Write([]byte("flanneld is not ready yet"))
+			if err != nil {
+				log.Errorf("Handling /readyz error. %v", err)
+			}
 		}
 	})
 

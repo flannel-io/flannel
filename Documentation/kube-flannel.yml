@@ -163,6 +163,23 @@ spec:
         args:
         - --ip-masq
         - --kube-subnet-mgr
+        - --healthz-port=8081
+        ports:
+        - name: healthz
+          containerPort: 8081
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: healthz
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: healthz
+          initialDelaySeconds: 5
+          periodSeconds: 10
         resources:
           requests:
             cpu: "100m"
