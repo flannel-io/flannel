@@ -80,7 +80,7 @@ spec:
         {{- if .Values.flannel.healthz.port }}
         ports:
         - name: healthz
-          containerPort: {{ .Values.flannel.healthz.port }}
+          containerPort: {{ int .Values.flannel.healthz.port }}
           protocol: TCP
         livenessProbe:
           httpGet:
