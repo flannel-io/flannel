@@ -42,15 +42,15 @@ type TrafficManager interface {
 	CleanUp(ctx context.Context) error
 	// Install kernel rules to forward the traffic to and from the flannel network range.
 	// This is done for IPv4 and/or IPv6 based on whether flannelIPv4Network and flannelIPv6Network are set.
-	// SetupAndEnsureForwardRules starts a go routine that
-	// rewrites these rules every resyncPeriod seconds if needed
+	// SetupAndEnsureForwardRules installs the initial rules and arranges any
+	// backend-specific periodic resync every resyncPeriod seconds if needed.
 	SetupAndEnsureForwardRules(ctx context.Context, flannelIPv4Network ip.IP4Net, flannelIPv6Network ip.IP6Net, resyncPeriod int)
 	// Install kernel rules to setup NATing of packets sent to the flannel interface
 	// This is done for IPv4 and/or IPv6 based on whether flannelIPv4Network and flannelIPv6Network are set.
 	// prevSubnet,prevNetworks, prevIPv6Subnet, prevIPv6Networks are used
 	// to determine whether the existing rules need to be replaced.
-	// SetupAndEnsureMasqRules starts a go routine that
-	// rewrites these rules every resyncPeriod seconds if needed
+	// SetupAndEnsureMasqRules installs the initial rules and arranges any
+	// backend-specific periodic resync every resyncPeriod seconds if needed.
 	SetupAndEnsureMasqRules(ctx context.Context,
 		flannelIPv4Net, prevSubnet, prevNetwork ip.IP4Net,
 		flannelIPv6Net, prevIPv6Subnet, prevIPv6Network ip.IP6Net,
