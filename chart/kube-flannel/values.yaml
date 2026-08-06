@@ -87,6 +87,16 @@ flannel:
     requests:
       cpu: 100m
       memory: 50Mi
+  # Health check server configuration. Set port to a non-zero value to enable.
+  # /healthz is the liveness endpoint; /readyz is the readiness endpoint.
+  healthz:
+    port: 8081
+    livenessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 30
+    readinessProbe:
+      initialDelaySeconds: 5
+      periodSeconds: 10
   tolerations:
   - effect: NoExecute
     operator: Exists

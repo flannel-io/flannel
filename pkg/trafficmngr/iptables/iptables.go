@@ -110,7 +110,7 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 
 		log.Infof("Setting up masking rules")
 		iptm.CreateIP4Chain("nat", "FLANNEL-POSTRTG")
-		go iptm.setupAndEnsureIP4Tables(ctx, iptm.masqRules(flannelIPv4Net, currentlease, ipMasqRandomFullyDisable), resyncPeriod)
+		iptm.setupAndEnsureIP4Tables(ctx, iptm.masqRules(flannelIPv4Net, currentlease, ipMasqRandomFullyDisable), resyncPeriod)
 	}
 	if !flannelIPv6Net.Empty() {
 		// recycle iptables rules only when network configured or subnet leased is not equal to current one.
@@ -127,7 +127,7 @@ func (iptm *IPTablesManager) SetupAndEnsureMasqRules(ctx context.Context, flanne
 
 		log.Infof("Setting up masking rules for IPv6")
 		iptm.CreateIP6Chain("nat", "FLANNEL-POSTRTG")
-		go iptm.setupAndEnsureIP6Tables(ctx, iptm.masqIP6Rules(flannelIPv6Net, currentlease, ipMasqRandomFullyDisable), resyncPeriod)
+		iptm.setupAndEnsureIP6Tables(ctx, iptm.masqIP6Rules(flannelIPv6Net, currentlease, ipMasqRandomFullyDisable), resyncPeriod)
 	}
 	return nil
 }
@@ -211,12 +211,12 @@ func (iptm *IPTablesManager) SetupAndEnsureForwardRules(ctx context.Context, fla
 	if !flannelIPv4Network.Empty() {
 		log.Infof("Changing default FORWARD chain policy to ACCEPT")
 		iptm.CreateIP4Chain("filter", "FLANNEL-FWD")
-		go iptm.setupAndEnsureIP4Tables(ctx, iptm.forwardRules(flannelIPv4Network.String()), resyncPeriod)
+		iptm.setupAndEnsureIP4Tables(ctx, iptm.forwardRules(flannelIPv4Network.String()), resyncPeriod)
 	}
 	if !flannelIPv6Network.Empty() {
 		log.Infof("IPv6: Changing default FORWARD chain policy to ACCEPT")
 		iptm.CreateIP6Chain("filter", "FLANNEL-FWD")
-		go iptm.setupAndEnsureIP6Tables(ctx, iptm.forwardRules(flannelIPv6Network.String()), resyncPeriod)
+		iptm.setupAndEnsureIP6Tables(ctx, iptm.forwardRules(flannelIPv6Network.String()), resyncPeriod)
 	}
 }
 
@@ -381,19 +381,20 @@ func (iptm *IPTablesManager) setupAndEnsureIP4Tables(ctx context.Context, rules 
 	}
 
 	iptm.ipv4Rules = append(iptm.ipv4Rules, rules...)
-	for {
-		select {
-		case <-ctx.Done():
-			//clean-up is setup in Init
-			return
-		case <-time.After(time.Duration(resyncPeriod) * time.Second):
-			// Ensure that all the iptables rules exist every 5 seconds
-			if err := ensureIPTables(ipt, iptRestore, rules); err != nil {
-				log.Errorf("Failed to ensure iptables rules: %v", err)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				//clean-up is setup in Init
+				return
+			case <-time.After(time.Duration(resyncPeriod) * time.Second):
+				// Ensure that all the iptables rules exist every 5 seconds
+				if err := ensureIPTables(ipt, iptRestore, rules); err != nil {
+					log.Errorf("Failed to ensure iptables rules: %v", err)
+				}
 			}
 		}
-
-	}
+	}()
 }
 
 func (iptm *IPTablesManager) setupAndEnsureIP6Tables(ctx context.Context, rules []trafficmngr.IPTablesRule, resyncPeriod int) {
@@ -417,18 +418,20 @@ func (iptm *IPTablesManager) setupAndEnsureIP6Tables(ctx context.Context, rules 
 	}
 	iptm.ipv6Rules = append(iptm.ipv6Rules, rules...)
 
-	for {
-		select {
-		case <-ctx.Done():
-			//clean-up is setup in Init
-			return
-		case <-time.After(time.Duration(resyncPeriod) * time.Second):
-			// Ensure that all the iptables rules exist every 5 seconds
-			if err := ensureIPTables(ipt, iptRestore, rules); err != nil {
-				log.Errorf("Failed to ensure iptables rules: %v", err)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				//clean-up is setup in Init
+				return
+			case <-time.After(time.Duration(resyncPeriod) * time.Second):
+				// Ensure that all the iptables rules exist every 5 seconds
+				if err := ensureIPTables(ipt, iptRestore, rules); err != nil {
+					log.Errorf("Failed to ensure iptables rules: %v", err)
+				}
 			}
 		}
-	}
+	}()
 }
 
 // deleteIP4Tables delete specified iptables rules

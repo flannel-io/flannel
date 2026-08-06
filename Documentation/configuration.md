@@ -103,9 +103,10 @@ Any command line option can be turned into an environment variable by prefixing 
 
 ## Health Check
 
-Flannel provides a health check http endpoint `healthz`. Currently this endpoint will blindly
-return http status ok(i.e. 200) when flannel is running. This feature is by default disabled.
-Set `healthz-port` to a non-zero value will enable a healthz server for flannel.
+Flannel provides two HTTP health check endpoints, both served on `--healthz-port` (disabled by default; set to a non-zero value to enable):
+
+- **`/healthz`** — liveness probe. Returns HTTP 200 whenever the `flanneld` process is running.
+- **`/readyz`** — readiness probe. Returns HTTP 200 only after flannel has completed startup: the iptables or nftables traffic rules (masquerade/forward) have been installed **and** the subnet environment file (`subnet.env`) has been written successfully. Returns HTTP 503 until that point.
 
 ## Dual-stack
 

@@ -70,9 +70,32 @@ spec:
         {{- range .Values.flannel.args }}
         - {{ . | quote }}
         {{- end }}
+        {{- if .Values.flannel.healthz.port }}
+        - {{ printf "--healthz-port=%d" (int .Values.flannel.healthz.port) | quote }}
+        {{- end }}
         {{- with .Values.flannel.resources }}
         resources:
           {{- toYaml . | trim | nindent 10 }}
+        {{- end }}
+        {{- if .Values.flannel.healthz.port }}
+        ports:
+        - name: healthz
+          containerPort: {{ int .Values.flannel.healthz.port }}
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: healthz
+          {{- with .Values.flannel.healthz.livenessProbe }}
+          {{- toYaml . | trim | nindent 10 }}
+          {{- end }}
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: healthz
+          {{- with .Values.flannel.healthz.readinessProbe }}
+          {{- toYaml . | trim | nindent 10 }}
+          {{- end }}
         {{- end }}
         securityContext:
           privileged: false
