@@ -17,17 +17,17 @@ package retry
 import (
 	log "k8s.io/klog/v2"
 
-	retry_v4 "github.com/avast/retry-go/v4"
+	retry_v5 "github.com/avast/retry-go/v5"
 )
 
 // Do executes f until it does not return an error
 // By default, the number of attempts is 10 with increasing delay between each
 func Do(f func() error) error {
 
-	return retry_v4.Do(f,
-		retry_v4.OnRetry(func(n uint, err error) {
+	return retry_v5.New(
+		retry_v5.OnRetry(func(n uint, err error) {
 			log.Errorf("#%d: %s\n", n, err)
 		}),
-	)
+	).Do(f)
 
 }
