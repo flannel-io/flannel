@@ -18,12 +18,20 @@ package functional
 import (
 	"fmt"
 	"net"
+	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 )
+
+var distDir = func() string {
+	_, file, _, _ := runtime.Caller(0)
+	return filepath.Join(filepath.Dir(file), "..", "dist")
+}()
 
 // docker0IP returns the IP address of the docker0 bridge on the host,
 // equivalent to `ip -o -f inet addr show docker0 | grep -Po 'inet \K[\d.]+'`.
@@ -122,8 +130,14 @@ func etcdctl(endpoint, certsDir string, args ...string) (string, error) {
 // writeConfigEtcd writes the flannel network config for the given backend to
 // etcd, retrying until it succeeds (etcd may still be coming up).
 func writeConfigEtcd(endpoint, certsDir, flannelNetCIDR, backend string) error {
-	return writeConfigEtcdKey(endpoint, certsDir, "/coreos.com/network/config",
-		fmt.Sprintf(`{ "Network": "%s", "Backend": { "Type": "%s" } }`, flannelNetCIDR, backend))
+	flannelConf := fmt.Sprintf(`{ "Network": "%s", "Backend": { "Type": "%s" } }`, flannelNetCIDR, backend)
+	if contents, err := os.ReadFile(filepath.Join(distDir, backend)); err == nil {
+		flannelConf = strings.TrimSpace(string(contents))
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("reading backend config %q: %w", backend, err)
+	}
+
+	return writeConfigEtcdKey(endpoint, certsDir, "/coreos.com/network/config", flannelConf)
 }
 
 // writeConfigEtcdKey writes an arbitrary key/value to etcd, retrying until it

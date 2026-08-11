@@ -107,30 +107,28 @@ var _ = Describe("kube apiserver", Ordered, func() {
 
 		// Start the kube-apiserver.
 		dockerRm("flannel-e2e-k8s-apiserver")
-		hyperkubeAPIServer := hyperkubeAPICmd
-		if hyperkubeCmd != "" {
-			hyperkubeAPIServer = hyperkubeCmd + " " + hyperkubeAPICmd
-		}
-		_, err = dockerRun(
-			"-d", "--net=host",
-			"-v", pkiDir+":/var/lib/kubernetes",
-			"--name", "flannel-e2e-k8s-apiserver",
-			hyperkubeImg+":v"+k8sVersion+"-rancher1",
-			"sh", "-c", strings.Join([]string{
-				hyperkubeAPIServer,
-				"--etcd-servers=" + etcdEndpt,
-				"--bind-address=" + dockerIP,
-				"--client-ca-file=/var/lib/kubernetes/pki/ca.crt",
-				"--enable-admission-plugins=NodeRestriction,ServiceAccount",
-				"--service-account-key-file=/var/lib/kubernetes/pki/service-account.crt",
-				"--service-account-signing-key-file=/var/lib/kubernetes/pki/service-account.key",
-				"--service-account-issuer=https://kubernetes.default.svc.local",
-				"--tls-cert-file=/var/lib/kubernetes/pki/kube-apiserver.crt",
-				"--tls-private-key-file=/var/lib/kubernetes/pki/kube-apiserver.key",
-				"--service-cluster-ip-range=10.101.0.0/16",
-				"--allow-privileged",
-			}, " "),
+		apiserverCmd := append(strings.Fields(hyperkubeCmd), hyperkubeAPICmd)
+		apiserverCmd = append(apiserverCmd,
+			"--etcd-servers="+etcdEndpt,
+			"--bind-address="+dockerIP,
+			"--client-ca-file=/var/lib/kubernetes/pki/ca.crt",
+			"--enable-admission-plugins=NodeRestriction,ServiceAccount",
+			"--service-account-key-file=/var/lib/kubernetes/pki/service-account.crt",
+			"--service-account-signing-key-file=/var/lib/kubernetes/pki/service-account.key",
+			"--service-account-issuer=https://kubernetes.default.svc.local",
+			"--tls-cert-file=/var/lib/kubernetes/pki/kube-apiserver.crt",
+			"--tls-private-key-file=/var/lib/kubernetes/pki/kube-apiserver.key",
+			"--service-cluster-ip-range=10.101.0.0/16",
+			"--allow-privileged",
 		)
+		runArgs := []string{
+			"-d", "--net=host",
+			"-v", pkiDir + ":/var/lib/kubernetes",
+			"--name", "flannel-e2e-k8s-apiserver",
+			hyperkubeImg + ":v" + k8sVersion + "-rancher1",
+		}
+		runArgs = append(runArgs, apiserverCmd...)
+		_, err = dockerRun(runArgs...)
 		Expect(err).NotTo(HaveOccurred(), "starting kube-apiserver")
 		time.Sleep(time.Second)
 
@@ -267,7 +265,7 @@ var _ = Describe("kube apiserver", Ordered, func() {
 // kubectl returns a `kubectl --kubeconfig=... <args>` slice for use with
 // dockerExec/dockerExecI against the apiserver container.
 func kubectl(container string, args ...string) []string {
-	base := []string{"kubectl", "--kubeconfig=/var/lib/kubernetes/admin.kubeconfig"}
+	base := append(strings.Fields(hyperkubeCmd), "kubectl", "--kubeconfig=/var/lib/kubernetes/admin.kubeconfig")
 	return append(base, args...)
 }
 
@@ -425,9 +423,11 @@ func setupKubeconfig(dockerIP string) error {
 			"--kubeconfig=/var/lib/kubernetes/admin.kubeconfig"},
 	}
 	for _, args := range cmds {
-		if _, err := dockerExec("flannel-e2e-k8s-apiserver", false,
-			append([]string{"kubectl"}, args...)...); err != nil {
-			return fmt.Errorf("kubectl %v: %w", args, err)
+		cmd := append(append([]string{}, strings.Fields(hyperkubeCmd)...), "kubectl")
+		cmd = append(cmd, args...)
+		out, err := dockerExec("flannel-e2e-k8s-apiserver", false, cmd...)
+		if err != nil {
+			return fmt.Errorf("kubectl %v: %w\n%s", args, err, out)
 		}
 	}
 	return nil
