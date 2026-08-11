@@ -23,12 +23,6 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Install kind
-        uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc #v1.14.0
-        with:
-          version: v0.32.0
-          install_only: true
-
       - name: set up modules
         run: sudo modprobe br_netfilter overlay
 
