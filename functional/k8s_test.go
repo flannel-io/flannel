@@ -157,7 +157,7 @@ var _ = Describe("kube apiserver", Ordered, func() {
 		dockerRm("flannel-e2e-test-flannel1")
 		dockerRm("flannel-e2e-test-flannel2")
 		if pkiDir != "" {
-			os.RemoveAll(pkiDir)
+			Expect(os.RemoveAll(pkiDir)).To(Succeed())
 		}
 	})
 
@@ -246,7 +246,9 @@ var _ = Describe("kube apiserver", Ordered, func() {
 	It("kube-flannel manifest is accepted by the API server", func() {
 		dir, err := os.MkdirTemp("", "flannel-manifest-")
 		Expect(err).NotTo(HaveOccurred())
-		defer os.RemoveAll(dir)
+		defer func() {
+			Expect(os.RemoveAll(dir)).To(Succeed())
+		}()
 
 		out, err := dockerExec("flannel-e2e-k8s-apiserver", false,
 			"cat", "/var/lib/kubernetes/admin.kubeconfig")
@@ -326,10 +328,14 @@ func generateKubePKI(dockerIP string) (string, error) {
 		return dir, err
 	}
 	if err := tmpl.Execute(f, struct{ DockerIP string }{dockerIP}); err != nil {
-		f.Close()
+		if closeErr := f.Close(); closeErr != nil {
+			return dir, fmt.Errorf("close %s after template execution failure: %v (template error: %w)", cnfPath, closeErr, err)
+		}
 		return dir, err
 	}
-	f.Close()
+	if err := f.Close(); err != nil {
+		return dir, err
+	}
 
 	// kube-apiserver cert
 	if _, err := runCommand("openssl", "genrsa", "-out", filepath.Join(pkiDir, "kube-apiserver.key"), "2048"); err != nil {

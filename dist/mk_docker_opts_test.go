@@ -43,9 +43,9 @@ FLANNEL_IPMASQ=false
 
 // mkDockerOptsCase describes one invocation of mk-docker-opts.sh.
 type mkDockerOptsCase struct {
-	name    string
-	flags   []string
-	want    string
+	name  string
+	flags []string
+	want  string
 }
 
 var mkDockerOptsCases = []mkDockerOptsCase{
@@ -106,11 +106,13 @@ func TestMkDockerOpts(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			// Remove output file from previous run.
-			os.Remove(outputFile)
+			if err := os.Remove(outputFile); err != nil && !os.IsNotExist(err) {
+				t.Fatalf("removing output file: %v", err)
+			}
 
 			args := []string{"-f", inputFile, "-d", outputFile}
 			args = append(args, tc.flags...)
-			cmd := exec.Command("bash", append([]string{script}, args...)...)
+			cmd := exec.Command(script, args...)
 			cmd.Dir = distDir
 			out, err := cmd.CombinedOutput()
 			if err != nil {
