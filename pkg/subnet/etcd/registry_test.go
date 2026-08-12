@@ -17,6 +17,7 @@ package etcd
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"testing"
@@ -24,6 +25,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 	etcd "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/tests/v3/framework/integration"
 )
@@ -44,6 +46,73 @@ func newTestEtcdRegistry(t *testing.T, ctx context.Context, client *etcd.Client)
 	}
 
 	return r, r.(*etcdSubnetRegistry).kvApi
+}
+
+func TestWatchResultsSkipsMalformedEvents(t *testing.T) {
+	r := &etcdSubnetRegistry{}
+	wresp := etcd.WatchResponse{Events: []*etcd.Event{
+		{
+			Type: etcd.EventTypeDelete,
+			Kv:   &mvccpb.KeyValue{Key: []byte("/coreos.com/network/subnets/10.1.5.0-24")},
+		},
+		{
+			Type: etcd.EventTypePut,
+			Kv:   &mvccpb.KeyValue{Key: []byte("/coreos.com/network/subnets/not-a-subnet")},
+		},
+	}}
+	wresp.Header.Revision = 42
+
+	results, err := r.watchResults(context.Background(), wresp)
+	if err != nil {
+		t.Fatal("watchResults returned an error", err)
+	}
+	if len(results) != 1 || len(results[0].Events) != 1 {
+		t.Fatalf("watchResults returned %#v, want only the valid event", results)
+	}
+	event := results[0].Events[0]
+	if event.Type != lease.EventRemoved || !event.Lease.EnableIPv4 || !event.Lease.Subnet.Equal(ip.IP4Net{IP: ip.MustParseIP4("10.1.5.0"), PrefixLen: 24}) {
+		t.Fatalf("watchResults returned unexpected event %#v", event)
+	}
+	cursor, ok := results[0].Cursor.(watchCursor)
+	if !ok || cursor.index != 42 {
+		t.Fatalf("watchResults returned cursor %#v, want revision 42", results[0].Cursor)
+	}
+}
+
+type failingLease struct {
+	etcd.Lease
+	err error
+}
+
+func (l failingLease) TimeToLive(context.Context, etcd.LeaseID, ...etcd.LeaseOption) (*etcd.LeaseTimeToLiveResponse, error) {
+	return nil, l.err
+}
+
+func TestWatchResultsReturnsTTLFailure(t *testing.T) {
+	ttlErr := errors.New("TTL unavailable")
+	r := &etcdSubnetRegistry{cli: &etcd.Client{Lease: failingLease{err: ttlErr}}}
+	wresp := etcd.WatchResponse{Events: []*etcd.Event{
+		{
+			Type: etcd.EventTypeDelete,
+			Kv:   &mvccpb.KeyValue{Key: []byte("/coreos.com/network/subnets/10.1.5.0-24")},
+		},
+		{
+			Type: etcd.EventTypePut,
+			Kv: &mvccpb.KeyValue{
+				Key:   []byte("/coreos.com/network/subnets/10.1.6.0-24"),
+				Value: []byte(`{"PublicIP":"1.2.3.4"}`),
+				Lease: 1,
+			},
+		},
+	}}
+
+	results, err := r.watchResults(context.Background(), wresp)
+	if !errors.Is(err, ttlErr) {
+		t.Fatalf("watchResults returned %v, want %v", err, ttlErr)
+	}
+	if results != nil {
+		t.Fatalf("watchResults returned partial results %#v", results)
+	}
 }
 
 func watchSubnets(t *testing.T, r Registry, ctx context.Context, sn ip.IP4Net, nextIndex int64, result chan error) {
@@ -393,56 +462,23 @@ func TestWatchSubnetReportsRemovalAfterCompaction(t *testing.T) {
 	}
 }
 
-// TestResyncWatchCancelWithBlockedReceiver is a regression test for the
-// ctx-aware send in resyncWatch. Before the fix, a blocked receiver caused
-// resyncWatch to hang indefinitely. After the fix it must return
-// context.Canceled promptly.
-func TestResyncWatchCancelWithBlockedReceiver(t *testing.T) {
-	integration.BeforeTestExternal(t)
-
-	clus := integration.NewCluster(t, &integration.ClusterConfig{Size: 1})
-	defer clus.Terminate(t)
-
-	client := clus.RandClient()
-	ctx := context.Background()
-	r, kvApi := newTestEtcdRegistry(t, ctx, client)
-
-	if _, err := kvApi.Put(ctx, "/coreos.com/network/config",
-		`{ "Network": "10.1.0.0/16", "Backend": { "Type": "host-gw" } }`); err != nil {
-		t.Fatal("seed config:", err)
-	}
-
-	sn := ip.IP4Net{IP: ip.MustParseIP4("10.1.5.0"), PrefixLen: 24}
-	attrs := &lease.LeaseAttrs{PublicIP: ip.MustParseIP4("1.2.3.4")}
-	if _, err := r.createSubnet(ctx, sn, ip.IP6Net{}, attrs, 24*time.Hour); err != nil {
-		t.Fatal("seed subnet:", err)
-	}
-
-	// Unbuffered receiver: resyncWatch's send blocks until a reader arrives
-	// or the context is canceled.
+func TestSendWatchResultsCancelWithBlockedReceiver(t *testing.T) {
 	receiver := make(chan []lease.LeaseWatchResult)
-	watchCtx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx, cancel := context.WithCancel(context.Background())
 
 	done := make(chan error, 1)
 	go func() {
-		esr := r.(*etcdSubnetRegistry)
-		_, err := esr.resyncWatch(watchCtx, receiver)
-		done <- err
+		done <- sendWatchResults(ctx, receiver, []lease.LeaseWatchResult{{}})
 	}()
-
-	// 500 ms is generous for a re-list over loopback; by then the goroutine
-	// should be blocked in the select waiting to send to the unbuffered receiver.
-	time.Sleep(500 * time.Millisecond)
 	cancel()
 
 	select {
 	case err := <-done:
 		if err != context.Canceled {
-			t.Fatalf("resyncWatch returned %v, want context.Canceled", err)
+			t.Fatalf("sendWatchResults returned %v, want context.Canceled", err)
 		}
-	case <-time.After(3 * time.Second):
-		t.Fatal("resyncWatch did not exit within 3s after context cancellation with blocked receiver")
+	case <-time.After(time.Second):
+		t.Fatal("sendWatchResults did not exit after context cancellation")
 	}
 }
 
