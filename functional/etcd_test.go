@@ -136,15 +136,15 @@ var _ = Describe("etcd backends", Ordered, func() {
 				}
 			})
 
-			It("pings between two flannel hosts", func() {
+			It("pings between two flannel hosts", func(ctx SpecContext) {
 				absDir, err := filepath.Abs(certsDir)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(writeConfigEtcd(etcdEndpt, absDir, flannelNet, spec.name)).To(Succeed())
+				Expect(writeConfigEtcd(ctx, etcdEndpt, absDir, flannelNet, spec.name)).To(Succeed())
 				startFlannelContainers(etcdEndpt)
 
 				By("waiting for subnet.env on both containers")
-				Expect(waitForFile("flannel-e2e-test-flannel1", "/run/flannel/subnet.env")).To(Succeed())
-				Expect(waitForFile("flannel-e2e-test-flannel2", "/run/flannel/subnet.env")).To(Succeed())
+				Expect(waitForFile(ctx, "flannel-e2e-test-flannel1", "/run/flannel/subnet.env")).To(Succeed())
+				Expect(waitForFile(ctx, "flannel-e2e-test-flannel2", "/run/flannel/subnet.env")).To(Succeed())
 
 				pingDest1, err := createPingDest("flannel-e2e-test-flannel1")
 				Expect(err).NotTo(HaveOccurred())
@@ -157,15 +157,15 @@ var _ = Describe("etcd backends", Ordered, func() {
 			})
 
 			if spec.hasPerf {
-				It("passes iperf3 throughput test", func() {
+				It("passes iperf3 throughput test", func(ctx SpecContext) {
 					absDir, err := filepath.Abs(certsDir)
 					Expect(err).NotTo(HaveOccurred())
-					Expect(writeConfigEtcd(etcdEndpt, absDir, flannelNet, spec.name)).To(Succeed())
+					Expect(writeConfigEtcd(ctx, etcdEndpt, absDir, flannelNet, spec.name)).To(Succeed())
 					startFlannelContainers(etcdEndpt)
 
 					By("waiting for subnet.env on both containers")
-					Expect(waitForFile("flannel-e2e-test-flannel1", "/run/flannel/subnet.env")).To(Succeed())
-					Expect(waitForFile("flannel-e2e-test-flannel2", "/run/flannel/subnet.env")).To(Succeed())
+					Expect(waitForFile(ctx, "flannel-e2e-test-flannel1", "/run/flannel/subnet.env")).To(Succeed())
+					Expect(waitForFile(ctx, "flannel-e2e-test-flannel2", "/run/flannel/subnet.env")).To(Succeed())
 
 					pingDest1, err := createPingDest("flannel-e2e-test-flannel1")
 					Expect(err).NotTo(HaveOccurred())
@@ -198,7 +198,7 @@ var _ = Describe("etcd backends", Ordered, func() {
 	}
 
 	Context("multi (vxlan+host-gw dual networks)", func() {
-		It("routes traffic over the correct backend", func() {
+		It("routes traffic over the correct backend", func(ctx SpecContext) {
 			absDir, err := filepath.Abs(certsDir)
 			Expect(err).NotTo(HaveOccurred())
 			dockerIP, err := docker0IP()
@@ -206,9 +206,9 @@ var _ = Describe("etcd backends", Ordered, func() {
 			etcdEndpt := "http://" + dockerIP + ":2379"
 
 			// Write configs for both networks.
-			Expect(writeConfigEtcdKey(etcdEndpt, absDir, "/vxlan/network/config",
+			Expect(writeConfigEtcdKey(ctx, etcdEndpt, absDir, "/vxlan/network/config",
 				`{"Network": "10.11.0.0/16", "Backend": {"Type": "vxlan"}}`)).To(Succeed())
-			Expect(writeConfigEtcdKey(etcdEndpt, absDir, "/hostgw/network/config",
+			Expect(writeConfigEtcdKey(ctx, etcdEndpt, absDir, "/hostgw/network/config",
 				`{"Network": "10.12.0.0/16", "Backend": {"Type": "host-gw"}}`)).To(Succeed())
 
 			for _, num := range []string{"1", "2"} {
@@ -234,8 +234,8 @@ var _ = Describe("etcd backends", Ordered, func() {
 			// Wait for both env files on both hosts.
 			for _, num := range []string{"1", "2"} {
 				host := "flannel-host" + num
-				Expect(waitForFile(host, "/vxlan.env")).To(Succeed())
-				Expect(waitForFile(host, "/hostgw.env")).To(Succeed())
+				Expect(waitForFile(ctx, host, "/vxlan.env")).To(Succeed())
+				Expect(waitForFile(ctx, host, "/hostgw.env")).To(Succeed())
 			}
 
 			// Create dummy interfaces on host1 and capture IPs.
@@ -273,8 +273,8 @@ var _ = Describe("etcd backends", Ordered, func() {
 
 			// Clean up multi-network keys so AfterEach doesn't error on the
 			// normal /coreos.com/network/config key.
-			etcdctl(etcdEndpt, absDir, "del", "/vxlan/network/config")   //nolint:errcheck
-			etcdctl(etcdEndpt, absDir, "del", "/hostgw/network/config")  //nolint:errcheck
+			etcdctl(etcdEndpt, absDir, "del", "/vxlan/network/config")  //nolint:errcheck
+			etcdctl(etcdEndpt, absDir, "del", "/hostgw/network/config") //nolint:errcheck
 		})
 	})
 })

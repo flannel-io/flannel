@@ -16,6 +16,7 @@
 package functional
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -26,6 +27,11 @@ import (
 	"time"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
+)
+
+const (
+	retryTimeout  = 30 * time.Second
+	retryInterval = 100 * time.Millisecond
 )
 
 var distDir = func() string {
@@ -111,6 +117,11 @@ func dockerInspectStatus(name string) string {
 // etcdctl runs an etcdctl command via docker against the given endpoint and
 // certs directory, returning combined output.
 func etcdctl(endpoint, certsDir string, args ...string) (string, error) {
+	return etcdctlContext(context.Background(), endpoint, certsDir, args...)
+}
+
+// etcdctlContext runs etcdctl with the provided context.
+func etcdctlContext(ctx context.Context, endpoint, certsDir string, args ...string) (string, error) {
 	dArgs := []string{
 		"run", "--rm",
 		"-e", "ETCDCTL_API=3",
@@ -122,14 +133,14 @@ func etcdctl(endpoint, certsDir string, args ...string) (string, error) {
 		"--key=/certs/client-key.pem",
 	}
 	dArgs = append(dArgs, args...)
-	cmd := exec.Command("docker", dArgs...)
+	cmd := exec.CommandContext(ctx, "docker", dArgs...)
 	out, err := cmd.CombinedOutput()
 	return string(out), err
 }
 
 // writeConfigEtcd writes the flannel network config for the given backend to
-// etcd, retrying until it succeeds (etcd may still be coming up).
-func writeConfigEtcd(endpoint, certsDir, flannelNetCIDR, backend string) error {
+// etcd.
+func writeConfigEtcd(ctx context.Context, endpoint, certsDir, flannelNetCIDR, backend string) error {
 	flannelConf := fmt.Sprintf(`{ "Network": "%s", "Backend": { "Type": "%s" } }`, flannelNetCIDR, backend)
 	if contents, err := os.ReadFile(filepath.Join(distDir, backend)); err == nil {
 		flannelConf = strings.TrimSpace(string(contents))
@@ -137,34 +148,60 @@ func writeConfigEtcd(endpoint, certsDir, flannelNetCIDR, backend string) error {
 		return fmt.Errorf("reading backend config %q: %w", backend, err)
 	}
 
-	return writeConfigEtcdKey(endpoint, certsDir, "/coreos.com/network/config", flannelConf)
+	return writeConfigEtcdKey(ctx, endpoint, certsDir, "/coreos.com/network/config", flannelConf)
 }
 
 // writeConfigEtcdKey writes an arbitrary key/value to etcd, retrying until it
-// succeeds.
-func writeConfigEtcdKey(endpoint, certsDir, key, value string) error {
+// succeeds or the retry timeout expires.
+func writeConfigEtcdKey(ctx context.Context, endpoint, certsDir, key, value string) error {
+	ctx, cancel := context.WithTimeout(ctx, retryTimeout)
+	defer cancel()
+
+	ticker := time.NewTicker(retryInterval)
+	defer ticker.Stop()
+
+	var lastErr error
 	for {
-		_, err := etcdctl(endpoint, certsDir, "put", key, value)
+		_, err := etcdctlContext(ctx, endpoint, certsDir, "put", key, value)
 		if err == nil {
 			return nil
 		}
-		time.Sleep(100 * time.Millisecond)
+		lastErr = err
+
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("writing etcd key %q: %w (last error: %v)", key, ctx.Err(), lastErr)
+		case <-ticker.C:
+		}
 	}
 }
 
-// waitForFile polls until `docker exec <container> ls <path>` succeeds or the
-// container exits with a non-running status.
-func waitForFile(container, path string) error {
+// waitForFile polls until `docker exec <container> ls <path>` succeeds, the
+// container exits, or the retry timeout expires.
+func waitForFile(ctx context.Context, container, path string) error {
+	ctx, cancel := context.WithTimeout(ctx, retryTimeout)
+	defer cancel()
+
+	ticker := time.NewTicker(retryInterval)
+	defer ticker.Stop()
+
+	var lastErr error
 	for {
-		_, err := exec.Command("docker", "exec", container, "ls", path).Output()
+		_, err := exec.CommandContext(ctx, "docker", "exec", container, "ls", path).Output()
 		if err == nil {
 			return nil
 		}
+		lastErr = err
 		status := dockerInspectStatus(container)
 		if status != "running" {
-			return fmt.Errorf("container %s exited with status %q before %s appeared", container, status, path)
+			return fmt.Errorf("container %s exited with status %q before %s appeared: %w", container, status, path, lastErr)
 		}
-		time.Sleep(100 * time.Millisecond)
+
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("waiting for %s in container %s: %w (last error: %v)", path, container, ctx.Err(), lastErr)
+		case <-ticker.C:
+		}
 	}
 }
 
