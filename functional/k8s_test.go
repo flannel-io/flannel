@@ -172,10 +172,11 @@ var _ = Describe("kube apiserver", Ordered, func() {
 	// backend, waits for /run/flannel/subnet.env, and returns ping destinations.
 	startFlannel := func(ctx context.Context, backend string) (string, string) {
 		GinkgoHelper()
-		flannel_conf := fmt.Sprintf(`{ "Network": "%s", "Backend": { "Type": "%s" } }`, flannelNet, backend)
+		flannelConf := fmt.Sprintf(`{ "Network": "%s", "Backend": { "Type": "%s" } }`, flannelNet, backend)
 
 		dir, err := os.MkdirTemp("", "flannel-kube-")
 		Expect(err).NotTo(HaveOccurred())
+		DeferCleanup(os.RemoveAll, dir)
 
 		out, err := dockerExec("flannel-e2e-k8s-apiserver", false,
 			"cat", "/var/lib/kubernetes/admin.kubeconfig")
@@ -194,7 +195,7 @@ var _ = Describe("kube apiserver", Ordered, func() {
 				flannelDockerImage,
 				"-c", fmt.Sprintf(
 					`mkdir -p /etc/kube-flannel && echo '%s' > /etc/kube-flannel/net-conf.json && /opt/bin/flanneld --kube-subnet-mgr --ip-masq --kubeconfig-file /var/lib/kubernetes/admin.kubeconfig --kube-api-url %s`,
-					flannel_conf, k8sEndpt,
+					flannelConf, k8sEndpt,
 				),
 			)
 			Expect(err).NotTo(HaveOccurred(), "starting flannel container %s", name)
