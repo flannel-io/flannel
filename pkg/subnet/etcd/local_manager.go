@@ -352,7 +352,7 @@ func (m *LocalManager) WatchLeases(ctx context.Context, receiver chan []lease.Le
 		return err
 	}
 
-	err = m.registry.watchSubnets(ctx, receiver, nextIndex)
+	err = m.registry.watchSubnets(ctx, nextIndex, receiver)
 	if err != nil {
 		return err
 	}

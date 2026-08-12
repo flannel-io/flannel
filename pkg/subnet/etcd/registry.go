@@ -50,7 +50,7 @@ type Registry interface {
 	createSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *lease.LeaseAttrs, ttl time.Duration) (time.Time, error)
 	updateSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *lease.LeaseAttrs, ttl time.Duration, asof int64) (time.Time, error)
 	deleteSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) error
-	watchSubnets(ctx context.Context, leaseWatchChan chan []lease.LeaseWatchResult, since int64) error
+	watchSubnets(ctx context.Context, since int64, leaseWatchChan chan []lease.LeaseWatchResult) error
 	watchSubnet(ctx context.Context, since int64, sn ip.IP4Net, sn6 ip.IP6Net, leaseWatchChan chan []lease.LeaseWatchResult) error
 	leasesWatchReset(ctx context.Context) (lease.LeaseWatchResult, error)
 }
@@ -416,7 +416,7 @@ func sendWatchResults(ctx context.Context, ch chan<- []lease.LeaseWatchResult, r
 	}
 }
 
-func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan chan []lease.LeaseWatchResult, since int64) error {
+func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, since int64, leaseWatchChan chan []lease.LeaseWatchResult) error {
 	return esr.runWatch(ctx, subnetWatch{
 		key:    path.Join(esr.etcdCfg.Prefix, "subnets"),
 		since:  since,

@@ -197,7 +197,7 @@ func (msr *MockSubnetRegistry) deleteSubnet(ctx context.Context, sn ip.IP4Net, s
 	return nil
 }
 
-func (msr *MockSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan chan []lease.LeaseWatchResult, since int64) error {
+func (msr *MockSubnetRegistry) watchSubnets(ctx context.Context, since int64, leaseWatchChan chan []lease.LeaseWatchResult) error {
 	log.Infof("watchSubnets started with since= [ %d]", since)
 	for {
 		msr.mux.Lock()
