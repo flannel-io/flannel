@@ -406,10 +406,6 @@ func (m *LocalManager) CompleteLease(ctx context.Context, myLease *lease.Lease, 
 	}
 }
 
-func isIndexTooSmall(err error) bool {
-	return err == rpctypes.ErrGRPCCompacted
-}
-
 func isSubnetConfigCompat(config *subnet.Config, sn ip.IP4Net) bool {
 	if sn.IP < config.SubnetMin || sn.IP > config.SubnetMax {
 		return false
