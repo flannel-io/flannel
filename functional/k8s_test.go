@@ -16,8 +16,10 @@
 package functional
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -27,6 +29,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
+
+const flannelStartupTimeout = 2 * time.Minute
 
 // k8sManifestPath is the kube-flannel.yml shipped in the repo.
 var k8sManifestPath = func() string {
@@ -166,7 +170,7 @@ var _ = Describe("kube apiserver", Ordered, func() {
 
 	// startFlannel starts two kube-subnet-mgr flanneld containers for the given
 	// backend, waits for /run/flannel/subnet.env, and returns ping destinations.
-	startFlannel := func(backend string) (string, string) {
+	startFlannel := func(ctx context.Context, backend string) (string, string) {
 		GinkgoHelper()
 		flannel_conf := fmt.Sprintf(`{ "Network": "%s", "Backend": { "Type": "%s" } }`, flannelNet, backend)
 
@@ -196,7 +200,7 @@ var _ = Describe("kube apiserver", Ordered, func() {
 			Expect(err).NotTo(HaveOccurred(), "starting flannel container %s", name)
 
 			// Wait for subnet.env or container exit.
-			err = waitForSubnetEnvOrExit(name)
+			err = waitForSubnetEnvOrExit(ctx, name)
 			if err != nil {
 				logf("flannel container %s logs:\n%s", name, dockerLogs(name))
 			}
@@ -210,7 +214,7 @@ var _ = Describe("kube apiserver", Ordered, func() {
 		return pingDest1, pingDest2
 	}
 
-	It("public-ip-overwrite annotation propagates", func() {
+	It("public-ip-overwrite annotation propagates", func(ctx SpecContext) {
 		// Annotate flannel1 with a static public IP.
 		_, err := dockerExec("flannel-e2e-k8s-apiserver", false,
 			kubectl("flannel-e2e-k8s-apiserver",
@@ -219,7 +223,7 @@ var _ = Describe("kube apiserver", Ordered, func() {
 			)...)
 		Expect(err).NotTo(HaveOccurred())
 
-		startFlannel("vxlan")
+		startFlannel(ctx, "vxlan")
 
 		By("checking public-ip annotation on flannel1")
 		Eventually(func() string {
@@ -270,18 +274,27 @@ func kubectl(container string, args ...string) []string {
 }
 
 // waitForSubnetEnvOrExit waits for /run/flannel/subnet.env in the container,
-// returning an error if the container exits before the file appears.
-func waitForSubnetEnvOrExit(container string) error {
+// returning an error if the container exits or the startup timeout expires
+// before the file appears.
+func waitForSubnetEnvOrExit(ctx context.Context, container string) error {
+	ctx, cancel := context.WithTimeout(ctx, flannelStartupTimeout)
+	defer cancel()
+
+	var lastErr error
 	for {
-		_, err := runCommand("docker", "exec", container, "ls", "/run/flannel/subnet.env")
+		_, err := exec.CommandContext(ctx, "docker", "exec", container, "ls", "/run/flannel/subnet.env").Output()
 		if err == nil {
 			return nil
 		}
+		lastErr = err
 		status := dockerInspectStatus(container)
 		if status != "running" {
-			return fmt.Errorf("container %s exited with status %q before subnet.env appeared", container, status)
+			return fmt.Errorf("container %s exited with status %q before subnet.env appeared: %w", container, status, lastErr)
 		}
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(retryInterval)
+		if err := ctx.Err(); err != nil {
+			return fmt.Errorf("waiting for /run/flannel/subnet.env in container %s: %w (last error: %v)", container, err, lastErr)
+		}
 	}
 }
 
