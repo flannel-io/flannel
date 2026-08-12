@@ -130,7 +130,7 @@ func watchSubnets(t *testing.T, r Registry, ctx context.Context, sn ip.IP4Net, n
 	numFound := 0
 
 	go func() {
-		err := r.watchSubnets(ctx, receiver, nextIndex)
+		err := r.watchSubnets(ctx, nextIndex, receiver)
 		if err != nil {
 			result <- errNoWatchChannel
 			return
@@ -333,7 +333,7 @@ func TestWatchSubnetsRecoversFromCompaction(t *testing.T) {
 
 	// Start the watch from rev 1, now below the compaction horizon.
 	receiver := make(chan []lease.LeaseWatchResult, 16)
-	go func() { _ = r.watchSubnets(ctx, receiver, 1) }()
+	go func() { _ = r.watchSubnets(ctx, 1, receiver) }()
 
 	// Recovery must surface a re-list snapshot that includes the existing lease.
 	if !waitForSnapshot(receiver, sn, 10*time.Second) {
