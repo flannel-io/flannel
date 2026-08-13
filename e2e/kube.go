@@ -282,9 +282,11 @@ func (kc *kindCluster) waitForSubnetEnv(ctx context.Context, timeout time.Durati
 }
 
 // createDeployment creates a Deployment in the default namespace serving on the
-// given container port. Replicas are spread across nodes via a pod anti-affinity
-// rule so that pod-to-service traffic must cross the flannel overlay. When node
-// is non-empty the pods are additionally pinned to that node.
+// given container port. Replicas are guaranteed to spread across nodes via a
+// required pod anti-affinity rule so that pod-to-service traffic must cross the
+// flannel overlay. The control-plane NoSchedule taint is tolerated so a replica
+// can run there in the default kind cluster. When node is non-empty the pods are
+// additionally pinned to that node.
 func (kc *kindCluster) createDeployment(ctx context.Context, name, image string, replicas int32, port int32, node string) error {
 	labels := map[string]string{"app": name}
 	spec := corev1.PodSpec{
@@ -296,15 +298,17 @@ func (kc *kindCluster) createDeployment(ctx context.Context, name, image string,
 		}},
 		Affinity: &corev1.Affinity{
 			PodAntiAffinity: &corev1.PodAntiAffinity{
-				PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{{
-					Weight: 100,
-					PodAffinityTerm: corev1.PodAffinityTerm{
-						LabelSelector: &metav1.LabelSelector{MatchLabels: labels},
-						TopologyKey:   "kubernetes.io/hostname",
-					},
+				RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{{
+					LabelSelector: &metav1.LabelSelector{MatchLabels: labels},
+					TopologyKey:   "kubernetes.io/hostname",
 				}},
 			},
 		},
+		Tolerations: []corev1.Toleration{{
+			Key:      "node-role.kubernetes.io/control-plane",
+			Operator: corev1.TolerationOpExists,
+			Effect:   corev1.TaintEffectNoSchedule,
+		}},
 	}
 	if node != "" {
 		spec.NodeName = node
