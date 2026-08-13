@@ -22,9 +22,11 @@ import (
 	"strings"
 	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
@@ -275,6 +277,123 @@ func (kc *kindCluster) waitForSubnetEnv(ctx context.Context, timeout time.Durati
 		}
 		out, _ := kc.execOnNode(node, "cat", "/run/flannel/subnet.env")
 		logf("subnet.env on %s:\n%s\n", node, out)
+	}
+	return nil
+}
+
+// createDeployment creates a Deployment in the default namespace serving on the
+// given container port. Replicas are spread across nodes via a pod anti-affinity
+// rule so that pod-to-service traffic must cross the flannel overlay. When node
+// is non-empty the pods are additionally pinned to that node.
+func (kc *kindCluster) createDeployment(ctx context.Context, name, image string, replicas int32, port int32, node string) error {
+	labels := map[string]string{"app": name}
+	spec := corev1.PodSpec{
+		Containers: []corev1.Container{{
+			Name:            name,
+			Image:           image,
+			ImagePullPolicy: corev1.PullIfNotPresent,
+			Ports:           []corev1.ContainerPort{{ContainerPort: port}},
+		}},
+		Affinity: &corev1.Affinity{
+			PodAntiAffinity: &corev1.PodAntiAffinity{
+				PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{{
+					Weight: 100,
+					PodAffinityTerm: corev1.PodAffinityTerm{
+						LabelSelector: &metav1.LabelSelector{MatchLabels: labels},
+						TopologyKey:   "kubernetes.io/hostname",
+					},
+				}},
+			},
+		},
+	}
+	if node != "" {
+		spec.NodeName = node
+	}
+
+	dep := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{Name: name, Labels: labels},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: &replicas,
+			Selector: &metav1.LabelSelector{MatchLabels: labels},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{Labels: labels},
+				Spec:       spec,
+			},
+		},
+	}
+	_, err := kc.client.AppsV1().Deployments("default").Create(ctx, dep, metav1.CreateOptions{})
+	return err
+}
+
+// createClusterIPService creates a ClusterIP Service in the default namespace
+// selecting pods by the given selector.
+func (kc *kindCluster) createClusterIPService(ctx context.Context, name string, selector map[string]string, port, targetPort int32) error {
+	svc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{Name: name},
+		Spec: corev1.ServiceSpec{
+			Type:     corev1.ServiceTypeClusterIP,
+			Selector: selector,
+			Ports: []corev1.ServicePort{{
+				Port:       port,
+				TargetPort: intstr.FromInt32(targetPort),
+				Protocol:   corev1.ProtocolTCP,
+			}},
+		},
+	}
+	_, err := kc.client.CoreV1().Services("default").Create(ctx, svc, metav1.CreateOptions{})
+	return err
+}
+
+// serviceClusterIP returns the allocated ClusterIP of a Service.
+func (kc *kindCluster) serviceClusterIP(ctx context.Context, namespace, name string) (string, error) {
+	svc, err := kc.client.CoreV1().Services(namespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	return svc.Spec.ClusterIP, nil
+}
+
+// waitForDeploymentReady polls until all replicas of the Deployment are ready.
+func (kc *kindCluster) waitForDeploymentReady(ctx context.Context, namespace, name string, timeout time.Duration) error {
+	return wait.PollUntilContextTimeout(ctx, 3*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+		dep, err := kc.client.AppsV1().Deployments(namespace).Get(ctx, name, metav1.GetOptions{})
+		if err != nil {
+			return false, nil
+		}
+		desired := int32(1)
+		if dep.Spec.Replicas != nil {
+			desired = *dep.Spec.Replicas
+		}
+		return dep.Status.ReadyReplicas >= desired, nil
+	})
+}
+
+// deleteDeployment removes a Deployment, ignoring NotFound.
+func (kc *kindCluster) deleteDeployment(ctx context.Context, namespace, name string) error {
+	err := kc.client.AppsV1().Deployments(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	if err != nil && !errors.IsNotFound(err) {
+		return fmt.Errorf("deleting deployment %s: %w", name, err)
+	}
+	return nil
+}
+
+// deleteService removes a Service, ignoring NotFound.
+func (kc *kindCluster) deleteService(ctx context.Context, namespace, name string) error {
+	err := kc.client.CoreV1().Services(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	if err != nil && !errors.IsNotFound(err) {
+		return fmt.Errorf("deleting service %s: %w", name, err)
+	}
+	return nil
+}
+
+// deletePod removes a single pod immediately, ignoring NotFound.
+func (kc *kindCluster) deletePod(ctx context.Context, namespace, name string) error {
+	gracePeriodSeconds := int64(0)
+	err := kc.client.CoreV1().Pods(namespace).Delete(ctx, name, metav1.DeleteOptions{
+		GracePeriodSeconds: &gracePeriodSeconds,
+	})
+	if err != nil && !errors.IsNotFound(err) {
+		return fmt.Errorf("deleting pod %s: %w", name, err)
 	}
 	return nil
 }
