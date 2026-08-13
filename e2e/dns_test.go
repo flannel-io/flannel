@@ -98,17 +98,33 @@ var _ = Describe("flannel service and DNS", Ordered, func() {
 	})
 })
 
-// waitForDNS polls until nslookup of host from pod succeeds, mirroring the style
-// of waitForPing.
+// waitForDNS polls until nslookup of host from pod returns an answer section,
+// mirroring the style of waitForPing.
 func (kc *kindCluster) waitForDNS(ctx context.Context, pod, host string, timeout time.Duration) error {
 	return wait.PollUntilContextTimeout(ctx, 2*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
 		out, err := kc.execInPod(ctx, "default", pod, "nslookup", host)
 		if err != nil {
 			return false, nil
 		}
-		// nslookup prints "server can't find" on failure even with exit 0 on
-		// some images, so require an Address line for the answer section.
-		return strings.Contains(out, "Address"), nil
+		lowerOut := strings.ToLower(out)
+		for _, failure := range []string{"can't resolve", "can't find", "nxdomain", "no answer", "server can't"} {
+			if strings.Contains(lowerOut, failure) {
+				return false, nil
+			}
+		}
+
+		seenName := false
+		for _, line := range strings.Split(out, "\n") {
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, "Name:") {
+				seenName = true
+				continue
+			}
+			if seenName && line != "" && strings.Contains(line, "Address") {
+				return true, nil
+			}
+		}
+		return false, nil
 	})
 }
 
