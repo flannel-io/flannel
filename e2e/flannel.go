@@ -32,6 +32,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/discovery"
@@ -158,6 +159,25 @@ func (kc *kindCluster) waitForFlannelRollout(ctx context.Context, timeout time.D
 		}
 		return daemonSetRolledOut(ds), nil
 	})
+}
+
+// restartFlannelDaemonSet triggers a rolling restart of the flannel DaemonSet
+// by stamping the pod template with a kubectl.kubernetes.io/restartedAt
+// annotation, mirroring `kubectl rollout restart daemonset/kube-flannel-ds`.
+// This bumps the DaemonSet generation so waitForFlannelRollout can observe the
+// new pods becoming available.
+func (kc *kindCluster) restartFlannelDaemonSet(ctx context.Context) error {
+	patch := []byte(fmt.Sprintf(
+		`{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":%q}}}}}`,
+		time.Now().Format(time.RFC3339),
+	))
+	_, err := kc.client.AppsV1().DaemonSets(flannelNamespace).Patch(
+		ctx, "kube-flannel-ds", types.StrategicMergePatchType, patch, metav1.PatchOptions{},
+	)
+	if err != nil {
+		return fmt.Errorf("patching kube-flannel-ds for restart: %w", err)
+	}
+	return nil
 }
 
 func daemonSetRolledOut(ds *appsv1.DaemonSet) bool {
