@@ -80,7 +80,9 @@ var _ = Describe("flannel resilience", Ordered, func() {
 	})
 
 	It("preserves connectivity and subnet leases across a flannel DaemonSet restart", func(ctx SpecContext) {
-		By("ensuring both test pods exist and can reach each other")
+		By("recreating both test pods on separate nodes")
+		Expect(sharedCluster.deletePod(ctx, "default", "multitool1")).To(Succeed())
+		Expect(sharedCluster.deletePod(ctx, "default", "multitool2")).To(Succeed())
 		Expect(sharedCluster.createTestPod(ctx, "multitool1", kindWorker)).To(Succeed())
 		Expect(sharedCluster.createTestPod(ctx, "multitool2", kindControlPlane)).To(Succeed())
 		Expect(sharedCluster.waitForPodReady(ctx, "default", "multitool1", time.Minute)).To(Succeed())

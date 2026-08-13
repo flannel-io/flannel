@@ -160,11 +160,18 @@ func (kc *kindCluster) deleteTestPods(ctx context.Context) error {
 
 // podIP mirrors get_pod_ip.
 func (kc *kindCluster) podIP(ctx context.Context, name string) (string, error) {
-	pod, err := kc.client.CoreV1().Pods("default").Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		return "", err
+	var ip string
+	if err := wait.PollUntilContextTimeout(ctx, 2*time.Second, time.Minute, true, func(ctx context.Context) (bool, error) {
+		pod, err := kc.client.CoreV1().Pods("default").Get(ctx, name, metav1.GetOptions{})
+		if err != nil {
+			return false, err
+		}
+		ip = pod.Status.PodIP
+		return ip != "", nil
+	}); err != nil {
+		return "", fmt.Errorf("waiting for pod %s IP: %w", name, err)
 	}
-	return pod.Status.PodIP, nil
+	return ip, nil
 }
 
 // podCIDR mirrors get_pod_cidr.
