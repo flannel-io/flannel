@@ -44,7 +44,9 @@ var _ = Describe("flannel resilience", Ordered, func() {
 	})
 
 	AfterAll(func(ctx SpecContext) {
-		// Leave the shared cluster clean for any later specs.
+		// Leave the shared cluster clean for any later specs: remove the test
+		// pods this suite created, then uninstall flannel.
+		Expect(sharedCluster.deleteTestPods(ctx)).To(Succeed())
 		Expect(sharedCluster.deleteFlannel(ctx)).To(Succeed())
 	})
 
@@ -65,8 +67,10 @@ var _ = Describe("flannel resilience", Ordered, func() {
 		Expect(sharedCluster.createTestPod(ctx, "multitool1", kindWorker)).To(Succeed())
 		Expect(sharedCluster.waitForPodReady(ctx, "default", "multitool1", time.Minute)).To(Succeed())
 
-		// The recreated pod gets a fresh IP within the node's subnet, proving
-		// flannel re-wired a new pod/veth and re-allocated an address.
+		// Connectivity to the recreated pod proves flannel re-wired a new
+		// pod/veth and re-allocated an address within the node subnet. The IP
+		// may or may not change (host-local IPAM can legally reuse a freed
+		// address), so we assert on connectivity recovery rather than a new IP.
 		By("verifying connectivity recovers for the recreated pod")
 		newIP1, err := sharedCluster.podIP(ctx, "multitool1")
 		Expect(err).NotTo(HaveOccurred())
