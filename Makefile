@@ -5,7 +5,6 @@ REGISTRY?=quay.io/coreos/flannel
 HELM_UNITTEST_VERSION?=v1.1.1
 HELM_UNITTEST_VERSION_NUMBER:=$(patsubst v%,%,$(HELM_UNITTEST_VERSION))
 QEMU_VERSION=v7.2.0-1
-BASH_UNIT_VERSION=v2.3.0
 
 # Fill these with expected SHA256 values for each qemu static binary.
 QEMU_SHA256_AMD64?=7132ffd39aef71c26d3344cc0c7dffc530e10e3e720c58c8279a97ef6fdd7784
@@ -98,7 +97,7 @@ test: license-check gofmt deps verify-modules
 	make unit-test
 
 	# Test the docker-opts script
-	cd dist; ./mk-docker-opts_tests.sh
+	go test ./dist/
 
 	# Run the functional tests
 	make e2e-test
@@ -113,10 +112,10 @@ unit-test:
 		golang:$(GO_VERSION) \
 		/bin/bash -c 'cd /go/src/github.com/flannel-io/flannel && go test -v -cover -timeout 5m $(TEST_PACKAGES_EXPANDED)'
 
-e2e-test: bash_unit dist/flanneld-$(TAG)-$(ARCH).docker
+e2e-test: dist/flanneld-$(TAG)-$(ARCH).docker
 	$(MAKE) -C images/iperf3 ARCH=$(ARCH)
-	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test.sh
-	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ./bash_unit dist/functional-test-k8s.sh
+	FLANNEL_DOCKER_IMAGE=$(REGISTRY):$(TAG)-$(ARCH) ARCH=$(ARCH) \
+		go test -tags functional -timeout 60m -v ./functional/...
 
 chart-test:
 	@set -e; \
@@ -168,9 +167,6 @@ verify-modules:
 		!go vet 2>&1|read'
 
 
-bash_unit:
-	wget https://raw.githubusercontent.com/pgrange/bash_unit/$(BASH_UNIT_VERSION)/bash_unit
-	chmod +x bash_unit
 
 
 # Make a release after creating a tag
