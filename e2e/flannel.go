@@ -61,8 +61,8 @@ func dynamicResource(dyn dynamic.Interface, gvr schema.GroupVersionResource, nam
 // the flannel image, net-conf.json and, for the udp backend, the privileged
 // flag) and applies it via the dynamic client. It replaces write-flannel-conf +
 // install-flannel. The list of created objects is stored for later deletion.
-func (kc *kindCluster) installFlannel(ctx context.Context, backend string, enableNFTables bool) error {
-	objs, err := renderFlannelManifest(backend, enableNFTables)
+func (kc *kindCluster) installFlannel(ctx context.Context, backend string, enableNFTables, enableIPv6 bool) error {
+	objs, err := renderFlannelManifest(backend, enableNFTables, enableIPv6)
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func (kc *kindCluster) restMapper() (meta.RESTMapper, error) {
 }
 
 // renderFlannelManifest loads the shipped manifest and patches it in place.
-func renderFlannelManifest(backend string, enableNFTables bool) ([]*unstructured.Unstructured, error) {
+func renderFlannelManifest(backend string, enableNFTables, enableIPv6 bool) ([]*unstructured.Unstructured, error) {
 	raw, err := os.ReadFile(flannelManifestPath)
 	if err != nil {
 		return nil, err
@@ -195,10 +195,18 @@ func renderFlannelManifest(backend string, enableNFTables bool) ([]*unstructured
 		return nil, err
 	}
 
-	netConf := fmt.Sprintf(
-		`{ "Network": "%s", "Backend": { "Type": "%s" }, "EnableNFTables": %t }`,
-		flannelNet, backend, enableNFTables,
-	)
+	var netConf string
+	if enableIPv6 {
+		netConf = fmt.Sprintf(
+			`{ "Network": "%s", "IPv6Network": "%s", "EnableIPv6": true, "Backend": { "Type": "%s" }, "EnableNFTables": %t }`,
+			flannelNet, flannelIPv6Net, backend, enableNFTables,
+		)
+	} else {
+		netConf = fmt.Sprintf(
+			`{ "Network": "%s", "Backend": { "Type": "%s" }, "EnableNFTables": %t }`,
+			flannelNet, backend, enableNFTables,
+		)
+	}
 
 	for _, obj := range objs {
 		switch obj.GetKind() {

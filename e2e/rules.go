@@ -39,19 +39,37 @@ func writeln(w io.Writer, args ...any) {
 // expectedIptablesPostrouting builds the golden FLANNEL-POSTRTG rule set for a
 // node with the given pod CIDR, mirroring check_iptables.
 func expectedIptablesPostrouting(podCIDR string) string {
+	return iptablesPostroutingRules(podCIDR, flannelNet, "224.0.0.0/4")
+}
+
+// expectedIp6tablesPostrouting is the IPv6 counterpart (ff00::/8 multicast).
+func expectedIp6tablesPostrouting(podCIDR string) string {
+	return iptablesPostroutingRules(podCIDR, flannelIPv6Net, "ff00::/8")
+}
+
+func iptablesPostroutingRules(podCIDR, network, multicast string) string {
 	return strings.Join([]string{
 		`-A POSTROUTING -m comment --comment "flanneld masq" -j FLANNEL-POSTRTG`,
 		`-N FLANNEL-POSTRTG`,
 		`-A FLANNEL-POSTRTG -m mark --mark 0x4000/0x4000 -m comment --comment "flanneld masq" -j RETURN`,
-		fmt.Sprintf(`-A FLANNEL-POSTRTG -s %s -d %s -m comment --comment "flanneld masq" -j RETURN`, podCIDR, flannelNet),
-		fmt.Sprintf(`-A FLANNEL-POSTRTG -s %s -d %s -m comment --comment "flanneld masq" -j RETURN`, flannelNet, podCIDR),
-		fmt.Sprintf(`-A FLANNEL-POSTRTG ! -s %s -d %s -m comment --comment "flanneld masq" -j RETURN`, flannelNet, podCIDR),
-		fmt.Sprintf(`-A FLANNEL-POSTRTG -s %s ! -d 224.0.0.0/4 -m comment --comment "flanneld masq" -j MASQUERADE --random-fully`, flannelNet),
-		fmt.Sprintf(`-A FLANNEL-POSTRTG ! -s %s -d %s -m comment --comment "flanneld masq" -j MASQUERADE --random-fully`, flannelNet, flannelNet),
+		fmt.Sprintf(`-A FLANNEL-POSTRTG -s %s -d %s -m comment --comment "flanneld masq" -j RETURN`, podCIDR, network),
+		fmt.Sprintf(`-A FLANNEL-POSTRTG -s %s -d %s -m comment --comment "flanneld masq" -j RETURN`, network, podCIDR),
+		fmt.Sprintf(`-A FLANNEL-POSTRTG ! -s %s -d %s -m comment --comment "flanneld masq" -j RETURN`, network, podCIDR),
+		fmt.Sprintf(`-A FLANNEL-POSTRTG -s %s ! -d %s -m comment --comment "flanneld masq" -j MASQUERADE --random-fully`, network, multicast),
+		fmt.Sprintf(`-A FLANNEL-POSTRTG ! -s %s -d %s -m comment --comment "flanneld masq" -j MASQUERADE --random-fully`, network, network),
 	}, "\n")
 }
 
 func expectedIptablesForward() string {
+	return iptablesForwardRules(flannelNet)
+}
+
+// expectedIp6tablesForward is the IPv6 counterpart of expectedIptablesForward.
+func expectedIp6tablesForward() string {
+	return iptablesForwardRules(flannelIPv6Net)
+}
+
+func iptablesForwardRules(network string) string {
 	return strings.Join([]string{
 		`-P FORWARD ACCEPT`,
 		`-A FORWARD -m conntrack --ctstate NEW -m comment --comment "kubernetes load balancer firewall" -j KUBE-PROXY-FIREWALL`,
@@ -60,8 +78,8 @@ func expectedIptablesForward() string {
 		`-A FORWARD -m conntrack --ctstate NEW -m comment --comment "kubernetes externally-visible service portals" -j KUBE-EXTERNAL-SERVICES`,
 		`-A FORWARD -m comment --comment "flanneld forward" -j FLANNEL-FWD`,
 		`-N FLANNEL-FWD`,
-		fmt.Sprintf(`-A FLANNEL-FWD -s %s -m comment --comment "flanneld forward" -j ACCEPT`, flannelNet),
-		fmt.Sprintf(`-A FLANNEL-FWD -d %s -m comment --comment "flanneld forward" -j ACCEPT`, flannelNet),
+		fmt.Sprintf(`-A FLANNEL-FWD -s %s -m comment --comment "flanneld forward" -j ACCEPT`, network),
+		fmt.Sprintf(`-A FLANNEL-FWD -d %s -m comment --comment "flanneld forward" -j ACCEPT`, network),
 	}, "\n")
 }
 
@@ -72,6 +90,15 @@ func (kc *kindCluster) checkRules(ctx context.Context, enableNFT bool) {
 		kc.checkNftables(ctx)
 	} else {
 		kc.checkIptables(ctx)
+	}
+}
+
+// checkRulesV6 asserts flannel's IPv6 masquerade and forward rules on both nodes.
+func (kc *kindCluster) checkRulesV6(ctx context.Context, enableNFT bool) {
+	if enableNFT {
+		kc.checkNftablesV6(ctx)
+	} else {
+		kc.checkIp6tables(ctx)
 	}
 }
 
@@ -86,21 +113,42 @@ func (kc *kindCluster) nodeCIDRs(ctx context.Context) map[string]string {
 	return cidrs
 }
 
+// nodeCIDRsV6 returns the IPv6 pod CIDR of each node keyed by node name.
+func (kc *kindCluster) nodeCIDRsV6(ctx context.Context) map[string]string {
+	cidrs := map[string]string{}
+	for _, node := range []string{kindWorker, kindControlPlane} {
+		cidr, err := kc.podCIDRv6(ctx, node)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		cidrs[node] = cidr
+	}
+	return cidrs
+}
+
 // checkIptables asserts the masquerade and forward rules on both nodes, mirroring
 // the bash check_iptables helper.
 func (kc *kindCluster) checkIptables(ctx context.Context) {
 	for node, cidr := range kc.nodeCIDRs(ctx) {
-		gomega.Expect(kc.iptablesNatFlannel(node)).To(gomega.Equal(expectedIptablesPostrouting(cidr)),
+		gomega.Expect(kc.iptablesNatFlannel(node, "/usr/sbin/iptables")).To(gomega.Equal(expectedIptablesPostrouting(cidr)),
 			"node %s has unexpected postrouting rules", node)
-		gomega.Expect(kc.iptablesFilterForward(node)).To(gomega.Equal(expectedIptablesForward()),
+		gomega.Expect(kc.iptablesFilterForward(node, "/usr/sbin/iptables")).To(gomega.Equal(expectedIptablesForward()),
 			"node %s has unexpected forward rules", node)
 	}
 }
 
-func (kc *kindCluster) iptablesNatFlannel(node string) string {
-	post, err := kc.execOnNode(node, "/usr/sbin/iptables", "-t", "nat", "-S", "POSTROUTING")
+// checkIp6tables asserts the IPv6 masquerade and forward rules on both nodes.
+func (kc *kindCluster) checkIp6tables(ctx context.Context) {
+	for node, cidr := range kc.nodeCIDRsV6(ctx) {
+		gomega.Expect(kc.iptablesNatFlannel(node, "/usr/sbin/ip6tables")).To(gomega.Equal(expectedIp6tablesPostrouting(cidr)),
+			"node %s has unexpected IPv6 postrouting rules", node)
+		gomega.Expect(kc.iptablesFilterForward(node, "/usr/sbin/ip6tables")).To(gomega.Equal(expectedIp6tablesForward()),
+			"node %s has unexpected IPv6 forward rules", node)
+	}
+}
+
+func (kc *kindCluster) iptablesNatFlannel(node, bin string) string {
+	post, err := kc.execOnNode(node, bin, "-t", "nat", "-S", "POSTROUTING")
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	chain, err := kc.execOnNode(node, "/usr/sbin/iptables", "-t", "nat", "-S", "FLANNEL-POSTRTG")
+	chain, err := kc.execOnNode(node, bin, "-t", "nat", "-S", "FLANNEL-POSTRTG")
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	var lines []string
@@ -113,10 +161,10 @@ func (kc *kindCluster) iptablesNatFlannel(node string) string {
 	return strings.Join(lines, "\n")
 }
 
-func (kc *kindCluster) iptablesFilterForward(node string) string {
-	fwd, err := kc.execOnNode(node, "/usr/sbin/iptables", "-t", "filter", "-S", "FORWARD")
+func (kc *kindCluster) iptablesFilterForward(node, bin string) string {
+	fwd, err := kc.execOnNode(node, bin, "-t", "filter", "-S", "FORWARD")
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	chain, err := kc.execOnNode(node, "/usr/sbin/iptables", "-t", "filter", "-S", "FLANNEL-FWD")
+	chain, err := kc.execOnNode(node, bin, "-t", "filter", "-S", "FLANNEL-FWD")
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return strings.TrimRight(fwd, "\n") + "\n" + strings.TrimRight(chain, "\n")
 }
@@ -165,6 +213,53 @@ func (kc *kindCluster) checkNftables(ctx context.Context) {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(strings.TrimRight(fwd, "\n")).To(gomega.Equal(expectedNftForward()),
 			"node %s has unexpected nftables forward rules", node)
+	}
+}
+
+// expectedNft6Postrouting builds the golden nftables postrtg chain for the IPv6
+// family (table ip6 flannel-ipv6), mirroring addMasqRules with ff00::/8.
+func expectedNft6Postrouting(podCIDR string) string {
+	return strings.Join([]string{
+		`table ip6 flannel-ipv6 {`,
+		"\tchain postrtg {",
+		"\t\tcomment \"chain to manage traffic masquerading by flannel\"",
+		"\t\ttype nat hook postrouting priority srcnat; policy accept;",
+		"\t\tmeta mark 0x00004000 return",
+		fmt.Sprintf("\t\tip6 saddr %s ip6 daddr %s return", podCIDR, flannelIPv6Net),
+		fmt.Sprintf("\t\tip6 saddr %s ip6 daddr %s return", flannelIPv6Net, podCIDR),
+		fmt.Sprintf("\t\tip6 saddr != %s ip6 daddr %s return", podCIDR, flannelIPv6Net),
+		fmt.Sprintf("\t\tip6 saddr %s ip6 daddr != ff00::/8 masquerade fully-random", flannelIPv6Net),
+		fmt.Sprintf("\t\tip6 saddr != %s ip6 daddr %s masquerade fully-random", flannelIPv6Net, flannelIPv6Net),
+		"\t}",
+		`}`,
+	}, "\n")
+}
+
+func expectedNft6Forward() string {
+	return strings.Join([]string{
+		`table ip6 flannel-ipv6 {`,
+		"\tchain forward {",
+		"\t\tcomment \"chain to accept flannel traffic\"",
+		"\t\ttype filter hook forward priority filter; policy accept;",
+		fmt.Sprintf("\t\tip6 saddr %s accept", flannelIPv6Net),
+		fmt.Sprintf("\t\tip6 daddr %s accept", flannelIPv6Net),
+		"\t}",
+		`}`,
+	}, "\n")
+}
+
+// checkNftablesV6 asserts the IPv6 nftables masquerade and forward chains.
+func (kc *kindCluster) checkNftablesV6(ctx context.Context) {
+	for node, cidr := range kc.nodeCIDRsV6(ctx) {
+		post, err := kc.execOnNode(node, "/usr/sbin/nft", "list", "chain", "ip6", "flannel-ipv6", "postrtg")
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(strings.TrimRight(post, "\n")).To(gomega.Equal(expectedNft6Postrouting(cidr)),
+			"node %s has unexpected IPv6 nftables postrouting rules", node)
+
+		fwd, err := kc.execOnNode(node, "/usr/sbin/nft", "list", "chain", "ip6", "flannel-ipv6", "forward")
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(strings.TrimRight(fwd, "\n")).To(gomega.Equal(expectedNft6Forward()),
+			"node %s has unexpected IPv6 nftables forward rules", node)
 	}
 }
 

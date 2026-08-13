@@ -1,5 +1,9 @@
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
+# NOTE: The e2e suite generates its kind config in code (see kindConfigYAML in
+# cluster.go) so it can toggle dual-stack via IP_FAMILY. This file is kept as an
+# IPv4 reference for running kind manually and must stay in sync with the image
+# pinned in cluster.go (kindNodeImage).
 networking:
   disableDefaultCNI: true
   podSubnet: "10.42.0.0/16"

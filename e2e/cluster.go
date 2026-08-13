@@ -47,6 +47,37 @@ var cniPluginSHA256 = map[string]string{
 
 const cniPluginsVersion = "v1.9.1"
 
+// kindNodeImage is the pinned kind node image used for the e2e cluster. It must
+// stay in sync with kind-config.yaml (kept for manual/standalone use).
+const kindNodeImage = "kindest/node:v1.36.1@sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5"
+
+// kindConfigYAML renders the kind cluster configuration. When dualStack is set
+// the cluster is configured with ipFamily: dual and both pod subnets so that
+// flannel can hand out IPv4 and IPv6 pod addresses.
+func kindConfigYAML(dualStack bool) string {
+	ipFamily := ""
+	podSubnet := flannelNet
+	if dualStack {
+		ipFamily = "  ipFamily: dual\n"
+		podSubnet = flannelNet + "," + flannelIPv6Net
+	}
+	node := func(role string) string {
+		return fmt.Sprintf(`- role: %s
+  image: %s
+  extraMounts:
+  - hostPath: /opt/cni/bin
+    containerPath: /opt/cni/bin
+`, role, kindNodeImage)
+	}
+	return fmt.Sprintf(`kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  disableDefaultCNI: true
+%s  podSubnet: "%s"
+nodes:
+%s%s`, ipFamily, podSubnet, node("control-plane"), node("worker"))
+}
+
 func logf(format string, args ...any) {
 	_, _ = fmt.Fprintf(ginkgo.GinkgoWriter, format, args...)
 }
@@ -147,7 +178,7 @@ func createCluster() (*kindCluster, error) {
 	ginkgo.By("creating kind cluster " + kindClusterName)
 	if err := provider.Create(
 		kindClusterName,
-		cluster.CreateWithConfigFile("kind-config.yaml"),
+		cluster.CreateWithRawConfig([]byte(kindConfigYAML(enableIPv6))),
 		cluster.CreateWithWaitForReady(5*time.Minute),
 	); err != nil {
 		return nil, fmt.Errorf("creating kind cluster: %w", err)

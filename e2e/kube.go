@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -131,6 +132,34 @@ func (kc *kindCluster) podCIDR(ctx context.Context, node string) (string, error)
 	return n.Spec.PodCIDR, nil
 }
 
+// podCIDRv6 returns the node's IPv6 pod CIDR from Spec.PodCIDRs (dual-stack).
+func (kc *kindCluster) podCIDRv6(ctx context.Context, node string) (string, error) {
+	n, err := kc.client.CoreV1().Nodes().Get(ctx, node, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	for _, cidr := range n.Spec.PodCIDRs {
+		if strings.Contains(cidr, ":") {
+			return cidr, nil
+		}
+	}
+	return "", fmt.Errorf("node %s has no IPv6 pod CIDR (PodCIDRs=%v)", node, n.Spec.PodCIDRs)
+}
+
+// podIPv6 returns the pod's IPv6 address from Status.PodIPs (dual-stack).
+func (kc *kindCluster) podIPv6(ctx context.Context, name string) (string, error) {
+	pod, err := kc.client.CoreV1().Pods("default").Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	for _, podIP := range pod.Status.PodIPs {
+		if strings.Contains(podIP.IP, ":") {
+			return podIP.IP, nil
+		}
+	}
+	return "", fmt.Errorf("pod %s has no IPv6 address (PodIPs=%v)", name, pod.Status.PodIPs)
+}
+
 // execInPod runs a command in a pod's default container and returns
 // stdout+stderr, replacing `kubectl exec`.
 func (kc *kindCluster) execInPod(ctx context.Context, namespace, pod string, command ...string) (string, error) {
@@ -221,6 +250,14 @@ func (kc *kindCluster) waitForCoreDNS(ctx context.Context, timeout time.Duration
 func (kc *kindCluster) waitForPing(ctx context.Context, pod, ip string, timeout time.Duration) error {
 	return wait.PollUntilContextTimeout(ctx, 2*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
 		_, err := kc.execInPod(ctx, "default", pod, "ping", "-c", "1", ip)
+		return err == nil, nil
+	})
+}
+
+// waitForPing6 is the IPv6 counterpart of waitForPing.
+func (kc *kindCluster) waitForPing6(ctx context.Context, pod, ip string, timeout time.Duration) error {
+	return wait.PollUntilContextTimeout(ctx, 2*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+		_, err := kc.execInPod(ctx, "default", pod, "ping", "-6", "-c", "1", ip)
 		return err == nil, nil
 	})
 }

@@ -25,18 +25,19 @@ import (
 
 // backendSpec describes a flannel backend under test.
 type backendSpec struct {
-	name      string
-	backend   string // flannel backend type (name without the -nftables suffix)
-	enableNFT bool
-	amd64Only bool
-	hasPerf   bool
+	name         string
+	backend      string // flannel backend type (name without the -nftables suffix)
+	enableNFT    bool
+	amd64Only    bool
+	hasPerf      bool
+	supportsIPv6 bool // included in the dual-stack matrix
 }
 
 var backendSpecs = []backendSpec{
-	{name: "vxlan", backend: "vxlan", hasPerf: true},
-	{name: "vxlan-nftables", backend: "vxlan", enableNFT: true},
-	{name: "wireguard", backend: "wireguard", hasPerf: true},
-	{name: "host-gw", backend: "host-gw", hasPerf: true},
+	{name: "vxlan", backend: "vxlan", hasPerf: true, supportsIPv6: true},
+	{name: "vxlan-nftables", backend: "vxlan", enableNFT: true, supportsIPv6: true},
+	{name: "wireguard", backend: "wireguard", hasPerf: true, supportsIPv6: true},
+	{name: "host-gw", backend: "host-gw", hasPerf: true, supportsIPv6: true},
 	{name: "ipip", backend: "ipip", hasPerf: true},
 	{name: "udp", backend: "udp", amd64Only: true, hasPerf: true},
 }
@@ -47,6 +48,9 @@ var _ = Describe("flannel backends", func() {
 
 		Context(spec.name, Ordered, func() {
 			BeforeAll(func() {
+				if enableIPv6 {
+					Skip("IPv4-only matrix is skipped when IP_FAMILY=dual (covered by the dual-stack matrix)")
+				}
 				if spec.amd64Only && arch != "amd64" {
 					Skip("backend " + spec.backend + " is only tested on amd64")
 				}
@@ -59,7 +63,7 @@ var _ = Describe("flannel backends", func() {
 			})
 
 			It("provides pod-to-pod connectivity", func(ctx SpecContext) {
-				prepareTest(ctx, sharedCluster, spec.backend, spec.enableNFT)
+				prepareTest(ctx, sharedCluster, spec.backend, spec.enableNFT, false)
 				pings(ctx, sharedCluster)
 				sharedCluster.checkRules(ctx, spec.enableNFT)
 				Expect(sharedCluster.deleteFlannel(ctx)).To(Succeed())
@@ -67,7 +71,7 @@ var _ = Describe("flannel backends", func() {
 
 			if spec.hasPerf {
 				It("passes iperf3 throughput test", func(ctx SpecContext) {
-					prepareTest(ctx, sharedCluster, spec.backend, spec.enableNFT)
+					prepareTest(ctx, sharedCluster, spec.backend, spec.enableNFT, false)
 					perf(ctx, sharedCluster)
 					Expect(sharedCluster.deleteFlannel(ctx)).To(Succeed())
 				})
@@ -76,16 +80,48 @@ var _ = Describe("flannel backends", func() {
 	}
 })
 
+var _ = Describe("flannel dual-stack backends", func() {
+	for i := range backendSpecs {
+		spec := backendSpecs[i]
+		if !spec.supportsIPv6 {
+			continue
+		}
+
+		Context(spec.name, Ordered, func() {
+			BeforeAll(func() {
+				if !enableIPv6 {
+					Skip("dual-stack matrix is disabled; set IP_FAMILY=dual (requires Docker IPv6)")
+				}
+			})
+
+			AfterEach(func(ctx SpecContext) {
+				if CurrentSpecReport().Failed() {
+					sharedCluster.dumpDebugInfo(ctx)
+				}
+			})
+
+			It("provides dual-stack pod-to-pod connectivity", func(ctx SpecContext) {
+				prepareTest(ctx, sharedCluster, spec.backend, spec.enableNFT, true)
+				pings(ctx, sharedCluster)
+				pingsV6(ctx, sharedCluster)
+				sharedCluster.checkRules(ctx, spec.enableNFT)
+				sharedCluster.checkRulesV6(ctx, spec.enableNFT)
+				Expect(sharedCluster.deleteFlannel(ctx)).To(Succeed())
+			})
+		})
+	}
+})
+
 // prepareTest installs flannel and waits for the cluster to be ready, mirroring
 // the bash prepare_test function.
-func prepareTest(ctx context.Context, kc *kindCluster, backend string, enableNFT bool) {
+func prepareTest(ctx context.Context, kc *kindCluster, backend string, enableNFT, enableIPv6 bool) {
 	GinkgoHelper()
 
 	By("cleaning up test pods from prior spec")
 	Expect(kc.deleteTestPods(ctx)).To(Succeed())
 
 	By("installing flannel with backend " + backend)
-	Expect(kc.installFlannel(ctx, backend, enableNFT)).To(Succeed())
+	Expect(kc.installFlannel(ctx, backend, enableNFT, enableIPv6)).To(Succeed())
 
 	By("waiting for the flannel DaemonSet to roll out")
 	Expect(kc.waitForFlannelRollout(ctx, 5*time.Minute)).To(Succeed())
@@ -124,6 +160,25 @@ func pings(ctx context.Context, kc *kindCluster) {
 	Expect(err).NotTo(HaveOccurred(), "multitool1 cannot ping multitool2")
 	_, err = kc.execInPod(ctx, "default", "multitool2", "ping", "-c", "5", ip1)
 	Expect(err).NotTo(HaveOccurred(), "multitool2 cannot ping multitool1")
+}
+
+// pingsV6 verifies bidirectional IPv6 connectivity between the two test pods
+// created by pings. It assumes pings has already created multitool1/multitool2.
+func pingsV6(ctx context.Context, kc *kindCluster) {
+	GinkgoHelper()
+
+	ip1, err := kc.podIPv6(ctx, "multitool1")
+	Expect(err).NotTo(HaveOccurred())
+	ip2, err := kc.podIPv6(ctx, "multitool2")
+	Expect(err).NotTo(HaveOccurred())
+	By("multitool1(v6)=" + ip1 + " multitool2(v6)=" + ip2)
+
+	Expect(kc.waitForPing6(ctx, "multitool1", ip2, time.Minute)).To(Succeed())
+
+	_, err = kc.execInPod(ctx, "default", "multitool1", "ping", "-6", "-c", "5", ip2)
+	Expect(err).NotTo(HaveOccurred(), "multitool1 cannot ping6 multitool2")
+	_, err = kc.execInPod(ctx, "default", "multitool2", "ping", "-6", "-c", "5", ip1)
+	Expect(err).NotTo(HaveOccurred(), "multitool2 cannot ping6 multitool1")
 }
 
 // perf runs an iperf3 throughput test between two pods, mirroring the bash perf

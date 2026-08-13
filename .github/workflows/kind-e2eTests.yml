@@ -15,6 +15,10 @@ jobs:
     name: test
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        ip-family: [ipv4, dual]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
 
@@ -26,5 +30,18 @@ jobs:
       - name: set up modules
         run: sudo modprobe br_netfilter overlay
 
+      - name: enable IPv6 in Docker
+        if: matrix.ip-family == 'dual'
+        run: |
+          # kind dual-stack clusters need the Docker daemon to have IPv6 enabled.
+          # All flannel IPv6 traffic stays inside the kind Docker network, so the
+          # runner does not need routable/internet IPv6 connectivity.
+          echo '{"ipv6":true,"fixed-cidr-v6":"fd00:dead:beef::/48","ip6tables":true}' \
+            | sudo tee /etc/docker/daemon.json
+          sudo modprobe ip6table_nat ip6table_filter
+          sudo systemctl restart docker
+
       - name: run e2e tests with kind
+        env:
+          IP_FAMILY: ${{ matrix.ip-family == 'dual' && 'dual' || '' }}
         run: make kind-e2e-test
