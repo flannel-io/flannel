@@ -29,13 +29,23 @@
 //	TAG              image tag used to build FLANNEL_IMAGE               (git describe)
 //	FLANNEL_IMAGE    full flannel image ref (quay.io/coreos/flannel:$TAG-$ARCH)
 //	FLANNEL_NET      IPv4 pod network                                    (10.42.0.0/16)
+//	FLANNEL_IPV6_NET IPv6 pod network (dual-stack runs)                  (fd00:10:244::/56)
+//	IP_FAMILY        set to "dual" to run the dual-stack backend matrix  (ipv4)
 //	IPERF3_IMAGE     iperf3 image reference                              (iperf3:latest)
 //	MULTITOOL_IMAGE  connectivity test image           (wbitt/network-multitool:alpine-extra)
+//
+// The dual-stack matrix (IP_FAMILY=dual) requires the Docker daemon on the host
+// to have IPv6 enabled (ipv6 + fixed-cidr-v6 + ip6tables in daemon.json). All
+// flannel IPv6 traffic stays inside the kind Docker network, so the host does
+// not need routable/internet IPv6 connectivity; GitHub-hosted runners work once
+// the daemon is configured. When IP_FAMILY=dual the IPv4-only matrix is skipped
+// (its IPv4 assertions are covered by the dual-stack specs).
 package e2e
 
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -61,6 +71,8 @@ var (
 	iperf3Image    string
 	multitoolImage string
 	flannelNet     string
+	flannelIPv6Net string
+	enableIPv6     bool
 )
 
 func env(key, def string) string {
@@ -78,6 +90,8 @@ func TestE2E(t *testing.T) {
 var _ = BeforeSuite(func() {
 	arch = env("ARCH", "amd64")
 	flannelNet = env("FLANNEL_NET", "10.42.0.0/16")
+	flannelIPv6Net = env("FLANNEL_IPV6_NET", "fd00:10:244::/56")
+	enableIPv6 = strings.EqualFold(os.Getenv("IP_FAMILY"), "dual")
 	iperf3Image = env("IPERF3_IMAGE", "iperf3:latest")
 	multitoolImage = env("MULTITOOL_IMAGE", "wbitt/network-multitool:alpine-extra")
 
@@ -89,7 +103,7 @@ var _ = BeforeSuite(func() {
 		flannelImage = fmt.Sprintf("quay.io/coreos/flannel:%s-%s", tag, arch)
 	}
 
-	By(fmt.Sprintf("using flannel image %s (arch %s)", flannelImage, arch))
+	By(fmt.Sprintf("using flannel image %s (arch %s, dual-stack %t)", flannelImage, arch, enableIPv6))
 
 	// CNI plugins must be present on the host so the kind nodes can wire pods.
 	Expect(installCNIPlugins(arch)).To(Succeed(), "installing CNI plugins")
