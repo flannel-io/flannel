@@ -81,6 +81,50 @@ func (kc *kindCluster) createPinnedPod(ctx context.Context, pod *corev1.Pod) err
 	return err
 }
 
+// deletePod deletes a single pod and waits for it to disappear. It is
+// idempotent: a NotFound pod is treated as already deleted, consistent with
+// deleteTestPods.
+func (kc *kindCluster) deletePod(ctx context.Context, namespace, name string) error {
+	gracePeriodSeconds := int64(0)
+	err := kc.client.CoreV1().Pods(namespace).Delete(ctx, name, metav1.DeleteOptions{
+		GracePeriodSeconds: &gracePeriodSeconds,
+	})
+	if err != nil && !errors.IsNotFound(err) {
+		return fmt.Errorf("deleting pod %s/%s: %w", namespace, name, err)
+	}
+	if err := wait.PollUntilContextTimeout(ctx, 2*time.Second, time.Minute, true, func(ctx context.Context) (bool, error) {
+		_, err := kc.client.CoreV1().Pods(namespace).Get(ctx, name, metav1.GetOptions{})
+		switch {
+		case errors.IsNotFound(err):
+			return true, nil
+		case err != nil:
+			return false, err
+		default:
+			return false, nil
+		}
+	}); err != nil {
+		return fmt.Errorf("waiting for pod %s/%s deletion: %w", namespace, name, err)
+	}
+	return nil
+}
+
+// subnetEnv returns the contents of /run/flannel/subnet.env on a node by
+// exec-ing into its kind node container.
+func (kc *kindCluster) subnetEnv(ctx context.Context, node string) (string, error) {
+	return kc.execOnNode(node, "cat", "/run/flannel/subnet.env")
+}
+
+// flannelSubnetLine extracts the FLANNEL_SUBNET=... line from a subnet.env
+// blob so callers can assert lease stability across restarts.
+func flannelSubnetLine(subnetEnv string) string {
+	for _, line := range strings.Split(subnetEnv, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "FLANNEL_SUBNET=") {
+			return strings.TrimSpace(line)
+		}
+	}
+	return ""
+}
+
 // deleteTestPods removes the well-known test pods left over from a prior spec.
 // Called at the start of prepareTest so that the shared cluster starts clean
 // for each backend, matching the bash suite's single-cluster approach.
@@ -116,11 +160,18 @@ func (kc *kindCluster) deleteTestPods(ctx context.Context) error {
 
 // podIP mirrors get_pod_ip.
 func (kc *kindCluster) podIP(ctx context.Context, name string) (string, error) {
-	pod, err := kc.client.CoreV1().Pods("default").Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		return "", err
+	var ip string
+	if err := wait.PollUntilContextTimeout(ctx, 2*time.Second, time.Minute, true, func(ctx context.Context) (bool, error) {
+		pod, err := kc.client.CoreV1().Pods("default").Get(ctx, name, metav1.GetOptions{})
+		if err != nil {
+			return false, err
+		}
+		ip = pod.Status.PodIP
+		return ip != "", nil
+	}); err != nil {
+		return "", fmt.Errorf("waiting for pod %s IP: %w", name, err)
 	}
-	return pod.Status.PodIP, nil
+	return ip, nil
 }
 
 // podCIDR mirrors get_pod_cidr.
