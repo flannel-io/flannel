@@ -440,15 +440,3 @@ func (kc *kindCluster) deleteService(ctx context.Context, namespace, name string
 	}
 	return nil
 }
-
-// deletePod removes a single pod immediately, ignoring NotFound.
-func (kc *kindCluster) deletePod(ctx context.Context, namespace, name string) error {
-	gracePeriodSeconds := int64(0)
-	err := kc.client.CoreV1().Pods(namespace).Delete(ctx, name, metav1.DeleteOptions{
-		GracePeriodSeconds: &gracePeriodSeconds,
-	})
-	if err != nil && !errors.IsNotFound(err) {
-		return fmt.Errorf("deleting pod %s: %w", name, err)
-	}
-	return nil
-}
