@@ -352,7 +352,7 @@ func (m *LocalManager) WatchLeases(ctx context.Context, receiver chan []lease.Le
 		return err
 	}
 
-	err = m.registry.watchSubnets(ctx, receiver, nextIndex)
+	err = m.registry.watchSubnets(ctx, nextIndex, receiver)
 	if err != nil {
 		return err
 	}
@@ -404,10 +404,6 @@ func (m *LocalManager) CompleteLease(ctx context.Context, myLease *lease.Lease, 
 			}
 		}
 	}
-}
-
-func isIndexTooSmall(err error) bool {
-	return err == rpctypes.ErrGRPCCompacted
 }
 
 func isSubnetConfigCompat(config *subnet.Config, sn ip.IP4Net) bool {

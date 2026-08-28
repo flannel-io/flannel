@@ -39,6 +39,7 @@ var (
 	errTryAgain            = errors.New("try again")
 	errConfigNotFound      = errors.New("flannel config not found in etcd store. Did you create your config using etcdv3 API?")
 	errNoWatchChannel      = errors.New("no watch channel")
+	errMalformedWatchEvent = errors.New("malformed subnet watch event")
 	errSubnetAlreadyexists = errors.New("subnet already exists")
 )
 
@@ -49,7 +50,7 @@ type Registry interface {
 	createSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *lease.LeaseAttrs, ttl time.Duration) (time.Time, error)
 	updateSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net, attrs *lease.LeaseAttrs, ttl time.Duration, asof int64) (time.Time, error)
 	deleteSubnet(ctx context.Context, sn ip.IP4Net, sn6 ip.IP6Net) error
-	watchSubnets(ctx context.Context, leaseWatchChan chan []lease.LeaseWatchResult, since int64) error
+	watchSubnets(ctx context.Context, since int64, leaseWatchChan chan []lease.LeaseWatchResult) error
 	watchSubnet(ctx context.Context, since int64, sn ip.IP4Net, sn6 ip.IP6Net, leaseWatchChan chan []lease.LeaseWatchResult) error
 	leasesWatchReset(ctx context.Context) (lease.LeaseWatchResult, error)
 }
@@ -284,22 +285,57 @@ func (esr *etcdSubnetRegistry) deleteSubnet(ctx context.Context, sn ip.IP4Net, s
 	return err
 }
 
-func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan chan []lease.LeaseWatchResult, since int64) error {
-	key := path.Join(esr.etcdCfg.Prefix, "subnets")
-	initialBackoff := 100 * time.Millisecond // Initial backoff duration
+// subnetWatch holds the parts that differ between an all-subnets watch and a
+// single-subnet watch. runWatch owns the reconnect loop, backoff, compaction
+// recovery and revision bookkeeping.
+type subnetWatch struct {
+	key    string
+	since  int64
+	ch     chan []lease.LeaseWatchResult
+	resync func(ctx context.Context, ch chan []lease.LeaseWatchResult) (int64, error)
+}
+
+// runWatch drives an etcd subnet watch, reconnecting with backoff and recovering
+// from compaction, until the context is cancelled.
+func (esr *etcdSubnetRegistry) runWatch(ctx context.Context, w subnetWatch) error {
+	const (
+		initialBackoff = 100 * time.Millisecond
+		maxBackoff     = 5 * time.Second
+	)
+
 	exponentialBackoff := initialBackoff
-	maxBackoff := 5 * time.Second // Cap for backoff duration
+
+	// Keep teardown in one place so every cancellation path closes the client
+	// and result channel consistently.
+	shutdown := func() error {
+		if err := esr.cli.Close(); err != nil {
+			log.Errorf("Failed to close etcd client: %v", err)
+		}
+		close(w.ch)
+		return ctx.Err()
+	}
+	waitForRetry := func() bool {
+		timer := time.NewTimer(exponentialBackoff)
+		defer timer.Stop()
+		select {
+		case <-ctx.Done():
+			return false
+		case <-timer.C:
+			exponentialBackoff = min(exponentialBackoff*2, maxBackoff)
+			return true
+		}
+	}
 
 	for {
 		wctx, cancel := context.WithCancel(ctx)
-		defer cancel()
-		log.V(4).Infof("registry: watching subnets starting from rev %d", since)
-		rch := esr.cli.Watch(etcd.WithRequireLeader(wctx), key, etcd.WithPrefix(), etcd.WithRev(since))
+		log.V(4).Infof("registry: watching %s starting from rev %d", w.key, w.since)
+		rch := esr.cli.Watch(etcd.WithRequireLeader(wctx), w.key, etcd.WithPrefix(), etcd.WithRev(w.since))
 		if rch == nil {
 			log.Errorf("Failed to establish etcd watch channel")
 			cancel()
-			time.Sleep(exponentialBackoff)                             // Avoid CPU spinning
-			exponentialBackoff = min(exponentialBackoff*2, maxBackoff) // Exponential backoff
+			if !waitForRetry() {
+				return shutdown()
+			}
 			continue
 		}
 
@@ -307,190 +343,116 @@ func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, leaseWatchChan 
 		for {
 			select {
 			case <-ctx.Done():
-				err := esr.cli.Close()
-				if err != nil {
-					log.Errorf("Failed to close etcd client: %v", err)
-				}
-				close(leaseWatchChan)
-				return ctx.Err()
+				cancel()
+				return shutdown()
 			case wresp, ok := <-rch:
 				err := wresp.Err()
 				if !ok || err != nil {
 					cancel()
 					// If the watch fell behind etcd's compaction horizon, reconnecting
 					// at the same revision fails identically forever (mvcc: required
-					// revision has been compacted). Re-list to grab a fresh snapshot at
-					// a current revision and resume from there instead of hot-looping.
+					// revision has been compacted). Re-read current state at a fresh
+					// revision and resume from there instead of hot-looping.
 					if isCompacted(wresp) {
-						log.Warningf("etcd watch for %s fell behind compaction horizon (compact rev %d), re-listing and resuming", key, wresp.CompactRevision)
+						log.Warningf("etcd watch for %s fell behind compaction horizon (compact rev %d), resyncing and resuming", w.key, wresp.CompactRevision)
 						for {
-							next, rerr := esr.resyncWatch(ctx, leaseWatchChan)
+							next, rerr := w.resync(ctx, w.ch)
 							if rerr == nil {
-								since = next
+								w.since = next
 								exponentialBackoff = initialBackoff
 								break innerLoop
 							}
-							log.Errorf("failed to re-list subnets after compaction: %v", rerr)
-							timer := time.NewTimer(exponentialBackoff)
-							select {
-							case <-ctx.Done():
-								timer.Stop()
-								err := esr.cli.Close()
-								if err != nil {
-									log.Errorf("Failed to close etcd client: %v", err)
-								}
-								close(leaseWatchChan)
-								return ctx.Err()
-							case <-timer.C:
+							if ctx.Err() != nil {
+								return shutdown()
 							}
-							exponentialBackoff = min(exponentialBackoff*2, maxBackoff)
+							log.Errorf("failed to resync %s after compaction: %v", w.key, rerr)
+							if !waitForRetry() {
+								return shutdown()
+							}
 						}
-					}
-					log.Warningf("etcd watch channel for %s closed (%v), reconnecting from rev %d...", key, err, since)
-					time.Sleep(exponentialBackoff)
-					exponentialBackoff = min(exponentialBackoff*2, maxBackoff)
-					break innerLoop
-				}
-				exponentialBackoff = initialBackoff // Reset backoff on success
-				// Advance the resume revision so a future reconnect picks up where we
-				// left off rather than replaying from the original start revision.
-				if wresp.Header.Revision != 0 {
-					since = wresp.Header.Revision + 1
-				}
-				results := make([]lease.LeaseWatchResult, 0)
-				for _, etcdEvent := range wresp.Events {
-					subnetEvent, err := parseSubnetWatchResponse(ctx, esr.cli, etcdEvent)
-					switch {
-
-					case err == nil:
-						log.Infof("watchSubnets: got valid subnet event with revision %d", wresp.Header.Revision)
-						// TODO only vxlan backend and kube subnet manager support dual stack now.
-						subnetEvent.Lease.EnableIPv4 = true
-						wr := lease.LeaseWatchResult{
-							Events: []lease.Event{subnetEvent},
-							Cursor: watchCursor{wresp.Header.Revision},
-						}
-						results = append(results, wr)
-
-					case isIndexTooSmall(err):
-						log.Warning("Watch of subnet leases failed because etcd index outside history window")
-						wr, err := esr.leasesWatchReset(ctx)
-						if err != nil {
-							log.Errorf("error resetting etcd watch: %s", err)
-						}
-						results = append(results, wr)
-					case wresp.Header.Revision != 0:
-						log.Warning("Watch of subnet leases failed because header revision != 0")
-						results = append(results, lease.LeaseWatchResult{Cursor: watchCursor{wresp.Header.Revision}})
-
-					default:
-						log.Warningf("Watch of subnet failed with error %s", err)
-						results = append(results, lease.LeaseWatchResult{})
 					}
 					if err != nil {
-						log.Errorf("error parsing etcd event: %s", err)
+						log.Warningf("etcd watch channel for %s closed with error %v, reconnecting from rev %d...", w.key, err, w.since)
+					} else {
+						log.Warningf("etcd watch channel for %s closed, reconnecting from rev %d...", w.key, w.since)
 					}
+					if !waitForRetry() {
+						return shutdown()
+					}
+					break innerLoop
+				}
+				results, err := esr.watchResults(ctx, wresp)
+				if err != nil {
+					cancel()
+					log.Warningf("couldn't read etcd event for %s: %v; reconnecting from rev %d...", w.key, err, w.since)
+					if !waitForRetry() {
+						return shutdown()
+					}
+					break innerLoop
 				}
 				if len(results) > 0 {
-					leaseWatchChan <- results
+					if err := sendWatchResults(ctx, w.ch, results); err != nil {
+						cancel()
+						return shutdown()
+					}
+				}
+				exponentialBackoff = initialBackoff
+				// Advance only after every event has been handled. An RPC failure while
+				// resolving a lease's TTL must be retried from the same revision.
+				if wresp.Header.Revision != 0 {
+					w.since = wresp.Header.Revision + 1
 				}
 			}
 		}
 	}
 }
 
-func (esr *etcdSubnetRegistry) watchSubnet(ctx context.Context, since int64, sn ip.IP4Net, sn6 ip.IP6Net, leaseWatchChan chan []lease.LeaseWatchResult) error {
-	subnetKey := subnet.MakeSubnetKey(sn, sn6)
-	key := path.Join(esr.etcdCfg.Prefix, "subnets", subnetKey)
-	initialBackoff := 100 * time.Millisecond // Initial backoff duration
-	exponentialBackoff := initialBackoff
-	maxBackoff := 5 * time.Second // Cap for backoff duration
-
-	for {
-		wctx, cancel := context.WithCancel(ctx)
-		defer cancel()
-		rch := esr.cli.Watch(etcd.WithRequireLeader(wctx), key, etcd.WithPrefix(), etcd.WithRev(since))
-		if rch == nil {
-			log.Errorf("Failed to establish etcd watch channel")
-			cancel()
-			time.Sleep(exponentialBackoff)                             // Avoid CPU spinning
-			exponentialBackoff = min(exponentialBackoff*2, maxBackoff) // Exponential backoff
-			continue
-		}
-
-	innerLoop:
-		for {
-			select {
-			case <-ctx.Done():
-				err := esr.cli.Close()
-				if err != nil {
-					log.Errorf("Failed to close etcd client: %v", err)
-				}
-				close(leaseWatchChan)
-				return ctx.Err()
-			case wresp, ok := <-rch:
-				err := wresp.Err()
-				if !ok || err != nil {
-					cancel()
-					// If the watch fell behind etcd's compaction horizon, reconnecting
-					// at the same revision fails identically forever (mvcc: required
-					// revision has been compacted). Re-read the lease at a current
-					// revision and resume from there instead of hot-looping.
-					if isCompacted(wresp) {
-						log.Warningf("etcd watch for %s fell behind compaction horizon (compact rev %d), re-reading and resuming", key, wresp.CompactRevision)
-						next, rerr := esr.resyncWatchSubnet(ctx, sn, sn6, leaseWatchChan)
-						if rerr != nil {
-							log.Errorf("failed to re-read subnet lease after compaction: %v", rerr)
-							time.Sleep(exponentialBackoff)
-							exponentialBackoff = min(exponentialBackoff*2, maxBackoff)
-							break innerLoop
-						}
-						since = next
-						exponentialBackoff = initialBackoff
-						break innerLoop
-					}
-					if err != nil {
-						log.Warningf("etcd watch channel for %s closed with error %v, reconnecting from rev %d...", key, err, since)
-					} else {
-						log.Warningf("etcd watch channel for %s closed, reconnecting from rev %d...", key, since)
-					}
-					time.Sleep(exponentialBackoff)
-					exponentialBackoff = min(exponentialBackoff*2, maxBackoff)
-					break innerLoop
-				}
-				exponentialBackoff = initialBackoff // Reset backoff on success
-				// Advance the resume revision so a future reconnect picks up where we
-				// left off rather than replaying from the original start revision.
-				if wresp.Header.Revision != 0 {
-					since = wresp.Header.Revision + 1
-				}
-				batch := make([]lease.LeaseWatchResult, 0)
-				for _, etcdEvent := range wresp.Events {
-					subnetEvent, err := parseSubnetWatchResponse(ctx, esr.cli, etcdEvent)
-					switch {
-					case err == nil:
-						wr := lease.LeaseWatchResult{
-							Events: []lease.Event{subnetEvent},
-							Cursor: watchCursor{wresp.Header.Revision},
-						}
-						batch = append(batch, wr)
-					case isIndexTooSmall(err):
-						log.Warning("Watch of subnet leases failed because etcd index outside history window")
-						wr, err := esr.leasesWatchReset(ctx)
-						if err != nil {
-							log.Errorf("error resetting etcd watch: %s", err)
-						}
-						batch = append(batch, wr)
-					default:
-						log.Errorf("couldn't read etcd event: %s", err)
-					}
-				}
-				if len(batch) > 0 {
-					leaseWatchChan <- batch
-				}
-			}
-		}
+func sendWatchResults(ctx context.Context, ch chan<- []lease.LeaseWatchResult, results []lease.LeaseWatchResult) error {
+	select {
+	case ch <- results:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
+}
+
+func (esr *etcdSubnetRegistry) watchSubnets(ctx context.Context, since int64, leaseWatchChan chan []lease.LeaseWatchResult) error {
+	return esr.runWatch(ctx, subnetWatch{
+		key:    path.Join(esr.etcdCfg.Prefix, "subnets"),
+		since:  since,
+		ch:     leaseWatchChan,
+		resync: esr.resyncWatch,
+	})
+}
+
+func (esr *etcdSubnetRegistry) watchResults(ctx context.Context, wresp etcd.WatchResponse) ([]lease.LeaseWatchResult, error) {
+	results := make([]lease.LeaseWatchResult, 0)
+	for _, etcdEvent := range wresp.Events {
+		subnetEvent, err := parseSubnetWatchResponse(ctx, esr.cli, etcdEvent)
+		switch {
+		case errors.Is(err, errMalformedWatchEvent):
+			log.Warningf("skipping malformed etcd event: %v", err)
+			continue
+		case err != nil:
+			return nil, err
+		}
+		results = append(results, lease.LeaseWatchResult{
+			Events: []lease.Event{subnetEvent},
+			Cursor: watchCursor{wresp.Header.Revision},
+		})
+	}
+	return results, nil
+}
+
+func (esr *etcdSubnetRegistry) watchSubnet(ctx context.Context, since int64, sn ip.IP4Net, sn6 ip.IP6Net, leaseWatchChan chan []lease.LeaseWatchResult) error {
+	return esr.runWatch(ctx, subnetWatch{
+		key:   path.Join(esr.etcdCfg.Prefix, "subnets", subnet.MakeSubnetKey(sn, sn6)),
+		since: since,
+		ch:    leaseWatchChan,
+		resync: func(ctx context.Context, ch chan []lease.LeaseWatchResult) (int64, error) {
+			return esr.resyncWatchSubnet(ctx, sn, sn6, ch)
+		},
+	})
 }
 
 func (esr *etcdSubnetRegistry) kv() etcd.KV {
@@ -502,7 +464,7 @@ func (esr *etcdSubnetRegistry) kv() etcd.KV {
 func parseSubnetWatchResponse(ctx context.Context, cli *etcd.Client, ev *etcd.Event) (lease.Event, error) {
 	sn, tsn6 := subnet.ParseSubnetKey(string(ev.Kv.Key))
 	if sn == nil {
-		return lease.Event{}, fmt.Errorf("%v %q: not a subnet, skipping", ev.Type, string(ev.Kv.Key))
+		return lease.Event{}, fmt.Errorf("%w: %v %q is not a subnet", errMalformedWatchEvent, ev.Type, string(ev.Kv.Key))
 	}
 
 	var sn6 ip.IP6Net
@@ -526,7 +488,7 @@ func parseSubnetWatchResponse(ctx context.Context, cli *etcd.Client, ev *etcd.Ev
 		attrs := &lease.LeaseAttrs{}
 		err := json.Unmarshal(ev.Kv.Value, attrs)
 		if err != nil {
-			return lease.Event{}, err
+			return lease.Event{}, fmt.Errorf("%w: %v", errMalformedWatchEvent, err)
 		}
 
 		lresp, lerr := cli.TimeToLive(ctx, etcd.LeaseID(ev.Kv.Lease))
@@ -595,10 +557,8 @@ func (esr *etcdSubnetRegistry) resyncWatch(ctx context.Context, ch chan []lease.
 	if err != nil {
 		return 0, err
 	}
-	select {
-	case ch <- []lease.LeaseWatchResult{wr}:
-	case <-ctx.Done():
-		return 0, ctx.Err()
+	if err := sendWatchResults(ctx, ch, []lease.LeaseWatchResult{wr}); err != nil {
+		return 0, err
 	}
 	return getNextIndex(wr.Cursor)
 }
@@ -645,10 +605,8 @@ func (esr *etcdSubnetRegistry) resyncWatchSubnet(ctx context.Context, sn ip.IP4N
 		}
 	}
 
-	select {
-	case ch <- []lease.LeaseWatchResult{wr}:
-	case <-ctx.Done():
-		return 0, ctx.Err()
+	if err := sendWatchResults(ctx, ch, []lease.LeaseWatchResult{wr}); err != nil {
+		return 0, err
 	}
 	return getNextIndex(wr.Cursor)
 }
