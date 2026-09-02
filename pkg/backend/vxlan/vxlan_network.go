@@ -118,25 +118,44 @@ func (nw *network) watchVXLANDevice(ctx context.Context, vxlanMissingChan chan<-
 		return
 	}
 
-	updates := make(chan netlink.LinkUpdate)
-	done := make(chan struct{})
-
-	if err := netlink.LinkSubscribe(updates, done); err != nil {
-		log.Fatalf("failed to subscribe to netlink: %v", err)
-	}
-	defer close(done)
-
 	name := nw.dev.link.Attrs().Name
 	defer close(vxlanMissingChan)
 	for {
-		select {
-		case <-ctx.Done():
+		updates := make(chan netlink.LinkUpdate)
+		done := make(chan struct{})
+		opts := netlink.LinkSubscribeOptions{
+			ErrorCallback: func(err error) {
+				log.Errorf("netlink link subscription error: %v", err)
+			},
+		}
+		if err := netlink.LinkSubscribeWithOptions(updates, done, opts); err != nil {
+			log.Fatalf("failed to subscribe to netlink: %v", err)
+		}
+
+		closed := watchLinkUpdates(ctx, updates, name, vxlanMissingChan)
+		close(done)
+		if !closed {
 			log.Info("stopping vxlan device watcher")
 			return
+		}
+		// netlink closes the channel when its receive loop fails, for
+		// example on ENOBUFS when the socket buffer overflows. Subscribe
+		// again so device deletions keep being detected.
+		log.Warning("netlink link subscription closed, resubscribing")
+	}
+}
 
-		case update := <-updates:
-			if update.Attrs() == nil {
-				continue
+// watchLinkUpdates signals vxlanMissingChan whenever the link called name is
+// deleted. It returns true if updates was closed and false if ctx was done.
+func watchLinkUpdates(ctx context.Context, updates <-chan netlink.LinkUpdate, name string, vxlanMissingChan chan<- bool) bool {
+	for {
+		select {
+		case <-ctx.Done():
+			return false
+
+		case update, ok := <-updates:
+			if !ok {
+				return true
 			}
 			// Detect deletion
 			if update.Attrs().Name == name && update.Header.Type == unix.RTM_DELLINK {
