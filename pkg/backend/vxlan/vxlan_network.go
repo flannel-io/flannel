@@ -111,7 +111,18 @@ func (nw *network) Run(ctx context.Context) {
 	}
 }
 
+// linkSubscribeFunc matches the signature of netlink.LinkSubscribe. It exists
+// so tests can substitute a fake subscription instead of a real netlink socket.
+type linkSubscribeFunc func(ch chan<- netlink.LinkUpdate, done <-chan struct{}) error
+
 func (nw *network) watchVXLANDevice(ctx context.Context, vxlanMissingChan chan<- bool) {
+	nw.watchVXLANDeviceWithSubscriber(ctx, vxlanMissingChan, netlink.LinkSubscribe, time.Second)
+}
+
+// watchVXLANDeviceWithSubscriber does the work for watchVXLANDevice. subscribe
+// and retryDelay are parameterized so tests can run this without a real
+// netlink socket and without waiting on production-sized delays.
+func (nw *network) watchVXLANDeviceWithSubscriber(ctx context.Context, vxlanMissingChan chan<- bool, subscribe linkSubscribeFunc, retryDelay time.Duration) {
 	log.Info("starting vxlan device watcher")
 	if nw.dev == nil {
 		log.Error("vxlan device is nil, cannot watch for events")
@@ -121,21 +132,39 @@ func (nw *network) watchVXLANDevice(ctx context.Context, vxlanMissingChan chan<-
 	updates := make(chan netlink.LinkUpdate)
 	done := make(chan struct{})
 
-	if err := netlink.LinkSubscribe(updates, done); err != nil {
+	// The initial subscription must succeed for the watcher to be of any use,
+	// so - as before - a failure here is fatal.
+	if err := subscribe(updates, done); err != nil {
 		log.Fatalf("failed to subscribe to netlink: %v", err)
 	}
-	defer close(done)
 
 	name := nw.dev.link.Attrs().Name
 	defer close(vxlanMissingChan)
 	for {
 		select {
 		case <-ctx.Done():
+			close(done)
 			log.Info("stopping vxlan device watcher")
 			return
 
-		case update := <-updates:
-			if update.Attrs() == nil {
+		case update, ok := <-updates:
+			if !ok {
+				// The subscription's netlink socket died (e.g. ENOBUFS caused
+				// the kernel to drop messages and the receive loop to exit).
+				// Release this attempt's done-goroutine/socket and
+				// re-establish the subscription; a dead subscription must not
+				// silently stop the watcher or close vxlanMissingChan.
+				close(done)
+				log.Warning("vxlan device watcher: netlink subscription closed, resubscribing")
+				updates, done = linkResubscribe(ctx, subscribe, retryDelay)
+				if updates == nil {
+					log.Info("stopping vxlan device watcher")
+					return
+				}
+				continue
+			}
+
+			if update.Link == nil || update.Attrs() == nil {
 				continue
 			}
 			// Detect deletion
@@ -148,6 +177,47 @@ func (nw *network) watchVXLANDevice(ctx context.Context, vxlanMissingChan chan<-
 				}
 			}
 		}
+	}
+}
+
+// waitForRetry waits for retryDelay, interruptible by ctx cancellation. It
+// returns false if ctx was canceled during the wait, true if the delay
+// elapsed normally.
+func waitForRetry(ctx context.Context, retryDelay time.Duration) bool {
+	timer := time.NewTimer(retryDelay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return false
+	case <-timer.C:
+		return true
+	}
+}
+
+// linkResubscribe waits retryDelay and then calls subscribe, repeating
+// (wait, attempt) until an attempt succeeds or ctx is canceled. It returns
+// (nil, nil) if ctx is canceled before a subscription could be established.
+//
+// Waiting before every attempt - including the first, which follows an
+// established subscription's updates channel closing - matters: without it,
+// a subscribe() call that succeeds but whose Receive() goroutine fails again
+// immediately (e.g. a persistent ENOBUFS condition) would tear its updates
+// channel down right away too, and the caller would loop back into
+// linkResubscribe with no delay at all, spinning.
+func linkResubscribe(ctx context.Context, subscribe linkSubscribeFunc, retryDelay time.Duration) (chan netlink.LinkUpdate, chan struct{}) {
+	for {
+		if !waitForRetry(ctx, retryDelay) {
+			return nil, nil
+		}
+
+		updates := make(chan netlink.LinkUpdate)
+		done := make(chan struct{})
+		if err := subscribe(updates, done); err != nil {
+			close(done)
+			log.Errorf("failed to resubscribe to netlink: %v, retrying in %s", err, retryDelay)
+			continue
+		}
+		return updates, done
 	}
 }
 
