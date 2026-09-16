@@ -3,18 +3,28 @@ kind: DaemonSet
 metadata:
   name: kube-flannel-ds
   namespace: {{ .Release.Namespace }}
+  {{- with (merge .Values.flannel.daemonSet.labels (include "flannel.labels" . | fromYaml)) }}
   labels:
-    tier: node
-    app: flannel
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with merge .Values.flannel.daemonSet.annotations .Values.global.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   selector:
     matchLabels:
-      app: flannel
+      {{- include "flannel.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- with (merge (include "flannel.labels" . | fromYaml) .Values.flannel.podLabels) }}
       labels:
-        tier: node
-        app: flannel
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with merge .Values.flannel.podAnnotations .Values.global.commonAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
       affinity:
         nodeAffinity:
