@@ -49,6 +49,11 @@ For Kubernetes v1.17+
 kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 ```
 
+Prefer the manifest attached to a **release** (or `latest` as above). The copy under
+`Documentation/kube-flannel.yml` on the default branch can lag or get ahead of the
+published container tags, so applying it directly may fail with missing binaries
+in the image (for example `install-conf`).
+
 If you use custom `podCIDR` (not `10.244.0.0/16`) you first need to download the above manifest and modify the network to match your one.
 
 #### Deploying Flannel with Helm
