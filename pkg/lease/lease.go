@@ -75,9 +75,9 @@ type LeaseWatcher struct {
 
 func (la *LeaseAttrs) String() string {
 	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf("BackendType: %s, PublicIP: %s, ", la.BackendType, la.PublicIP.String()))
+	fmt.Fprintf(&buffer, "BackendType: %s, PublicIP: %s, ", la.BackendType, la.PublicIP.String())
 	if la.PublicIPv6 != nil {
-		buffer.WriteString(fmt.Sprintf("PublicIPv6: %s, ", la.PublicIPv6.String()))
+		fmt.Fprintf(&buffer, "PublicIPv6: %s, ", la.PublicIPv6.String())
 	} else {
 		buffer.WriteString("PublicIPv6: (nil), ")
 	}
@@ -86,7 +86,7 @@ func (la *LeaseAttrs) String() string {
 		if err != nil {
 			buffer.WriteString("BackendData: (nil), ")
 		} else {
-			buffer.WriteString(fmt.Sprintf("BackendData: %s, ", string(j)))
+			fmt.Fprintf(&buffer, "BackendData: %s, ", string(j))
 		}
 	} else {
 		buffer.WriteString("BackendData: (nil), ")
@@ -96,7 +96,7 @@ func (la *LeaseAttrs) String() string {
 		if err != nil {
 			buffer.WriteString("BackendV6Data: (nil)")
 		} else {
-			buffer.WriteString(fmt.Sprintf("BackendV6Data: %s", string(j)))
+			fmt.Fprintf(&buffer, "BackendV6Data: %s", string(j))
 		}
 	} else {
 		buffer.WriteString("BackendV6Data: (nil)")

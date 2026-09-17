@@ -124,7 +124,7 @@ Manages forwarding rules and masquerading using either iptables or nftables.
 
 **CGO_ENABLED**: Set to 1 for amd64 (enables UDP backend), 0 for other architectures.
 
-**Cross-compilation**: Uses Docker with golang:1.25 image and qemu-user-static for cross-arch builds.
+**Cross-compilation**: Uses Docker with golang:1.26 image and qemu-user-static for cross-arch builds.
 
 **Version embedding**: Git tag/commit is embedded via ldflags:
 ```
@@ -141,7 +141,7 @@ Manages forwarding rules and masquerading using either iptables or nftables.
 
 ## Key Configuration
 
-**Go version**: 1.25 (see Makefile GO_VERSION)
+**Go version**: 1.26 (see Makefile GO_VERSION)
 
 **Supported architectures**: amd64, arm, arm64, s390x, ppc64le, riscv64
 
