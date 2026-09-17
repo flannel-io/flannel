@@ -25,6 +25,7 @@ import (
 
 	"github.com/flannel-io/flannel/pkg/ip"
 	"github.com/flannel-io/flannel/pkg/lease"
+	"go.etcd.io/etcd/api/v3/etcdserverpb"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	etcd "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/tests/v3/framework/integration"
@@ -50,17 +51,19 @@ func newTestEtcdRegistry(t *testing.T, ctx context.Context, client *etcd.Client)
 
 func TestWatchResultsSkipsMalformedEvents(t *testing.T) {
 	r := &etcdSubnetRegistry{}
-	wresp := etcd.WatchResponse{Events: []*etcd.Event{
-		{
-			Type: etcd.EventTypeDelete,
-			Kv:   &mvccpb.KeyValue{Key: []byte("/coreos.com/network/subnets/10.1.5.0-24")},
+	wresp := etcd.WatchResponse{
+		Header: &etcdserverpb.ResponseHeader{Revision: 42},
+		Events: []*etcd.Event{
+			{
+				Type: etcd.EventTypeDelete,
+				Kv:   &mvccpb.KeyValue{Key: []byte("/coreos.com/network/subnets/10.1.5.0-24")},
+			},
+			{
+				Type: etcd.EventTypePut,
+				Kv:   &mvccpb.KeyValue{Key: []byte("/coreos.com/network/subnets/not-a-subnet")},
+			},
 		},
-		{
-			Type: etcd.EventTypePut,
-			Kv:   &mvccpb.KeyValue{Key: []byte("/coreos.com/network/subnets/not-a-subnet")},
-		},
-	}}
-	wresp.Header.Revision = 42
+	}
 
 	results, err := r.watchResults(context.Background(), wresp)
 	if err != nil {
