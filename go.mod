@@ -32,8 +32,8 @@ require (
 require (
 	github.com/avast/retry-go/v5 v5.0.0
 	github.com/google/renameio/v2 v2.0.2
-	github.com/onsi/ginkgo/v2 v2.32.2
-	github.com/onsi/gomega v1.40.0
+	github.com/onsi/ginkgo/v2 v2.33.0
+	github.com/onsi/gomega v1.43.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.170
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.3.170
 	golang.org/x/sync v0.23.0
@@ -116,7 +116,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.45.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/mod v0.38.0 // indirect
 	golang.org/x/tools v0.48.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260803160001-6ac0973c030d // indirect
