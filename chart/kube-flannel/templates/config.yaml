@@ -3,9 +3,14 @@ apiVersion: v1
 metadata:
   name: kube-flannel-cfg
   namespace: {{ .Release.Namespace }}
+  {{- with (merge .Values.flannel.configMap.labels (include "flannel.labels" . | fromYaml)) }}
   labels:
-    tier: node
-    app: flannel
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with merge .Values.flannel.configMap.annotations .Values.global.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 data:
   cni-conf.json: {{ .Values.flannel.cniConf | toJson }}
   net-conf.json: |
