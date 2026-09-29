@@ -74,4 +74,4 @@ jobs:
        make dist/flanneld
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@4bd7200e1f146b1c937cae12d258b50f41a53cf8 #v4.38.0
+      uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 #v4.38.0
