@@ -30,10 +30,19 @@ updates:
           - "sigs.k8s.io/*"
           - "go.etcd.io/*"
           - "github.com/tencentcloud/*"
-  - package-ecosystem: "github-actions" 
+
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      action-deps:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-patch"
 
   - package-ecosystem: docker
     directory: /e2e
