@@ -3,13 +3,13 @@ IPERF_IMG ?= iperf3:latest
 ARCH ?= amd64
 
 ifeq ($(ARCH),amd64)
-        BASEIMAGE=amd64/alpine:3.24@sha256:a0a65670a97d4d6ffc87eed1175c9c7d699813489e0913d96c7b917d7b51e456
+        BASEIMAGE=amd64/alpine:3.24@sha256:d5487879ebd5f0264ca2db5af02584e8d9090403f54cb3abcfcd7a5bcc1e7ebb
 endif
 ifeq ($(ARCH),arm64)
-	BASEIMAGE=arm64v8/alpine:3.24@sha256:65b6d5e8cc3010146b8b28cad29473b67883635fbedc9851f05ac83fb713ebdb
+	BASEIMAGE=arm64v8/alpine:3.24@sha256:cc99de154757eb3d8b9200868d0bab96bff581a4f3000e62caed7baf46b41f95
 endif
 ifeq ($(ARCH),ppc64le)
-	BASEIMAGE=ppc64le/alpine:3.24@sha256:2b2dcda826915dfbd61de6b3b09d7dd6eb4252800b90c2ffa8ae9b040f6f4806
+	BASEIMAGE=ppc64le/alpine:3.24@sha256:a3ed54376ac872705532c49aef51a2ea0c92f1f824ec17a8f3c5f510dad619cd
 endif
 
 .PHONY: all container
