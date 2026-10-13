@@ -34,7 +34,7 @@ require (
 	github.com/google/renameio/v2 v2.0.2
 	github.com/onsi/ginkgo/v2 v2.33.0
 	github.com/onsi/gomega v1.44.0
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.190
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.192
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.3.188
 	golang.org/x/sync v0.23.0
 	sigs.k8s.io/kind v0.32.0
