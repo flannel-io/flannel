@@ -32,11 +32,11 @@ require (
 require (
 	github.com/avast/retry-go/v5 v5.0.0
 	github.com/google/renameio/v2 v2.0.2
-	github.com/onsi/ginkgo/v2 v2.33.0
+	github.com/onsi/ginkgo/v2 v2.33.1
 	github.com/onsi/gomega v1.44.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.190
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.3.188
-	golang.org/x/sync v0.23.0
+	golang.org/x/sync v0.24.0
 	sigs.k8s.io/kind v0.32.0
 	sigs.k8s.io/knftables v0.0.18
 )
@@ -153,7 +153,7 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.55.0 // indirect
-	golang.org/x/sys v0.48.0
+	golang.org/x/sys v0.49.0
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 	google.golang.org/grpc v1.83.2 // indirect
