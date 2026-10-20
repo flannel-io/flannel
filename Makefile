@@ -13,6 +13,7 @@ QEMU_SHA256_ARM64?=dce64b2dc6b005485c7aa735a7ea39cb0006bf7e5badc28b324b2cd0c73d8
 QEMU_SHA256_PPC64LE?=a8855b9a9cdefbe2163d9f7851fb71c77207d816451237caed616eb9b03229ac
 QEMU_SHA256_S390X?=a438ab2f7c2e0f0ffe63992bccedaf60d789cfb1849e035c0764bda7d9e73a9a
 QEMU_SHA256_RISCV64?=3d25c6ec0523cf36e51ccd32ecefebed1752958ef384d10ba84c059ac26a4b3c
+QEMU_SHA256_LOONG64?=bc6c99470ad792a3b509489031084824248ade4c1047e25b17865845cd7da51d
 
 QEMU_ASSET_amd64=qemu-x86_64-static
 QEMU_ASSET_arm=qemu-arm-static
@@ -20,6 +21,7 @@ QEMU_ASSET_arm64=qemu-aarch64-static
 QEMU_ASSET_ppc64le=qemu-ppc64le-static
 QEMU_ASSET_s390x=qemu-s390x-static
 QEMU_ASSET_riscv64=qemu-riscv64-static
+QEMU_ASSET_loong64=qemu-loongarch64-static
 
 QEMU_SHA256_amd64=$(QEMU_SHA256_AMD64)
 QEMU_SHA256_arm=$(QEMU_SHA256_ARM)
@@ -27,6 +29,7 @@ QEMU_SHA256_arm64=$(QEMU_SHA256_ARM64)
 QEMU_SHA256_ppc64le=$(QEMU_SHA256_PPC64LE)
 QEMU_SHA256_s390x=$(QEMU_SHA256_S390X)
 QEMU_SHA256_riscv64=$(QEMU_SHA256_RISCV64)
+QEMU_SHA256_loong64=$(QEMU_SHA256_LOONG64)
 
 # Default tag and architecture. Can be overridden
 TAG?=$(shell git describe --tags --always)
@@ -70,7 +73,7 @@ dist/flanneld.exe: $(shell find . -type f  -name '*.go')
 
 # This will build flannel natively using golang image
 dist/flanneld-$(ARCH): deps dist/qemu-$(ARCH)-static
-	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x riscv64]
+	# valid values for ARCH are [amd64 arm arm64 ppc64le s390x riscv64 loong64]
 	docker run --rm -e CGO_ENABLED=$(CGO_ENABLED) -e GOARCH=$(ARCH) -e GOCACHE=/go \
 		-u $(shell id -u):$(shell id -g) \
 		-v $(CURDIR)/dist/qemu-$(ARCH)-static:/usr/bin/qemu-$(ARCH)-static \
