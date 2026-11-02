@@ -215,9 +215,52 @@ func (n *RouteNetwork) routeCheck(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-time.After(routeCheckRetries * time.Second):
+			n.syncHostGWLinkIndex(linkIndexByName)
 			n.checkSubnetExistInV4Routes()
 			n.checkSubnetExistInV6Routes()
 		}
+	}
+}
+
+// linkIndexByName looks up a link by name. host-gw routes are pinned to the
+// external interface's ifindex, which changes when that interface is recreated.
+func linkIndexByName(name string) (int, error) {
+	link, err := netlink.LinkByName(name)
+	if err != nil {
+		return 0, err
+	}
+	return link.Attrs().Index, nil
+}
+
+// syncHostGWLinkIndex points cached host-gw routes at the external interface's
+// current ifindex. Other backends (ipip) use a different link for the route.
+func (n *RouteNetwork) syncHostGWLinkIndex(lookup func(name string) (int, error)) {
+	if n.BackendType != "host-gw" || n.ExtIface == nil || n.ExtIface.Iface == nil || lookup == nil {
+		return
+	}
+	name := n.ExtIface.Iface.Name
+	if name == "" {
+		name = n.ExtIface.IfaceName
+	}
+	if name == "" {
+		return
+	}
+	idx, err := lookup(name)
+	if err != nil {
+		log.V(4).Infof("host-gw: could not look up %s: %v", name, err)
+		return
+	}
+	if idx == 0 || idx == n.LinkIndex {
+		return
+	}
+	log.Infof("host-gw: external interface %s index changed from %d to %d", name, n.LinkIndex, idx)
+	n.LinkIndex = idx
+	n.ExtIface.Iface.Index = idx
+	for i := range n.routes {
+		n.routes[i].LinkIndex = idx
+	}
+	for i := range n.v6Routes {
+		n.v6Routes[i].LinkIndex = idx
 	}
 }
 

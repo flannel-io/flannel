@@ -26,6 +26,45 @@ import (
 	"github.com/vishvananda/netlink"
 )
 
+func TestSyncHostGWLinkIndex(t *testing.T) {
+	iface := &net.Interface{Index: 5, Name: "zt0"}
+	dst := &net.IPNet{IP: net.ParseIP("10.1.0.0").To4(), Mask: net.CIDRMask(24, 32)}
+	nw := RouteNetwork{
+		SimpleNetwork: SimpleNetwork{ExtIface: &ExternalInterface{Iface: iface}},
+		BackendType:   "host-gw",
+		LinkIndex:     5,
+		routes:        []netlink.Route{{Dst: dst, LinkIndex: 5}},
+		v6Routes:      []netlink.Route{{LinkIndex: 5}},
+	}
+	nw.syncHostGWLinkIndex(func(name string) (int, error) {
+		if name != "zt0" {
+			t.Fatalf("lookup name = %q", name)
+		}
+		return 9, nil
+	})
+	if nw.LinkIndex != 9 || iface.Index != 9 {
+		t.Fatalf("index = %d iface = %d", nw.LinkIndex, iface.Index)
+	}
+	if nw.routes[0].LinkIndex != 9 || nw.v6Routes[0].LinkIndex != 9 {
+		t.Fatalf("routes not updated: %+v %+v", nw.routes[0], nw.v6Routes[0])
+	}
+
+	// same index is a no-op
+	nw.syncHostGWLinkIndex(func(string) (int, error) { return 9, nil })
+	if nw.LinkIndex != 9 {
+		t.Fatal(nw.LinkIndex)
+	}
+
+	// ipip routes use the tunnel link, not the external iface
+	nw.BackendType = "ipip"
+	nw.LinkIndex = 5
+	nw.routes[0].LinkIndex = 5
+	nw.syncHostGWLinkIndex(func(string) (int, error) { return 11, nil })
+	if nw.LinkIndex != 5 || nw.routes[0].LinkIndex != 5 {
+		t.Fatalf("ipip index changed: %d %d", nw.LinkIndex, nw.routes[0].LinkIndex)
+	}
+}
+
 func TestRouteCache(t *testing.T) {
 	teardown := ns.SetUpNetlinkTest(t)
 	defer teardown()
