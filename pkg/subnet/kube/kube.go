@@ -315,17 +315,17 @@ func (ksm *kubeSubnetManager) handleUpdateLeaseEvent(ctx context.Context, oldObj
 	if s, ok := n.Annotations[ksm.annotations.SubnetKubeManaged]; !ok || s != "true" {
 		return
 	}
-	var changed = true
-	if ksm.enableIPv4 && o.Annotations[ksm.annotations.BackendData] == n.Annotations[ksm.annotations.BackendData] &&
-		o.Annotations[ksm.annotations.BackendType] == n.Annotations[ksm.annotations.BackendType] &&
-		o.Annotations[ksm.annotations.BackendPublicIP] == n.Annotations[ksm.annotations.BackendPublicIP] {
-		changed = false
+	var changed = false
+	if ksm.enableIPv4 && (o.Annotations[ksm.annotations.BackendData] != n.Annotations[ksm.annotations.BackendData] ||
+		o.Annotations[ksm.annotations.BackendType] != n.Annotations[ksm.annotations.BackendType] ||
+		o.Annotations[ksm.annotations.BackendPublicIP] != n.Annotations[ksm.annotations.BackendPublicIP]) {
+		changed = true
 	}
 
-	if ksm.enableIPv6 && o.Annotations[ksm.annotations.BackendV6Data] == n.Annotations[ksm.annotations.BackendV6Data] &&
-		o.Annotations[ksm.annotations.BackendType] == n.Annotations[ksm.annotations.BackendType] &&
-		o.Annotations[ksm.annotations.BackendPublicIPv6] == n.Annotations[ksm.annotations.BackendPublicIPv6] {
-		changed = false
+	if ksm.enableIPv6 && (o.Annotations[ksm.annotations.BackendV6Data] != n.Annotations[ksm.annotations.BackendV6Data] ||
+		o.Annotations[ksm.annotations.BackendType] != n.Annotations[ksm.annotations.BackendType] ||
+		o.Annotations[ksm.annotations.BackendPublicIPv6] != n.Annotations[ksm.annotations.BackendPublicIPv6]) {
+		changed = true
 	}
 
 	if !changed {
