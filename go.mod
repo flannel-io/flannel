@@ -29,9 +29,9 @@ require (
 )
 
 require (
-	github.com/avast/retry-go/v5 v5.0.0
+	github.com/avast/retry-go/v5 v5.1.1
 	github.com/google/renameio/v2 v2.0.2
-	github.com/onsi/ginkgo/v2 v2.33.1
+	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.200
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.3.198
