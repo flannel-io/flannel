@@ -41,6 +41,19 @@ type network struct {
 	v6Dev     *vxlanDevice
 	subnetMgr subnet.Manager
 	mtu       int
+
+	// knownLeases holds the remote leases that have been handed to
+	// handleSubnetEvents, so that their ARP, FDB and route entries can be
+	// written again after the VXLAN device is recreated. It is only used
+	// from the Run loop.
+	knownLeases lease.LeaseWatcher
+}
+
+// recreatedDevices carries the devices built by reCreateVxlan back to the
+// Run loop, which owns nw.dev, nw.v6Dev and the lease handling.
+type recreatedDevices struct {
+	dev   *vxlanDevice
+	v6Dev *vxlanDevice
 }
 
 const (
@@ -68,6 +81,8 @@ func (nw *network) Run(ctx context.Context) {
 	log.V(0).Info("watching for new subnet leases")
 	leaseEvents := make(chan []lease.Event)
 	vxlanMissingChan := make(chan bool, 1) // buffered to avoid blocking
+	vxlanRecreatedChan := make(chan recreatedDevices, 1)
+	nw.knownLeases.OwnLease = nw.SubnetLease
 
 	wg.Add(1)
 	go func() {
@@ -92,6 +107,7 @@ func (nw *network) Run(ctx context.Context) {
 				log.Infof("leaseEvents chan closed")
 				return
 			}
+			nw.knownLeases.Update(evtBatch)
 			nw.handleSubnetEvents(evtBatch)
 
 		case _, ok := <-vxlanMissingChan:
@@ -101,14 +117,56 @@ func (nw *network) Run(ctx context.Context) {
 			}
 			log.Info("vxlan device missing, attempting to recreate...")
 
-			// Offload recreate so this loop doesn’t block handleSubnetEvents
+			// Offload recreate so this loop doesn’t block handleSubnetEvents.
+			// The new devices are handed back through vxlanRecreatedChan so
+			// that this loop installs them and re-applies the known leases.
 			go func() {
-				if err := nw.reCreateVxlan(ctx); err != nil {
+				dev, v6Dev, err := nw.reCreateVxlan(ctx)
+				if err != nil {
 					log.Errorf("failed to recreate vxlan: %v", err)
+					return
+				}
+				select {
+				case vxlanRecreatedChan <- recreatedDevices{dev: dev, v6Dev: v6Dev}:
+				case <-ctx.Done():
 				}
 			}()
+
+		case recreated := <-vxlanRecreatedChan:
+			nw.useRecreatedDevices(recreated)
 		}
 	}
+}
+
+// useRecreatedDevices installs the devices built by reCreateVxlan and writes
+// the ARP, FDB and route entries of every known remote lease again. The kernel
+// removes those entries together with the old device, and lease events are
+// only delivered when a lease changes, so without this replay the node stays
+// cut off from the other nodes' pod subnets until flannel restarts.
+func (nw *network) useRecreatedDevices(recreated recreatedDevices) {
+	nw.dev = recreated.dev
+	nw.v6Dev = recreated.v6Dev
+	if nw.dev != nil {
+		nw.mtu = nw.dev.link.Attrs().MTU
+	} else if nw.v6Dev != nil {
+		nw.mtu = nw.v6Dev.link.Attrs().MTU
+	}
+
+	batch := nw.knownLeaseEvents()
+	if len(batch) == 0 {
+		return
+	}
+	log.Infof("re-applying %d known subnet lease(s) to the recreated vxlan device", len(batch))
+	nw.handleSubnetEvents(batch)
+}
+
+// knownLeaseEvents returns an EventAdded for every known remote lease.
+func (nw *network) knownLeaseEvents() []lease.Event {
+	batch := make([]lease.Event, 0, len(nw.knownLeases.Leases))
+	for _, l := range nw.knownLeases.Leases {
+		batch = append(batch, lease.Event{Type: lease.EventAdded, Lease: l})
+	}
+	return batch
 }
 
 // linkSubscribeFunc matches the signature of netlink.LinkSubscribe. It exists
@@ -221,14 +279,17 @@ func linkResubscribe(ctx context.Context, subscribe linkSubscribeFunc, retryDela
 	}
 }
 
-func (nw *network) reCreateVxlan(ctx context.Context) error {
+// reCreateVxlan builds new VXLAN devices once the external interface is back.
+// It does not modify nw.dev or nw.v6Dev; the caller installs the returned
+// devices from the Run loop.
+func (nw *network) reCreateVxlan(ctx context.Context) (*vxlanDevice, *vxlanDevice, error) {
 	backoff := time.Second
 	maxBackoff := 30 * time.Second
 
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("context canceled, stopping vxlan recreate")
+			return nil, nil, fmt.Errorf("context canceled, stopping vxlan recreate")
 		default:
 		}
 
@@ -302,11 +363,13 @@ func (nw *network) reCreateVxlan(ctx context.Context) error {
 			continue
 		}
 
-		nw.dev = dev
-		nw.v6Dev = v6Dev
-		nw.mtu = dev.link.Attrs().MTU
-		log.Infof("VXLAN device %s recreated successfully", dev.link.Attrs().Name)
-		return nil
+		if dev != nil {
+			log.Infof("VXLAN device %s recreated successfully", dev.link.Attrs().Name)
+		}
+		if v6Dev != nil {
+			log.Infof("VXLAN device %s recreated successfully", v6Dev.link.Attrs().Name)
+		}
+		return dev, v6Dev, nil
 	}
 }
 
