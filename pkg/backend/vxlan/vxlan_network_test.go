@@ -19,10 +19,17 @@ package vxlan
 import (
 	"context"
 	"errors"
+	"fmt"
+	"net"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/flannel-io/flannel/pkg/backend"
+	"github.com/flannel-io/flannel/pkg/ip"
+	"github.com/flannel-io/flannel/pkg/lease"
+	"github.com/flannel-io/flannel/pkg/ns"
+	"github.com/flannel-io/flannel/pkg/subnet"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/sys/unix"
 )
@@ -324,4 +331,139 @@ func TestWatchVXLANDevice_NilLinkUpdate_NoPanic(t *testing.T) {
 
 	cancel()
 	requireClosedSoon(t, stopped, "watcher to exit")
+}
+
+// fakeSubnetManager serves the network config used to recreate the device.
+type fakeSubnetManager struct {
+	subnet.Manager
+	config *subnet.Config
+}
+
+func (m *fakeSubnetManager) GetNetworkConfig(context.Context) (*subnet.Config, error) {
+	return m.config, nil
+}
+
+func (m *fakeSubnetManager) GetStoredMacAddresses(context.Context) (string, string) {
+	return "", ""
+}
+
+func addDummyLink(t *testing.T, name, cidr string) *net.Interface {
+	t.Helper()
+	link := &netlink.Dummy{LinkAttrs: netlink.LinkAttrs{Name: name}}
+	if err := netlink.LinkAdd(link); err != nil {
+		t.Fatal(err)
+	}
+	addr, err := netlink.ParseAddr(cidr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := netlink.AddrAdd(link, addr); err != nil {
+		t.Fatal(err)
+	}
+	if err := netlink.LinkSetUp(link); err != nil {
+		t.Fatal(err)
+	}
+	iface, err := net.InterfaceByName(name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return iface
+}
+
+func hasRoute(t *testing.T, dev string, dst *net.IPNet) bool {
+	t.Helper()
+	link, err := netlink.LinkByName(dev)
+	if err != nil {
+		return false
+	}
+	routes, err := netlink.RouteList(link, netlink.FAMILY_V4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, r := range routes {
+		if r.Dst != nil && r.Dst.String() == dst.String() {
+			return true
+		}
+	}
+	return false
+}
+
+// TestRecreatedDeviceGetsKnownLeases covers #2617: deleting the external
+// interface also deletes the VXLAN device with its routes, ARP and FDB
+// entries, so they must be written again once the device is recreated.
+func TestRecreatedDeviceGetsKnownLeases(t *testing.T) {
+	teardown := ns.SetUpNetlinkTest(t)
+	defer teardown()
+
+	const extName = "ext0"
+	extIface := addDummyLink(t, extName, "192.0.2.1/24")
+
+	_, podNet, _ := net.ParseCIDR("198.18.0.0/16")
+	_, ownNet, _ := net.ParseCIDR("198.18.1.0/24")
+	_, remoteNet, _ := net.ParseCIDR("198.18.2.0/24")
+	sm := &fakeSubnetManager{config: &subnet.Config{
+		EnableIPv4: true,
+		Network:    ip.FromIPNet(podNet),
+		Backend:    []byte(`{"Type":"vxlan","VNI":1}`),
+	}}
+	own := &lease.Lease{EnableIPv4: true, Subnet: ip.FromIPNet(ownNet)}
+	remote := lease.Lease{
+		EnableIPv4: true,
+		Subnet:     ip.FromIPNet(remoteNet),
+		Attrs: lease.LeaseAttrs{
+			PublicIP:    ip.MustParseIP4("192.0.2.2"),
+			BackendType: "vxlan",
+			BackendData: []byte(`{"VNI":1,"VtepMAC":"02:00:00:00:00:02"}`),
+		},
+	}
+
+	ctx := context.Background()
+	cfg, err := parseVXLANConfig(sm.config.Backend, extIface.MTU)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dev, _, err := createVXLANDevice(ctx, sm.config, cfg, sm, extIface.Index, net.ParseIP("192.0.2.1"), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := configureDeviceIPv4IPv6(dev, nil, own, sm.config); err != nil {
+		t.Fatal(err)
+	}
+	nw := &network{
+		SimpleNetwork: backend.SimpleNetwork{SubnetLease: own, ExtIface: &backend.ExternalInterface{IfaceName: extName}},
+		dev:           dev,
+		subnetMgr:     sm,
+	}
+	nw.knownLeases.OwnLease = own
+
+	// What Run does for a lease event.
+	events := []lease.Event{{Type: lease.EventAdded, Lease: remote}}
+	nw.knownLeases.Update(events)
+	nw.handleSubnetEvents(events)
+	devName := fmt.Sprintf("flannel.%d", cfg.VNI)
+	if !hasRoute(t, devName, remoteNet) {
+		t.Fatalf("no route to %s via %s after the lease was added", remoteNet, devName)
+	}
+
+	// Recreate the external interface; the kernel removes the VXLAN device.
+	extLink, err := netlink.LinkByName(extName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := netlink.LinkDel(extLink); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := netlink.LinkByName(devName); err == nil {
+		t.Fatalf("%s still exists after %s was deleted", devName, extName)
+	}
+	addDummyLink(t, extName, "192.0.2.1/24")
+
+	newDev, newV6Dev, err := nw.reCreateVxlan(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	nw.useRecreatedDevices(recreatedDevices{dev: newDev, v6Dev: newV6Dev})
+	if !hasRoute(t, devName, remoteNet) {
+		t.Fatalf("no route to %s via %s after %s was recreated", remoteNet, devName, devName)
+	}
 }
