@@ -315,15 +315,12 @@ func generateKubePKI(dockerIP string) (string, error) {
 	if _, err := runCommand("openssl", "genrsa", "-out", filepath.Join(pkiDir, "ca.key"), "2048"); err != nil {
 		return dir, fmt.Errorf("gen ca.key: %w", err)
 	}
-	if _, err := runCommand("openssl", "req", "-new", "-key", filepath.Join(pkiDir, "ca.key"),
+	// Create the CA certificate with "openssl req -x509" so that it is a CA
+	// certificate (basicConstraints CA:TRUE). Go rejects a parent certificate
+	// that is not a CA when verifying the apiserver certificate.
+	if _, err := runCommand("openssl", "req", "-x509", "-new",
+		"-key", filepath.Join(pkiDir, "ca.key"),
 		"-subj", "/CN=KUBERNETES-CA/O=Kubernetes",
-		"-out", filepath.Join(pkiDir, "ca.csr")); err != nil {
-		return dir, fmt.Errorf("gen ca.csr: %w", err)
-	}
-	if _, err := runCommand("openssl", "x509", "-req",
-		"-in", filepath.Join(pkiDir, "ca.csr"),
-		"-signkey", filepath.Join(pkiDir, "ca.key"),
-		"-CAcreateserial",
 		"-out", filepath.Join(pkiDir, "ca.crt"),
 		"-days", "1000"); err != nil {
 		return dir, fmt.Errorf("gen ca.crt: %w", err)
