@@ -1,0 +1,122 @@
+suite: test labels annotations overrides
+templates:
+  - daemonset.yaml
+  - rbac.yaml
+  - serviceaccount.yaml
+  - config.yaml
+tests:
+  - it: should have the correct labels and annotations for overrides
+    set:
+      global.commonLabels:
+        non-overridden-label: "label should not be overridden"
+        overridden-label: "label has not been overridden"
+      global.commonAnnotations:
+        non-overridden-annotation: "annotation should not be overridden"
+        overridden-annotation: "annotation has not been overridden"
+      flannel.configMap.labels:
+        overridden-label: "label has been overridden"
+        leaf-label: "label has been set at the leaf level" # Leaf as in the individual templates
+      flannel.configMap.annotations:
+        overridden-annotation: "annotation has been overridden"
+        leaf-annotation: "annotation has been set at the leaf level"
+      flannel.daemonSet.labels:
+        overridden-label: "label has been overridden"
+        leaf-label: "label has been set at the leaf level"
+      flannel.daemonSet.annotations:
+        overridden-annotation: "annotation has been overridden"
+        leaf-annotation: "annotation has been set at the leaf level"
+      flannel.rbac.clusterRole.labels:
+        overridden-label: "label has been overridden"
+        leaf-label: "label has been set at the leaf level"
+      flannel.rbac.clusterRole.annotations:
+        overridden-annotation: "annotation has been overridden"
+        leaf-annotation: "annotation has been set at the leaf level"
+      flannel.rbac.clusterRoleBinding.labels:
+        overridden-label: "label has been overridden"
+        leaf-label: "label has been set at the leaf level"
+      flannel.rbac.clusterRoleBinding.annotations:
+        overridden-annotation: "annotation has been overridden"
+        leaf-annotation: "annotation has been set at the leaf level"
+      flannel.serviceAccount.labels:
+        overridden-label: "label has been overridden"
+        leaf-label: "label has been set at the leaf level"
+      flannel.serviceAccount.annotations:
+        overridden-annotation: "annotation has been overridden"
+        leaf-annotation: "annotation has been set at the leaf level"
+    asserts:
+      - equal:
+          path: metadata.labels.non-overridden-label
+          value: "label should not be overridden"
+      - equal:
+          path: metadata.labels.overridden-label
+          value: "label has been overridden"
+      - equal:
+          path: metadata.labels.leaf-label
+          value: "label has been set at the leaf level"
+      - equal:
+          path: metadata.annotations.non-overridden-annotation
+          value: "annotation should not be overridden"
+      - equal:
+          path: metadata.annotations.overridden-annotation
+          value: "annotation has been overridden"
+      - equal:
+          path: metadata.annotations.leaf-annotation
+          value: "annotation has been set at the leaf level"
+  - it: should have the correct labels and annotations for rbac overrides
+    templates:
+      - rbac.yaml
+    set:
+      flannel.rbac.labels:
+        rbac-non-overridden-label: "rbac label should not be overridden"
+        rbac-overridden-label: "rbac label should be overridden"
+      flannel.rbac.clusterRole.labels:
+        rbac-overridden-label: "rbac label has been overridden"
+      flannel.rbac.clusterRoleBinding.labels:
+        rbac-overridden-label: "rbac label has been overridden"
+      flannel.rbac.annotations:
+        rbac-non-overridden-annotation: "rbac annotation should not be overridden"
+        rbac-overridden-annotation: "rbac annotation should be overridden"
+      flannel.rbac.clusterRole.annotations:
+        rbac-overridden-annotation: "rbac annotation has been overridden"
+      flannel.rbac.clusterRoleBinding.annotations:
+        rbac-overridden-annotation: "rbac annotation has been overridden"
+    asserts:
+      - equal:
+          path: metadata.labels.rbac-non-overridden-label
+          value: "rbac label should not be overridden"
+      - equal:
+          path: metadata.labels.rbac-overridden-label
+          value: "rbac label has been overridden"
+      - equal:
+          path: metadata.annotations.rbac-non-overridden-annotation
+          value: "rbac annotation should not be overridden"
+      - equal:
+          path: metadata.annotations.rbac-overridden-annotation
+          value: "rbac annotation has been overridden"
+  - it: selector.matchLabels must not change (helm upgrade is immutable)
+    templates:
+      - daemonset.yaml
+    set:
+      global.commonLabels:
+        should-not-appear-selector: "selector labels should not change"
+      flannel.podLabels:
+        should-not-appear-selector: "selector labels should not change"
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app: flannel
+  - it: selector labels should not be overridden by user
+    templates:
+      - daemonset.yaml
+    set:
+      flannel.podLabels:
+        app: "user tries to override selector label"
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app: flannel
+      - equal:
+          path: spec.template.metadata.labels.app
+          value: "flannel"
