@@ -16,15 +16,10 @@ spec:
         tier: node
         app: flannel
     spec:
+      {{- with .Values.flannel.affinity }}
       affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/os
-                operator: In
-                values:
-                - linux
+        {{- toYaml . | trim | nindent 8 }}
+      {{- end }}
       hostNetwork: true
       priorityClassName: system-node-critical
       {{- with .Values.flannel.tolerations }}
