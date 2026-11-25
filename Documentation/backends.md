@@ -15,7 +15,7 @@ For more information on configuration options for Tencent see [TencentCloud VPC 
 
 ### VXLAN
 
-Use in-kernel VXLAN to encapsulate the packets.
+Use [in-kernel VXLAN](https://docs.kernel.org/networking/vxlan.html) to encapsulate the packets.
 
 Type and options:
 * `Type` (string): `vxlan`
@@ -27,6 +27,15 @@ Type and options:
 * `MTU` (number): Desired MTU for the outgoing packets. If not defined, the MTU of the external interface is used. Linux only.
 * `MacPrefix` (String): Windows only. MAC address prefix for the VXLAN interface, format `xx-xx`. Defaults to `0E-2A`.
 * `Name` (String): Windows only. Name of the VXLAN network interface. Defaults to `flannel.<VNI>` (for example `flannel.4096`).
+
+VXLAN encapsulation consumes part of the underlay's [MTU](https://subneti.ca/en/glossary/mtu/).
+For the standard IPv4 VXLAN case, a 1500-byte base MTU leaves 1450 bytes for the
+inner IP packet after the outer IPv4, UDP, VXLAN, and inner Ethernet headers.
+The `MTU` option above supplies the base value; Flannel subtracts encapsulation
+overhead when deriving the network MTU. Additional encapsulation can require a
+smaller base MTU, so the example is not a universal setting. The VXLAN frame
+format and underlay MTU considerations are described in
+[RFC 7348, section 5](https://www.rfc-editor.org/rfc/rfc7348.html#section-5).
 
 Starting with Ubuntu 21.10, vxlan support on Raspberry Pi has been moved into a separate kernel module. 
 ```
