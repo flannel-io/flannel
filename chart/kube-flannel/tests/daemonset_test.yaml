@@ -119,3 +119,36 @@ tests:
       - equal:
           path: spec.template.spec.nodeSelector["eks.amazonaws.com/compute-type"]
           value: hybrid
+
+  - it: should render the default linux node affinity
+    asserts:
+      - equal:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0]
+          value:
+            key: kubernetes.io/os
+            operator: In
+            values:
+              - linux
+
+  - it: should render custom affinity when set
+    set:
+      flannel.affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/edge
+                    operator: DoesNotExist
+    asserts:
+      - equal:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0]
+          value:
+            key: node-role.kubernetes.io/edge
+            operator: DoesNotExist
+
+  - it: should not render affinity when set to null
+    set:
+      flannel.affinity: null
+    asserts:
+      - notExists:
+          path: spec.template.spec.affinity

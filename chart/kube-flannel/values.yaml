@@ -97,6 +97,17 @@ flannel:
     readinessProbe:
       initialDelaySeconds: 5
       periodSeconds: 10
+  # Affinity for the kube-flannel daemonset. When overridden, the default linux
+  # OS constraint below is replaced entirely; re-add it if still needed.
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/os
+            operator: In
+            values:
+            - linux
   tolerations:
   - effect: NoExecute
     operator: Exists
