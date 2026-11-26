@@ -46,6 +46,14 @@ type vxlanDevice struct {
 	directRouting bool
 }
 
+// vxlanOverhead is the bytes reserved for the VXLAN header when deriving the
+// device MTU from the underlying link.
+const vxlanOverhead = 50
+
+func desiredVxlanMTU(devMTU int) int {
+	return devMTU - vxlanOverhead
+}
+
 func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 	var err error
 	hardwareAddr := devAttrs.hwAddr
@@ -56,11 +64,15 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 		}
 	}
 
+	// Do not set MTU in LinkAttrs at create time. On some kernels a jumbo
+	// host MTU (for example 9001) makes the requested VXLAN MTU exceed
+	// dev->max_mtu during LinkAdd, which fails with EINVAL and leaves the
+	// device uncreated. Let the kernel pick a default from the underlying
+	// device, then apply the desired MTU with LinkSetMTU afterwards.
 	link := &netlink.Vxlan{
 		LinkAttrs: netlink.LinkAttrs{
 			Name:         devAttrs.name,
 			HardwareAddr: hardwareAddr,
-			MTU:          devAttrs.MTU - 50,
 		},
 		VxlanId:      int(devAttrs.vni),
 		VtepDevIndex: devAttrs.vtepIndex,
@@ -73,6 +85,14 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 	link, err = ensureLink(link)
 	if err != nil {
 		return nil, err
+	}
+
+	wantMTU := desiredVxlanMTU(devAttrs.MTU)
+	if link.MTU != wantMTU {
+		if err := netlink.LinkSetMTU(link, wantMTU); err != nil {
+			return nil, fmt.Errorf("failed to set VXLAN device MTU to %d: %v", wantMTU, err)
+		}
+		link.MTU = wantMTU
 	}
 
 	_, _ = sysctl.Sysctl(fmt.Sprintf("net/ipv6/conf/%s/accept_ra", devAttrs.name), "0")
